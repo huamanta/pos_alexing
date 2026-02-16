@@ -1,0 +1,7 @@
+{
+    "require": {
+        "mpdf/mpdf": "^8.2",
+        "phpoffice/phpspreadsheet": "^1.12",
+        "textalk/websocket": "^1.5"
+    }
+}

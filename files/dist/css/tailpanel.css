@@ -1,0 +1,44 @@
+ @layer base {
+            body {
+                @apply bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 overflow-hidden;
+            }
+        }
+        .sidebar-item {
+            @apply flex items-center justify-between px-3 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors rounded-lg mx-2 mb-0.5;
+        }
+        .sidebar-item-active {
+            @apply bg-primary/10 text-primary !important;
+        }
+        .sub-item {
+            @apply flex items-center px-4 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-500 hover:text-primary dark:hover:text-white transition-colors pl-11;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 20px;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            @apply bg-transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+        }
+        .pos-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 1.25rem;
+        }
+        .tailpanel-input {
+            @apply w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none;
+        }
+        .category-tab {
+            @apply px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-full transition-all whitespace-nowrap;
+        }
+        .category-tab-active {
+            @apply bg-primary text-white shadow-lg shadow-primary/30;
+        }
+        .category-tab-inactive {
+            @apply bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700;
+        }

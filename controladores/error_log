@@ -1,0 +1,490 @@
+[12-Feb-2026 11:25:14 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[12-Feb-2026 11:25:14 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[12-Feb-2026 12:02:13 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[12-Feb-2026 12:02:14 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[12-Feb-2026 16:12:31 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[12-Feb-2026 16:12:32 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[12-Feb-2026 16:12:37 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[12-Feb-2026 16:12:37 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 14:26:15 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 14:26:15 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:39:40 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:43:51 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:43:51 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:43:51 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:43:51 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:43:51 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:43:51 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:43:51 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:43:51 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:43:51 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:43:52 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:43:52 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:43:52 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:47:26 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:47:26 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:47:26 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:47:27 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:47:27 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:47:27 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:47:27 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:47:27 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:47:27 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:47:27 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:47:27 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:47:27 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:49:01 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:49:01 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:49:01 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:49:02 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:49:02 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:49:02 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:49:02 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:49:02 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:49:02 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:49:02 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:49:02 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:49:02 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:49:46 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:50:15 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:59:03 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:59:03 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:59:03 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:59:04 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:59:04 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:59:04 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:59:04 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:59:04 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:59:04 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 14:59:04 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 14:59:04 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 14:59:04 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 15:00:16 America/Lima] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in /home/syspider/demo.syspidertechnolgy.com/configuraciones/Conexion.php:28
+Stack trace:
+#0 /home/syspider/demo.syspidertechnolgy.com/modelos/Consultas.php(446): ejecutarConsultaSimpleFila('SELECT IFNULL((...')
+#1 /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php(266): Consultas->mostrarTotalSalidaTarjeta('2026-02-13', '2026-02-13', 'Todos', 'Todos')
+#2 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/configuraciones/Conexion.php on line 28
+[13-Feb-2026 15:00:17 America/Lima] idpersonal: 7, idasistencia: 
+[13-Feb-2026 15:00:17 America/Lima] idpersonal: 3, idasistencia: 
+[13-Feb-2026 15:00:17 America/Lima] idpersonal: 5, idasistencia: 
+[13-Feb-2026 15:00:17 America/Lima] idpersonal: 4, idasistencia: 
+[13-Feb-2026 15:00:17 America/Lima] idpersonal: 6, idasistencia: 
+[13-Feb-2026 15:00:17 America/Lima] idpersonal: 8, idasistencia: 
+[13-Feb-2026 15:00:44 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 15:00:44 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 15:00:44 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 15:00:44 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 15:00:44 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 15:00:44 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 15:00:44 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 15:00:44 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 15:00:44 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 15:00:45 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 15:00:45 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 15:00:45 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 15:02:43 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 15:02:43 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 15:02:43 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 15:02:43 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 15:02:43 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 15:02:43 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 15:02:43 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 15:02:43 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 15:02:43 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 15:02:44 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 15:02:44 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 15:02:44 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 15:08:37 America/Lima] PHP Notice:  Undefined index: idsucursal in /home/syspider/demo.syspidertechnolgy.com/controladores/traslado.php on line 7
+[13-Feb-2026 15:08:47 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 15:08:47 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 15:09:23 America/Lima] PHP Notice:  Undefined index: idsucursal in /home/syspider/demo.syspidertechnolgy.com/controladores/traslado.php on line 7
+[13-Feb-2026 15:09:36 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 15:09:37 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 15:17:34 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 15:17:34 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 15:17:49 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 15:17:49 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 15:47:16 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 15:47:17 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 15:47:23 America/Lima] PHP Notice:  Undefined index: idsucursal in /home/syspider/demo.syspidertechnolgy.com/controladores/traslado.php on line 7
+[13-Feb-2026 15:47:36 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 15:47:36 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 15:47:43 America/Lima] PHP Notice:  Undefined index: idsucursal in /home/syspider/demo.syspidertechnolgy.com/controladores/traslado.php on line 7
+[13-Feb-2026 20:20:09 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 20:20:09 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 20:20:52 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 20:20:52 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 20:20:52 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 20:20:59 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:20:59 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:20:59 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:21:00 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:21:00 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:21:00 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:21:00 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:21:00 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:21:00 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:21:00 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:21:00 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:21:00 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:23:34 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:23:34 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:23:34 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:23:34 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:23:34 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:23:34 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:23:34 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:23:34 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:23:34 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:23:35 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:23:35 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:23:35 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:28:18 America/Lima] PHP Notice:  Undefined index: idsucursal2 in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 1276
+[13-Feb-2026 20:28:33 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 20:28:33 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 20:28:33 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 20:29:00 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 20:29:00 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 20:29:00 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 20:33:34 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 20:33:34 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 20:33:34 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 20:33:39 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:33:39 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:33:39 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:33:39 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:33:39 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:33:39 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:33:39 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:33:39 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:33:39 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:33:40 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:33:40 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:33:40 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:34:57 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:34:57 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:34:57 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:34:57 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:34:57 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:34:57 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:34:57 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:34:57 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:34:57 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:34:57 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 20:34:58 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 20:34:58 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 20:39:31 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 20:39:31 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 20:46:24 America/Lima] PHP Notice:  Undefined index: idsucursal in /home/syspider/demo.syspidertechnolgy.com/controladores/traslado.php on line 7
+[13-Feb-2026 20:46:42 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 20:46:42 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 21:40:57 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 21:40:57 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 21:41:06 America/Lima] PHP Notice:  Undefined index: idsucursal in /home/syspider/demo.syspidertechnolgy.com/controladores/traslado.php on line 7
+[13-Feb-2026 21:41:11 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 21:41:11 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 21:45:24 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 21:45:24 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 21:48:31 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 21:48:31 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 21:48:31 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 21:50:31 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 21:50:31 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 21:50:31 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 21:57:22 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[14-Feb-2026 03:01:37 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method Persona::listarTransportista() in /home/syspider/demo.syspidertechnolgy.com/controladores/guia.php:211
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/guia.php on line 211
+[14-Feb-2026 03:01:37 UTC] PHP Fatal error:  Uncaught Error: Call to undefined method Persona::listarPersonal() in /home/syspider/demo.syspidertechnolgy.com/controladores/guia.php:219
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/guia.php on line 219
+[13-Feb-2026 22:01:37 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method Consultas::listarMotivosTraslado() in /home/syspider/demo.syspidertechnolgy.com/controladores/guia.php:229
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/guia.php on line 229
+[13-Feb-2026 22:02:03 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 572
+[13-Feb-2026 22:02:03 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 617
+[13-Feb-2026 22:02:03 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 618
+[13-Feb-2026 22:02:33 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 22:02:33 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 22:02:33 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 22:02:39 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 572
+[13-Feb-2026 22:02:39 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 617
+[13-Feb-2026 22:02:39 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 618
+[13-Feb-2026 22:03:13 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 22:03:13 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 22:03:13 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 22:03:13 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 22:03:13 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 22:03:13 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 22:07:02 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 22:07:02 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 22:07:02 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:07:08 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:07:11 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 22:07:11 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 22:07:11 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 22:07:31 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 22:07:31 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 22:07:31 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 22:07:53 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 22:07:53 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 22:07:53 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 22:08:19 America/Lima] PHP Notice:  Undefined variable: serie_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 531
+[13-Feb-2026 22:08:19 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 532
+[13-Feb-2026 22:08:19 America/Lima] PHP Notice:  Undefined variable: num_comp_tic in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 488
+[13-Feb-2026 22:08:40 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:08:40 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:08:40 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:08:40 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:08:40 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:08:40 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:08:41 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:08:41 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:08:41 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:08:41 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:08:41 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:08:41 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:08:49 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:08:49 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:08:49 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:08:49 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:08:49 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:08:49 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:08:56 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:08:56 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:08:56 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:08:57 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:08:57 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:08:57 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:09:07 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:09:07 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:09:07 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:09:07 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[13-Feb-2026 22:09:07 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[13-Feb-2026 22:09:07 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[13-Feb-2026 22:11:34 America/Lima] PHP Fatal error:  Uncaught Error: Call to a member function fetch_assoc() on bool in /home/syspider/demo.syspidertechnolgy.com/configuraciones/Conexion.php:28
+Stack trace:
+#0 /home/syspider/demo.syspidertechnolgy.com/modelos/Consultas.php(446): ejecutarConsultaSimpleFila('SELECT IFNULL((...')
+#1 /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php(266): Consultas->mostrarTotalSalidaTarjeta('2026-02-13', '2026-02-13', 'Todos', 'Todos')
+#2 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/configuraciones/Conexion.php on line 28
+[13-Feb-2026 22:11:34 America/Lima] idpersonal: 7, idasistencia: 
+[13-Feb-2026 22:11:34 America/Lima] idpersonal: 3, idasistencia: 
+[13-Feb-2026 22:11:34 America/Lima] idpersonal: 5, idasistencia: 
+[13-Feb-2026 22:11:34 America/Lima] idpersonal: 4, idasistencia: 
+[13-Feb-2026 22:11:34 America/Lima] idpersonal: 6, idasistencia: 
+[13-Feb-2026 22:11:34 America/Lima] idpersonal: 8, idasistencia: 
+[13-Feb-2026 22:17:47 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 22:17:47 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[13-Feb-2026 22:17:52 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[13-Feb-2026 22:17:52 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[14-Feb-2026 22:11:12 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[14-Feb-2026 22:11:12 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[14-Feb-2026 22:11:19 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[14-Feb-2026 22:11:19 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[14-Feb-2026 22:11:19 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[14-Feb-2026 22:11:19 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[14-Feb-2026 22:11:19 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[14-Feb-2026 22:11:19 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[14-Feb-2026 22:11:20 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[14-Feb-2026 22:11:20 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[14-Feb-2026 22:11:20 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[14-Feb-2026 22:11:20 America/Lima] PHP Notice:  Undefined variable: num_comp in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 403
+[14-Feb-2026 22:11:20 America/Lima] PHP Notice:  Undefined variable: serie_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 447
+[14-Feb-2026 22:11:20 America/Lima] PHP Notice:  Undefined variable: num_comp_bol in /home/syspider/demo.syspidertechnolgy.com/controladores/venta.php on line 448
+[16-Feb-2026 07:18:12 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[16-Feb-2026 07:18:12 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[16-Feb-2026 12:36:33 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1623
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1623
+[16-Feb-2026 12:36:33 America/Lima] PHP Fatal error:  Uncaught Error: Call to undefined method mysqli_result::fetch_all() in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php:1605
+Stack trace:
+#0 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/controladores/consultas.php on line 1605
+[16-Feb-2026 12:36:49 America/Lima] PHP Notice:  Undefined index: idsucursal in /home/syspider/demo.syspidertechnolgy.com/controladores/traslado.php on line 7

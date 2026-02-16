@@ -1,0 +1,667 @@
+/* =====================================================
+   BADGES – Elegant Glow (premium / minimal)
+   ===================================================== */
+
+/* Base */
+.badge.badge-neon {
+    background-color: transparent !important;
+    border: 1px solid currentColor !important;
+
+    font-weight: 500;
+    letter-spacing: .3px;
+    font-size: 11.5px;
+
+    padding: 2px 7px;
+    border-radius: 5px;
+
+    /* ✨ brillo ultra sutil */
+    box-shadow: 0 0 2px currentColor;
+    text-shadow: none;
+
+    opacity: .92;
+
+    transition:
+        border-color .2s ease,
+        box-shadow .2s ease,
+        transform .15s ease,
+        opacity .15s ease;
+}
+
+/* Hover muy fino */
+.badge.badge-neon:hover {
+    box-shadow: 0 0 4px currentColor;
+    opacity: 1;
+    transform: translateY(-0.5px);
+}
+
+/* =======================
+   Paleta sobria (enterprise)
+   ======================= */
+
+.neon-green {
+    color: #22c55e !important; /* verde elegante */
+}
+
+.neon-red {
+    color: #ef4444 !important; /* rojo controlado */
+}
+
+.neon-blue {
+    color: #3b82f6 !important; /* azul profesional */
+}
+
+.neon-yellow {
+    color: #eab308 !important; /* amarillo sobrio */
+}
+
+.neon-gray {
+    color: #9ca3af !important; /* gris moderno */
+}
+
+.neon-purple {
+    color: #8b5cf6 !important; /* púrpura premium */
+}
+/* =======================
+   Variantes
+   ======================= */
+
+.badge-neon.sm {
+    font-size: 10.5px;
+    padding: 1px 6px;
+}
+
+.badge-neon.lg {
+    font-size: 12.5px;
+    padding: 3px 9px;
+}
+
+/* =======================
+   Dark mode (AdminLTE)
+   ======================= */
+body.dark-mode .badge.badge-neon {
+    box-shadow: 0 0 3px currentColor;
+    opacity: .95;
+}
+
+
+
+
+/* =====================================================
+   DATATABLE – TailPanel Style (SaaS / Premium)
+   ===================================================== */
+
+.table-tailpanel {
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    font-size: 13px;
+}
+
+/* Header */
+.table-tailpanel thead th {
+    background-color: #f9fafb;
+    color: #374151;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 12px 10px;
+}
+
+/* Body */
+.table-tailpanel tbody td {
+    padding: 10px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    color: #374151;
+}
+
+/* Hover tipo TailPanel */
+.table-tailpanel tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Última fila limpia */
+.table-tailpanel tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* =======================
+   DataTables controls
+   ======================= */
+
+.dataTables_wrapper .dataTables_filter input {
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 6px !important;
+    border: 1px solid #e5e7eb !important;
+    background: #fff !important;
+    margin: 0 2px;
+    font-size: 12px;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background: #3b82f6 !important;
+    color: #fff !important;
+    border-color: #3b82f6 !important;
+}
+
+/* Info text */
+.dataTables_info {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* Buttons (Excel / PDF / ColVis) */
+.dt-buttons .btn {
+    border-radius: 6px;
+    font-size: 12px;
+    padding: 5px 8px;
+    border: 1px solid #e5e7eb;
+    background: #fff;
+    color: #374151;
+}
+
+.dt-buttons .btn:hover {
+    background: #f9fafb;
+}
+
+/* =======================
+   Dark Mode (AdminLTE)
+   ======================= */
+
+body.dark-mode .table-tailpanel {
+    background-color: #111827;
+    border-color: #1f2933;
+}
+
+body.dark-mode .table-tailpanel thead th {
+    background-color: #1f2937;
+    color: #e5e7eb;
+}
+
+body.dark-mode .table-tailpanel tbody tr:hover {
+    background-color: #1f2937;
+}
+
+body.dark-mode .table-tailpanel tbody td {
+    color: #e5e7eb;
+    border-color: #1f2937;
+}
+
+/* =====================================================
+   DATATABLE – Responsive Fix (TailPanel)
+   ===================================================== */
+
+/* Evita scroll horizontal innecesario */
+.table-tailpanel {
+    width: 100% !important;
+}
+
+/* En móviles: cards */
+@media (max-width: 768px) {
+
+    table.dataTable.dtr-inline.collapsed > tbody > tr > td:first-child::before {
+        background-color: #3b82f6;
+        top: 50%;
+        transform: translateY(-50%);
+        border-radius: 50%;
+    }
+
+    table.dataTable > tbody > tr.child {
+        background: #f9fafb;
+    }
+
+    table.dataTable > tbody > tr.child td {
+        padding: 8px 12px;
+        font-size: 12px;
+        border: none;
+    }
+
+    table.dataTable > tbody > tr.child ul.dtr-details {
+        width: 100%;
+    }
+
+    table.dataTable > tbody > tr.child ul.dtr-details li {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px dashed #e5e7eb;
+    }
+
+    table.dataTable > tbody > tr.child ul.dtr-details li:last-child {
+        border-bottom: none;
+    }
+
+    table.dataTable > tbody > tr.child span.dtr-title {
+        font-weight: 600;
+        color: #374151;
+    }
+}
+
+/* Dark mode */
+body.dark-mode table.dataTable > tbody > tr.child {
+    background: #1f2937;
+}
+
+body.dark-mode table.dataTable > tbody > tr.child span.dtr-title {
+    color: #e5e7eb;
+}
+/* =====================================================
+   MODAL TAILPANEL / OPEN FORM STYLE
+   ===================================================== */
+
+.modal-tailpanel .modal-content {
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    background: #ffffff;
+}
+
+/* Header */
+.modal-header-tailpanel {
+    border-bottom: 1px solid #e5e7eb;
+    padding: 18px 24px;
+    background: linear-gradient(135deg, #f9fafb, #ffffff);
+}
+
+.modal-header-tailpanel .modal-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+/* Close */
+.close-tailpanel {
+    font-size: 22px;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.close-tailpanel:hover {
+    opacity: 1;
+    transform: rotate(90deg);
+}
+
+/* Body */
+.modal-content-tailpanel .modal-body {
+    padding: 24px;
+    background: #f9fafb;
+}
+
+/* Inputs */
+.modal-content-tailpanel .form-control,
+.modal-content-tailpanel .select2-container--default .select2-selection--single {
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    font-size: 14px;
+    padding: 10px 12px;
+    transition: all 0.2s ease;
+}
+
+.modal-content-tailpanel .form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Labels */
+.modal-content-tailpanel label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+}
+
+/* Footer */
+.modal-footer-tailpanel {
+    border-top: 1px solid #e5e7eb;
+    padding: 16px 24px;
+    background: #ffffff;
+}
+
+/* Save button */
+.btn-save-tailpanel {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+}
+
+/* Imagen preview */
+.imagen-hover {
+    border-radius: 12px;
+    border: 1px dashed #d1d5db;
+    transition: all 0.3s ease;
+}
+
+.imagen-hover:hover {
+    border-color: #3b82f6;
+    transform: scale(1.02);
+}
+
+/* Barcode area */
+#barcode {
+    margin-top: 10px;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+    .modal-xl {
+        max-width: 95%;
+    }
+
+    .modal-content-tailpanel .modal-body {
+        padding: 16px;
+    }
+}
+
+/* Dark mode */
+body.dark-mode .modal-content-tailpanel {
+    background: #111827;
+}
+
+body.dark-mode .modal-header-tailpanel,
+body.dark-mode .modal-footer-tailpanel {
+    background: #1f2937;
+    border-color: #374151;
+}
+
+body.dark-mode label {
+    color: #e5e7eb;
+}
+
+body.dark-mode .form-control {
+    background: #1f2937;
+    color: #f9fafb;
+    border-color: #374151;
+}
+
+/* ===============================
+   TAILPANEL DASHBOARD CORE
+   =============================== */
+
+.tp-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 8px 20px rgba(0,0,0,.04);
+  transition: all .25s ease;
+}
+
+.tp-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 30px rgba(0,0,0,.08);
+}
+
+.tp-card-body {
+  padding: 1.25rem;
+}
+
+.tp-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .75rem;
+}
+
+.tp-card-title {
+  font-size: .9rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.tp-card-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Icon */
+.tp-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+}
+
+/* Colores suaves */
+.tp-indigo { background:#eef2ff; color:#4338ca; }
+.tp-green  { background:#ecfdf5; color:#047857; }
+.tp-blue   { background:#eff6ff; color:#1d4ed8; }
+.tp-yellow { background:#fffbeb; color:#b45309; }
+.tp-red    { background:#fef2f2; color:#b91c1c; }
+.tp-gray   { background:#f9fafb; color:#374151; }
+
+/* Footer opcional */
+.tp-card-footer {
+  border-top: 1px solid #e5e7eb;
+  padding: .6rem;
+  text-align: center;
+  font-weight: 600;
+  font-size: .85rem;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.tp-card-footer:hover {
+  background: #f9fafb;
+}
+
+/* Charts */
+.tp-chart-card {
+  padding: 1.25rem;
+}
+
+.tp-chart-title {
+  font-size: .95rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 1rem;
+}
+
+/* ====== TAILPANEL SIDEBAR STYLE ====== */
+
+/* ==============================
+   TAILPANEL SIDEBAR STYLE
+================================ */
+
+/* IMPORTAR FUENTE (SIEMPRE ARRIBA DEL TODO) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+.tailpanel-sidebar {
+  background-color: #ffffff !important;
+  font-family: 'Inter', sans-serif;
+  border-right: 1px solid #e5e7eb;
+}
+
+/* Logo */
+.tailpanel-sidebar .brand-link {
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tailpanel-sidebar .brand-text {
+  color: #111827;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+/* Usuario */
+.tailpanel-sidebar .user-panel {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tailpanel-sidebar .user-panel .info a {
+  color: #111827;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Links principales */
+.tailpanel-sidebar .nav-sidebar > .nav-item > .nav-link {
+  color: #374151;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 8px;
+  margin: 4px 8px;
+}
+
+/* Hover */
+.tailpanel-sidebar .nav-link:hover {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+/* Activo */
+.tailpanel-sidebar .nav-link.active {
+  background-color: #e5e7eb;
+  color: #111827;
+  font-weight: 600;
+}
+
+/* Submenú */
+.tailpanel-sidebar .nav-treeview .nav-link {
+  font-size: 13.5px;
+  color: #6b7280;
+  padding-left: 32px;
+}
+
+.tailpanel-sidebar .nav-treeview .nav-link:hover {
+  color: #111827;
+}
+
+/* Iconos */
+.tailpanel-sidebar .nav-icon {
+  font-size: 16px !important;
+  color: #6b7280;
+}
+
+.tailpanel-sidebar .nav-link.active .nav-icon {
+  color: #111827;
+}
+
+/* Flecha */
+.tailpanel-sidebar .right {
+  color: #9ca3af;
+}
+
+/* Online dot */
+.text-success {
+  color: #22c55e !important;
+}
+.tailpanel-sidebar .nav-sidebar > .nav-item > .nav-link > .nav-icon {
+  font-size: 20px !important;
+}
+
+.tailpanel-sidebar .nav-treeview .nav-link > .nav-icon {
+  font-size: 17px !important;
+}
+/* ===============================
+   USER PANEL - SIDEBAR COLLAPSED
+================================ */
+
+/* Cuando el sidebar está colapsado */
+.sidebar-collapse .tailpanel-sidebar .user-panel {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+/* Imagen del usuario */
+.sidebar-collapse .tailpanel-sidebar .user-panel .image img {
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px;
+  min-height: 38px;
+  object-fit: cover;
+}
+
+/* Ocultar texto (nombre / online) */
+.sidebar-collapse .tailpanel-sidebar .user-panel .info {
+  display: none;
+}
+
+
+#toastContainer {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 1060;
+}
+
+/* Diseño de cada toast */
+.toast-custom {
+    min-width: 280px;
+    margin-bottom: 12px;
+    border-left: 5px solid #28a745; /* Verde para notificación de traslado */
+    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    background-color: #fff;
+    color: #333;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 10px;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.3s ease;
+}
+.toast-custom:hover {
+    transform: translateX(-5px);
+    opacity: 0.95;
+}
+
+/* Header del toast */
+.toast-custom .toast-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 5px;
+}
+
+/* Botón de cerrar / marcar como leído */
+.toast-custom .toast-close {
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    color: #888;
+    cursor: pointer;
+}
+.toast-custom .toast-close:hover {
+    color: #000;
+}
+
+.toast-warning {
+  background-color: #f0ad4e;
+  border: 1px solid #eea236;
+  color: #fff;
+  font-weight: bold;
+}
+
+#stockAlertTable {
+    max-height: 300px;
+    overflow-y: auto;
+}
+#stockAlertTable .table {
+    margin-bottom: 0;
+    font-size: 10px;
+}
+.card-footer a {
+    color: #000;
+    text-decoration: none;
+}
+.card-footer a:hover {
+    color: #ff0000;
+}
+
+.tailpanel-sidebar .brand-text {
+    color: #111827; /* negro oscuro */
+    font-weight: 600;
+    font-size: 18px;
+}

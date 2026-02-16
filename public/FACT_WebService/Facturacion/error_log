@@ -1,0 +1,13 @@
+[13-Feb-2026 14:48:02 America/Lima] PHP Warning:  mysqli_connect(): (28000/1045): Access denied for user 'root'@'localhost' (using password: NO) in /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/src/Util.php on line 58
+[13-Feb-2026 15:01:58 America/Lima] PHP Warning:  mysqli_connect(): (28000/1045): Access denied for user 'root'@'localhost' (using password: NO) in /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/src/Util.php on line 58
+[13-Feb-2026 15:02:01 America/Lima] PHP Warning:  mysqli_connect(): (28000/1045): Access denied for user 'root'@'localhost' (using password: NO) in /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/src/Util.php on line 58
+[13-Feb-2026 15:02:08 America/Lima] PHP Warning:  mysqli_connect(): (28000/1045): Access denied for user 'root'@'localhost' (using password: NO) in /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/src/Util.php on line 58
+[13-Feb-2026 20:23:22 America/Lima] PHP Warning:  mysqli_connect(): (28000/1045): Access denied for user 'root'@'localhost' (using password: NO) in /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/src/Util.php on line 58
+[13-Feb-2026 21:58:55 America/Lima] PHP Warning:  mysqli_connect(): (28000/1045): Access denied for user 'root'@'localhost' (using password: NO) in /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/src/Util.php on line 58
+[14-Feb-2026 03:00:44 UTC] PHP Warning:  mysqli_connect(): (28000/1045): Access denied for user 'root'@'localhost' (using password: NO) in /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/src/Util.php on line 58
+[14-Feb-2026 03:00:44 UTC] PHP Fatal error:  Uncaught TypeError: mysqli_query() expects parameter 1 to be mysqli, bool given in /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/consultacdr.php:128
+Stack trace:
+#0 /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/consultacdr.php(128): mysqli_query(false, 'SELECT * FROM d...')
+#1 {main}
+  thrown in /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/consultacdr.php on line 128
+[13-Feb-2026 22:00:47 America/Lima] PHP Warning:  mysqli_connect(): (28000/1045): Access denied for user 'root'@'localhost' (using password: NO) in /home/syspider/demo.syspidertechnolgy.com/public/FACT_WebService/Facturacion/src/Util.php on line 58

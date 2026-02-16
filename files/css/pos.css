@@ -1,0 +1,524 @@
+  /* Personaliza estilos adicionales aquí si es necesario */
+  .btn-custom {
+    background-color: #E4E1E4;
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+  }
+
+  .btn-custom:hover {
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+    /* Ajusta los valores según tu preferencia */
+    background-color: #D0CECF;
+    /* Cambio de color al pasar el mouse */
+    transform: translate(1px, -1px);
+    /* Ligero movimiento */
+  }
+
+  .calculator-buttons {
+    margin-top: 20px;
+  }
+
+  .calculator-buttons .btn {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+
+  .calculator-buttons4 .btn {
+    width: 95px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .calculator-buttons2 .btn {
+    width: 160px;
+    height: 50px;
+    font-size: 15px;
+  }
+
+  span.teclado {
+    color: #888688;
+    text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+  }
+
+  #cardContainer {
+    max-height: 640px;
+    /* Establece la altura máxima para el contenedor de las cards */
+    overflow-y: auto;
+    overflow-x: hidden;
+    /* Agrega un scrollbar vertical cuando las cards superan la altura máxima */
+  }
+
+  #card2 {
+    max-height: 800px;
+    /* Establece la altura máxima para el contenedor de las cards */
+    overflow-y: auto;
+    /* Agrega un scrollbar vertical cuando las cards superan la altura máxima */
+  }
+
+  .circle-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background-color: #FBAE30;
+    /* Cambia el color de fondo según tus preferencias */
+    color: #fff;
+    /* Cambia el color del texto según tus preferencias */
+    border-radius: 50%;
+    font-size: 0.4rem;
+    cursor: pointer;
+    transition: transform 0.3s, background-color 0.3s;
+  }
+
+  .circle-icon:hover {
+    transform: scale(1.2);
+    /* Aplica el zoom al pasar el mouse */
+    background-color: #00FF00;
+    /* Cambia el color de fondo al pasar el mouse */
+  }
+
+  .circle-container {
+    display: flex;
+    align-items: center;
+  }
+
+  .circle {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .circle:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+  }
+
+  .circle1 {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+  }
+
+
+  .trash-icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .trash-icon:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+  }
+
+  div.scrollmenu {
+    background-color: #3183FA;
+    overflow: auto;
+    white-space: nowrap;
+  }
+
+  div.scrollmenu a {
+    display: inline-block;
+    color: white;
+    text-align: center;
+    padding: 14px;
+    text-decoration: none;
+    margin-right: 10px;
+  }
+
+  div.scrollmenu a:hover {
+    background: #007bff linear-gradient(180deg, #267fde, #0069d9) repeat-x !important;
+    border-color: #0062cc;
+    color: #ececec;
+  }
+
+  ::-webkit-scrollbar {
+    height: 4px;
+    /* height of horizontal scrollbar ← You're missing this */
+    width: 4px;
+    /* width of vertical scrollbar */
+    border: 1px solid #d5d5d5;
+  }
+
+  .panel-carrito {
+    background: red;
+  }
+
+  .table-scroll-limit {
+    max-height: 340px;
+    /* Altura aprox. para 4 filas */
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    /* Opcional: para mostrar el borde */
+  }
+
+  /* Para mantener los encabezados fijos mientras haces scroll */
+  .table-scroll-limit thead th {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 1;
+  }
+
+  .active-search {
+  background-color: #007bff !important;
+  color: white !important;
+  border-color: #007bff !important;
+}
+
+
+
+
+
+@media (max-width: 768px) {
+  .btn-custom, .btn {
+    width: 100% !important;
+    height: 50px !important;
+    font-size: 18px !important;
+    margin-bottom: 10px;
+  }
+
+  .calculator-buttons .btn,
+  .calculator-buttons2 .btn,
+  .calculator-buttons4 .btn {
+    width: 100% !important;
+    height: 50px !important;
+    font-size: 16px !important;
+  }
+}
+  @media (max-width: 768px) {
+  #cardContainer, #card2 {
+    max-height: 60vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* Scroll suave en iOS */
+  }
+
+  .scrollmenu {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+
+@media (max-width: 768px) {
+  .modal-dialog {
+    margin: 0;
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+  }
+
+  .modal-content {
+    height: 100%;
+    border-radius: 0;
+  }
+
+  .modal-body {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-control {
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  .input-group-text {
+    font-size: 16px;
+    padding: 10px;
+  }
+}
+@media (max-width: 768px) {
+  #cardContainer .card {
+    margin-bottom: 10px;
+    font-size: 14px;
+    flex: 0 0 48%;
+  }
+}
+.pos-card {
+  cursor: pointer;
+  border-radius: 16px;
+  transition: all .25s ease;
+  box-shadow: 0 6px 14px rgba(0,0,0,.12);
+  background: #fff;
+  height: 100%;
+}
+
+.pos-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(0,0,0,.18);
+}
+
+.pos-img {
+  height: 160px;
+  object-fit: cover;
+  border-radius: 16px 16px 0 0;
+}
+
+.pos-price {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: #0d6efd;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.pos-stock {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.pos-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.pos-cart-table td {
+  vertical-align: middle;
+}
+
+.cart-product-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.cart-badges span {
+  font-size: 11px;
+  padding: 4px 6px;
+}
+
+.cart-price-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cart-price-wrapper i {
+  cursor: pointer;
+  color: #0d6efd;
+  font-size: 16px;
+}
+
+.cart-price-wrapper i:hover {
+  transform: scale(1.15);
+}
+
+.cart-qty {
+  width: 80px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.cart-subtotal {
+  font-weight: 700;
+  color: #198754;
+}
+
+.cart-trash {
+  cursor: pointer;
+  font-size: 17px;
+}
+
+.cart-trash:hover {
+  transform: scale(1.2);
+}
+
+.cart-row td {
+  padding: 0 !important;
+  border: none;
+}
+
+.cart-item {
+  display: grid;
+  grid-template-columns: 40px 1fr 120px 90px 120px;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+  transition: all .2s ease;
+}
+
+.cart-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+}
+
+/* eliminar */
+.cart-remove {
+  text-align: center;
+  cursor: pointer;
+  color: #dc3545;
+  font-size: 18px;
+}
+
+.cart-remove:hover {
+  transform: scale(1.2);
+}
+
+/* info */
+.cart-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cart-meta span {
+  font-size: 11px;
+  margin-right: 4px;
+}
+
+/* precio */
+.cart-price {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cart-price input {
+  width: 80px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.cart-price i {
+  cursor: pointer;
+  color: #0d6efd;
+}
+
+/* cantidad */
+.cart-qty-box input {
+  width: 70px;
+  text-align: center;
+  font-weight: 600;
+}
+
+/* subtotal */
+.cart-subtotal {
+  text-align: right;
+  font-weight: 700;
+  font-size: 16px;
+  color: #198754;
+}
+/* ========================= */
+/* 📱 MODO MÓVIL CARRITO POS */
+/* ========================= */
+@media (max-width: 768px) {
+
+  #agregarcarrito thead {
+    display: none;
+  }
+
+  #agregarcarrito tbody tr {
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  #agregarcarrito tbody td {
+    display: block;
+    width: 100%;
+    padding: 0 !important;
+    border: none;
+  }
+
+  /* CARD */
+  .cart-item {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  /* 🗑 eliminar */
+  .cart-remove {
+    text-align: right;
+  }
+
+  /* producto */
+  .cart-product-name {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .cart-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  /* fila precio + cantidad */
+  .cart-price,
+  .cart-qty-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cart-price::before {
+    content: "Precio";
+    font-weight: 600;
+    color: #6c757d;
+  }
+
+  .cart-qty-box::before {
+    content: "Cantidad";
+    font-weight: 600;
+    color: #6c757d;
+  }
+
+  .cart-price input,
+  .cart-qty-box input {
+    width: 120px;
+    text-align: right;
+  }
+
+  /* SUBTOTAL */
+  .cart-subtotal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 17px;
+    font-weight: 700;
+    padding-top: 6px;
+    border-top: 1px dashed #ddd;
+  }
+
+  .cart-subtotal::before {
+    content: "Subtotal";
+    font-weight: 600;
+    color: #6c757d;
+  }
+}
+
+
