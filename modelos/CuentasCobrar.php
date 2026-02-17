@@ -23,230 +23,235 @@ Class CuentasCobrar
     $montoPagarTarjeta,
     $idcaja,
     $idpersonal
-    ) {
-        // Normaliza fecha
-        $fechaPago = trim((string)$fechaPago);
-        if ($fechaPago === "") {
-            $fechaPago = date("Y-m-d H:i:s"); // si tu columna es DATE usa date("Y-m-d")
-        }
+) {
+    global $conexion;
 
-        // 1) validar caja abierta
-        $sqlCaja = "SELECT estado FROM cajas WHERE idcaja='$idcaja'";
-        $caja = ejecutarConsultaSimpleFila($sqlCaja);
-        if (!$caja || intval($caja['estado']) != 2) {
-            return ['success' => false, 'message' => 'La caja está cerrada, no se puede registrar el pago.'];
-        }
+    // Normalizar fecha
+    $fechaPago = trim((string)$fechaPago);
+    if ($fechaPago === "") $fechaPago = date("Y-m-d H:i:s");
 
-        // 2) idventa de la cuota
-        $rowVenta = ejecutarConsultaSimpleFila("SELECT idventa FROM cuentas_por_cobrar WHERE idcpc='$idcpc'");
-        if (!$rowVenta) {
-            return ['success' => false, 'message' => 'Cuenta no encontrada'];
-        }
-        $idventa = intval($rowVenta['idventa']);
+    // formapago (NOT NULL)
+    $formapago = trim((string)$formapago);
+    if ($formapago === "") $formapago = "Efectivo";
 
-        // 3) pago total
-        $pagoEfectivo = floatval($montopagado);
-        $pagoTarjeta  = floatval($montoPagarTarjeta);
-        $pagoTotal    = $pagoEfectivo + $pagoTarjeta;
-
-        if ($pagoTotal <= 0) {
-            return ['success' => false, 'message' => 'El monto de pago debe ser mayor a 0.'];
-        }
-
-        // prorrateo para detalle (si es solo efectivo -> ratioEfe=1, ratioTar=0)
-        $ratioEfe = $pagoTotal > 0 ? ($pagoEfectivo / $pagoTotal) : 0;
-        $ratioTar = $pagoTotal > 0 ? ($pagoTarjeta / $pagoTotal) : 0;
-
-        // 4) cuotas pendientes de esa venta
-        $sqlCuotas = "
-            SELECT idcpc, fechavencimiento
-            FROM cuentas_por_cobrar
-            WHERE idventa='$idventa' AND estado_pago=1
-            ORDER BY fechavencimiento ASC, idcpc ASC
-        ";
-        $rs = ejecutarConsulta($sqlCuotas);
-        if (!$rs) {
-            return ['success' => false, 'message' => 'No se pudo obtener las cuotas de la venta.'];
-        }
-
-        $cuotas = [];
-        while ($r = $rs->fetch_assoc()) {
-            $cuotas[] = $r;
-        }
-        if (empty($cuotas)) {
-            return ['success' => false, 'message' => 'No hay cuotas pendientes para esta venta.'];
-        }
-
-        // priorizar la cuota enviada
-        usort($cuotas, function ($a, $b) use ($idcpc) {
-            if (intval($a['idcpc']) === intval($idcpc)) return -1;
-            if (intval($b['idcpc']) === intval($idcpc)) return 1;
-
-            $fa = strtotime($a['fechavencimiento']);
-            $fb = strtotime($b['fechavencimiento']);
-            if ($fa === $fb) return intval($a['idcpc']) <=> intval($b['idcpc']);
-            return $fa <=> $fb;
-        });
-
-        // 5) transacción
-        ejecutarConsulta("START TRANSACTION");
-
-        try {
-            $restante = $pagoTotal;
-            $saldoFavor = 0.0;
-
-            foreach ($cuotas as $c) {
-                if ($restante <= 0) break;
-
-                $idcpc_i = intval($c['idcpc']);
-
-                // Cargar cuota con lock (incluye deuda/mora y lo ya pagado)
-                $fila = ejecutarConsultaSimpleFila("
-                    SELECT
-                        idcpc, deudatotal, deuda_base, mora, deuda, fechavencimiento,
-                        mora_pagada, abonototal, estado_pago
-                    FROM cuentas_por_cobrar
-                    WHERE idcpc='$idcpc_i' FOR UPDATE
-                ");
-                if (!$fila) continue;
-                if (intval($fila['estado_pago']) != 1) continue;
-
-                $moraOriginal       = floatval($fila['mora']);          // mora actual guardada
-                $moraPagadaActual   = floatval($fila['mora_pagada']);   // ya pagado de mora
-                $deudaBaseOriginal  = floatval($fila['deuda_base']);    // base guardada (puede estar 0)
-                $deudaCampo         = floatval($fila['deuda']);         // ✅ valor real de la cuota (principal)
-                $abonoTotalActual   = floatval($fila['abonototal']);    // ya pagado de principal
-                $deudaTotalOriginal = floatval($fila['deudatotal']);
-                $fechaVenc          = $fila['fechavencimiento'];
-
-                // Reconstruir base si está en 0: prioridad deuda (principal)
-                if ($deudaBaseOriginal <= 0) {
-                    if ($deudaCampo > 0) {
-                        $deudaBaseOriginal = $deudaCampo;
-                    } else {
-                        $deudaBaseOriginal = $deudaTotalOriginal - $moraOriginal;
-                    }
-                    if ($deudaBaseOriginal < 0) $deudaBaseOriginal = 0;
-                }
-
-                // Principal real de la cuota
-                $cuotaBase = ($deudaCampo > 0) ? $deudaCampo : $deudaBaseOriginal;
-
-                // ✅ Faltantes separados (NO mezclar mora dentro de abonototal)
-                $faltanteBase = round($cuotaBase - $abonoTotalActual, 2);
-                if ($faltanteBase < 0) $faltanteBase = 0;
-
-                $faltanteMora = round($moraOriginal - $moraPagadaActual, 2);
-                if ($faltanteMora < 0) $faltanteMora = 0;
-
-                $faltanteTotal = round($faltanteBase + $faltanteMora, 2);
-                if ($faltanteTotal <= 0) {
-                    // ya no debe nada (según contabilidad), cerrar
-                    ejecutarConsulta("UPDATE cuentas_por_cobrar
-                                    SET estado_pago=0, deudatotal=0, deuda_base=0, mora=0
-                                    WHERE idcpc='$idcpc_i'");
-                    continue;
-                }
-
-                // aplicar solo hasta lo que falta en esta cuota
-                $montoAplicable = min($restante, $faltanteTotal);
-                if ($montoAplicable <= 0) continue;
-
-                // ✅ pagar mora hasta su faltante
-                $pagoUsadoMora = min($montoAplicable, $faltanteMora);
-                $montoAplicable -= $pagoUsadoMora;
-
-                // ✅ pagar base hasta su faltante
-                $pagoUsadoBase = min($montoAplicable, $faltanteBase);
-                $montoAplicable -= $pagoUsadoBase;
-
-                $abonadoAdd = round($pagoUsadoMora + $pagoUsadoBase, 2);
-                $restante = round($restante - $abonadoAdd, 6);
-
-                // Actualizar saldos: reducimos base y mora
-                $deuda_base = round(max(0, $deudaBaseOriginal - $pagoUsadoBase), 2);
-                $mora       = round(max(0, $moraOriginal - $pagoUsadoMora), 2);
-
-                // Recalcular deudatotal con los valores nuevos
-                // (si tú recalculas mora por días de atraso en otro proceso, NO lo hagas aquí)
-                $deudatotalNuevo = round($deuda_base + $mora, 2);
-
-                // ✅ abonototal SOLO principal (base) y topeado a la cuotaBase
-                $nuevoAbonoTotal = round($abonoTotalActual + $pagoUsadoBase, 2);
-                if ($nuevoAbonoTotal > $cuotaBase) $nuevoAbonoTotal = $cuotaBase;
-
-                // ✅ mora_pagada suma solo lo pagado a mora
-                $moraPagadaAdd = round($pagoUsadoMora, 2);
-
-                // Guardar en cuentas_por_cobrar
-                $sqlUpdate = "
-                    UPDATE cuentas_por_cobrar
-                    SET deuda_base = '$deuda_base',
-                        mora = '$mora',
-                        deudatotal = '$deudatotalNuevo',
-                        mora_pagada = COALESCE(mora_pagada, 0) + '$moraPagadaAdd',
-                        abonototal = '$nuevoAbonoTotal',
-                        fecha_update_mora = CURDATE(),
-                        estado_pago = ".($deudatotalNuevo <= 0 ? 0 : 1)."
-                    WHERE idcpc = '$idcpc_i'
-                ";
-                $save = ejecutarConsulta($sqlUpdate);
-                if (!$save) {
-                    throw new Exception("No se pudo actualizar la cuenta idcpc=$idcpc_i");
-                }
-
-                // Insertar detalle por lo aplicado a esta cuota
-                if ($abonadoAdd > 0) {
-                    $detEfe = round($abonadoAdd * $ratioEfe, 2);
-                    $detTar = round($abonadoAdd * $ratioTar, 2);
-
-                    // ajustar redondeo para que sumen exacto
-                    $diff = round($abonadoAdd - ($detEfe + $detTar), 2);
-                    if ($diff != 0) $detEfe = round($detEfe + $diff, 2);
-
-                    $obs = $observacion;
-                    if (intval($idcpc_i) !== intval($idcpc)) {
-                        $obs = trim(($obs ? $obs . " | " : "") . "Amortización automática a otra cuota (misma venta)");
-                    }
-
-                    $sqlDetalle = "
-                        INSERT INTO detalle_cuentas_por_cobrar
-                        (idcpc, idcaja, idpersonal, montopagado, montotarjeta, banco, op, fechapago, formapago, observacion)
-                        VALUES
-                        ('$idcpc_i', '$idcaja', '$idpersonal', '$detEfe', '$detTar', '$banco', '$op', '$fechaPago', '$formapago', '$obs')
-                    ";
-                    $det = ejecutarConsulta($sqlDetalle);
-                    if (!$det) {
-                        throw new Exception("No se pudo registrar el detalle del pago (idcpc=$idcpc_i).");
-                    }
-                }
-            }
-
-            // si queda dinero luego de pagar todas las cuotas pendientes
-            if ($restante > 0) {
-                $saldoFavor = round($restante, 2);
-            }
-
-            ejecutarConsulta("COMMIT");
-
-            $msg = "Pago registrado correctamente";
-            if ($saldoFavor > 0) {
-                $msg .= ". Excedente / saldo a favor: S/ " . number_format($saldoFavor, 2);
-            }
-
-            return [
-                'success' => true,
-                'message' => $msg,
-                'saldo_favor' => $saldoFavor
-            ];
-        } catch (Exception $e) {
-            ejecutarConsulta("ROLLBACK");
-            return ['success' => false, 'message' => $e->getMessage()];
-        }
+    // 1) validar caja abierta
+    $sqlCaja = "SELECT estado FROM cajas WHERE idcaja='$idcaja'";
+    $caja = ejecutarConsultaSimpleFila($sqlCaja);
+    if (!$caja || intval($caja['estado']) != 2) {
+        return ['success'=>false, 'message'=>'La caja está cerrada, no se puede registrar el pago.'];
     }
 
+    // 2) obtener idventa de la cuota seleccionada
+    $rowVenta = ejecutarConsultaSimpleFila("SELECT idventa FROM cuentas_por_cobrar WHERE idcpc='$idcpc'");
+    if (!$rowVenta) {
+        return ['success'=>false, 'message'=>'Cuenta no encontrada'];
+    }
+    $idventa = intval($rowVenta['idventa']);
 
+    // 3) pago total y proporciones para registrar detalle
+    $pagoEfe = round(floatval($montopagado), 2);
+    $pagoTar = round(floatval($montoPagarTarjeta), 2);
+    $pagoTotal = round($pagoEfe + $pagoTar, 2);
 
+    if ($pagoTotal <= 0) {
+        return ['success'=>false, 'message'=>'El monto de pago debe ser mayor a 0.'];
+    }
+
+    $ratioEfe = ($pagoTotal > 0) ? ($pagoEfe / $pagoTotal) : 1;
+    $ratioTar = ($pagoTotal > 0) ? ($pagoTar / $pagoTotal) : 0;
+
+    // 4) cuotas pendientes de esa venta
+    $rsCuotas = ejecutarConsulta("
+        SELECT idcpc, fechavencimiento
+        FROM cuentas_por_cobrar
+        WHERE idventa='$idventa' AND estado_pago=1
+        ORDER BY fechavencimiento ASC, idcpc ASC
+    ");
+    if (!$rsCuotas) {
+        return ['success'=>false, 'message'=>'No se pudo obtener las cuotas de la venta.'];
+    }
+
+    $cuotas = [];
+    while ($r = $rsCuotas->fetch_assoc()) $cuotas[] = $r;
+    if (empty($cuotas)) {
+        return ['success'=>false, 'message'=>'No hay cuotas pendientes para esta venta.'];
+    }
+
+    // 5) priorizar la cuota enviada al inicio
+    usort($cuotas, function ($a, $b) use ($idcpc) {
+        if (intval($a['idcpc']) === intval($idcpc)) return -1;
+        if (intval($b['idcpc']) === intval($idcpc)) return 1;
+
+        $fa = strtotime($a['fechavencimiento']);
+        $fb = strtotime($b['fechavencimiento']);
+        if ($fa === $fb) return intval($a['idcpc']) <=> intval($b['idcpc']);
+        return $fa <=> $fb;
+    });
+
+    // 6) transacción
+    ejecutarConsulta("START TRANSACTION");
+
+    try {
+        $restante = $pagoTotal;
+        $saldoFavor = 0.00;
+
+        foreach ($cuotas as $c) {
+            if ($restante <= 0) break;
+
+            $idcpc_i = intval($c['idcpc']);
+
+            // lock cuota
+            $fila = ejecutarConsultaSimpleFila("
+                SELECT idcpc, deudatotal, deuda_base, deuda, mora, mora_pagada, abonototal, fechavencimiento, estado_pago
+                FROM cuentas_por_cobrar
+                WHERE idcpc='$idcpc_i'
+                FOR UPDATE
+            ");
+            if (!$fila) continue;
+            if (intval($fila['estado_pago']) != 1) continue;
+
+            $fechaVenc = $fila['fechavencimiento'];
+
+            // ===== Normalizar modelo =====
+            // deuda_base = monto original cuota (27.50)
+            $deuda_base = round(floatval($fila['deuda_base']), 2);
+            $mora       = round(floatval($fila['mora']), 2);
+            $mora_pagada_actual = round(floatval($fila['mora_pagada']), 2);
+
+            // Si deuda_base viene en 0, reconstruir desde deudatotal - mora
+            if ($deuda_base <= 0) {
+                $deuda_base = round(floatval($fila['deudatotal']) - $mora, 2);
+                if ($deuda_base < 0) $deuda_base = 0;
+                $fix = ejecutarConsulta("UPDATE cuentas_por_cobrar SET deuda_base='$deuda_base' WHERE idcpc='$idcpc_i'");
+                if (!$fix) throw new Exception("No se pudo normalizar deuda_base (idcpc=$idcpc_i)");
+            }
+
+            // deuda = saldo principal (si es NULL o 0 pero estado pendiente, lo asumimos como deuda_base)
+            $deuda = $fila['deuda'];
+            $deuda = ($deuda === null || $deuda === '') ? $deuda_base : round(floatval($deuda), 2);
+            if ($deuda < 0) $deuda = 0;
+
+            // ===== Faltante real =====
+            $faltanteMora = max(0, $mora);
+            $faltanteBase = max(0, $deuda);
+            $faltanteTotal = round($faltanteMora + $faltanteBase, 2);
+
+            if ($faltanteTotal <= 0) {
+                // cerrar por seguridad
+                $close = ejecutarConsulta("
+                    UPDATE cuentas_por_cobrar
+                    SET estado_pago=0, deudatotal=0, deuda=0, mora=0, abonototal='$deuda_base', fecha_update_mora=CURDATE()
+                    WHERE idcpc='$idcpc_i'
+                ");
+                if (!$close) throw new Exception("No se pudo cerrar cuota (idcpc=$idcpc_i)");
+                continue;
+            }
+
+            // Aplicar solo lo que corresponde a esta cuota
+            $aplicar = min($restante, $faltanteTotal);
+            if ($aplicar <= 0) continue;
+
+            // 1) pagar mora
+            $pagoMora = min($aplicar, $faltanteMora);
+            $aplicar -= $pagoMora;
+
+            // 2) pagar principal
+            $pagoBase = min($aplicar, $faltanteBase);
+            $aplicar -= $pagoBase;
+
+            $pagadoEnEstaCuota = round($pagoMora + $pagoBase, 2);
+            $restante = round($restante - $pagadoEnEstaCuota, 2);
+
+            // Nuevos saldos
+            $moraNueva  = round(max(0, $mora  - $pagoMora), 2);
+            $deudaNueva = round(max(0, $deuda - $pagoBase), 2);
+
+            // Si quieres recalcular mora por atraso, hazlo pero SOBRE el saldo que queda:
+            $fechaV = new DateTime(date('Y-m-d', strtotime($fechaVenc)));
+            $hoy    = new DateTime(date('Y-m-d'));
+
+            if ($deudaNueva > 0 && $hoy > $fechaV) {
+                $diasRetraso = (int)$hoy->diff($fechaV)->days;
+                $porcMoraMes = 10.0;
+                $moraDiaria  = ($deudaNueva * ($porcMoraMes / 100)) / 30;
+                $moraCalc    = round($moraDiaria * $diasRetraso, 2);
+
+                // toma el mayor entre lo que ya quedó de mora y lo calculado
+                if ($moraCalc > $moraNueva) $moraNueva = $moraCalc;
+            }
+
+            $deudatotalNuevo = round($deudaNueva + $moraNueva, 2);
+
+            // abonototal (pagado de principal) = cuota - saldo principal
+            $abonototalNuevo = round(max(0, $deuda_base - $deudaNueva), 2);
+            if ($abonototalNuevo > $deuda_base) $abonototalNuevo = $deuda_base;
+
+            $estadoNuevo = ($deudatotalNuevo <= 0) ? 0 : 1;
+
+            // Update cuota
+            $sqlUpdate = "
+                UPDATE cuentas_por_cobrar
+                SET deuda       = '$deudaNueva',
+                    mora        = '$moraNueva',
+                    deudatotal   = '$deudatotalNuevo',
+                    abonototal   = '$abonototalNuevo',
+                    mora_pagada  = COALESCE(mora_pagada,0) + '".round($pagoMora,2)."',
+                    fecha_update_mora = CURDATE(),
+                    estado_pago  = '$estadoNuevo'
+                WHERE idcpc = '$idcpc_i'
+            ";
+            $save = ejecutarConsulta($sqlUpdate);
+            if (!$save) throw new Exception("No se pudo actualizar la cuenta (idcpc=$idcpc_i)");
+
+            // Insertar detalle SOLO por lo aplicado a ESTA cuota
+            if ($pagadoEnEstaCuota > 0) {
+                $detEfe = round($pagadoEnEstaCuota * $ratioEfe, 2);
+                $detTar = round($pagadoEnEstaCuota * $ratioTar, 2);
+                $diff   = round($pagadoEnEstaCuota - ($detEfe + $detTar), 2);
+                if ($diff != 0) $detEfe = round($detEfe + $diff, 2);
+
+                $obs = (string)$observacion;
+                if ($idcpc_i != intval($idcpc)) {
+                    $obs = trim(($obs ? $obs . " | " : "") . "Amortización automática a otra cuota (misma venta)");
+                }
+
+                $obsEsc   = mysqli_real_escape_string($conexion, $obs);
+                $formaEsc = mysqli_real_escape_string($conexion, $formapago);
+
+                $bancoSQL = (isset($banco) && trim((string)$banco) !== '')
+                    ? "'" . mysqli_real_escape_string($conexion, (string)$banco) . "'"
+                    : "NULL";
+                $opSQL = (isset($op) && trim((string)$op) !== '')
+                    ? "'" . mysqli_real_escape_string($conexion, (string)$op) . "'"
+                    : "NULL";
+
+                $sqlDetalle = "
+                    INSERT INTO detalle_cuentas_por_cobrar
+                    (idcpc, idcaja, idpersonal, montopagado, montotarjeta, banco, op, fechapago, formapago, observacion)
+                    VALUES
+                    ('$idcpc_i', '$idcaja', '$idpersonal', '$detEfe', '$detTar', $bancoSQL, $opSQL, '$fechaPago', '$formaEsc', '$obsEsc')
+                ";
+                $det = ejecutarConsulta($sqlDetalle);
+                if (!$det) {
+                    throw new Exception("No se pudo registrar el detalle del pago (idcpc=$idcpc_i).");
+                }
+            }
+        }
+
+        if ($restante > 0) $saldoFavor = round($restante, 2);
+
+        ejecutarConsulta("COMMIT");
+
+        $msg = "Pago registrado correctamente";
+        if ($saldoFavor > 0) $msg .= ". Excedente / saldo a favor: S/ " . number_format($saldoFavor, 2);
+
+        return ['success'=>true, 'message'=>$msg, 'saldo_favor'=>$saldoFavor];
+
+    } catch (Exception $e) {
+        ejecutarConsulta("ROLLBACK");
+        return ['success'=>false, 'message'=>$e->getMessage()];
+    }
+}
 
 
 	public function deudacliente($idventa){

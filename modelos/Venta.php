@@ -102,211 +102,302 @@ class Venta
         return ejecutarConsulta($sql);
     }
 
-	public function insertar($idsucursal, $idcliente, $idpersonal, $idcaja, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $tipopago, $formapago, $nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido, $totaldeposito, $vuelto, $tipo, $banco, $idproducto, $nombre, $cantidad, $precio_venta, $descuento, $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, $idmotivo, $observaciones, $fecha_pago, $interes, $input_cuotas, $cantidad_contenedor, $contenedor, $idp, $check_precio, $id_fifo_lote, $idcategoria) { // Cambiado de id_detalle_compra_lote a id_fifo_lote
+	public function insertar(
+    $idsucursal, $idcliente, $idpersonal, $idcaja,
+    $tipo_comprobante, $serie_comprobante, $num_comprobante,
+    $fecha_hora, $impuesto, $total_venta,
+    $tipopago, $formapago, $nroOperacion, $fechaDepostivo,
+    $porcentaje, $totalrecibido, $totaldeposito, $vuelto,
+    $tipo, $banco,
+    $idproducto, $nombre, $cantidad, $precio_venta, $descuento,
+    $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia,
+    $idmotivo, $observaciones, $fecha_pago,
+    $interes, $input_cuotas,
+    $cantidad_contenedor, $contenedor,
+    $idp, $check_precio, $id_fifo_lote, $idcategoria
+) {
     global $conexion;
 
-    // Validación sesión
-    if (!isset($_SESSION['idpersonal']) || $_SESSION['idpersonal'] == null || $_SESSION['idpersonal'] == '') {
+    // =========================
+    // 1) Validación sesión
+    // =========================
+    if (!isset($_SESSION['idpersonal']) || $_SESSION['idpersonal'] === null || $_SESSION['idpersonal'] === '') {
         header('Location: /salir');
         exit();
     }
 
-    // Validar conexión a la BD
+    // =========================
+    // 2) Validar conexión BD
+    // =========================
     if (!$conexion || $conexion->connect_errno) {
-        error_log("Error de conexión a la base de datos: " . ($conexion ? $conexion->connect_error : 'Sin conexión'));
+        error_log("Error de conexión BD: " . ($conexion ? $conexion->connect_error : 'Sin conexión'));
         return null;
     }
 
-    // Validar conexión a internet
+    // =========================
+    // 3) Chequeo internet (NO bloqueante)
+    // =========================
+    // Si tu server bloquea salida a google, esto te mataba ventas.
+    // Si quieres que sea bloqueante, cambia el warning por return null.
     $internetTest = @fsockopen("www.google.com", 80, $errno, $errstr, 2);
     if (!$internetTest) {
-        error_log("No hay conexión a internet. Abortando venta.");
-        return null;
+        error_log("WARN: No hay conexión a internet (fsockopen falló). Continuando igual. errno=$errno err=$errstr");
     } else {
         fclose($internetTest);
     }
 
-    if ($total_venta <= 0) {
-        return null;
-    }
+    // =========================
+    // 4) Validaciones básicas
+    // =========================
+    $total_venta = floatval($total_venta);
+    if ($total_venta <= 0) return null;
+
+    if ($idcliente == "" || $idcliente === null) $idcliente = 6;
 
     $dovEstado = "";
-    if ($idcliente == "") { $idcliente = 6; }
-    if ($tipo_comprobante == "Nota de Venta") {
-        $estado = "Activado"; $dovEstado = "ACEPTADO";
+    if ($tipo_comprobante === "Nota de Venta") {
+        $estado = "Activado";
+        $dovEstado = "ACEPTADO";
     } else {
         $estado = "Por Enviar";
     }
+
     if ($serie_comprobante == "-" && $num_comprobante == "-") {
         $tipo_comprobante = "Anular";
     }
 
-    // Generar número de comprobante si no hay
+    // =========================
+    // 5) Generar comprobante si falta
+    // =========================
     if (empty($num_comprobante)) {
-        $numc = "SELECT serie_comprobante, num_comprobante FROM venta WHERE tipo_comprobante = '$tipo_comprobante' AND idsucursal = '$idsucursal' ORDER BY idventa DESC LIMIT 1";
+        $numc = "SELECT serie_comprobante, num_comprobante
+                 FROM venta
+                 WHERE tipo_comprobante = '$tipo_comprobante' AND idsucursal = '$idsucursal'
+                 ORDER BY idventa DESC LIMIT 1";
         $existeNum = ejecutarConsulta($numc);
-        if (!$existeNum) { return null; }
+        if (!$existeNum) return null;
+
+        $c = $serie_comprobante;
         $v = 0;
+
         while ($regn = $existeNum->fetch_object()) {
             $c = $regn->serie_comprobante;
             $v = $regn->num_comprobante;
         }
+
         if (!empty($v)) {
             $serie_comprobante = $c;
-            $num = $v + 1;
+            $num = intval($v) + 1;
             $num_comprobante = str_pad($num, 7, "0", STR_PAD_LEFT);
         } else {
             $num_comprobante = '0000001';
         }
     }
 
-    // Validar duplicados
-    $existeComprobante = "SELECT * FROM venta WHERE serie_comprobante = '$serie_comprobante' AND num_comprobante = '$num_comprobante' AND idsucursal = '$idsucursal'";
+    // =========================
+    // 6) Validar duplicados
+    // =========================
+    $existeComprobante = "SELECT idventa
+                          FROM venta
+                          WHERE serie_comprobante = '$serie_comprobante'
+                            AND num_comprobante   = '$num_comprobante'
+                            AND idsucursal        = '$idsucursal'
+                          LIMIT 1";
     $existeCompro = ejecutarConsulta($existeComprobante);
-    if (!$existeCompro) { return null; }
+    if (!$existeCompro) return null;
+
     if ($existeCompro->num_rows > 0) {
-        $sqlUltimoC = "SELECT idventa, num_comprobante FROM venta WHERE tipo_comprobante = '$tipo_comprobante' AND idsucursal = '$idsucursal' ORDER BY idventa DESC LIMIT 1";
+        $sqlUltimoC = "SELECT num_comprobante
+                       FROM venta
+                       WHERE tipo_comprobante = '$tipo_comprobante' AND idsucursal = '$idsucursal'
+                       ORDER BY idventa DESC LIMIT 1";
         $ultimoComprobante = ejecutarConsulta($sqlUltimoC);
-        if (!$ultimoComprobante) { return null; }
+        if (!$ultimoComprobante) return null;
+
         $var2 = 0;
         while ($reg = $ultimoComprobante->fetch_object()) {
             $var2 = $reg->num_comprobante;
         }
         if ($var2 > 0) {
-            $num_comprobante = str_pad($var2 + 1, 7, "0", STR_PAD_LEFT);
+            $num_comprobante = str_pad(intval($var2) + 1, 7, "0", STR_PAD_LEFT);
         }
     }
 
-    // Iniciar transacción
+    // =========================
+    // 7) Iniciar transacción
+    // =========================
     $startTime = microtime(true);
     ejecutarConsulta("BEGIN");
+
+    $sw = true; // <-- IMPORTANTE: antes lo usabas sin inicializar
+
+    // =========================
+    // 8) Determinar forma pago real (Mixto)
+    // =========================
     $formapagoVenta = $formapago;
-
     if (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
-        $metodos = array_filter($_POST['metodo_pago']);
-        $metodos = array_values($metodos);
-        if (count($metodos) > 1) {
-            $formapagoVenta = "Mixto";
-        } elseif (count($metodos) == 1) {
-            $formapagoVenta = $metodos[0];
-        }
+        $metodosTmp = array_values(array_filter($_POST['metodo_pago']));
+        if (count($metodosTmp) > 1) $formapagoVenta = "Mixto";
+        elseif (count($metodosTmp) == 1) $formapagoVenta = $metodosTmp[0];
     }
-    
-    $fechaActual = date('Y-m-d H:i:s');
-    $sql = "INSERT INTO venta (idsucursal, idcaja, idcliente, idpersonal, idmotivo_nota, tipo_comprobante, serie_comprobante, num_comprobante, 
-                fecha_hora, impuesto, total_venta, ventacredito, interes, formapago, meses, numoperacion, fechadeposito, 
-                descuento, totalrecibido, totaldeposito, vuelto, banco, montoPagado, estado, documento_rel, dov_Estado, observacion, fecha_kardex) 
-                VALUES ('$idsucursal','$idcaja','$idcliente','$idpersonal','$idmotivo','$tipo_comprobante','$serie_comprobante','$num_comprobante',
-                        '$fecha_hora','$impuesto','$total_venta','$tipopago','$interes','$formapagoVenta','$input_cuotas','$nroOperacion','$fechaDepostivo',
-                        '$porcentaje','$totalrecibido','$totaldeposito','$vuelto','$banco','$montoPagado','$estado','$comprobanteReferencia','$dovEstado',
-                        '$observaciones','$fechaActual')";
-    $idventanew = ejecutarConsulta_retornarID($sql);
-    if (!$idventanew) { ejecutarConsulta("ROLLBACK"); return null; }
 
-    // ========== INSERTAR PAGOS MIXTOS ==========
-    // IMPORTANTE: No sobrescribir $tipopago, usar variable diferente
-    $ventaCredito = $_POST['tipopago'] ?? 'No';
-    
-    // Solo insertar pagos si NO es crédito
-    if($ventaCredito !== "Si"){
-        if(isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])){
+    $fechaActual = date('Y-m-d H:i:s');
+
+    // =========================
+    // 9) Insertar venta
+    // =========================
+    $sql = "INSERT INTO venta (
+                idsucursal, idcaja, idcliente, idpersonal, idmotivo_nota,
+                tipo_comprobante, serie_comprobante, num_comprobante,
+                fecha_hora, impuesto, total_venta, ventacredito,
+                interes, formapago, meses, numoperacion, fechadeposito,
+                descuento, totalrecibido, totaldeposito, vuelto,
+                banco, montoPagado, estado, documento_rel, dov_Estado,
+                observacion, fecha_kardex
+            ) VALUES (
+                '$idsucursal','$idcaja','$idcliente','$idpersonal','$idmotivo',
+                '$tipo_comprobante','$serie_comprobante','$num_comprobante',
+                '$fecha_hora','$impuesto','$total_venta','$tipopago',
+                '$interes','$formapagoVenta','$input_cuotas','$nroOperacion','$fechaDepostivo',
+                '$porcentaje','$totalrecibido','$totaldeposito','$vuelto',
+                '$banco','$montoPagado','$estado','$comprobanteReferencia','$dovEstado',
+                '".mysqli_real_escape_string($conexion, (string)$observaciones)."','$fechaActual'
+            )";
+
+    $idventanew = ejecutarConsulta_retornarID($sql);
+    if (!$idventanew) {
+        error_log("ERROR insert venta: " . mysqli_error($conexion));
+        error_log("SQL: " . $sql);
+        ejecutarConsulta("ROLLBACK");
+        return null;
+    }
+
+    // =========================
+    // 10) Insertar pagos mixtos (si NO es crédito)
+    // =========================
+    $ventaCredito = $_POST['tipopago'] ?? $tipopago ?? 'No';
+
+    if ($ventaCredito !== "Si" && $sw) {
+        if (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
+
             $metodos = $_POST['metodo_pago'];
             $montosReales = $_POST['monto_real_pago'] ?? [];
             $nros = $_POST['nroOperacion_pago'] ?? [];
             $bancos = $_POST['banco_pago'] ?? [];
             $fechas = $_POST['fecha_deposito_pago'] ?? [];
 
-            // Validar que haya datos antes de insertar
-            if(count($metodos) > 0 && count($montosReales) > 0){
-                for($i = 0; $i < count($metodos); $i++){
-                    // Validar que el método y monto existan
-                    if(!empty($metodos[$i]) && isset($montosReales[$i])){
+            if (count($metodos) > 0 && count($montosReales) > 0) {
+                for ($i = 0; $i < count($metodos); $i++) {
+                    if (!empty($metodos[$i]) && isset($montosReales[$i])) {
+
                         $montoPago = floatval($montosReales[$i]);
                         $metodoPago = mysqli_real_escape_string($conexion, $metodos[$i]);
-                        $nroOp = isset($nros[$i]) && !empty($nros[$i]) ? mysqli_real_escape_string($conexion, $nros[$i]) : NULL;
-                        $bancoVal = isset($bancos[$i]) && !empty($bancos[$i]) ? mysqli_real_escape_string($conexion, $bancos[$i]) : NULL;
-                        $fechaDep = isset($fechas[$i]) && !empty($fechas[$i]) ? mysqli_real_escape_string($conexion, $fechas[$i]) : NULL;
 
-                        // Construir query con NULL correctos
-                        $nroOpSQL = $nroOp !== NULL ? "'$nroOp'" : "NULL";
-                        $bancoSQL = $bancoVal !== NULL ? "'$bancoVal'" : "NULL";
-                        $fechaDepSQL = $fechaDep !== NULL ? "'$fechaDep'" : "NULL";
+                        $nroOp = (isset($nros[$i]) && trim((string)$nros[$i]) !== '') ? mysqli_real_escape_string($conexion, $nros[$i]) : null;
+                        $bancoVal = (isset($bancos[$i]) && trim((string)$bancos[$i]) !== '') ? mysqli_real_escape_string($conexion, $bancos[$i]) : null;
+                        $fechaDep = (isset($fechas[$i]) && trim((string)$fechas[$i]) !== '') ? mysqli_real_escape_string($conexion, $fechas[$i]) : null;
 
-                        $sqlPago = "INSERT INTO venta_pago (idventa, metodo_pago, monto, nroOperacion, banco, fechaDeposito) 
-                                    VALUES ('$idventanew', '$metodoPago', '$montoPago', $nroOpSQL, $bancoSQL, $fechaDepSQL)";
-                        
-                        if(!ejecutarConsulta($sqlPago)){
-                            error_log("Error al insertar pago mixto - Método: $metodoPago, Monto: $montoPago");
+                        $nroOpSQL = $nroOp !== null ? "'$nroOp'" : "NULL";
+                        $bancoSQL = $bancoVal !== null ? "'$bancoVal'" : "NULL";
+                        $fechaDepSQL = $fechaDep !== null ? "'$fechaDep'" : "NULL";
+
+                        $sqlPago = "INSERT INTO venta_pago (
+                                        idventa, metodo_pago, monto, nroOperacion, banco, fechaDeposito
+                                    ) VALUES (
+                                        '$idventanew', '$metodoPago', '$montoPago', $nroOpSQL, $bancoSQL, $fechaDepSQL
+                                    )";
+
+                        if (!ejecutarConsulta($sqlPago)) {
+                            error_log("ERROR insert venta_pago: " . mysqli_error($conexion));
+                            error_log("SQL: " . $sqlPago);
                             $sw = false;
                             break;
                         }
                     }
                 }
-            } else {
-                error_log("Advertencia: No se recibieron datos de pagos mixtos en POST");
             }
         }
     }
 
+    // =========================
+    // 11) Detalles + FIFO
+    // =========================
     $num_elementos = 0;
-    $sw = true;
+    $totalItems = is_array($idp) ? count($idp) : 0;
 
-    // ========== LÓGICA FIFO CORREGIDA ==========
-    while ($num_elementos < count($idp)) {
+    while ($num_elementos < $totalItems && $sw) {
+
         if ((microtime(true) - $startTime) > 15) {
             error_log("Timeout en venta - más de 15 segundos");
             $sw = false;
             break;
         }
 
-        $id_producto_config = $idp[$num_elementos];
-        $id_producto_real = $idproducto[$num_elementos];
-        $cantidad_solicitada = $cantidad[$num_elementos];
-        $id_fifo_sugerido = $id_fifo_lote[$num_elementos]; // El idfifo que viene del frontend
-            // =====================================================
-    //  SI ES SERVICIO → NO FIFO, NO STOCK, NO KARDEX
-    // =====================================================
-    if ($idcategoria[$num_elementos] == 1) {
+        $id_producto_config = $idp[$num_elementos] ?? 0;
+        $id_producto_real   = $idproducto[$num_elementos] ?? 0;
 
-        $sql_detalle_servicio = "INSERT INTO detalle_venta (
-            idsucursal, idventa, idproducto, id_fifo, nombre_producto,
-            cantidad, contenedor, cantidad_contenedor, precio_venta,
-            descuento, tipo, check_precio
-        ) VALUES (
-            '$idsucursal', '$idventanew', '$id_producto_config', 0,
-            '{$nombre[$num_elementos]}',
-            '{$cantidad[$num_elementos]}',
-            '{$contenedor[$num_elementos]}',
-            1,
-            '{$precio_venta[$num_elementos]}',
-            '{$descuento[$num_elementos]}',
-            '$tipo',
-            '{$check_precio[$num_elementos]}'
-        )";
+        $cant_solicitada = floatval($cantidad[$num_elementos] ?? 0);
+        $factor_conten   = floatval($cantidad_contenedor[$num_elementos] ?? 1);
+        if ($factor_conten <= 0) $factor_conten = 1;
 
-        if (!ejecutarConsulta($sql_detalle_servicio)) {
-            error_log("Error al insertar detalle de SERVICIO");
-            $sw = false;
-            break;
+        // normalizar descuento: '' => 0
+        $desc_raw = $descuento[$num_elementos] ?? 0;
+        $desc_raw = trim((string)$desc_raw);
+        $desc_val = ($desc_raw === '' ? 0 : (float)$desc_raw);
+
+        $precio_final = floatval($precio_venta[$num_elementos] ?? 0);
+
+        $nomProd = mysqli_real_escape_string($conexion, (string)($nombre[$num_elementos] ?? ''));
+        $contVal = mysqli_real_escape_string($conexion, (string)($contenedor[$num_elementos] ?? ''));
+        $checkPr = mysqli_real_escape_string($conexion, (string)($check_precio[$num_elementos] ?? ''));
+
+        $id_fifo_sugerido = intval($id_fifo_lote[$num_elementos] ?? 0);
+        $cat = intval($idcategoria[$num_elementos] ?? 0);
+
+        // =========================
+        // 11.1) SERVICIO: NO FIFO / NO STOCK / NO KARDEX
+        // =========================
+        if ($cat === 1) {
+            $sql_detalle_servicio = "INSERT INTO detalle_venta (
+                idsucursal, idventa, idproducto, id_fifo, nombre_producto,
+                cantidad, contenedor, cantidad_contenedor, precio_venta,
+                descuento, tipo, check_precio
+            ) VALUES (
+                '$idsucursal', '$idventanew', '$id_producto_config', 0,
+                '$nomProd',
+                '$cant_solicitada',
+                '$contVal',
+                1,
+                '$precio_final',
+                '$desc_val',
+                '$tipo',
+                '$checkPr'
+            )";
+
+            if (!ejecutarConsulta($sql_detalle_servicio)) {
+                error_log("ERROR insert detalle SERVICIO: " . mysqli_error($conexion));
+                error_log("SQL: " . $sql_detalle_servicio);
+                $sw = false;
+                break;
+            }
+
+            $num_elementos++;
+            continue;
         }
 
-        //  saltamos TODO el FIFO
-        $num_elementos++;
-        continue;
-    }
-
-        $factor_contenedor = $cantidad_contenedor[$num_elementos];
-        $cantidad_total_unidades = $cantidad_solicitada * $factor_contenedor;
+        // =========================
+        // 11.2) PRODUCTO: FIFO
+        // =========================
+        $cantidad_total_unidades = $cant_solicitada * $factor_conten;
         $cantidad_restante_a_vender = $cantidad_total_unidades;
 
-        // ========== OBTENER LOTES FIFO DISPONIBLES ==========
+        // obtener lotes
         $lotes_disponibles = null;
-        
-        // 1. Intentar usar el lote sugerido si tiene stock
+
         if ($id_fifo_sugerido != 0) {
-            $sql_lote_especifico = "SELECT idfifo, cantidad_restante, precio_venta
+            $sql_lote_especifico = "SELECT idfifo, cantidad_restante
                                     FROM stock_fifo
-                                    WHERE idfifo = '$id_fifo_sugerido' 
+                                    WHERE idfifo = '$id_fifo_sugerido'
                                       AND idproducto = '$id_producto_real'
                                       AND idsucursal = '$idsucursal'
                                       AND cantidad_restante > 0
@@ -315,138 +406,172 @@ class Venta
             $lotes_disponibles = ejecutarConsulta($sql_lote_especifico);
         }
 
-        // 2. Si no hay lote específico o no tiene stock, usar FIFO normal
         if (!$lotes_disponibles || $lotes_disponibles->num_rows == 0 || $id_fifo_sugerido == 0) {
-            $sql_fifo = "SELECT idfifo, cantidad_restante, precio_venta
+            $sql_fifo = "SELECT idfifo, cantidad_restante
                          FROM stock_fifo
-                         WHERE idproducto = '$id_producto_real' 
+                         WHERE idproducto = '$id_producto_real'
                            AND idsucursal = '$idsucursal'
                            AND cantidad_restante > 0
                            AND estado = 1
-                         ORDER BY fecha_ingreso ASC"; // FIFO: más antiguo primero
+                         ORDER BY fecha_ingreso ASC";
             $lotes_disponibles = ejecutarConsulta($sql_fifo);
         }
 
-        if (!$lotes_disponibles) { 
-            error_log("Error al consultar lotes FIFO para producto: $id_producto_real");
-            $sw = false; 
-            break; 
+        if (!$lotes_disponibles) {
+            error_log("ERROR consultar FIFO: " . mysqli_error($conexion));
+            $sw = false;
+            break;
         }
 
         $stock_global_descontado = 0;
 
-        // ========== DESCONTAR DE CADA LOTE FIFO ==========
-        while ($lote = $lotes_disponibles->fetch_object() AND $cantidad_restante_a_vender > 0) {
-            $cantidad_disponible_lote = floatval($lote->cantidad_restante);
-            $id_lote_actual = $lote->idfifo;
-            
-            // CORRECCIÓN: Usar el precio enviado por el usuario, NO el del lote
-            // $precio_venta_lote = $lote->precio_venta; // <--- ESTO ESTABA SOBRESCRIBIENDO TU SELECCIÓN
-            $precio_venta_final = $precio_venta[$num_elementos]; 
+        while (($lote = $lotes_disponibles->fetch_object()) && $cantidad_restante_a_vender > 0) {
 
-            // Tomar lo que se pueda de este lote
+            $cantidad_disponible_lote = floatval($lote->cantidad_restante);
+            $id_lote_actual = intval($lote->idfifo);
+
             $cantidad_a_tomar = min($cantidad_restante_a_vender, $cantidad_disponible_lote);
 
-            // ========== ACTUALIZAR STOCK_FIFO ==========
-            $sql_update_fifo = "UPDATE stock_fifo 
-                                SET cantidad_restante = cantidad_restante - '$cantidad_a_tomar' 
+            // actualizar fifo
+            $sql_update_fifo = "UPDATE stock_fifo
+                                SET cantidad_restante = cantidad_restante - '$cantidad_a_tomar'
                                 WHERE idfifo = '$id_lote_actual'";
-            if (!ejecutarConsulta($sql_update_fifo)) { 
-                error_log("Error al actualizar stock_fifo - idfifo: $id_lote_actual");
-                $sw = false; 
-                break 2; 
+
+            if (!ejecutarConsulta($sql_update_fifo)) {
+                error_log("ERROR update stock_fifo: " . mysqli_error($conexion));
+                error_log("SQL: " . $sql_update_fifo);
+                $sw = false;
+                break;
             }
 
-            // ========== INSERTAR DETALLE_VENTA ==========
+            // insertar detalle (SIN comentarios --)
             $sql_detalle = "INSERT INTO detalle_venta (
-                        idsucursal, idventa, idproducto, id_fifo, nombre_producto, 
-                        cantidad, contenedor, cantidad_contenedor, precio_venta, 
-                        descuento, tipo, check_precio
-                    ) VALUES (
-                        '$idsucursal', '$idventanew', '$id_producto_config', '$id_lote_actual',
-                        '{$nombre[$num_elementos]}', '$cantidad_a_tomar', 
-                        '{$contenedor[$num_elementos]}', '$factor_contenedor', 
-                        '$precio_venta_final', '{$descuento[$num_elementos]}',  -- USAR LA VARIABLE CORREGIDA
-                        '$tipo', '{$check_precio[$num_elementos]}'
-                    )";
-            if (!ejecutarConsulta($sql_detalle)) { 
-                error_log("Error al insertar detalle_venta");
-                $sw = false; 
-                break 2; 
+                idsucursal, idventa, idproducto, id_fifo, nombre_producto,
+                cantidad, contenedor, cantidad_contenedor, precio_venta,
+                descuento, tipo, check_precio
+            ) VALUES (
+                '$idsucursal', '$idventanew', '$id_producto_config', '$id_lote_actual',
+                '$nomProd',
+                '$cantidad_a_tomar',
+                '$contVal',
+                '$factor_conten',
+                '$precio_final',
+                '$desc_val',
+                '$tipo',
+                '$checkPr'
+            )";
+
+            if (!ejecutarConsulta($sql_detalle)) {
+                error_log("ERROR insert detalle_venta: " . mysqli_error($conexion));
+                error_log("SQL: " . $sql_detalle);
+                $sw = false;
+                break;
             }
 
             $cantidad_restante_a_vender -= $cantidad_a_tomar;
             $stock_global_descontado += $cantidad_a_tomar;
         }
 
-        // ========== VALIDAR SI SE CUBRIÓ TODA LA CANTIDAD ==========
+        if (!$sw) break;
+
         if ($cantidad_restante_a_vender > 0) {
-            error_log("Stock insuficiente en lotes FIFO para producto ID: {$id_producto_real}. Faltante: {$cantidad_restante_a_vender}");
+            error_log("Stock insuficiente FIFO para producto ID: $id_producto_real. Faltante: $cantidad_restante_a_vender");
             $sw = false;
             break;
         }
 
-        // ========== ACTUALIZAR STOCK GLOBAL EN PRODUCTO ==========
-        $sql_update_producto_stock = "UPDATE producto 
-                                      SET stock = stock - '$stock_global_descontado' 
-                                      WHERE idproducto = '$id_producto_real' 
+        // actualizar stock global producto
+        $sql_update_producto_stock = "UPDATE producto
+                                      SET stock = stock - '$stock_global_descontado'
+                                      WHERE idproducto = '$id_producto_real'
                                         AND idsucursal = '$idsucursal'";
-        if (!ejecutarConsulta($sql_update_producto_stock)) { 
-            error_log("Error al actualizar stock global del producto: $id_producto_real");
-            $sw = false; 
-            break; 
+
+        if (!ejecutarConsulta($sql_update_producto_stock)) {
+            error_log("ERROR update producto stock: " . mysqli_error($conexion));
+            error_log("SQL: " . $sql_update_producto_stock);
+            $sw = false;
+            break;
         }
 
-        // ========== INSERTAR EN KARDEX ==========
+        // insertar kardex
         $sql_kardex = "INSERT INTO kardex (
-                            idsucursal, idproducto, cantidad, cantidad_contenedor, 
-                            precio_unitario, stock_actual, tipo_movimiento, 
-                            motivo, descripcion, fecha_kardex
-                       ) VALUES (
-                            '$idsucursal', '$id_producto_real', '$stock_global_descontado', 
-                            '$factor_contenedor', '{$precio_venta[$num_elementos]}', 
-                            (SELECT stock FROM producto WHERE idproducto = '$id_producto_real' AND idsucursal = '$idsucursal'), 
-                            1, 'Venta', 'Venta #$num_comprobante', '$fechaActual'
-                       )";
-        if (!ejecutarConsulta($sql_kardex)) { 
-            error_log("Error al insertar kardex");
-            $sw = false; 
-            break; 
+            idsucursal, idproducto, cantidad, cantidad_contenedor,
+            precio_unitario, stock_actual, tipo_movimiento,
+            motivo, descripcion, fecha_kardex
+        ) VALUES (
+            '$idsucursal', '$id_producto_real', '$stock_global_descontado', '$factor_conten',
+            '$precio_final',
+            (SELECT stock FROM producto WHERE idproducto = '$id_producto_real' AND idsucursal = '$idsucursal'),
+            1, 'Venta', 'Venta #$num_comprobante', '$fechaActual'
+        )";
+
+        if (!ejecutarConsulta($sql_kardex)) {
+            error_log("ERROR insert kardex: " . mysqli_error($conexion));
+            error_log("SQL: " . $sql_kardex);
+            $sw = false;
+            break;
         }
 
         $num_elementos++;
     }
 
-    // ========== MANEJO DE CRÉDITO ==========
+    // =========================
+    // 12) Crédito (cuentas por cobrar)
+    // =========================
     if ($tipopago == 'Si' && $sw) {
         $cuotas = 0;
-        $monto_cuota = round(($montoDeuda * ($interes / 100) + $montoDeuda) / $input_cuotas, 1);
+        $montoDeuda = floatval($montoDeuda);
+        $interes = floatval($interes);
+        $input_cuotas = intval($input_cuotas);
+
+        if ($input_cuotas <= 0) $input_cuotas = 1;
+
+        $monto_cuota = round((($montoDeuda * ($interes / 100)) + $montoDeuda) / $input_cuotas, 2);
+
         while ($cuotas < count($fecha_pago)) {
-            if (!ejecutarConsulta("INSERT INTO cuentas_por_cobrar (idventa, fecharegistro, deudatotal, fechavencimiento, abonototal, deuda, interes) 
-                                   VALUES ('$idventanew', '$fecha_hora', '$monto_cuota', '$fecha_pago[$cuotas]', 0, '$monto_cuota', 0)")) {
-                $sw = false; break;
+            $fv = mysqli_real_escape_string($conexion, (string)$fecha_pago[$cuotas]);
+
+            $sql_cpc = "INSERT INTO cuentas_por_cobrar (
+                idventa, fecharegistro, deudatotal, fechavencimiento, abonototal, deuda, interes
+            ) VALUES (
+                '$idventanew', '$fecha_hora', '$monto_cuota', '$fv', 0, '$monto_cuota', 0
+            )";
+
+            if (!ejecutarConsulta($sql_cpc)) {
+                error_log("ERROR insert cuentas_por_cobrar: " . mysqli_error($conexion));
+                error_log("SQL: " . $sql_cpc);
+                $sw = false;
+                break;
             }
             $cuotas++;
         }
     }
 
-    // ========== ACTUALIZAR COTIZACIÓN SI APLICA ==========
+    // =========================
+    // 13) Cotización -> Vendido
+    // =========================
     if ($comprobanteReferencia != '' && $tipo == 'venta' && $sw) {
-        if (!ejecutarConsulta("UPDATE cotizacion SET estado = 'VENDIDO' WHERE idcotizacion = '$comprobanteReferencia'")) {
+        $sql_cot = "UPDATE cotizacion SET estado = 'VENDIDO' WHERE idcotizacion = '$comprobanteReferencia'";
+        if (!ejecutarConsulta($sql_cot)) {
+            error_log("ERROR update cotizacion: " . mysqli_error($conexion));
+            error_log("SQL: " . $sql_cot);
             $sw = false;
         }
     }
 
-    // ========== COMMIT O ROLLBACK ==========
+    // =========================
+    // 14) Commit / Rollback
+    // =========================
     if ($sw) {
         ejecutarConsulta("COMMIT");
         return $idventanew;
     } else {
         ejecutarConsulta("ROLLBACK");
-        error_log("ROLLBACK ejecutado - venta cancelada");
+        error_log("ROLLBACK ejecutado - venta cancelada. idventa tentativa: $idventanew");
         return null;
     }
 }
+
 
 public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $tipopago, $formapago, $nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido, $totaldeposito, $vuelto, $tipo, $banco, $idproducto, $nombre, $cantidad, $precio_venta, $descuento, $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, $idmotivo, $observaciones, $fecha_pago, $interes, $input_cuotas, $cantidad_contenedor, $contenedor, $idp, $check_precio) 
 {
