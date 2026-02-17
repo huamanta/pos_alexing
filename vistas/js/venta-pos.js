@@ -55,23 +55,23 @@ function init() {
     $("#tipo_comprobante").html(c);
   });*/
 
- $("#tipo_comprobante").on("change", function () {
+  $("#tipo_comprobante").on("change", function () {
     var tipo_comprobante = $(this).val();
     var es_factura = (tipo_comprobante === "Factura") ? "1" : "0";
     var cliente_actual = $("#idcliente").val(); // Guardar cliente seleccionado
-    
+
     $.post("controladores/venta.php?op=selectCliente",
       { tipo_documento: "", es_factura: es_factura },
       function (r) {
         $("#idcliente").html(r);
-        
+
         // Solo restaurar si había un cliente seleccionado
         if (cliente_actual && cliente_actual !== "") {
           $("#idcliente").val(cliente_actual);
         }
-        
+
         $("#idcliente").select2();
-        
+
         if (es_factura === "1") {
           $("#alerta-cliente").show();
         } else {
@@ -79,16 +79,16 @@ function init() {
         }
       }
     );
-});
+  });
 
-// Carga inicial (sin filtro y sin alerta)
-$.post("controladores/venta.php?op=selectCliente",
+  // Carga inicial (sin filtro y sin alerta)
+  $.post("controladores/venta.php?op=selectCliente",
     { tipo_documento: "", es_factura: "0" },
     function (r) {
       $("#idcliente").html(r);
       $("#idcliente").select2();
     }
-);
+  );
 
   verificarConceptoMovimiento();
   cargarSucursales();
@@ -527,14 +527,14 @@ var ventaAGenerarSunat = null;
 function guardaryeditar(e) {
   //  Protección contra null
   if (e) e.preventDefault();
-  
+
   if (detalles <= 0) {
     Swal.fire("Agrega productos a la venta", "", "warning");
     return false;
   }
-  
+
   var formData = new FormData($("#formulario")[0]);
-  
+
   if ($('#tipopago').val() == 'Si' && $('#idcliente').val() == 1) {
     Swal.fire({
       title: "No puedes dar crédito a público en general",
@@ -544,14 +544,14 @@ function guardaryeditar(e) {
     });
     return false;
   }
-  
+
   Swal.fire({
     title: "Procesando venta...",
     text: "Por favor, espera un momento",
     allowOutsideClick: false,
     didOpen: () => Swal.showLoading(),
   });
-  
+
   $.ajax({
     url: "controladores/venta.php?op=guardaryeditar",
     type: "POST",
@@ -560,12 +560,12 @@ function guardaryeditar(e) {
     processData: false,
     success: function (datos) {
       Swal.close();
-      
+
       if (!datos || datos.trim() === "") {
         Swal.fire("Error en la venta", "No se pudo registrar la venta.", "error");
         return;
       }
-      
+
       // ============================================================
       // VALIDAR SI LA RESPUESTA ES UN ERROR DE PERMISOS DE FECHA
       // ============================================================
@@ -580,11 +580,11 @@ function guardaryeditar(e) {
           });
           return;
         }
-      } catch(e) {
+      } catch (e) {
         // Si no es JSON, continúa con el flujo normal
       }
       // ============================================================
-      
+
       if ($('#tipo_comprobante option:selected').text() !== 'Nota de Venta') {
         ventaAGenerarSunat = {
           idventa: datos,
@@ -594,7 +594,7 @@ function guardaryeditar(e) {
       } else {
         ventaAGenerarSunat = null;
       }
-      
+
       $("#ModalTipocomprobante").modal("show");
       $("#pant-imprimir").html(`
         <div onclick="imprimirBoleta(${datos})" class="col-sm-6 btn btn-success">
@@ -604,7 +604,7 @@ function guardaryeditar(e) {
           <i class="fas fa-file-pdf"></i> PDF
         </div>
       `);
-      
+
       $("#formulario")[0].reset();
       marcarImpuesto();
       resetearPagos();
@@ -1340,6 +1340,11 @@ function listarArticulos2() {
 
   tabla = $("#tblarticulos2")
     .dataTable({
+      language: {
+        emptyTable: "No se encontraron productos en el almacén.",
+        zeroRecords: "No se encontraron productos.",
+        infoEmpty: "Sin registros disponibles"
+      },
       aProcessing: true, //activamos el procedimiento del datatable
       aServerSide: true, //paginacion y filrado realizados por el server
       dom: "Bfrtip", //definimos los elementos del control de la tabla
@@ -3391,49 +3396,49 @@ function ejecutarCambioComprobante(idventa, tipo, idsucursal) {
 
 // --- 1. LÓGICA DE CARGA DE DATOS ---
 function verHistorialCliente() {
-    var idcliente = $("#idcliente").val();
-    // 1. OBTENER ID SUCURSAL
-    var idsucursal = $("#idsucursal").val(); 
+  var idcliente = $("#idcliente").val();
+  // 1. OBTENER ID SUCURSAL
+  var idsucursal = $("#idsucursal").val();
 
-    if (!idcliente || idcliente == "6" || idcliente == "1") { 
-        return; 
-    }
+  if (!idcliente || idcliente == "6" || idcliente == "1") {
+    return;
+  }
 
-    var productosEnCarrito = [];
-    $("input[name='idproducto[]']").each(function() {
-        if($(this).val()) productosEnCarrito.push($(this).val());
-    });
+  var productosEnCarrito = [];
+  $("input[name='idproducto[]']").each(function () {
+    if ($(this).val()) productosEnCarrito.push($(this).val());
+  });
 
-    // ... (Tu código de loading y fade in sigue igual) ...
-    $("#body_historial_flotante").html('<tr><td colspan="6" class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x text-info"></i><p class="mt-2 text-muted">Consultando historial...</p></td></tr>');
-    
-    if ($("#floating-history").is(":hidden")) {
-        $("#floating-history").fadeIn();
-    }
+  // ... (Tu código de loading y fade in sigue igual) ...
+  $("#body_historial_flotante").html('<tr><td colspan="6" class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x text-info"></i><p class="mt-2 text-muted">Consultando historial...</p></td></tr>');
 
-    $.ajax({
-        url: "controladores/venta.php?op=listarProductosCliente",
-        type: "POST",
-        // 2. ENVIAR ID SUCURSAL AL CONTROLADOR
-        data: { 
-            idcliente: idcliente, 
-            idsucursal: idsucursal, 
-            ids_carrito: productosEnCarrito 
-        },
-        dataType: "json",
-        success: function(data) {
-             // ... (Tu código success sigue exactamente igual) ...
-             // (Pega aquí toda la lógica de pintar la tabla y los 8 items que ya tienes)
-             var html = "";
-             if (data.length > 0) {
-                 $.each(data, function(i, item) {
-                     // ... tu lógica de filas ...
-                     let claseExtra = item.coincide ? 'resaltado-carrito' : '';
-                     let icono = item.coincide ? '<i class="fas fa-star text-warning mr-1"></i> ' : ''; 
-                     let colorDesc = item.descuento !== '-' ? 'text-danger font-weight-bold' : 'text-muted';
-                     let estiloFila = (i >= 8) ? 'style="display:none;"' : '';
+  if ($("#floating-history").is(":hidden")) {
+    $("#floating-history").fadeIn();
+  }
 
-                     html += `<tr class="${claseExtra}" ${estiloFila}>
+  $.ajax({
+    url: "controladores/venta.php?op=listarProductosCliente",
+    type: "POST",
+    // 2. ENVIAR ID SUCURSAL AL CONTROLADOR
+    data: {
+      idcliente: idcliente,
+      idsucursal: idsucursal,
+      ids_carrito: productosEnCarrito
+    },
+    dataType: "json",
+    success: function (data) {
+      // ... (Tu código success sigue exactamente igual) ...
+      // (Pega aquí toda la lógica de pintar la tabla y los 8 items que ya tienes)
+      var html = "";
+      if (data.length > 0) {
+        $.each(data, function (i, item) {
+          // ... tu lógica de filas ...
+          let claseExtra = item.coincide ? 'resaltado-carrito' : '';
+          let icono = item.coincide ? '<i class="fas fa-star text-warning mr-1"></i> ' : '';
+          let colorDesc = item.descuento !== '-' ? 'text-danger font-weight-bold' : 'text-muted';
+          let estiloFila = (i >= 8) ? 'style="display:none;"' : '';
+
+          html += `<tr class="${claseExtra}" ${estiloFila}>
                                 <td title="${item.producto}">
                                     ${icono}${item.producto.substring(0, 35).toLowerCase()}
                                 </td>
@@ -3443,34 +3448,34 @@ function verHistorialCliente() {
                                 <td class="text-right font-weight-bold text-info">${item.subtotal}</td>
                                 <td class="text-center text-muted" title="${item.comprobante}">${item.fecha}</td>
                              </tr>`;
-                 });
-             } else {
-                 html = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-shopping-basket fa-2x mb-2"></i><br>Sin historial reciente en esta sucursal.</td></tr>';
-             }
-             $("#body_historial_flotante").html(html);
-        }
-    });
+        });
+      } else {
+        html = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-shopping-basket fa-2x mb-2"></i><br>Sin historial reciente en esta sucursal.</td></tr>';
+      }
+      $("#body_historial_flotante").html(html);
+    }
+  });
 }
 // Búsqueda instantánea INTELIGENTE
-$("#inputBusquedaHistorial").on("keyup", function() {
-    var value = $(this).val().toLowerCase();
-    
-    if (value === "") {
-        // OPCIÓN A: Si el buscador está vacío, restauramos la vista de "Solo 8"
-        $("#body_historial_flotante tr").each(function(index) {
-            if (index < 8) {
-                $(this).show(); // Muestra los primeros 8
-            } else {
-                $(this).hide(); // Oculta el resto
-            }
-        });
-    } else {
-        // OPCIÓN B: Si hay texto, buscamos en TODOS los registros (incluso los ocultos)
-        $("#body_historial_flotante tr").filter(function() {
-            // toggle(true) muestra, toggle(false) oculta basado en la coincidencia
-            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-        });
-    }
+$("#inputBusquedaHistorial").on("keyup", function () {
+  var value = $(this).val().toLowerCase();
+
+  if (value === "") {
+    // OPCIÓN A: Si el buscador está vacío, restauramos la vista de "Solo 8"
+    $("#body_historial_flotante tr").each(function (index) {
+      if (index < 8) {
+        $(this).show(); // Muestra los primeros 8
+      } else {
+        $(this).hide(); // Oculta el resto
+      }
+    });
+  } else {
+    // OPCIÓN B: Si hay texto, buscamos en TODOS los registros (incluso los ocultos)
+    $("#body_historial_flotante tr").filter(function () {
+      // toggle(true) muestra, toggle(false) oculta basado en la coincidencia
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  }
 });
 
 // --- 2. LÓGICA PARA ARRASTRAR (DRAG & DROP) ---
@@ -3478,58 +3483,58 @@ $("#inputBusquedaHistorial").on("keyup", function() {
 hacerArrastrable(document.getElementById("floating-history"));
 
 function hacerArrastrable(elmnt) {
-    var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-    var header = document.getElementById("floating-header");
+  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  var header = document.getElementById("floating-header");
 
-    if (header) {
-        // Si existe el header, arrastramos desde ahí
-        header.onmousedown = dragMouseDown;
-    } else {
-        // Si no, desde cualquier parte del div (no recomendado)
-        elmnt.onmousedown = dragMouseDown;
-    }
+  if (header) {
+    // Si existe el header, arrastramos desde ahí
+    header.onmousedown = dragMouseDown;
+  } else {
+    // Si no, desde cualquier parte del div (no recomendado)
+    elmnt.onmousedown = dragMouseDown;
+  }
 
-    function dragMouseDown(e) {
-        e = e || window.event;
-        e.preventDefault();
+  function dragMouseDown(e) {
+    e = e || window.event;
+    e.preventDefault();
 
-        // 1. Obtener posición inicial del mouse
-        pos3 = e.clientX;
-        pos4 = e.clientY;
+    // 1. Obtener posición inicial del mouse
+    pos3 = e.clientX;
+    pos4 = e.clientY;
 
-        // 2. Agregar listeners al DOCUMENTO (no al elemento) para seguir el mouse
-        // Usamos addEventListener para no romper otros scripts
-        document.addEventListener('mouseup', closeDragElement);
-        document.addEventListener('mousemove', elementDrag);
-    }
+    // 2. Agregar listeners al DOCUMENTO (no al elemento) para seguir el mouse
+    // Usamos addEventListener para no romper otros scripts
+    document.addEventListener('mouseup', closeDragElement);
+    document.addEventListener('mousemove', elementDrag);
+  }
 
-    function elementDrag(e) {
-        e = e || window.event;
-        e.preventDefault();
+  function elementDrag(e) {
+    e = e || window.event;
+    e.preventDefault();
 
-        // 1. Calcular cuánto se movió el cursor
-        pos1 = pos3 - e.clientX;
-        pos2 = pos4 - e.clientY;
-        
-        // 2. Guardar nueva posición del cursor para el siguiente frame
-        pos3 = e.clientX;
-        pos4 = e.clientY;
+    // 1. Calcular cuánto se movió el cursor
+    pos1 = pos3 - e.clientX;
+    pos2 = pos4 - e.clientY;
 
-        // 3. Aplicar nueva posición al elemento
-        // Nota: Al movernos, convertimos la posición a 'top/left' fijos
-        // para evitar conflictos si usabas 'bottom' o 'right' en CSS.
-        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-        
-        // Eliminamos 'right' si existía para que 'left' tome el control total
-        elmnt.style.right = 'auto'; 
-    }
+    // 2. Guardar nueva posición del cursor para el siguiente frame
+    pos3 = e.clientX;
+    pos4 = e.clientY;
 
-    function closeDragElement() {
-        // IMPORTANTE: Eliminar los listeners para liberar memoria del sistema
-        document.removeEventListener('mouseup', closeDragElement);
-        document.removeEventListener('mousemove', elementDrag);
-    }
+    // 3. Aplicar nueva posición al elemento
+    // Nota: Al movernos, convertimos la posición a 'top/left' fijos
+    // para evitar conflictos si usabas 'bottom' o 'right' en CSS.
+    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+
+    // Eliminamos 'right' si existía para que 'left' tome el control total
+    elmnt.style.right = 'auto';
+  }
+
+  function closeDragElement() {
+    // IMPORTANTE: Eliminar los listeners para liberar memoria del sistema
+    document.removeEventListener('mouseup', closeDragElement);
+    document.removeEventListener('mousemove', elementDrag);
+  }
 }
 
 // --- 3. TRIGGER AUTOMÁTICO (OPCIONAL) ---

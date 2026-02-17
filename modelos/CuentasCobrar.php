@@ -112,35 +112,31 @@ Class CuentasCobrar
 
             $fechaVenc = $fila['fechavencimiento'];
 
-            // ===== Normalizar modelo =====
-            // deuda_base = monto original cuota (27.50)
+            // ===== Modelo =====
             $deuda_base = round(floatval($fila['deuda_base']), 2);
             $mora       = round(floatval($fila['mora']), 2);
-            $mora_pagada_actual = round(floatval($fila['mora_pagada']), 2);
 
-            // Si deuda_base viene en 0, reconstruir desde deudatotal - mora
-            if ($deuda_base <= 0) {
-                $deuda_base = round(floatval($fila['deudatotal']) - $mora, 2);
-                if ($deuda_base < 0) $deuda_base = 0;
-                $fix = ejecutarConsulta("UPDATE cuentas_por_cobrar SET deuda_base='$deuda_base' WHERE idcpc='$idcpc_i'");
-                if (!$fix) throw new Exception("No se pudo normalizar deuda_base (idcpc=$idcpc_i)");
-            }
+            // abonototal acumulado actual (principal pagado)
+            $abonototalActual = round(floatval($fila['abonototal']), 2);
+            if ($abonototalActual < 0) $abonototalActual = 0;
+            if ($abonototalActual > $deuda_base) $abonototalActual = $deuda_base;
 
-            // deuda = saldo principal (si es NULL o 0 pero estado pendiente, lo asumimos como deuda_base)
+            // deuda pendiente principal
             $deuda = $fila['deuda'];
-            $deuda = ($deuda === null || $deuda === '') ? $deuda_base : round(floatval($deuda), 2);
+            $deuda = ($deuda === null || $deuda === '') ? round(max(0, $deuda_base - $abonototalActual), 2) : round(floatval($deuda), 2);
             if ($deuda < 0) $deuda = 0;
+            if ($deuda > $deuda_base) $deuda = $deuda_base;
 
             // ===== Faltante real =====
-            $faltanteMora = max(0, $mora);
-            $faltanteBase = max(0, $deuda);
+            $faltanteMora  = max(0, $mora);
+            $faltanteBase  = max(0, $deuda);
             $faltanteTotal = round($faltanteMora + $faltanteBase, 2);
 
             if ($faltanteTotal <= 0) {
-                // cerrar por seguridad
+                // cerrar por seguridad SIN inventar abonototal
                 $close = ejecutarConsulta("
                     UPDATE cuentas_por_cobrar
-                    SET estado_pago=0, deudatotal=0, deuda=0, mora=0, abonototal='$deuda_base', fecha_update_mora=CURDATE()
+                    SET estado_pago=0, deudatotal=0, deuda=0, mora=0, abonototal='$abonototalActual', fecha_update_mora=CURDATE()
                     WHERE idcpc='$idcpc_i'
                 ");
                 if (!$close) throw new Exception("No se pudo cerrar cuota (idcpc=$idcpc_i)");
@@ -166,7 +162,7 @@ Class CuentasCobrar
             $moraNueva  = round(max(0, $mora  - $pagoMora), 2);
             $deudaNueva = round(max(0, $deuda - $pagoBase), 2);
 
-            // Si quieres recalcular mora por atraso, hazlo pero SOBRE el saldo que queda:
+            // Si quieres recalcular mora por atraso, hazlo SOBRE el saldo que queda:
             $fechaV = new DateTime(date('Y-m-d', strtotime($fechaVenc)));
             $hoy    = new DateTime(date('Y-m-d'));
 
@@ -175,16 +171,15 @@ Class CuentasCobrar
                 $porcMoraMes = 10.0;
                 $moraDiaria  = ($deudaNueva * ($porcMoraMes / 100)) / 30;
                 $moraCalc    = round($moraDiaria * $diasRetraso, 2);
-
-                // toma el mayor entre lo que ya quedó de mora y lo calculado
                 if ($moraCalc > $moraNueva) $moraNueva = $moraCalc;
             }
 
             $deudatotalNuevo = round($deudaNueva + $moraNueva, 2);
 
-            // abonototal (pagado de principal) = cuota - saldo principal
-            $abonototalNuevo = round(max(0, $deuda_base - $deudaNueva), 2);
+            // ✅ FIX: abonototal acumulado por cuota = lo que ya tenía + lo pagado de principal en esta cuota
+            $abonototalNuevo = round($abonototalActual + $pagoBase, 2);
             if ($abonototalNuevo > $deuda_base) $abonototalNuevo = $deuda_base;
+            if ($abonototalNuevo < 0) $abonototalNuevo = 0;
 
             $estadoNuevo = ($deudatotalNuevo <= 0) ? 0 : 1;
 
@@ -252,6 +247,7 @@ Class CuentasCobrar
         return ['success'=>false, 'message'=>$e->getMessage()];
     }
 }
+
 
 
 	public function deudacliente($idventa){
@@ -365,8 +361,7 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
 
 	public function mostrar($idcpc)
 	{
-
-		$sql="SELECT v.idventa, v.total_venta, v.interes, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal,2) as deudatotal, cc.deudatotal as deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
+		$sql="SELECT v.idventa, v.total_venta, v.interes, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal,2) as deudatotal, cc.deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
 				FROM venta v 
 				INNER JOIN cuentas_por_cobrar cc
 		        ON v.idventa = cc.idventa

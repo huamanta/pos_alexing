@@ -1,7 +1,6 @@
 var status = true;
 var sessionChecker = setInterval(() => {
   if (Boolean(status) === true) {
-    console.log("Ejecutando verificacion de sesion...");
     loadSesionsApp();
   } else {
     clearInterval(sessionChecker); // Detiene el intervalo
@@ -31,32 +30,30 @@ function loadSesionsApp(params) {
 }
 
 function sessionExpired() {
-        if (!status) return; // evita doble ejecución
+  if (!status) return; // evita doble ejecución
 
-        status = false;
-        clearInterval(sessionChecker);
+  status = false;
+  clearInterval(sessionChecker);
 
-        console.log("Sesión expirada. Intervalo detenido.");
+  Swal.fire({
+    title: "Sesión expirada",
+    text: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
+    icon: "warning",
+    confirmButtonText: "OK",
+    allowOutsideClick: false,
+    allowEscapeKey: false
+  }).then(() => {
 
-        Swal.fire({
-            title: "Sesión expirada",
-            text: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
-            icon: "warning",
-            confirmButtonText: "OK",
-            allowOutsideClick: false,
-            allowEscapeKey: false
-        }).then(() => {
+    $.ajax({
+      url: "controladores/auth.php",
+      type: "POST",
+      complete: function () {
+        window.location.href = "ingreso";
+      }
+    });
 
-            $.ajax({
-                url: "controladores/auth.php",
-                type: "POST",
-                complete: function () {
-                    window.location.href = "ingreso";
-                }
-            });
-
-        });
-    }
+  });
+}
 
 var tabla;
 var contador = 0;
@@ -95,6 +92,7 @@ function init() {
     $("#idsucursal").select2("");
 
     documentosSucursal(); // <- Esto selecciona el comprobante correcto automáticamente
+    agregarCards("Todos");
   });
 
   $("#idsucursal").change(documentosSucursal);
@@ -140,8 +138,7 @@ $("#idsucursal2").change(listar);
 
 $("#idsucursal").change(function () {
   var categoria = $(this).val(); // Obtener el valor seleccionado
-  console.log(categoria); // Verificar el valor
-  agregarCards(categoria);
+  agregarCards("Todos");
 });
 
 function verificarCaja() {
@@ -215,11 +212,11 @@ function verificarCaja() {
 $("<style>")
   .text(
     ".nav-link i { " +
-      "   transition: transform 0.3s ease; " +
-      "} " +
-      ".nav-link:hover i { " +
-      "   transform: scale(1.2); " +
-      "}"
+    "   transition: transform 0.3s ease; " +
+    "} " +
+    ".nav-link:hover i { " +
+    "   transform: scale(1.2); " +
+    "}"
   )
   .appendTo("head");
 
@@ -313,15 +310,15 @@ function cerrarCaja() {
               ${ventasHtml}
               <b>Resumen de ingresos y egresos:</b><br>${movimientosHtml}
               <b>Efectivo final esperado (para cierre):</b> <span style="color: red; font-size:20px; font-weight:bold">S/. ${parseFloat(
-                resumen.total_efectivo
-              ).toFixed(2)}</span>
+              resumen.total_efectivo
+            ).toFixed(2)}</span>
               <hr>
               <label>Verifique la cantidad del sistema con la de su caja física</label>`,
             input: "number",
             input: 'number',
-            inputAttributes: { 
-              autocapitalize: "off", 
-              required: true, 
+            inputAttributes: {
+              autocapitalize: "off",
+              required: true,
               step: "0.01"   // o "0.001" si quieres 3 decimales
             },
             inputValue: parseFloat(resumen.total_efectivo).toFixed(2),
@@ -461,34 +458,34 @@ function listar() {
 
 //cargamos los items al select cliente
 function listarClientes() {
-  $("#tipo_comprobante").on("change", function () { 
+  $("#tipo_comprobante").on("change", function () {
     var tipo_comprobante = $(this).val();
     var filtro = (tipo_comprobante === "Factura") ? "RUC" : "";
     var es_factura = (tipo_comprobante === "Factura") ? "1" : "0";
 
-    $.post("controladores/venta.php?op=selectCliente", 
-        { tipo_documento: filtro, es_factura: es_factura }, 
-        function (r) {
-            $("#idcliente").html(r);
-            $("#idcliente").select2();
-
-            if (es_factura === "1") {
-                $("#alerta-cliente").show();
-            } else {
-                $("#alerta-cliente").hide();
-            }
-        }
-    );
-});
-
-// Carga inicial (sin filtro y sin alerta)
-$.post("controladores/venta.php?op=selectCliente", 
-    { tipo_documento: "", es_factura: "0" }, 
-    function (r) {
+    $.post("controladores/venta.php?op=selectCliente",
+      { tipo_documento: filtro, es_factura: es_factura },
+      function (r) {
         $("#idcliente").html(r);
         $("#idcliente").select2();
+
+        if (es_factura === "1") {
+          $("#alerta-cliente").show();
+        } else {
+          $("#alerta-cliente").hide();
+        }
+      }
+    );
+  });
+
+  // Carga inicial (sin filtro y sin alerta)
+  $.post("controladores/venta.php?op=selectCliente",
+    { tipo_documento: "", es_factura: "0" },
+    function (r) {
+      $("#idcliente").html(r);
+      $("#idcliente").select2();
     }
-);
+  );
 }
 
 function comprobantevista() {
@@ -537,15 +534,64 @@ $('#btn_barcode_search').on('click', function () {
 function agregarCards(categoria) {
   var cardContainer = document.getElementById("cardContainer");
   var idsucursal = $("#idsucursal").val(); // Obtener la sucursal actual
-  
   $.ajax({
-    url: "controladores/pos.php?op=listarProductos&idsucursal=" + idsucursal,
+    url: "controladores/pos.php?op=listarProductos&idsucursal=" + idsucursal + "&categoria=" + categoria,
     type: "GET",
     data: "",
+    beforeSend: function () {
+      cardContainer.innerHTML = `
+        <div style="margin: 0 auto">
+          <div class="loader-wrapper" style="text-align: center">
+              <div class="spinner"></div>
+              <div class="loader-text">Cargando...</div>
+          </div>
+        </div>
+      `;
+    },
     success: function (data) {
       var data = JSON.parse(data);
-      console.log("Datos recibidos para agregarCards:", data);
       var cardHtml = "";
+      if (data.length === 0) {
+        cardContainer.innerHTML = `<div style="margin: 0 auto">
+          <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;min-height:220px;">
+            <svg width="120" height="120" viewBox="0 0 128 128" role="img" aria-label="Sin resultados">
+              <defs>
+                <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#e9ecef"></stop>
+                  <stop offset="1" stop-color="#f8f9fa"></stop>
+                </linearGradient>
+              </defs>
+
+              <!-- sombra -->
+              <ellipse cx="64" cy="108" rx="34" ry="10" fill="#000" opacity="0.06"></ellipse>
+
+              <!-- caja -->
+              <path d="M30 44 L64 28 L98 44 L64 60 Z" fill="url(#g)" stroke="#ced4da" stroke-width="2" />
+              <path d="M30 44 V86 L64 102 V60 Z" fill="#f1f3f5" stroke="#ced4da" stroke-width="2" />
+              <path d="M98 44 V86 L64 102 V60 Z" fill="#ffffff" stroke="#ced4da" stroke-width="2" />
+
+              <!-- cinta -->
+              <path d="M64 28 V60" stroke="#adb5bd" stroke-width="2" />
+              <path d="M45 40 L64 50 L83 40" fill="none" stroke="#adb5bd" stroke-width="2" />
+
+              <!-- carita triste -->
+              <circle cx="52" cy="74" r="2.5" fill="#868e96"></circle>
+              <circle cx="76" cy="74" r="2.5" fill="#868e96"></circle>
+              <path d="M54 86 Q64 78 74 86" fill="none" stroke="#868e96" stroke-width="2" stroke-linecap="round" />
+
+              <!-- estrellitas -->
+              <path d="M104 30 l3 6 l6 3 l-6 3 l-3 6 l-3-6 l-6-3 l6-3 z" fill="#dee2e6"/>
+              <path d="M20 30 l2 4 l4 2 l-4 2 l-2 4 l-2-4 l-4-2 l4-2 z" fill="#dee2e6"/>
+            </svg>
+
+            <div style="margin-top:10px;font-size:14px;color:#495057;">
+              No se encontraron productos en el almacén...
+            </div>
+          </div>
+        </div>`;
+
+        return;
+      };
       $.each(data, function (i, item) {
         // Calcular el stock disponible en términos de contenedores
         let stockEnContenedores = item.stock_lote_fifo / item.cantidad_contenedor;
@@ -559,10 +605,9 @@ function agregarCards(categoria) {
               <div class="position-relative">
                 <img src="files/productos/${item.imagen}" class="pos-img w-100">
 
-                <div class="pos-stock" style="background:${
-                  stockEnContenedores < 5 ? '#dc3545' :
-                  stockEnContenedores < 15 ? '#fd7e14' : '#198754'
-                }">
+                <div class="pos-stock" style="background:${stockEnContenedores < 5 ? '#dc3545' :
+            stockEnContenedores < 15 ? '#fd7e14' : '#198754'
+          }">
                   Stock ${stockEnContenedores.toFixed(1)}
                 </div>
 
@@ -617,7 +662,7 @@ $("#search-producto").keyup(function (e) {
   const valor = $(this).val();
 
   if (valor.length > 0) {
-  searchProductos(valor); // Ya obtiene el modo internamente
+    searchProductos(valor); // Ya obtiene el modo internamente
   } else {
     agregarCards("Todos");
   }
@@ -675,10 +720,9 @@ function searchProductos(producto) {
               <div class="position-relative">
                 <img src="files/productos/${item.imagen}" class="pos-img w-100">
 
-                <div class="pos-stock" style="background:${
-                  stockEnContenedores < 5 ? '#dc3545' :
-                  stockEnContenedores < 15 ? '#fd7e14' : '#198754'
-                }">
+                <div class="pos-stock" style="background:${stockEnContenedores < 5 ? '#dc3545' :
+                stockEnContenedores < 15 ? '#fd7e14' : '#198754'
+              }">
                   Stock ${stockEnContenedores.toFixed(1)}
                 </div>
 
@@ -718,8 +762,6 @@ $("#campoDeBusqueda").on("input", function () {
 
 function seleccionarProducto(data) {
   var data = JSON.parse(atob(data));
-  console.log(data);
-
   // 🔎 Validar según el tipo de contenedor usando stock_lote_fifo
   let stockDisponibleUnidades = parseFloat(data.stock_lote_fifo) || 0;
   let cantidadContenedor = parseFloat(data.cantidad_contenedor) || 1;
@@ -757,7 +799,6 @@ function seleccionarProducto(data) {
       id_fifo: data.id_fifo // ID del lote FIFO
     },
     success: function (resp) {
-      console.log(resp);
       var result = JSON.parse(resp);
       if (result.status == 1) {
         var audioSuccess = new Audio("files/audio/vip.mp3");
@@ -828,7 +869,7 @@ function listarCarrito() {
           let subtotal = item.precio * item.cantidad;
           total += subtotal;
           totalV += item.comisionV * item.cantidad;
-          
+
           // 🔹 CALCULA EL STOCK SEGÚN EL TIPO DE CONTENEDOR USANDO FIFO
           let stockDisponibleUnidades = parseFloat(item.stock_lote_fifo) || 0;
           let stockDisponibleEnContenedores;
@@ -839,7 +880,7 @@ function listarCarrito() {
             // Para unidades: mostrar el stock tal cual (puede ser fraccionado)
             stockDisponibleEnContenedores = stockDisponibleUnidades;
           }
-          
+
           html += `
             <tr class="cart-row">
               <td colspan="6">
@@ -937,7 +978,7 @@ function actualizarDataItem(idproducto, value, campo) {
       campo: campo, // nombre del campo, ej. "nombre"
       value: value,
     },
-    success: function (data) {},
+    success: function (data) { },
     error: function (error) {
       toastr.error("Error al procesar la solicitud", "Error");
     },
@@ -1077,12 +1118,12 @@ function handleCantidadChange(idproducto) {
     input.value = stock;
     cantidad = stock;
   }
-  
+
   if (cantidad < 0) {
     input.value = cantidadContenedor > 1 ? 1 : 0.01;
     return;
   }
-  
+
   modificarSubtotales(idproducto);
 }
 
@@ -1194,15 +1235,15 @@ function keyUpProductoCarrito(idproducto, cantidadStr) {
 }
 
 $('#modal-default').on('hidden.bs.modal', function () {
-    // Resetear inputs
-    $(this).find('input[type="text"], input[type="hidden"]').val('');
-    $(this).find('textarea').val('');
-    
-    // Resetear spans
-    $(this).find('div.h5').text('0.00');
+  // Resetear inputs
+  $(this).find('input[type="text"], input[type="hidden"]').val('');
+  $(this).find('textarea').val('');
 
-    // Resetear selects
-    $(this).find('select').prop('selectedIndex', 0);
+  // Resetear spans
+  $(this).find('div.h5').text('0.00');
+
+  // Resetear selects
+  $(this).find('select').prop('selectedIndex', 0);
 });
 
 $("#pasar-caja").click(function (e) {
@@ -1370,7 +1411,7 @@ function sumPagos() {
   // suma visible: principal (lo que escribió el cajero) + pagos dinámicos
   let suma = 0;
   suma += toNumber($("#input-efectivo").val());
-  $(".pago-dinamico .pago-input").each(function() {
+  $(".pago-dinamico .pago-input").each(function () {
     suma += toNumber($(this).val());
   });
   return suma;
@@ -1378,11 +1419,11 @@ function sumPagos() {
 
 /* -------------------- tipos de pago -------------------- */
 const tiposPago = [
-  {id:'visa', label:'Visa', icon:'visa.ico'},
-  {id:'yape', label:'Yape', icon:'yape.ico'},
-  {id:'plin', label:'Plin', icon:'plin.ico'},
-  {id:'mastercard', label:'MasterCard', icon:'master.ico'},
-  {id:'deposito', label:'Depósito', icon:'deposito.ico'}
+  { id: 'visa', label: 'Visa', icon: 'visa.ico' },
+  { id: 'yape', label: 'Yape', icon: 'yape.ico' },
+  { id: 'plin', label: 'Plin', icon: 'plin.ico' },
+  { id: 'mastercard', label: 'MasterCard', icon: 'master.ico' },
+  { id: 'deposito', label: 'Depósito', icon: 'deposito.ico' }
 ];
 
 
@@ -1407,14 +1448,14 @@ function actualizarPagos() {
   var totalEfectivo = 0;
   var totalOtros = 0;
 
-  if(tipoPrincipal === "Efectivo") totalEfectivo += montoPrincipal;
+  if (tipoPrincipal === "Efectivo") totalEfectivo += montoPrincipal;
   else totalOtros += montoPrincipal;
 
   // sumar pagos dinámicos según su tipo
-  $(".pago-dinamico").each(function(){
+  $(".pago-dinamico").each(function () {
     var tipo = $(this).find(".pago-hidden").val();
     var monto = toNumber($(this).find(".pago-input").val());
-    if(tipo === "Efectivo") totalEfectivo += monto;
+    if (tipo === "Efectivo") totalEfectivo += monto;
     else totalOtros += monto;
   });
 
@@ -1429,7 +1470,7 @@ function actualizarPagos() {
 }
 
 /* -------------------- formateo al perder foco -------------------- */
-$(document).on("blur", "#input-efectivo, .pago-dinamico .pago-input", function() {
+$(document).on("blur", "#input-efectivo, .pago-dinamico .pago-input", function () {
   var val = toNumber($(this).val());
   $(this).val(val.toFixed(2));
   actualizarPagos();
@@ -1439,11 +1480,11 @@ $(document).on("blur", "#input-efectivo, .pago-dinamico .pago-input", function()
 $(document).on("input", "#input-efectivo, .pago-dinamico .pago-input", actualizarPagos);
 
 /* -------------------- cambiar icono del pago principal -------------------- */
-$(document).on("change", "#tipo-principal", function(){
+$(document).on("change", "#tipo-principal", function () {
   let tipo = $(this).val();
   let pago = tiposPago.find(p => p.id === tipo);
 
-  if(pago){
+  if (pago) {
     $("#icono-principal").attr("src", "files/icons/" + pago.icon);
     $("#label-principal").text(pago.label);  // <<< cambia el texto
   } else {
@@ -1452,7 +1493,7 @@ $(document).on("change", "#tipo-principal", function(){
   }
 
   // mostrar/ocultar extras
-  if(tipo === "Efectivo"){
+  if (tipo === "Efectivo") {
     $("#extras-principal").addClass("d-none");
   } else {
     $("#extras-principal").removeClass("d-none");
@@ -1467,10 +1508,10 @@ $("#modal-default").on("shown.bs.modal", function () {
   $("#total-pedido").text("S/. " + total.toFixed(2));
 
   // Si no hay pagos, cargar total en el pago principal (visible)
-  if(sumPagos() === 0 && !$("#input-efectivo").val()){
+  if (sumPagos() === 0 && !$("#input-efectivo").val()) {
     $("#input-efectivo").val(total.toFixed(2));
     $("#tipo-principal").val("Efectivo");
-    $("#icono-principal").attr("src","files/icons/efectivo.ico");
+    $("#icono-principal").attr("src", "files/icons/efectivo.ico");
   }
   actualizarPagos();
 });
@@ -1478,7 +1519,7 @@ $("#modal-default").on("shown.bs.modal", function () {
 /* -------------------- pagos dinámicos -------------------- */
 let contadorPagos = 0;
 
-$("#agregar-pago-btn").on("click", function(){
+$("#agregar-pago-btn").on("click", function () {
   let opciones = tiposPago.map(p => `<option value="${p.id}">${p.label}</option>`).join('');
 
   // calcular saldo pendiente antes de crear el pago
@@ -1514,19 +1555,19 @@ $("#agregar-pago-btn").on("click", function(){
   actualizarPagos();
 });
 
-$(document).on("change", ".pago-tipo", function(){
+$(document).on("change", ".pago-tipo", function () {
   let tipo = $(this).val();
   let pago = tiposPago.find(p => p.id === tipo);
   let container = $(this).closest(".pago-dinamico");
 
-  if(pago){
+  if (pago) {
     container.find(".pago-icon").attr("src", "files/icons/" + pago.icon);
     container.find(".pago-label").text(pago.label);   // <<< cambia el nombre
     container.find(".pago-hidden").val(tipo);
   }
 
   // mostrar/ocultar extras en dinámicos
-  if(tipo === "Efectivo"){
+  if (tipo === "Efectivo") {
     container.find(".extras-dinamico").addClass("d-none");
   } else {
     container.find(".extras-dinamico").removeClass("d-none");
@@ -1537,7 +1578,7 @@ $(document).on("change", ".pago-tipo", function(){
 
 
 
-$(document).on("click", ".quitar-pago", function(){
+$(document).on("click", ".quitar-pago", function () {
   $(this).closest(".pago-dinamico").remove();
   actualizarPagos();
 });
@@ -1561,7 +1602,7 @@ function prepararPagosParaGuardar() {
 
   // sumar pagos dinámicos según su tipo
   let sumaDinamicos = 0; // suma total de dinámicos (todos los tipos)
-  $(".pago-dinamico").each(function(){
+  $(".pago-dinamico").each(function () {
     let tipo = $(this).find(".pago-hidden").val();
     let monto = toNumber($(this).find(".pago-input").val());
     sumaDinamicos += monto;
@@ -1590,13 +1631,13 @@ function prepararPagosParaGuardar() {
   // 7) inyectar pagado[] y metodo_pago[] para el pago principal, SOLO si principalRegistrable > 0
   // (esto NO afecta los hidden de totales porque ya calculamos desde la UI)
   if (principalRegistrable > 0) {
-    $("<input>", {type:"hidden", name:"pagado[]", value: principalRegistrable.toFixed(2), "data-injected": "1"}).appendTo("#procesar-venta");
-    $("<input>", {type:"hidden", name:"metodo_pago[]", value: tipoPrincipal, "data-injected": "1"}).appendTo("#procesar-venta");
+    $("<input>", { type: "hidden", name: "pagado[]", value: principalRegistrable.toFixed(2), "data-injected": "1" }).appendTo("#procesar-venta");
+    $("<input>", { type: "hidden", name: "metodo_pago[]", value: tipoPrincipal, "data-injected": "1" }).appendTo("#procesar-venta");
 
     // placeholders para alinear índices si tu backend espera nroOperacion[], banco[], fechaDeposito[]
-    $("<input>", {type:"hidden", name:"nroOperacion[]", value: "", "data-injected": "1"}).appendTo("#procesar-venta");
-    $("<input>", {type:"hidden", name:"banco[]", value: "", "data-injected": "1"}).appendTo("#procesar-venta");
-    $("<input>", {type:"hidden", name:"fechaDeposito[]", value: "", "data-injected": "1"}).appendTo("#procesar-venta");
+    $("<input>", { type: "hidden", name: "nroOperacion[]", value: "", "data-injected": "1" }).appendTo("#procesar-venta");
+    $("<input>", { type: "hidden", name: "banco[]", value: "", "data-injected": "1" }).appendTo("#procesar-venta");
+    $("<input>", { type: "hidden", name: "fechaDeposito[]", value: "", "data-injected": "1" }).appendTo("#procesar-venta");
   }
 
   // Nota: No devolvemos nada — simplemente preparamos el formulario. El envío debe venir después.
@@ -1619,18 +1660,35 @@ $("#procesar-venta").submit(function (e) {
         listarCarrito();
         marcarImpuesto();
         agregarCards("Todos");
-        var newWindow = window.open("reportes/exTicket.php?id=" + data.idventa);
-        newWindow.onunload = function () {
-          // Resetear el formulario después de imprimir
-          $("#procesar-venta")[0].reset();
-          // 🔹 Limpiar métodos de pago dinámicos (no efectivo)
-          $(".pago-dinamico").remove();
-          actualizarPagos();
-          marcarImpuesto(); // Esto recargará el número y serie correctos según el comprobante seleccionado
-          window.close();
+
+        const url = "reportes/exTicket.php?id=" + encodeURIComponent(data.idventa);
+        const newWindow = window.open(url, "_blank");
+
+        if (!newWindow) {
+          alert("Tu navegador bloqueó la ventana emergente. Habilita popups para imprimir.");
+          return;
+        }
+
+        newWindow.onload = function () {
+          // imprimir cuando ya cargó el HTML
+          newWindow.focus();
+          newWindow.print();
+
+          // cuando termina de imprimir (o cancela)
+          newWindow.onafterprint = function () {
+            // cerrar solo el popup
+            newWindow.close();
+
+            // Resetear el formulario después de imprimir
+            $("#procesar-venta")[0].reset();
+            $(".pago-dinamico").remove();
+            actualizarPagos();
+            marcarImpuesto();
+            limpiar();
+          };
         };
-        limpiar();
       }
+
     },
     error: function (error) {
       console.log(error.responseText);
@@ -1672,24 +1730,38 @@ $("#guardar-sin-imprimir").click(function () {
     success: function (data) {
       var responseData = JSON.parse(data);
       if (responseData.status == 1) {
-        $modal.modal("hide");
+        $("#modal-default").modal("hide");
         listarCarrito();
         marcarImpuesto();
         agregarCards("Todos");
-        Swal.fire({
-          title: "Venta guardada",
-          icon: "success",
-          timer: 1500,
-          timerProgressBar: true,
-          showConfirmButton: false,
-        });
-        // Resetear el formulario después de guardar
-        $("#procesar-venta")[0].reset();
-        // 🔹 Limpiar métodos de pago dinámicos (no efectivo)
-      $(".pago-dinamico").remove();
-      actualizarPagos();
-        marcarImpuesto();
-      } else {
+        const url = "reportes/exTicket.php?id=" + encodeURIComponent(responseData.idventa.idventa);
+        const newWindow = window.open(url, "_blank");
+
+        if (!newWindow) {
+          alert("Tu navegador bloqueó la ventana emergente. Habilita popups para imprimir.");
+          return;
+        }
+
+        newWindow.onload = function () {
+          // imprimir cuando ya cargó el HTML
+          newWindow.focus();
+          newWindow.print();
+
+          // cuando termina de imprimir (o cancela)
+          newWindow.onafterprint = function () {
+            // cerrar solo el popup
+            newWindow.close();
+
+            // Resetear el formulario después de imprimir
+            $("#procesar-venta")[0].reset();
+            $(".pago-dinamico").remove();
+            actualizarPagos();
+            marcarImpuesto();
+            limpiar();
+          };
+        };
+      }
+      else {
         Swal.fire({
           title: "Error",
           text: responseData.message || "No se pudo guardar la venta",
@@ -1699,7 +1771,6 @@ $("#guardar-sin-imprimir").click(function () {
       }
     },
     error: function (error) {
-      console.log(error.responseText);
       Swal.fire({
         title: "Error",
         text: "Ocurrió un error al procesar la venta",
@@ -2017,10 +2088,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                      " " +
-                      dat.apellidoPaterno +
-                      " " +
-                      dat.apellidoMaterno
+                    " " +
+                    dat.apellidoPaterno +
+                    " " +
+                    dat.apellidoMaterno
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -2030,7 +2101,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         } else {
@@ -2054,7 +2125,6 @@ function BuscarCliente() {
               type: "GET",
               url: url,
               success: function (dat) {
-                console.log(dat);
                 if (dat.success == false) {
                   Swal.fire({
                     title: "Ruc Inválido",
@@ -2075,7 +2145,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         }
@@ -2166,7 +2236,7 @@ function limpiarmov() {
    Usa las funciones existentes: searchProductos(...) y seleccionarProducto(...)
    No modifica tu servidor ni funciones PHP.
 */
-(function(){
+(function () {
   var scannerRunning = false;
   var lastScanned = null;
   var scanCooldownMs = 400; // tiempo mínimo entre lecturas (no muy necesario si solo una lectura)
@@ -2197,10 +2267,10 @@ function limpiarmov() {
         target: document.querySelector('#interactive-scanner'),
         constraints: constraints
       },
-      decoder: { readers: ["ean_reader","ean_8_reader","code_128_reader","upc_reader","code_39_reader"] },
+      decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "upc_reader", "code_39_reader"] },
       locate: true,
-      numOfWorkers: navigator.hardwareConcurrency ? Math.max(2, Math.floor(navigator.hardwareConcurrency/2)) : 2,
-    }, function(err) {
+      numOfWorkers: navigator.hardwareConcurrency ? Math.max(2, Math.floor(navigator.hardwareConcurrency / 2)) : 2,
+    }, function (err) {
       if (err) { console.error(err); return; }
       Quagga.start();
       scannerRunning = true;
@@ -2213,20 +2283,20 @@ function limpiarmov() {
 
   function stopScanner() {
     if (!scannerRunning) return;
-    try { Quagga.offDetected(onDetected); Quagga.stop(); } catch(e){}
+    try { Quagga.offDetected(onDetected); Quagga.stop(); } catch (e) { }
     scannerRunning = false; lastScanned = null;
-    if(cooldownTimer){ clearTimeout(cooldownTimer); cooldownTimer=null; }
+    if (cooldownTimer) { clearTimeout(cooldownTimer); cooldownTimer = null; }
     clearOverlay();
   }
 
   function drawOverlay(result) {
     var canvas = document.getElementById('scannerOverlay');
     var video = document.querySelector('#interactive-scanner video');
-    if(!canvas || !video) return;
+    if (!canvas || !video) return;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     var ctx = canvas.getContext('2d');
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.strokeStyle = 'lime';
     ctx.lineWidth = 3;
@@ -2236,7 +2306,7 @@ function limpiarmov() {
 
   function clearOverlay() {
     var canvas = document.getElementById('scannerOverlay');
-    if(canvas) canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
   }
 
   function onDetected(result) {
@@ -2244,82 +2314,82 @@ function limpiarmov() {
     var code = result.codeResult.code;
 
     // Validar zona inferior
-    if(result.line){
-      var yAvg = (result.line[0].y + result.line[1].y)/2;
+    if (result.line) {
+      var yAvg = (result.line[0].y + result.line[1].y) / 2;
       var video = document.querySelector('#interactive-scanner video');
-      if(video && yAvg < video.videoHeight*(1-readZoneRatio)) return;
+      if (video && yAvg < video.videoHeight * (1 - readZoneRatio)) return;
     }
 
-    if(lastScanned===code) return;
+    if (lastScanned === code) return;
     lastScanned = code;
-    if(cooldownTimer) clearTimeout(cooldownTimer);
-    cooldownTimer=setTimeout(function(){ lastScanned=null; }, scanCooldownMs);
+    if (cooldownTimer) clearTimeout(cooldownTimer);
+    cooldownTimer = setTimeout(function () { lastScanned = null; }, scanCooldownMs);
 
     handleScannedCode(code);
   }
 
-  function handleScannedCode(code){
-    try { new Audio('files/audio/vip.mp3').play(); } catch(e){}
+  function handleScannedCode(code) {
+    try { new Audio('files/audio/vip.mp3').play(); } catch (e) { }
 
     // Buscar directamente el producto por código
     $.ajax({
-        url:"controladores/pos.php?op=searchProductos",
-        type:"GET",
-        data:{producto: code, type: 2}, // type=2 → búsqueda por código
-        success: function(data){
-            var d = JSON.parse(data||'[]');
-            
-            if(d.length === 0){
-                Swal.fire({
-                    title: "Producto no encontrado",
-                    icon: "error",
-                    timer: 1200,
-                    showConfirmButton: false
-                });
-                stopScanner();
-                $('#cameraScannerModal').fadeOut(150);
-                return;
-            }
+      url: "controladores/pos.php?op=searchProductos",
+      type: "GET",
+      data: { producto: code, type: 2 }, // type=2 → búsqueda por código
+      success: function (data) {
+        var d = JSON.parse(data || '[]');
 
-            // Si existe al menos un producto, agregamos el primero
-            seleccionarProducto(btoa(JSON.stringify(d[0])));
-
-            // Cerramos el scanner después de agregar
-            setTimeout(function(){
-                stopScanner();
-                $('#cameraScannerModal').fadeOut(150);
-            }, 300); // un pequeño delay para que se reproduzca el audio
-        },
-        error: function(){
-            Swal.fire({
-                title: "Error al buscar producto",
-                icon: "error",
-                timer: 1200,
-                showConfirmButton: false
-            });
-            stopScanner();
-            $('#cameraScannerModal').fadeOut(150);
+        if (d.length === 0) {
+          Swal.fire({
+            title: "Producto no encontrado",
+            icon: "error",
+            timer: 1200,
+            showConfirmButton: false
+          });
+          stopScanner();
+          $('#cameraScannerModal').fadeOut(150);
+          return;
         }
+
+        // Si existe al menos un producto, agregamos el primero
+        seleccionarProducto(btoa(JSON.stringify(d[0])));
+
+        // Cerramos el scanner después de agregar
+        setTimeout(function () {
+          stopScanner();
+          $('#cameraScannerModal').fadeOut(150);
+        }, 300); // un pequeño delay para que se reproduzca el audio
+      },
+      error: function () {
+        Swal.fire({
+          title: "Error al buscar producto",
+          icon: "error",
+          timer: 1200,
+          showConfirmButton: false
+        });
+        stopScanner();
+        $('#cameraScannerModal').fadeOut(150);
+      }
     });
-}
+  }
 
 
-  $(document).ready(function(){
-    $('#btn_camera_search').on('click',function(e){
+  $(document).ready(function () {
+    $('#btn_camera_search').on('click', function (e) {
       e.preventDefault();
-      $('#cameraScannerModal').css('display','flex').hide().fadeIn(120);
+      $('#cameraScannerModal').css('display', 'flex').hide().fadeIn(120);
       startScanner();
     });
-    $('#btn_stop_scanner').on('click',function(e){ 
-      e.preventDefault(); 
-      stopScanner(); 
-      $('#cameraScannerModal').fadeOut(120); 
+    $('#btn_stop_scanner').on('click', function (e) {
+      e.preventDefault();
+      stopScanner();
+      $('#cameraScannerModal').fadeOut(120);
     });
-    $('#cameraScannerModal').on('click',function(e){ 
-      if(e.target.id==='cameraScannerModal'){ 
-        stopScanner(); 
-        $('#cameraScannerModal').fadeOut(120); 
-      } 
+    $('#cameraScannerModal').on('click', function (e) {
+      if (e.target.id === 'cameraScannerModal') {
+        stopScanner();
+        $('#cameraScannerModal').fadeOut(120);
+      }
     });
   });
 

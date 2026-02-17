@@ -797,8 +797,16 @@ $sqlVenta = "INSERT INTO venta
     return ejecutarConsulta($sql);
 }
 
-    public function listarProductosActivosFIFO($idsucursal)
+    public function listarProductosActivosFIFO($idsucursal, $idcategoria = null)
 {
+    $idsucursal  = intval($idsucursal);
+    $idcategoria = isset($idcategoria) && $idcategoria !== '' ? intval($idcategoria) : 0;
+
+    // Filtro opcional
+    $whereCategoria = ($idcategoria > 0)
+        ? " AND c.idcategoria = $idcategoria "
+        : "";
+
     $sql = "SELECT
                 p.idproducto AS id_producto_real,
                 p.nombre,
@@ -817,58 +825,49 @@ $sqlVenta = "INSERT INTO venta
                 pg.precio_venta AS precio_contenedor_guardado,
                 pg.idfifo_origen,
 
-                /* =========================
-                   LOTE FIFO MÁS ANTIGUO CON STOCK
-                ========================== */
-                (SELECT idfifo 
-                 FROM stock_fifo 
+                (SELECT idfifo
+                 FROM stock_fifo
                  WHERE idproducto = p.idproducto
-                   AND idsucursal = '$idsucursal'
+                   AND idsucursal = $idsucursal
                    AND cantidad_restante > 0
                    AND estado = 1
                  ORDER BY fecha_ingreso ASC
                  LIMIT 1) AS id_fifo,
 
-                (SELECT precio_venta 
-                 FROM stock_fifo 
+                (SELECT precio_venta
+                 FROM stock_fifo
                  WHERE idproducto = p.idproducto
-                   AND idsucursal = '$idsucursal'
+                   AND idsucursal = $idsucursal
                    AND cantidad_restante > 0
                    AND estado = 1
                  ORDER BY fecha_ingreso ASC
                  LIMIT 1) AS precio_base_fifo,
 
-                (SELECT cantidad_restante 
-                 FROM stock_fifo 
+                (SELECT cantidad_restante
+                 FROM stock_fifo
                  WHERE idproducto = p.idproducto
-                   AND idsucursal = '$idsucursal'
+                   AND idsucursal = $idsucursal
                    AND cantidad_restante > 0
                    AND estado = 1
                  ORDER BY fecha_ingreso ASC
                  LIMIT 1) AS stock_lote_fifo,
 
-                (SELECT fecha_ingreso 
-                 FROM stock_fifo 
+                (SELECT fecha_ingreso
+                 FROM stock_fifo
                  WHERE idproducto = p.idproducto
-                   AND idsucursal = '$idsucursal'
+                   AND idsucursal = $idsucursal
                    AND cantidad_restante > 0
                    AND estado = 1
                  ORDER BY fecha_ingreso ASC
                  LIMIT 1) AS fecha_ingreso,
 
-                /* =========================
-                   PRECIO FINAL DEL CONTENEDOR
-                   - Si es UNIDAD: precio FIFO automático (se actualiza con cada lote)
-                   - Si NO es UNIDAD: precio MANUAL de producto_configuracion (fijo hasta que el usuario lo cambie)
-                ========================== */
-                CASE 
+                CASE
                     WHEN UPPER(TRIM(pg.contenedor)) = 'UNIDAD' THEN
-                        -- UNIDAD: Precio FIFO del lote más antiguo (automático)
                         COALESCE(
-                            (SELECT precio_venta 
-                             FROM stock_fifo 
+                            (SELECT precio_venta
+                             FROM stock_fifo
                              WHERE idproducto = p.idproducto
-                               AND idsucursal = '$idsucursal'
+                               AND idsucursal = $idsucursal
                                AND cantidad_restante > 0
                                AND estado = 1
                              ORDER BY fecha_ingreso ASC
@@ -876,31 +875,32 @@ $sqlVenta = "INSERT INTO venta
                             0
                         )
                     ELSE
-                        -- Otros contenedores: Precio MANUAL guardado (NO se actualiza con lotes)
                         COALESCE(NULLIF(pg.precio_venta, 0), 0)
                 END AS precio_venta_fifo
 
             FROM producto p
-            INNER JOIN producto_configuracion pg 
-                ON p.idproducto = pg.idproducto 
+            INNER JOIN producto_configuracion pg
+                ON p.idproducto = pg.idproducto
                 AND pg.deleted_at IS NULL
-            INNER JOIN categoria c 
+            INNER JOIN categoria c
                 ON p.idcategoria = c.idcategoria
-            INNER JOIN unidad_medida um 
+            INNER JOIN unidad_medida um
                 ON p.idunidad_medida = um.idunidad_medida
             WHERE p.condicion = 1
-              AND p.idsucursal = '$idsucursal'
+              AND p.idsucursal = $idsucursal
+              $whereCategoria
               AND c.nombre != 'SERVICIO'
             ORDER BY p.nombre ASC
             LIMIT 20";
 
     $productos = ejecutarConsulta($sql);
-    $data = array();
+    $data = [];
     while ($reg = $productos->fetch_object()) {
         $data[] = $reg;
     }
     return $data;
 }
+
 
 public function searchProductosFIFO($idsucursal, $search = null, $type = null)
 {

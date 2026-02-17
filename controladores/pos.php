@@ -236,8 +236,9 @@ switch ($_GET['op']) {
 
 
     case 'listarProductos':
-        $idsucursal = $_SESSION["idsucursal"];
-        $rpta = $pos->listarProductosActivosFIFO($idsucursal);
+        $idsucursal = intval($_GET["idsucursal"] ?? $_SESSION["idsucursal"] ?? 0);
+        $categoria  = isset($_GET["categoria"]) ? trim($_GET["categoria"]) : null;
+        $rpta = $pos->listarProductosActivosFIFO($idsucursal,  $categoria);
         echo json_encode($rpta);
         break;
 

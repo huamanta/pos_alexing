@@ -100,6 +100,34 @@ session_start();
     .select2-container--default .select2-selection--single .select2-selection__arrow {
       height: 36px;
     }
+
+    .loader-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 200px; /* ajusta según tu card */
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e0e0e0;
+    border-top: 4px solid #0d6efd; /* color azul bootstrap */
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.loader-text {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
   </style>
 
 </head>
