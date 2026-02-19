@@ -46,110 +46,128 @@ switch ($_GET["op"]) {
 	break;
 
 	case 'listar':
-	    $fecha_inicio = $_REQUEST["fecha_inicio"];
-	    $fecha_fin = $_REQUEST["fecha_fin"];
-	    $estado = $_REQUEST["estado"];
-	    $idsucursal = $_SESSION['idsucursal']; 
+		$fecha_inicio = $_REQUEST["fecha_inicio"];
+		$fecha_fin = $_REQUEST["fecha_fin"];
+		$estado = $_REQUEST["estado"];
+		$idsucursal = $_SESSION['idsucursal'];
 
-	    $rspta = $traslado->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal);
-	    $data = array();
+		// ✅ admin si idusuario == 1
+		$esAdmin = isset($_SESSION['idusuario']) && intval($_SESSION['idusuario']) === 1;
 
-	    while ($reg = $rspta->fetch_object()) {
+		$rspta = $traslado->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal);
+		$data = array();
 
-		    $acciones = '';
-		    $btnVer = '';
-		    $btnImprimir = '';
+		while ($reg = $rspta->fetch_object()) {
 
-		    //  Icono y color según tipo
-		    if ($reg->tipo == 'solicitud') {
-		        $tipoIcon = '<i class="fa fa-file-text"></i> Solicitud';
-		        $rowClass = 'table-primary'; // fondo azul claro para solicitudes
-		    } else {
-		        $tipoIcon = '<i class="fa fa-exchange-alt"></i> Traslado';
-		        $rowClass = 'table-success'; // fondo verde claro para traslados
-		    }
+			$acciones = '';
+			$btnVer = '';
+			$btnImprimir = '';
 
-		    //  Botón imprimir según tipo
-		    if ($reg->tipo == 'solicitud') {
-		        $btnImprimir = '<button class="btn btn-primary btn-sm" title="Imprimir solicitud" onclick="imprimirSolicitud(' . $reg->idtraslado . ')"><i class="fa fa-print"></i></button> ';
-		    } else {
-		        $btnImprimir = '<button class="btn btn-success btn-sm" title="Imprimir traslado" onclick="imprimirTraslado(' . $reg->idtraslado . ')"><i class="fa fa-print"></i></button> ';
-		    }
+			// Icono y color según tipo
+			if ($reg->tipo == 'solicitud') {
+				$tipoIcon = '<i class="fa fa-file-text"></i> Solicitud';
+				$rowClass = 'table-primary';
+			} else {
+				$tipoIcon = '<i class="fa fa-exchange-alt"></i> Traslado';
+				$rowClass = 'table-success';
+			}
 
-		    //  Acciones según tipo y sucursal
-		    if ($reg->tipo == 'solicitud') {
+			// Botón imprimir según tipo
+			if ($reg->tipo == 'solicitud') {
+				$btnImprimir = '<button class="btn btn-primary btn-sm" title="Imprimir solicitud" onclick="imprimirSolicitud(' . $reg->idtraslado . ')"><i class="fa fa-print"></i></button> ';
+			} else {
+				$btnImprimir = '<button class="btn btn-success btn-sm" title="Imprimir traslado" onclick="imprimirTraslado(' . $reg->idtraslado . ')"><i class="fa fa-print"></i></button> ';
+			}
 
-		        if ($reg->idorigen == $idsucursal) {
-		            // Sucursal solicitante
-		            $btnVer = '<button class="btn btn-info btn-sm" title="Ver mi solicitud" onclick="verProductosSolicitud(' . $reg->idtraslado . ', true)"><i class="fa fa-eye"></i></button> ';
+			// Acciones según tipo y sucursal
+			if ($reg->tipo == 'solicitud') {
 
-		            $btnImprimir = ($reg->estado == 'Aceptado') 
-		                ? '<button class="btn btn-primary btn-sm" title="Imprimir solicitud" onclick="imprimirSolicitud(' . $reg->idtraslado . ')"><i class="fa fa-print"></i></button> ' 
-		                : '';
+				if ($reg->idorigen == $idsucursal) {
+					// Sucursal solicitante
+					$soloLectura = !$esAdmin ? 'true' : 'false';
+					$btnVer = '<button class="btn btn-info btn-sm" title="Ver mi solicitud" onclick="verProductosSolicitud(' . $reg->idtraslado . ', '.$soloLectura.')"><i class="fa fa-eye"></i></button> ';
 
-		            $acciones = $btnVer . $btnImprimir;
+					$btnImprimir = ($reg->estado == 'Aceptado')
+						? '<button class="btn btn-primary btn-sm" title="Imprimir solicitud" onclick="imprimirSolicitud(' . $reg->idtraslado . ')"><i class="fa fa-print"></i></button> '
+						: '';
 
-		        } else {
-		            // Sucursal principal
-		            $soloLectura = ($reg->estado != 'Pendiente') ? 'true' : 'false';
-		            $btnVer = '<button class="btn btn-info btn-sm" title="Ver solicitud" onclick="verProductosSolicitud(' . $reg->idtraslado . ', ' . $soloLectura . ')"><i class="fa fa-eye"></i></button> ';
-		            $btnImprimir = '<button class="btn btn-primary btn-sm" title="Imprimir solicitud" onclick="imprimirSolicitud(' . $reg->idtraslado . ')"><i class="fa fa-print"></i></button> ';
+					$acciones = $btnVer . $btnImprimir;
 
-		            $acciones = $btnVer . $btnImprimir;
+				} else {
+					// Sucursal principal (o cualquier otra viendo)
+					$soloLectura = ($reg->estado != 'Pendiente') ? 'true' : 'false';
+					$btnVer = '<button class="btn btn-info btn-sm" title="Ver solicitud" onclick="verProductosSolicitud(' . $reg->idtraslado . ', ' . $soloLectura . ')"><i class="fa fa-eye"></i></button> ';
+					$btnImprimir = '<button class="btn btn-primary btn-sm" title="Imprimir solicitud" onclick="imprimirSolicitud(' . $reg->idtraslado . ')"><i class="fa fa-print"></i></button> ';
 
-		            if ($reg->estado != 'Anulado') {
-		                $acciones .= '<button class="btn btn-danger btn-sm" title="Anular solicitud" onclick="desactivar(' . $reg->idtraslado . ')"><i class="fa fa-times"></i></button> ';
-		            }
-		        }
-		    } 
-		    else {
-		        // Tipo traslado
-		        $btnVer = '<button class="btn btn-info btn-sm" title="Ver traslado" onclick="verProductos(' . $reg->idtraslado . ')"><i class="fa fa-eye"></i></button> ';
-		        $acciones = $btnVer . $btnImprimir;
+					$acciones = $btnVer . $btnImprimir;
 
-		        if ($reg->idorigen == $idsucursal) {
-		            // Sucursal origen (envía)
-		            if ($reg->estado == 'Pendiente') {
-		                $acciones .= '<button class="btn btn-danger btn-sm" title="Anular traslado" onclick="desactivar(' . $reg->idtraslado . ')"><i class="fa fa-times"></i></button> ';
-		            }
-		        } else {
-		            // Sucursal destino (recibe)
-		            if ($reg->estado == 'Pendiente') {
-		                $acciones .= '<button class="btn btn-success btn-sm" title="Aceptar traslado" onclick="aceptarTraslado(' . $reg->idtraslado . ')"><i class="fa fa-check"></i></button> ';
-		            }
-		        }
-		    }
+					if ($reg->estado != 'Anulado') {
+						$acciones .= '<button class="btn btn-danger btn-sm" title="Anular solicitud" onclick="desactivar(' . $reg->idtraslado . ')"><i class="fa fa-times"></i></button> ';
+					}
+				}
+			}
+			else {
+				// Tipo traslado
+				$btnVer = '<button class="btn btn-info btn-sm" title="Ver traslado" onclick="verProductos(' . $reg->idtraslado . ')"><i class="fa fa-eye"></i></button> ';
+				$acciones = $btnVer . $btnImprimir;
 
-		    // Reactivar si está anulado
-		    if ($reg->estado == 'Anulado') {
-		        $acciones .= '<button class="btn btn-success btn-sm" title="Reactivar traslado" onclick="activar(' . $reg->idtraslado . ')"><i class="fa fa-check"></i></button>';
-		    }
+				if ($reg->idorigen == $idsucursal) {
+					// Sucursal origen (envía)
+					if ($reg->estado == 'Pendiente') {
+						$acciones .= '<button class="btn btn-danger btn-sm" title="Anular traslado" onclick="desactivar(' . $reg->idtraslado . ')"><i class="fa fa-times"></i></button> ';
 
-		    // Badge con tooltip
-		    $estadoBadge = '<span class="badge bg-' . 
-		                   ($reg->estado == 'Aceptado' ? 'success' : 
-		                   ($reg->estado == 'Pendiente' ? 'warning' : 'danger')) . '" 
-		                   title="Estado: ' . $reg->estado . '">' . 
-		                   $reg->estado . '</span>';
+						// ✅ Admin puede aceptar incluso si está en origen (si quieres que aparezca acá también)
+						if ($esAdmin) {
+							$acciones .= '<button class="btn btn-success btn-sm" title="Aceptar traslado (ADMIN)" onclick="aceptarTraslado(' . $reg->idtraslado . ')"><i class="fa fa-check"></i></button> ';
+						}
+					}
+				} else {
+					// Sucursal destino (recibe) o cualquier otra sucursal mirando
+					if ($reg->estado == 'Pendiente') {
 
-		    $data[] = array(
-		        "DT_RowClass" => $rowClass, // aplica color de fondo a la fila
-		        "0" => $reg->idtraslado,
-		        "1" => $reg->origen,
-		        "2" => $reg->destino,
-		        "3" => $reg->fecha,
-		        "4" => $estadoBadge,
-		        "5" => $tipoIcon,
-		        "6" => $acciones
-		    );
+						// ✅ Normal: solo destino puede aceptar
+						// ✅ Admin: puede aceptar desde cualquier sucursal
+						// Requiere que tu query traiga $reg->iddestino
+						$esDestino = isset($reg->iddestino) && intval($reg->iddestino) === intval($idsucursal);
+
+						if ($esAdmin || $esDestino) {
+							$acciones .= '<button class="btn btn-success btn-sm" title="Aceptar traslado" onclick="aceptarTraslado(' . $reg->idtraslado . ')"><i class="fa fa-check"></i></button> ';
+						}
+					}
+				}
+			}
+
+			// Reactivar si está anulado
+			if ($reg->estado == 'Anulado') {
+				$acciones .= '<button class="btn btn-success btn-sm" title="Reactivar traslado" onclick="activar(' . $reg->idtraslado . ')"><i class="fa fa-check"></i></button>';
+			}
+
+			// Badge con tooltip
+			$estadoBadge = '<span class="badge bg-' .
+				($reg->estado == 'Aceptado' ? 'success' :
+				($reg->estado == 'Pendiente' ? 'warning' : 'danger')) .
+				'" title="Estado: ' . $reg->estado . '">' . $reg->estado . '</span>';
+
+			$data[] = array(
+				"DT_RowClass" => $rowClass,
+				"0" => $reg->idtraslado,
+				"1" => $reg->origen,
+				"2" => $reg->destino,
+				"3" => $reg->fecha,
+				"4" => $estadoBadge,
+				"5" => $tipoIcon,
+				"6" => $acciones
+			);
 		}
-	    echo json_encode([
-	        "sEcho" => 1,
-	        "iTotalRecords" => count($data),
-	        "iTotalDisplayRecords" => count($data),
-	        "aaData" => $data
-	    ]);
+
+		echo json_encode([
+			"sEcho" => 1,
+			"iTotalRecords" => count($data),
+			"iTotalDisplayRecords" => count($data),
+			"aaData" => $data
+		]);
 	break;
+
 
 	case 'verdetalle':
 	    $idtraslado = $_GET['idtraslado'];
@@ -203,35 +221,35 @@ switch ($_GET["op"]) {
 
 
     case 'guardarSolicitud':
-    $idorigen = $_SESSION['idsucursal'];
-    $iddestino = $_POST['iddestino_solicitud'];
-    $productos = $_POST['productos'];
-    $idusuario = $_SESSION['idusuario'];
-    $fecha = date("Y-m-d H:i:s");
+		$idorigen = $_SESSION['idsucursal'];
+		$iddestino = $_POST['iddestino_solicitud'];
+		$productos = $_POST['productos'];
+		$idusuario = $_SESSION['idusuario'];
+		$fecha = date("Y-m-d H:i:s");
 
-    // Insertar cabecera de solicitud con estado 0 (pendiente)
-    $idtraslado = ejecutarConsulta_retornarID("INSERT INTO traslado (idorigen, iddestino, fecha, estado, idusuario, tipo) 
-                                              VALUES ('$idorigen','$iddestino','$fecha','0','$idusuario', 'solicitud')");
+		// Insertar cabecera de solicitud con estado 0 (pendiente)
+		$idtraslado = ejecutarConsulta_retornarID("INSERT INTO traslado (idorigen, iddestino, fecha, estado, idusuario, tipo) 
+												VALUES ('$idorigen','$iddestino','$fecha','0','$idusuario', 'solicitud')");
 
-    if(!$idtraslado){
-        echo "Error al crear la solicitud";
-        exit;
-    }
+		if(!$idtraslado){
+			echo "Error al crear la solicitud";
+			exit;
+		}
 
-    $productos = json_decode($productos, true);
-    foreach($productos as $p){
-        $idproducto = intval($p['idproducto']);
-        $cantidad = floatval($p['cantidad']);
-        ejecutarConsulta("INSERT INTO traslado_detalle (idtraslado, idproducto, cantidad) 
-                          VALUES ('$idtraslado','$idproducto','$cantidad')");
-    }
+		$productos = json_decode($productos, true);
+		foreach($productos as $p){
+			$idproducto = intval($p['idproducto']);
+			$cantidad = floatval($p['cantidad']);
+			ejecutarConsulta("INSERT INTO traslado_detalle (idtraslado, idproducto, cantidad) 
+							VALUES ('$idtraslado','$idproducto','$cantidad')");
+		}
 
-    // Crear notificación para almacén destino
-    $mensaje = "Nueva solicitud pendiente desde el almacén {$_SESSION['idsucursal']} con ID $idtraslado";
-    ejecutarConsulta("INSERT INTO notificaciones (idsucursal, idtraslado, mensaje) VALUES ('$iddestino', '$idtraslado', '$mensaje')");
+		// Crear notificación para almacén destino
+		$mensaje = "Nueva solicitud pendiente desde el almacén {$_SESSION['idsucursal']} con ID $idtraslado";
+		ejecutarConsulta("INSERT INTO notificaciones (idsucursal, idtraslado, mensaje) VALUES ('$iddestino', '$idtraslado', '$mensaje')");
 
-    echo " Solicitud enviada correctamente";
-break;
+		echo " Solicitud enviada correctamente";
+	break;
 
 	case 'aprobarSolicitud':
 	    $idtraslado = $_POST["idtraslado"];
