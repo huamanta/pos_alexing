@@ -449,11 +449,13 @@ async function mostrar(idcpc) {
         function(data) {
 
             data = JSON.parse(data);
+            console.log(data);
+            
 
             $('#documento').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
-            $("#deutaTotal").text(data.deudatotal);
+            $("#deutaTotal").text(data.deuda);
             $("#valorVenta").text(data.total_venta);
-            $("#valorInteres").text(data.interes);
+            $("#valorInteres").text(data.total_venta * (data.interes/100));
             $("#montoAdeudado").val(data.deudatotal);
             $("#idcpc").val(data.idcpc);
             

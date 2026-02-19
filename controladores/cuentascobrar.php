@@ -108,11 +108,11 @@ $op = $_GET["op"] ?? '';
 		            "1"  => $reg->tipo_comprobante . '-' . $reg->serie_comprobante . '-' . $reg->num_comprobante,
 		            "2"  => $reg->nombre,
 		            "3"  => $reg->num_documento,
-		            "4"  => number_format($deudaTotalConMora, 2, ".", ","), // deuda + mora
+		            "4"  => number_format($saldo, 2, ".", ","),              // saldo restante
 		            "5"  => number_format($reg->abonototal, 2, ".", ","),   // abonos
-		            "6"  => number_format($saldo, 2, ".", ","),              // saldo restante
+		            "6"  => number_format($deudaTotalConMora, 2, ".", ","), // deuda + mora
 		            "7"  => $reg->fechavencimiento,
-		            "8"  => ($deudaTotalConMora <= 0)
+		            "8"  => ($reg->deudatotal == 0)
 		                        ? '<center><span class="badge bg-green">Cancelado</span></center>'
 		                        : '<center><span class="badge bg-red">Por Cancelar</span></center>',
 		            "9"  => '<center><a target="_blank" href="' . $url1 . $reg->idventa . '" data-toggle="tooltip" title="Ticket"> <button class="btn btn-primary btn-xs"><i class="far fa-file-alt"></i></button></a></center>',

@@ -532,9 +532,9 @@ class Venta
             $fv = mysqli_real_escape_string($conexion, (string)$fecha_pago[$cuotas]);
 
             $sql_cpc = "INSERT INTO cuentas_por_cobrar (
-                idventa, fecharegistro, deudatotal, fechavencimiento, abonototal, deuda, interes
+                idventa, fecharegistro, deudatotal, deuda_base, fechavencimiento, abonototal, deuda, interes
             ) VALUES (
-                '$idventanew', '$fecha_hora', '$monto_cuota', '$fv', 0, '$monto_cuota', 0
+                '$idventanew', '$fecha_hora', '$monto_cuota', '$monto_cuota', '$fv', 0, '$monto_cuota', 0
             )";
 
             if (!ejecutarConsulta($sql_cpc)) {
