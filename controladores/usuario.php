@@ -270,102 +270,102 @@ switch ($_GET["op"]){
 
 	
 	case 'verificar':
-    $logina = $_POST['logina'];
-    $clavea = $_POST['clavea'];
+		$logina = $_POST['logina'];
+		$clavea = $_POST['clavea'];
 
-    // Hash SHA256 en la contraseña
-    $clavehash = hash("SHA256", $clavea);
+		// Hash SHA256 en la contraseña
+		$clavehash = hash("SHA256", $clavea);
 
-    $rspta = $usuario->verificar($logina, $clavehash);
-    $fetch = $rspta->fetch_object();
+		$rspta = $usuario->verificar($logina, $clavehash);
+		$fetch = $rspta->fetch_object();
 
-    // Datos de IP y user agent
-    $ip = getClientIP();
+		// Datos de IP y user agent
+		$ip = getClientIP();
 
-    $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Desconocido';
+		$user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Desconocido';
 
-    if (isset($fetch)) {
-        // Login exitoso
-        $_SESSION['idusuario'] = $fetch->idusuario;
-        $_SESSION['idpersonal'] = $fetch->idpersonal;
-        $_SESSION['imagen'] = $fetch->imagen;
-        $_SESSION['nombre'] = $fetch->nombre;
-        $_SESSION['login'] = $fetch->login;
-        $_SESSION['cargo'] = $fetch->cargo;
-        $_SESSION["iniciarSesion"] = "ok";
+		if (isset($fetch)) {
+			// Login exitoso
+			$_SESSION['idusuario'] = $fetch->idusuario;
+			$_SESSION['idpersonal'] = $fetch->idpersonal;
+			$_SESSION['imagen'] = $fetch->imagen;
+			$_SESSION['nombre'] = $fetch->nombre;
+			$_SESSION['login'] = $fetch->login;
+			$_SESSION['cargo'] = $fetch->cargo;
+			$_SESSION["iniciarSesion"] = "ok";
 
-        require_once "../modelos/Negocio.php"; 
-            $negocioModel = new Negocio();
-            $datosNegocio = $negocioModel->mostrarNombreNegocio();
-            
-            // Verificamos si trajo datos y si existe la columna 'nombre'
-            // Nota: ejecutarConsultaSimpleFila suele devolver un Array asociativo
-            if ($datosNegocio && !empty($datosNegocio['nombre'])) {
-                $_SESSION['nombre_negocio'] = $datosNegocio['nombre'];
-            } else {
-                // Fallback por si la tabla datos_negocio está vacía
-                $_SESSION['nombre_negocio'] = 'Mi Empresa'; 
-            }
-        // Registrar historial de login exitoso
-        $usuario->registrarHistorial($fetch->idusuario, $ip, $user_agent, 1);
+			require_once "../modelos/Negocio.php"; 
+				$negocioModel = new Negocio();
+				$datosNegocio = $negocioModel->mostrarNombreNegocio();
+				
+				// Verificamos si trajo datos y si existe la columna 'nombre'
+				// Nota: ejecutarConsultaSimpleFila suele devolver un Array asociativo
+				if ($datosNegocio && !empty($datosNegocio['nombre'])) {
+					$_SESSION['nombre_negocio'] = $datosNegocio['nombre'];
+				} else {
+					// Fallback por si la tabla datos_negocio está vacía
+					$_SESSION['nombre_negocio'] = 'Mi Empresa'; 
+				}
+			// Registrar historial de login exitoso
+			$usuario->registrarHistorial($fetch->idusuario, $ip, $user_agent, 1);
 
-        // ======================================
-        // Obtener sucursales asignadas
-        // ======================================
-        $sql_suc = "SELECT idsucursal FROM usuario_sucursal WHERE idusuario='{$fetch->idusuario}'";
-        $rs_suc = ejecutarConsulta($sql_suc);
-        $_SESSION['sucursales'] = array();
-        while ($row = $rs_suc->fetch_object()) {
-            $_SESSION['sucursales'][] = $row->idsucursal;
-        }
-        $_SESSION['idsucursal'] = $_SESSION['sucursales'][0] ?? null;
+			// ======================================
+			// Obtener sucursales asignadas
+			// ======================================
+			$sql_suc = "SELECT idsucursal FROM usuario_sucursal WHERE idusuario='{$fetch->idusuario}'";
+			$rs_suc = ejecutarConsulta($sql_suc);
+			$_SESSION['sucursales'] = array();
+			while ($row = $rs_suc->fetch_object()) {
+				$_SESSION['sucursales'][] = $row->idsucursal;
+			}
+			$_SESSION['idsucursal'] = $_SESSION['sucursales'][0] ?? null;
 
-        // Obtener permisos, subpermisos y acciones
-        $marcados = $usuario->listarmarcados($fetch->idusuario);
-        $valores = array();
-        while ($per = $marcados->fetch_object()) {
-            array_push($valores, $per->idpermiso);
-        }
-        // Accesos del usuario
-        in_array(1, $valores) ? $_SESSION['inicio'] = 1 : $_SESSION['inicio'] = 0;
-        in_array(2, $valores) ? $_SESSION['almacen'] = 1 : $_SESSION['almacen'] = 0;
-        in_array(3, $valores) ? $_SESSION['compras'] = 1 : $_SESSION['compras'] = 0;
-        in_array(4, $valores) ? $_SESSION['ventas'] = 1 : $_SESSION['ventas'] = 0;
-        in_array(5, $valores) ? $_SESSION['personal'] = 1 : $_SESSION['personal'] = 0;
-        in_array(6, $valores) ? $_SESSION['consultac'] = 1 : $_SESSION['consultac'] = 0;
-        in_array(7, $valores) ? $_SESSION['consultav'] = 1 : $_SESSION['consultav'] = 0;
-        in_array(8, $valores) ? $_SESSION['configuracion'] = 1 : $_SESSION['configuracion'] = 0;
-        in_array(9, $valores) ? $_SESSION['cajachica'] = 1 : $_SESSION['cajachica'] = 0;
-        in_array(10, $valores) ? $_SESSION['cuentascobrar'] = 1 : $_SESSION['cuentascobrar'] = 0;
-        in_array(11, $valores) ? $_SESSION['kardex'] = 1 : $_SESSION['kardex'] = 0;
-        in_array(12, $valores) ? $_SESSION['pos'] = 1 : $_SESSION['pos'] = 0;
-        in_array(13, $valores) ? $_SESSION['cuentasxpagar'] = 1 : $_SESSION['cuentasxpagar'] = 0;
-        in_array(14, $valores) ? $_SESSION['crearventa'] = 1 : $_SESSION['crearventa'] = 0;
-        in_array(15, $valores) ? $_SESSION['inventario'] = 1 : $_SESSION['inventario'] = 0;
-        in_array(16, $valores) ? $_SESSION['crearservicio'] = 1 : $_SESSION['crearservicio'] = 0;
-        in_array(17, $valores) ? $_SESSION['procesar'] = 1 : $_SESSION['procesar'] = 0;
+			// Obtener permisos, subpermisos y acciones
+			$marcados = $usuario->listarmarcados($fetch->idusuario);
+			$valores = array();
+			while ($per = $marcados->fetch_object()) {
+				array_push($valores, $per->idpermiso);
+			}
+			// Accesos del usuario
+			in_array(1, $valores) ? $_SESSION['inicio'] = 1 : $_SESSION['inicio'] = 0;
+			in_array(2, $valores) ? $_SESSION['almacen'] = 1 : $_SESSION['almacen'] = 0;
+			in_array(3, $valores) ? $_SESSION['compras'] = 1 : $_SESSION['compras'] = 0;
+			in_array(4, $valores) ? $_SESSION['ventas'] = 1 : $_SESSION['ventas'] = 0;
+			in_array(5, $valores) ? $_SESSION['personal'] = 1 : $_SESSION['personal'] = 0;
+			in_array(6, $valores) ? $_SESSION['consultac'] = 1 : $_SESSION['consultac'] = 0;
+			in_array(7, $valores) ? $_SESSION['consultav'] = 1 : $_SESSION['consultav'] = 0;
+			in_array(8, $valores) ? $_SESSION['configuracion'] = 1 : $_SESSION['configuracion'] = 0;
+			in_array(9, $valores) ? $_SESSION['cajachica'] = 1 : $_SESSION['cajachica'] = 0;
+			in_array(10, $valores) ? $_SESSION['cuentascobrar'] = 1 : $_SESSION['cuentascobrar'] = 0;
+			in_array(11, $valores) ? $_SESSION['kardex'] = 1 : $_SESSION['kardex'] = 0;
+			in_array(12, $valores) ? $_SESSION['pos'] = 1 : $_SESSION['pos'] = 0;
+			in_array(13, $valores) ? $_SESSION['cuentasxpagar'] = 1 : $_SESSION['cuentasxpagar'] = 0;
+			in_array(14, $valores) ? $_SESSION['crearventa'] = 1 : $_SESSION['crearventa'] = 0;
+			in_array(15, $valores) ? $_SESSION['inventario'] = 1 : $_SESSION['inventario'] = 0;
+			in_array(16, $valores) ? $_SESSION['crearservicio'] = 1 : $_SESSION['crearservicio'] = 0;
+			in_array(17, $valores) ? $_SESSION['procesar'] = 1 : $_SESSION['procesar'] = 0;
 
-        // Subpermisos
-        $subpermisos = $usuario->listarsubpermisos($fetch->idusuario);
-        $_SESSION['subpermisos'] = array();
-        while ($sub = $subpermisos->fetch_object()) {
-            $_SESSION['subpermisos'][$sub->idpermiso][] = $sub->nombre;
-        }
+			// Subpermisos
+			$subpermisos = $usuario->listarsubpermisos($fetch->idusuario);
+			$_SESSION['subpermisos'] = array();
+			while ($sub = $subpermisos->fetch_object()) {
+				$_SESSION['subpermisos'][$sub->idpermiso][] = $sub->nombre;
+			}
 
-        // Acciones
-        $acciones = $usuario->listaracciones($fetch->idusuario);
-        $_SESSION['acciones'] = array();
-        while ($act = $acciones->fetch_object()) {
-            $_SESSION['acciones'][$act->modulo][$act->submodulo][$act->accion] = true;
-        }
+			// Acciones
+			$acciones = $usuario->listaracciones($fetch->idusuario);
+			$_SESSION['acciones'] = array();
+			while ($act = $acciones->fetch_object()) {
+				$_SESSION['acciones'][$act->modulo][$act->submodulo][$act->accion] = true;
+			}
 
-    } else {
-        // Login fallido
-        $usuario->registrarHistorial(0, $ip, $user_agent, 0);
-    }
+		} else {
+			// Login fallido
+			$usuario->registrarHistorial(0, $ip, $user_agent, 0);
+		}
 
-    echo json_encode($fetch);
-break;
+		echo json_encode($fetch);
+	break;
 
 
 
