@@ -580,11 +580,7 @@ function tienePermiso($modulo, $accion, $submodulo = null) {
                                                         </div>
                                                       </div>
                                                     </div>
-
-
-                                                    <hr>
-
-                                                    <div class="col-md-12" style="margin-top: -57px;">
+                                                    <div class="col-md-12">
                                                         
                                                         <input type="hidden" name="idcaja" id="idcaja" style="right: -15px;">
                                                         <table id="detalles" class="table table-striped table-responsive-sm">
@@ -592,10 +588,10 @@ function tienePermiso($modulo, $accion, $submodulo = null) {
                                                                 <th style="width: 500px;">Producto</th>
                                                                 <th>UM</th>
                                                                 <th>Precio</th>
+                                                                <th>Blz</th>
                                                                 <th>Cantidad</th>
                                                                 <th>Descuento</th>
                                                                 <th style="width: 30px;">Subtotal</th>
-                                                                <th style="width: 50px;">Eliminar</th>
                                                             </thead>
                                                             <tfoot>
                                                             </tfoot>
@@ -638,9 +634,7 @@ function tienePermiso($modulo, $accion, $submodulo = null) {
 
                                                     <!-- MÉTODO DE PAGO -->
                                                     <!--//***************************************************************************//-->
-                                                    <div class="card shadow">
-
-                                                        <div class="card-header" hidden>
+                                                    <div class="card-header" hidden>
                                                             <button type="button" class="btn btn-block bg-gradient-success btn-sm shadow" title="Completa los datos de tu pedido">Opciones de Venta</button>
                                                         </div>
                                                         <div class="card-body p-2" id="datosgenerales2" style="margin-top: -60px;">
@@ -824,12 +818,15 @@ function tienePermiso($modulo, $accion, $submodulo = null) {
                                                                             <th>Monto a pagar</th>
                                                                         </tr>
                                                                     </thead>
-                                                                    <tbody id="datafechas"></tbody>
+                                                                    <tbody id="datafechas">
+                                                                        <tr>
+                                                                            <td colspan="2" class="text-center">No se han calculado las fechas de pago</td>
+                                                                        </tr>
+                                                                    </tbody>
                                                                 </table>
                                                             </div>
                                                             <div id="fechasHiddenContainer" style="display:none;"></div>
                                                         </div>
-                                                    </div>
                                                     <!--//***************************************************************************//-->
                                                 </div>
 

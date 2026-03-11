@@ -138,10 +138,11 @@ function tienePermiso($modulo, $accion, $submodulo = null) {
                     </div>
                   </div>
                 </div>
-                <div class="card-body" style="margin-top: -45px;">
+                <div class="card-body">
                   <div class="table-responsive table-scroll-limit">
                     <table id="agregarcarrito" class="table table-striped table-responsive-sm">
                       <thead style="width: 100%;">
+                        <th></th>
                         <th width="300px">Producto</th>
                         <th>Precio</th>
                         <th>Cantidad</th>
@@ -163,6 +164,26 @@ function tienePermiso($modulo, $accion, $submodulo = null) {
                     </div>
                     <div class="col-sm-4">
                       <span style=" text-align: right; display: block;" id="subtotal-venta">0.00</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-12">
+                  <div class="row">
+                    <div class="col-sm-8">
+                      <label>IGV:</label>
+                    </div>
+                    <div class="col-sm-4">
+                      <span style=" text-align: right; display: block;" id="igv_venta">0.00</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-sm-12">
+                  <div class="row">
+                    <div class="col-sm-8">
+                      <label>Total:</label>
+                    </div>
+                    <div class="col-sm-4">
+                      <span style=" text-align: right; display: block;" id="total_venta">0.00</span>
                     </div>
                   </div>
                 </div>

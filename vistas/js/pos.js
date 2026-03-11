@@ -23,7 +23,7 @@ function loadSesionsApp(params) {
       console.error(
         "Error en la verificación de sesión:",
         textStatus,
-        errorThrown
+        errorThrown,
       );
     },
   });
@@ -41,17 +41,15 @@ function sessionExpired() {
     icon: "warning",
     confirmButtonText: "OK",
     allowOutsideClick: false,
-    allowEscapeKey: false
+    allowEscapeKey: false,
   }).then(() => {
-
     $.ajax({
       url: "controladores/auth.php",
       type: "POST",
       complete: function () {
         window.location.href = "ingreso";
-      }
+      },
     });
-
   });
 }
 
@@ -117,7 +115,6 @@ function documentosSucursal() {
   marcarImpuesto();
 }
 
-
 window.addEventListener(
   "keypress",
   function (event) {
@@ -125,7 +122,7 @@ window.addEventListener(
       event.preventDefault();
     }
   },
-  false
+  false,
 );
 
 function verReportes() {
@@ -212,11 +209,11 @@ function verificarCaja() {
 $("<style>")
   .text(
     ".nav-link i { " +
-    "   transition: transform 0.3s ease; " +
-    "} " +
-    ".nav-link:hover i { " +
-    "   transform: scale(1.2); " +
-    "}"
+      "   transition: transform 0.3s ease; " +
+      "} " +
+      ".nav-link:hover i { " +
+      "   transform: scale(1.2); " +
+      "}",
   )
   .appendTo("head");
 
@@ -305,21 +302,21 @@ function cerrarCaja() {
           Swal.fire({
             title: "Cierre de caja",
             html: `<b>Efectivo apertura:</b> S/. ${parseFloat(
-              resumen.efectivo_apertura
+              resumen.efectivo_apertura,
             ).toFixed(2)}<br>
               ${ventasHtml}
               <b>Resumen de ingresos y egresos:</b><br>${movimientosHtml}
               <b>Efectivo final esperado (para cierre):</b> <span style="color: red; font-size:20px; font-weight:bold">S/. ${parseFloat(
-              resumen.total_efectivo
-            ).toFixed(2)}</span>
+                resumen.total_efectivo,
+              ).toFixed(2)}</span>
               <hr>
               <label>Verifique la cantidad del sistema con la de su caja física</label>`,
             input: "number",
-            input: 'number',
+            input: "number",
             inputAttributes: {
               autocapitalize: "off",
               required: true,
-              step: "0.01"   // o "0.001" si quieres 3 decimales
+              step: "0.01", // o "0.001" si quieres 3 decimales
             },
             inputValue: parseFloat(resumen.total_efectivo).toFixed(2),
             showCancelButton: true,
@@ -335,7 +332,7 @@ function cerrarCaja() {
                 const response = await fetch(url);
                 if (!response.status) {
                   return Swal.showValidationMessage(
-                    `${JSON.stringify(await response.json())}`
+                    `${JSON.stringify(await response.json())}`,
                   );
                 }
                 return response.json();
@@ -368,7 +365,6 @@ function cerrarCaja() {
     }
   });
 }
-
 
 function verificarCarrito(callback) {
   $.ajax({
@@ -460,10 +456,11 @@ function listar() {
 function listarClientes() {
   $("#tipo_comprobante").on("change", function () {
     var tipo_comprobante = $(this).val();
-    var filtro = (tipo_comprobante === "Factura") ? "RUC" : "";
-    var es_factura = (tipo_comprobante === "Factura") ? "1" : "0";
+    var filtro = tipo_comprobante === "Factura" ? "RUC" : "";
+    var es_factura = tipo_comprobante === "Factura" ? "1" : "0";
 
-    $.post("controladores/venta.php?op=selectCliente",
+    $.post(
+      "controladores/venta.php?op=selectCliente",
       { tipo_documento: filtro, es_factura: es_factura },
       function (r) {
         $("#idcliente").html(r);
@@ -474,17 +471,18 @@ function listarClientes() {
         } else {
           $("#alerta-cliente").hide();
         }
-      }
+      },
     );
   });
 
   // Carga inicial (sin filtro y sin alerta)
-  $.post("controladores/venta.php?op=selectCliente",
+  $.post(
+    "controladores/venta.php?op=selectCliente",
     { tipo_documento: "", es_factura: "0" },
     function (r) {
       $("#idcliente").html(r);
       $("#idcliente").select2();
-    }
+    },
   );
 }
 
@@ -501,33 +499,35 @@ function toggleCard() {
 }
 
 $(document).ready(function () {
-  const type = parseInt(window.localStorage.getItem('type_search') || 1);
+  const type = parseInt(window.localStorage.getItem("type_search") || 1);
   activeSearch(type); // Establecer estado visual según el localStorage
 });
 
-
 function activeSearch(index) {
-  window.localStorage.setItem('type_search', index);
+  window.localStorage.setItem("type_search", index);
   if (index === 1) {
-    $('#btn_text_search').addClass('active-search');
-    $('#btn_barcode_search').removeClass('active-search');
-    $('#search-producto').attr('placeholder', 'Buscar producto por nombre');
+    $("#btn_text_search").addClass("active-search");
+    $("#btn_barcode_search").removeClass("active-search");
+    $("#search-producto").attr("placeholder", "Buscar producto por nombre");
   }
   if (index === 2) {
-    $('#btn_barcode_search').addClass('active-search');
-    $('#btn_text_search').removeClass('active-search');
-    $('#search-producto').attr('placeholder', 'Buscar producto por código de barras');
+    $("#btn_barcode_search").addClass("active-search");
+    $("#btn_text_search").removeClass("active-search");
+    $("#search-producto").attr(
+      "placeholder",
+      "Buscar producto por código de barras",
+    );
   }
 }
 
-$('#btn_text_search').on('click', function () {
+$("#btn_text_search").on("click", function () {
   activeSearch(1);
-  $('#search-producto').focus();
+  $("#search-producto").focus();
 });
 
-$('#btn_barcode_search').on('click', function () {
+$("#btn_barcode_search").on("click", function () {
   activeSearch(2);
-  $('#search-producto').focus();
+  $("#search-producto").focus();
 });
 
 // Función para agregar cards dinámicamente
@@ -535,7 +535,11 @@ function agregarCards(categoria) {
   var cardContainer = document.getElementById("cardContainer");
   var idsucursal = $("#idsucursal").val(); // Obtener la sucursal actual
   $.ajax({
-    url: "controladores/pos.php?op=listarProductos&idsucursal=" + idsucursal + "&categoria=" + categoria,
+    url:
+      "controladores/pos.php?op=listarProductos&idsucursal=" +
+      idsucursal +
+      "&categoria=" +
+      categoria,
     type: "GET",
     data: "",
     beforeSend: function () {
@@ -591,10 +595,11 @@ function agregarCards(categoria) {
         </div>`;
 
         return;
-      };
+      }
       $.each(data, function (i, item) {
         // Calcular el stock disponible en términos de contenedores
-        let stockEnContenedores = item.stock_lote_fifo / item.cantidad_contenedor;
+        let stockEnContenedores =
+          item.stock_lote_fifo / item.cantidad_contenedor;
         if (stockEnContenedores < 0) stockEnContenedores = 0; // Asegurar que no sea negativo
 
         cardHtml += `
@@ -605,9 +610,13 @@ function agregarCards(categoria) {
               <div class="position-relative">
                 <img src="files/productos/${item.imagen}" class="pos-img w-100">
 
-                <div class="pos-stock" style="background:${stockEnContenedores < 5 ? '#dc3545' :
-            stockEnContenedores < 15 ? '#fd7e14' : '#198754'
-          }">
+                <div class="pos-stock" style="background:${
+                  stockEnContenedores < 5
+                    ? "#dc3545"
+                    : stockEnContenedores < 15
+                      ? "#fd7e14"
+                      : "#198754"
+                }">
                   Stock ${stockEnContenedores.toFixed(1)}
                 </div>
 
@@ -668,7 +677,6 @@ $("#search-producto").keyup(function (e) {
   }
 });
 
-
 function escapeJSString(str) {
   return String(str)
     .replace(/\\/g, "\\\\") // barra invertida
@@ -687,7 +695,7 @@ function searchProductos(producto) {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(function () {
     const cardContainer = document.getElementById("cardContainer");
-    const type = parseInt(window.localStorage.getItem('type_search') || 1); // 1=nombre, 2=código
+    const type = parseInt(window.localStorage.getItem("type_search") || 1); // 1=nombre, 2=código
     const idsucursal = $("#idsucursal").val(); // Obtener la sucursal actual
 
     $.ajax({
@@ -696,7 +704,7 @@ function searchProductos(producto) {
       data: {
         producto: producto,
         type: type,
-        idsucursal: idsucursal // Pasar idsucursal a la búsqueda
+        idsucursal: idsucursal, // Pasar idsucursal a la búsqueda
       },
       success: function (data) {
         const dataParsed = JSON.parse(data);
@@ -710,7 +718,8 @@ function searchProductos(producto) {
         if (dataParsed.length > 0) {
           $.each(dataParsed, function (i, item) {
             // Calcular el stock disponible en términos de contenedores
-            let stockEnContenedores = item.stock_lote_fifo / item.cantidad_contenedor;
+            let stockEnContenedores =
+              item.stock_lote_fifo / item.cantidad_contenedor;
             if (stockEnContenedores < 0) stockEnContenedores = 0; // Asegurar que no sea negativo
 
             cardHtml += `<div class="col-6 col-md-3 mb-3">
@@ -720,9 +729,13 @@ function searchProductos(producto) {
               <div class="position-relative">
                 <img src="files/productos/${item.imagen}" class="pos-img w-100">
 
-                <div class="pos-stock" style="background:${stockEnContenedores < 5 ? '#dc3545' :
-                stockEnContenedores < 15 ? '#fd7e14' : '#198754'
-              }">
+                <div class="pos-stock" style="background:${
+                  stockEnContenedores < 5
+                    ? "#dc3545"
+                    : stockEnContenedores < 15
+                      ? "#fd7e14"
+                      : "#198754"
+                }">
                   Stock ${stockEnContenedores.toFixed(1)}
                 </div>
 
@@ -749,11 +762,10 @@ function searchProductos(producto) {
         }
 
         cardContainer.innerHTML = cardHtml;
-      }
+      },
     });
   }, 300);
 }
-
 
 $("#campoDeBusqueda").on("input", function () {
   var searchTerm = $(this).val();
@@ -765,7 +777,9 @@ function seleccionarProducto(data) {
   // 🔎 Validar según el tipo de contenedor usando stock_lote_fifo
   let stockDisponibleUnidades = parseFloat(data.stock_lote_fifo) || 0;
   let cantidadContenedor = parseFloat(data.cantidad_contenedor) || 1;
-  let stockDisponibleEnContenedores = Math.floor(stockDisponibleUnidades / cantidadContenedor);
+  let stockDisponibleEnContenedores = Math.floor(
+    stockDisponibleUnidades / cantidadContenedor,
+  );
 
   if (stockDisponibleEnContenedores < 1) {
     var audioError = new Audio("files/audio/error.mp3");
@@ -796,7 +810,7 @@ function seleccionarProducto(data) {
       cantidad_contenedor: data.cantidad_contenedor,
       cantidad: cantidadAAgregar,
       stock_disponible: stockDisponibleUnidades, // Stock disponible en unidades
-      id_fifo: data.id_fifo // ID del lote FIFO
+      id_fifo: data.id_fifo, // ID del lote FIFO
     },
     success: function (resp) {
       var result = JSON.parse(resp);
@@ -875,75 +889,68 @@ function listarCarrito() {
           let stockDisponibleEnContenedores;
           if (item.cantidad_contenedor > 1) {
             // Para cajas: mostrar cuántas cajas completas hay
-            stockDisponibleEnContenedores = Math.floor(stockDisponibleUnidades / item.cantidad_contenedor);
+            stockDisponibleEnContenedores = Math.floor(
+              stockDisponibleUnidades / item.cantidad_contenedor,
+            );
           } else {
             // Para unidades: mostrar el stock tal cual (puede ser fraccionado)
             stockDisponibleEnContenedores = stockDisponibleUnidades;
           }
 
           html += `
-            <tr class="cart-row">
-              <td colspan="6">
-                <div class="cart-item">
-
-                  <!-- eliminar -->
-                  <div class="cart-remove"
-                       onclick="eliminarProductoCarrito(${item.idproducto})">
-                    <i class="fas fa-trash-alt"></i>
-                  </div>
-
-                  <!-- info -->
-                  <div class="cart-info">
-                    <div class="cart-product-name">
-                      ${item.producto}
-                    </div>
-
-                    <div class="cart-meta">
-                      <span class="badge bg-success">
-                        ${item.contenedor}
-                      </span>
-                      <span class="badge bg-primary">
-                        ${item.unidad_medida}
-                      </span>
-                    </div>
-                  </div>
-
-                  <!-- precio -->
-                  <div class="cart-price">
-                    <input type="text"
-                           class="form-control form-control-sm"
-                           id="precio-${item.idproducto}"
-                           value="${item.precio}"
-                           oninput="modificarSubtotales(${item.idproducto})"
-                           onblur="actualizarDataItem(${item.idproducto}, this.value, 'precio')">
-
-                    <i class="fas fa-eye"
-                       onclick="verPreciosItem(${item.idproducto})"></i>
-                  </div>
-
-                  <!-- cantidad -->
-                  <div class="cart-qty-box">
-                    <input type="number" class="form-control form-control-sm"
-                           min="0"
-                           max="${stockDisponibleEnContenedores}"
-                           step="${item.cantidad_contenedor > 1 ? '1' : '0.01'}"
-                           id="cantidad-${item.idproducto}"
-                           value="${item.cantidad}"
-                           data-stock="${stockDisponibleEnContenedores}"
-                           data-cantidad-contenedor="${item.cantidad_contenedor}"
-                           oninput="handleCantidadChange(${item.idproducto})"
-                           onblur="actualizarDataItem(${item.idproducto}, this.value, 'cantidad')">
-                  </div>
-
-                  <!-- subtotal -->
-                  <div class="cart-subtotal subtotal-item"
-                       id="subtotal-${item.idproducto}">
-                    S/. ${subtotal.toFixed(2)}
-                  </div>
-
-                </div>
-              </td>
-            </tr>`;
+<tr class="cart-row" id="fila${cont}">
+  <td>
+    <div class="cart-remove" onclick="eliminarProductoCarrito(${item.idproducto})" style="cursor:pointer;">
+      <i class="fas fa-trash-alt"></i>
+    </div>
+  </td>
+  <td>
+    <div class="cart-info">
+      <div class="cart-product-name">${item.producto}</div>
+      <div class="cart-meta">
+        <span class="badge bg-success">${item.contenedor}</span>
+        <span class="badge bg-primary">${item.unidad_medida}</span>
+      </div>
+    </div>
+  </td>
+  <td>
+    <!-- precio -->
+<div style="position: relative; display: inline-block;">
+  <input type="text"
+         class="form-control form-control-sm"
+         id="precio-${item.idproducto}"
+         value="${item.precio}"
+         style="padding-right: 2rem;"
+         oninput="modificarSubtotales(${item.idproducto})"
+         onblur="actualizarDataItem(${item.idproducto}, this.value, 'precio')">
+  <i class="fas fa-eye" 
+     onclick="verPreciosItem(${item.idproducto})" 
+     style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); cursor:pointer; font-size: 0.8em; color: #6c757d;"></i>
+</div>
+  </td>
+  <td>
+    <!-- cantidad -->
+    <div class="cart-qty-box">
+      <input type="number" 
+             class="form-control form-control-sm"
+             min="0"
+             max="${stockDisponibleEnContenedores}"
+             step="${item.cantidad_contenedor > 1 ? "1" : "0.01"}"
+             id="cantidad-${item.idproducto}"
+             value="${item.cantidad}"
+             data-stock="${stockDisponibleEnContenedores}"
+             data-cantidad-contenedor="${item.cantidad_contenedor}"
+             oninput="handleCantidadChange(${item.idproducto})"
+             onblur="actualizarDataItem(${item.idproducto}, this.value, 'cantidad')">
+    </div>
+  </td>
+  <td>
+    <!-- subtotal -->
+    <div class="cart-subtotal subtotal-item" id="subtotal-${item.idproducto}">
+      S/. ${subtotal.toFixed(2)}
+    </div>
+  </td>
+</tr>`;
         });
 
         $("#subtotal-venta").html("S/. " + total.toFixed(2));
@@ -978,7 +985,7 @@ function actualizarDataItem(idproducto, value, campo) {
       campo: campo, // nombre del campo, ej. "nombre"
       value: value,
     },
-    success: function (data) { },
+    success: function (data) {},
     error: function (error) {
       toastr.error("Error al procesar la solicitud", "Error");
     },
@@ -1108,7 +1115,10 @@ function handleCantidadChange(idproducto) {
   let cantidadContenedor = parseInt(input.dataset.cantidadContenedor) || 1;
 
   if (cantidad > stock) {
-    let unidadTexto = cantidadContenedor > 1 ? `${input.dataset.contenedor || 'contenedor'}(es)` : 'unidad(es)';
+    let unidadTexto =
+      cantidadContenedor > 1
+        ? `${input.dataset.contenedor || "contenedor"}(es)`
+        : "unidad(es)";
     Swal.fire({
       title: "Cantidad mayor al stock disponible",
       text: `Solo hay ${stock} ${unidadTexto} disponibles.`,
@@ -1234,16 +1244,16 @@ function keyUpProductoCarrito(idproducto, cantidadStr) {
   });
 }
 
-$('#modal-default').on('hidden.bs.modal', function () {
+$("#modal-default").on("hidden.bs.modal", function () {
   // Resetear inputs
-  $(this).find('input[type="text"], input[type="hidden"]').val('');
-  $(this).find('textarea').val('');
+  $(this).find('input[type="text"], input[type="hidden"]').val("");
+  $(this).find("textarea").val("");
 
   // Resetear spans
-  $(this).find('div.h5').text('0.00');
+  $(this).find("div.h5").text("0.00");
 
   // Resetear selects
-  $(this).find('select').prop('selectedIndex', 0);
+  $(this).find("select").prop("selectedIndex", 0);
 });
 
 $("#pasar-caja").click(function (e) {
@@ -1394,7 +1404,6 @@ function numSerieTicket() {
   });
 }
 
-
 // =======================
 // FUNCIONES DE CÁLCULO
 // =======================
@@ -1419,13 +1428,12 @@ function sumPagos() {
 
 /* -------------------- tipos de pago -------------------- */
 const tiposPago = [
-  { id: 'visa', label: 'Visa', icon: 'visa.ico' },
-  { id: 'yape', label: 'Yape', icon: 'yape.ico' },
-  { id: 'plin', label: 'Plin', icon: 'plin.ico' },
-  { id: 'mastercard', label: 'MasterCard', icon: 'master.ico' },
-  { id: 'deposito', label: 'Depósito', icon: 'deposito.ico' }
+  { id: "visa", label: "Visa", icon: "visa.ico" },
+  { id: "yape", label: "Yape", icon: "yape.ico" },
+  { id: "plin", label: "Plin", icon: "plin.ico" },
+  { id: "mastercard", label: "MasterCard", icon: "master.ico" },
+  { id: "deposito", label: "Depósito", icon: "deposito.ico" },
 ];
-
 
 /* -------------------- actualizarPagos (actualiza UI + hidden) -------------------- */
 function actualizarPagos() {
@@ -1470,23 +1478,31 @@ function actualizarPagos() {
 }
 
 /* -------------------- formateo al perder foco -------------------- */
-$(document).on("blur", "#input-efectivo, .pago-dinamico .pago-input", function () {
-  var val = toNumber($(this).val());
-  $(this).val(val.toFixed(2));
-  actualizarPagos();
-});
+$(document).on(
+  "blur",
+  "#input-efectivo, .pago-dinamico .pago-input",
+  function () {
+    var val = toNumber($(this).val());
+    $(this).val(val.toFixed(2));
+    actualizarPagos();
+  },
+);
 
 /* -------------------- listener en tiempo real -------------------- */
-$(document).on("input", "#input-efectivo, .pago-dinamico .pago-input", actualizarPagos);
+$(document).on(
+  "input",
+  "#input-efectivo, .pago-dinamico .pago-input",
+  actualizarPagos,
+);
 
 /* -------------------- cambiar icono del pago principal -------------------- */
 $(document).on("change", "#tipo-principal", function () {
   let tipo = $(this).val();
-  let pago = tiposPago.find(p => p.id === tipo);
+  let pago = tiposPago.find((p) => p.id === tipo);
 
   if (pago) {
     $("#icono-principal").attr("src", "files/icons/" + pago.icon);
-    $("#label-principal").text(pago.label);  // <<< cambia el texto
+    $("#label-principal").text(pago.label); // <<< cambia el texto
   } else {
     $("#icono-principal").attr("src", "files/icons/efectivo.ico");
     $("#label-principal").text("Efectivo");
@@ -1520,7 +1536,9 @@ $("#modal-default").on("shown.bs.modal", function () {
 let contadorPagos = 0;
 
 $("#agregar-pago-btn").on("click", function () {
-  let opciones = tiposPago.map(p => `<option value="${p.id}">${p.label}</option>`).join('');
+  let opciones = tiposPago
+    .map((p) => `<option value="${p.id}">${p.label}</option>`)
+    .join("");
 
   // calcular saldo pendiente antes de crear el pago
   let totalVenta = toNumber($("#input-total-venta").val());
@@ -1557,12 +1575,12 @@ $("#agregar-pago-btn").on("click", function () {
 
 $(document).on("change", ".pago-tipo", function () {
   let tipo = $(this).val();
-  let pago = tiposPago.find(p => p.id === tipo);
+  let pago = tiposPago.find((p) => p.id === tipo);
   let container = $(this).closest(".pago-dinamico");
 
   if (pago) {
     container.find(".pago-icon").attr("src", "files/icons/" + pago.icon);
-    container.find(".pago-label").text(pago.label);   // <<< cambia el nombre
+    container.find(".pago-label").text(pago.label); // <<< cambia el nombre
     container.find(".pago-hidden").val(tipo);
   }
 
@@ -1576,13 +1594,10 @@ $(document).on("change", ".pago-tipo", function () {
   actualizarPagos();
 });
 
-
-
 $(document).on("click", ".quitar-pago", function () {
   $(this).closest(".pago-dinamico").remove();
   actualizarPagos();
 });
-
 
 function prepararPagosParaGuardar() {
   // 1) eliminar inyecciones anteriores
@@ -1616,9 +1631,9 @@ function prepararPagosParaGuardar() {
   if (vuelto < 0) vuelto = 0;
 
   // 5) actualizar los hidden que se enviarán al backend
-  $("#pagado-total").val(totalRecibidoReal.toFixed(2));        // suma total pagada (para montoPagado)
-  $("#hidden-totalrecibido").val(totalEfectivo.toFixed(2));    // SOLO efectivo
-  $("#hidden-totaldeposito").val(totalOtros.toFixed(2));       // SOLO otros pagos (yape/plin/visa/dep)
+  $("#pagado-total").val(totalRecibidoReal.toFixed(2)); // suma total pagada (para montoPagado)
+  $("#hidden-totalrecibido").val(totalEfectivo.toFixed(2)); // SOLO efectivo
+  $("#hidden-totaldeposito").val(totalOtros.toFixed(2)); // SOLO otros pagos (yape/plin/visa/dep)
   $("#hidden-vuelto").val(vuelto.toFixed(2));
 
   // 6) calcular cuánto del pago principal se debe registrar realmente en venta_pago (limitado al faltante)
@@ -1631,13 +1646,38 @@ function prepararPagosParaGuardar() {
   // 7) inyectar pagado[] y metodo_pago[] para el pago principal, SOLO si principalRegistrable > 0
   // (esto NO afecta los hidden de totales porque ya calculamos desde la UI)
   if (principalRegistrable > 0) {
-    $("<input>", { type: "hidden", name: "pagado[]", value: principalRegistrable.toFixed(2), "data-injected": "1" }).appendTo("#procesar-venta");
-    $("<input>", { type: "hidden", name: "metodo_pago[]", value: tipoPrincipal, "data-injected": "1" }).appendTo("#procesar-venta");
+    $("<input>", {
+      type: "hidden",
+      name: "pagado[]",
+      value: principalRegistrable.toFixed(2),
+      "data-injected": "1",
+    }).appendTo("#procesar-venta");
+    $("<input>", {
+      type: "hidden",
+      name: "metodo_pago[]",
+      value: tipoPrincipal,
+      "data-injected": "1",
+    }).appendTo("#procesar-venta");
 
     // placeholders para alinear índices si tu backend espera nroOperacion[], banco[], fechaDeposito[]
-    $("<input>", { type: "hidden", name: "nroOperacion[]", value: "", "data-injected": "1" }).appendTo("#procesar-venta");
-    $("<input>", { type: "hidden", name: "banco[]", value: "", "data-injected": "1" }).appendTo("#procesar-venta");
-    $("<input>", { type: "hidden", name: "fechaDeposito[]", value: "", "data-injected": "1" }).appendTo("#procesar-venta");
+    $("<input>", {
+      type: "hidden",
+      name: "nroOperacion[]",
+      value: "",
+      "data-injected": "1",
+    }).appendTo("#procesar-venta");
+    $("<input>", {
+      type: "hidden",
+      name: "banco[]",
+      value: "",
+      "data-injected": "1",
+    }).appendTo("#procesar-venta");
+    $("<input>", {
+      type: "hidden",
+      name: "fechaDeposito[]",
+      value: "",
+      "data-injected": "1",
+    }).appendTo("#procesar-venta");
   }
 
   // Nota: No devolvemos nada — simplemente preparamos el formulario. El envío debe venir después.
@@ -1661,11 +1701,14 @@ $("#procesar-venta").submit(function (e) {
         marcarImpuesto();
         agregarCards("Todos");
 
-        const url = "reportes/exTicket.php?id=" + encodeURIComponent(data.idventa);
+        const url =
+          "reportes/exTicket.php?id=" + encodeURIComponent(data.idventa);
         const newWindow = window.open(url, "_blank");
 
         if (!newWindow) {
-          alert("Tu navegador bloqueó la ventana emergente. Habilita popups para imprimir.");
+          alert(
+            "Tu navegador bloqueó la ventana emergente. Habilita popups para imprimir.",
+          );
           return;
         }
 
@@ -1688,7 +1731,6 @@ $("#procesar-venta").submit(function (e) {
           };
         };
       }
-
     },
     error: function (error) {
       console.log(error.responseText);
@@ -1734,11 +1776,15 @@ $("#guardar-sin-imprimir").click(function () {
         listarCarrito();
         marcarImpuesto();
         agregarCards("Todos");
-        const url = "reportes/exTicket.php?id=" + encodeURIComponent(responseData.idventa.idventa);
+        const url =
+          "reportes/exTicket.php?id=" +
+          encodeURIComponent(responseData.idventa.idventa);
         const newWindow = window.open(url, "_blank");
 
         if (!newWindow) {
-          alert("Tu navegador bloqueó la ventana emergente. Habilita popups para imprimir.");
+          alert(
+            "Tu navegador bloqueó la ventana emergente. Habilita popups para imprimir.",
+          );
           return;
         }
 
@@ -1760,8 +1806,7 @@ $("#guardar-sin-imprimir").click(function () {
             limpiar();
           };
         };
-      }
-      else {
+      } else {
         Swal.fire({
           title: "Error",
           text: responseData.message || "No se pudo guardar la venta",
@@ -2024,14 +2069,14 @@ function mostrar(idventa) {
       $("#nrooperacionm").val(data.numoperacion);
       $("#fechadeposito").val(data.fechadeposito);
       $("#idventam").val(data.idventa);
-    }
+    },
   );
 
   $.post(
     "controladores/venta.php?op=listarDetalle&id=" + idventa,
     function (r) {
       $("#detallesm").html(r);
-    }
+    },
   );
 }
 
@@ -2088,10 +2133,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                    " " +
-                    dat.apellidoPaterno +
-                    " " +
-                    dat.apellidoMaterno
+                      " " +
+                      dat.apellidoPaterno +
+                      " " +
+                      dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -2101,7 +2146,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         } else {
@@ -2145,12 +2190,12 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         }
       }
-    }
+    },
   );
 }
 
@@ -2223,7 +2268,7 @@ function verificarConceptoMovimiento() {
     function (r) {
       $("#idconcepto_movimiento").html(r);
       $("#idconcepto_movimiento").select2();
-    }
+    },
   );
 }
 
@@ -2246,7 +2291,7 @@ function limpiarmov() {
   function startScanner() {
     if (scannerRunning) return;
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert('El navegador no permite acceso a la cámara.');
+      alert("El navegador no permite acceso a la cámara.");
       return;
     }
 
@@ -2256,26 +2301,42 @@ function limpiarmov() {
         facingMode: { ideal: "environment" },
         width: { ideal: 1280 },
         height: { ideal: 720 },
-        focusMode: "continuous" // algunos navegadores lo reconocen
-      }
+        focusMode: "continuous", // algunos navegadores lo reconocen
+      },
     };
 
-    Quagga.init({
-      inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: document.querySelector('#interactive-scanner'),
-        constraints: constraints
+    Quagga.init(
+      {
+        inputStream: {
+          name: "Live",
+          type: "LiveStream",
+          target: document.querySelector("#interactive-scanner"),
+          constraints: constraints,
+        },
+        decoder: {
+          readers: [
+            "ean_reader",
+            "ean_8_reader",
+            "code_128_reader",
+            "upc_reader",
+            "code_39_reader",
+          ],
+        },
+        locate: true,
+        numOfWorkers: navigator.hardwareConcurrency
+          ? Math.max(2, Math.floor(navigator.hardwareConcurrency / 2))
+          : 2,
       },
-      decoder: { readers: ["ean_reader", "ean_8_reader", "code_128_reader", "upc_reader", "code_39_reader"] },
-      locate: true,
-      numOfWorkers: navigator.hardwareConcurrency ? Math.max(2, Math.floor(navigator.hardwareConcurrency / 2)) : 2,
-    }, function (err) {
-      if (err) { console.error(err); return; }
-      Quagga.start();
-      scannerRunning = true;
-      lastScanned = null;
-    });
+      function (err) {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        Quagga.start();
+        scannerRunning = true;
+        lastScanned = null;
+      },
+    );
 
     Quagga.onProcessed(drawOverlay);
     Quagga.onDetected(onDetected);
@@ -2283,30 +2344,38 @@ function limpiarmov() {
 
   function stopScanner() {
     if (!scannerRunning) return;
-    try { Quagga.offDetected(onDetected); Quagga.stop(); } catch (e) { }
-    scannerRunning = false; lastScanned = null;
-    if (cooldownTimer) { clearTimeout(cooldownTimer); cooldownTimer = null; }
+    try {
+      Quagga.offDetected(onDetected);
+      Quagga.stop();
+    } catch (e) {}
+    scannerRunning = false;
+    lastScanned = null;
+    if (cooldownTimer) {
+      clearTimeout(cooldownTimer);
+      cooldownTimer = null;
+    }
     clearOverlay();
   }
 
   function drawOverlay(result) {
-    var canvas = document.getElementById('scannerOverlay');
-    var video = document.querySelector('#interactive-scanner video');
+    var canvas = document.getElementById("scannerOverlay");
+    var video = document.querySelector("#interactive-scanner video");
     if (!canvas || !video) return;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    var ctx = canvas.getContext('2d');
+    var ctx = canvas.getContext("2d");
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    ctx.strokeStyle = 'lime';
+    ctx.strokeStyle = "lime";
     ctx.lineWidth = 3;
     var yStart = canvas.height * (1 - readZoneRatio);
     ctx.strokeRect(0, yStart, canvas.width, canvas.height * readZoneRatio);
   }
 
   function clearOverlay() {
-    var canvas = document.getElementById('scannerOverlay');
-    if (canvas) canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
+    var canvas = document.getElementById("scannerOverlay");
+    if (canvas)
+      canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
   }
 
   function onDetected(result) {
@@ -2316,20 +2385,24 @@ function limpiarmov() {
     // Validar zona inferior
     if (result.line) {
       var yAvg = (result.line[0].y + result.line[1].y) / 2;
-      var video = document.querySelector('#interactive-scanner video');
+      var video = document.querySelector("#interactive-scanner video");
       if (video && yAvg < video.videoHeight * (1 - readZoneRatio)) return;
     }
 
     if (lastScanned === code) return;
     lastScanned = code;
     if (cooldownTimer) clearTimeout(cooldownTimer);
-    cooldownTimer = setTimeout(function () { lastScanned = null; }, scanCooldownMs);
+    cooldownTimer = setTimeout(function () {
+      lastScanned = null;
+    }, scanCooldownMs);
 
     handleScannedCode(code);
   }
 
   function handleScannedCode(code) {
-    try { new Audio('files/audio/vip.mp3').play(); } catch (e) { }
+    try {
+      new Audio("files/audio/vip.mp3").play();
+    } catch (e) {}
 
     // Buscar directamente el producto por código
     $.ajax({
@@ -2337,17 +2410,17 @@ function limpiarmov() {
       type: "GET",
       data: { producto: code, type: 2 }, // type=2 → búsqueda por código
       success: function (data) {
-        var d = JSON.parse(data || '[]');
+        var d = JSON.parse(data || "[]");
 
         if (d.length === 0) {
           Swal.fire({
             title: "Producto no encontrado",
             icon: "error",
             timer: 1200,
-            showConfirmButton: false
+            showConfirmButton: false,
           });
           stopScanner();
-          $('#cameraScannerModal').fadeOut(150);
+          $("#cameraScannerModal").fadeOut(150);
           return;
         }
 
@@ -2357,7 +2430,7 @@ function limpiarmov() {
         // Cerramos el scanner después de agregar
         setTimeout(function () {
           stopScanner();
-          $('#cameraScannerModal').fadeOut(150);
+          $("#cameraScannerModal").fadeOut(150);
         }, 300); // un pequeño delay para que se reproduzca el audio
       },
       error: function () {
@@ -2365,34 +2438,32 @@ function limpiarmov() {
           title: "Error al buscar producto",
           icon: "error",
           timer: 1200,
-          showConfirmButton: false
+          showConfirmButton: false,
         });
         stopScanner();
-        $('#cameraScannerModal').fadeOut(150);
-      }
+        $("#cameraScannerModal").fadeOut(150);
+      },
     });
   }
 
-
   $(document).ready(function () {
-    $('#btn_camera_search').on('click', function (e) {
+    $("#btn_camera_search").on("click", function (e) {
       e.preventDefault();
-      $('#cameraScannerModal').css('display', 'flex').hide().fadeIn(120);
+      $("#cameraScannerModal").css("display", "flex").hide().fadeIn(120);
       startScanner();
     });
-    $('#btn_stop_scanner').on('click', function (e) {
+    $("#btn_stop_scanner").on("click", function (e) {
       e.preventDefault();
       stopScanner();
-      $('#cameraScannerModal').fadeOut(120);
+      $("#cameraScannerModal").fadeOut(120);
     });
-    $('#cameraScannerModal').on('click', function (e) {
-      if (e.target.id === 'cameraScannerModal') {
+    $("#cameraScannerModal").on("click", function (e) {
+      if (e.target.id === "cameraScannerModal") {
         stopScanner();
-        $('#cameraScannerModal').fadeOut(120);
+        $("#cameraScannerModal").fadeOut(120);
       }
     });
   });
-
 })();
 
 init();

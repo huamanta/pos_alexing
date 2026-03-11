@@ -25,10 +25,8 @@ function init() {
   //cargamos los items al select comprobantes
   $.post("controladores/cotizaciones.php?op=selectCotizaciones", function (c) {
     $("#comprobanteReferencia").html(c);
-    $("#comprobanteReferencia").select2('');
-  }
-  );
-
+    $("#comprobanteReferencia").select2("");
+  });
 
   $.post("controladores/usuario.php?op=selectEmpleado", function (r) {
     $("#idpersonal").html(r);
@@ -57,10 +55,11 @@ function init() {
 
   $("#tipo_comprobante").on("change", function () {
     var tipo_comprobante = $(this).val();
-    var es_factura = (tipo_comprobante === "Factura") ? "1" : "0";
+    var es_factura = tipo_comprobante === "Factura" ? "1" : "0";
     var cliente_actual = $("#idcliente").val(); // Guardar cliente seleccionado
 
-    $.post("controladores/venta.php?op=selectCliente",
+    $.post(
+      "controladores/venta.php?op=selectCliente",
       { tipo_documento: "", es_factura: es_factura },
       function (r) {
         $("#idcliente").html(r);
@@ -77,17 +76,18 @@ function init() {
         } else {
           $("#alerta-cliente").hide();
         }
-      }
+      },
     );
   });
 
   // Carga inicial (sin filtro y sin alerta)
-  $.post("controladores/venta.php?op=selectCliente",
+  $.post(
+    "controladores/venta.php?op=selectCliente",
     { tipo_documento: "", es_factura: "0" },
     function (r) {
       $("#idcliente").html(r);
       $("#idcliente").select2();
-    }
+    },
   );
 
   verificarConceptoMovimiento();
@@ -123,15 +123,14 @@ function init() {
         event.preventDefault();
       }
     },
-    false
+    false,
   );
 }
 
 $("#comprobanteReferencia").on("change", function () {
-  if (!$(this).val()) return;  // prevenir ejecución automática
+  if (!$(this).val()) return; // prevenir ejecución automática
   mostrarE();
 });
-
 
 function cargarSucursales() {
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
@@ -145,9 +144,9 @@ function cargarSucursales() {
 
 document.addEventListener("DOMContentLoaded", function () {
   // Petición AJAX para obtener el cargo del usuario
-  fetch('controladores/empleado.php?op=verificarAdmin') // 
-    .then(response => response.json())
-    .then(data => {
+  fetch("controladores/empleado.php?op=verificarAdmin") //
+    .then((response) => response.json())
+    .then((data) => {
       console.log("Respuesta del servidor:", data); // Depuración en la consola
 
       if (data.error) {
@@ -157,31 +156,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (data.es_admin) {
         // Mostrar márgenes
-        document.querySelectorAll('[id^="margen"]').forEach(elemento => {
+        document.querySelectorAll('[id^="margen"]').forEach((elemento) => {
           elemento.style.display = "table-cell";
         });
 
         // Mostrar solo elementos con id que comiencen con "util" para el administrador
-        document.querySelectorAll('[id^="util"]').forEach(elemento => {
+        document.querySelectorAll('[id^="util"]').forEach((elemento) => {
           elemento.style.display = "table-cell";
         });
       } else {
         // Ocultar márgenes
-        document.querySelectorAll('[id^="margen"]').forEach(elemento => {
+        document.querySelectorAll('[id^="margen"]').forEach((elemento) => {
           elemento.style.display = "none";
         });
 
         // Ocultar elementos con id que comiencen con "util" para los no administradores
-        document.querySelectorAll('[id^="util"]').forEach(elemento => {
+        document.querySelectorAll('[id^="util"]').forEach((elemento) => {
           elemento.style.display = "none";
         });
       }
     })
-    .catch(error => console.error('Error obteniendo el cargo del usuario:', error));
+    .catch((error) =>
+      console.error("Error obteniendo el cargo del usuario:", error),
+    );
 });
-
-
-
 
 function cargarItemsAlSelect() {
   // Cargamos los items al select almacen
@@ -251,10 +249,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                    " " +
-                    dat.apellidoPaterno +
-                    " " +
-                    dat.apellidoMaterno
+                      " " +
+                      dat.apellidoPaterno +
+                      " " +
+                      dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -264,7 +262,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         } else {
@@ -309,12 +307,12 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         }
       }
-    }
+    },
   );
 }
 
@@ -426,6 +424,12 @@ $("#formapago").change(function () {
 
 $("#tipopago").change(function () {
   if ($("#tipopago").val() == "Si") {
+    if (detalles <= 0) {
+      Swal.fire("Aun no ha seleccionado productos", "", "warning");
+      $("#tipopago").val("No");
+      return false;
+    }
+
     $("#n0").show();
     $("#b1").show();
     $("#n1").show();
@@ -511,7 +515,7 @@ function EnviarSunat(tipoc, idventa, idcol) {
         text: resp,
         timer: 1000,
         timerProgressBar: true,
-        onClose: function () { },
+        onClose: function () {},
       });
     },
     complete: function () {
@@ -519,7 +523,6 @@ function EnviarSunat(tipoc, idventa, idcol) {
     },
   });
 }
-
 
 // Variable global para guardar la venta a enviar a Sunat
 var ventaAGenerarSunat = null;
@@ -533,17 +536,29 @@ function guardaryeditar(e) {
     return false;
   }
 
-  var formData = new FormData($("#formulario")[0]);
+  const idcliente = parseInt($("#idcliente").val());
+  const tipopago = $("#tipopago").val().trim();
+  const lista = $("#datafechas");
 
-  if ($('#tipopago').val() == 'Si' && $('#idcliente').val() == 1) {
-    Swal.fire({
-      title: "No puedes dar crédito a público en general",
-      icon: "info",
-      timer: 1500,
-      timerProgressBar: true,
-    });
+  if (idcliente === 6 && tipopago === "Si") {
+    Swal.fire(
+      "Selecciona un cliente para realizar una venta a credito",
+      "",
+      "warning",
+    );
     return false;
   }
+
+  if (lista.children().length === 0 && tipopago === "Si") {
+    Swal.fire(
+      "No se ha calculado el numero de cuotas y fechas de pago",
+      "",
+      "warning",
+    );
+    return false;
+  }
+
+  var formData = new FormData($("#formulario")[0]);
 
   Swal.fire({
     title: "Procesando venta...",
@@ -562,7 +577,11 @@ function guardaryeditar(e) {
       Swal.close();
 
       if (!datos || datos.trim() === "") {
-        Swal.fire("Error en la venta", "No se pudo registrar la venta.", "error");
+        Swal.fire(
+          "Error en la venta",
+          "No se pudo registrar la venta.",
+          "error",
+        );
         return;
       }
 
@@ -571,12 +590,12 @@ function guardaryeditar(e) {
       // ============================================================
       try {
         var response = JSON.parse(datos);
-        if (response.status === 'error') {
+        if (response.status === "error") {
           Swal.fire({
             title: "Permiso Denegado",
             text: response.mensaje,
             icon: "error",
-            confirmButtonText: "Entendido"
+            confirmButtonText: "Entendido",
           });
           return;
         }
@@ -585,11 +604,12 @@ function guardaryeditar(e) {
       }
       // ============================================================
 
-      if ($('#tipo_comprobante option:selected').text() !== 'Nota de Venta') {
+      if ($("#tipo_comprobante option:selected").text() !== "Nota de Venta") {
         ventaAGenerarSunat = {
           idventa: datos,
-          tipo: $('#tipo_comprobante option:selected').text() == 'Boleta' ? 1 : 2,
-          idpersonal: $('#idpersonal').val()
+          tipo:
+            $("#tipo_comprobante option:selected").text() == "Boleta" ? 1 : 2,
+          idpersonal: $("#idpersonal").val(),
         };
       } else {
         ventaAGenerarSunat = null;
@@ -614,15 +634,23 @@ function guardaryeditar(e) {
     },
     error: function () {
       Swal.close();
-      Swal.fire("Error de conexión", "No se pudo conectar con el servidor.", "error");
-    }
+      Swal.fire(
+        "Error de conexión",
+        "No se pudo conectar con el servidor.",
+        "error",
+      );
+    },
   });
 }
 
 // Enganchar evento cuando el modal de imprimir se cierre
-$('#ModalTipocomprobante').on('hidden.bs.modal', function () {
+$("#ModalTipocomprobante").on("hidden.bs.modal", function () {
   if (ventaAGenerarSunat) {
-    EnviarSunat(ventaAGenerarSunat.tipo, ventaAGenerarSunat.idventa, ventaAGenerarSunat.idpersonal);
+    EnviarSunat(
+      ventaAGenerarSunat.tipo,
+      ventaAGenerarSunat.idventa,
+      ventaAGenerarSunat.idpersonal,
+    );
     ventaAGenerarSunat = null; // Limpiar para evitar reenvíos
   }
 });
@@ -678,10 +706,23 @@ function calcularTotalRecibido() {
   let totalRecibido = 0;
   $(".pagoItem").each(function () {
     let metodo = $(this).find(".metodoPago").val();
-    let monto = parseFloat($(this).find(".montoPago").val().replace(",", ".")) || 0;
+    let monto =
+      parseFloat($(this).find(".montoPago").val().replace(",", ".")) || 0;
     if (metodo === "Efectivo") totalRecibido += monto;
   });
   $("#totalrecibido").val(totalRecibido.toFixed(2));
+
+  // Aquí ajustamos el monto de la deuda/restante
+  let montoDeuda = parseFloat($("#montoDeuda").val()) || 0;
+
+  // Solo si estás en modo crédito, restar lo pagado
+  if ($("#tipopago").val() === "Si") {
+    // si está en modo crédito
+    let montoRestante = montoDeuda - totalRecibido;
+    if (montoRestante < 0) montoRestante = 0;
+    $("#montoDeuda").val(montoRestante.toFixed(2));
+  }
+
   return totalRecibido;
 }
 
@@ -689,7 +730,8 @@ function calcularTotalDeposito() {
   let totalDeposito = 0;
   $(".pagoItem").each(function () {
     let metodo = $(this).find(".metodoPago").val();
-    let monto = parseFloat($(this).find(".montoPago").val().replace(",", ".")) || 0;
+    let monto =
+      parseFloat($(this).find(".montoPago").val().replace(",", ".")) || 0;
     if (metodo !== "Efectivo") totalDeposito += monto;
   });
   $("#totaldeposito").val(totalDeposito.toFixed(2));
@@ -697,7 +739,6 @@ function calcularTotalDeposito() {
 }
 
 $(document).ready(function () {
-
   // Inicializar primer pago
   precargarPrimerPago();
 
@@ -705,28 +746,31 @@ $(document).ready(function () {
   $(document).on("keyup change", ".montoPago, .metodoPago", recalcularPagos);
 
   // Recalcular cuando cambia cantidad o precio de los detalles
-  $(document).on("keyup change", "input[name='cantidad[]'], input[name='precio_venta[]']", function () {
-    actualizarMontoPrimerPago();
-    recalcularPagos();
-  });
+  $(document).on(
+    "keyup change",
+    "input[name='cantidad[]'], input[name='precio_venta[]']",
+    function () {
+      actualizarMontoPrimerPago();
+      recalcularPagos();
+    },
+  );
 
   $(document).on("change", ".metodoPago", function () {
     let metodo = $(this).val();
-    let fila = $(this).closest('.pagoItem');
+    let fila = $(this).closest(".pagoItem");
 
     if (metodo === "Deposito" || metodo === "Transferencia") {
-      fila.find('.bancoContainer, .fechaContainer').show();
+      fila.find(".bancoContainer, .fechaContainer").show();
     } else {
-      fila.find('.bancoContainer, .fechaContainer').hide();
-      fila.find('.bancoPago, .fechaDeposito').val('');
+      fila.find(".bancoContainer, .fechaContainer").hide();
+      fila.find(".bancoPago, .fechaDeposito").val("");
     }
 
     recalcularPagos();
   });
 
-
   // Agregar nuevo pago
-  $('#addPago').click(function () {
+  $("#addPago").click(function () {
     let totalVenta = calcularTotalVenta();
     let totalPagado = 0;
 
@@ -767,18 +811,17 @@ $(document).ready(function () {
             </div>
         </div>`;
 
-    $('#pagosMixtosContainer').append(nuevaFila);
+    $("#pagosMixtosContainer").append(nuevaFila);
     recalcularPagos();
   });
 
   // Eliminar pago
-  $(document).on('click', '.removePago', function () {
+  $(document).on("click", ".removePago", function () {
     if ($(".pagoItem").length > 1) {
-      $(this).closest('.pagoItem').remove();
+      $(this).closest(".pagoItem").remove();
       recalcularPagos();
     }
   });
-
 });
 
 // ------------------ FUNCIONES ------------------
@@ -794,20 +837,21 @@ function calcularTotalVenta() {
   return obtenerTotalVentaReal();
 }
 
-
 function obtenerTotalVentaReal() {
   let total = 0;
 
   $("#detalles tbody tr").each(function () {
-
     const idp = $(this).find('input[name="idp[]"]').val();
     const chk = document.getElementById("chkPrecioSegunCantidad-" + idp);
 
-    const cantidad = parseFloat($(this).find('input[name="cantidad[]"]').val()) || 0;
-    const precio = parseFloat($(this).find('input[name="precio_venta[]"]').val()) || 0;
+    const cantidad =
+      parseFloat($(this).find('input[name="cantidad[]"]').val()) || 0;
+    const precio =
+      parseFloat($(this).find('input[name="precio_venta[]"]').val()) || 0;
 
     // ⛔ Aqui estaba el problema: debes obtener el descuento POR FILA
-    const descuento = parseFloat($(this).find('input[name="descuento[]"]').val()) || 0;
+    const descuento =
+      parseFloat($(this).find('input[name="descuento[]"]').val()) || 0;
 
     let subtotal = 0;
 
@@ -816,7 +860,7 @@ function obtenerTotalVentaReal() {
       subtotal = precio;
     } else {
       // descuento aplicado solo a esta fila
-      subtotal = (cantidad * precio) - descuento;
+      subtotal = cantidad * precio - descuento;
 
       if (subtotal < 0) subtotal = 0;
     }
@@ -834,8 +878,6 @@ function obtenerTotalVentaReal() {
 
   return parseFloat(total);
 }
-
-
 
 // Actualizar el primer pago automáticamente
 function actualizarMontoPrimerPago() {
@@ -858,51 +900,45 @@ function actualizarMontoPrimerPago() {
 // Función principal de recalculo de pagos
 function recalcularPagos() {
   let totalVenta = obtenerTotalVentaReal();
-  let totalRecibido = 0;   // efectivo entregado
-  let totalDeposito = 0;   // transferencias, yape, etc.
-  let totalPagadoCliente = 0; // suma de todos los pagos (para vuelto)
+  let totalRecibido = 0;
+  let totalDeposito = 0;
+  let totalPagadoCliente = 0;
 
   $(".pagoItem").each(function () {
     let metodo = $(this).find(".metodoPago").val();
-    let monto = parseFloat($(this).find(".montoPago").val().replace(",", ".")) || 0;
-    totalPagadoCliente += monto; // suma todo lo que entregó el cliente
-
-    // montoRealPago se puede usar para control interno (máx = venta)
-    let montoReal = Math.min(monto, totalVenta);
-    $(this).find(".montoRealPago").val(montoReal.toFixed(2));
+    let monto =
+      parseFloat($(this).find(".montoPago").val().replace(",", ".")) || 0;
+    totalPagadoCliente += monto;
 
     if (metodo === "Efectivo") {
-      totalRecibido += monto; // 🔹 aquí va lo que ENTREGÓ el cliente
+      totalRecibido += monto;
     } else {
       totalDeposito += monto;
     }
   });
 
-  // Asignar a inputs
   $("#totalrecibido").val(totalRecibido.toFixed(2));
   $("#totaldeposito").val(totalDeposito.toFixed(2));
+
+  // Si en modo crédito, actualiza el monto restante automáticamente
+  if ($("#tipopago").val() === "Si") {
+    let montoOriginalDeuda = parseFloat($("#total_venta").val()) || 0;
+    let montoPagado = totalRecibido;
+    let montoRestante = montoOriginalDeuda - montoPagado;
+    if (montoRestante < 0) montoRestante = 0;
+    $("#montoDeuda").val(montoRestante.toFixed(2));
+  }
 
   // Calcular vuelto
   let vuelto = totalPagadoCliente - totalVenta;
   if (vuelto < 0) vuelto = 0;
   $("#vuelto").val(vuelto.toFixed(2));
-
-  // Forma de pago
-  let metodos = [];
-  $(".metodoPago").each(function () {
-    if ($(this).val()) metodos.push($(this).val());
-  });
-  $("#formapago").val(metodos.length === 1 ? metodos[0] : "Mixto");
 }
-
-
 
 //Función limpiar
 function limpiardatafecha() {
   $("#datafechas").val("");
 }
-
-
 
 function imprimirBoleta(id) {
   $("#ModalTipocomprobante").modal("hide");
@@ -914,7 +950,7 @@ function imprimirFactura(id) {
   $("#ModalTipocomprobante").modal("hide");
   window.open(
     "reportes/factura/generaFactura.php?id=" + id,
-    "IMPRIMIR FACTURA"
+    "IMPRIMIR FACTURA",
   );
   mostrarform(true);
 }
@@ -955,7 +991,7 @@ function guardarCliente(e) {
           data = JSON.parse(data);
 
           seleccionarCliente(data.nombre, data.idpersona);
-        }
+        },
       );
     },
   });
@@ -978,8 +1014,6 @@ function documentosSucursal() {
     marcarImpuesto(); // Esto ya llama a numTicket, numBoleta, etc.
   }
 }
-
-
 
 function limpiar() {
   $("#idventa").val("");
@@ -1091,12 +1125,12 @@ function buscarProductoCod(e, codigo) {
               data.precioD,
               data.stock,
               data.proigv,
-              data.unidadmedida
+              data.unidadmedida,
             );
           }
 
           $("#idCodigoBarra").val("");
-        }
+        },
       );
     }
   }
@@ -1133,21 +1167,31 @@ function verificarProductosDisponibles() {
   });
 
   // Verificar cada producto si está disponible en la nueva sucursal
-  $.post("controladores/venta.php?op=verificarProductos", { idsucursal: idsucursal, productos: productosAgregados }, function (response) {
-    if (response.no_disponibles.length > 0) {
-      // Eliminar los productos no disponibles de la tabla
-      response.no_disponibles.forEach(function (idproducto) {
-        eliminarProductoDeTabla(idproducto);
-        Swal.fire("Advertencia", "El producto con ID " + idproducto + " no existe en el almacén seleccionado.", "warning");
-      });
-      evaluar();
-    }
-
-  }, "json");
+  $.post(
+    "controladores/venta.php?op=verificarProductos",
+    { idsucursal: idsucursal, productos: productosAgregados },
+    function (response) {
+      if (response.no_disponibles.length > 0) {
+        // Eliminar los productos no disponibles de la tabla
+        response.no_disponibles.forEach(function (idproducto) {
+          eliminarProductoDeTabla(idproducto);
+          Swal.fire(
+            "Advertencia",
+            "El producto con ID " +
+              idproducto +
+              " no existe en el almacén seleccionado.",
+            "warning",
+          );
+        });
+        evaluar();
+      }
+    },
+    "json",
+  );
 }
 
 function eliminarProductoDeTabla(idproducto) {
-  $('#detalles tr').each(function () {
+  $("#detalles tr").each(function () {
     var id = $(this).find("input[name='idproducto[]']").val();
     if (id === idproducto) {
       $(this).remove(); // Eliminar la fila
@@ -1158,45 +1202,51 @@ function eliminarProductoDeTabla(idproducto) {
   });
 }
 
-$('#search_product').keyup(function (e) {
+$("#search_product").keyup(function (e) {
   var search = $(this).val();
   listarArticulosSearchFIFO(search);
 });
 
-if (window.localStorage.getItem('type_search')) {
-  var search = window.localStorage.getItem('type_search');
-  if (search === '1') {
-    $('#btn_text_search').addClass('active-search');
-    $('#btn_barcode_search').removeClass('active-search');
-    $('#search_product').attr('placeholder', 'Buscar producto por nombre');
+if (window.localStorage.getItem("type_search")) {
+  var search = window.localStorage.getItem("type_search");
+  if (search === "1") {
+    $("#btn_text_search").addClass("active-search");
+    $("#btn_barcode_search").removeClass("active-search");
+    $("#search_product").attr("placeholder", "Buscar producto por nombre");
   }
-  if (search === '2') {
-    $('#btn_barcode_search').addClass('active-search');
-    $('#btn_text_search').removeClass('active-search');
-    $('#search_product').attr('placeholder', 'Buscar producto por codigo de barras');
+  if (search === "2") {
+    $("#btn_barcode_search").addClass("active-search");
+    $("#btn_text_search").removeClass("active-search");
+    $("#search_product").attr(
+      "placeholder",
+      "Buscar producto por codigo de barras",
+    );
   }
 } else {
-  $('#btn_text_search').addClass('active-search');
-  $('#search_product').attr('placeholder', 'Buscar producto por nombre');
+  $("#btn_text_search").addClass("active-search");
+  $("#search_product").attr("placeholder", "Buscar producto por nombre");
 }
 
 function activeSearch(index) {
-  window.localStorage.setItem('type_search', index);
+  window.localStorage.setItem("type_search", index);
   if (index === 1) {
-    $('#btn_text_search').addClass('active-search');
-    $('#btn_barcode_search').removeClass('active-search');
-    $('#search_product').attr('placeholder', 'Buscar producto por nombre');
+    $("#btn_text_search").addClass("active-search");
+    $("#btn_barcode_search").removeClass("active-search");
+    $("#search_product").attr("placeholder", "Buscar producto por nombre");
   }
   if (index === 2) {
-    $('#btn_barcode_search').addClass('active-search');
-    $('#btn_text_search').removeClass('active-search');
-    $('#search_product').attr('placeholder', 'Buscar producto por codigo de barras');
+    $("#btn_barcode_search").addClass("active-search");
+    $("#btn_text_search").removeClass("active-search");
+    $("#search_product").attr(
+      "placeholder",
+      "Buscar producto por codigo de barras",
+    );
   }
 }
 
-function listarArticulosSearchFIFO(search = '') {
+function listarArticulosSearchFIFO(search = "") {
   var idsucursal = $("#idsucursal").val();
-  var type = window.localStorage.getItem('type_search') || 1;
+  var type = window.localStorage.getItem("type_search") || 1;
 
   $.ajax({
     url: "controladores/venta.php?op=listarArticulosSearchFIFO",
@@ -1204,11 +1254,10 @@ function listarArticulosSearchFIFO(search = '') {
     dataType: "json",
     data: { idsucursal, search, type },
     success: function (data) {
-
       if (!Array.isArray(data)) return;
 
-      let html = '';
-      data.forEach(item => {
+      let html = "";
+      data.forEach((item) => {
         html += `
           <tr>
             <td>${item.stock}</td>
@@ -1221,15 +1270,13 @@ function listarArticulosSearchFIFO(search = '') {
       });
 
       $("#tbody_articulos").html(html);
-    }
+    },
   });
 }
 
-
-
 function listarArticulosSearch(search) {
   var idsucursal = $("#idsucursal").val();
-  var type = window.localStorage.getItem('type_search');
+  var type = window.localStorage.getItem("type_search");
 
   $.ajax({
     url: "controladores/venta.php?op=listarArticulosSearch",
@@ -1246,7 +1293,7 @@ function listarArticulosSearch(search) {
       }
       if (data.length === 1 && type == 2) {
         let producto = data[0];
-        $('#search_product').val('');
+        $("#search_product").val("");
 
         if (parseFloat(producto.stock_num) > 0) {
           agregarDetalle(
@@ -1264,19 +1311,19 @@ function listarArticulosSearch(search) {
             producto.proigv,
             producto.cantidad_contenedor,
             producto.contenedor,
-            producto.idcategoria
+            producto.idcategoria,
           );
         } else {
           Swal.fire({
-            icon: 'error',
-            title: 'No hay suficiente stock',
+            icon: "error",
+            title: "No hay suficiente stock",
             showConfirmButton: false,
             timer: 1500,
-            timerProgressBar: true
+            timerProgressBar: true,
           });
         }
       }
-      var html = '';
+      var html = "";
       data.forEach(function (item) {
         html += `<tr class="odd">
           <td>${item.stock}</td>
@@ -1288,7 +1335,7 @@ function listarArticulosSearch(search) {
         </tr>`;
       });
 
-      $('#tbody_articulos').html(html);
+      $("#tbody_articulos").html(html);
     },
     error: function (e) {
       console.log(e.responseText);
@@ -1296,14 +1343,13 @@ function listarArticulosSearch(search) {
   });
 }
 
-
 function selectTab(index) {
   if (index == 1) {
-    $('#div_search').attr('hidden', false);
+    $("#div_search").attr("hidden", false);
   }
 
   if (index == 2) {
-    $('#div_search').attr('hidden', true);
+    $("#div_search").attr("hidden", true);
   }
 }
 
@@ -1343,7 +1389,7 @@ function listarArticulos2() {
       language: {
         emptyTable: "No se encontraron productos en el almacén.",
         zeroRecords: "No se encontraron productos.",
-        infoEmpty: "Sin registros disponibles"
+        infoEmpty: "Sin registros disponibles",
       },
       aProcessing: true, //activamos el procedimiento del datatable
       aServerSide: true, //paginacion y filrado realizados por el server
@@ -1389,11 +1435,14 @@ function verimagen(idproducto, imagen, nombre, stock, precio) {
   $("#detalleProductoContenido").html(html);
 
   // Obtener precios adicionales
-  $.post("controladores/producto.php?op=precios_adicionales", { idproducto: idproducto }, function (data) {
-    $("#detallePreciosAdicionales").html(data);
-  });
+  $.post(
+    "controladores/producto.php?op=precios_adicionales",
+    { idproducto: idproducto },
+    function (data) {
+      $("#detallePreciosAdicionales").html(data);
+    },
+  );
 }
-
 
 // Cerrar y resetear el modal al hacer clic en el botón
 $(document).on("click", "#btnCerrarModalProducto", function () {
@@ -1406,10 +1455,10 @@ $(document).on("click", "#btnCerrarModalProducto", function () {
 
     // Vaciar contenido de detalles y precios
     $("#detalleProductoContenido").html("");
-    $("#detallePreciosAdicionales").html('<i>Cargando...</i>');
+    $("#detallePreciosAdicionales").html("<i>Cargando...</i>");
 
     // Volver a activar el tab de imagen
-    $('#detalleProductoTabs a[href="#tab-imagen"]').tab('show');
+    $('#detalleProductoTabs a[href="#tab-imagen"]').tab("show");
   }, 300); // espera a que el modal se oculte completamente
 });
 
@@ -1520,11 +1569,11 @@ function listar() {
 //cancelar form
 function cancelarform() {
   // Limpiar todos los campos del formulario
-  limpiar();           // tu función que limpia inputs y selects
-  mostrarform(false);  // oculta el formulario
+  limpiar(); // tu función que limpia inputs y selects
+  mostrarform(false); // oculta el formulario
 
   // Resetear inputs tipo text, number, textarea y selects
-  $('#formulario')[0].reset(); // reemplaza 'formulario' por el id de tu <form>
+  $("#formulario")[0].reset(); // reemplaza 'formulario' por el id de tu <form>
 
   // Resetear variables JS
   detalles = 0;
@@ -1532,10 +1581,10 @@ function cancelarform() {
   modoEditar = false;
 
   // Limpiar tablas de detalles
-  $('#detalles tbody').empty();
+  $("#detalles tbody").empty();
 
   // 🔹 Limpiar los pagos dinámicos del modal
-  $('#pagosMixtosContainer').empty();
+  $("#pagosMixtosContainer").empty();
 
   // Opcional: si quieres dejar al menos 1 fila por defecto (Efectivo, monto 0)
   let filaDefault = `
@@ -1567,9 +1616,8 @@ function cancelarform() {
                 <button type="button" class="btn btn-danger btn-sm removePago"><i class="fa fa-trash"></i></button>
             </div>
         </div>`;
-  $('#pagosMixtosContainer').append(filaDefault);
+  $("#pagosMixtosContainer").append(filaDefault);
 }
-
 
 //cancelar form
 function cancelarform2() {
@@ -1577,7 +1625,6 @@ function cancelarform2() {
   limpiar();
   mostrarform(false);
 }
-
 
 //Función mostrar formulario
 async function mostrarform(flag) {
@@ -1588,7 +1635,11 @@ async function mostrarform(flag) {
     const nombreSucursal = $("#idsucursal2 option:selected").text();
 
     if (!idsucursalSeleccionada) {
-      Swal.fire("Atención", "Seleccione una sucursal antes de crear una venta.", "warning");
+      Swal.fire(
+        "Atención",
+        "Seleccione una sucursal antes de crear una venta.",
+        "warning",
+      );
       return;
     }
 
@@ -1642,7 +1693,6 @@ async function mostrarform(flag) {
   }
 }
 
-
 $("#idsucursal2").on("change", async function () {
   const idsucursal = $(this).val();
   if (!idsucursal) return;
@@ -1654,11 +1704,10 @@ $("#idsucursal2").on("change", async function () {
       title: "Caja no abierta",
       text: "No tienes una caja abierta en esta sucursal. Deberás aperturar una antes de vender.",
       timer: 2500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   }
 });
-
 
 function verificarCaja() {
   return new Promise((resolve, reject) => {
@@ -1667,11 +1716,12 @@ function verificarCaja() {
       type: "get",
       dataType: "json",
       success: function (response) {
-        $('#navbar-poss').hide();       // ocultas el navbar general del cabezote
-        $('#navbar-pos2').show().empty();
+        $("#navbar-poss").hide(); // ocultas el navbar general del cabezote
+        $("#navbar-pos2").show().empty();
         if (response.success) {
           $("#idcaja").val(response.idcaja);
-          $("#navbar-pos2").html(`<li class="nav-item" style="margin-right: 10px;">
+          $("#navbar-pos2")
+            .html(`<li class="nav-item" style="margin-right: 10px;">
             <a class="nav-link"  onclick="cerrarcaja()" title="Cerrar caja" style="background-color: #FA7A31; border-radius: 5px; color: white; font-weight:bold;" href="#" role="button">
               <i class="fas fa-arrow-left"></i>
             </a>
@@ -1735,11 +1785,10 @@ function verificarCajaPorSucursal(idsucursal) {
       error: function (error) {
         console.error("Error al verificar caja:", error);
         reject(error);
-      }
+      },
     });
   });
 }
-
 
 function listarCajas() {
   // Obtenemos la sucursal seleccionada del combo principal
@@ -1747,7 +1796,9 @@ function listarCajas() {
 
   // Si no se ha seleccionado ninguna sucursal, mostramos mensaje
   if (!idsucursal) {
-    $("#cajas").html("<option value=''>Seleccione una sucursal primero</option>");
+    $("#cajas").html(
+      "<option value=''>Seleccione una sucursal primero</option>",
+    );
     return;
   }
 
@@ -1764,7 +1815,8 @@ function listarCajas() {
           html += `<option value="${item.idcaja}">${item.nombre}</option>`;
         });
       } else {
-        html = "<option value=''>No hay cajas activas en esta sucursal</option>";
+        html =
+          "<option value=''>No hay cajas activas en esta sucursal</option>";
       }
 
       $("#cajas").html(html);
@@ -1772,13 +1824,13 @@ function listarCajas() {
     error: function (xhr, status, error) {
       console.error("Error al listar cajas:", error);
       $("#cajas").html("<option value=''>Error al cargar cajas</option>");
-    }
+    },
   });
 }
 
 $("#formularioappcaja").submit(function (e) {
   e.preventDefault();
-  var $form = $(this);               // guardamos una referencia al form
+  var $form = $(this); // guardamos una referencia al form
   var data = new FormData(this);
 
   $.ajax({
@@ -1805,7 +1857,7 @@ $("#formularioappcaja").submit(function (e) {
     },
     error: function () {
       Swal.fire("Error", "Fallo en la petición de apertura.", "error");
-    }
+    },
   });
 });
 
@@ -1814,7 +1866,11 @@ function cerrarcaja() {
   var idsucursal2 = $("#idsucursal2").val(); // Tomamos la sucursal seleccionada
 
   $.ajax({
-    url: "controladores/pos.php?op=showResumenCaja&idcaja=" + idcaja + "&idsucursal=" + idsucursal2,
+    url:
+      "controladores/pos.php?op=showResumenCaja&idcaja=" +
+      idcaja +
+      "&idsucursal=" +
+      idsucursal2,
     type: "POST",
     contentType: false,
     processData: false,
@@ -1825,7 +1881,11 @@ function cerrarcaja() {
         resumen = JSON.parse(data);
       } catch (err) {
         console.error("Error al parsear JSON:", err, data);
-        Swal.fire("Error", "No se pudo obtener el resumen de caja correctamente.", "error");
+        Swal.fire(
+          "Error",
+          "No se pudo obtener el resumen de caja correctamente.",
+          "error",
+        );
         return;
       }
 
@@ -1874,11 +1934,11 @@ function cerrarcaja() {
                     </span>
                     <hr>
                     <label>Verifique la cantidad del sistema con la de su caja física</label>`,
-        input: 'number',
+        input: "number",
         inputAttributes: {
           autocapitalize: "off",
           required: true,
-          step: "0.01"
+          step: "0.01",
         },
         inputValue: parseFloat(resumen.total_efectivo).toFixed(2),
         showCancelButton: true,
@@ -1886,7 +1946,9 @@ function cerrarcaja() {
         showLoaderOnConfirm: true,
         preConfirm: async (efectivo_cierre) => {
           try {
-            const resp = await fetch(`controladores/pos.php?op=cerrarCaja&efectivo_cierre=${efectivo_cierre}&idcaja=${idcaja}&idsucursal=${idsucursal2}`);
+            const resp = await fetch(
+              `controladores/pos.php?op=cerrarCaja&efectivo_cierre=${efectivo_cierre}&idcaja=${idcaja}&idsucursal=${idsucursal2}`,
+            );
             if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
             return resp.json();
           } catch (err) {
@@ -1901,7 +1963,7 @@ function cerrarcaja() {
             icon: "success",
             text: "Vuelva a abrir una caja cuando lo necesite.",
             showConfirmButton: false,
-            timer: 1500
+            timer: 1500,
           }).then(() => location.reload());
         }
       });
@@ -1909,10 +1971,9 @@ function cerrarcaja() {
     error: function (err) {
       console.error("Error al cargar resumen de caja:", err);
       Swal.fire("Error", "No se pudo obtener el resumen de caja.", "error");
-    }
+    },
   });
 }
-
 
 $("#formularioappcaja").submit(function (e) {
   e.preventDefault();
@@ -1967,7 +2028,9 @@ $("#tipo_comprobante").change(function () {
 
 // Función unificada para número y serie
 function cargarNumeroSerie(tipoComprobante, idsucursal) {
-  let opNum = "", opSerie = "", prefijo = "";
+  let opNum = "",
+    opSerie = "",
+    prefijo = "";
 
   switch (tipoComprobante) {
     case "Factura":
@@ -2026,7 +2089,11 @@ function marcarImpuesto(idsucursalSeleccionada) {
     idsucursalSeleccionada = $("#idsucursal").val(); // fallback
   }
 
-  if (tipo_comprobante === "Factura" || tipo_comprobante === "Boleta" || tipo_comprobante === "Ticket") {
+  if (
+    tipo_comprobante === "Factura" ||
+    tipo_comprobante === "Boleta" ||
+    tipo_comprobante === "Ticket"
+  ) {
     mostrar_impuesto();
     no_aplica = impuesto;
     cargarNumeroSerie(tipo_comprobante, idsucursalSeleccionada);
@@ -2044,7 +2111,7 @@ $("#tipo_comprobante").change(function () {
 });
 
 function handlePrecioChange(input, idpc) {
-  const checkbox = document.getElementById('chkPrecioSegunCantidad-' + idpc);
+  const checkbox = document.getElementById("chkPrecioSegunCantidad-" + idpc);
   const activarAuto = checkbox?.checked;
 
   const valorInput = input.value.trim();
@@ -2057,13 +2124,16 @@ function handlePrecioChange(input, idpc) {
   }
 
   // Guardar el precio original al primer cambio
-  if (!input.hasAttribute('data-precio-original')) {
-    input.setAttribute('data-precio-original', input.getAttribute('data-previo') || precioNuevo);
+  if (!input.hasAttribute("data-precio-original")) {
+    input.setAttribute(
+      "data-precio-original",
+      input.getAttribute("data-previo") || precioNuevo,
+    );
   }
 
   // Buscar la fila del producto
-  const filas = document.querySelectorAll('#detalles tbody tr');
-  filas.forEach(fila => {
+  const filas = document.querySelectorAll("#detalles tbody tr");
+  filas.forEach((fila) => {
     const idProducto = fila.querySelector('input[name="idp[]"]').value;
     if (idProducto == idpc) {
       const cantidadInput = fila.querySelector('input[name="cantidad[]"]');
@@ -2076,17 +2146,19 @@ function handlePrecioChange(input, idpc) {
       }
 
       // --- Guardamos precio base la primera vez que se activa ---
-      let precioBase = parseFloat(input.getAttribute('data-precio-base'));
+      let precioBase = parseFloat(input.getAttribute("data-precio-base"));
       if (isNaN(precioBase) || precioBase <= 0) {
-        precioBase = parseFloat(input.getAttribute('data-previo')) || precioNuevo;
-        input.setAttribute('data-precio-base', precioBase);
+        precioBase =
+          parseFloat(input.getAttribute("data-previo")) || precioNuevo;
+        input.setAttribute("data-precio-base", precioBase);
       }
 
       // --- Guardamos cantidad base la primera vez ---
-      let cantidadBase = parseFloat(cantidadInput.getAttribute('data-cantidad-base'))
-        || parseFloat(cantidadInput.value)
-        || 1;
-      cantidadInput.setAttribute('data-cantidad-base', cantidadBase);
+      let cantidadBase =
+        parseFloat(cantidadInput.getAttribute("data-cantidad-base")) ||
+        parseFloat(cantidadInput.value) ||
+        1;
+      cantidadInput.setAttribute("data-cantidad-base", cantidadBase);
 
       // --- Calcular nueva cantidad ---
       const nuevaCantidad = (precioNuevo / precioBase) * cantidadBase;
@@ -2099,15 +2171,16 @@ function handlePrecioChange(input, idpc) {
   });
 
   // Guardar nuevo precio como referencia
-  input.setAttribute('data-previo', precioNuevo);
+  input.setAttribute("data-previo", precioNuevo);
   calcularTotales();
 }
 
 function toggleCheckPrecio(idpc, checkbox) {
-  const hidden = document.getElementById('check_precio_' + idpc);
-  const input = document.getElementById('precio-' + idpc);
-  const fila = [...document.querySelectorAll('#detalles tbody tr')]
-    .find(f => f.querySelector('input[name="idp[]"]').value == idpc);
+  const hidden = document.getElementById("check_precio_" + idpc);
+  const input = document.getElementById("precio-" + idpc);
+  const fila = [...document.querySelectorAll("#detalles tbody tr")].find(
+    (f) => f.querySelector('input[name="idp[]"]').value == idpc,
+  );
 
   const cantidadInput = fila?.querySelector('input[name="cantidad[]"]');
   const subtotalSpan = fila?.querySelector('span[name="subtotal"]');
@@ -2124,36 +2197,39 @@ function toggleCheckPrecio(idpc, checkbox) {
       icon: "info",
       timer: 1500,
       showConfirmButton: false,
-      position: 'top-end',
+      position: "top-end",
       toast: true,
       background: "#e0f7fa",
-      color: "#00796b"
+      color: "#00796b",
     });
 
     // Guardar cantidad original la primera vez
-    if (!cantidadInput.hasAttribute('data-cantidad-original')) {
-      cantidadInput.setAttribute('data-cantidad-original', cantidadInput.value);
+    if (!cantidadInput.hasAttribute("data-cantidad-original")) {
+      cantidadInput.setAttribute("data-cantidad-original", cantidadInput.value);
     }
 
     // Guardar precio original si no existe
-    if (!input.hasAttribute('data-precio-original')) {
-      input.setAttribute('data-precio-original', input.value);
+    if (!input.hasAttribute("data-precio-original")) {
+      input.setAttribute("data-precio-original", input.value);
     }
 
     // Restaurar el precio base a su valor original
-    const precioOriginal = parseFloat(input.getAttribute('data-precio-original'));
+    const precioOriginal = parseFloat(
+      input.getAttribute("data-precio-original"),
+    );
     if (!isNaN(precioOriginal)) {
       input.value = precioOriginal.toFixed(2);
-      input.setAttribute('data-previo', precioOriginal.toFixed(2));
-      input.setAttribute('data-precio-base', precioOriginal.toFixed(2));
+      input.setAttribute("data-previo", precioOriginal.toFixed(2));
+      input.setAttribute("data-precio-base", precioOriginal.toFixed(2));
     }
 
     // Restaurar la cantidad original también
-    const cantidadOriginal = parseFloat(cantidadInput.getAttribute('data-cantidad-original'));
+    const cantidadOriginal = parseFloat(
+      cantidadInput.getAttribute("data-cantidad-original"),
+    );
     if (!isNaN(cantidadOriginal)) {
       cantidadInput.value = cantidadOriginal.toFixed(3);
     }
-
   } else {
     // Si se desactiva, restauramos también cantidad y precio originales
     Swal.fire({
@@ -2161,19 +2237,23 @@ function toggleCheckPrecio(idpc, checkbox) {
       icon: "warning",
       timer: 1500,
       showConfirmButton: false,
-      position: 'top-end',
+      position: "top-end",
       toast: true,
       background: "#fff3e0",
-      color: "#e65100"
+      color: "#e65100",
     });
 
-    const precioOriginal = parseFloat(input.getAttribute('data-precio-original'));
-    const cantidadOriginal = parseFloat(cantidadInput.getAttribute('data-cantidad-original'));
+    const precioOriginal = parseFloat(
+      input.getAttribute("data-precio-original"),
+    );
+    const cantidadOriginal = parseFloat(
+      cantidadInput.getAttribute("data-cantidad-original"),
+    );
 
     if (!isNaN(precioOriginal)) {
       input.value = precioOriginal.toFixed(2);
-      input.setAttribute('data-previo', precioOriginal.toFixed(2));
-      input.setAttribute('data-precio-base', precioOriginal.toFixed(2));
+      input.setAttribute("data-previo", precioOriginal.toFixed(2));
+      input.setAttribute("data-precio-base", precioOriginal.toFixed(2));
     }
 
     if (!isNaN(cantidadOriginal)) {
@@ -2184,10 +2264,25 @@ function toggleCheckPrecio(idpc, checkbox) {
   modificarSubtotales();
 }
 
-
-function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, preciocigv, precioB, precioC
-  , precioD, stock, proigv, cantidad_contenedor, contenedor, idcategoria, unidadmedida, id_detalle_compra_lote) {
-
+function agregarDetalle(
+  idpc,
+  idproducto,
+  producto,
+  cant,
+  desc,
+  precio_venta,
+  preciocigv,
+  precioB,
+  precioC,
+  precioD,
+  stock,
+  proigv,
+  cantidad_contenedor,
+  contenedor,
+  idcategoria,
+  unidadmedida,
+  id_detalle_compra_lote,
+) {
   if (precio_venta == 0) {
     Swal.fire({
       title: "Alerta",
@@ -2197,31 +2292,40 @@ function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, pr
       confirmButtonText: "Entendido", // Texto personalizado en el botón
       confirmButtonColor: "#3085d6", // Color del botón
       background: "#f8f9fa", // Fondo claro para hacerla más elegante
-      position: 'center', // Centrado en la pantalla
+      position: "center", // Centrado en la pantalla
       customClass: {
-        popup: 'swal-custom-popup', // Estilo personalizado para la ventana emergente
-        title: 'swal-title', // Estilo personalizado para el título
-        content: 'swal-content' // Estilo personalizado para el contenido
+        popup: "swal-custom-popup", // Estilo personalizado para la ventana emergente
+        title: "swal-title", // Estilo personalizado para el título
+        content: "swal-content", // Estilo personalizado para el contenido
       },
       willClose: () => {
         // Añadir animación de desvanecimiento cuando se cierre
-        document.querySelector('.swal2-popup').classList.add('fade-out');
-      }
+        document.querySelector(".swal2-popup").classList.add("fade-out");
+      },
     });
   }
 
-  if (idcategoria != 1) { // no aplica a servicios
+  if (idcategoria != 1) {
+    // no aplica a servicios
     if (cantidad_contenedor > 1) {
       // Caso caja u otro contenedor
       let stockDisponible = stock / cantidad_contenedor;
       if (stockDisponible < 1) {
-        Swal.fire("Stock insuficiente", "No hay stock suficiente para el contenedor: " + contenedor, "error");
+        Swal.fire(
+          "Stock insuficiente",
+          "No hay stock suficiente para el contenedor: " + contenedor,
+          "error",
+        );
         return false;
       }
     } else {
       // Caso unidad
       if (stock <= 0) {
-        Swal.fire("Stock insuficiente", "No hay stock suficiente para el contenedor: " + contenedor, "error");
+        Swal.fire(
+          "Stock insuficiente",
+          "No hay stock suficiente para el contenedor: " + contenedor,
+          "error",
+        );
         return false;
       }
 
@@ -2233,8 +2337,10 @@ function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, pr
 
         Swal.fire(
           "Aviso",
-          "El stock es menor a 1, se agregará solo la cantidad disponible (" + stock + "), ajustando el precio proporcionalmente.",
-          "info"
+          "El stock es menor a 1, se agregará solo la cantidad disponible (" +
+            stock +
+            "), ajustando el precio proporcionalmente.",
+          "info",
         );
       }
     }
@@ -2258,7 +2364,10 @@ function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, pr
 
   //aquí preguntamos si el idarticulo ya fue agregado
   // SOLO evitar duplicados si NO es servicio
-  if (idcategoria != 1 && articuloAdd.split('-').indexOf(idpc.toString()) !== -1) {
+  if (
+    idcategoria != 1 &&
+    articuloAdd.split("-").indexOf(idpc.toString()) !== -1
+  ) {
     //reporta -1 cuando no existe
     // swal( producto +" ya se agrego");
 
@@ -2297,9 +2406,11 @@ function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, pr
     }*/
     var detail = "";
     if (contenedor != undefined && unidadmedida != undefined) {
-      detail = unidadmedida + ' <span style="color:#d9534f;font-weight:bold;padding:0 3px;">x</span> ' + contenedor;
+      detail =
+        unidadmedida +
+        ' <span style="color:#d9534f;font-weight:bold;padding:0 3px;">x</span> ' +
+        contenedor;
     }
-
 
     var descuento = desc;
 
@@ -2307,29 +2418,32 @@ function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, pr
     var select = "";
     // Campo de precio con evento y checkbox por producto
     var precioInput =
-      '<div class="d-flex align-items-center justify-content-center" style="gap:5px;">' +
-      '<input ' +
-      'class="form-control text-center" style="width:80px" ' +
+      "<input " +
+      'class="form-control form-control-sm" style="width:80px" ' +
       'type="number" step="0.01" ' +
-      'oninput="handlePrecioChange(this, \'' + idpc + '\')" ' +
+      "oninput=\"handlePrecioChange(this, '" +
+      idpc +
+      "')\" " +
       'name="precio_venta[]" ' +
-      'id="precio-' + idpc + '" ' +
-      'value="' + precio_venta + '" ' +
-      'data-previo="' + precio_venta + '">' +
-      // Checkbox local
-      '<div class="form-check" title="Activar Precio según cantidad" style="margin-left:5px;">' +
-      '<input class="form-check-input" type="checkbox" id="chkPrecioSegunCantidad-' + idpc + '" onchange="toggleCheckPrecio(' + idpc + ', this)">' +
-      '</div>' +
-      '</div>';
+      'id="precio-' +
+      idpc +
+      '" ' +
+      'value="' +
+      precio_venta +
+      '" ' +
+      'data-previo="' +
+      precio_venta +
+      '">';
 
     var btnVerPrecios =
-      '<button ' +
-      'type="button" ' +
-      'class="btn btn-outline-secondary btn-sm ml-1" ' +
-      'onclick="verPreciosItem(' + idpc + ')" ' +
+      "<i " +
+      'class="fas fa-eye" ' +
+      'onclick="verPreciosItem(' +
+      idpc +
+      ')" ' +
+      'style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); cursor:pointer; font-size: 0.8em; color: #6c757d;"' +
       'title="Mostrar precios">' +
-      '<i class="fas fa-eye"></i>' +
-      '</button>';
+      "</i>";
 
     if (precioB != "0.00" || precioC != "0.00" || precioD != "0.00") {
       cad =
@@ -2364,54 +2478,87 @@ function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, pr
     if (idpc !== "") {
       contador = contador + 1;
       var fila =
-        '<tr class="filas custom-row" id="fila' + cont + '" style="margin-bottom: -10px !important; border-radius: 10px; box-shadow: 0 0 5px rgba(0,0,0,0.3);">' +
-        '<td style="text-align: center; vertical-align: middle;">' +
-        '<input type="hidden" name="contenedor[]" value="' + contenedor + '">' +
-        '<input type="text" name="cantidad_contenedor[]" value="' + cantidad_contenedor + '" style="display: none;">' +
-        '<input type="hidden" name="idp[]" value="' + idpc + '">' +
-        '<input type="hidden" name="check_precio[]" id="check_precio_' + idpc + '" value="0">' +
-        '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
-        '<input type="hidden" name="idcategoria[]" value="' + idcategoria + '">' +
-        '<input type="hidden" name="id_detalle_compra_lote[]" value="' + id_detalle_compra_lote + '">' + '<div style="display: flex; align-items: center; justify-content: center; gap: 5px;">' +
-        '<textarea class="form-control nombre-producto" name="nombreProducto[]" rows="1" oninput="autoResize(this)" onfocus="this.select()" style=" font-weight:bold; width:300px; resize:none; overflow:hidden; white-space: pre-wrap; word-break: break-word; overflow-wrap: break-word; line-height:1.2;">' + producto + '</textarea>' +
-        //'<span style="color: red; font-weight: bold; white-space: nowrap;width: 120px">' + select + '</span>' +
-        //'</div>' + 
-        //'<input type="text" name="nombreProducto[]" value="' + producto + '" hidden>' +
-        '</td>' +
-        '<td style="text-align: center; vertical-align: middle;">' +
-        '<span class="badge bg-green" style="white-space:nowrap; font-size:11px;">' + detail + '</span>' +
-        '</td>' +
-        '<td class="text-center align-middle">' +
-        '<div class="d-flex justify-content-center align-items-center">' +
-        precioInput +
-        btnVerPrecios +
-        '</div>' +
-        '</td>' +
-        '<td style="text-align: center; vertical-align: middle;">' +
-        '<input class="form-control" style="text-align:center; width: 80px; background-color:transparent; color: blue; font-weight: bold;" ' +
-        'type="number" step="0.001" min="0" ' +
-        'oninput="validarCantidad(this, ' + stock + ', ' + cantidad_contenedor + '); modificarSubtotales()" ' +
-        'name="cantidad[]" id="cantidad[]" value="' + cantidad + '">' + // Cantidad en azul
-        '</td>' +
-        '<td style="text-align: center; vertical-align: middle;"><input class="form-control" style="text-align:center; width: 70px; background-color:#fff3cd; font-weight:bold;" type="number" step="0.01" oninput="modificarSubtotales(' +
-        cont + ')" name="descuento[]" value="' + descuento + '"></td>' +
-        '<td style="text-align: center; vertical-align: middle; display:none">' +
-        '<input  style="text-align:center; width: 50px; font-size:10px" type="text" readonly="readonly" name="stock[]" value="' +
-        stock + '" hidden>' +
-        '<span class="btn btn-warning" style="font-size:12px;font-weight:bold">' +
-        stock + "</span>" +
-        '</td>' +
-        '<td style="text-align: center; vertical-align: middle; width:100px">S/. <span id="subtotal' + cont + '" name="subtotal" style="text-align:center;font-size:14px;font-weight:bold"></span></td>' +
-        '<td style="text-align: center; vertical-align: middle;">' +
-        (modoEditar
-          ? ''  // si está en edición, no mostramos nada
-          : '<button type="button" class="btn btn-danger btn-sm" onclick="eliminarDetalle(' + cont + ')"><i class="fa fa-trash"></i></button>'
-        ) +
-        '</td>' +
+  '<tr class="filas custom-row" id="fila' + cont + '" style="margin-bottom:-10px;border-radius:10px;box-shadow:0 0 5px rgba(0,0,0,0.3);">' +
 
-        '<td style="display: none;"><span style="text-align:center" id="proigv' + cont + '" name="proigv" hidden>' +
-        proigv + "</span></td>" +
-        "</tr>";
+  '<td style="text-align:center;vertical-align:middle;">' +
+
+    '<input type="hidden" name="contenedor[]" value="' + contenedor + '">' +
+    '<input type="hidden" name="cantidad_contenedor[]" value="' + cantidad_contenedor + '">' +
+    '<input type="hidden" name="idp[]" value="' + idpc + '">' +
+    '<input type="hidden" name="check_precio[]" id="check_precio_' + idpc + '" value="0">' +
+    '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
+    '<input type="hidden" name="idcategoria[]" value="' + idcategoria + '">' +
+    '<input type="hidden" name="id_detalle_compra_lote[]" value="' + id_detalle_compra_lote + '">' +
+
+    '<div style="display:flex;align-items:center;justify-content:center;gap:5px;">' +
+
+      (modoEditar
+        ? ""
+        : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' + cont + ')"></i>') +
+
+      '<textarea class="form-control nombre-producto" ' +
+      'name="nombreProducto[]" rows="1" ' +
+      'oninput="autoResize(this)" onfocus="this.select()" ' +
+      'style="font-weight:bold;width:300px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:1.2;">' +
+      producto +
+      '</textarea>' +
+
+    '</div>' +
+  '</td>' +
+
+  '<td style="text-align:center;vertical-align:middle;">' +
+    '<span class="badge bg-green" style="white-space:nowrap;font-size:11px;">' +
+      detail +
+    '</span>' +
+  '</td>' +
+
+  '<td class="text-center align-middle">' +
+    '<div style="position:relative;display:inline-block;">' +
+      precioInput +
+      btnVerPrecios +
+    '</div>' +
+  '</td>' +
+
+  '<td style="text-align:center; vertical-align:middle;">' +
+    '<div style="display:flex; justify-content:center; align-items:center; width:100%;">' +
+        '<input type="checkbox" ' +
+        'id="chkPrecioSegunCantidad-' + idpc + '" ' +
+        'onchange="toggleCheckPrecio(' + idpc + ', this)">' +
+    '</div>' +
+'</td>' +
+
+  '<td style="text-align:center;vertical-align:middle;">' +
+    '<input class="form-control" ' +
+    'style="text-align:center;width:80px;background-color:transparent;color:blue;font-weight:bold;" ' +
+    'type="number" step="0.001" min="0" ' +
+    'oninput="validarCantidad(this,' + stock + ',' + cantidad_contenedor + ');modificarSubtotales()" ' +
+    'name="cantidad[]" value="' + cantidad + '">' +
+  '</td>' +
+
+  '<td style="text-align:center;vertical-align:middle;">' +
+    '<input class="form-control" ' +
+    'style="text-align:center;width:70px;background-color:#fff3cd;font-weight:bold;" ' +
+    'type="number" step="0.01" ' +
+    'oninput="modificarSubtotales(' + cont + ')" ' +
+    'name="descuento[]" value="' + descuento + '">' +
+  '</td>' +
+
+  '<td style="display:none;text-align:center;vertical-align:middle;">' +
+    '<input type="hidden" name="stock[]" value="' + stock + '">' +
+    '<span class="btn btn-warning" style="font-size:12px;font-weight:bold;">' +
+      stock +
+    '</span>' +
+  '</td>' +
+
+  '<td style="text-align:center;vertical-align:middle;width:100px;">' +
+    'S/. <span id="subtotal' + cont + '" name="subtotal" style="font-size:14px;font-weight:bold;"></span>' +
+  '</td>' +
+
+  '<td style="display:none;">' +
+    '<span id="proigv' + cont + '" name="proigv">' + proigv + '</span>' +
+  '</td>' +
+
+'</tr>';
       cont++;
       detalles = detalles + 1;
       articuloAdd = articuloAdd + idpc + "-";
@@ -2429,10 +2576,8 @@ function autoResize(textarea) {
   textarea.style.height = textarea.scrollHeight + "px";
 }
 
-
-$(document).on('keydown', '.nombre-producto', function (e) {
-
-  if (e.key === 'Tab') {
+$(document).on("keydown", ".nombre-producto", function (e) {
+  if (e.key === "Tab") {
     e.preventDefault(); // evita salir del campo
 
     let start = this.selectionStart;
@@ -2440,9 +2585,7 @@ $(document).on('keydown', '.nombre-producto', function (e) {
 
     // Insertar salto de línea en la posición del cursor
     this.value =
-      this.value.substring(0, start) +
-      "\n" +
-      this.value.substring(end);
+      this.value.substring(0, start) + "\n" + this.value.substring(end);
 
     // Mover cursor a la siguiente línea
     this.selectionStart = this.selectionEnd = start + 1;
@@ -2450,9 +2593,7 @@ $(document).on('keydown', '.nombre-producto', function (e) {
     // Ajustar altura automáticamente
     autoResize(this);
   }
-
 });
-
 
 function verPreciosItem(idproducto) {
   $.ajax({
@@ -2508,19 +2649,22 @@ function validarCantidad(input, stock, cantidad_contenedor) {
 
 // 1) Función para actualizar en BD
 function actualizarDataItem(idproducto, campo, value) {
-  var token = $("#token").val();     // si lo necesitas
-  $.post("controladores/pos.php?op=actualizarDataItem", {
-    idproducto: idproducto,
-    campo: campo,
-    value: value,
-  },
+  var token = $("#token").val(); // si lo necesitas
+  $.post(
+    "controladores/pos.php?op=actualizarDataItem",
+    {
+      idproducto: idproducto,
+      campo: campo,
+      value: value,
+    },
     function (res) {
       if (res.status == 1) {
         console.log("Precio actualizado.");
       } else {
         toastr.error("No se pudo guardar el cambio.");
       }
-    }, "json"
+    },
+    "json",
   );
 }
 
@@ -2532,9 +2676,6 @@ function actualizarPrecio(precio, idproducto) {
   modificarSubtotales(idproducto);
   $("#ModalPrecios").modal("hide");
 }
-
-
-
 
 // customStyles.js
 
@@ -2596,7 +2737,7 @@ function modificarSubtotales(e) {
       subtotal = precio;
     } else {
       // Modo normal con descuento RESTANDO AL SUBTOTAL FINAL
-      subtotal = (cantidad * precio) - descuento;
+      subtotal = cantidad * precio - descuento;
 
       // Evitar negativos
       if (subtotal < 0) subtotal = 0;
@@ -2629,7 +2770,6 @@ function modificarSubtotales(e) {
   calcularTotalRecibido();
   calcularTotalDeposito();
 }
-
 
 function calcularTotales() {
   const sub = document.getElementsByName("subtotal");
@@ -2704,7 +2844,15 @@ $("#calcular_cuotas").click(function (e) {
   var deuda = parseFloat($("#montoDeuda").val());
   var fechaBase = new Date($("#fechaOperacion").val());
 
-  if (cuotas <= 0 || deuda <= 0) return;
+  if (!cuotas) {
+    Swal.fire("Selecciona número de cuotas", "", "warning");
+    return;
+  }
+
+  if (!deuda || deuda <= 0) {
+    Swal.fire("El credito no puede ser menor o igual a 0", "", "warning");
+    return;
+  }
 
   // interés total
   var interesTotal = deuda * (interes / 100);
@@ -2717,11 +2865,21 @@ $("#calcular_cuotas").click(function (e) {
 
   var html = "";
 
+  if (cuotas === 0) {
+    $("#datafechas").html(
+      '<td colspan="2" class="text-center">No se han calculado las fechas de pago</td>',
+    );
+    return;
+  }
+
   for (let i = 1; i <= cuotas; i++) {
     fechaBase.setMonth(fechaBase.getMonth() + 1);
 
-    var fecha = fechaBase.getFullYear() + "-" +
-      ("0" + (fechaBase.getMonth() + 1)).slice(-2) + "-" +
+    var fecha =
+      fechaBase.getFullYear() +
+      "-" +
+      ("0" + (fechaBase.getMonth() + 1)).slice(-2) +
+      "-" +
       ("0" + fechaBase.getDate()).slice(-2);
 
     html += `
@@ -2735,7 +2893,6 @@ $("#calcular_cuotas").click(function (e) {
 
   $("#datafechas").html(html);
 });
-
 
 function calcularDeuda() {
   $("#totalrecibido").val(0);
@@ -2789,7 +2946,11 @@ function calcularVuelto() {
     let metodo = metodos[0];
     if (metodo === "Efectivo") {
       totalRecibido = parseFloat($("#totalrecibido").val()) || 0;
-    } else if (metodo === "Yape" || metodo === "Deposito" || metodo === "Transferencia") {
+    } else if (
+      metodo === "Yape" ||
+      metodo === "Deposito" ||
+      metodo === "Transferencia"
+    ) {
       totalRecibido = parseFloat($("#totaldeposito").val()) || 0;
     }
     $("#formapago").val(metodo);
@@ -2806,14 +2967,13 @@ function calcularVuelto() {
   let montoPagado = parseFloat($("#montoPagado").val()) || 0;
 
   // Calcular vuelto
-  let vuelto = montoPagado > 0 ? totalRecibido - montoPagado : totalRecibido - totalVenta;
+  let vuelto =
+    montoPagado > 0 ? totalRecibido - montoPagado : totalRecibido - totalVenta;
   if (vuelto < 0) vuelto = 0;
 
   $("#vuelto").val(vuelto.toFixed(2));
   $("#totalrecibido").val(totalRecibido.toFixed(2));
 }
-
-
 
 function eliminarDetalle(indice) {
   $("#fila" + indice).remove();
@@ -2904,24 +3064,25 @@ function generarComprobante(idventa) {
         data = JSON.parse(data);
 
         for (var i = 0; i < data.length; i++) {
-          let cantidadVendida = parseFloat(data[i][3]) * parseFloat(data[i][13]);
+          let cantidadVendida =
+            parseFloat(data[i][3]) * parseFloat(data[i][13]);
           let stockDisponible = parseFloat(data[i][10]) + cantidadVendida;
 
           agregarDetalle(
-            data[i][0],   // idpc
-            data[i][1],   // idproducto
-            data[i][2],   // producto
-            data[i][3],   // cantidad
-            data[i][4],   // descuento
-            data[i][5],   // precio_venta
+            data[i][0], // idpc
+            data[i][1], // idproducto
+            data[i][2], // producto
+            data[i][3], // cantidad
+            data[i][4], // descuento
+            data[i][5], // precio_venta
             data[i][6],
             data[i][7],
             data[i][8],
             data[i][9],
             stockDisponible, // stock corregido
-            data[i][12],     // proigv
-            data[i][13],     // cantidad_contenedor
-            data[i][14]      // contenedor
+            data[i][12], // proigv
+            data[i][13], // cantidad_contenedor
+            data[i][14], // contenedor
           );
         }
 
@@ -2931,7 +3092,7 @@ function generarComprobante(idventa) {
       } catch (e) {
         console.error("Error en listarDetalleVenta:", e);
       }
-    }
+    },
   );
 
   // Cargar datos generales de la venta
@@ -3004,15 +3165,16 @@ function generarComprobante(idventa) {
             $("#pagosMixtosContainer").append(nuevaFila);
           }
         } else {
-          $("#pagosMixtosContainer").html("<div class='text-muted'>Sin pagos registrados</div>");
+          $("#pagosMixtosContainer").html(
+            "<div class='text-muted'>Sin pagos registrados</div>",
+          );
         }
 
         recalcularPagos();
-
       } catch (error) {
         console.error("Error al procesar datos de venta:", error);
       }
-    }
+    },
   );
 
   //Cargar cuotas de la venta
@@ -3036,13 +3198,12 @@ function generarComprobante(idventa) {
       } catch (e) {
         console.error("Error al cargar cuotas:", e);
       }
-    }
+    },
   );
 
   // Ocultar botón guardar hasta que cargue todo
   $("#btnGuardar").hide();
 }
-
 
 function mostrarE() {
   let idcotizacion = $("#comprobanteReferencia").val();
@@ -3063,7 +3224,7 @@ function mostrarE() {
       } else {
         console.error("No se recibió idcliente:", data);
       }
-    }
+    },
   );
   $.post(
     "controladores/cotizaciones.php?op=listarDetalleCotizacion",
@@ -3076,7 +3237,8 @@ function mostrarE() {
       }
 
       for (var i = 0; i < data.length; i++) {
-        console.log(data[i][0],
+        console.log(
+          data[i][0],
           data[i][1],
           data[i][2],
           data[i][3],
@@ -3089,7 +3251,8 @@ function mostrarE() {
           data[i][10],
           data[i][12],
           data[i][13],
-          data[i][14]);
+          data[i][14],
+        );
 
         agregarDetalle(
           data[i][0],
@@ -3105,10 +3268,10 @@ function mostrarE() {
           data[i][10],
           data[i][12],
           data[i][13],
-          data[i][14]
+          data[i][14],
         );
       }
-    }
+    },
   );
 }
 
@@ -3129,13 +3292,13 @@ function anularComprobante(idventa) {
         function (e) {
           Swal.fire("!!! Anulado !!!", e, "success");
           tabla.ajax.reload();
-        }
+        },
       );
     } else {
       Swal.fire(
         "! Cancelado ¡",
         "Se Cancelo la anulación de la Venta",
-        "error"
+        "error",
       );
     }
   });
@@ -3146,22 +3309,22 @@ function CrearMov() {
     .then((cajaAbierta) => {
       if (cajaAbierta) {
         // Abre el modal
-        $('#myModal').modal('show');
+        $("#myModal").modal("show");
       } else {
         // Opcional: alerta si la caja no está abierta
         Swal.fire({
-          icon: 'warning',
-          title: 'Caja cerrada',
-          text: 'Primero debes abrir la caja para poder registrar movimientos.'
+          icon: "warning",
+          title: "Caja cerrada",
+          text: "Primero debes abrir la caja para poder registrar movimientos.",
         });
       }
     })
     .catch((err) => {
-      console.error('Error al verificar caja:', err);
+      console.error("Error al verificar caja:", err);
       Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo verificar el estado de la caja.'
+        icon: "error",
+        title: "Error",
+        text: "No se pudo verificar el estado de la caja.",
       });
     });
 }
@@ -3181,15 +3344,14 @@ function guardaryeditarmovimiento(e) {
 
     success: function (datos) {
       Swal.fire({
-        title: 'Movimiento',
-        icon: 'success',
-        text: datos
+        title: "Movimiento",
+        icon: "success",
+        text: datos,
       });
 
-      $('#myModal').modal('hide');
+      $("#myModal").modal("hide");
       verificarCaja();
-    }
-
+    },
   });
   limpiarmov();
 }
@@ -3209,7 +3371,7 @@ function verificarConceptoMovimiento() {
     function (r) {
       $("#idconcepto_movimiento").html(r);
       $("#idconcepto_movimiento").select2();
-    }
+    },
   );
 }
 
@@ -3220,29 +3382,30 @@ function limpiarmov() {
 
 function notaCredito(idventa, idsucursal) {
   Swal.fire({
-    title: '¿Está seguro?',
+    title: "¿Está seguro?",
     text: "Se generará una Nota de Crédito para este comprobante",
-    icon: 'warning',
+    icon: "warning",
     showCancelButton: true,
-    confirmButtonText: 'Sí, continuar',
-    cancelButtonText: 'Cancelar'
+    confirmButtonText: "Sí, continuar",
+    cancelButtonText: "Cancelar",
   }).then((result) => {
     if (result.isConfirmed) {
-      $.post("controladores/venta.php?op=notacredito",
+      $.post(
+        "controladores/venta.php?op=notacredito",
         { comprobanteReferencia: idventa, idsucursal: idsucursal, idmotivo: 1 },
         function (resp) {
           Swal.fire({
-            title: 'Nota de Crédito',
+            title: "Nota de Crédito",
             text: resp,
-            icon: 'success'
+            icon: "success",
           });
           listar(); // refrescamos la tabla
-        }
+        },
       ).fail(function (xhr) {
         Swal.fire({
-          title: 'Error',
-          text: 'Ocurrió un problema al generar la Nota de Crédito',
-          icon: 'error'
+          title: "Error",
+          text: "Ocurrió un problema al generar la Nota de Crédito",
+          icon: "error",
         });
       });
     }
@@ -3265,30 +3428,40 @@ function mostrar(idventa) {
       $("#cliente").text(data.cliente);
       $("#personalm").text(data.personal);
       $("#tipo_comprobantem").html(
-        data.tipo_comprobante == 'Boleta'
-          ? '<span class="badge badge-primary">' + data.tipo_comprobante + '</span>'
-          : '<span class="badge badge-info">' + data.tipo_comprobante + '</span>'
+        data.tipo_comprobante == "Boleta"
+          ? '<span class="badge badge-primary">' +
+              data.tipo_comprobante +
+              "</span>"
+          : '<span class="badge badge-info">' +
+              data.tipo_comprobante +
+              "</span>",
       );
-      $("#correlativo").text(data.serie_comprobante + " - " + data.num_comprobante);
+      $("#correlativo").text(
+        data.serie_comprobante + " - " + data.num_comprobante,
+      );
       $("#ventacreditom").html(
-        data.ventacredito == 'Si'
-          ? '<span class="badge badge-success">' + data.ventacredito + '</span>'
-          : '<span class="badge badge-danger">' + data.ventacredito + '</span>'
+        data.ventacredito == "Si"
+          ? '<span class="badge badge-success">' + data.ventacredito + "</span>"
+          : '<span class="badge badge-danger">' + data.ventacredito + "</span>",
       );
       $("#fecha_hora").text(data.fecha);
       $("#impuestom").text(data.impuesto);
       $("#observaciones").text(data.observacion);
-      $("#formapagom").html('<span class="badge badge-info">' + data.formapago + '</span>');
+      $("#formapagom").html(
+        '<span class="badge badge-info">' + data.formapago + "</span>",
+      );
 
       // Montos
       let montopagado = parseFloat(data.montopagado) || 0;
       $("#abonos").text(montopagado.toFixed(2));
       let deuda = parseFloat(data.total_venta) - montopagado;
-      $("#deuda").text(data.ventacredito == 'Si' ? 'S/. ' + deuda.toFixed(2) : '---');
+      $("#deuda").text(
+        data.ventacredito == "Si" ? "S/. " + deuda.toFixed(2) : "---",
+      );
       $("#subtotalm").text(parseFloat(data.subtotal || 0).toFixed(2));
       $("#impuestom").text(parseFloat(data.impuesto || 0).toFixed(2));
       $("#totalm").text(parseFloat(data.total_venta || 0).toFixed(2));
-    }
+    },
   );
 
   // Cargar detalles en la tabla del modal
@@ -3296,35 +3469,34 @@ function mostrar(idventa) {
     "controladores/venta.php?op=listarDetalle&id=" + idventa,
     function (r) {
       $("#detallesm tbody").html(r);
-    }
+    },
   );
 }
 
-
 function cancelarform02() {
   // Cerrar el modal (asegúrate que coincida con tu HTML)
-  $('#getCodeModal22').modal('hide');
+  $("#getCodeModal22").modal("hide");
 
   // Limpiar el contenido del modal
-  $('#cliente').text('');
-  $('#personalm').text('');
-  $('#fecha_hora').text('');
-  $('#tipo_comprobantem').text('');
-  $('#correlativo').text('');
-  $('#formapagom').text('');
-  $('#ventacreditom').text('');
-  $('#abonos').text('');
-  $('#deuda').text('');
-  $('#observaciones').text('');
-  $('#nrooperacionm').text('');
-  $('#banco').text('');
-  $('#fechadeposito').text('');
-  $('#subtotal').text('');
-  $('#impuesto').text('');
-  $('#total').text('');
+  $("#cliente").text("");
+  $("#personalm").text("");
+  $("#fecha_hora").text("");
+  $("#tipo_comprobantem").text("");
+  $("#correlativo").text("");
+  $("#formapagom").text("");
+  $("#ventacreditom").text("");
+  $("#abonos").text("");
+  $("#deuda").text("");
+  $("#observaciones").text("");
+  $("#nrooperacionm").text("");
+  $("#banco").text("");
+  $("#fechadeposito").text("");
+  $("#subtotal").text("");
+  $("#impuesto").text("");
+  $("#total").text("");
 
   // Limpiar la tabla de detalles
-  $('#detallesm tbody').empty();
+  $("#detallesm tbody").empty();
 }
 
 function cambiarComprobante(idventa, idsucursal) {
@@ -3338,7 +3510,7 @@ function cambiarComprobante(idventa, idsucursal) {
         `,
     showCancelButton: true,
     confirmButtonText: "Continuar",
-    cancelButtonText: "Cancelar"
+    cancelButtonText: "Cancelar",
   }).then((result) => {
     if (!result.isConfirmed) return;
     let tipo = $("#nuevoComprobante").val();
@@ -3351,37 +3523,45 @@ function cambiarComprobante(idventa, idsucursal) {
 }
 
 function seleccionarClienteFactura(idventa, idsucursal) {
-  $.post("controladores/venta.php?op=selectClienteRUC", function (htmlClientes) {
-    Swal.fire({
-      title: "Seleccionar Cliente (RUC)",
-      html: `<select id="clienteFactura" class="form-control">${htmlClientes}</select><br>
+  $.post(
+    "controladores/venta.php?op=selectClienteRUC",
+    function (htmlClientes) {
+      Swal.fire({
+        title: "Seleccionar Cliente (RUC)",
+        html: `<select id="clienteFactura" class="form-control">${htmlClientes}</select><br>
                    <button class="btn btn-primary btn-block" id="btnNuevoCliente">
                         <i class="fa fa-user-plus"></i> Nuevo Cliente
                    </button>`,
-      showCancelButton: true,
-      confirmButtonText: "Usar este cliente",
-      cancelButtonText: "Cancelar",
-      didOpen: () => {
-        $("#clienteFactura").select2({ dropdownParent: $(".swal2-container") });
-        $("#btnNuevoCliente").on("click", function () {
-          $("#ModalClientes").modal("show");
-          Swal.close();
-        });
-      }
-    }).then((r) => {
-      if (!r.isConfirmed) return;
-      let idcliente = $("#clienteFactura").val();
-      $.post("controladores/venta.php?op=actualizarClienteVentaFactura",
-        { idventa: idventa, idcliente: idcliente },
-        function (resp) {
-          ejecutarCambioComprobante(idventa, "Factura", idsucursal);
-        });
-    });
-  });
+        showCancelButton: true,
+        confirmButtonText: "Usar este cliente",
+        cancelButtonText: "Cancelar",
+        didOpen: () => {
+          $("#clienteFactura").select2({
+            dropdownParent: $(".swal2-container"),
+          });
+          $("#btnNuevoCliente").on("click", function () {
+            $("#ModalClientes").modal("show");
+            Swal.close();
+          });
+        },
+      }).then((r) => {
+        if (!r.isConfirmed) return;
+        let idcliente = $("#clienteFactura").val();
+        $.post(
+          "controladores/venta.php?op=actualizarClienteVentaFactura",
+          { idventa: idventa, idcliente: idcliente },
+          function (resp) {
+            ejecutarCambioComprobante(idventa, "Factura", idsucursal);
+          },
+        );
+      });
+    },
+  );
 }
 
 function ejecutarCambioComprobante(idventa, tipo, idsucursal) {
-  $.post("controladores/venta.php?op=cambiar_comprobante",
+  $.post(
+    "controladores/venta.php?op=cambiar_comprobante",
     { idventa: idventa, tipo: tipo, idsucursal: idsucursal },
     function (resp) {
       if (resp.trim() === "ok") {
@@ -3390,7 +3570,7 @@ function ejecutarCambioComprobante(idventa, tipo, idsucursal) {
       } else {
         Swal.fire("Error", resp, "error");
       }
-    }
+    },
   );
 }
 
@@ -3410,7 +3590,9 @@ function verHistorialCliente() {
   });
 
   // ... (Tu código de loading y fade in sigue igual) ...
-  $("#body_historial_flotante").html('<tr><td colspan="6" class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x text-info"></i><p class="mt-2 text-muted">Consultando historial...</p></td></tr>');
+  $("#body_historial_flotante").html(
+    '<tr><td colspan="6" class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x text-info"></i><p class="mt-2 text-muted">Consultando historial...</p></td></tr>',
+  );
 
   if ($("#floating-history").is(":hidden")) {
     $("#floating-history").fadeIn();
@@ -3423,7 +3605,7 @@ function verHistorialCliente() {
     data: {
       idcliente: idcliente,
       idsucursal: idsucursal,
-      ids_carrito: productosEnCarrito
+      ids_carrito: productosEnCarrito,
     },
     dataType: "json",
     success: function (data) {
@@ -3433,10 +3615,15 @@ function verHistorialCliente() {
       if (data.length > 0) {
         $.each(data, function (i, item) {
           // ... tu lógica de filas ...
-          let claseExtra = item.coincide ? 'resaltado-carrito' : '';
-          let icono = item.coincide ? '<i class="fas fa-star text-warning mr-1"></i> ' : '';
-          let colorDesc = item.descuento !== '-' ? 'text-danger font-weight-bold' : 'text-muted';
-          let estiloFila = (i >= 8) ? 'style="display:none;"' : '';
+          let claseExtra = item.coincide ? "resaltado-carrito" : "";
+          let icono = item.coincide
+            ? '<i class="fas fa-star text-warning mr-1"></i> '
+            : "";
+          let colorDesc =
+            item.descuento !== "-"
+              ? "text-danger font-weight-bold"
+              : "text-muted";
+          let estiloFila = i >= 8 ? 'style="display:none;"' : "";
 
           html += `<tr class="${claseExtra}" ${estiloFila}>
                                 <td title="${item.producto}">
@@ -3450,10 +3637,11 @@ function verHistorialCliente() {
                              </tr>`;
         });
       } else {
-        html = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-shopping-basket fa-2x mb-2"></i><br>Sin historial reciente en esta sucursal.</td></tr>';
+        html =
+          '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-shopping-basket fa-2x mb-2"></i><br>Sin historial reciente en esta sucursal.</td></tr>';
       }
       $("#body_historial_flotante").html(html);
-    }
+    },
   });
 }
 // Búsqueda instantánea INTELIGENTE
@@ -3473,7 +3661,7 @@ $("#inputBusquedaHistorial").on("keyup", function () {
     // OPCIÓN B: Si hay texto, buscamos en TODOS los registros (incluso los ocultos)
     $("#body_historial_flotante tr").filter(function () {
       // toggle(true) muestra, toggle(false) oculta basado en la coincidencia
-      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
     });
   }
 });
@@ -3483,7 +3671,10 @@ $("#inputBusquedaHistorial").on("keyup", function () {
 hacerArrastrable(document.getElementById("floating-history"));
 
 function hacerArrastrable(elmnt) {
-  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+  var pos1 = 0,
+    pos2 = 0,
+    pos3 = 0,
+    pos4 = 0;
   var header = document.getElementById("floating-header");
 
   if (header) {
@@ -3504,8 +3695,8 @@ function hacerArrastrable(elmnt) {
 
     // 2. Agregar listeners al DOCUMENTO (no al elemento) para seguir el mouse
     // Usamos addEventListener para no romper otros scripts
-    document.addEventListener('mouseup', closeDragElement);
-    document.addEventListener('mousemove', elementDrag);
+    document.addEventListener("mouseup", closeDragElement);
+    document.addEventListener("mousemove", elementDrag);
   }
 
   function elementDrag(e) {
@@ -3523,17 +3714,17 @@ function hacerArrastrable(elmnt) {
     // 3. Aplicar nueva posición al elemento
     // Nota: Al movernos, convertimos la posición a 'top/left' fijos
     // para evitar conflictos si usabas 'bottom' o 'right' en CSS.
-    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    elmnt.style.top = elmnt.offsetTop - pos2 + "px";
+    elmnt.style.left = elmnt.offsetLeft - pos1 + "px";
 
     // Eliminamos 'right' si existía para que 'left' tome el control total
-    elmnt.style.right = 'auto';
+    elmnt.style.right = "auto";
   }
 
   function closeDragElement() {
     // IMPORTANTE: Eliminar los listeners para liberar memoria del sistema
-    document.removeEventListener('mouseup', closeDragElement);
-    document.removeEventListener('mousemove', elementDrag);
+    document.removeEventListener("mouseup", closeDragElement);
+    document.removeEventListener("mousemove", elementDrag);
   }
 }
 
