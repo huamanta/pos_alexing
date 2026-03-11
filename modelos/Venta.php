@@ -246,6 +246,23 @@ class Venta
     // =========================
     // 9) Insertar venta
     // =========================
+
+    if(empty($idmotivo)){
+        $idmotivo = 0;
+    }
+
+    if(empty($fechaDepostivo)){
+        $fechaDepostivo = date('Y-m-d H:i:s');
+    }
+
+    if(empty($porcentaje)){
+        $porcentaje = 0;
+    }
+
+    if(empty($input_cuotas)){
+        $input_cuotas = 0;
+    }
+    
     $sql = "INSERT INTO venta (
                 idsucursal, idcaja, idcliente, idpersonal, idmotivo_nota,
                 tipo_comprobante, serie_comprobante, num_comprobante,
