@@ -9,6 +9,9 @@ function getClientIP() {
     // Primero intentamos obtener la IP local o la del proxy
     $ip = '';
 
+	$host = $_SERVER['HTTP_HOST'] ?? '';
+	$isProduction = !($host === 'localhost' || strpos($host, '127.0.0.1') !== false);
+
     $headers = [
         'HTTP_CLIENT_IP',
         'HTTP_X_FORWARDED_FOR',
@@ -32,8 +35,8 @@ function getClientIP() {
         }
     }
 
-    // Si sigue siendo localhost, usamos un servicio externo para obtener la IP pública
-    if ($ip === '127.0.0.1' || $ip === '::1' || $ip === '') {
+	// Solo en producción intentamos resolver una IP pública externa
+	if ($isProduction && ($ip === '127.0.0.1' || $ip === '::1' || $ip === '')) {
         try {
             $ip = file_get_contents('https://api.ipify.org');
             if (!filter_var($ip, FILTER_VALIDATE_IP)) {
@@ -42,6 +45,10 @@ function getClientIP() {
         } catch (Exception $e) {
             $ip = '0.0.0.0';
         }
+	}
+
+	if (!$isProduction && ($ip === '' || $ip === '::1')) {
+		$ip = '127.0.0.1';
     }
 
     return $ip;
