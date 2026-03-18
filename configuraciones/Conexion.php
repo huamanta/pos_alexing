@@ -14,11 +14,17 @@ if (mysqli_connect_errno()) {
 //metodo para ejecutar consulta
 if (!function_exists('ejecutarConsulta')) 
 {
-	Function ejecutarConsulta($sql)
-	{ 
+
+	function ejecutarConsulta($sql) {
 		global $conexion;
-		$query=$conexion->query($sql);
-		return $query;
+
+		$result = $conexion->query($sql);
+
+		if (!$result) {
+			throw new Exception($conexion->error); // 👈 ERROR REAL
+		}
+
+		return $result;
 	}
 
 	function ejecutarConsultaSimpleFila($sql)

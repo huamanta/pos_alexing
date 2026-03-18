@@ -70,9 +70,16 @@ public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $pe
     $sw = true;
 
     // 1. Actualizar datos básicos del usuario (sin idsucursal)
-    $sql = "UPDATE usuario 
-            SET idpersonal='$idpersonal', login='$login', clave='$clave' 
-            WHERE idusuario='$idusuario'";
+    if (isset($clave) && trim($clave) !== "") {
+        $sql = "UPDATE usuario 
+                SET idpersonal='$idpersonal', login='$login', clave='$clave' 
+                WHERE idusuario='$idusuario'";
+    } else {
+        $sql = "UPDATE usuario 
+                SET idpersonal='$idpersonal', login='$login' 
+                WHERE idusuario='$idusuario'";
+    }
+    
     if (!ejecutarConsulta($sql)) {
         ejecutarConsulta("ROLLBACK");
         return false;

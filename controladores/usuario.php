@@ -77,7 +77,11 @@ switch ($_GET["op"]){
 	case 'guardaryeditar':
 
 		//Hash SHA256 en la contraseña
-		$clavehash=hash("SHA256",$clave);
+		if (!empty($clave)) {
+		    $clavehash = hash("SHA256", $clave);
+		} else {
+		    $clavehash = null; // No se actualiza la contraseña
+		}
 		
 		if (empty($idusuario)){
 			$rspta=$usuario->insertar($idpersonal,$login,$clavehash,$idsucursal,$permisos, $subpermisos, $acciones);

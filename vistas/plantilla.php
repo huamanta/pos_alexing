@@ -209,6 +209,7 @@ session_start();
         $_GET["ruta"] == "kardex" ||
         $_GET["ruta"] == "reporte" ||
         $_GET["ruta"] == "resumen" ||
+        $_GET["ruta"] == "empresas" ||
         $_GET["ruta"] == "salir"
       ) {
 
