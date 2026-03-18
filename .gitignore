@@ -2,3 +2,5 @@
 /configuraciones/local.php
 /reportes/qr
 /reportes/documentos
+/phpqrcode/img*
+/phpqrcode/cache
