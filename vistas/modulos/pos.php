@@ -426,7 +426,7 @@ function tienePermiso($modulo, $accion, $submodulo = null) {
                   <i class="fas fa-store-alt"></i>
                 </span>
               </div>
-              <select id="idsucursal2" name="idsucursal2" class="form-control">
+              <select id="idsucursal2" name="idsucursal2" class="form-control" readonly>
               </select>
             </div>
           </div>

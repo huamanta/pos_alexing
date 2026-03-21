@@ -19,10 +19,10 @@ Class Categoria
 	}
 
 	//Implementamos un método para insertar registros
-	public function insertarSucursal($nombre,$direccion,$telefono,$nombreSucursal,$serie_comprobante,$num_comprobante,$distrito,$provincia,$departamento,$ubigeo)
+	public function insertarSucursal($nombre,$direccion,$telefono,$nombreSucursal,$serie_comprobante,$num_comprobante,$distrito,$provincia,$departamento,$ubigeo, $idempresa, $moneda, $simbolo)
 	{
-		$sql="INSERT INTO sucursal (nombre,direccion,telefono,distrito,provincia,departamento,ubigeo)
-		VALUES ('$nombre','$direccion','$telefono','$distrito','$provincia','$departamento','$ubigeo')";
+		$sql="INSERT INTO sucursal (nombre,direccion,telefono,distrito,provincia,departamento,ubigeo,idempresa,moneda,simbolo)
+		VALUES ('$nombre','$direccion','$telefono','$distrito','$provincia','$departamento','$ubigeo','$idempresa','$moneda','$simbolo')";
 
 		$idsucursalnew=ejecutarConsulta_retornarID($sql);
 
@@ -68,9 +68,9 @@ Class Categoria
 	}
 
 	//Implementamos un método para editar registros
-	public function editarSucursal($idsucursal,$nombre,$direccion,$telefono,$distrito,$provincia,$departamento,$ubigeo)
+	public function editarSucursal($idsucursal,$nombre,$direccion,$telefono,$distrito,$provincia,$departamento,$ubigeo, $idempresa, $moneda, $simbolo)
 	{
-		$sql="UPDATE sucursal SET nombre='$nombre',direccion='$direccion',telefono='$telefono',distrito='$distrito',provincia='$provincia',departamento='$departamento',ubigeo='$ubigeo' WHERE idsucursal='$idsucursal'";
+		$sql="UPDATE sucursal SET nombre='$nombre',direccion='$direccion',telefono='$telefono',distrito='$distrito',provincia='$provincia',departamento='$departamento',ubigeo='$ubigeo',idempresa='$idempresa',moneda='$moneda',simbolo='$simbolo' WHERE idsucursal='$idsucursal'";
 		return ejecutarConsulta($sql);
 	}
 
@@ -223,7 +223,10 @@ public function obtenerUltimaSerie()
     return ejecutarConsultaSimpleFila($sql);
 }
 
-
+	public function selectEmpresas() {
+		$sql = "SELECT * FROM empresas";
+		return ejecutarConsulta($sql);
+	}
 }
 
 ?>

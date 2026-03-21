@@ -95,7 +95,7 @@ function guardaryeditar(e)
 	    processData: false,
 
 	    success: function(datos)
-	    {                    
+	    {                  
 	          Swal.fire({
 				  title: 'Usuario',
 				  icon: 'success',
@@ -121,7 +121,7 @@ function mostrar(idusuario)
         $('#myModal').modal('show');
         $("#idpersonal").val(data.idpersonal).trigger('change');
         $("#login").val(data.login);
-        $("#clave").val(data.clave);
+        $("#clave").val('');
         $("#idusuario").val(data.idusuario);
 
         // Cargar sucursales asignadas

@@ -77,7 +77,11 @@ switch ($_GET["op"]){
 	case 'guardaryeditar':
 
 		//Hash SHA256 en la contraseña
-		$clavehash=hash("SHA256",$clave);
+		if (!empty($clave)) {
+		    $clavehash = hash("SHA256", $clave);
+		} else {
+		    $clavehash = null; // No se actualiza la contraseña
+		}
 		
 		if (empty($idusuario)){
 			$rspta=$usuario->insertar($idpersonal,$login,$clavehash,$idsucursal,$permisos, $subpermisos, $acciones);
@@ -325,7 +329,7 @@ switch ($_GET["op"]){
 			while ($row = $rs_suc->fetch_object()) {
 				$_SESSION['sucursales'][] = $row->idsucursal;
 			}
-			$_SESSION['idsucursal'] = $_SESSION['sucursales'][0] ?? null;
+			//$_SESSION['idsucursal'] = $_SESSION['sucursales'][0] ?? null;
 
 			// Obtener permisos, subpermisos y acciones
 			$marcados = $usuario->listarmarcados($fetch->idusuario);
@@ -532,6 +536,16 @@ case 'validar_token':
         echo json_encode(['status' => false]);
     }
 
+break;
+
+case 'seleccionarSucursal':
+    $idsucursal = $_POST['idsucursal'];
+    if (in_array($idsucursal, $_SESSION['sucursales'])) {
+        $_SESSION['idsucursal'] = $idsucursal;
+        echo 'ok';
+    } else {
+        echo 'error';
+    }
 break;
 
 

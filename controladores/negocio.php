@@ -161,11 +161,10 @@ switch ($_GET["op"]) {
 	case 'sesions':
 		if (
 			!isset($_SESSION['idusuario'], $_SESSION['idpersonal'], $_SESSION['login'], 
-				   $_SESSION['idsucursal'], $_SESSION['cargo'], $_SESSION['iniciarSesion']) 
+				  $_SESSION['cargo'], $_SESSION['iniciarSesion']) 
 			|| $_SESSION['idusuario'] === '' 
 			|| $_SESSION['idpersonal'] === '' 
 			|| $_SESSION['login'] === '' 
-			|| $_SESSION['idsucursal'] === '' // No considera "0" como vacío
 			|| $_SESSION['cargo'] === '' 
 			|| $_SESSION['iniciarSesion'] === ''
 		) {

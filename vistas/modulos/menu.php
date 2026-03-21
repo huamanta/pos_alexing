@@ -508,6 +508,15 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
+            <?php if (tieneSubpermiso(8, 'Facturadores')): ?>
+              <li class="nav-item" style="font-size: 14px">
+                <a href="empresas" class="nav-link" id="navFacturadores">
+                  <i class="fas fa-file-alt nav-icon text-orange" style="font-size: 14px"></i>
+                  <p>Facturadores</p>
+                </a>
+              </li>
+            <?php endif; ?>
+
             <?php if (tieneSubpermiso(8, 'Sucursales')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="sucursal" class="nav-link" id="navSucursal">

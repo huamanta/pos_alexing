@@ -128,9 +128,9 @@ final class Pos
     }
 
 
-    public function verificarCaja($idusurio)
+    public function verificarCaja($idusurio, $idsucursal)
     {
-        $sql = "SELECT * FROM caja_apertura WHERE idusuario = '$idusurio' AND estado = 1 AND fecha_cierre IS NULL";
+        $sql = "SELECT * FROM caja_apertura WHERE idusuario = '$idusurio' AND idsucursal = '$idsucursal' AND estado = 1 AND fecha_cierre IS NULL";
         $apertura = ejecutarConsulta($sql)->fetch_object();
         return ($apertura) ? $apertura : array('idcaja' => 0);
     }
@@ -146,22 +146,22 @@ final class Pos
         return $data;
     }
 
-    public function aperturarCaja($fecha_hora, $efectivo_apertura, $caja_apertura, $idusuario)
+    public function aperturarCaja($fecha_hora, $efectivo_apertura, $caja_apertura, $idusuario, $idsucursal)
     {
         if ($idusuario == null || $idusuario == '' || $idusuario == 0) {
             header('Location: /ingreso');
             exit();
         }
-        $sql = "INSERT INTO caja_apertura (fecha_apertura, efectivo_apertura, idcaja, idusuario) VALUES ('$fecha_hora', '$efectivo_apertura','$caja_apertura','$idusuario')";
+        $sql = "INSERT INTO caja_apertura (fecha_apertura, efectivo_apertura, idcaja, idusuario, idsucursal) VALUES ('$fecha_hora', '$efectivo_apertura','$caja_apertura','$idusuario','$idsucursal')";
         $update = "UPDATE cajas SET estado = 2 WHERE idcaja = '$caja_apertura'";
         ejecutarConsulta($update);
         return ejecutarConsulta($sql);
     }
 
-    public function cerrarCaja($fecha_hora, $efectivo_cierre, $idcaja, $idusuario)
+    public function cerrarCaja($fecha_hora, $efectivo_cierre, $idcaja, $idusuario, $idsucursal)
     {
         $sql = "UPDATE caja_apertura SET fecha_cierre = '$fecha_hora', efectivo_cierre='$efectivo_cierre', estado='0'
-        WHERE idcaja = '$idcaja' AND idusuario = '$idusuario' AND estado = '1' LIMIT 1";
+        WHERE idcaja = '$idcaja' AND idusuario = '$idusuario' AND idsucursal = '$idsucursal' AND estado = '1' LIMIT 1";
         $update = "UPDATE cajas SET estado = 1 WHERE idcaja = '$idcaja'";
         ejecutarConsulta($update);
         return ejecutarConsulta($sql);

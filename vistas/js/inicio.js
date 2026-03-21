@@ -8,15 +8,19 @@ function init() {
     $('#navInicio').addClass("treeview active");
     $('#navInicio').addClass("active");
 
-    mostrarInicio();
     $.post("controladores/venta.php?op=selectSucursal3", function (r) {
         $("#idsucursal2").html(r);
         $("#idsucursal2").select2("");
 
         $("#idsucursal2").on("change", function () {
             cargarVendedoresPorSucursal();
+            mostrarInicio();
         });
+
         cargarVendedoresPorSucursal();
+
+        // Una vez cargada la sucursal, inicializamos las consultas y tablas
+        mostrarInicio();
     });
 
     // Actualizar la alerta cada 30 segundos, pero solo si la tabla está visible
@@ -85,6 +89,11 @@ function mostrarInicio() {
     var fecha_fin = $("#fecha_fin").val();
     var idvendedor = $("#idcliente").val();
     var idsucursal = $("#idsucursal2").val();
+
+    if (!idsucursal) {
+        console.warn('No existe sucursal seleccionada aún en mostrarInicio(), se omiten consultas.');
+        return;
+    }
 
     if ($.fn.DataTable.isDataTable('#tblpedidos')) {
         $('#tblpedidos').DataTable().destroy();

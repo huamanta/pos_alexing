@@ -41,11 +41,11 @@ class Venta
 	}
 
 
-	public function aperturarCaja($idcaja, $monto_apertura, $idusuario)
+	public function aperturarCaja($idcaja, $monto_apertura, $idusuario, $idsucursal)
 	{
 		$fechaActual = date('Y-m-d H:i:s');
-		$sql = "INSERT INTO caja_apertura (idcaja, efectivo_apertura, idusuario, estado, fecha_apertura) 
-		VALUES ('$idcaja', '$monto_apertura', '$idusuario', '1', '$fechaActual')";
+		$sql = "INSERT INTO caja_apertura (idcaja, efectivo_apertura, idusuario, idsucursal, estado, fecha_apertura) 
+		VALUES ('$idcaja', '$monto_apertura', '$idusuario', '$idsucursal', '1', '$fechaActual')";
 		$rspta = ejecutarConsulta($sql);
 		$data = array();
 		if ($rspta) {
