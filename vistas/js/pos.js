@@ -72,6 +72,7 @@ function init() {
   $.post("controladores/venta.php?op=selectSucursal3", function (r) {
     $("#idsucursal2").html(r);
     $("#idsucursal2").select2("");
+    $('#idsucursal2').prop('disabled', true);
   });
   $.post("controladores/usuario.php?op=selectEmpleado", function (r) {
     $("#idpersonal02").html(r);
@@ -84,6 +85,7 @@ function init() {
     $("#idsucursal02").html(r);
     $("#idsucursal02").select2("");
   });
+
   //cargamos los items al select almacen
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
     $("#idsucursal").html(r);
@@ -386,6 +388,7 @@ function verificarCarrito(callback) {
 function listar() {
   var estado = $("#estado").val();
   var idcaja = $("#idcaja").val();
+  var idsucursal = $("#idsucursal2").val();
 
   tabla = $("#tbllistado")
     .dataTable({
@@ -438,7 +441,9 @@ function listar() {
           "controladores/pos.php?op=listarVentas&estado=" +
           estado +
           "&idcaja=" +
-          idcaja,
+          idcaja +
+          "&idsucursal=" +
+          idsucursal,
         type: "get",
         dataType: "json",
         error: function (e) {

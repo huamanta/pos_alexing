@@ -158,7 +158,9 @@ session_start();
     CONTENIDO
     =============================================*/
 
-    if (isset($_GET["ruta"])) {
+    if (isset($_SESSION['idsucursal']) && !empty($_SESSION['idsucursal'])) {
+
+      if (isset($_GET["ruta"])) {
 
       if (
         $_GET["ruta"] == "inicio" ||
@@ -223,6 +225,12 @@ session_start();
 
       include "modulos/inicio.php";
       
+    }
+
+    } else {
+
+      include "modulos/elegir-sucursal.php";
+
     }
 
     /*=============================================

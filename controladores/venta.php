@@ -89,8 +89,9 @@ switch ($_GET["op"]) {
 	case 'aperturar_caja':
 		$idcaja = $_POST['cajas'];
 		$idusuario = $_SESSION["idusuario"];
+		$idsucursal = $_SESSION["idsucursal"];
 		$monto_apertura = $_POST['monto_apertura'];
-		$rspta = $venta->aperturarCaja($idcaja, $monto_apertura, $idusuario);
+		$rspta = $venta->aperturarCaja($idcaja, $monto_apertura, $idusuario, $idsucursal);
 		echo json_encode($rspta);
 		break;
 
@@ -1069,9 +1070,13 @@ switch ($_GET["op"]) {
 	    if ((int)$_SESSION['idsucursal'] === 0) {
 	        echo '<option value="0">Todas las Sucursales</option>';
 	    }
-
+		$selectedSucursal = isset($_SESSION['idsucursal']) ? (int)$_SESSION['idsucursal'] : 0;
 	    while ($reg = $rspta->fetch_object()) {
-	        echo '<option value="' . (int)$reg->idsucursal . '">' . $reg->nombre . '</option>';
+			if ((int)$reg->idsucursal === $selectedSucursal) {
+	            echo '<option value="' . (int)$reg->idsucursal . '" selected>' . $reg->nombre . '</option>';
+	        } else {
+	       		echo '<option value="' . (int)$reg->idsucursal . '">' . $reg->nombre . '</option>';
+			}
 	    }
 	break;
 
@@ -1080,9 +1085,13 @@ switch ($_GET["op"]) {
 		$venta = new Venta();
 
 		$rspta = $venta->listarSucursal2($_SESSION['idpersonal'], $_SESSION['idsucursal']);
-
+		$sucursal = isset($_SESSION['idsucursal']) ? $_SESSION['idsucursal'] : 0;
 		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idsucursal . '>' . $reg->nombre . '</option>';
+			if ($reg->idsucursal == $sucursal) {
+				echo '<option value="' . $reg->idsucursal . '" selected>' . $reg->nombre . '</option>';
+			} else {
+				echo '<option value="' . $reg->idsucursal . '">' . $reg->nombre . '</option>';
+			}
 		}
 		break;
 	

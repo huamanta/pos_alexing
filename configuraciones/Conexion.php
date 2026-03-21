@@ -1,7 +1,12 @@
 <?php 
 require_once "local.php";
 
-$conexion=new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
+$conexion = null;
+$conexion = new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
+
+if (!$conexion) {
+    die("Failed to connect to database");
+}
 
 mysqli_query($conexion, 'SET NAMES "'.DB_ENCODE.'"');
 

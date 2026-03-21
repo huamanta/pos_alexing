@@ -2226,16 +2226,24 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 		return ejecutarConsultaSimpleFila($sql);
 	}
 
-	public function comprasultimos_10dias()
+	public function comprasultimos_10dias($idsucursal)
 	{
-		$sql = "SELECT CONCAT(DAY(fecha_hora),'-',DATE_FORMAT(fecha_hora,'%M')) as fecha,SUM(total_compra) as total FROM compra WHERE tipo_c = 'Compra' AND estado != 'Anulado' GROUP by fecha_hora ORDER BY fecha_hora DESC limit 0,10";
+		if($idsucursal == "Todos" || $idsucursal == null){
+			$sql = "SELECT CONCAT(DAY(fecha_hora),'-',DATE_FORMAT(fecha_hora,'%M')) as fecha,SUM(total_compra) as total FROM compra WHERE tipo_c = 'Compra' AND estado != 'Anulado' GROUP by fecha_hora ORDER BY fecha_hora DESC limit 0,10";
+		} else {
+			$sql = "SELECT CONCAT(DAY(fecha_hora),'-',DATE_FORMAT(fecha_hora,'%M')) as fecha,SUM(total_compra) as total FROM compra WHERE tipo_c = 'Compra' AND estado != 'Anulado' AND idsucursal = '$idsucursal' GROUP by fecha_hora ORDER BY fecha_hora DESC limit 0,10";
+		}
 		return ejecutarConsulta($sql);
 	}
 
-	public function ventasultimos_12meses()
+	public function ventasultimos_12meses($idsucursal)
 	{
 		//Date format -> convertir fecha y hora en un formato de mes
-		$sql = "SELECT DATE_FORMAT(fecha_hora,'%M') as fecha,SUM(total_venta) as total FROM venta WHERE estado IN('Aceptado','Activado') GROUP by MONTH(fecha_hora) ORDER BY fecha_hora DESC limit 0,12";
+		if($idsucursal == "Todos" || $idsucursal == null){
+			$sql = "SELECT DATE_FORMAT(fecha_hora,'%M') as fecha,SUM(total_venta) as total FROM venta WHERE estado IN('Aceptado','Activado') GROUP by MONTH(fecha_hora) ORDER BY fecha_hora DESC limit 0,12";
+		} else {
+			$sql = "SELECT DATE_FORMAT(fecha_hora,'%M') as fecha,SUM(total_venta) as total FROM venta WHERE idsucursal = '$idsucursal' AND estado IN('Aceptado','Activado') GROUP by MONTH(fecha_hora) ORDER BY fecha_hora DESC limit 0,12";
+		}
 		return ejecutarConsulta($sql);
 	}
 

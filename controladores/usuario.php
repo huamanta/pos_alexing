@@ -329,7 +329,7 @@ switch ($_GET["op"]){
 			while ($row = $rs_suc->fetch_object()) {
 				$_SESSION['sucursales'][] = $row->idsucursal;
 			}
-			$_SESSION['idsucursal'] = $_SESSION['sucursales'][0] ?? null;
+			//$_SESSION['idsucursal'] = $_SESSION['sucursales'][0] ?? null;
 
 			// Obtener permisos, subpermisos y acciones
 			$marcados = $usuario->listarmarcados($fetch->idusuario);
@@ -536,6 +536,16 @@ case 'validar_token':
         echo json_encode(['status' => false]);
     }
 
+break;
+
+case 'seleccionarSucursal':
+    $idsucursal = $_POST['idsucursal'];
+    if (in_array($idsucursal, $_SESSION['sucursales'])) {
+        $_SESSION['idsucursal'] = $idsucursal;
+        echo 'ok';
+    } else {
+        echo 'error';
+    }
 break;
 
 
