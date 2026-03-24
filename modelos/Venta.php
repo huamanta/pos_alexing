@@ -112,7 +112,7 @@ class Venta
     $idproducto, $nombre, $cantidad, $precio_venta, $descuento,
     $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia,
     $idmotivo, $observaciones, $fecha_pago,
-    $interes, $input_cuotas,
+    $interes, $input_cuotas, $input_frecuencia, 
     $cantidad_contenedor, $contenedor,
     $idp, $check_precio, $id_fifo_lote, $idcategoria
 ) {
@@ -267,7 +267,7 @@ class Venta
                 idsucursal, idcaja, idcliente, idpersonal, idmotivo_nota,
                 tipo_comprobante, serie_comprobante, num_comprobante,
                 fecha_hora, impuesto, total_venta, ventacredito,
-                interes, formapago, meses, numoperacion, fechadeposito,
+                interes, formapago, frecuencia, meses, numoperacion, fechadeposito,
                 descuento, totalrecibido, totaldeposito, vuelto,
                 banco, montoPagado, estado, documento_rel, dov_Estado,
                 observacion, fecha_kardex
@@ -275,7 +275,7 @@ class Venta
                 '$idsucursal','$idcaja','$idcliente','$idpersonal','$idmotivo',
                 '$tipo_comprobante','$serie_comprobante','$num_comprobante',
                 '$fecha_hora','$impuesto','$total_venta','$tipopago',
-                '$interes','$formapagoVenta','$input_cuotas','$nroOperacion','$fechaDepostivo',
+                '$interes','$formapagoVenta', '$input_frecuencia', '$input_cuotas','$nroOperacion','$fechaDepostivo',
                 '$porcentaje','$totalrecibido','$totaldeposito','$vuelto',
                 '$banco','$montoPagado','$estado','$comprobanteReferencia','$dovEstado',
                 '".mysqli_real_escape_string($conexion, (string)$observaciones)."','$fechaActual'

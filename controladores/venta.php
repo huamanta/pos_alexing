@@ -64,6 +64,7 @@ $telefono = isset($_POST["telefono"]) ? limpiarCadena($_POST["telefono"]) : "";
 $email = isset($_POST["email"]) ? limpiarCadena($_POST["email"]) : "";
 $fecha_hora = date("Y-m-d H:i:s");
 $input_cuotas = isset($_POST["input_cuotas"]) ? limpiarCadena($_POST["input_cuotas"]) : "";
+$input_frecuencia = isset($_POST["input_frecuencia"]) ? limpiarCadena($_POST["input_frecuencia"]) : "";
 $inputInteres = isset($_POST["inputInteres"]) ? limpiarCadena($_POST["inputInteres"]) : "";
 function tienePermiso($modulo, $submodulo, $accion) {
     return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
@@ -144,7 +145,7 @@ switch ($_GET["op"]) {
 			$nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido,$totaldeposito, $vuelto, $tipo, $banco,
 			$_POST["idproducto"], $_POST["nombreProducto"], $_POST["cantidad"], $_POST["precio_venta"], 
 			$_POST["descuento"], $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, 
-			$idmotivo, $observaciones, $fecha_pago, $inputInteres, $input_cuotas, $_POST["cantidad_contenedor"], 
+			$idmotivo, $observaciones, $fecha_pago, $inputInteres, $input_cuotas, $input_frecuencia, $_POST["cantidad_contenedor"], 
 			$_POST["contenedor"], $_POST["idp"],$_POST["check_precio"], $_POST["id_detalle_compra_lote"], $_POST["idcategoria"]);
 			echo $rspta;
 		} else {

@@ -80,7 +80,7 @@
         } else {
             clearInterval(sessionChecker);
         }
-    }, 3000);
+    }, 10000);
 
     function loadSesionsApp() {
         $.ajax({

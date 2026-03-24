@@ -5,6 +5,22 @@ var cont = 0;
 var detalles = 0;
 var modoEditar = false;
 
+// Función para limpiar y reiniciar completamente el carrito
+function limpiarCarrito() {
+  $("#detalles").html("");
+  articuloAdd = "";
+
+  // Reconstruir articuloAdd basándose en lo que realmente está en el carrito (post-limpieza)
+  document.querySelectorAll('input[name="idproducto[]"]').forEach(function (input) {
+    articuloAdd = articuloAdd + input.value + "-";
+  });
+
+  contador = 0;
+  cont = 0;
+  detalles = 0;
+  evaluar();
+}
+
 function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
   marcarImpuesto();
@@ -94,7 +110,14 @@ function init() {
   cargarSucursales();
   $("#fecha_inicio").change(listar);
   $("#fecha_fin").change(listar);
-  $("#idsucursal2").change(listar);
+  $("#idsucursal2").change(function () {
+    listar();
+    // Update notifications with new sucursal
+    verificarNuevasNotificaciones();
+    cargarNotificacionesCXCNavbar();
+    // Limpiar y reiniciar completamente el carrito
+    limpiarCarrito();
+  });
   $("#estado").change(listar);
   $("#idproducto").change(listar);
 
@@ -125,6 +148,19 @@ function init() {
     },
     false,
   );
+
+  generarCuotas(100);
+}
+
+function generarCuotas(max = 100) {
+  let select = $("#input_cuotas");
+  let html = '<option value="" selected hidden>Seleccionar...</option>';
+
+  for (let i = 1; i <= max; i++) {
+    html += `<option value="${i}">${i}</option>`;
+  }
+
+  select.html(html);
 }
 
 $("#comprobanteReferencia").on("change", function () {
@@ -249,10 +285,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                      " " +
-                      dat.apellidoPaterno +
-                      " " +
-                      dat.apellidoMaterno,
+                    " " +
+                    dat.apellidoPaterno +
+                    " " +
+                    dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -262,7 +298,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         } else {
@@ -307,7 +343,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         }
@@ -515,7 +551,7 @@ function EnviarSunat(tipoc, idventa, idcol) {
         text: resp,
         timer: 1000,
         timerProgressBar: true,
-        onClose: function () {},
+        onClose: function () { },
       });
     },
     complete: function () {
@@ -1067,7 +1103,7 @@ function limpiar() {
   $("#totaldeposito").val(0);
   $("#vuelto").val(0);
   $("#montoDeuda").val(0);
-  $("#input_cuotas").val(0);
+  $("#input_cuotas").val('');
 
   $("#panel1").hide();
   $("#b1").hide();
@@ -1154,7 +1190,8 @@ function limpiarDetalle() {
 $("#idsucursal").change(function () {
   listarArticulosSearchFIFO();
   listarArticulos2(); // Llama a la función para actualizar los artículos al cambiar de sucursal
-  verificarProductosDisponibles(); // Verifica los productos seleccionados
+  // Limpiar el carrito al cambiar de sucursal para evitar productos no disponibles
+  limpiarCarrito();
 });
 
 function verificarProductosDisponibles() {
@@ -1178,8 +1215,8 @@ function verificarProductosDisponibles() {
           Swal.fire(
             "Advertencia",
             "El producto con ID " +
-              idproducto +
-              " no existe en el almacén seleccionado.",
+            idproducto +
+            " no existe en el almacén seleccionado.",
             "warning",
           );
         });
@@ -2283,6 +2320,8 @@ function agregarDetalle(
   unidadmedida,
   id_detalle_compra_lote,
 ) {
+  console.log('kkkkkk');
+
   if (precio_venta == 0) {
     Swal.fire({
       title: "Alerta",
@@ -2338,8 +2377,8 @@ function agregarDetalle(
         Swal.fire(
           "Aviso",
           "El stock es menor a 1, se agregará solo la cantidad disponible (" +
-            stock +
-            "), ajustando el precio proporcionalmente.",
+          stock +
+          "), ajustando el precio proporcionalmente.",
           "info",
         );
       }
@@ -2361,12 +2400,13 @@ function agregarDetalle(
   } else {
     precio_venta = precio_venta;
   }
+  console.log('ooooooooo');
 
   //aquí preguntamos si el idarticulo ya fue agregado
   // SOLO evitar duplicados si NO es servicio
   if (
     idcategoria != 1 &&
-    articuloAdd.split("-").indexOf(idpc.toString()) !== -1
+    articuloAdd.split("-").indexOf(idproducto.toString()) !== -1
   ) {
     //reporta -1 cuando no existe
     // swal( producto +" ya se agrego");
@@ -2376,7 +2416,7 @@ function agregarDetalle(
     let id = document.getElementsByName("idproducto[]");
 
     for (var i = 0; i < cant.length; i++) {
-      if (id[i].value == idpc) {
+      if (id[i].value == idproducto) {
         let total = Number(cant[i].value) + 1;
         let stockverify = Number(cant[i].value) + Number(cantidad_contenedor);
         if (idcategoria != 1) {
@@ -2478,90 +2518,90 @@ function agregarDetalle(
     if (idpc !== "") {
       contador = contador + 1;
       var fila =
-  '<tr class="filas custom-row" id="fila' + cont + '" style="margin-bottom:-10px;border-radius:10px;box-shadow:0 0 5px rgba(0,0,0,0.3);">' +
+        '<tr class="filas custom-row" id="fila' + cont + '" style="margin-bottom:-10px;border-radius:10px;box-shadow:0 0 5px rgba(0,0,0,0.3);">' +
 
-  '<td style="text-align:center;vertical-align:middle;">' +
+        '<td style="text-align:center;vertical-align:middle;">' +
 
-    '<input type="hidden" name="contenedor[]" value="' + contenedor + '">' +
-    '<input type="hidden" name="cantidad_contenedor[]" value="' + cantidad_contenedor + '">' +
-    '<input type="hidden" name="idp[]" value="' + idpc + '">' +
-    '<input type="hidden" name="check_precio[]" id="check_precio_' + idpc + '" value="0">' +
-    '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
-    '<input type="hidden" name="idcategoria[]" value="' + idcategoria + '">' +
-    '<input type="hidden" name="id_detalle_compra_lote[]" value="' + id_detalle_compra_lote + '">' +
+        '<input type="hidden" name="contenedor[]" value="' + contenedor + '">' +
+        '<input type="hidden" name="cantidad_contenedor[]" value="' + cantidad_contenedor + '">' +
+        '<input type="hidden" name="idp[]" value="' + idpc + '">' +
+        '<input type="hidden" name="check_precio[]" id="check_precio_' + idpc + '" value="0">' +
+        '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
+        '<input type="hidden" name="idcategoria[]" value="' + idcategoria + '">' +
+        '<input type="hidden" name="id_detalle_compra_lote[]" value="' + id_detalle_compra_lote + '">' +
 
-    '<div style="display:flex;align-items:center;justify-content:center;gap:5px;">' +
+        '<div style="display:flex;align-items:center;justify-content:center;gap:5px;">' +
 
-      (modoEditar
-        ? ""
-        : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' + cont + ')"></i>') +
+        (modoEditar
+          ? ""
+          : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' + cont + ')"></i>') +
 
-      '<textarea class="form-control nombre-producto" ' +
-      'name="nombreProducto[]" rows="1" ' +
-      'oninput="autoResize(this)" onfocus="this.select()" ' +
-      'style="font-weight:bold;width:300px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:1.2;">' +
-      producto +
-      '</textarea>' +
+        '<textarea class="form-control nombre-producto" ' +
+        'name="nombreProducto[]" rows="1" ' +
+        'oninput="autoResize(this)" onfocus="this.select()" ' +
+        'style="font-weight:bold;width:300px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:1.2;">' +
+        producto +
+        '</textarea>' +
 
-    '</div>' +
-  '</td>' +
+        '</div>' +
+        '</td>' +
 
-  '<td style="text-align:center;vertical-align:middle;">' +
-    '<span class="badge bg-green" style="white-space:nowrap;font-size:11px;">' +
-      detail +
-    '</span>' +
-  '</td>' +
+        '<td style="text-align:center;vertical-align:middle;">' +
+        '<span class="badge bg-green" style="white-space:nowrap;font-size:11px;">' +
+        detail +
+        '</span>' +
+        '</td>' +
 
-  '<td class="text-center align-middle">' +
-    '<div style="position:relative;display:inline-block;">' +
-      precioInput +
-      btnVerPrecios +
-    '</div>' +
-  '</td>' +
+        '<td class="text-center align-middle">' +
+        '<div style="position:relative;display:inline-block;">' +
+        precioInput +
+        btnVerPrecios +
+        '</div>' +
+        '</td>' +
 
-  '<td style="text-align:center; vertical-align:middle;">' +
-    '<div style="display:flex; justify-content:center; align-items:center; width:100%;">' +
+        '<td style="text-align:center; vertical-align:middle;">' +
+        '<div style="display:flex; justify-content:center; align-items:center; width:100%;">' +
         '<input type="checkbox" ' +
         'id="chkPrecioSegunCantidad-' + idpc + '" ' +
         'onchange="toggleCheckPrecio(' + idpc + ', this)">' +
-    '</div>' +
-'</td>' +
+        '</div>' +
+        '</td>' +
 
-  '<td style="text-align:center;vertical-align:middle;">' +
-    '<input class="form-control" ' +
-    'style="text-align:center;width:80px;background-color:transparent;color:blue;font-weight:bold;" ' +
-    'type="number" step="0.001" min="0" ' +
-    'oninput="validarCantidad(this,' + stock + ',' + cantidad_contenedor + ');modificarSubtotales()" ' +
-    'name="cantidad[]" value="' + cantidad + '">' +
-  '</td>' +
+        '<td style="text-align:center;vertical-align:middle;">' +
+        '<input class="form-control" ' +
+        'style="text-align:center;width:80px;background-color:transparent;color:blue;font-weight:bold;" ' +
+        'type="number" step="0.001" min="0" ' +
+        'oninput="validarCantidad(this,' + stock + ',' + cantidad_contenedor + ');modificarSubtotales()" ' +
+        'name="cantidad[]" value="' + cantidad + '">' +
+        '</td>' +
 
-  '<td style="text-align:center;vertical-align:middle;">' +
-    '<input class="form-control" ' +
-    'style="text-align:center;width:70px;background-color:#fff3cd;font-weight:bold;" ' +
-    'type="number" step="0.01" ' +
-    'oninput="modificarSubtotales(' + cont + ')" ' +
-    'name="descuento[]" value="' + descuento + '">' +
-  '</td>' +
+        '<td style="text-align:center;vertical-align:middle;">' +
+        '<input class="form-control" ' +
+        'style="text-align:center;width:70px;background-color:#fff3cd;font-weight:bold;" ' +
+        'type="number" step="0.01" ' +
+        'oninput="modificarSubtotales(' + cont + ')" ' +
+        'name="descuento[]" value="' + descuento + '">' +
+        '</td>' +
 
-  '<td style="display:none;text-align:center;vertical-align:middle;">' +
-    '<input type="hidden" name="stock[]" value="' + stock + '">' +
-    '<span class="btn btn-warning" style="font-size:12px;font-weight:bold;">' +
-      stock +
-    '</span>' +
-  '</td>' +
+        '<td style="display:none;text-align:center;vertical-align:middle;">' +
+        '<input type="hidden" name="stock[]" value="' + stock + '">' +
+        '<span class="btn btn-warning" style="font-size:12px;font-weight:bold;">' +
+        stock +
+        '</span>' +
+        '</td>' +
 
-  '<td style="text-align:center;vertical-align:middle;width:100px;">' +
-    'S/. <span id="subtotal' + cont + '" name="subtotal" style="font-size:14px;font-weight:bold;"></span>' +
-  '</td>' +
+        '<td style="text-align:center;vertical-align:middle;width:100px;">' +
+        'S/. <span id="subtotal' + cont + '" name="subtotal" style="font-size:14px;font-weight:bold;"></span>' +
+        '</td>' +
 
-  '<td style="display:none;">' +
-    '<span id="proigv' + cont + '" name="proigv">' + proigv + '</span>' +
-  '</td>' +
+        '<td style="display:none;">' +
+        '<span id="proigv' + cont + '" name="proigv">' + proigv + '</span>' +
+        '</td>' +
 
-'</tr>';
+        '</tr>';
       cont++;
       detalles = detalles + 1;
-      articuloAdd = articuloAdd + idpc + "-";
+      articuloAdd = articuloAdd + idproducto + "-";
       $("#detalles").append(fila);
       modificarSubtotales();
       evaluar();
@@ -2836,51 +2876,14 @@ function evaluar() {
   }
 }
 
-$("#calcular_cuotas").click(function (e) {
-  e.preventDefault();
-
-  var cuotas = parseInt($("#input_cuotas").val());
-  var interes = parseFloat($("#inputInteres").val());
-  var deuda = parseFloat($("#montoDeuda").val());
-  var fechaBase = new Date($("#fechaOperacion").val());
-
-  if (!cuotas) {
-    Swal.fire("Selecciona número de cuotas", "", "warning");
-    return;
-  }
-
-  if (!deuda || deuda <= 0) {
-    Swal.fire("El credito no puede ser menor o igual a 0", "", "warning");
-    return;
-  }
-
-  // interés total
-  var interesTotal = deuda * (interes / 100);
-
-  // monto final a pagar
-  var deudaTotal = deuda + interesTotal;
-
-  // cuota final
-  var montoCuota = (deudaTotal / cuotas).toFixed(2);
-
-  var html = "";
-
-  if (cuotas === 0) {
-    $("#datafechas").html(
-      '<td colspan="2" class="text-center">No se han calculado las fechas de pago</td>',
-    );
-    return;
-  }
+function generarTabla(cuotas, frecuencia, fechaBase, montoCuota) {
+  let html = "";
+  let fechaTemp = new Date(fechaBase);
 
   for (let i = 1; i <= cuotas; i++) {
-    fechaBase.setMonth(fechaBase.getMonth() + 1);
+    fechaTemp = sumarFrecuencia(fechaTemp, frecuencia);
 
-    var fecha =
-      fechaBase.getFullYear() +
-      "-" +
-      ("0" + (fechaBase.getMonth() + 1)).slice(-2) +
-      "-" +
-      ("0" + fechaBase.getDate()).slice(-2);
+    let fecha = formatearFecha(fechaTemp);
 
     html += `
       <tr>
@@ -2890,6 +2893,89 @@ $("#calcular_cuotas").click(function (e) {
         <td>S/. ${montoCuota}</td>
       </tr>`;
   }
+
+  return html;
+}
+
+function formatearFecha(fecha) {
+  return fecha.getFullYear() + "-" +
+    ("0" + (fecha.getMonth() + 1)).slice(-2) + "-" +
+    ("0" + fecha.getDate()).slice(-2);
+}
+
+function sumarFrecuencia(fecha, frecuencia) {
+  let nuevaFecha = new Date(fecha);
+
+  switch (frecuencia) {
+    case 1: nuevaFecha.setDate(nuevaFecha.getDate() + 1); break;
+    case 2: nuevaFecha.setDate(nuevaFecha.getDate() + 7); break;
+    case 3: nuevaFecha.setDate(nuevaFecha.getDate() + 15); break;
+    case 4: nuevaFecha.setMonth(nuevaFecha.getMonth() + 1); break;
+    case 5: nuevaFecha.setMonth(nuevaFecha.getMonth() + 2); break;
+    case 6: nuevaFecha.setMonth(nuevaFecha.getMonth() + 3); break;
+    case 7: nuevaFecha.setMonth(nuevaFecha.getMonth() + 6); break;
+    case 8: nuevaFecha.setFullYear(nuevaFecha.getFullYear() + 1); break;
+  }
+
+  return nuevaFecha;
+}
+
+function calcularMontos(deuda, interes, cuotas) {
+  let interesTotal = deuda * (interes / 100);
+  let deudaTotal = deuda + interesTotal;
+  let montoCuota = (deudaTotal / cuotas).toFixed(2);
+
+  return {
+    interesTotal,
+    deudaTotal,
+    montoCuota
+  };
+}
+
+function validarDatos({ cuotas, frecuencia, deuda }) {
+  if (!frecuencia) {
+    Swal.fire("Selecciona frecuencia de pago", "", "warning");
+    return false;
+  }
+
+  if (!cuotas) {
+    Swal.fire("Selecciona número de cuotas", "", "warning");
+    return false;
+  }
+
+  if (!deuda || deuda <= 0) {
+    Swal.fire("El crédito no puede ser menor o igual a 0", "", "warning");
+    return false;
+  }
+
+  return true;
+}
+
+$("#calcular_cuotas").click(function (e) {
+  e.preventDefault();
+
+  let data = {
+    cuotas: parseInt($("#input_cuotas").val()),
+    frecuencia: parseInt($("#input_frecuencia").val()),
+    interes: parseFloat($("#inputInteres").val()),
+    deuda: parseFloat($("#montoDeuda").val()),
+    fechaBase: new Date($("#fechaOperacion").val())
+  };
+
+  if (!validarDatos(data)) return;
+
+  let { montoCuota } = calcularMontos(
+    data.deuda,
+    data.interes,
+    data.cuotas
+  );
+
+  let html = generarTabla(
+    data.cuotas,
+    data.frecuencia,
+    data.fechaBase,
+    montoCuota
+  );
 
   $("#datafechas").html(html);
 });
@@ -3430,11 +3516,11 @@ function mostrar(idventa) {
       $("#tipo_comprobantem").html(
         data.tipo_comprobante == "Boleta"
           ? '<span class="badge badge-primary">' +
-              data.tipo_comprobante +
-              "</span>"
+          data.tipo_comprobante +
+          "</span>"
           : '<span class="badge badge-info">' +
-              data.tipo_comprobante +
-              "</span>",
+          data.tipo_comprobante +
+          "</span>",
       );
       $("#correlativo").text(
         data.serie_comprobante + " - " + data.num_comprobante,
