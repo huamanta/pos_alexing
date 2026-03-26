@@ -2876,21 +2876,25 @@ function evaluar() {
   }
 }
 
-function generarTabla(cuotas, frecuencia, fechaBase, montoCuota) {
+function generarTabla(cuotas, frecuencia, fechaBase, deuda, interes) {
   let html = "";
   let fechaTemp = new Date(fechaBase);
 
+  const interesTotal = deuda * (interes / 100);
+  const montoBase = deuda / cuotas;
+  const interesPorCuota = interesTotal / cuotas;
+  const totalCuota = montoBase + interesPorCuota;
+
   for (let i = 1; i <= cuotas; i++) {
     fechaTemp = sumarFrecuencia(fechaTemp, frecuencia);
-
     let fecha = formatearFecha(fechaTemp);
 
     html += `
       <tr>
-        <td>
-          <input type="date" class="form-control" name="fecha_pago[]" value="${fecha}">
-        </td>
-        <td>S/. ${montoCuota}</td>
+        <td><input type="date" class="form-control" name="fecha_pago[]" value="${fecha}"></td>
+        <td>S/. ${montoBase.toFixed(2)}</td>
+        <td>S/. ${interesPorCuota.toFixed(2)}</td>
+        <td>S/. ${totalCuota.toFixed(2)}</td>
       </tr>`;
   }
 
@@ -2974,7 +2978,8 @@ $("#calcular_cuotas").click(function (e) {
     data.cuotas,
     data.frecuencia,
     data.fechaBase,
-    montoCuota
+    data.deuda,
+    data.interes
   );
 
   $("#datafechas").html(html);

@@ -521,54 +521,43 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                                     class="form-control select2" required></select>
                                                             </div>
 
-                                                            <!-- Almacén y Cliente -->
-                                                            <div class="form-group mb-3">
+                                                            <!-- Almacén y Cliente (estructura mejorada) -->
+                                                            <fieldset class="border p-2 rounded mb-3">
+                                                                <legend class="w-auto px-2 small font-weight-bold text-primary">Datos principales</legend>
                                                                 <div class="row">
-                                                                    <div class="col-md-4">
-                                                                        <label for="idsucursal"
-                                                                            class="font-weight-bold">
-                                                                            <i class="fas fa-map-marked-alt"></i>
-                                                                            Almacén
+                                                                    <div class="col-md-4 col-sm-12 mb-2">
+                                                                        <label for="idsucursal" class="font-weight-bold">
+                                                                            <i class="fas fa-map-marked-alt"></i> Almacén
                                                                         </label>
-                                                                        <select id="idsucursal" name="idsucursal"
-                                                                            class="form-control"></select>
+                                                                        <select id="idsucursal" name="idsucursal" class="form-control"></select>
                                                                     </div>
-                                                                    <div class="col-md-8">
+                                                                    <div class="col-md-8 col-sm-12 mb-2">
                                                                         <label for="idcliente" class="font-weight-bold">
                                                                             <i class="fas fa-users"></i> Cliente
-
-                                                                            <a class="ml-2 text-info"
-                                                                                style="cursor:pointer;"
-                                                                                data-toggle="modal"
-                                                                                data-target="#ModalClientes">
-                                                                                <i class="fa fa-plus"></i> Nuevo
-                                                                            </a>
-
-                                                                            <a class="ml-3 text-success"
-                                                                                style="cursor:pointer;"
-                                                                                onclick="verHistorialCliente()">
-                                                                                <i class="fas fa-history"></i> Ver
-                                                                                Últimas Compras
-                                                                            </a>
                                                                         </label>
-                                                                        <select id="idcliente" name="idcliente"
-                                                                            class="form-control" required></select>
+                                                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                                                            <div>
+                                                                                <a class="text-info" style="cursor:pointer;" data-toggle="modal" data-target="#ModalClientes">
+                                                                                    <i class="fa fa-plus"></i> Nuevo
+                                                                                </a>
+                                                                                <a class="ml-3 text-success" style="cursor:pointer;" onclick="verHistorialCliente()">
+                                                                                    <i class="fas fa-history"></i> Historial
+                                                                                </a>
+                                                                            </div>
+                                                                        </div>
+                                                                        <select id="idcliente" name="idcliente" class="form-control" required></select>
                                                                     </div>
                                                                 </div>
-                                                            </div>
+                                                            </fieldset>
 
-                                                            <!-- Tipo de Documento, Serie y N° Orden -->
-                                                            <div class="form-group mb-3">
+                                                            <fieldset class="border p-2 rounded mb-3">
+                                                                <legend class="w-auto px-2 small font-weight-bold text-primary">Documento</legend>
                                                                 <div class="row">
-                                                                    <div class="col-md-4">
-                                                                        <label for="tipo_comprobante"
-                                                                            class="font-weight-bold">
-                                                                            <i class="fas fa-file-alt"></i> Tipo
-                                                                            Documento
+                                                                    <div class="col-md-4 col-sm-12 mb-2">
+                                                                        <label for="tipo_comprobante" class="font-weight-bold">
+                                                                            <i class="fas fa-file-alt"></i> Tipo Documento
                                                                         </label>
-                                                                        <select class="form-control"
-                                                                            name="tipo_comprobante"
-                                                                            id="tipo_comprobante">
+                                                                        <select class="form-control" name="tipo_comprobante" id="tipo_comprobante">
                                                                             <?php if (tienePermiso('Pos', 'Crear Boleta', 'Venta Pos')): ?>
                                                                                 <option value="Boleta">Boleta</option>
                                                                             <?php endif; ?>
@@ -576,38 +565,25 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                                                 <option value="Factura">Factura</option>
                                                                             <?php endif; ?>
                                                                             <?php if (tienePermiso('Pos', 'Crear Nota de Venta', 'Venta Pos')): ?>
-                                                                                <option value="Nota de Venta">Nota de Venta
-                                                                                </option>
+                                                                                <option value="Nota de Venta">Nota de Venta</option>
                                                                             <?php endif; ?>
                                                                         </select>
-                                                                        <small id="validate_categoria"
-                                                                            class="text-danger d-none">Debe Seleccionar
-                                                                            documento</small>
+                                                                        <small id="validate_categoria" class="text-danger d-none">Debe seleccionar documento</small>
                                                                     </div>
-                                                                    <div class="col-md-4">
-                                                                        <label for="serie_comprobante"
-                                                                            class="font-weight-bold">
+                                                                    <div class="col-md-4 col-sm-12 mb-2">
+                                                                        <label for="serie_comprobante" class="font-weight-bold">
                                                                             <i class="fas fa-store-alt"></i> Serie
                                                                         </label>
-                                                                        <input type="text"
-                                                                            class="form-control form-control-sm text-center bg-warning"
-                                                                            name="serie_comprobante"
-                                                                            id="serie_comprobante" maxlength="7"
-                                                                            placeholder="Serie" readonly>
+                                                                        <input type="text" class="form-control form-control-sm text-center bg-warning" name="serie_comprobante" id="serie_comprobante" maxlength="7" placeholder="Serie" readonly>
                                                                     </div>
-                                                                    <div class="col-md-4">
-                                                                        <label for="num_comprobante"
-                                                                            class="font-weight-bold">
-                                                                            <i class="fas fa-file-alt"></i> N° Orden
+                                                                    <div class="col-md-4 col-sm-12 mb-2">
+                                                                        <label for="num_comprobante" class="font-weight-bold">
+                                                                            <i class="fas fa-file-alt"></i> Nº Orden
                                                                         </label>
-                                                                        <input type="text"
-                                                                            class="form-control form-control-sm text-center bg-warning"
-                                                                            name="num_comprobante" id="num_comprobante"
-                                                                            maxlength="10" placeholder="Número"
-                                                                            readonly>
+                                                                        <input type="text" class="form-control form-control-sm text-center bg-warning" name="num_comprobante" id="num_comprobante" maxlength="10" placeholder="Número" readonly>
                                                                     </div>
                                                                 </div>
-                                                            </div>
+                                                            </fieldset>
 
                                                             <!-- Fecha (oculta) -->
                                                             <!-- Fecha -->
@@ -844,9 +820,8 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                                 </div>
                                                             </div>
                                                         </div>
-
+                                                        <hr style="border: 1 px solid #007bff;"/>
                                                         <div class="row col-md-12 mt-4">
-
                                                             <div class="form-group col-lg-3" id="n0">
                                                                 <label>Frecuencia:</label>
                                                                 <select name="input_frecuencia" id="input_frecuencia"
@@ -979,12 +954,14 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                                 <thead>
                                                                     <tr>
                                                                         <th>Fecha de pagos</th>
-                                                                        <th>Monto a pagar</th>
+                                                                        <th>Monto</th>
+                                                                        <th>Interés</th>
+                                                                        <th>Total</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody id="datafechas">
                                                                     <tr>
-                                                                        <td colspan="2" class="text-center">No se han
+                                                                        <td colspan="4" class="text-center">No se han
                                                                             calculado las fechas de pago</td>
                                                                     </tr>
                                                                 </tbody>
