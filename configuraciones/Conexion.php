@@ -1,7 +1,12 @@
 <?php 
 require_once "local.php";
 
-$conexion=new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
+$conexion = null;
+$conexion = new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
+
+if (!$conexion) {
+    die("Failed to connect to database");
+}
 
 mysqli_query($conexion, 'SET NAMES "'.DB_ENCODE.'"');
 
@@ -14,11 +19,17 @@ if (mysqli_connect_errno()) {
 //metodo para ejecutar consulta
 if (!function_exists('ejecutarConsulta')) 
 {
-	Function ejecutarConsulta($sql)
-	{ 
+
+	function ejecutarConsulta($sql) {
 		global $conexion;
-		$query=$conexion->query($sql);
-		return $query;
+
+		$result = $conexion->query($sql);
+
+		if (!$result) {
+			throw new Exception($conexion->error); // 👈 ERROR REAL
+		}
+
+		return $result;
 	}
 
 	function ejecutarConsultaSimpleFila($sql)

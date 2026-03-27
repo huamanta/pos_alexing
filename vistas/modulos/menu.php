@@ -76,11 +76,11 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </p>
             </a>
             <ul class="nav nav-treeview">
-            <?php if (tieneSubpermiso(12, 'Punto de Venta')): ?>
+            <?php if (tieneSubpermiso(12, 'Contrato')): ?>
             <li class="nav-item" style="font-size: 14px">
-                <a href="pos" class="nav-link" id="navPos1">
-                  <i class="fas fa-credit-card nav-icon text-primary" style="font-size: 14px"></i>
-                  <p>Punto de Venta</p>
+                <a href="contrato" class="nav-link" id="navContrato">
+                  <i class="fas fa-file-contract nav-icon text-primary" style="font-size: 14px"></i>
+                  <p>Contratos</p>
                 </a>
               </li>
             <?php endif; ?>
@@ -504,6 +504,15 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                 <a href="negocio" class="nav-link" id="navDatosGeneralesI">
                   <i class="fas fa-building nav-icon text-orange" style="font-size: 14px"></i>
                   <p>Datos Generales</p>
+                </a>
+              </li>
+            <?php endif; ?>
+
+            <?php if (tieneSubpermiso(8, 'Facturadores')): ?>
+              <li class="nav-item" style="font-size: 14px">
+                <a href="empresas" class="nav-link" id="navFacturadores">
+                  <i class="fas fa-file-alt nav-icon text-orange" style="font-size: 14px"></i>
+                  <p>Facturadores</p>
                 </a>
               </li>
             <?php endif; ?>

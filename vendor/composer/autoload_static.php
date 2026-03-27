@@ -74,10 +74,6 @@ class ComposerStaticInit5ce13f389270716aa74fac6c4293dda4
         array (
             'setasign\\Fpdi\\' => 14,
         ),
-        'W' => 
-        array (
-            'WebSocket\\' => 10,
-        ),
         'P' => 
         array (
             'Psr\\SimpleCache\\' => 16,
@@ -106,10 +102,6 @@ class ComposerStaticInit5ce13f389270716aa74fac6c4293dda4
         'setasign\\Fpdi\\' => 
         array (
             0 => __DIR__ . '/..' . '/setasign/fpdi/src',
-        ),
-        'WebSocket\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/textalk/websocket/lib',
         ),
         'Psr\\SimpleCache\\' => 
         array (

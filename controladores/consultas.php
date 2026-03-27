@@ -1601,8 +1601,12 @@ break;
 			break;
 
 			case 'totalVentas':
-				$rspta=$consulta->ventasultimos_12meses();
-				$reg=$rspta->fetch_all();
+				$idsucursal = $_POST['idsucursal'] ?? $_SESSION['idsucursal'];
+				if (empty($idsucursal) || $idsucursal == "0" || $idsucursal == "Todos") {
+					$idsucursal = "Todos";
+				}
+				$rspta = $consulta->ventasultimos_12meses($idsucursal);
+				$reg = $rspta->fetch_all();
 				echo json_encode($reg);
 		
 			break;
@@ -1671,7 +1675,11 @@ break;
 
 
 			case 'totalCompras':
-				$rspta=$consulta->comprasultimos_10dias();
+				$idsucursal = $_POST['idsucursal'] ?? $_SESSION['idsucursal'];
+				if (empty($idsucursal) || $idsucursal == "0" || $idsucursal == "Todos") {
+					$idsucursal = "Todos";
+				}
+				$rspta=$consulta->comprasultimos_10dias($idsucursal);
 				$reg=$rspta->fetch_all();
 				echo json_encode($reg);
 		

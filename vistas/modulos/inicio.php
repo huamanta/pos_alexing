@@ -558,15 +558,41 @@ if (session_status() === PHP_SESSION_NONE) {
 <script type="text/javascript">
 
 document.addEventListener('DOMContentLoaded', async () => {
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    async function waitSucursal() {
+        let idsucursal = document.getElementById("idsucursal2").value || "";
+        let tries = 0;
+        while ((idsucursal === "" || idsucursal === "0") && tries < 30) {
+            await sleep(150); // espera 150ms
+            idsucursal = document.getElementById("idsucursal2").value || "";
+            tries++;
+        }
+        if (!idsucursal || idsucursal === "0") {
+            idsucursal = "<?= $_SESSION['idsucursal'] ?? '0' ?>";
+        }
+        return idsucursal;
+    }
+
     try {
+        // Esperar a que exista la sucursal activa
+        const idsucursal = await waitSucursal();
+
+        if (!idsucursal || idsucursal === "0") {
+            console.warn('No hay sucursal seleccionada en inicio.php. Se omiten las consultas de ventas/compras.');
+            return;
+        }
+
         // Obtener ventas
-        const ventasResponse = await fetch("controladores/consultas.php?op=totalVentas");
+        const ventasResponse = await fetch("controladores/consultas.php?op=totalVentas&idsucursal=" + idsucursal);
         const ventasData = await ventasResponse.json();
         const periodos = ventasData.map(item => item[0]);
         const montosVentas = ventasData.map(item => parseFloat(item[1] || 0));
 
         // Obtener compras
-        const comprasResponse = await fetch("controladores/consultas.php?op=totalCompras");
+        const comprasResponse = await fetch("controladores/consultas.php?op=totalCompras&idsucursal=" + idsucursal);
         const comprasData = await comprasResponse.json();
         const montosCompras = comprasData.map(item => parseFloat(item[1] || 0));
 

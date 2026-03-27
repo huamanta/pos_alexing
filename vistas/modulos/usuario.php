@@ -99,7 +99,7 @@
               
               <div class="col-sm-3">
                 <label for="name">Clave:</label>
-                <input type="password" class="form-control" name="clave" id="clave" maxlength="64" placeholder="Clave" required>
+                <input type="password" class="form-control" name="clave" id="clave" maxlength="64" placeholder="Clave">
               </div>
               
               <div class="col-sm-3">

@@ -6,8 +6,9 @@ require_once "../modelos/pos.php";
 $pos = new Pos();
 switch ($_GET['op']) {
     case 'verificarCaja':
+        $idsucursal = $_POST["idsucursal"] ?? $_SESSION["idsucursal"];
         $idusuario = $_SESSION["idusuario"];
-        $rpta = $pos->verificarCaja($idusuario);
+        $rpta = $pos->verificarCaja($idusuario, $idsucursal);
         echo json_encode($rpta);
         break;
 
@@ -19,7 +20,7 @@ switch ($_GET['op']) {
 
     case 'listarVentas':
         $idcaja = isset($_GET["idcaja"]) ? limpiarCadena($_GET["idcaja"]) : "";
-        $idsucursal = $_SESSION["idsucursal"];
+        $idsucursal = $_GET["idsucursal"] ??    $_SESSION["idsucursal"];
         $idusuario = $_SESSION["idusuario"];
         $estado = isset($_GET["estado"]) ? limpiarCadena($_GET["estado"]) : "";
         $rpta = $pos->listarVentas($idcaja, $idsucursal, $idusuario, $estado);
@@ -192,7 +193,8 @@ switch ($_GET['op']) {
         $efectivo_apertura = isset($_POST["efectivo_apertura"]) ? limpiarCadena($_POST["efectivo_apertura"]) : "";
         $caja_apertura = isset($_POST["caja_apertura"]) ? limpiarCadena($_POST["caja_apertura"]) : "";
         $idusuario = $_SESSION["idusuario"];
-        $rpta = $pos->aperturarCaja($fecha_hora, $efectivo_apertura, $caja_apertura, $idusuario);
+        $idsucursal = $_SESSION["idsucursal"];
+        $rpta = $pos->aperturarCaja($fecha_hora, $efectivo_apertura, $caja_apertura, $idusuario, $idsucursal);
         if ($rpta) {
             $info = array('status' => 1);
         } else {

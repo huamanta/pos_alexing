@@ -11,15 +11,18 @@ $distrito=isset($_POST["distrito"])? limpiarCadena($_POST["distrito"]):"";
 $provincia=isset($_POST["provincia"])? limpiarCadena($_POST["provincia"]):"";
 $departamento=isset($_POST["departamento"])? limpiarCadena($_POST["departamento"]):"";
 $ubigeo=isset($_POST["ubigeo"])? limpiarCadena($_POST["ubigeo"]):"";
+$idempresa=isset($_POST["idempresa"])? limpiarCadena($_POST["idempresa"]):"";
+$moneda=isset($_POST["moneda"])? limpiarCadena($_POST["moneda"]):"";
+$simbolo=isset($_POST["simbolo"])? limpiarCadena($_POST["simbolo"]):"";
 
 switch ($_GET["op"]){
 	case 'guardaryeditar':
 		if (empty($idsucursal)){
-			$rspta=$categoria->insertarSucursal($nombre,$direccion,$telefono,$_POST["nombreSucursal"],$_POST["serie"],$_POST["numero"],$distrito,$provincia,$departamento,$ubigeo);
+			$rspta=$categoria->insertarSucursal($nombre,$direccion,$telefono,$_POST["nombreSucursal"],$_POST["serie"],$_POST["numero"],$distrito,$provincia,$departamento,$ubigeo, $idempresa, $moneda, $simbolo);
 			echo $rspta ? "Sucursal registrada" : "Sucursal no se pudo registrar";
 		}
 		else {
-			$rspta = $categoria->editarSucursal($idsucursal,$nombre,$direccion,$telefono,$distrito,$provincia,$departamento,$ubigeo);
+			$rspta = $categoria->editarSucursal($idsucursal,$nombre,$direccion,$telefono,$distrito,$provincia,$departamento,$ubigeo, $idempresa, $moneda, $simbolo);
 		    $categoria->actualizarComprobantes($idsucursal,$_POST["nombreSucursal"],$_POST["serie"],$_POST["numero"]);
 		    echo $rspta ? "Sucursal actualizada" : "Sucursal no se pudo actualizar";
 				}
@@ -51,6 +54,9 @@ switch ($_GET["op"]){
 	            "provincia" => $reg->provincia,
 	            "departamento" => $reg->departamento,
 	            "ubigeo" => $reg->ubigeo,
+				"idempresa" => $reg->idempresa,
+				"moneda" => $reg->moneda,
+				"simbolo" => $reg->simbolo,
 	            "comprobantes" => array(
 	                "id_comp_pago" => $reg->id_comp_pago,
 	                "nombre" => $reg->comp_nombre,
@@ -156,6 +162,19 @@ switch ($_GET["op"]){
  				);
  		}
  		echo json_encode($data);
+ 	break;
+
+	case 'selectEmpresas':
+		$rspta = $categoria->selectEmpresas();
+		$data = Array();
+ 		while ($reg = $rspta->fetch_object()) {
+ 			$data[] = array(
+ 				"idempresa" => $reg->idempresa,
+ 				"ruc" => $reg->ruc,
+				 				"razon_social" => $reg->razon_social
+ 			);
+ 		}
+		echo json_encode($data);
  	break;
 
 }
