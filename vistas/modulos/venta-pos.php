@@ -911,11 +911,17 @@ function tienePermiso($modulo, $accion, $submodulo = null)
 
                                                             <div class="form-group col-lg-1" style="display: none;"
                                                                 id="b1">
-
                                                                 <br>
                                                                 <button type="button" class="btn btn-success"
                                                                     id="calcular_cuotas">Calcular</button>
                                                             </div>
+
+                                                            <div class="form-group col-lg-9" style="display: none;"
+                                                                id="n5">
+                                                                <label for="">Garante</label>
+                                                                <select class="form-control" id="idgarante" name="idgarante"></select>
+                                                            </div>
+
                                                         </div>
                                                         <div class="row col-md-12 mt-4" style="display: none;" id="n6">
                                                             <div class="col-lg-2">

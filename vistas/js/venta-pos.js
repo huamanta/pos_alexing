@@ -152,6 +152,32 @@ function init() {
   generarCuotas(100);
 }
 
+$("#idgarante").select2({
+    placeholder: "🔍 Buscar sucursal...",
+    allowClear: true,
+    width: '100%',
+    minimumInputLength: 1,
+    ajax: {
+        url: "controladores/venta.php?op=buscarGarante",
+        dataType: 'json',
+        delay: 250,
+
+        data: function (params) {
+            return {
+                search: params.term // lo que escribe el usuario
+            };
+        },
+
+        processResults: function (data) {
+            return {
+                results: data
+            };
+        },
+
+        cache: true
+    }
+});
+
 function generarCuotas(max = 100) {
   let select = $("#input_cuotas");
   let html = '<option value="" selected hidden>Seleccionar...</option>';
@@ -474,6 +500,7 @@ $("#tipopago").change(function () {
 
     $("#n3").show();
     $("#n4").show();
+    $("#n5").show();
     $("#panel1").show();
 
     // $('#fp2').show();
@@ -492,6 +519,7 @@ $("#tipopago").change(function () {
 
     document.getElementById("n3").style.display = "none";
     document.getElementById("n4").style.display = "none";
+    document.getElementById("n5").style.display = "none";
 
     // $('#n1').hide();
 

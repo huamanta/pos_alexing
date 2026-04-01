@@ -3,12 +3,12 @@ require "../configuraciones/Conexion.php";
 date_default_timezone_set('America/Lima');
 class Venta
 {
-	//implementamos nuestro constructor
-	public function __construct()
-	{
-	}
+    //implementamos nuestro constructor
+    public function __construct()
+    {
+    }
 
-	public function verificarCaja($idusuario, $idsucursal)
+    public function verificarCaja($idusuario, $idsucursal)
     {
         $sql = "SELECT ca.*
                 FROM caja_apertura ca
@@ -29,34 +29,34 @@ class Venta
 
 
 
-	public function listarCajas($idsucursal)
-	{
-		$sql = "SELECT * FROM cajas WHERE estado = 1 AND idsucursal = '$idsucursal' AND deleted_at IS NULL";
-		$cajas = ejecutarConsulta($sql);
-		$data = array();
-		while ($reg = $cajas->fetch_object()) {
-			$data[] = $reg;
-		}
-		return $data;
-	}
+    public function listarCajas($idsucursal)
+    {
+        $sql = "SELECT * FROM cajas WHERE estado = 1 AND idsucursal = '$idsucursal' AND deleted_at IS NULL";
+        $cajas = ejecutarConsulta($sql);
+        $data = array();
+        while ($reg = $cajas->fetch_object()) {
+            $data[] = $reg;
+        }
+        return $data;
+    }
 
 
-	public function aperturarCaja($idcaja, $monto_apertura, $idusuario, $idsucursal)
-	{
-		$fechaActual = date('Y-m-d H:i:s');
-		$sql = "INSERT INTO caja_apertura (idcaja, efectivo_apertura, idusuario, idsucursal, estado, fecha_apertura) 
+    public function aperturarCaja($idcaja, $monto_apertura, $idusuario, $idsucursal)
+    {
+        $fechaActual = date('Y-m-d H:i:s');
+        $sql = "INSERT INTO caja_apertura (idcaja, efectivo_apertura, idusuario, idsucursal, estado, fecha_apertura) 
 		VALUES ('$idcaja', '$monto_apertura', '$idusuario', '$idsucursal', '1', '$fechaActual')";
-		$rspta = ejecutarConsulta($sql);
-		$data = array();
-		if ($rspta) {
-			$sqlupdate = "UPDATE cajas SET estado = '2' WHERE idcaja = '$idcaja'";
-			ejecutarConsulta($sqlupdate);
-			$data = array('success' => true, 'idcaja' => $idcaja);
-		} else {
-			$data = array('success' => false, 'idcaja' => 0);
-		}
-		return $data;
-	}
+        $rspta = ejecutarConsulta($sql);
+        $data = array();
+        if ($rspta) {
+            $sqlupdate = "UPDATE cajas SET estado = '2' WHERE idcaja = '$idcaja'";
+            ejecutarConsulta($sqlupdate);
+            $data = array('success' => true, 'idcaja' => $idcaja);
+        } else {
+            $data = array('success' => false, 'idcaja' => 0);
+        }
+        return $data;
+    }
 
     public function verPreciosItem($idproducto_configuracion, $idusuario)
     {
@@ -97,180 +97,217 @@ class Venta
 
         // Si el campo es texto, rodearlo con comillas
         $sql = "UPDATE temp_detalle_venta SET $campo = '$value_escaped' WHERE token = '$token' AND idproducto = '$idproducto'";
-       
+
 
         return ejecutarConsulta($sql);
     }
 
-	public function insertar(
-    $idsucursal, $idcliente, $idpersonal, $idcaja,
-    $tipo_comprobante, $serie_comprobante, $num_comprobante,
-    $fecha_hora, $impuesto, $total_venta,
-    $tipopago, $formapago, $nroOperacion, $fechaDepostivo,
-    $porcentaje, $totalrecibido, $totaldeposito, $vuelto,
-    $tipo, $banco,
-    $idproducto, $nombre, $cantidad, $precio_venta, $descuento,
-    $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia,
-    $idmotivo, $observaciones, $fecha_pago,
-    $interes, $input_cuotas, $input_frecuencia, 
-    $cantidad_contenedor, $contenedor,
-    $idp, $check_precio, $id_fifo_lote, $idcategoria
-) {
-    global $conexion;
+    public function insertar(
+        $idsucursal,
+        $idcliente,
+        $idpersonal,
+        $idcaja,
+        $tipo_comprobante,
+        $serie_comprobante,
+        $num_comprobante,
+        $fecha_hora,
+        $impuesto,
+        $total_venta,
+        $tipopago,
+        $formapago,
+        $nroOperacion,
+        $fechaDepostivo,
+        $porcentaje,
+        $totalrecibido,
+        $totaldeposito,
+        $vuelto,
+        $tipo,
+        $banco,
+        $idproducto,
+        $nombre,
+        $cantidad,
+        $precio_venta,
+        $descuento,
+        $fechaOperacion,
+        $montoDeuda,
+        $montoPagado,
+        $comprobanteReferencia,
+        $idmotivo,
+        $observaciones,
+        $fecha_pago,
+        $interes,
+        $input_cuotas,
+        $input_frecuencia,
+        $cantidad_contenedor,
+        $contenedor,
+        $idp,
+        $check_precio,
+        $id_fifo_lote,
+        $idcategoria,
+        $idgarante
+    ) {
+        global $conexion;
 
-    // =========================
-    // 1) Validación sesión
-    // =========================
-    if (!isset($_SESSION['idpersonal']) || $_SESSION['idpersonal'] === null || $_SESSION['idpersonal'] === '') {
-        header('Location: /salir');
-        exit();
-    }
+        // =========================
+        // 1) Validación sesión
+        // =========================
+        if (!isset($_SESSION['idpersonal']) || $_SESSION['idpersonal'] === null || $_SESSION['idpersonal'] === '') {
+            header('Location: /salir');
+            exit();
+        }
 
-    // =========================
-    // 2) Validar conexión BD
-    // =========================
-    if (!$conexion || $conexion->connect_errno) {
-        error_log("Error de conexión BD: " . ($conexion ? $conexion->connect_error : 'Sin conexión'));
-        return null;
-    }
+        // =========================
+        // 2) Validar conexión BD
+        // =========================
+        if (!$conexion || $conexion->connect_errno) {
+            error_log("Error de conexión BD: " . ($conexion ? $conexion->connect_error : 'Sin conexión'));
+            return null;
+        }
 
-    // =========================
-    // 3) Chequeo internet (NO bloqueante)
-    // =========================
-    // Si tu server bloquea salida a google, esto te mataba ventas.
-    // Si quieres que sea bloqueante, cambia el warning por return null.
-    $internetTest = @fsockopen("www.google.com", 80, $errno, $errstr, 2);
-    if (!$internetTest) {
-        error_log("WARN: No hay conexión a internet (fsockopen falló). Continuando igual. errno=$errno err=$errstr");
-    } else {
-        fclose($internetTest);
-    }
+        // =========================
+        // 3) Chequeo internet (NO bloqueante)
+        // =========================
+        // Si tu server bloquea salida a google, esto te mataba ventas.
+        // Si quieres que sea bloqueante, cambia el warning por return null.
+        $internetTest = @fsockopen("www.google.com", 80, $errno, $errstr, 2);
+        if (!$internetTest) {
+            error_log("WARN: No hay conexión a internet (fsockopen falló). Continuando igual. errno=$errno err=$errstr");
+        } else {
+            fclose($internetTest);
+        }
 
-    // =========================
-    // 4) Validaciones básicas
-    // =========================
-    $total_venta = floatval($total_venta);
-    if ($total_venta <= 0) return null;
+        // =========================
+        // 4) Validaciones básicas
+        // =========================
+        $total_venta = floatval($total_venta);
+        if ($total_venta <= 0)
+            return null;
 
-    if ($idcliente == "" || $idcliente === null) $idcliente = 6;
+        if ($idcliente == "" || $idcliente === null)
+            $idcliente = 6;
 
-    $dovEstado = "";
-    if ($tipo_comprobante === "Nota de Venta") {
-        $estado = "Activado";
-        $dovEstado = "ACEPTADO";
-    } else {
-        $estado = "Por Enviar";
-    }
+        $dovEstado = "";
+        if ($tipo_comprobante === "Nota de Venta") {
+            $estado = "Activado";
+            $dovEstado = "ACEPTADO";
+        } else {
+            $estado = "Por Enviar";
+        }
 
-    if ($serie_comprobante == "-" && $num_comprobante == "-") {
-        $tipo_comprobante = "Anular";
-    }
+        if ($serie_comprobante == "-" && $num_comprobante == "-") {
+            $tipo_comprobante = "Anular";
+        }
 
-    // =========================
-    // 5) Generar comprobante si falta
-    // =========================
-    if (empty($num_comprobante)) {
-        $numc = "SELECT serie_comprobante, num_comprobante
+        // =========================
+        // 5) Generar comprobante si falta
+        // =========================
+        if (empty($num_comprobante)) {
+            $numc = "SELECT serie_comprobante, num_comprobante
                  FROM venta
                  WHERE tipo_comprobante = '$tipo_comprobante' AND idsucursal = '$idsucursal'
                  ORDER BY idventa DESC LIMIT 1";
-        $existeNum = ejecutarConsulta($numc);
-        if (!$existeNum) return null;
+            $existeNum = ejecutarConsulta($numc);
+            if (!$existeNum)
+                return null;
 
-        $c = $serie_comprobante;
-        $v = 0;
+            $c = $serie_comprobante;
+            $v = 0;
 
-        while ($regn = $existeNum->fetch_object()) {
-            $c = $regn->serie_comprobante;
-            $v = $regn->num_comprobante;
+            while ($regn = $existeNum->fetch_object()) {
+                $c = $regn->serie_comprobante;
+                $v = $regn->num_comprobante;
+            }
+
+            if (!empty($v)) {
+                $serie_comprobante = $c;
+                $num = intval($v) + 1;
+                $num_comprobante = str_pad($num, 7, "0", STR_PAD_LEFT);
+            } else {
+                $num_comprobante = '0000001';
+            }
         }
 
-        if (!empty($v)) {
-            $serie_comprobante = $c;
-            $num = intval($v) + 1;
-            $num_comprobante = str_pad($num, 7, "0", STR_PAD_LEFT);
-        } else {
-            $num_comprobante = '0000001';
-        }
-    }
-
-    // =========================
-    // 6) Validar duplicados
-    // =========================
-    $existeComprobante = "SELECT idventa
+        // =========================
+        // 6) Validar duplicados
+        // =========================
+        $existeComprobante = "SELECT idventa
                           FROM venta
                           WHERE serie_comprobante = '$serie_comprobante'
                             AND num_comprobante   = '$num_comprobante'
                             AND idsucursal        = '$idsucursal'
                           LIMIT 1";
-    $existeCompro = ejecutarConsulta($existeComprobante);
-    if (!$existeCompro) return null;
+        $existeCompro = ejecutarConsulta($existeComprobante);
+        if (!$existeCompro)
+            return null;
 
-    if ($existeCompro->num_rows > 0) {
-        $sqlUltimoC = "SELECT num_comprobante
+        if ($existeCompro->num_rows > 0) {
+            $sqlUltimoC = "SELECT num_comprobante
                        FROM venta
                        WHERE tipo_comprobante = '$tipo_comprobante' AND idsucursal = '$idsucursal'
                        ORDER BY idventa DESC LIMIT 1";
-        $ultimoComprobante = ejecutarConsulta($sqlUltimoC);
-        if (!$ultimoComprobante) return null;
+            $ultimoComprobante = ejecutarConsulta($sqlUltimoC);
+            if (!$ultimoComprobante)
+                return null;
 
-        $var2 = 0;
-        while ($reg = $ultimoComprobante->fetch_object()) {
-            $var2 = $reg->num_comprobante;
+            $var2 = 0;
+            while ($reg = $ultimoComprobante->fetch_object()) {
+                $var2 = $reg->num_comprobante;
+            }
+            if ($var2 > 0) {
+                $num_comprobante = str_pad(intval($var2) + 1, 7, "0", STR_PAD_LEFT);
+            }
         }
-        if ($var2 > 0) {
-            $num_comprobante = str_pad(intval($var2) + 1, 7, "0", STR_PAD_LEFT);
+
+        // =========================
+        // 7) Iniciar transacción
+        // =========================
+        $startTime = microtime(true);
+        ejecutarConsulta("BEGIN");
+
+        $sw = true; // <-- IMPORTANTE: antes lo usabas sin inicializar
+
+        // =========================
+        // 8) Determinar forma pago real (Mixto)
+        // =========================
+        $formapagoVenta = $formapago;
+        if (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
+            $metodosTmp = array_values(array_filter($_POST['metodo_pago']));
+            if (count($metodosTmp) > 1)
+                $formapagoVenta = "Mixto";
+            elseif (count($metodosTmp) == 1)
+                $formapagoVenta = $metodosTmp[0];
         }
-    }
 
-    // =========================
-    // 7) Iniciar transacción
-    // =========================
-    $startTime = microtime(true);
-    ejecutarConsulta("BEGIN");
+        $fechaActual = date('Y-m-d H:i:s');
 
-    $sw = true; // <-- IMPORTANTE: antes lo usabas sin inicializar
+        // =========================
+        // 9) Insertar venta
+        // =========================
 
-    // =========================
-    // 8) Determinar forma pago real (Mixto)
-    // =========================
-    $formapagoVenta = $formapago;
-    if (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
-        $metodosTmp = array_values(array_filter($_POST['metodo_pago']));
-        if (count($metodosTmp) > 1) $formapagoVenta = "Mixto";
-        elseif (count($metodosTmp) == 1) $formapagoVenta = $metodosTmp[0];
-    }
+        if (empty($idmotivo)) {
+            $idmotivo = 0;
+        }
 
-    $fechaActual = date('Y-m-d H:i:s');
+        if (empty($fechaDepostivo)) {
+            $fechaDepostivo = date('Y-m-d H:i:s');
+        }
 
-    // =========================
-    // 9) Insertar venta
-    // =========================
+        if (empty($porcentaje)) {
+            $porcentaje = 0;
+        }
 
-    if(empty($idmotivo)){
-        $idmotivo = 0;
-    }
+        if (empty($input_cuotas)) {
+            $input_cuotas = 0;
+        }
 
-    if(empty($fechaDepostivo)){
-        $fechaDepostivo = date('Y-m-d H:i:s');
-    }
-
-    if(empty($porcentaje)){
-        $porcentaje = 0;
-    }
-
-    if(empty($input_cuotas)){
-        $input_cuotas = 0;
-    }
-    
-    $sql = "INSERT INTO venta (
+        $sql = "INSERT INTO venta (
                 idsucursal, idcaja, idcliente, idpersonal, idmotivo_nota,
                 tipo_comprobante, serie_comprobante, num_comprobante,
                 fecha_hora, impuesto, total_venta, ventacredito,
                 interes, formapago, frecuencia, meses, numoperacion, fechadeposito,
                 descuento, totalrecibido, totaldeposito, vuelto,
                 banco, montoPagado, estado, documento_rel, dov_Estado,
-                observacion, fecha_kardex
+                observacion, fecha_kardex, idgarante
             ) VALUES (
                 '$idsucursal','$idcaja','$idcliente','$idpersonal','$idmotivo',
                 '$tipo_comprobante','$serie_comprobante','$num_comprobante',
@@ -278,104 +315,105 @@ class Venta
                 '$interes','$formapagoVenta', '$input_frecuencia', '$input_cuotas','$nroOperacion','$fechaDepostivo',
                 '$porcentaje','$totalrecibido','$totaldeposito','$vuelto',
                 '$banco','$montoPagado','$estado','$comprobanteReferencia','$dovEstado',
-                '".mysqli_real_escape_string($conexion, (string)$observaciones)."','$fechaActual'
+                '" . mysqli_real_escape_string($conexion, (string) $observaciones) . "','$fechaActual','$idgarante'
             )";
 
-    $idventanew = ejecutarConsulta_retornarID($sql);
-    if (!$idventanew) {
-        error_log("ERROR insert venta: " . mysqli_error($conexion));
-        error_log("SQL: " . $sql);
-        ejecutarConsulta("ROLLBACK");
-        return null;
-    }
+        $idventanew = ejecutarConsulta_retornarID($sql);
+        if (!$idventanew) {
+            error_log("ERROR insert venta: " . mysqli_error($conexion));
+            error_log("SQL: " . $sql);
+            ejecutarConsulta("ROLLBACK");
+            return null;
+        }
 
-    // =========================
-    // 10) Insertar pagos mixtos (si NO es crédito)
-    // =========================
-    $ventaCredito = $_POST['tipopago'] ?? $tipopago ?? 'No';
+        // =========================
+        // 10) Insertar pagos mixtos (si NO es crédito)
+        // =========================
+        $ventaCredito = $_POST['tipopago'] ?? $tipopago ?? 'No';
 
-    if ($ventaCredito !== "Si" && $sw) {
-        if (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
+        if ($ventaCredito !== "Si" && $sw) {
+            if (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
 
-            $metodos = $_POST['metodo_pago'];
-            $montosReales = $_POST['monto_real_pago'] ?? [];
-            $nros = $_POST['nroOperacion_pago'] ?? [];
-            $bancos = $_POST['banco_pago'] ?? [];
-            $fechas = $_POST['fecha_deposito_pago'] ?? [];
+                $metodos = $_POST['metodo_pago'];
+                $montosReales = $_POST['monto_real_pago'] ?? [];
+                $nros = $_POST['nroOperacion_pago'] ?? [];
+                $bancos = $_POST['banco_pago'] ?? [];
+                $fechas = $_POST['fecha_deposito_pago'] ?? [];
 
-            if (count($metodos) > 0 && count($montosReales) > 0) {
-                for ($i = 0; $i < count($metodos); $i++) {
-                    if (!empty($metodos[$i]) && isset($montosReales[$i])) {
+                if (count($metodos) > 0 && count($montosReales) > 0) {
+                    for ($i = 0; $i < count($metodos); $i++) {
+                        if (!empty($metodos[$i]) && isset($montosReales[$i])) {
 
-                        $montoPago = floatval($montosReales[$i]);
-                        $metodoPago = mysqli_real_escape_string($conexion, $metodos[$i]);
+                            $montoPago = floatval($montosReales[$i]);
+                            $metodoPago = mysqli_real_escape_string($conexion, $metodos[$i]);
 
-                        $nroOp = (isset($nros[$i]) && trim((string)$nros[$i]) !== '') ? mysqli_real_escape_string($conexion, $nros[$i]) : null;
-                        $bancoVal = (isset($bancos[$i]) && trim((string)$bancos[$i]) !== '') ? mysqli_real_escape_string($conexion, $bancos[$i]) : null;
-                        $fechaDep = (isset($fechas[$i]) && trim((string)$fechas[$i]) !== '') ? mysqli_real_escape_string($conexion, $fechas[$i]) : null;
+                            $nroOp = (isset($nros[$i]) && trim((string) $nros[$i]) !== '') ? mysqli_real_escape_string($conexion, $nros[$i]) : null;
+                            $bancoVal = (isset($bancos[$i]) && trim((string) $bancos[$i]) !== '') ? mysqli_real_escape_string($conexion, $bancos[$i]) : null;
+                            $fechaDep = (isset($fechas[$i]) && trim((string) $fechas[$i]) !== '') ? mysqli_real_escape_string($conexion, $fechas[$i]) : null;
 
-                        $nroOpSQL = $nroOp !== null ? "'$nroOp'" : "NULL";
-                        $bancoSQL = $bancoVal !== null ? "'$bancoVal'" : "NULL";
-                        $fechaDepSQL = $fechaDep !== null ? "'$fechaDep'" : "NULL";
+                            $nroOpSQL = $nroOp !== null ? "'$nroOp'" : "NULL";
+                            $bancoSQL = $bancoVal !== null ? "'$bancoVal'" : "NULL";
+                            $fechaDepSQL = $fechaDep !== null ? "'$fechaDep'" : "NULL";
 
-                        $sqlPago = "INSERT INTO venta_pago (
+                            $sqlPago = "INSERT INTO venta_pago (
                                         idventa, metodo_pago, monto, nroOperacion, banco, fechaDeposito
                                     ) VALUES (
                                         '$idventanew', '$metodoPago', '$montoPago', $nroOpSQL, $bancoSQL, $fechaDepSQL
                                     )";
 
-                        if (!ejecutarConsulta($sqlPago)) {
-                            error_log("ERROR insert venta_pago: " . mysqli_error($conexion));
-                            error_log("SQL: " . $sqlPago);
-                            $sw = false;
-                            break;
+                            if (!ejecutarConsulta($sqlPago)) {
+                                error_log("ERROR insert venta_pago: " . mysqli_error($conexion));
+                                error_log("SQL: " . $sqlPago);
+                                $sw = false;
+                                break;
+                            }
                         }
                     }
                 }
             }
         }
-    }
-
-    // =========================
-    // 11) Detalles + FIFO
-    // =========================
-    $num_elementos = 0;
-    $totalItems = is_array($idp) ? count($idp) : 0;
-
-    while ($num_elementos < $totalItems && $sw) {
-
-        if ((microtime(true) - $startTime) > 15) {
-            error_log("Timeout en venta - más de 15 segundos");
-            $sw = false;
-            break;
-        }
-
-        $id_producto_config = $idp[$num_elementos] ?? 0;
-        $id_producto_real   = $idproducto[$num_elementos] ?? 0;
-
-        $cant_solicitada = floatval($cantidad[$num_elementos] ?? 0);
-        $factor_conten   = floatval($cantidad_contenedor[$num_elementos] ?? 1);
-        if ($factor_conten <= 0) $factor_conten = 1;
-
-        // normalizar descuento: '' => 0
-        $desc_raw = $descuento[$num_elementos] ?? 0;
-        $desc_raw = trim((string)$desc_raw);
-        $desc_val = ($desc_raw === '' ? 0 : (float)$desc_raw);
-
-        $precio_final = floatval($precio_venta[$num_elementos] ?? 0);
-
-        $nomProd = mysqli_real_escape_string($conexion, (string)($nombre[$num_elementos] ?? ''));
-        $contVal = mysqli_real_escape_string($conexion, (string)($contenedor[$num_elementos] ?? ''));
-        $checkPr = mysqli_real_escape_string($conexion, (string)($check_precio[$num_elementos] ?? ''));
-
-        $id_fifo_sugerido = intval($id_fifo_lote[$num_elementos] ?? 0);
-        $cat = intval($idcategoria[$num_elementos] ?? 0);
 
         // =========================
-        // 11.1) SERVICIO: NO FIFO / NO STOCK / NO KARDEX
+        // 11) Detalles + FIFO
         // =========================
-        if ($cat === 1) {
-            $sql_detalle_servicio = "INSERT INTO detalle_venta (
+        $num_elementos = 0;
+        $totalItems = is_array($idp) ? count($idp) : 0;
+
+        while ($num_elementos < $totalItems && $sw) {
+
+            if ((microtime(true) - $startTime) > 15) {
+                error_log("Timeout en venta - más de 15 segundos");
+                $sw = false;
+                break;
+            }
+
+            $id_producto_config = $idp[$num_elementos] ?? 0;
+            $id_producto_real = $idproducto[$num_elementos] ?? 0;
+
+            $cant_solicitada = floatval($cantidad[$num_elementos] ?? 0);
+            $factor_conten = floatval($cantidad_contenedor[$num_elementos] ?? 1);
+            if ($factor_conten <= 0)
+                $factor_conten = 1;
+
+            // normalizar descuento: '' => 0
+            $desc_raw = $descuento[$num_elementos] ?? 0;
+            $desc_raw = trim((string) $desc_raw);
+            $desc_val = ($desc_raw === '' ? 0 : (float) $desc_raw);
+
+            $precio_final = floatval($precio_venta[$num_elementos] ?? 0);
+
+            $nomProd = mysqli_real_escape_string($conexion, (string) ($nombre[$num_elementos] ?? ''));
+            $contVal = mysqli_real_escape_string($conexion, (string) ($contenedor[$num_elementos] ?? ''));
+            $checkPr = mysqli_real_escape_string($conexion, (string) ($check_precio[$num_elementos] ?? ''));
+
+            $id_fifo_sugerido = intval($id_fifo_lote[$num_elementos] ?? 0);
+            $cat = intval($idcategoria[$num_elementos] ?? 0);
+
+            // =========================
+            // 11.1) SERVICIO: NO FIFO / NO STOCK / NO KARDEX
+            // =========================
+            if ($cat === 1) {
+                $sql_detalle_servicio = "INSERT INTO detalle_venta (
                 idsucursal, idventa, idproducto, id_fifo, nombre_producto,
                 cantidad, contenedor, cantidad_contenedor, precio_venta,
                 descuento, tipo, check_precio
@@ -391,28 +429,28 @@ class Venta
                 '$checkPr'
             )";
 
-            if (!ejecutarConsulta($sql_detalle_servicio)) {
-                error_log("ERROR insert detalle SERVICIO: " . mysqli_error($conexion));
-                error_log("SQL: " . $sql_detalle_servicio);
-                $sw = false;
-                break;
+                if (!ejecutarConsulta($sql_detalle_servicio)) {
+                    error_log("ERROR insert detalle SERVICIO: " . mysqli_error($conexion));
+                    error_log("SQL: " . $sql_detalle_servicio);
+                    $sw = false;
+                    break;
+                }
+
+                $num_elementos++;
+                continue;
             }
 
-            $num_elementos++;
-            continue;
-        }
+            // =========================
+            // 11.2) PRODUCTO: FIFO
+            // =========================
+            $cantidad_total_unidades = $cant_solicitada * $factor_conten;
+            $cantidad_restante_a_vender = $cantidad_total_unidades;
 
-        // =========================
-        // 11.2) PRODUCTO: FIFO
-        // =========================
-        $cantidad_total_unidades = $cant_solicitada * $factor_conten;
-        $cantidad_restante_a_vender = $cantidad_total_unidades;
+            // obtener lotes
+            $lotes_disponibles = null;
 
-        // obtener lotes
-        $lotes_disponibles = null;
-
-        if ($id_fifo_sugerido != 0) {
-            $sql_lote_especifico = "SELECT idfifo, cantidad_restante
+            if ($id_fifo_sugerido != 0) {
+                $sql_lote_especifico = "SELECT idfifo, cantidad_restante
                                     FROM stock_fifo
                                     WHERE idfifo = '$id_fifo_sugerido'
                                       AND idproducto = '$id_producto_real'
@@ -420,49 +458,49 @@ class Venta
                                       AND cantidad_restante > 0
                                       AND estado = 1
                                     LIMIT 1";
-            $lotes_disponibles = ejecutarConsulta($sql_lote_especifico);
-        }
+                $lotes_disponibles = ejecutarConsulta($sql_lote_especifico);
+            }
 
-        if (!$lotes_disponibles || $lotes_disponibles->num_rows == 0 || $id_fifo_sugerido == 0) {
-            $sql_fifo = "SELECT idfifo, cantidad_restante
+            if (!$lotes_disponibles || $lotes_disponibles->num_rows == 0 || $id_fifo_sugerido == 0) {
+                $sql_fifo = "SELECT idfifo, cantidad_restante
                          FROM stock_fifo
                          WHERE idproducto = '$id_producto_real'
                            AND idsucursal = '$idsucursal'
                            AND cantidad_restante > 0
                            AND estado = 1
                          ORDER BY fecha_ingreso ASC";
-            $lotes_disponibles = ejecutarConsulta($sql_fifo);
-        }
+                $lotes_disponibles = ejecutarConsulta($sql_fifo);
+            }
 
-        if (!$lotes_disponibles) {
-            error_log("ERROR consultar FIFO: " . mysqli_error($conexion));
-            $sw = false;
-            break;
-        }
-
-        $stock_global_descontado = 0;
-
-        while (($lote = $lotes_disponibles->fetch_object()) && $cantidad_restante_a_vender > 0) {
-
-            $cantidad_disponible_lote = floatval($lote->cantidad_restante);
-            $id_lote_actual = intval($lote->idfifo);
-
-            $cantidad_a_tomar = min($cantidad_restante_a_vender, $cantidad_disponible_lote);
-
-            // actualizar fifo
-            $sql_update_fifo = "UPDATE stock_fifo
-                                SET cantidad_restante = cantidad_restante - '$cantidad_a_tomar'
-                                WHERE idfifo = '$id_lote_actual'";
-
-            if (!ejecutarConsulta($sql_update_fifo)) {
-                error_log("ERROR update stock_fifo: " . mysqli_error($conexion));
-                error_log("SQL: " . $sql_update_fifo);
+            if (!$lotes_disponibles) {
+                error_log("ERROR consultar FIFO: " . mysqli_error($conexion));
                 $sw = false;
                 break;
             }
 
-            // insertar detalle (SIN comentarios --)
-            $sql_detalle = "INSERT INTO detalle_venta (
+            $stock_global_descontado = 0;
+
+            while (($lote = $lotes_disponibles->fetch_object()) && $cantidad_restante_a_vender > 0) {
+
+                $cantidad_disponible_lote = floatval($lote->cantidad_restante);
+                $id_lote_actual = intval($lote->idfifo);
+
+                $cantidad_a_tomar = min($cantidad_restante_a_vender, $cantidad_disponible_lote);
+
+                // actualizar fifo
+                $sql_update_fifo = "UPDATE stock_fifo
+                                SET cantidad_restante = cantidad_restante - '$cantidad_a_tomar'
+                                WHERE idfifo = '$id_lote_actual'";
+
+                if (!ejecutarConsulta($sql_update_fifo)) {
+                    error_log("ERROR update stock_fifo: " . mysqli_error($conexion));
+                    error_log("SQL: " . $sql_update_fifo);
+                    $sw = false;
+                    break;
+                }
+
+                // insertar detalle (SIN comentarios --)
+                $sql_detalle = "INSERT INTO detalle_venta (
                 idsucursal, idventa, idproducto, id_fifo, nombre_producto,
                 cantidad, contenedor, cantidad_contenedor, precio_venta,
                 descuento, tipo, check_precio
@@ -478,40 +516,41 @@ class Venta
                 '$checkPr'
             )";
 
-            if (!ejecutarConsulta($sql_detalle)) {
-                error_log("ERROR insert detalle_venta: " . mysqli_error($conexion));
-                error_log("SQL: " . $sql_detalle);
+                if (!ejecutarConsulta($sql_detalle)) {
+                    error_log("ERROR insert detalle_venta: " . mysqli_error($conexion));
+                    error_log("SQL: " . $sql_detalle);
+                    $sw = false;
+                    break;
+                }
+
+                $cantidad_restante_a_vender -= $cantidad_a_tomar;
+                $stock_global_descontado += $cantidad_a_tomar;
+            }
+
+            if (!$sw)
+                break;
+
+            if ($cantidad_restante_a_vender > 0) {
+                error_log("Stock insuficiente FIFO para producto ID: $id_producto_real. Faltante: $cantidad_restante_a_vender");
                 $sw = false;
                 break;
             }
 
-            $cantidad_restante_a_vender -= $cantidad_a_tomar;
-            $stock_global_descontado += $cantidad_a_tomar;
-        }
-
-        if (!$sw) break;
-
-        if ($cantidad_restante_a_vender > 0) {
-            error_log("Stock insuficiente FIFO para producto ID: $id_producto_real. Faltante: $cantidad_restante_a_vender");
-            $sw = false;
-            break;
-        }
-
-        // actualizar stock global producto
-        $sql_update_producto_stock = "UPDATE producto
+            // actualizar stock global producto
+            $sql_update_producto_stock = "UPDATE producto
                                       SET stock = stock - '$stock_global_descontado'
                                       WHERE idproducto = '$id_producto_real'
                                         AND idsucursal = '$idsucursal'";
 
-        if (!ejecutarConsulta($sql_update_producto_stock)) {
-            error_log("ERROR update producto stock: " . mysqli_error($conexion));
-            error_log("SQL: " . $sql_update_producto_stock);
-            $sw = false;
-            break;
-        }
+            if (!ejecutarConsulta($sql_update_producto_stock)) {
+                error_log("ERROR update producto stock: " . mysqli_error($conexion));
+                error_log("SQL: " . $sql_update_producto_stock);
+                $sw = false;
+                break;
+            }
 
-        // insertar kardex
-        $sql_kardex = "INSERT INTO kardex (
+            // insertar kardex
+            $sql_kardex = "INSERT INTO kardex (
             idsucursal, idproducto, cantidad, cantidad_contenedor,
             precio_unitario, stock_actual, tipo_movimiento,
             motivo, descripcion, fecha_kardex
@@ -522,183 +561,198 @@ class Venta
             1, 'Venta', 'Venta #$num_comprobante', '$fechaActual'
         )";
 
-        if (!ejecutarConsulta($sql_kardex)) {
-            error_log("ERROR insert kardex: " . mysqli_error($conexion));
-            error_log("SQL: " . $sql_kardex);
-            $sw = false;
-            break;
+            if (!ejecutarConsulta($sql_kardex)) {
+                error_log("ERROR insert kardex: " . mysqli_error($conexion));
+                error_log("SQL: " . $sql_kardex);
+                $sw = false;
+                break;
+            }
+
+            $num_elementos++;
         }
 
-        $num_elementos++;
-    }
+        // =========================
+        // 12) Crédito (cuentas por cobrar)
+        // =========================
+        if ($tipopago == 'Si' && $sw) {
+            $cuotas = 0;
+            $montoDeuda = floatval($montoDeuda);
+            $interes = floatval($interes);
+            $input_cuotas = intval($input_cuotas);
 
-    // =========================
-    // 12) Crédito (cuentas por cobrar)
-    // =========================
-    if ($tipopago == 'Si' && $sw) {
-        $cuotas = 0;
-        $montoDeuda = floatval($montoDeuda);
-        $interes = floatval($interes);
-        $input_cuotas = intval($input_cuotas);
+            if ($input_cuotas <= 0)
+                $input_cuotas = 1;
 
-        if ($input_cuotas <= 0) $input_cuotas = 1;
+            $monto_cuota = round((($montoDeuda * ($interes / 100)) + $montoDeuda) / $input_cuotas, 2);
 
-        $monto_cuota = round((($montoDeuda * ($interes / 100)) + $montoDeuda) / $input_cuotas, 2);
+            while ($cuotas < count($fecha_pago)) {
+                $fv = mysqli_real_escape_string($conexion, (string) $fecha_pago[$cuotas]);
 
-        while ($cuotas < count($fecha_pago)) {
-            $fv = mysqli_real_escape_string($conexion, (string)$fecha_pago[$cuotas]);
-
-            $sql_cpc = "INSERT INTO cuentas_por_cobrar (
+                $sql_cpc = "INSERT INTO cuentas_por_cobrar (
                 idventa, fecharegistro, deudatotal, deuda_base, fechavencimiento, abonototal, deuda, interes
             ) VALUES (
                 '$idventanew', '$fecha_hora', '$monto_cuota', '$monto_cuota', '$fv', 0, '$monto_cuota', 0
             )";
 
-            if (!ejecutarConsulta($sql_cpc)) {
-                error_log("ERROR insert cuentas_por_cobrar: " . mysqli_error($conexion));
-                error_log("SQL: " . $sql_cpc);
-                $sw = false;
-                break;
+                if (!ejecutarConsulta($sql_cpc)) {
+                    error_log("ERROR insert cuentas_por_cobrar: " . mysqli_error($conexion));
+                    error_log("SQL: " . $sql_cpc);
+                    $sw = false;
+                    break;
+                }
+                $cuotas++;
             }
-            $cuotas++;
+        }
+
+        // =========================
+        // 13) Cotización -> Vendido
+        // =========================
+        if ($comprobanteReferencia != '' && $tipo == 'venta' && $sw) {
+            $sql_cot = "UPDATE cotizacion SET estado = 'VENDIDO' WHERE idcotizacion = '$comprobanteReferencia'";
+            if (!ejecutarConsulta($sql_cot)) {
+                error_log("ERROR update cotizacion: " . mysqli_error($conexion));
+                error_log("SQL: " . $sql_cot);
+                $sw = false;
+            }
+        }
+
+        // crear contrato
+        if ($ventaCredito == "Si") {
+            $sql = "SELECT IFNULL(MAX(correlativo), 0) + 1 AS correlativo FROM documentacion";
+            $row = ejecutarConsultaSimpleFila($sql);
+
+            $correlativo = $row['correlativo'];
+
+            // Insertar
+            $sql_contrato = "INSERT INTO documentacion (`fecha_contrato`, `tipo`, `correlativo`, `estado`, `idventa`) 
+            VALUES ('$fechaActual', '1', '$correlativo', '1', '$idventanew')";
+
+            ejecutarConsulta($sql_contrato);
+        }
+
+        // =========================
+        // 14) Commit / Rollback
+        // =========================
+        if ($sw) {
+            ejecutarConsulta("COMMIT");
+            return $idventanew;
+        } else {
+            ejecutarConsulta("ROLLBACK");
+            error_log("ROLLBACK ejecutado - venta cancelada. idventa tentativa: $idventanew");
+            return null;
         }
     }
 
-    // =========================
-    // 13) Cotización -> Vendido
-    // =========================
-    if ($comprobanteReferencia != '' && $tipo == 'venta' && $sw) {
-        $sql_cot = "UPDATE cotizacion SET estado = 'VENDIDO' WHERE idcotizacion = '$comprobanteReferencia'";
-        if (!ejecutarConsulta($sql_cot)) {
-            error_log("ERROR update cotizacion: " . mysqli_error($conexion));
-            error_log("SQL: " . $sql_cot);
-            $sw = false;
+
+    public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $tipopago, $formapago, $nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido, $totaldeposito, $vuelto, $tipo, $banco, $idproducto, $nombre, $cantidad, $precio_venta, $descuento, $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, $idmotivo, $observaciones, $fecha_pago, $interes, $input_cuotas, $cantidad_contenedor, $contenedor, $idp, $check_precio)
+    {
+        $fechaActual = date('Y-m-d H:i:s');
+
+        // Obtener productos ya existentes en el detalle
+        $productosExistentes = [];
+        $res = ejecutarConsulta("SELECT idproducto FROM detalle_venta WHERE idventa = '$idventa'");
+        while ($row = $res->fetch_object()) {
+            $productosExistentes[] = $row->idproducto;
         }
-    }
 
-    // =========================
-    // 14) Commit / Rollback
-    // =========================
-    if ($sw) {
-        ejecutarConsulta("COMMIT");
-        return $idventanew;
-    } else {
-        ejecutarConsulta("ROLLBACK");
-        error_log("ROLLBACK ejecutado - venta cancelada. idventa tentativa: $idventanew");
-        return null;
-    }
-}
+        // Procesar productos enviados desde el formulario
+        for ($i = 0; $i < count($idproducto); $i++) {
+            $existe = in_array($idp[$i], $productosExistentes);
 
-
-public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $tipopago, $formapago, $nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido, $totaldeposito, $vuelto, $tipo, $banco, $idproducto, $nombre, $cantidad, $precio_venta, $descuento, $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, $idmotivo, $observaciones, $fecha_pago, $interes, $input_cuotas, $cantidad_contenedor, $contenedor, $idp, $check_precio) 
-{
-    $fechaActual = date('Y-m-d H:i:s');
-
-    // Obtener productos ya existentes en el detalle
-    $productosExistentes = [];
-    $res = ejecutarConsulta("SELECT idproducto FROM detalle_venta WHERE idventa = '$idventa'");
-    while ($row = $res->fetch_object()) {
-        $productosExistentes[] = $row->idproducto;
-    }
-
-    // Procesar productos enviados desde el formulario
-    for ($i = 0; $i < count($idproducto); $i++) {
-        $existe = in_array($idp[$i], $productosExistentes);
-
-        if (!$existe) {
-            // INSERTAR nuevo producto
-            $sql_detalle = "INSERT INTO detalle_venta (idsucursal, idventa, idproducto, nombre_producto, cantidad, contenedor, cantidad_contenedor, precio_venta, descuento, tipo, check_precio) 
+            if (!$existe) {
+                // INSERTAR nuevo producto
+                $sql_detalle = "INSERT INTO detalle_venta (idsucursal, idventa, idproducto, nombre_producto, cantidad, contenedor, cantidad_contenedor, precio_venta, descuento, tipo, check_precio) 
                 VALUES ('$idsucursal','$idventa','$idp[$i]','','$cantidad[$i]','$contenedor[$i]','$cantidad_contenedor[$i]','$precio_venta[$i]','$descuento[$i]','$tipo','{$check_precio[$i]}')";
-            ejecutarConsulta($sql_detalle);
+                ejecutarConsulta($sql_detalle);
 
-            // Stock y kardex
-            $producto = ejecutarConsulta("SELECT * FROM producto WHERE idproducto = '$idproducto[$i]' AND idsucursal = '$idsucursal'")->fetch_object();
-            $cantidad_vendida = $cantidad[$i] * $cantidad_contenedor[$i];
-            $nuevo_stock = $producto->stock - $cantidad_vendida;
+                // Stock y kardex
+                $producto = ejecutarConsulta("SELECT * FROM producto WHERE idproducto = '$idproducto[$i]' AND idsucursal = '$idsucursal'")->fetch_object();
+                $cantidad_vendida = $cantidad[$i] * $cantidad_contenedor[$i];
+                $nuevo_stock = $producto->stock - $cantidad_vendida;
 
-            ejecutarConsulta("INSERT INTO kardex (idsucursal, idproducto, cantidad, cantidad_contenedor, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion, fecha_kardex) 
+                ejecutarConsulta("INSERT INTO kardex (idsucursal, idproducto, cantidad, cantidad_contenedor, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion, fecha_kardex) 
                 VALUES ('$idsucursal', '$idproducto[$i]', '$cantidad_vendida', '$cantidad_contenedor[$i]', '$precio_venta[$i]', '$nuevo_stock', 1, 'Venta Actualizada', '', '$fechaActual')");
 
-            ejecutarConsulta("UPDATE producto SET stock = $nuevo_stock WHERE idproducto = '$idproducto[$i]'");
-        } else {
-            // ACTUALIZAR producto existente
-            $this->verificarProducto(
-                $idp[$i], // ID que ya estaba en detalle_venta
-                $idproducto[$i], // ID del producto actual del form
-                $idventa,
-                $cantidad[$i],
-                $precio_venta[$i],
-                $cantidad_contenedor[$i],
-                $contenedor[$i],
-                $idsucursal,
-                $descuento[$i]
-            );
-        }
-    }
-
-    // ELIMINAR productos que ya no están
-    foreach ($productosExistentes as $prodExistente) {
-        if (!in_array($prodExistente, $idp)) {
-            $detalle = ejecutarConsulta("SELECT * FROM detalle_venta WHERE idventa = '$idventa' AND idproducto = '$prodExistente'")->fetch_object();
-            $producto = ejecutarConsulta("SELECT * FROM producto WHERE idproducto = '$prodExistente' AND idsucursal = '$idsucursal'")->fetch_object();
-
-            $cantidad_devuelta = $detalle->cantidad * $detalle->cantidad_contenedor;
-            $nuevo_stock = $producto->stock + $cantidad_devuelta;
-
-            ejecutarConsulta("INSERT INTO kardex (idsucursal, idproducto, cantidad, cantidad_contenedor, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion, fecha_kardex) 
-                VALUES ('$idsucursal', '$prodExistente', '$cantidad_devuelta', '$detalle->cantidad_contenedor', '$detalle->precio_venta', '$nuevo_stock', 0, 'Detalle de venta eliminado', '', '$fechaActual')");
-
-            ejecutarConsulta("UPDATE producto SET stock = $nuevo_stock WHERE idproducto = '$prodExistente'");
-            ejecutarConsulta("DELETE FROM detalle_venta WHERE idventa = '$idventa' AND idproducto = '$prodExistente'");
-        }
-    }
-
-    // Eliminar cuentas por cobrar existentes
-    ejecutarConsulta("DELETE FROM cuentas_por_cobrar WHERE idventa = '$idventa'");
-
-    // Registrar nuevas cuentas por cobrar si aplica
-    if ($tipopago == 'Si') {
-        // Usar interes como en insertar()
-        $monto_cuota = round(($montoDeuda * ($interes / 100) + $montoDeuda) / $input_cuotas, 1);
-
-        for ($c = 0; $c < count($fecha_pago); $c++) {
-            $sql_cpc = "INSERT INTO cuentas_por_cobrar
-                        (idventa, fecharegistro, deudatotal, fechavencimiento, abonototal, deuda, interes)
-                        VALUES ('$idventa', '$fecha_hora', '$monto_cuota', '{$fecha_pago[$c]}', 0, '$monto_cuota', '$interes')";
-            ejecutarConsulta($sql_cpc);
-        }
-    }
-    // ------------------ Determinar formapago según metodos enviados (igual que insertar) ------------------
-    $formapagoVenta = $formapago; // por defecto el que viene por parámetro
-
-    if ($tipopago === "Si") {
-        // 🔹 Si es crédito, forzar "Credito"
-        $formapagoVenta = "Credito";
-    } elseif (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
-        $metodos = $_POST['metodo_pago'];
-        $montosReales = isset($_POST['monto_real_pago']) ? $_POST['monto_real_pago'] : array();
-
-        // Contar sólo métodos con monto > 0
-        $metodosValidos = [];
-        for ($i = 0; $i < count($metodos); $i++) {
-            $montoPagoTmp = isset($montosReales[$i]) ? floatval($montosReales[$i]) : 0;
-            $metodoTmp = trim($metodos[$i]);
-            if ($montoPagoTmp > 0 && $metodoTmp !== '') {
-                $metodosValidos[] = $metodoTmp;
+                ejecutarConsulta("UPDATE producto SET stock = $nuevo_stock WHERE idproducto = '$idproducto[$i]'");
+            } else {
+                // ACTUALIZAR producto existente
+                $this->verificarProducto(
+                    $idp[$i], // ID que ya estaba en detalle_venta
+                    $idproducto[$i], // ID del producto actual del form
+                    $idventa,
+                    $cantidad[$i],
+                    $precio_venta[$i],
+                    $cantidad_contenedor[$i],
+                    $contenedor[$i],
+                    $idsucursal,
+                    $descuento[$i]
+                );
             }
         }
 
-        if (count($metodosValidos) > 1) {
-            $formapagoVenta = "Mixto";
-        } elseif (count($metodosValidos) == 1) {
-            $formapagoVenta = $metodosValidos[0];
+        // ELIMINAR productos que ya no están
+        foreach ($productosExistentes as $prodExistente) {
+            if (!in_array($prodExistente, $idp)) {
+                $detalle = ejecutarConsulta("SELECT * FROM detalle_venta WHERE idventa = '$idventa' AND idproducto = '$prodExistente'")->fetch_object();
+                $producto = ejecutarConsulta("SELECT * FROM producto WHERE idproducto = '$prodExistente' AND idsucursal = '$idsucursal'")->fetch_object();
+
+                $cantidad_devuelta = $detalle->cantidad * $detalle->cantidad_contenedor;
+                $nuevo_stock = $producto->stock + $cantidad_devuelta;
+
+                ejecutarConsulta("INSERT INTO kardex (idsucursal, idproducto, cantidad, cantidad_contenedor, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion, fecha_kardex) 
+                VALUES ('$idsucursal', '$prodExistente', '$cantidad_devuelta', '$detalle->cantidad_contenedor', '$detalle->precio_venta', '$nuevo_stock', 0, 'Detalle de venta eliminado', '', '$fechaActual')");
+
+                ejecutarConsulta("UPDATE producto SET stock = $nuevo_stock WHERE idproducto = '$prodExistente'");
+                ejecutarConsulta("DELETE FROM detalle_venta WHERE idventa = '$idventa' AND idproducto = '$prodExistente'");
+            }
         }
-    }
 
-    // ---------------------------------------------------------------------------------------------------------
+        // Eliminar cuentas por cobrar existentes
+        ejecutarConsulta("DELETE FROM cuentas_por_cobrar WHERE idventa = '$idventa'");
 
-    // Actualizar venta (usar formapago calculado)
-    ejecutarConsulta("UPDATE venta SET 
+        // Registrar nuevas cuentas por cobrar si aplica
+        if ($tipopago == 'Si') {
+            // Usar interes como en insertar()
+            $monto_cuota = round(($montoDeuda * ($interes / 100) + $montoDeuda) / $input_cuotas, 1);
+
+            for ($c = 0; $c < count($fecha_pago); $c++) {
+                $sql_cpc = "INSERT INTO cuentas_por_cobrar
+                        (idventa, fecharegistro, deudatotal, fechavencimiento, abonototal, deuda, interes)
+                        VALUES ('$idventa', '$fecha_hora', '$monto_cuota', '{$fecha_pago[$c]}', 0, '$monto_cuota', '$interes')";
+                ejecutarConsulta($sql_cpc);
+            }
+        }
+        // ------------------ Determinar formapago según metodos enviados (igual que insertar) ------------------
+        $formapagoVenta = $formapago; // por defecto el que viene por parámetro
+
+        if ($tipopago === "Si") {
+            // 🔹 Si es crédito, forzar "Credito"
+            $formapagoVenta = "Credito";
+        } elseif (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
+            $metodos = $_POST['metodo_pago'];
+            $montosReales = isset($_POST['monto_real_pago']) ? $_POST['monto_real_pago'] : array();
+
+            // Contar sólo métodos con monto > 0
+            $metodosValidos = [];
+            for ($i = 0; $i < count($metodos); $i++) {
+                $montoPagoTmp = isset($montosReales[$i]) ? floatval($montosReales[$i]) : 0;
+                $metodoTmp = trim($metodos[$i]);
+                if ($montoPagoTmp > 0 && $metodoTmp !== '') {
+                    $metodosValidos[] = $metodoTmp;
+                }
+            }
+
+            if (count($metodosValidos) > 1) {
+                $formapagoVenta = "Mixto";
+            } elseif (count($metodosValidos) == 1) {
+                $formapagoVenta = $metodosValidos[0];
+            }
+        }
+
+        // ---------------------------------------------------------------------------------------------------------
+
+        // Actualizar venta (usar formapago calculado)
+        ejecutarConsulta("UPDATE venta SET 
         idcliente='$idcliente', 
         total_venta='$total_venta',
         ventacredito='$tipopago',
@@ -712,55 +766,56 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
         fecha_hora='$fecha_hora'
         WHERE idventa='$idventa'");
 
-    // --------- PAGOS: borrar los viejos y grabar los nuevos (venta_pago) ----------
-    ejecutarConsulta("DELETE FROM venta_pago WHERE idventa = '$idventa'");
+        // --------- PAGOS: borrar los viejos y grabar los nuevos (venta_pago) ----------
+        ejecutarConsulta("DELETE FROM venta_pago WHERE idventa = '$idventa'");
 
-    if ($tipopago !== "Si") { // si NO es crédito, insertamos pagos
-        if (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
-            $metodos = $_POST['metodo_pago'];
-            $montosReales = isset($_POST['monto_real_pago']) ? $_POST['monto_real_pago'] : array();
-            $nros = isset($_POST['nroOperacion_pago']) ? $_POST['nroOperacion_pago'] : array();
-            $bancos = isset($_POST['banco_pago']) ? $_POST['banco_pago'] : array();
-            $fechas = isset($_POST['fecha_deposito_pago']) ? $_POST['fecha_deposito_pago'] : array();
+        if ($tipopago !== "Si") { // si NO es crédito, insertamos pagos
+            if (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
+                $metodos = $_POST['metodo_pago'];
+                $montosReales = isset($_POST['monto_real_pago']) ? $_POST['monto_real_pago'] : array();
+                $nros = isset($_POST['nroOperacion_pago']) ? $_POST['nroOperacion_pago'] : array();
+                $bancos = isset($_POST['banco_pago']) ? $_POST['banco_pago'] : array();
+                $fechas = isset($_POST['fecha_deposito_pago']) ? $_POST['fecha_deposito_pago'] : array();
 
-            for ($i = 0; $i < count($metodos); $i++) {
-                $montoPago = floatval(isset($montosReales[$i]) ? $montosReales[$i] : 0);
-                if ($montoPago <= 0) continue;
+                for ($i = 0; $i < count($metodos); $i++) {
+                    $montoPago = floatval(isset($montosReales[$i]) ? $montosReales[$i] : 0);
+                    if ($montoPago <= 0)
+                        continue;
 
-                $metodoPago = $metodos[$i];
-                $nroOp = isset($nros[$i]) ? $nros[$i] : '';
-                $ban = isset($bancos[$i]) ? $bancos[$i] : '';
-                $fechaDep = isset($fechas[$i]) ? $fechas[$i] : '';
+                    $metodoPago = $metodos[$i];
+                    $nroOp = isset($nros[$i]) ? $nros[$i] : '';
+                    $ban = isset($bancos[$i]) ? $bancos[$i] : '';
+                    $fechaDep = isset($fechas[$i]) ? $fechas[$i] : '';
 
-                $sqlPago = "INSERT INTO venta_pago (idventa, metodo_pago, monto, nroOperacion, banco, fechaDeposito) 
+                    $sqlPago = "INSERT INTO venta_pago (idventa, metodo_pago, monto, nroOperacion, banco, fechaDeposito) 
                             VALUES ('$idventa','$metodoPago','$montoPago','$nroOp','$ban','$fechaDep')";
-                if (!ejecutarConsulta($sqlPago)) {
-                    // si falla, puedes lanzar rollback aquí (si estás manejando transacciones)
+                    if (!ejecutarConsulta($sqlPago)) {
+                        // si falla, puedes lanzar rollback aquí (si estás manejando transacciones)
+                    }
                 }
             }
         }
+
+        return $idventa;
     }
 
-    return $idventa;
-}
 
 
+    public function verificarProducto($idp, $idproducto, $idventa, $cantidad, $precio_venta, $cantidad_contenedor, $contenedor, $idsucursal, $descuento = 0, $check_precio = 0)
+    {
+        $sql = "SELECT * FROM detalle_venta WHERE idventa = '$idventa' AND idproducto = '$idp'";
+        $result = ejecutarConsulta($sql)->fetch_object();
+        $fechaActual = date('Y-m-d H:i:s');
 
-	public function verificarProducto($idp, $idproducto, $idventa, $cantidad, $precio_venta, $cantidad_contenedor, $contenedor, $idsucursal, $descuento = 0, $check_precio = 0)
-{
-    $sql = "SELECT * FROM detalle_venta WHERE idventa = '$idventa' AND idproducto = '$idp'";
-    $result = ejecutarConsulta($sql)->fetch_object();
-    $fechaActual = date('Y-m-d H:i:s');
+        if ($result) {
+            $cambioCantidad = ($result->cantidad != $cantidad);
+            $cambioPrecio = ($result->precio_venta != $precio_venta);
+            $cambioDesc = ($result->descuento != $descuento);
+            $cambioCheck = (isset($result->check_precio) ? $result->check_precio != $check_precio : false);
 
-    if ($result) {
-        $cambioCantidad = ($result->cantidad != $cantidad);
-        $cambioPrecio   = ($result->precio_venta != $precio_venta);
-        $cambioDesc     = ($result->descuento != $descuento);
-        $cambioCheck    = (isset($result->check_precio) ? $result->check_precio != $check_precio : false);
-
-        // Siempre actualizar detalle si cambia cantidad, precio o descuento
-        if ($cambioCantidad || $cambioPrecio || $cambioDesc || $cambioCheck) {
-            ejecutarConsulta("UPDATE detalle_venta 
+            // Siempre actualizar detalle si cambia cantidad, precio o descuento
+            if ($cambioCantidad || $cambioPrecio || $cambioDesc || $cambioCheck) {
+                ejecutarConsulta("UPDATE detalle_venta 
                 SET cantidad = '$cantidad',
                     precio_venta = '$precio_venta',
                     descuento = '$descuento',
@@ -768,38 +823,39 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
                     cantidad_contenedor = '$cantidad_contenedor'
                     " . (isset($result->check_precio) ? ", check_precio = '$check_precio'" : "") . "
                 WHERE idventa = '$idventa' AND idproducto = '$idp'");
-        }
+            }
 
-        // Ajustar stock y kardex solo si cambia cantidad
-        if ($cambioCantidad) {
-            $producto = ejecutarConsulta("SELECT * FROM producto WHERE idproducto = '$idproducto' AND idsucursal = '$idsucursal'")->fetch_object();
+            // Ajustar stock y kardex solo si cambia cantidad
+            if ($cambioCantidad) {
+                $producto = ejecutarConsulta("SELECT * FROM producto WHERE idproducto = '$idproducto' AND idsucursal = '$idsucursal'")->fetch_object();
 
-            if ($result->cantidad > $cantidad) {
-                // Venta reducida → aumentar stock
-                $new_cantidad = $result->cantidad - $cantidad;
-                $cantidad_vendida = $new_cantidad * $cantidad_contenedor;
-                $nuevo_stock = $producto->stock + $cantidad_vendida;
+                if ($result->cantidad > $cantidad) {
+                    // Venta reducida → aumentar stock
+                    $new_cantidad = $result->cantidad - $cantidad;
+                    $cantidad_vendida = $new_cantidad * $cantidad_contenedor;
+                    $nuevo_stock = $producto->stock + $cantidad_vendida;
 
-                ejecutarConsulta("INSERT INTO kardex (idsucursal, idproducto, cantidad, cantidad_contenedor, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion, fecha_kardex) 
+                    ejecutarConsulta("INSERT INTO kardex (idsucursal, idproducto, cantidad, cantidad_contenedor, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion, fecha_kardex) 
                     VALUES ('$idsucursal', '$idproducto', '$cantidad_vendida', '$cantidad_contenedor', '$precio_venta', '$nuevo_stock', 0, 'Venta Actualizada', '', '$fechaActual')");
-                ejecutarConsulta("UPDATE producto SET stock = $nuevo_stock WHERE idproducto = '$idproducto'");
-            } elseif ($result->cantidad < $cantidad) {
-                // Venta aumentada → reducir stock
-                $new_cantidad = $cantidad - $result->cantidad;
-                $cantidad_vendida = $new_cantidad * $cantidad_contenedor;
-                $nuevo_stock = $producto->stock - $cantidad_vendida;
+                    ejecutarConsulta("UPDATE producto SET stock = $nuevo_stock WHERE idproducto = '$idproducto'");
+                } elseif ($result->cantidad < $cantidad) {
+                    // Venta aumentada → reducir stock
+                    $new_cantidad = $cantidad - $result->cantidad;
+                    $cantidad_vendida = $new_cantidad * $cantidad_contenedor;
+                    $nuevo_stock = $producto->stock - $cantidad_vendida;
 
-                ejecutarConsulta("INSERT INTO kardex (idsucursal, idproducto, cantidad, cantidad_contenedor, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion, fecha_kardex) 
+                    ejecutarConsulta("INSERT INTO kardex (idsucursal, idproducto, cantidad, cantidad_contenedor, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion, fecha_kardex) 
                     VALUES ('$idsucursal', '$idproducto', '$cantidad_vendida', '$cantidad_contenedor', '$precio_venta', '$nuevo_stock', 1, 'Venta Actualizada', '', '$fechaActual')");
-                ejecutarConsulta("UPDATE producto SET stock = $nuevo_stock WHERE idproducto = '$idproducto'");
+                    ejecutarConsulta("UPDATE producto SET stock = $nuevo_stock WHERE idproducto = '$idproducto'");
+                }
             }
         }
     }
-}
 
-	public function notaCredito($comprobanteReferencia, $idsucursal, $idmotivo)
+    public function notaCredito($comprobanteReferencia, $idsucursal, $idmotivo)
     {
-        if ($comprobanteReferencia == '') return false;
+        if ($comprobanteReferencia == '')
+            return false;
 
         $sx = true;
         $fechaActual = date('Y-m-d H:i:s');
@@ -808,7 +864,8 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
         // OBTENER VENTA ORIGINAL
         // =============================
         $venta = ejecutarConsulta("SELECT * FROM venta WHERE idventa='$comprobanteReferencia'")->fetch_object();
-        if (!$venta) return false;
+        if (!$venta)
+            return false;
 
         // =============================
         // DEVOLUCIÓN DE STOCK + KARDEX
@@ -856,7 +913,8 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
                 $cant_cont = $_POST['cantidad_contenedor'][$i];
 
                 $producto = ejecutarConsulta("SELECT * FROM producto WHERE idproducto='$idproducto'")->fetch_object();
-                if (!$producto) continue;
+                if (!$producto)
+                    continue;
 
                 $cantidad_real = $cantidad * $cant_cont;
                 $nuevo_stock = $producto->stock + $cantidad_real;
@@ -970,11 +1028,12 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
         return $sx;
     }
 
-	public function anular($idventa, $idsucursal)
+    public function anular($idventa, $idsucursal)
     {
         $verifydata = "SELECT * FROM detalle_venta WHERE idventa='$idventa'";
         $list = ejecutarConsulta($verifydata);
-        if (!$list) return false;
+        if (!$list)
+            return false;
 
         $fechaActual = date('Y-m-d H:i:s');
 
@@ -987,7 +1046,8 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
                 WHERE pg.id ='$reg->idproducto'
             ";
             $producto = ejecutarConsulta($verifyproduct)->fetch_object();
-            if (!$producto) continue;
+            if (!$producto)
+                continue;
 
             $cantidad_real = $reg->cantidad * $producto->cantidad_contenedor;
 
@@ -1047,49 +1107,49 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
         ");
     }
 
-	public function anularR($idventa, $idsucursal)
-	{
-		// Obtener los detalles de la venta
-		$verifydata = "SELECT * FROM detalle_venta WHERE idventa='$idventa'";
-		$list = ejecutarConsulta($verifydata);
+    public function anularR($idventa, $idsucursal)
+    {
+        // Obtener los detalles de la venta
+        $verifydata = "SELECT * FROM detalle_venta WHERE idventa='$idventa'";
+        $list = ejecutarConsulta($verifydata);
 
-		while ($reg = $list->fetch_object()) {
-			// Obtener información del producto
-			$verifyproduct = "SELECT * FROM producto_configuracion pg, producto p WHERE p.idproducto = pg.idproducto AND pg.id ='$reg->idproducto'";
-			$producto = ejecutarConsulta($verifyproduct)->fetch_object();
+        while ($reg = $list->fetch_object()) {
+            // Obtener información del producto
+            $verifyproduct = "SELECT * FROM producto_configuracion pg, producto p WHERE p.idproducto = pg.idproducto AND pg.id ='$reg->idproducto'";
+            $producto = ejecutarConsulta($verifyproduct)->fetch_object();
 
-			// Calcular el nuevo stock
-			$nuevo_stock = $producto->stock + $reg->cantidad * $producto->cantidad_contenedor;
+            // Calcular el nuevo stock
+            $nuevo_stock = $producto->stock + $reg->cantidad * $producto->cantidad_contenedor;
 
-			// Actualizar el stock del producto
-			$producto_update = "UPDATE producto SET stock = '$nuevo_stock' WHERE idproducto = '$producto->idproducto'";
-			ejecutarConsulta($producto_update);
+            // Actualizar el stock del producto
+            $producto_update = "UPDATE producto SET stock = '$nuevo_stock' WHERE idproducto = '$producto->idproducto'";
+            ejecutarConsulta($producto_update);
 
-			// Registrar movimiento en el kardex
-			$insert = "INSERT INTO kardex (idsucursal, idproducto, cantidad, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion) VALUES ('$idsucursal', '$producto->idproducto', '$reg->cantidad', '$producto->precio', '$nuevo_stock', 0, 'Venta rechazada', '')";
-			ejecutarConsulta($insert);
-		}
+            // Registrar movimiento en el kardex
+            $insert = "INSERT INTO kardex (idsucursal, idproducto, cantidad, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion) VALUES ('$idsucursal', '$producto->idproducto', '$reg->cantidad', '$producto->precio', '$nuevo_stock', 0, 'Venta rechazada', '')";
+            ejecutarConsulta($insert);
+        }
 
-		// Actualizar la condición de cuentas por cobrar
-		$sql1 = "UPDATE cuentas_por_cobrar SET condicion='0' WHERE idventa='$idventa'";
-		ejecutarConsulta($sql1);
+        // Actualizar la condición de cuentas por cobrar
+        $sql1 = "UPDATE cuentas_por_cobrar SET condicion='0' WHERE idventa='$idventa'";
+        ejecutarConsulta($sql1);
 
-		// Actualizar el estado de la venta a 'Anulado'
-		$sql = "UPDATE venta SET estado='Rechazado' WHERE idventa='$idventa'";
-		ejecutarConsulta($sql);
-	}
+        // Actualizar el estado de la venta a 'Anulado'
+        $sql = "UPDATE venta SET estado='Rechazado' WHERE idventa='$idventa'";
+        ejecutarConsulta($sql);
+    }
 
 
-	public function cambiarEstado($idventa, $estado)
-	{
-		$sql = "UPDATE venta SET estadoS='$estado' WHERE idventa='$idventa'";
-		return ejecutarConsulta($sql);
-	}
+    public function cambiarEstado($idventa, $estado)
+    {
+        $sql = "UPDATE venta SET estadoS='$estado' WHERE idventa='$idventa'";
+        return ejecutarConsulta($sql);
+    }
 
-	//implementar un metodopara mostrar los datos de unregistro a modificar
-	public function mostrar($idventa)
-	{
-	    $sql = "SELECT v.idventa, DATE(v.fecha_hora) as fecha,DATE(v.fecha_kardex) as fechahora ,c.idcaja as caja, s.idsucursal as sucursal, v.idcliente, p.nombre as cliente, u.idpersonal, u.nombre as personal, p.telefono, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta, v.impuesto, v.ventacredito, v.formapago, v.meses,v.observacion, v.descuento, v.totalrecibido,cpc.deudatotal,SUM(dcpc.montopagado) as montopagado, v.vuelto, vp.nroOperacion, DATE(vp.fechaDeposito) as fechaDeposito, v.estado,vp.banco
+    //implementar un metodopara mostrar los datos de unregistro a modificar
+    public function mostrar($idventa)
+    {
+        $sql = "SELECT v.idventa, DATE(v.fecha_hora) as fecha,DATE(v.fecha_kardex) as fechahora ,c.idcaja as caja, s.idsucursal as sucursal, v.idcliente, p.nombre as cliente, u.idpersonal, u.nombre as personal, p.telefono, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta, v.impuesto, v.ventacredito, v.formapago, v.meses,v.observacion, v.descuento, v.totalrecibido,cpc.deudatotal,SUM(dcpc.montopagado) as montopagado, v.vuelto, vp.nroOperacion, DATE(vp.fechaDeposito) as fechaDeposito, v.estado,vp.banco
 	            FROM venta v 
 	            INNER JOIN persona p ON v.idcliente = p.idpersona
                 LEFT JOIN venta_pago vp ON v.idventa = vp.idventa 
@@ -1100,13 +1160,13 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
 				LEFT JOIN detalle_cuentas_por_cobrar dcpc ON cpc.idcpc = dcpc.idcpc
 	            WHERE v.idventa  = '$idventa'
 	            GROUP BY v.idventa";
-	    return ejecutarConsultaSimpleFila($sql);
-	}
+        return ejecutarConsultaSimpleFila($sql);
+    }
 
-	public function mostrarEdit($idventa)
-{
-    // Traer datos principales de la venta (igual que antes, agrupando por venta)
-    $sql = "SELECT v.idventa, DATE(v.fecha_hora) as fecha, DATE(v.fecha_kardex) as fechahora, c.idcaja as caja, s.idsucursal as sucursal,
+    public function mostrarEdit($idventa)
+    {
+        // Traer datos principales de la venta (igual que antes, agrupando por venta)
+        $sql = "SELECT v.idventa, DATE(v.fecha_hora) as fecha, DATE(v.fecha_kardex) as fechahora, c.idcaja as caja, s.idsucursal as sucursal,
                    v.idcliente, p.nombre as cliente, u.idpersonal, u.nombre as personal, p.telefono,
                    v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta, v.impuesto,
                    v.ventacredito, v.formapago, v.meses, v.observacion, v.descuento, v.totalrecibido,
@@ -1122,48 +1182,49 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
             WHERE v.idventa = '$idventa'
             GROUP BY v.idventa";
 
-    $venta = ejecutarConsultaSimpleFila($sql);
+        $venta = ejecutarConsultaSimpleFila($sql);
 
-    // Ahora traer los pagos relacionados (venta_pago)
-    $sqlPagos = "SELECT metodo_pago, monto, nroOperacion, banco, DATE(fechaDeposito) AS fechaDeposito
+        // Ahora traer los pagos relacionados (venta_pago)
+        $sqlPagos = "SELECT metodo_pago, monto, nroOperacion, banco, DATE(fechaDeposito) AS fechaDeposito
                  FROM venta_pago
                  WHERE idventa = '$idventa'
                  ORDER BY idventa";
-    $rsPagos = ejecutarConsulta($sqlPagos);
+        $rsPagos = ejecutarConsulta($sqlPagos);
 
-    $pagos = array();
-    if ($rsPagos) {
-        while ($p = $rsPagos->fetch_object()) {
-            $pagos[] = $p;
+        $pagos = array();
+        if ($rsPagos) {
+            while ($p = $rsPagos->fetch_object()) {
+                $pagos[] = $p;
+            }
         }
+
+        // Adjuntar pagos al objeto/array venta para que el JS reciba data.pagos
+        if (is_object($venta)) {
+            $venta->pagos = $pagos;
+        } elseif (is_array($venta)) {
+            $venta['pagos'] = $pagos;
+        } else {
+            // si no hay venta, devolver al menos el array pagos vacío en un objeto
+            $venta = new stdClass();
+            $venta->pagos = $pagos;
+        }
+
+        return $venta;
     }
 
-    // Adjuntar pagos al objeto/array venta para que el JS reciba data.pagos
-    if (is_object($venta)) {
-        $venta->pagos = $pagos;
-    } elseif (is_array($venta)) {
-        $venta['pagos'] = $pagos;
-    } else {
-        // si no hay venta, devolver al menos el array pagos vacío en un objeto
-        $venta = new stdClass();
-        $venta->pagos = $pagos;
-    }
-
-    return $venta;
-}
-
-	public function listarCuotas($idventa){
-	    $sql = "SELECT cpc.idcpc, cpc.fecharegistro, cpc.deudatotal, cpc.fechavencimiento, dcpc.montopagado 
+    public function listarCuotas($idventa)
+    {
+        $sql = "SELECT cpc.idcpc, cpc.fecharegistro, cpc.deudatotal, cpc.fechavencimiento, dcpc.montopagado 
 	            FROM cuentas_por_cobrar cpc 
 	            LEFT JOIN detalle_cuentas_por_cobrar dcpc ON cpc.idcpc = dcpc.idcpc 
 	            WHERE cpc.idventa = '$idventa'";
-	    return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
 
-	public function mostrarPOS($idventa)
-	{
-	    $sql = "SELECT v.idventa, DATE(v.fecha_hora) as fecha,DATE(v.fecha_kardex) as fechahora ,c.idcaja as caja, s.idsucursal as sucursal, v.idcliente, p.nombre as cliente, u.idpersonal, u.nombre as personal, p.telefono, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta, v.impuesto, v.ventacredito, v.formapago, v.meses,v.observacion, v.descuento, v.totalrecibido,cpc.deudatotal,SUM(dcpc.montopagado) as montopagado, v.vuelto, v.numoperacion, DATE(v.fechadeposito) as fechadeposito, v.estado 
+    public function mostrarPOS($idventa)
+    {
+        $sql = "SELECT v.idventa, DATE(v.fecha_hora) as fecha,DATE(v.fecha_kardex) as fechahora ,c.idcaja as caja, s.idsucursal as sucursal, v.idcliente, p.nombre as cliente, u.idpersonal, u.nombre as personal, p.telefono, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta, v.impuesto, v.ventacredito, v.formapago, v.meses,v.observacion, v.descuento, v.totalrecibido,cpc.deudatotal,SUM(dcpc.montopagado) as montopagado, v.vuelto, v.numoperacion, DATE(v.fechadeposito) as fechadeposito, v.estado 
 	            FROM venta v 
 	            INNER JOIN persona p ON v.idcliente = p.idpersona 
 	            INNER JOIN personal u ON v.idpersonal = u.idpersonal 
@@ -1173,30 +1234,30 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
 				LEFT JOIN detalle_cuentas_por_cobrar dcpc ON cpc.idcpc = dcpc.idcpc
 	            WHERE v.idventa  = '$idventa'
 	            GROUP BY v.idventa";
-	    return ejecutarConsultaSimpleFila($sql);
-	}
+        return ejecutarConsultaSimpleFila($sql);
+    }
 
 
-	public function mostrardetalle($idventa)
-	{
-		$sql = "SELECT dv.idventa,dv.idproducto,a.nombre,dv.cantidad,dv.precio_venta,dv.descuento,(dv.cantidad*dv.precio_venta-dv.descuento) as subtotal, v.total_venta, v.impuesto, p.nombre as cliente, v.num_comprobante 
+    public function mostrardetalle($idventa)
+    {
+        $sql = "SELECT dv.idventa,dv.idproducto,a.nombre,dv.cantidad,dv.precio_venta,dv.descuento,(dv.cantidad*dv.precio_venta-dv.descuento) as subtotal, v.total_venta, v.impuesto, p.nombre as cliente, v.num_comprobante 
 		FROM detalle_venta dv 
 		INNER JOIN producto a ON dv.idproducto=a.idproducto 
 		INNER JOIN venta v ON v.idventa=dv.idventa 
 		INNER JOIN persona p ON v.idcliente=p.idpersona WHERE dv.idventa='$idventa'";
-		return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	public function mostrarUltimoCliente()
-	{
+    public function mostrarUltimoCliente()
+    {
 
-		$sql = "SELECT * FROM persona order by idpersona desc limit 1";
-		return ejecutarConsultaSimpleFila($sql);
-	}
+        $sql = "SELECT * FROM persona order by idpersona desc limit 1";
+        return ejecutarConsultaSimpleFila($sql);
+    }
 
-	public function listarDetalle($idventa)
-{
-    $sql = "SELECT 
+    public function listarDetalle($idventa)
+    {
+        $sql = "SELECT 
                 dv.idventa,
                 dv.idproducto,
                 c.nombre AS categoria,
@@ -1220,44 +1281,44 @@ public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, 
             LEFT JOIN producto a ON a.idproducto = pg.idproducto
             LEFT JOIN categoria c ON c.idcategoria = a.idcategoria
             WHERE dv.idventa = '$idventa'";
-    return ejecutarConsulta($sql);
-}
-
-
-	//Implementar un método para listar los registros 
-	public function listarSucursal()
-	{
-		$sql = "SELECT * FROM sucursal";
-		return ejecutarConsulta($sql);
-	}
-
-	public function listarSucursal2($idpersonal, $idsucursal)
-{
-    if ($idsucursal != 0 && isset($_SESSION['sucursales']) && is_array($_SESSION['sucursales'])) {
-
-        // Si el usuario tiene varias sucursales asignadas en la sesión
-        $ids = implode(",", $_SESSION['sucursales']); // Ej: "1,2,3"
-
-        $sql = "SELECT s.idsucursal, s.nombre 
-                FROM sucursal s 
-                WHERE s.idsucursal IN ($ids)";
-    } else {
-        // Si el usuario tiene acceso total (administrador, etc.)
-        $sql = "SELECT s.idsucursal, s.nombre FROM sucursal s";
+        return ejecutarConsulta($sql);
     }
 
-    return ejecutarConsulta($sql);
-}
+
+    //Implementar un método para listar los registros 
+    public function listarSucursal()
+    {
+        $sql = "SELECT * FROM sucursal";
+        return ejecutarConsulta($sql);
+    }
+
+    public function listarSucursal2($idpersonal, $idsucursal)
+    {
+        if ($idsucursal != 0 && isset($_SESSION['sucursales']) && is_array($_SESSION['sucursales'])) {
+
+            // Si el usuario tiene varias sucursales asignadas en la sesión
+            $ids = implode(",", $_SESSION['sucursales']); // Ej: "1,2,3"
+
+            $sql = "SELECT s.idsucursal, s.nombre 
+                FROM sucursal s 
+                WHERE s.idsucursal IN ($ids)";
+        } else {
+            // Si el usuario tiene acceso total (administrador, etc.)
+            $sql = "SELECT s.idsucursal, s.nombre FROM sucursal s";
+        }
+
+        return ejecutarConsulta($sql);
+    }
 
 
-	//listar registros
-public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto)
-{
-    $idpersonal_sesion = $_SESSION["idpersonal"]; // ID del usuario en sesión
-    $cargo_sesion = $_SESSION["cargo"]; // Cargo del usuario en sesión
+    //listar registros
+    public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto)
+    {
+        $idpersonal_sesion = $_SESSION["idpersonal"]; // ID del usuario en sesión
+        $cargo_sesion = $_SESSION["cargo"]; // Cargo del usuario en sesión
 
-    // Base de la consulta SQL
-    $sql = "SELECT v.idventa,DATE_FORMAT(v.fecha_hora, '%d/%m/%Y %H:%i:%s') as fecha,v.idsucursal, s.nombre as sucursal, date_format(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex,
+        // Base de la consulta SQL
+        $sql = "SELECT v.idventa,DATE_FORMAT(v.fecha_hora, '%d/%m/%Y %H:%i:%s') as fecha,v.idsucursal, s.nombre as sucursal, date_format(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex,
             v.idcliente,p.nombre as cliente,p.num_documento,v.estadoS,u.idpersonal,u.nombre as personal, 
             v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.formapago,v.ventacredito,v.impuesto,
             v.dov_Nombre,v.estado 
@@ -1270,75 +1331,75 @@ public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idprodu
             AND DATE(v.fecha_hora) >= '$fecha_inicio' 
             AND DATE(v.fecha_hora) <= '$fecha_fin'";
 
-    // Si el usuario NO es administrador, filtrar solo sus ventas
-    if ($cargo_sesion != "Administrador") {
-        $sql .= " AND v.idpersonal = '$idpersonal_sesion'";
-    }
+        // Si el usuario NO es administrador, filtrar solo sus ventas
+        if ($cargo_sesion != "Administrador") {
+            $sql .= " AND v.idpersonal = '$idpersonal_sesion'";
+        }
 
-    // Filtrado por sucursal (si aplica)
-    if ($idsucursal != "Todos") {
-        $sql .= " AND v.idsucursal = '$idsucursal'";
-    }
+        // Filtrado por sucursal (si aplica)
+        if ($idsucursal != "Todos") {
+            $sql .= " AND v.idsucursal = '$idsucursal'";
+        }
 
-    // Filtrado por estado (si aplica)
-    if ($estado != "Todos") {
-        $sql .= " AND v.estado = '$estado'";
-    }
-    // Filtrar por producto solo si NO ES "Todos"
-    if ($idproducto != "" && $idproducto != null && $idproducto != "Todos") {
-        $sql .= " AND v.idventa IN (
+        // Filtrado por estado (si aplica)
+        if ($estado != "Todos") {
+            $sql .= " AND v.estado = '$estado'";
+        }
+        // Filtrar por producto solo si NO ES "Todos"
+        if ($idproducto != "" && $idproducto != null && $idproducto != "Todos") {
+            $sql .= " AND v.idventa IN (
                 SELECT dv.idventa
                 FROM detalle_venta dv
                 INNER JOIN producto_configuracion pc ON pc.id = dv.idproducto
                 WHERE pc.idproducto = '$idproducto'
                 )";
+        }
+
+        $sql .= " ORDER BY v.idventa DESC";
+
+        return ejecutarConsulta($sql);
     }
 
-    $sql .= " ORDER BY v.idventa DESC";
 
-    return ejecutarConsulta($sql);
-}
+    //listar registros
+    public function listar2($fecha_inicio, $fecha_fin, $estado, $idsucursal, $ids)
+    {
+        if ($estado == "Todos" and $ids == "Todos" || $estado == "Todos" and $ids == "") {
 
+            $sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' ORDER BY v.idventa DESC";
+        } else if ($estado == "Todos" and $ids != "Todos") {
 
-	//listar registros
-	public function listar2($fecha_inicio, $fecha_fin, $estado, $idsucursal, $ids)
-	{
-		if ($estado == "Todos" and $ids == "Todos" || $estado == "Todos" and $ids == "") {
+            $sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.idsucursal = '$ids' ORDER BY v.idventa DESC";
+        } else if ($estado == 'Aceptado' and $ids == "Todos") {
 
-			$sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' ORDER BY v.idventa DESC";
-		} else if ($estado == "Todos" and $ids != "Todos") {
+            $sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado = 'Aceptado' ORDER BY v.idventa DESC";
+        } else if ($estado == "Por Enviar" and $ids == "Todos") {
 
-			$sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.idsucursal = '$ids' ORDER BY v.idventa DESC";
-		} else if ($estado == 'Aceptado' and $ids == "Todos") {
+            $sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado = 'Por Enviar' ORDER BY v.idventa DESC";
+        } else if ($estado == "Nota Credito" and $ids == "Todos") {
 
-			$sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado = 'Aceptado' ORDER BY v.idventa DESC";
-		} else if ($estado == "Por Enviar" and $ids == "Todos") {
+            $sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado = 'Nota Credito' ORDER BY v.idventa DESC";
+        } else {
 
-			$sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado = 'Por Enviar' ORDER BY v.idventa DESC";
-		} else if ($estado == "Nota Credito" and $ids == "Todos") {
+            $sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado = 'Rechazado' AND v.idsucursal = '$ids' ORDER BY v.idventa DESC";
+        }
+        return ejecutarConsulta($sql);
+    }
 
-			$sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado = 'Nota Credito' ORDER BY v.idventa DESC";
-		} else {
+    //listar registros
+    public function listarTodo()
+    {
 
-			$sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.fecha_kardex,v.idcliente,p.nombre as cliente,p.num_documento,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado = 'Rechazado' AND v.idsucursal = '$ids' ORDER BY v.idventa DESC";
-		}
-		return ejecutarConsulta($sql);
-	}
+        $sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' ORDER BY v.idventa DESC";
 
-	//listar registros
-	public function listarTodo()
-	{
+        return ejecutarConsulta($sql);
+    }
 
-		$sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,v.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.ventacredito,v.impuesto,v.dov_Nombre,v.estado FROM venta v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') AND v.serie_comprobante != '-' ORDER BY v.idventa DESC";
-
-		return ejecutarConsulta($sql);
-	}
-
-	//listar registros
-	public function listarNC($fecha_inicio, $fecha_fin, $estado, $idsucursal)
-	{
-		if ($estado == "Todos") {
-			$sql = "SELECT v.idventa,s.nombre as sucursal,DATE(v.fecha_hora) as fecha,v.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(
+    //listar registros
+    public function listarNC($fecha_inicio, $fecha_fin, $estado, $idsucursal)
+    {
+        if ($estado == "Todos") {
+            $sql = "SELECT v.idventa,s.nombre as sucursal,DATE(v.fecha_hora) as fecha,v.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(
         SELECT IFNULL(ROUND(SUM((dv.precio_venta - dv.descuento) * dv.cantidad),2),0)
         FROM detalle_venta dv
         WHERE dv.idventa = v.idventa
@@ -1354,8 +1415,8 @@ public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idprodu
             AND DATE(v.fecha_hora)<='$fecha_fin'
             AND v.idsucursal = '$idsucursal' 
             ORDER BY v.idventa DESC";
-		} else if ($estado == 'Aceptado') {
-			$sql = "SELECT v.idventa,s.nombre as sucursal,DATE(v.fecha_hora) as fecha,v.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(
+        } else if ($estado == 'Aceptado') {
+            $sql = "SELECT v.idventa,s.nombre as sucursal,DATE(v.fecha_hora) as fecha,v.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(
         SELECT IFNULL(ROUND(SUM((dv.precio_venta - dv.descuento) * dv.cantidad),2),0)
         FROM detalle_venta dv
         WHERE dv.idventa = v.idventa
@@ -1372,8 +1433,8 @@ public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idprodu
             AND v.idsucursal = '$idsucursal'  
             AND v.estado = 'Aceptado' 
             ORDER BY v.idventa DESC";
-		} else if ($estado == "Por Enviar") {
-			$sql = "SELECT v.idventa,s.nombre as sucursal,DATE(v.fecha_hora) as fecha,v.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(
+        } else if ($estado == "Por Enviar") {
+            $sql = "SELECT v.idventa,s.nombre as sucursal,DATE(v.fecha_hora) as fecha,v.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(
         SELECT IFNULL(ROUND(SUM((dv.precio_venta - dv.descuento) * dv.cantidad),2),0)
         FROM detalle_venta dv
         WHERE dv.idventa = v.idventa
@@ -1390,9 +1451,9 @@ public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idprodu
             AND v.idsucursal = '$idsucursal'  
             AND v.estado = 'Por Enviar' 
             ORDER BY v.idventa DESC";
-		} else {
+        } else {
 
-			$sql = "SELECT v.idventa,s.nombre as sucursal,DATE(v.fecha_hora) as fecha,v.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(
+            $sql = "SELECT v.idventa,s.nombre as sucursal,DATE(v.fecha_hora) as fecha,v.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(
         SELECT IFNULL(ROUND(SUM((dv.precio_venta - dv.descuento) * dv.cantidad),2),0)
         FROM detalle_venta dv
         WHERE dv.idventa = v.idventa
@@ -1409,14 +1470,14 @@ public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idprodu
             AND v.idsucursal = '$idsucursal'  
             AND v.estado = 'Rechazado' 
             ORDER BY v.idventa DESC";
-		}
-		return ejecutarConsulta($sql);
-	}
+        }
+        return ejecutarConsulta($sql);
+    }
 
 
-	public function ventacabecera($idventa)
-	{
-		$sql = "SELECT v.idventa,v.idsucursal, v.idcliente, p.nombre AS cliente, s.nombre as sucursal, p.direccion, p.tipo_documento, p.num_documento, p.email, p.telefono, v.idpersonal, v.montoPagado, v.formapago, v.numoperacion, date_format(v.fechadeposito,'%d/%m/%y') as fechadeposito, u.nombre AS personal, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, DATE(v.fecha_hora) AS fecha, date_format(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex, v.impuesto, v.total_venta, v.ventacredito, v.descuento, v.vuelto, v.observacion, v.totalrecibido
+    public function ventacabecera($idventa)
+    {
+        $sql = "SELECT v.idventa,v.idsucursal, v.idcliente, p.nombre AS cliente, s.nombre as sucursal, p.direccion, p.tipo_documento, p.num_documento, p.email, p.telefono, v.idpersonal, v.montoPagado, v.formapago, v.numoperacion, date_format(v.fechadeposito,'%d/%m/%y') as fechadeposito, u.nombre AS personal, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, DATE(v.fecha_hora) AS fecha, date_format(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex, v.impuesto, v.total_venta, v.ventacredito, v.descuento, v.vuelto, v.observacion, v.totalrecibido
 		FROM venta v 
 		INNER JOIN persona p 
 		ON v.idcliente=p.idpersona 
@@ -1424,12 +1485,12 @@ public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idprodu
 		ON v.idpersonal=u.idpersonal
 		INNER JOIN sucursal s
 		ON s.idsucursal = v.idsucursal WHERE v.idventa='$idventa'";
-		return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	public function ventadetalle($idventa)
-{
-    $sql = "SELECT 
+    public function ventadetalle($idventa)
+    {
+        $sql = "SELECT 
                 pg.id, 
                 a.idproducto,
                 a.idcategoria,
@@ -1460,21 +1521,22 @@ public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idprodu
             INNER JOIN venta v ON v.idventa = d.idventa
             INNER JOIN categoria ca ON a.idcategoria = ca.idcategoria
             WHERE d.idventa = '$idventa'";
-    
-    return ejecutarConsulta($sql);
-}
+
+        return ejecutarConsulta($sql);
+    }
 
 
-    public function pagosPorVenta($idventa) {
+    public function pagosPorVenta($idventa)
+    {
         $sql = "SELECT metodo_pago, monto 
                 FROM venta_pago 
                 WHERE idventa = '$idventa'";
         return ejecutarConsulta($sql);
     }
 
-	public function ventadetallePDF($idventa)
-	{
-		$sql = "SELECT a.idproducto, a.nombre AS producto, um.nombre as unidadmedida, a.proigv, CASE WHEN a.codigo = 'SIN CODIGO' THEN '-' ELSE a.codigo END as codigo, d.cantidad, d.precio_venta, (d.descuento + v.descuento) AS descuento, (d.cantidad*d.precio_venta-d.descuento) AS subtotal, a.stock 
+    public function ventadetallePDF($idventa)
+    {
+        $sql = "SELECT a.idproducto, a.nombre AS producto, um.nombre as unidadmedida, a.proigv, CASE WHEN a.codigo = 'SIN CODIGO' THEN '-' ELSE a.codigo END as codigo, d.cantidad, d.precio_venta, (d.descuento + v.descuento) AS descuento, (d.cantidad*d.precio_venta-d.descuento) AS subtotal, a.stock 
 	FROM detalle_venta d 
 	INNER JOIN producto a ON 
 	d.idproducto=a.idproducto 
@@ -1483,138 +1545,139 @@ public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idprodu
 	INNER JOIN venta v
 	ON v.idventa = d.idventa
 	WHERE d.idventa='$idventa'";
-		return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	//funcion para selecciolnar el numero de factura
-	public function numero_venta($idsucursal)
-	{
+    //funcion para selecciolnar el numero de factura
+    public function numero_venta($idsucursal)
+    {
 
-		$sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Factura' AND idsucursal = '$idsucursal' ORDER BY idventa DESC limit 1";
-		return ejecutarConsulta($sql);
-	}
+        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Factura' AND idsucursal = '$idsucursal' ORDER BY idventa DESC limit 1";
+        return ejecutarConsulta($sql);
+    }
 
-	//funcion para seleccionar la serie de la factura
-	public function numero_serie($idsucursal)
-	{
+    //funcion para seleccionar la serie de la factura
+    public function numero_serie($idsucursal)
+    {
 
-		$sql = "SELECT REPLACE(serie_comprobante,'F','') AS serie_comprobante ,num_comprobante FROM venta WHERE tipo_comprobante='Factura'
+        $sql = "SELECT REPLACE(serie_comprobante,'F','') AS serie_comprobante ,num_comprobante FROM venta WHERE tipo_comprobante='Factura'
 			AND idsucursal = '$idsucursal'
 			ORDER BY idventa DESC limit 1";
 
-		return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	//funcion para selecciolnar el numero de boleta
-	public function numero_venta_boleta($idsucursal)
-	{
+    //funcion para selecciolnar el numero de boleta
+    public function numero_venta_boleta($idsucursal)
+    {
 
-		$sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Boleta' 
+        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Boleta' 
 			AND idsucursal = '$idsucursal'
 			ORDER BY idventa DESC limit 1 ";
-		return ejecutarConsulta($sql);
-	}
-	//funcion para seleccionar la serie de la boleta
-	public function numero_serie_boleta($idsucursal)
-	{
+        return ejecutarConsulta($sql);
+    }
+    //funcion para seleccionar la serie de la boleta
+    public function numero_serie_boleta($idsucursal)
+    {
 
-		$sql = "SELECT REPLACE(serie_comprobante,'B','') AS serie_comprobante, num_comprobante FROM venta WHERE tipo_comprobante='Boleta' AND idsucursal = '$idsucursal' ORDER BY idventa DESC limit 1";
+        $sql = "SELECT REPLACE(serie_comprobante,'B','') AS serie_comprobante, num_comprobante FROM venta WHERE tipo_comprobante='Boleta' AND idsucursal = '$idsucursal' ORDER BY idventa DESC limit 1";
 
-		return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	//funcion para seleccionar la serie de la boleta
-	public function numero_serie_nc($idsucursal)
-	{
+    //funcion para seleccionar la serie de la boleta
+    public function numero_serie_nc($idsucursal)
+    {
 
-		$sql = "SELECT REPLACE(serie_comprobante,'FN','') AS serie_comprobante, num_comprobante FROM venta WHERE tipo_comprobante='NC' 
+        $sql = "SELECT REPLACE(serie_comprobante,'FN','') AS serie_comprobante, num_comprobante FROM venta WHERE tipo_comprobante='NC' 
 	AND idsucursal = '$idsucursal'
 	ORDER BY idventa DESC limit 1";
 
-		return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	//funcion para seleccionar la serie de la boleta
-	public function numero_serie_ncb($idsucursal)
-	{
+    //funcion para seleccionar la serie de la boleta
+    public function numero_serie_ncb($idsucursal)
+    {
 
-		$sql = "SELECT REPLACE(serie_comprobante,'BN','') AS serie_comprobante, num_comprobante FROM venta WHERE tipo_comprobante='NCB' 
+        $sql = "SELECT REPLACE(serie_comprobante,'BN','') AS serie_comprobante, num_comprobante FROM venta WHERE tipo_comprobante='NCB' 
 	AND idsucursal = '$idsucursal'
 	ORDER BY idventa DESC limit 1";
 
-		return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	//funcion para selecciolnar el numero de nota de crédito
-	public function numero_venta_nc($idsucursal)
-	{
+    //funcion para selecciolnar el numero de nota de crédito
+    public function numero_venta_nc($idsucursal)
+    {
 
-		$sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='NC' 
+        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='NC' 
 			AND idsucursal = '$idsucursal'
 			ORDER BY idventa DESC limit 1";
-		return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	//funcion para selecciolnar el numero de nota de crédito
-	public function numero_venta_ncb($idsucursal)
-	{
+    //funcion para selecciolnar el numero de nota de crédito
+    public function numero_venta_ncb($idsucursal)
+    {
 
-		$sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='NCB' 
+        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='NCB' 
 	AND idsucursal = '$idsucursal'
 	ORDER BY idventa DESC limit 1";
-		return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	//funcion para selecciolnar el numero de ticket
-	public function numero_venta_ticket($idsucursal)
-	{
+    //funcion para selecciolnar el numero de ticket
+    public function numero_venta_ticket($idsucursal)
+    {
 
-		$sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Nota de Venta' 
+        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Nota de Venta' 
 			AND idsucursal = '$idsucursal'
 			ORDER BY idventa DESC limit 1";
-		return ejecutarConsulta($sql);
-	}
-	//funcion para seleccionar la serie de la ticket
-	public function numero_serie_ticket($idsucursal)
-	{
+        return ejecutarConsulta($sql);
+    }
+    //funcion para seleccionar la serie de la ticket
+    public function numero_serie_ticket($idsucursal)
+    {
 
-		$sql = "SELECT REPLACE(serie_comprobante,'P','') AS serie_comprobante, num_comprobante 
+        $sql = "SELECT REPLACE(serie_comprobante,'P','') AS serie_comprobante, num_comprobante 
 		FROM venta WHERE tipo_comprobante='Nota de Venta' AND idsucursal = '$idsucursal' 
 		ORDER BY idventa DESC limit 1";
 
-		return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	public function buscarProducto($codigo)
-	{
-		$sql = "SELECT p.*, um.nombre as unidadmedida FROM producto p INNER JOIN unidad_medida um ON p.idunidad_medida = um.idunidad_medida WHERE codigo='$codigo'";
-		return ejecutarConsultaSimpleFila($sql);
-	}
+    public function buscarProducto($codigo)
+    {
+        $sql = "SELECT p.*, um.nombre as unidadmedida FROM producto p INNER JOIN unidad_medida um ON p.idunidad_medida = um.idunidad_medida WHERE codigo='$codigo'";
+        return ejecutarConsultaSimpleFila($sql);
+    }
 
-	public function updateNV($idventa)
-	{
-		$sql = "UPDATE venta SET estado='Nota de Venta Editida' WHERE idventa='$idventa'";
-		return ejecutarConsulta($sql);
-	}
+    public function updateNV($idventa)
+    {
+        $sql = "UPDATE venta SET estado='Nota de Venta Editida' WHERE idventa='$idventa'";
+        return ejecutarConsulta($sql);
+    }
 
-	public function updateBoleta($idventa)
-	{
-		$sql = "UPDATE venta SET estado='Boleta Emitida' WHERE idventa='$idventa'";
-		return ejecutarConsulta($sql);
-	}
+    public function updateBoleta($idventa)
+    {
+        $sql = "UPDATE venta SET estado='Boleta Emitida' WHERE idventa='$idventa'";
+        return ejecutarConsulta($sql);
+    }
 
-	public function updateFactura($idventa)
-	{
-		$sql = "UPDATE venta SET estado='Factura Emitida' WHERE idventa='$idventa'";
-		return ejecutarConsulta($sql);
-	}
+    public function updateFactura($idventa)
+    {
+        $sql = "UPDATE venta SET estado='Factura Emitida' WHERE idventa='$idventa'";
+        return ejecutarConsulta($sql);
+    }
 
-	public function comprobantesPendientes() {
-	    $sql = "SELECT COUNT(*) as total FROM venta WHERE estado = 'Por Enviar'";
-	    return ejecutarConsultaSimpleFila($sql);
-	}
+    public function comprobantesPendientes()
+    {
+        $sql = "SELECT COUNT(*) as total FROM venta WHERE estado = 'Por Enviar'";
+        return ejecutarConsultaSimpleFila($sql);
+    }
 
-public function listarHistorialCliente($idcliente,$fecha_inicio,$fecha_fin)
+    public function listarHistorialCliente($idcliente, $fecha_inicio, $fecha_fin)
     {
         $sql = "SELECT * FROM venta v WHERE v.idcliente = '$idcliente' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado IN ('Activado','Por Enviar','Aceptado')";
         //echo  $sql;
@@ -1631,8 +1694,8 @@ public function listarHistorialCliente($idcliente,$fecha_inicio,$fecha_fin)
                     $detalle[] = array(
                         "idproducto" => $reg2->idproducto,
                         "nombre_producto" => $reg2->nombre_producto,
-                        "cantidad" => $reg2->cantidad.' Unid.',
-                        "precio_venta" => 'S/. '.$reg2->precio_venta,
+                        "cantidad" => $reg2->cantidad . ' Unid.',
+                        "precio_venta" => 'S/. ' . $reg2->precio_venta,
 
                     ); # code...
                 }
@@ -1697,8 +1760,8 @@ public function listarHistorialCliente($idcliente,$fecha_inicio,$fecha_fin)
                     $detalle4[] = array(
                         "idproducto" => $reg4->idproducto,
                         "nombre_producto" => $reg4->nombre_producto,
-                        "cantidad" => $reg4->cantidad.' Unid.',
-                        "precio_venta" => 'S/. '.$reg4->precio_venta,
+                        "cantidad" => $reg4->cantidad . ' Unid.',
+                        "precio_venta" => 'S/. ' . $reg4->precio_venta,
 
                     ); # code...
                 }
@@ -1747,206 +1810,209 @@ public function listarHistorialCliente($idcliente,$fecha_inicio,$fecha_fin)
         return array('ventas' => $data, 'cuentasxcobrar' => $list, 'compras' => $data3, 'cuentasxpagar' => $list3);
     }
 
-   
 
-   public function exportarExcel($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto)
-{
-    // Cargar PHPSpreadsheet
-    $autoload = realpath(__DIR__ . '/../vendor/autoload.php');
-    if ($autoload) require $autoload;
 
-    // Datos del negocio
-    require_once "Negocio.php";
-    $negocio = new Negocio();
-    $datos = $negocio->mostrarNombreNegocio();
+    public function exportarExcel($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto)
+    {
+        // Cargar PHPSpreadsheet
+        $autoload = realpath(__DIR__ . '/../vendor/autoload.php');
+        if ($autoload)
+            require $autoload;
 
-    // Buscar nombre de sucursal
-    $nombre_sucursal = "Todas";
-    if ($idsucursal && $idsucursal != "Todas") {
-        $sql = "SELECT nombre FROM sucursal WHERE idsucursal = '$idsucursal' LIMIT 1";
-        $res = ejecutarConsultaSimpleFila($sql);
-        if ($res && isset($res['nombre'])) {
-            $nombre_sucursal = $res['nombre'];
+        // Datos del negocio
+        require_once "Negocio.php";
+        $negocio = new Negocio();
+        $datos = $negocio->mostrarNombreNegocio();
+
+        // Buscar nombre de sucursal
+        $nombre_sucursal = "Todas";
+        if ($idsucursal && $idsucursal != "Todas") {
+            $sql = "SELECT nombre FROM sucursal WHERE idsucursal = '$idsucursal' LIMIT 1";
+            $res = ejecutarConsultaSimpleFila($sql);
+            if ($res && isset($res['nombre'])) {
+                $nombre_sucursal = $res['nombre'];
+            }
         }
-    }
 
-    // Crear Excel
-    $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-    $sheet = $spreadsheet->getActiveSheet();
-    $sheet->setTitle("Ventas");
+        // Crear Excel
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle("Ventas");
 
-    // ENCABEZADO
-    $sheet->mergeCells("A1:H1");
-    $sheet->mergeCells("A2:H2");
-    $sheet->mergeCells("A3:H3");
+        // ENCABEZADO
+        $sheet->mergeCells("A1:H1");
+        $sheet->mergeCells("A2:H2");
+        $sheet->mergeCells("A3:H3");
 
-    $sheet->setCellValue("A1", $datos['nombre'] ?? '');
-    $sheet->setCellValue("A2", "RUC: " . ($datos['documento'] ?? ''));
-    $sheet->setCellValue("A3", $datos['direccion'] ?? '');
+        $sheet->setCellValue("A1", $datos['nombre'] ?? '');
+        $sheet->setCellValue("A2", "RUC: " . ($datos['documento'] ?? ''));
+        $sheet->setCellValue("A3", $datos['direccion'] ?? '');
 
-    $sheet->getStyle("A1")->getFont()->setSize(16)->setBold(true);
-    $sheet->getStyle("A1:A3")->getAlignment()
-        ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle("A1")->getFont()->setSize(16)->setBold(true);
+        $sheet->getStyle("A1:A3")->getAlignment()
+            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
-    // SUBTÍTULO
-    $sheet->mergeCells("A5:H5");
-    $sheet->setCellValue("A5", "REPORTE DE VENTAS");
-    $sheet->getStyle("A5")->getFont()->setBold(true)->setSize(14);
+        // SUBTÍTULO
+        $sheet->mergeCells("A5:H5");
+        $sheet->setCellValue("A5", "REPORTE DE VENTAS");
+        $sheet->getStyle("A5")->getFont()->setBold(true)->setSize(14);
 
-    // FILTROS
-    $sheet->setCellValue("A7", "Fecha Inicio:");
-    $sheet->setCellValue("B7", $fecha_inicio ?: "-");
+        // FILTROS
+        $sheet->setCellValue("A7", "Fecha Inicio:");
+        $sheet->setCellValue("B7", $fecha_inicio ?: "-");
 
-    $sheet->setCellValue("A8", "Fecha Fin:");
-    $sheet->setCellValue("B8", $fecha_fin ?: "-");
+        $sheet->setCellValue("A8", "Fecha Fin:");
+        $sheet->setCellValue("B8", $fecha_fin ?: "-");
 
-    $sheet->setCellValue("A9", "Estado:");
-    $sheet->setCellValue("B9", $estado ?: "Todos");
+        $sheet->setCellValue("A9", "Estado:");
+        $sheet->setCellValue("B9", $estado ?: "Todos");
 
-    $sheet->setCellValue("A10", "Sucursal:");
-    $sheet->setCellValue("B10", $nombre_sucursal);
+        $sheet->setCellValue("A10", "Sucursal:");
+        $sheet->setCellValue("B10", $nombre_sucursal);
 
-    $sheet->setCellValue("A11", "Producto:");
-    $sheet->setCellValue("B11", $idproducto ?: "Todos");
+        $sheet->setCellValue("A11", "Producto:");
+        $sheet->setCellValue("B11", $idproducto ?: "Todos");
 
-    $sheet->getStyle("A7:A11")->getFont()->setBold(true);
+        $sheet->getStyle("A7:A11")->getFont()->setBold(true);
 
-    // ENCABEZADOS TABLA
-    $filaEnc = 14;
-    $titulos = ["Fecha","Tipo Doc","Serie","Número","Cliente","Documento","Sucursal","Total Venta"];
-    $col = "A";
+        // ENCABEZADOS TABLA
+        $filaEnc = 14;
+        $titulos = ["Fecha", "Tipo Doc", "Serie", "Número", "Cliente", "Documento", "Sucursal", "Total Venta"];
+        $col = "A";
 
-    foreach ($titulos as $t) {
-        $sheet->setCellValue($col.$filaEnc, $t);
-        $col++;
-    }
+        foreach ($titulos as $t) {
+            $sheet->setCellValue($col . $filaEnc, $t);
+            $col++;
+        }
 
-    // ESTILO ENCABEZADO
-    $sheet->getStyle("A{$filaEnc}:H{$filaEnc}")->applyFromArray([
-        'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
-        'fill' => [
-            'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-            'startColor' => ['rgb' => '4F81BD']
-        ],
-        'alignment' => [
-            'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER
-        ]
-    ]);
-
-    // OBTENER VENTAS
-    $rs = $this->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto);
-
-    $fila = $filaEnc + 1;
-    $total = 0;
-
-    // LLENAR FILAS
-    while ($r = $rs->fetch_object()) {
-        $sheet->setCellValue("A{$fila}", $r->fecha);
-        $sheet->setCellValue("B{$fila}", $r->tipo_comprobante);
-        $sheet->setCellValue("C{$fila}", $r->serie_comprobante);
-        $sheet->setCellValue("D{$fila}", $r->num_comprobante);
-        $sheet->setCellValue("E{$fila}", $r->cliente);
-        $sheet->setCellValue("F{$fila}", $r->num_documento);
-        $sheet->setCellValue("G{$fila}", $r->sucursal);
-        $sheet->setCellValue("H{$fila}", $r->total_venta);
-
-        $total += $r->total_venta;
-        $fila++;
-    }
-
-    $ultima = $fila - 1;
-
-    // APLICAR UN SOLO ESTILO A LA TABLA (evita corrupción)
-    $sheet->getStyle("A{$filaEnc}:H{$ultima}")->applyFromArray([
-        'borders' => [
-            'allBorders' => [
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
+        // ESTILO ENCABEZADO
+        $sheet->getStyle("A{$filaEnc}:H{$filaEnc}")->applyFromArray([
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '4F81BD']
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER
             ]
-        ],
-        'alignment' => [
-            'wrapText' => true,
-            'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP
-        ]
-    ]);
+        ]);
 
-    // TOTAL GENERAL
-    $sheet->setCellValue("G{$fila}", "TOTAL GENERAL:");
-    $sheet->setCellValue("H{$fila}", $total);
+        // OBTENER VENTAS
+        $rs = $this->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto);
 
-    $sheet->getStyle("G{$fila}:H{$fila}")->applyFromArray([
-        'font' => ['bold' => true]
-    ]);
+        $fila = $filaEnc + 1;
+        $total = 0;
 
-    // ANCHOS FIJOS (autosize genera styles.xml corrupto)
-    $anchos = [12, 12, 10, 12, 35, 15, 20, 14];
-    $col = "A";
-    foreach ($anchos as $w) {
-        $sheet->getColumnDimension($col)->setWidth($w);
-        $col++;
+        // LLENAR FILAS
+        while ($r = $rs->fetch_object()) {
+            $sheet->setCellValue("A{$fila}", $r->fecha);
+            $sheet->setCellValue("B{$fila}", $r->tipo_comprobante);
+            $sheet->setCellValue("C{$fila}", $r->serie_comprobante);
+            $sheet->setCellValue("D{$fila}", $r->num_comprobante);
+            $sheet->setCellValue("E{$fila}", $r->cliente);
+            $sheet->setCellValue("F{$fila}", $r->num_documento);
+            $sheet->setCellValue("G{$fila}", $r->sucursal);
+            $sheet->setCellValue("H{$fila}", $r->total_venta);
+
+            $total += $r->total_venta;
+            $fila++;
+        }
+
+        $ultima = $fila - 1;
+
+        // APLICAR UN SOLO ESTILO A LA TABLA (evita corrupción)
+        $sheet->getStyle("A{$filaEnc}:H{$ultima}")->applyFromArray([
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
+                ]
+            ],
+            'alignment' => [
+                'wrapText' => true,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP
+            ]
+        ]);
+
+        // TOTAL GENERAL
+        $sheet->setCellValue("G{$fila}", "TOTAL GENERAL:");
+        $sheet->setCellValue("H{$fila}", $total);
+
+        $sheet->getStyle("G{$fila}:H{$fila}")->applyFromArray([
+            'font' => ['bold' => true]
+        ]);
+
+        // ANCHOS FIJOS (autosize genera styles.xml corrupto)
+        $anchos = [12, 12, 10, 12, 35, 15, 20, 14];
+        $col = "A";
+        foreach ($anchos as $w) {
+            $sheet->getColumnDimension($col)->setWidth($w);
+            $col++;
+        }
+
+        // EXPORTACIÓN LIMPIA
+        while (ob_get_level()) {
+            @ob_end_clean();
+        }
+
+        $filename = "Ventas_" . date("Ymd_His") . ".xlsx";
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment;filename=\"{$filename}\"");
+        header('Cache-Control: max-age=0');
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $writer->save("php://output");
+        exit;
     }
 
-    // EXPORTACIÓN LIMPIA
-    while (ob_get_level()) { @ob_end_clean(); }
-
-    $filename = "Ventas_" . date("Ymd_His") . ".xlsx";
-
-    header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    header("Content-Disposition: attachment;filename=\"{$filename}\"");
-    header('Cache-Control: max-age=0');
-
-    $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-    $writer->save("php://output");
-    exit;
-}
-
-public function getVentaData($idventa)
-{
-    $sql = "SELECT v.idcliente, p.nombre as cliente, v.fecha_hora as fecha, p.direccion as punto_llegada 
+    public function getVentaData($idventa)
+    {
+        $sql = "SELECT v.idcliente, p.nombre as cliente, v.fecha_hora as fecha, p.direccion as punto_llegada 
             FROM venta v
             INNER JOIN persona p ON v.idcliente = p.idpersona
             WHERE v.idventa = '$idventa'";
-    return ejecutarConsultaSimpleFila($sql);
-}
+        return ejecutarConsultaSimpleFila($sql);
+    }
 
-public function getVentaDetalles($idventa)
-{
-    $sql = "SELECT dv.idproducto, p.codigo, dv.nombre_producto, dv.cantidad, um.nombre as unidad, p.stock as peso, 1 as bultos, '' as lotes
+    public function getVentaDetalles($idventa)
+    {
+        $sql = "SELECT dv.idproducto, p.codigo, dv.nombre_producto, dv.cantidad, um.nombre as unidad, p.stock as peso, 1 as bultos, '' as lotes
             FROM detalle_venta dv
             INNER JOIN producto p ON dv.idproducto = p.idproducto
             INNER JOIN unidad_medida um ON p.idunidad_medida = um.idunidad_medida
             WHERE dv.idventa = '$idventa'";
-    return ejecutarConsulta($sql);
-}
+        return ejecutarConsulta($sql);
+    }
 
-public function cambiarComprobante($idventa, $nuevo_tipo, $idsucursal)
-{
-    // --- 1. DEFINIR PREFIJO ---
-    $prefijo = ($nuevo_tipo == "Factura") ? "F" :
-               (($nuevo_tipo == "Boleta") ? "B" : "P");
+    public function cambiarComprobante($idventa, $nuevo_tipo, $idsucursal)
+    {
+        // --- 1. DEFINIR PREFIJO ---
+        $prefijo = ($nuevo_tipo == "Factura") ? "F" :
+            (($nuevo_tipo == "Boleta") ? "B" : "P");
 
-    // --- 2. OBTENER SERIE DESDE comp_pago ---
-    $sqlSerie = "
+        // --- 2. OBTENER SERIE DESDE comp_pago ---
+        $sqlSerie = "
         SELECT serie_comprobante
         FROM comp_pago
         WHERE nombre = '$nuevo_tipo'
         AND idsucursal = '$idsucursal'
         LIMIT 1
     ";
-    $rowSerie = ejecutarConsultaSimpleFila($sqlSerie);
+        $rowSerie = ejecutarConsultaSimpleFila($sqlSerie);
 
-    if (!$rowSerie || $rowSerie['serie_comprobante'] === "") {
-        return "Error: No existe serie configurada en comp_pago.";
-    }
+        if (!$rowSerie || $rowSerie['serie_comprobante'] === "") {
+            return "Error: No existe serie configurada en comp_pago.";
+        }
 
-    // convertir serie de BD (000,001,002...) a entero y sumar 1
-    $serie_base = intval($rowSerie['serie_comprobante']); // 0,1,2...
-    $serie_num = $serie_base + 1; // 1,2,3...
+        // convertir serie de BD (000,001,002...) a entero y sumar 1
+        $serie_base = intval($rowSerie['serie_comprobante']); // 0,1,2...
+        $serie_num = $serie_base + 1; // 1,2,3...
 
-    // construir serie final real F001, B002, P003
-    $serie_final = $prefijo . str_pad($serie_num, 3, "0", STR_PAD_LEFT);
+        // construir serie final real F001, B002, P003
+        $serie_final = $prefijo . str_pad($serie_num, 3, "0", STR_PAD_LEFT);
 
-    // --- 3. OBTENER CORRELATIVO ---
-    $sqlNumero = "
+        // --- 3. OBTENER CORRELATIVO ---
+        $sqlNumero = "
         SELECT num_comprobante
         FROM venta
         WHERE tipo_comprobante = '$nuevo_tipo'
@@ -1956,18 +2022,18 @@ public function cambiarComprobante($idventa, $nuevo_tipo, $idsucursal)
         LIMIT 1
     ";
 
-    $rowNum = ejecutarConsultaSimpleFila($sqlNumero);
+        $rowNum = ejecutarConsultaSimpleFila($sqlNumero);
 
-    if ($rowNum && $rowNum['num_comprobante'] != "") {
-        $nuevo_num = intval($rowNum['num_comprobante']) + 1;
-    } else {
-        $nuevo_num = 1;
-    }
+        if ($rowNum && $rowNum['num_comprobante'] != "") {
+            $nuevo_num = intval($rowNum['num_comprobante']) + 1;
+        } else {
+            $nuevo_num = 1;
+        }
 
-    $num_final = str_pad($nuevo_num, 7, "0", STR_PAD_LEFT);
+        $num_final = str_pad($nuevo_num, 7, "0", STR_PAD_LEFT);
 
-    // --- 4. ACTUALIZAR LA VENTA ---
-    $sqlUpdate = "
+        // --- 4. ACTUALIZAR LA VENTA ---
+        $sqlUpdate = "
         UPDATE venta SET 
             tipo_comprobante = '$nuevo_tipo',
             serie_comprobante = '$serie_final',
@@ -1976,38 +2042,38 @@ public function cambiarComprobante($idventa, $nuevo_tipo, $idsucursal)
         WHERE idventa = '$idventa'
     ";
 
-    return ejecutarConsulta($sqlUpdate) ? "ok" : "Error al actualizar";
-}
-public function obtenerPagos($idventa)
-{
-    $sql = "SELECT metodo_pago, monto 
+        return ejecutarConsulta($sqlUpdate) ? "ok" : "Error al actualizar";
+    }
+    public function obtenerPagos($idventa)
+    {
+        $sql = "SELECT metodo_pago, monto 
             FROM venta_pago 
             WHERE idventa = '$idventa'";
 
-    // Usando tu función de consulta general
-    $res = ejecutarConsulta($sql);
+        // Usando tu función de consulta general
+        $res = ejecutarConsulta($sql);
 
-    $pagos = [];
-    if ($res) {
-        while ($row = mysqli_fetch_assoc($res)) {
-            $pagos[] = $row;
+        $pagos = [];
+        if ($res) {
+            while ($row = mysqli_fetch_assoc($res)) {
+                $pagos[] = $row;
+            }
         }
+
+        return $pagos; // Retorna array vacío si no hay pagos
     }
 
-    return $pagos; // Retorna array vacío si no hay pagos
-}
+    // Agregamos $idsucursal como parámetro
+    public function listarUltimosProductosCliente($idcliente, $idsucursal, $ids_carrito = [])
+    {
+        // Preparamos los IDs para la prioridad
+        $ids_string = "0";
+        if (!empty($ids_carrito)) {
+            $ids_seguros = array_map('intval', $ids_carrito);
+            $ids_string = implode(',', $ids_seguros);
+        }
 
-// Agregamos $idsucursal como parámetro
-public function listarUltimosProductosCliente($idcliente, $idsucursal, $ids_carrito = [])
-{
-    // Preparamos los IDs para la prioridad
-    $ids_string = "0"; 
-    if (!empty($ids_carrito)) {
-        $ids_seguros = array_map('intval', $ids_carrito);
-        $ids_string = implode(',', $ids_seguros);
-    }
-
-    $sql = "SELECT 
+        $sql = "SELECT 
                 dv.nombre_producto,
                 dv.cantidad,
                 pg.contenedor, 
@@ -2031,8 +2097,13 @@ public function listarUltimosProductosCliente($idcliente, $idsucursal, $ids_carr
             
             ORDER BY prioridad ASC, v.fecha_hora DESC
             LIMIT 100";
-            
-    return ejecutarConsulta($sql);
-}
 
+        return ejecutarConsulta($sql);
+    }
+
+    public function buscarGarante($search)
+    {
+        $sql = "SELECT idpersona, nombre FROM persona WHERE nombre LIKE '%$search%' AND tipo_persona = 'cliente' ORDER BY nombre ASC LIMIT 10";
+        return ejecutarConsulta($sql);
+    }
 }

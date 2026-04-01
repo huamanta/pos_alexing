@@ -1,25 +1,11 @@
 <?php
 require "../../configuraciones/Conexion.php";
+require "./Helpers.php";
+$helpers = new Helpers();
 date_default_timezone_set('America/Lima');
-// Función para encriptar/desencriptar
-function encrypt_decrypt($action, $string) {
-    if ($action == 'encrypt') {
-        $output = base64_encode($string);
-        $output = str_replace(['=', '/', '+'], ['', '_', '-'], $output);
-        return $output;
-    } else if ($action == 'decrypt') {
-        $string = str_replace(['_', '-'], ['/', '+'], $string);
-        $mod4 = strlen($string) % 4;
-        if ($mod4) {
-            $string .= substr('====', $mod4);
-        }
-        return base64_decode($string);
-    }
-    return false;
-}
 
 // Obtener ID del contrato desde parámetro encriptado
-$idVenta = isset($_GET['contrato']) ? encrypt_decrypt('decrypt', $_GET['contrato']) : null;
+$idVenta = isset($_GET['idventa']) ? $helpers->encryptDecrypt('decrypt', $_GET['idventa']) : null;
 // DATOS DINÁMICOS (puedes traerlos de BD basado en $idVenta)
 $sqlNegocio = "SELECT * 
 FROM datos_negocio 
@@ -27,231 +13,256 @@ ORDER BY id_negocio ASC
 LIMIT 1";
 $resultNegocio = ejecutarConsultaSimpleFila($sqlNegocio);
 
-$sqlVenta = "SELECT * FROM venta v 
+$sqlVenta = "SELECT v.*, p.nombre AS nombre_cliente, p.num_documento AS num_documento_cliente, p.direccion AS direccion_cliente, p.telefono AS telefono_cliente, g.nombre AS nombre_garante, g.num_documento AS num_documento_garante 
+             FROM venta v 
              INNER JOIN persona p ON v.idcliente = p.idpersona 
+             INNER JOIN persona g ON v.idgarante = g.idpersona 
              WHERE v.idventa = $idVenta";
 $resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
+
+$comprador = $resultVenta['nombre_cliente'] ?? '';
+$dniComprador = $resultVenta['num_documento_cliente'] ?? '';
+$direccionComprador = $resultVenta['direccion_cliente'] ?? '';
+$celularComprador = $resultVenta['telefono_cliente'] ?? '';
+$total = $resultVenta['total_venta'] ?? '';
+$inicial = $resultVenta['totalrecibido'] ?? '';
+$meses = $resultVenta['meses'] ?? '';
 $numeroContrato = "C" . str_pad($resultVenta['idventa'], 9, '0', STR_PAD_LEFT);
 
 $sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $resultVenta['idsucursal'];
 $resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
 
-$fecha = "Tarapoto, 24 de Marzo del 2026";
 
-$comprador = $resultVenta['nombre'];
 
 // Generación PDF con mPDF (server-side)
-ob_start();
+$garante = $resultVenta['nombre_garante'] ?? '';
+$dniGarante = $resultVenta['num_documento_garante'] ?? '';
+$fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
-$dniComprador = $resultVenta['num_documento'];
-$direccionComprador = $resultVenta['direccion'];
-$celularComprador = $resultVenta['telefono'];
+// seleccionar detalle de la venta
+$sqlDetalle = "SELECT * FROM detalle_venta dv INNER JOIN producto p ON dv.idproducto = p.idproducto WHERE dv.idventa = $idVenta";
+$resultDetalle = ejecutarConsulta($sqlDetalle);
 
-$garante = "JOKABE PAZ ROMERO";
-$dniGarante = "00933140";
-
-$vehiculo = [
-    "marca" => "WANXIN",
-    "clase" => "L5",
-    "combustible" => "GASOLINA",
-    "carroceria" => "TRIMOTO DE PASAJEROS",
-    "color" => "AZUL",
-    "motor" => "WX162FMJ226J30726",
-    "serie" => "LDAPAK105TGD30726",
-    "anio" => "2026",
-    "placa" => "NUEVO"
-];
-
-$total = $resultVenta['total_venta'];
-$inicial = $resultVenta['totalrecibido'];
-$cuota = "619.00";
-$frecuencia = $resultVenta['frecuencia'];
-switch ($frecuencia) {
-    case '1':
-        $frecuenciaTexto = "diarias";
-        $frecuenciaSm = "dias";
-        break;
-    case '2':
-        $frecuenciaTexto = "semanales";
-        $frecuenciaSm = "semanas";
-        break;
-    case '3':
-        $frecuenciaTexto = "quincenales";
-        $frecuenciaSm = "quincenas";
-        break;
-    case '4':
-        $frecuenciaTexto = "mensuales";
-        $frecuenciaSm = "meses";
-        break;
-    case "5":
-        $frecuenciaTexto = "bimestrales";
-        $frecuenciaSm = "bimestres";
-        break;
-    case "6":
-        $frecuenciaTexto = "trimestrales";
-        $frecuenciaSm = "trimestres";
-        break;
-    case '7':
-        $frecuenciaTexto = "semestrales";
-        $frecuenciaSm = "semestres";
-        break;
-    case "8":
-        $frecuenciaTexto = "anuales";
-        $frecuenciaSm = "años";
-        break;
-    default:
-        $frecuenciaTexto = "mensuales";
-        $frecuenciaSm = "meses";
+$data = [];
+foreach ($resultDetalle as $row) {
+    $data[] = [
+        "idproducto" => $row['idproducto'],
+        'nombre' => $row['nombre_producto'],
+        "cantidad" => $row['cantidad'],
+        "precio_venta" => $row['precio_venta'],
+        "descuento" => $row['descuento']
+    ];
 }
-$meses = $resultVenta['meses'];
-?>
 
+$cuota = "619.00";
+
+$dataFrecuencia = $helpers->getDataFrecuencia($resultVenta['frecuencia']);
+$frecuenciaSm = $dataFrecuencia->short;
+$frecuenciaTexto = $dataFrecuencia->texto;
+
+ob_start();
+?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<title>Contrato</title>
+    <meta charset="UTF-8">
+    <title>Contrato</title>
+    <style>
+        body {
+            font-family: "Times New Roman", serif;
+            font-size: 11px;
+            margin: 40px;
+            line-height: 1.4;
+            color: #000;
+        }
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-    font-size: 12px;
-    margin: 40px;
-}
+        .header {
+            text-align: center;
+        }
 
-h2, h3 {
-    text-align: center;
-    margin: 5px;
-}
+        .empresa {
+            color: #5b8db8;
+            font-weight: bold;
+            font-size: 16px;
+        }
 
-p {
-    text-align: justify;
-    line-height: 1.5;
-}
+        .subempresa {
+            color: #7a7a7a;
+            font-weight: bold;
+            font-size: 15px;
+        }
 
-.header {
-    text-align: center;
-}
+        .ruc {
+            color: #7a7a7a;
+            font-size: 13px;
+        }
 
-.section-title {
-    font-weight: bold;
-    margin-top: 15px;
-}
+        .linea {
+            border-top: 1px solid #999;
+            margin: 10px 0;
+        }
 
-.firma {
-    margin-top: 50px;
-    width: 100%;
-}
+        .titulo {
+            font-weight: bold;
+            text-align: center;
+            font-size: 13px;
+        }
 
-.firma div {
-    width: 30%;
-    display: inline-block;
-    text-align: center;
-}
-@media print {
-    body {
-        margin: 20px;
-    }
-}
-</style>
+        .numero {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 13px;
+        }
 
+        p {
+            text-align: justify;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        .clausula {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .firma {
+            margin-top: 60px;
+            width: 100%;
+        }
+
+        .firma div {
+            width: 45%;
+            display: inline-block;
+            text-align: center;
+            font-size: 10px;
+        }
+    </style>
 </head>
+
 <body>
 
-<div class="header">
-    <h3><?php echo $resultNegocio['nombre']; ?></h3>
-    <p><?php echo $resultSucursal['razon_social']; ?></p>
-    <p>R.U.C. <?php echo $resultSucursal['ruc']; ?></p>
-    <p>OFICINA: <?php echo $resultSucursal['nombre']; ?></p>
+    <div class="header">
+        <div class="empresa"><?php echo strtoupper($resultNegocio['nombre']); ?></div>
+        <div class="subempresa">ALQUILER VENTA DE VEHÍCULOS MOTORIZADOS</div>
+        <div class="ruc">R.U.C. <?php echo $resultSucursal['ruc']; ?></div>
 
-    <h2>CONTRATO DE COMPRA VENTA A PLAZOS</h2>
-    <h3>N° <?php echo $numeroContrato; ?></h3>
-</div>
+        <div class="linea"></div>
 
-<p>
-Conste por el presente documento el contrato de compra-venta a plazos con reserva de propiedad que celebran de una parte la empresa <b><?php echo $resultNegocio['nombre']; ?></b>, y de la otra parte el señor(a) <b><?php echo $comprador; ?></b>, identificado con DNI N° <?php echo $dniComprador; ?>, con domicilio en <?php echo $direccionComprador; ?>, celular <?php echo $celularComprador; ?>, con garante <?php echo $garante; ?> con DNI N° <?php echo $dniGarante; ?>.
-</p>
-
-<p class="section-title">PRIMERA: ANTECEDENTES</p>
-<p>El vendedor es propietario del siguiente vehículo:</p>
-
-<ul>
-    <li>Marca: <?php echo $vehiculo['marca']; ?></li>
-    <li>Clase: <?php echo $vehiculo['clase']; ?></li>
-    <li>Combustible: <?php echo $vehiculo['combustible']; ?></li>
-    <li>Carrocería: <?php echo $vehiculo['carroceria']; ?></li>
-    <li>Color: <?php echo $vehiculo['color']; ?></li>
-    <li>Motor: <?php echo $vehiculo['motor']; ?></li>
-    <li>Serie: <?php echo $vehiculo['serie']; ?></li>
-    <li>Año: <?php echo $vehiculo['anio']; ?></li>
-    <li>Placa: <?php echo $vehiculo['placa']; ?></li>
-</ul>
-
-<p class="section-title">SEGUNDA: OBJETO</p>
-<p>
-El vendedor transfiere el vehículo al comprador bajo modalidad de pago a plazos con reserva de propiedad.
-</p>
-
-<p class="section-title">TERCERA: PLAZO</p>
-<p>
-El contrato tendrá una duración de <?php echo $meses; ?> <?php echo $frecuenciaSm; ?>.
-</p>
-
-<p class="section-title">CUARTA: PRECIO Y FORMA DE PAGO</p>
-<p>
-El valor total del vehículo es de S/ <?php echo $total; ?>, con una cuota inicial de S/ <?php echo $inicial; ?> y <?php echo $meses; ?> cuotas <?php echo $frecuenciaTexto; ?> de S/ <?php echo $cuota; ?>.
-</p>
-
-<p class="section-title">QUINTA: RESERVA DE PROPIEDAD</p>
-<p>
-El vehículo será propiedad del vendedor hasta la cancelación total del monto.
-</p>
-
-<p class="section-title">SEXTA: INCUMPLIMIENTO</p>
-<p>
-El incumplimiento de pagos dará lugar a la resolución del contrato.
-</p>
-
-<p class="section-title">SÉPTIMA: RESPONSABILIDAD</p>
-<p>
-El comprador asume toda responsabilidad del vehículo desde su entrega.
-</p>
-
-<p style="text-align:right;"><?php echo $fecha; ?></p>
-
-<div class="firma">
-    <div>
-        ___________________________<br>
-        VENDEDOR
+        <div class="titulo">CONTRATO DE VENTA AL CONTADO DE VEHICULO MOTORIZADO</div>
+        <div class="numero">N° <?php echo $numeroContrato; ?></div>
     </div>
 
-    <div>
-        ___________________________<br>
-        COMPRADOR
-    </div>
+    <p>
+        Conste por el presente documento, el contrato de <b>VENTA AL CONTADO</b> de vehículo <b>NUEVO</b>, que celebran
+        de
+        una parte como <b>VENDEDOR</b>, la Empresa "<b><?php echo strtoupper($resultNegocio['nombre']); ?></b>", con RUC
+        Nº <?php echo $resultSucursal['ruc']; ?>, representado
+        por su Gerente General el señor <b>JESUS ROBERTO SURCO KACASACA</b>, identificado con DNI Nº <b>43978509</b>,
+        con
+        domicilio en <b>JR. JIMENEZ PIMENTEL NRO. 886, SAN MARTIN - SAN MARTIN - TARAPOTO</b>; con facultades
+        inscrita en la partida electrónica N° 11070911 del registro de personas jurídicas de la Oficina Registral
+        Tarapoto;
+        y de la otra parte como <b>COMPRADOR</b> el(la) señor(a) <b><?php echo strtoupper($comprador); ?></b>,
+        identificado con DNI
+        Nº <b><?php echo $dniComprador; ?></b>, de estado civil soltero(a), con domicilio en
+        <b><?php echo strtoupper($direccionComprador); ?></b> y con número de celular
+        <b><?php echo $celularComprador; ?></b> en los siguientes términos:
+    </p>
 
-    <div>
-        ___________________________<br>
-        GARANTE
+    <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre']); ?>, declara ser propietario y
+        titular registral del vehículo
+        <b>MOTOCICLETA</b> con las siguientes características:
+    </p>
+
+    <?php foreach ($data as $item): ?>
+        <p>
+            marca <b><?php echo $item['marca'] ?? 'N/A'; ?></b>, modelo <b><?php echo $item['modelo'] ?? 'N/A'; ?></b>, color
+            <b><?php echo $item['color'] ?? 'N/A'; ?></b> con
+            Nº serie <b><?php echo $item['serie'] ?? 'N/A'; ?></b>, Nº de motor <b><?php echo $item['motor'] ?? 'N/A'; ?></b>, año de
+            fabricación <b><?php echo $item['anio'] ?? 'N/A'; ?></b> Nº de cilindro
+            01, N° Placa de Rodaje <b><?php echo $item['placa'] ?? 'NUEVO'; ?></b>. El mismo que es <b>NUEVO</b>.
+        </p>
+    <?php endforeach; ?>
+
+    <p>
+        Bien mueble que fue reconocido físicamente en su calidad de vehículo MOTOCICLETA <b>NUEVO</b> por ambas partes
+        con anterioridad.
+    </p>
+
+    <p><b class="clausula">SEGUNDO.-</b> El VENDEDOR, deja constancia que el vehículo MOTOCICLETA descrito en la cláusula primera, se
+        encuentra en perfecto estado de conservación y funcionamiento, por ser este bien mueble en calidad de NUEVO.</p>
+
+    <p><b class="clausula">TERCERO.-</b> El VENDEDOR, declara que, el vehículo MOTOCICLETA se encuentra, al momento de celebrarse
+        este contrato, libre de toda carga, gravamen, derecho real de garantía, medida judicial o extrajudicial,
+        papeletas
+        en el SAT y en general de todo acto o circunstancia que impida, prive o limite la posesión o uso del bien; por
+        tratarse de un bien mueble en calidad de NUEVO; no obstante a ellos se obliga a la evicción o saneamiento de
+        ley; asimismo el alquiler-venta se hace Ad-Corpus.</p>
+
+    <p><b class="clausula">CUARTO.-</b> El PRECIO FINAL pactado por ambas partes por la venta del vehículo MOTOCICLETA descrito en la
+        cláusula primera, es de <b>S/<?php echo number_format($total, 2); ?></b> (
+        <b><?php echo $helpers->numeroALetrasMoneda($total); ?></b> ), suma que el COMPRADOR abonará
+        al VENDEDOR en su totalidad de <b>S/<?php echo number_format($total, 2); ?></b> (
+        <b><?php echo $helpers->numeroALetrasMoneda($total); ?></b> ), importe que deberá ser
+        cancelado en moneda nacional y en efectivo; asimismo, EL VENDEDOR, se le entregará un recibo por el importe
+        pactado.
+    </p>
+
+    <p><b class="clausula">QUINTO.-</b> EL COMPRADOR acepta que, una vez realizada la compra, no habrá devolución del dinero bajo
+        ninguna circunstancia. El COMPRADOR entendió que la compra es definitiva y no puede ser cancelada.</p>
+
+    <p><b class="clausula">SEXTO.-</b> EL VENDEDOR, garantiza que el vehículo se encuentra en buen estado de funcionamiento sin garantías
+        ni responsabilidades. EL COMPRADOR, declara haber inspeccionado el vehículo y estar satisfecho con su estado.
+    </p>
+
+    <p><b class="clausula">SÉPTIMO.-</b> El presente contrato es IRREVOCABLE y no puede ser modificado sin el consentimiento por escrito
+        de ambas partes.</p>
+
+    <p><b class="clausula">OCTAVO.-</b> Cualquier disputa o controversia que surja en la relación con el presente contrato será resuelta
+        mediante instancias judiciales.</p>
+
+    <p>
+        <b class="clausula">NOVENO.-</b> Los contratantes declaran que existe la más justa y perfecta equivalencia entre el precio
+        pactado y el
+        valor del bien mueble, no teniendo nada que reclamarse al respecto. En fe y señal de conformidad, las partes
+        firman el presente contrato en <?php echo $resultSucursal['direccion'] ?? 'Jr. Ex Carretera Yurimaguas S/n'; ?>
+        el día <?php echo $helpers->fechaLetras($resultVenta['fecha_hora']); ?>.
+    </p>
+
+    <br><br>
+
+    <div class="firma">
+        <div>
+            ________________________________________<br>
+            FIRMA Y SELLO DEL GERENTE GENERAL<br>
+            ARRENDADOR-VENDEDOR
+        </div>
+
+        <div>
+            ________________________________________<br>
+            <?php echo strtoupper($comprador); ?><br>
+            ARRENDADOR-COMPRADOR
+        </div>
     </div>
-</div>
-</script>
 
 </body>
+
 <?php
-    $html = ob_get_clean();
-    require_once __DIR__ . '/../../reportes/factura/pdf/vendor/autoload.php';
+$html = ob_get_clean();
+require_once __DIR__ . '/../../reportes/factura/pdf/vendor/autoload.php';
 
-    $options = new \Dompdf\Options();
-    $options->set('isRemoteEnabled', true);
-    $options->set('defaultFont', 'Arial');
+$options = new \Dompdf\Options();
+$options->set('isRemoteEnabled', true);
+$options->set('defaultFont', 'Arial');
 
-    $dompdf = new \Dompdf\Dompdf($options);
-    $dompdf->loadHtml($html);
-    $dompdf->setPaper('A4', 'portrait');
-    $dompdf->render();
-    $dompdf->stream('contrato_'.$numeroContrato.'.pdf', array('Attachment' => 0));
-    exit;
+$dompdf = new \Dompdf\Dompdf($options);
+$dompdf->loadHtml($html);
+$dompdf->setPaper('A4', 'portrait');
+$dompdf->render();
+$dompdf->stream('contrato_' . $numeroContrato . '.pdf', array('Attachment' => 0));
+exit;
 
 ?>
+
 </html>

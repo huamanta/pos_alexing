@@ -14,13 +14,13 @@ $tipo_comprobante = isset($_POST["tipo_comprobante"]) ? limpiarCadena($_POST["ti
 $serie_comprobante = isset($_POST["serie_comprobante"]) ? limpiarCadena($_POST["serie_comprobante"]) : "";
 $num_comprobante = isset($_POST["num_comprobante"]) ? limpiarCadena($_POST["num_comprobante"]) : "";
 if (!empty($_POST["fecha"])) {
-    // Le llega solo YYYY-MM-DD desde el input
-    $fecha = limpiarCadena($_POST["fecha"]);
-    // Concatenamos la hora actual
-    $fecha .= " " . date("H:i:s");
+	// Le llega solo YYYY-MM-DD desde el input
+	$fecha = limpiarCadena($_POST["fecha"]);
+	// Concatenamos la hora actual
+	$fecha .= " " . date("H:i:s");
 } else {
-    // Si no hay fecha en el POST, usamos fecha y hora actual
-    $fecha = date("Y-m-d H:i:s");
+	// Si no hay fecha en el POST, usamos fecha y hora actual
+	$fecha = date("Y-m-d H:i:s");
 }
 $impuesto = isset($_POST["impuesto"]) ? limpiarCadena($_POST["impuesto"]) : "";
 $total_venta = isset($_POST["total_venta"]) ? limpiarCadena($_POST["total_venta"]) : "";
@@ -49,6 +49,7 @@ $estadoS = isset($_POST["estadoS"]) ? limpiarCadena($_POST["estadoS"]) : "";
 $tipo = isset($_POST["tipo"]) ? limpiarCadena($_POST["tipo"]) : "";
 
 $banco = isset($_POST["banco"]) ? limpiarCadena($_POST["banco"]) : "";
+$idgarante = isset($_POST["idgarante"]) ? limpiarCadena($_POST["idgarante"]) : "";
 
 require_once "../modelos/Persona.php";
 
@@ -66,25 +67,26 @@ $fecha_hora = date("Y-m-d H:i:s");
 $input_cuotas = isset($_POST["input_cuotas"]) ? limpiarCadena($_POST["input_cuotas"]) : "";
 $input_frecuencia = isset($_POST["input_frecuencia"]) ? limpiarCadena($_POST["input_frecuencia"]) : "";
 $inputInteres = isset($_POST["inputInteres"]) ? limpiarCadena($_POST["inputInteres"]) : "";
-function tienePermiso($modulo, $submodulo, $accion) {
-    return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
+function tienePermiso($modulo, $submodulo, $accion)
+{
+	return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
 }
 
 switch ($_GET["op"]) {
 
 	case 'verificar_caja':
-	    $idusuario = $_SESSION["idusuario"];
-	    $idsucursal = $_SESSION["idsucursal"];
-	    $rspta = $venta->verificarCaja($idusuario, $idsucursal);
-	    echo json_encode($rspta);
-	break;
+		$idusuario = $_SESSION["idusuario"];
+		$idsucursal = $_SESSION["idsucursal"];
+		$rspta = $venta->verificarCaja($idusuario, $idsucursal);
+		echo json_encode($rspta);
+		break;
 
 
 	case 'listar_cajas':
-	    $idsucursal = isset($_GET["idsucursal"]) ? $_GET["idsucursal"] : $_SESSION["idsucursal"];
-	    $rspta = $venta->listarCajas($idsucursal);
-	    echo json_encode($rspta);
-	break;
+		$idsucursal = isset($_GET["idsucursal"]) ? $_GET["idsucursal"] : $_SESSION["idsucursal"];
+		$rspta = $venta->listarCajas($idsucursal);
+		echo json_encode($rspta);
+		break;
 
 
 	case 'aperturar_caja':
@@ -97,74 +99,147 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'verificar_caja_por_sucursal':
-	    $idusuario = $_SESSION["idusuario"];
-	    $idsucursal = $_GET["idsucursal"];
+		$idusuario = $_SESSION["idusuario"];
+		$idsucursal = $_GET["idsucursal"];
 
-	    $rspta = $venta->verificarCaja($idusuario, $idsucursal);
-	    echo json_encode($rspta);
-	break;
+		$rspta = $venta->verificarCaja($idusuario, $idsucursal);
+		echo json_encode($rspta);
+		break;
 
 	case 'comprobantesPendientes':
-        $venta = new Venta();
-        $result = $venta->comprobantesPendientes();
-        echo json_encode($result);
-        break;
+		$venta = new Venta();
+		$result = $venta->comprobantesPendientes();
+		echo json_encode($result);
+		break;
 
 
 	case 'guardaryeditar':
-		 if (!empty($_POST["fecha"])) {
-	        $fechaInput = limpiarCadena($_POST["fecha"]);
-	        
-	        // Validar restricción de fecha según cargo
-	        if ($_SESSION['cargo'] !== 'Administrador') {
-	            $fechaSeleccionada = strtotime($fechaInput);
-	            $hoy = strtotime(date('Y-m-d'));
-	            $ayer = strtotime(date('Y-m-d', strtotime('-1 day')));
-	            
-	            // Verificar que la fecha esté dentro del rango permitido
-	            if ($fechaSeleccionada < $ayer || $fechaSeleccionada > $hoy) {
-	                echo json_encode([
-	                    'status' => 'error',
-	                    'mensaje' => 'No tienes permisos para usar esta fecha. Solo puedes registrar ventas de hoy o ayer.'
-	                ]);
-	                exit;
-	            }
-	        }
-	        
-	        // Si pasa la validación, concatenamos la hora actual
-	        $fecha = $fechaInput . " " . date("H:i:s");
-	    } else {
-	        // Si no hay fecha en el POST, usamos fecha y hora actual
-	        $fecha = date("Y-m-d H:i:s");
-	    }
+		if (!empty($_POST["fecha"])) {
+			$fechaInput = limpiarCadena($_POST["fecha"]);
+
+			// Validar restricción de fecha según cargo
+			if ($_SESSION['cargo'] !== 'Administrador') {
+				$fechaSeleccionada = strtotime($fechaInput);
+				$hoy = strtotime(date('Y-m-d'));
+				$ayer = strtotime(date('Y-m-d', strtotime('-1 day')));
+
+				// Verificar que la fecha esté dentro del rango permitido
+				if ($fechaSeleccionada < $ayer || $fechaSeleccionada > $hoy) {
+					echo json_encode([
+						'status' => 'error',
+						'mensaje' => 'No tienes permisos para usar esta fecha. Solo puedes registrar ventas de hoy o ayer.'
+					]);
+					exit;
+				}
+			}
+
+			// Si pasa la validación, concatenamos la hora actual
+			$fecha = $fechaInput . " " . date("H:i:s");
+		} else {
+			// Si no hay fecha en el POST, usamos fecha y hora actual
+			$fecha = date("Y-m-d H:i:s");
+		}
 		if (empty($idventa)) {
 			$idcaja = $_POST['idcaja'];
 			$fecha_pago = isset($_POST["fecha_pago"]) && is_array($_POST["fecha_pago"]) ? $_POST["fecha_pago"] : [];
-			$rspta = $venta->insertar($idsucursal, $idcliente, $idpersonal, $idcaja, $tipo_comprobante, 
-			$serie_comprobante, $num_comprobante, $fecha, $impuesto, $total_venta, $tipopago, $formapago, 
-			$nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido,$totaldeposito, $vuelto, $tipo, $banco,
-			$_POST["idproducto"], $_POST["nombreProducto"], $_POST["cantidad"], $_POST["precio_venta"], 
-			$_POST["descuento"], $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, 
-			$idmotivo, $observaciones, $fecha_pago, $inputInteres, $input_cuotas, $input_frecuencia, $_POST["cantidad_contenedor"], 
-			$_POST["contenedor"], $_POST["idp"],$_POST["check_precio"], $_POST["id_detalle_compra_lote"], $_POST["idcategoria"]);
+			$rspta = $venta->insertar(
+				$idsucursal,
+				$idcliente,
+				$idpersonal,
+				$idcaja,
+				$tipo_comprobante,
+				$serie_comprobante,
+				$num_comprobante,
+				$fecha,
+				$impuesto,
+				$total_venta,
+				$tipopago,
+				$formapago,
+				$nroOperacion,
+				$fechaDepostivo,
+				$porcentaje,
+				$totalrecibido,
+				$totaldeposito,
+				$vuelto,
+				$tipo,
+				$banco,
+				$_POST["idproducto"],
+				$_POST["nombreProducto"],
+				$_POST["cantidad"],
+				$_POST["precio_venta"],
+				$_POST["descuento"],
+				$fechaOperacion,
+				$montoDeuda,
+				$montoPagado,
+				$comprobanteReferencia,
+				$idmotivo,
+				$observaciones,
+				$fecha_pago,
+				$inputInteres,
+				$input_cuotas,
+				$input_frecuencia,
+				$_POST["cantidad_contenedor"],
+				$_POST["contenedor"],
+				$_POST["idp"],
+				$_POST["check_precio"],
+				$_POST["id_detalle_compra_lote"],
+				$_POST["idcategoria"],
+				$idgarante
+			);
 			echo $rspta;
 		} else {
 			$idcaja = $_POST['idcaja'];
 			$fecha_pago = isset($_POST["fecha_pago"]) && is_array($_POST["fecha_pago"]) ? $_POST["fecha_pago"] : [];
-			$rspta = $venta->editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, $tipo_comprobante, 
-			$serie_comprobante, $num_comprobante, $fecha, $impuesto, $total_venta, $tipopago, $formapago, 
-			$nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido, $totaldeposito,$vuelto, $tipo, $banco,
-			$_POST["idproducto"], $_POST["nombreProducto"], $_POST["cantidad"], $_POST["precio_venta"], 
-			$_POST["descuento"], $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, 
-			$idmotivo, $observaciones, $fecha_pago, $inputInteres, $input_cuotas, $_POST["cantidad_contenedor"], 
-			$_POST["contenedor"], $_POST["idp"],  $_POST["check_precio"], $_POST["id_detalle_compra_lote"], $_POST["idcategoria"]);
+			$rspta = $venta->editar(
+				$idventa,
+				$idsucursal,
+				$idcliente,
+				$idpersonal,
+				$idcaja,
+				$tipo_comprobante,
+				$serie_comprobante,
+				$num_comprobante,
+				$fecha,
+				$impuesto,
+				$total_venta,
+				$tipopago,
+				$formapago,
+				$nroOperacion,
+				$fechaDepostivo,
+				$porcentaje,
+				$totalrecibido,
+				$totaldeposito,
+				$vuelto,
+				$tipo,
+				$banco,
+				$_POST["idproducto"],
+				$_POST["nombreProducto"],
+				$_POST["cantidad"],
+				$_POST["precio_venta"],
+				$_POST["descuento"],
+				$fechaOperacion,
+				$montoDeuda,
+				$montoPagado,
+				$comprobanteReferencia,
+				$idmotivo,
+				$observaciones,
+				$fecha_pago,
+				$inputInteres,
+				$input_cuotas,
+				$_POST["cantidad_contenedor"],
+				$_POST["contenedor"],
+				$_POST["idp"],
+				$_POST["check_precio"],
+				$_POST["id_detalle_compra_lote"],
+				$_POST["idcategoria"]
+			);
 			echo $rspta;
 		}
 
 		break;
 
 	case 'agregar_carrito':
-	  $sql = "INSERT INTO carrito_venta_tmp (
+		$sql = "INSERT INTO carrito_venta_tmp (
 	            idpersonal, idsucursal, idcaja, idproducto, idcategoria,
 	            nombre_producto, cantidad, cantidad_contenedor, contenedor,
 	            precio_venta, descuento, check_precio, id_fifo
@@ -188,44 +263,44 @@ switch ($_GET["op"]) {
 	            descuento = VALUES(descuento),
 	            precio_venta = VALUES(precio_venta)";
 
-	  ejecutarConsulta($sql);
-	  echo "ok";
-	break;
+		ejecutarConsulta($sql);
+		echo "ok";
+		break;
 
 	case 'verPreciosItem':
-        $idusuario = $_SESSION["idusuario"];
-        $idproducto = isset($_GET["idproducto"]) ? limpiarCadena($_GET["idproducto"]) : "";
-        $rpta = $pos->verPreciosItem($idproducto, $idusuario);
-        echo json_encode($rpta);
-        break;
+		$idusuario = $_SESSION["idusuario"];
+		$idproducto = isset($_GET["idproducto"]) ? limpiarCadena($_GET["idproducto"]) : "";
+		$rpta = $pos->verPreciosItem($idproducto, $idusuario);
+		echo json_encode($rpta);
+		break;
 
 	case 'actualizarDataItem':
-        $idproducto = isset($_POST["idproducto"]) ? limpiarCadena($_POST["idproducto"]) : "";
-        $campo = isset($_POST["campo"]) ? limpiarCadena($_POST["campo"]) : "";
-        $value = isset($_POST["value"]) ? limpiarCadena($_POST["value"]) : "";
-        $rpta = $pos->actualizarDataItem($idproducto, $campo, $value);
-        echo $rpta? json_encode(array('status' => 1)) : json_encode(array('status' => 0));
-        break;
+		$idproducto = isset($_POST["idproducto"]) ? limpiarCadena($_POST["idproducto"]) : "";
+		$campo = isset($_POST["campo"]) ? limpiarCadena($_POST["campo"]) : "";
+		$value = isset($_POST["value"]) ? limpiarCadena($_POST["value"]) : "";
+		$rpta = $pos->actualizarDataItem($idproducto, $campo, $value);
+		echo $rpta ? json_encode(array('status' => 1)) : json_encode(array('status' => 0));
+		break;
 
 	case 'verificarProductos':
-	    // Verificar si se reciben los parámetros necesarios
-	    if (isset($_POST['idsucursal']) && isset($_POST['productos'])) {
-	        $idsucursal = $_POST['idsucursal'];
-	        $productos = $_POST['productos'];
-	        $productosList = implode(',', array_map('intval', $productos));
-	        $sql = "SELECT idproducto, nombre FROM producto WHERE idsucursal = '$idsucursal' AND idproducto IN ($productosList)";
-	        $result = ejecutarConsulta($sql);
-	        $productosDisponibles = [];
-	        
-	        while ($row = $result->fetch_assoc()) {
-	            $productosDisponibles[] = $row['idproducto'];
-	        }
-	        $noDisponibles = array_diff($productos, $productosDisponibles);
-	        echo json_encode(['no_disponibles' => array_values($noDisponibles)]);
-	    } else {
-	        echo json_encode(['no_disponibles' => []]);
-	    }
-	    break;
+		// Verificar si se reciben los parámetros necesarios
+		if (isset($_POST['idsucursal']) && isset($_POST['productos'])) {
+			$idsucursal = $_POST['idsucursal'];
+			$productos = $_POST['productos'];
+			$productosList = implode(',', array_map('intval', $productos));
+			$sql = "SELECT idproducto, nombre FROM producto WHERE idsucursal = '$idsucursal' AND idproducto IN ($productosList)";
+			$result = ejecutarConsulta($sql);
+			$productosDisponibles = [];
+
+			while ($row = $result->fetch_assoc()) {
+				$productosDisponibles[] = $row['idproducto'];
+			}
+			$noDisponibles = array_diff($productos, $productosDisponibles);
+			echo json_encode(['no_disponibles' => array_values($noDisponibles)]);
+		} else {
+			echo json_encode(['no_disponibles' => []]);
+		}
+		break;
 
 
 	case 'guardarCliente':
@@ -256,14 +331,14 @@ switch ($_GET["op"]) {
 		echo json_encode($rspta);
 		break;
 	case 'listarCuotas':
-	    $rspta = $venta->listarCuotas($_POST["idventa"]);
-	    // Retornar un arreglo con todas las cuotas encontradas
-	    $cuotas = array();
-	    while($reg = $rspta->fetch_object()){
-	        $cuotas[] = $reg;
-	    }
-	    echo json_encode($cuotas);
-	    break;
+		$rspta = $venta->listarCuotas($_POST["idventa"]);
+		// Retornar un arreglo con todas las cuotas encontradas
+		$cuotas = array();
+		while ($reg = $rspta->fetch_object()) {
+			$cuotas[] = $reg;
+		}
+		echo json_encode($cuotas);
+		break;
 
 
 	/*case 'mostrar':
@@ -316,7 +391,7 @@ switch ($_GET["op"]) {
 				$num_comp = $reg->num_comprobante
 			);
 		}
-		$numero_fac_comp = (int)$num_comp;
+		$numero_fac_comp = (int) $num_comp;
 
 		$rspta = $venta->numero_venta($idsucursal);
 		$data = array();
@@ -326,16 +401,16 @@ switch ($_GET["op"]) {
 				$numerof = $reg->num_comprobante
 			);
 		}
-		$numero_factura = (int)$numerof;
+		$numero_factura = (int) $numerof;
 		$new_factura = '';
 
 		if ($numero_factura == 9999999 or empty($numerof)) {
 			$new_factura = '0000001';
-			$numero_nuevo = (int)$new_factura;
+			$numero_nuevo = (int) $new_factura;
 			echo json_encode($numero_nuevo);
 		} elseif ($numerof == 9999999) {
 			$new_factura = '0000001';
-			$numero_nuevo = (int)$new_factura;
+			$numero_nuevo = (int) $new_factura;
 			echo json_encode($numero_nuevo);
 		} else {
 			$sumafact = $numero_factura + 1;
@@ -361,8 +436,8 @@ switch ($_GET["op"]) {
 				$num_comp = $reg->num_comprobante
 			);
 		}
-		$serie_fac_comp = (int)$serie_comp;
-		$num_fac_comp = (int)$num_comp;
+		$serie_fac_comp = (int) $serie_comp;
+		$num_fac_comp = (int) $num_comp;
 		//fin de mostrar numero de factura de la tabla comprobantes
 		$rspta = $venta->numero_serie($idsucursal);
 		$data = array();
@@ -375,9 +450,9 @@ switch ($_GET["op"]) {
 				$numerofa = $reg->num_comprobante
 			);
 		}
-		$nums = (int)$numeros;
+		$nums = (int) $numeros;
 		$nuew_serie = 0;
-		$numf = (int)$numerofa;
+		$numf = (int) $numerofa;
 		if ($numf == 9999999 or empty($numerofa)) {
 			$nuew_serie = $nums + 1;
 			echo json_encode($nuew_serie);
@@ -386,7 +461,7 @@ switch ($_GET["op"]) {
 		}
 		break; //opcion para mostrar la numeracion y la serie_comprobante de la factura
 
-		//opcion para mostrar la numeracion y la serie_comprobante de la boleta
+	//opcion para mostrar la numeracion y la serie_comprobante de la boleta
 	case 'mostrar_num_boleta':
 
 		$idsucursal = $_REQUEST["idsucursal"];
@@ -402,7 +477,7 @@ switch ($_GET["op"]) {
 				$num_comp = $reg->num_comprobante
 			);
 		}
-		$numero_bol_comp = (int)$num_comp;
+		$numero_bol_comp = (int) $num_comp;
 		//fin de mostrar numero de boleta de la tabla comprobantes
 
 		$rspta = $venta->numero_venta_boleta($idsucursal);
@@ -414,7 +489,7 @@ switch ($_GET["op"]) {
 				$numerob = $reg->num_comprobante
 			);
 		}
-		$numero_boleta = (int)$numerob;
+		$numero_boleta = (int) $numerob;
 		$new_boleta = '';
 
 		if ($numero_boleta == 9999999 or empty($numerob)) {
@@ -446,8 +521,8 @@ switch ($_GET["op"]) {
 				$num_comp_bol = $reg->num_comprobante
 			);
 		}
-		$serie_bol_comp = (int)$serie_comp_bol;
-		$num_bol_comp = (int)$num_comp_bol;
+		$serie_bol_comp = (int) $serie_comp_bol;
+		$num_bol_comp = (int) $num_comp_bol;
 		//fin de mostrar numero de factura de la tabla comprobantes
 		$rspta = $venta->numero_serie_boleta($idsucursal);
 		$data = array();
@@ -460,9 +535,9 @@ switch ($_GET["op"]) {
 				$numero_bol = $reg->num_comprobante
 			);
 		}
-		$nums_bol = (int)$numero_s_bol;
+		$nums_bol = (int) $numero_s_bol;
 		$nuew_serie_bol = 0;
-		$numb = (int)$numero_bol;
+		$numb = (int) $numero_bol;
 		if ($numb == 9999999 or empty($numero_s_bol)) {
 			$nuew_serie_bol = $nums_bol + 1;
 			echo json_encode($nuew_serie_bol);
@@ -471,7 +546,7 @@ switch ($_GET["op"]) {
 		}
 		break; //fin de opcion de mostrar num_comprobante y serie_comprobante de boleta
 
-		//opcion para mostrar la numeracion y la serie_comprobante de la ticket
+	//opcion para mostrar la numeracion y la serie_comprobante de la ticket
 	case 'mostrar_num_ticket':
 
 		$idsucursal = $_REQUEST["idsucursal"];
@@ -487,7 +562,7 @@ switch ($_GET["op"]) {
 				$num_comp_tic = $reg->num_comprobante
 			);
 		}
-		$numero_tic_comp = (int)$num_comp_tic;
+		$numero_tic_comp = (int) $num_comp_tic;
 		//fin de mostrar numero de boleta de la tabla comprobantes
 		$rspta = $venta->numero_venta_ticket($idsucursal);
 		$data = array();
@@ -498,7 +573,7 @@ switch ($_GET["op"]) {
 				$numerot = $reg->num_comprobante
 			);
 		}
-		$numero_ticket = (int)$numerot;
+		$numero_ticket = (int) $numerot;
 		$new_ticket = '';
 
 		if ($numero_ticket == 9999999 or empty($numerot)) {
@@ -520,7 +595,7 @@ switch ($_GET["op"]) {
 
 		// Defaults para evitar Undefined variable
 		$serie_comp_tic = 0;
-		$num_comp_tic   = 0;
+		$num_comp_tic = 0;
 
 		require_once "../modelos/Comprobantes.php";
 		$comprobantes = new Comprobantes();
@@ -528,26 +603,26 @@ switch ($_GET["op"]) {
 		$rspta = $comprobantes->mostrar_serie_ticket($idsucursal);
 
 		while ($reg = $rspta->fetch_object()) {
-			$serie_comp_tic = (int)$reg->serie_comprobante;
-			$num_comp_tic   = (int)$reg->num_comprobante;
+			$serie_comp_tic = (int) $reg->serie_comprobante;
+			$num_comp_tic = (int) $reg->num_comprobante;
 		}
 
-		$serie_tic_comp = (int)$serie_comp_tic;
-		$num_tic_comp   = (int)$num_comp_tic;
+		$serie_tic_comp = (int) $serie_comp_tic;
+		$num_tic_comp = (int) $num_comp_tic;
 
 		// fin de mostrar numero de factura de la tabla comprobantes
 		$rspta = $venta->numero_serie_ticket($idsucursal);
 
-		$numero_s_tic   = $serie_tic_comp;
-		$numero_bolet   = $num_tic_comp;
+		$numero_s_tic = $serie_tic_comp;
+		$numero_bolet = $num_tic_comp;
 
 		while ($reg = $rspta->fetch_object()) {
-			$numero_s_tic = (int)$reg->serie_comprobante;
-			$numero_bolet = (int)$reg->num_comprobante;
+			$numero_s_tic = (int) $reg->serie_comprobante;
+			$numero_bolet = (int) $reg->num_comprobante;
 		}
 
-		$num_s_ticket = (int)$numero_s_tic;
-		$numbo        = (int)$numero_bolet;
+		$num_s_ticket = (int) $numero_s_tic;
+		$numbo = (int) $numero_bolet;
 
 		if ($numbo == 9999999 || empty($numero_s_tic)) {
 			$nuew_serie_ticket = $num_s_ticket + 1;
@@ -556,7 +631,7 @@ switch ($_GET["op"]) {
 			echo json_encode($num_s_ticket);
 		}
 		break;
-		
+
 	case 'mostrar_num_nc':
 
 		$idsucursal = $_REQUEST["idsucursal"];
@@ -572,7 +647,7 @@ switch ($_GET["op"]) {
 				$num_comp = $reg->num_comprobante
 			);
 		}
-		$numero_bol_comp = (int)$num_comp;
+		$numero_bol_comp = (int) $num_comp;
 		//fin de mostrar numero de boleta de la tabla comprobantes
 
 		$rspta = $venta->numero_venta_nc($idsucursal);
@@ -584,7 +659,7 @@ switch ($_GET["op"]) {
 				$numerob = $reg->num_comprobante
 			);
 		}
-		$numero_boleta = (int)$numerob;
+		$numero_boleta = (int) $numerob;
 		$new_boleta = '';
 
 		if ($numero_boleta == 9999999 or empty($numerob)) {
@@ -617,8 +692,8 @@ switch ($_GET["op"]) {
 				$num_comp_bol = $reg->num_comprobante
 			);
 		}
-		$serie_bol_comp = (int)$serie_comp_bol;
-		$num_bol_comp = (int)$num_comp_bol;
+		$serie_bol_comp = (int) $serie_comp_bol;
+		$num_bol_comp = (int) $num_comp_bol;
 		//fin de mostrar numero de factura de la tabla comprobantes
 		$rspta = $venta->numero_serie_nc($idsucursal);
 		$data = array();
@@ -631,9 +706,9 @@ switch ($_GET["op"]) {
 				$numero_bol = $reg->num_comprobante
 			);
 		}
-		$nums_bol = (int)$numero_s_bol;
+		$nums_bol = (int) $numero_s_bol;
 		$nuew_serie_bol = 0;
-		$numb = (int)$numero_bol;
+		$numb = (int) $numero_bol;
 		if ($numb == 9999999 or empty($numero_s_bol)) {
 			$nuew_serie_bol = $nums_bol + 1;
 			echo json_encode($nuew_serie_bol);
@@ -642,7 +717,7 @@ switch ($_GET["op"]) {
 		}
 		break; //fin de opcion de mostrar num_comprobante y serie_comprobante de boleta
 
-		//opcion para mostrar la numeracion y la serie_comprobante de la boleta
+	//opcion para mostrar la numeracion y la serie_comprobante de la boleta
 	case 'mostrar_num_ncb':
 
 		$idsucursal = $_REQUEST["idsucursal"];
@@ -658,7 +733,7 @@ switch ($_GET["op"]) {
 				$num_comp = $reg->num_comprobante
 			);
 		}
-		$numero_bol_comp = (int)$num_comp;
+		$numero_bol_comp = (int) $num_comp;
 		//fin de mostrar numero de boleta de la tabla comprobantes
 
 		$rspta = $venta->numero_venta_ncb($idsucursal);
@@ -670,7 +745,7 @@ switch ($_GET["op"]) {
 				$numerob = $reg->num_comprobante
 			);
 		}
-		$numero_boleta = (int)$numerob;
+		$numero_boleta = (int) $numerob;
 		$new_boleta = '';
 
 		if ($numero_boleta == 9999999 or empty($numerob)) {
@@ -703,8 +778,8 @@ switch ($_GET["op"]) {
 				$num_comp_bol = $reg->num_comprobante
 			);
 		}
-		$serie_bol_comp = (int)$serie_comp_bol;
-		$num_bol_comp = (int)$num_comp_bol;
+		$serie_bol_comp = (int) $serie_comp_bol;
+		$num_bol_comp = (int) $num_comp_bol;
 		//fin de mostrar numero de factura de la tabla comprobantes
 		$rspta = $venta->numero_serie_ncb($idsucursal);
 		$data = array();
@@ -717,9 +792,9 @@ switch ($_GET["op"]) {
 				$numero_bol = $reg->num_comprobante
 			);
 		}
-		$nums_bol = (int)$numero_s_bol;
+		$nums_bol = (int) $numero_s_bol;
 		$nuew_serie_bol = 0;
-		$numb = (int)$numero_bol;
+		$numb = (int) $numero_bol;
 		if ($numb == 9999999 or empty($numero_s_bol)) {
 			$nuew_serie_bol = $nums_bol + 1;
 			echo json_encode($nuew_serie_bol);
@@ -728,7 +803,7 @@ switch ($_GET["op"]) {
 		}
 		break; //fin de opcion de mostrar num_comprobante y serie_comprobante de boleta
 
-		//________________________________
+	//________________________________
 
 	case 'cambiarEstado':
 		$venta = new Venta();
@@ -737,23 +812,23 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarDetalle':
-    require_once "../modelos/Negocio.php";
-    $cnegocio = new Negocio();
-    $rsptan = $cnegocio->listar();
-    $regn = $rsptan->fetch_object();
-    $smoneda = empty($regn) ? 'Simbolo de moneda' : $regn->simbolo;
-    $nom_imp = empty($regn) ? '' : $regn->nombre_impuesto;
+		require_once "../modelos/Negocio.php";
+		$cnegocio = new Negocio();
+		$rsptan = $cnegocio->listar();
+		$regn = $rsptan->fetch_object();
+		$smoneda = empty($regn) ? 'Simbolo de moneda' : $regn->simbolo;
+		$nom_imp = empty($regn) ? '' : $regn->nombre_impuesto;
 
-    $id = $_GET['id'];
+		$id = $_GET['id'];
 
-    $rspta = $venta->listarDetalle($id);
+		$rspta = $venta->listarDetalle($id);
 
-    $total = 0;
-    $totaldescuento = 0;
-    $total_efectivo = 0;
-    $total_otro_pago = 0;
+		$total = 0;
+		$totaldescuento = 0;
+		$total_efectivo = 0;
+		$total_otro_pago = 0;
 
-    echo '<thead style="background-color:#A9D0F5; font-weight: bold;">
+		echo '<thead style="background-color:#A9D0F5; font-weight: bold;">
             <tr>
                 <th>Producto</th>
                 <th>Categoría</th>
@@ -763,25 +838,25 @@ switch ($_GET["op"]) {
             </tr>
           </thead>';
 
-    while ($reg = $rspta->fetch_object()) {
+		while ($reg = $rspta->fetch_object()) {
 
-        // 🔹 Calcular subtotal de forma robusta
-        $subtotalCalc = 0;
-        if ($reg->cantidad > 0) {
-            $precioUnitarioEstimado = $reg->precio_venta / $reg->cantidad;
+			// 🔹 Calcular subtotal de forma robusta
+			$subtotalCalc = 0;
+			if ($reg->cantidad > 0) {
+				$precioUnitarioEstimado = $reg->precio_venta / $reg->cantidad;
 
-            // Si el precio_unitario_estimado es menor a la mitad del precio
-            // o la cantidad tiene decimales → asumimos que el precio fue directo (check activado)
-            if ($precioUnitarioEstimado < ($reg->precio_venta * 0.5) || fmod($reg->cantidad, 1) !== 0.0) {
-                $subtotalCalc = $reg->precio_venta; // precio directo (no multiplicar)
-            } else {
-                $subtotalCalc = $reg->cantidad * $reg->precio_venta;
-            }
-        } else {
-            $subtotalCalc = $reg->precio_venta;
-        }
+				// Si el precio_unitario_estimado es menor a la mitad del precio
+				// o la cantidad tiene decimales → asumimos que el precio fue directo (check activado)
+				if ($precioUnitarioEstimado < ($reg->precio_venta * 0.5) || fmod($reg->cantidad, 1) !== 0.0) {
+					$subtotalCalc = $reg->precio_venta; // precio directo (no multiplicar)
+				} else {
+					$subtotalCalc = $reg->cantidad * $reg->precio_venta;
+				}
+			} else {
+				$subtotalCalc = $reg->precio_venta;
+			}
 
-        echo '<tr class="filas" style="border-bottom: 1px solid #ccc;">
+			echo '<tr class="filas" style="border-bottom: 1px solid #ccc;">
                 <td><span class="badge bg-success">' . $reg->cantidad . '</span> ' . htmlspecialchars($reg->nombre_producto) . ' <span class="badge bg-danger">' . htmlspecialchars($reg->contenedor) . '</span></td>
                 <td>' . htmlspecialchars($reg->categoria) . '</td>
                 <td>' . $reg->cantidad . '</td>
@@ -789,19 +864,19 @@ switch ($_GET["op"]) {
                 <td>' . number_format($subtotalCalc, 2) . '</td>
             </tr>';
 
-        // Totales
-        $total = $reg->total_venta;
-        $totaldescuento = $reg->descuento;
-        $total_efectivo = $reg->total_efectivo;
-        $total_otro_pago = $reg->total_otro_pago;
+			// Totales
+			$total = $reg->total_venta;
+			$totaldescuento = $reg->descuento;
+			$total_efectivo = $reg->total_efectivo;
+			$total_otro_pago = $reg->total_otro_pago;
 
-        $numoperacion = $reg->numoperacion;
-        $banco = $reg->banco;
-        $fechadeposito = $reg->fechadeposito;
-    }
+			$numoperacion = $reg->numoperacion;
+			$banco = $reg->banco;
+			$fechadeposito = $reg->fechadeposito;
+		}
 
-    // TOTALES ORDENADOS
-    echo '<tfoot style="background-color:#E3F2FD;">
+		// TOTALES ORDENADOS
+		echo '<tfoot style="background-color:#E3F2FD;">
             <tr>
                 <th colspan="3"></th>
                 <th>TOTAL VENTA</th>
@@ -809,7 +884,7 @@ switch ($_GET["op"]) {
             </tr>
           </tfoot>';
 
-    echo '<tfoot style="background-color:#E3F2FD;">
+		echo '<tfoot style="background-color:#E3F2FD;">
             <tr>
                 <th colspan="3"></th>
                 <th>PAGO EN PLATAFORMAS DIGITALES</th>
@@ -817,7 +892,7 @@ switch ($_GET["op"]) {
             </tr>
           </tfoot>';
 
-    echo '<tfoot style="background-color:#E3F2FD;">
+		echo '<tfoot style="background-color:#E3F2FD;">
             <tr>
                 <th colspan="3"></th>
                 <th>PAGO CON EFECTIVO</th>
@@ -825,261 +900,261 @@ switch ($_GET["op"]) {
             </tr>
           </tfoot>';
 
-    echo "<script>
+		echo "<script>
             $('#nrooperacionm').text('{$numoperacion}');
             $('#banco').text('{$banco}');
             $('#fechadeposito').text('{$fechadeposito}');
           </script>";
 
-    break;
+		break;
 
 
 
 	case 'listar':
 
-	$fecha_inicio = $_REQUEST["fecha_inicio"];
-	$fecha_fin = $_REQUEST["fecha_fin"];
-	$estado = $_REQUEST["estado"];
-	$idsucursal = $_REQUEST["idsucursal2"];
-	$idproducto = isset($_REQUEST["idproducto"]) ? $_REQUEST["idproducto"] : "";
+		$fecha_inicio = $_REQUEST["fecha_inicio"];
+		$fecha_fin = $_REQUEST["fecha_fin"];
+		$estado = $_REQUEST["estado"];
+		$idsucursal = $_REQUEST["idsucursal2"];
+		$idproducto = isset($_REQUEST["idproducto"]) ? $_REQUEST["idproducto"] : "";
 
-	if ($idsucursal == "" || $idsucursal == NULL) {
-		if ($_SESSION['idsucursal'] == 0) {
-			$idsucursal = 'Todos';
-		} else {
-			$idsucursal = $_SESSION['idsucursal'];
+		if ($idsucursal == "" || $idsucursal == NULL) {
+			if ($_SESSION['idsucursal'] == 0) {
+				$idsucursal = 'Todos';
+			} else {
+				$idsucursal = $_SESSION['idsucursal'];
+			}
 		}
-	}
 
-	$rspta = $venta->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto);
+		$rspta = $venta->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto);
 
-	$data = array();
+		$data = array();
 
-	while ($reg = $rspta->fetch_object()) {
-		$url1 = 'reportes/exTicket.php?id=';
-		$url2 = 'reportes/factura/generaFactura.php?id=';
+		while ($reg = $rspta->fetch_object()) {
+			$url1 = 'reportes/exTicket.php?id=';
+			$url2 = 'reportes/factura/generaFactura.php?id=';
 
-		$ruta = 'public/FACT_WebService/Facturacion/files/' . $reg->dov_Nombre . '.xml';
-		$rutaCdr = 'public/FACT_WebService/Facturacion/files/R-' . $reg->dov_Nombre . '.zip';
+			$ruta = 'public/FACT_WebService/Facturacion/files/' . $reg->dov_Nombre . '.xml';
+			$rutaCdr = 'public/FACT_WebService/Facturacion/files/R-' . $reg->dov_Nombre . '.zip';
 
-		if ($reg->tipo_comprobante == 'Boleta') {
+			if ($reg->tipo_comprobante == 'Boleta') {
 
-			$enviarSunat = '<a data-toggle="tooltip" title="Enviar a Sunat" onclick="EnviarSunat(1,' . $reg->idventa . ',' . $reg->idpersonal . ');"> 
+				$enviarSunat = '<a data-toggle="tooltip" title="Enviar a Sunat" onclick="EnviarSunat(1,' . $reg->idventa . ',' . $reg->idpersonal . ');"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-paper-plane"></i></button></a> 
 				<a href="' . $ruta . '" style="pointer-events: none;"> 
 				<button class="btn btn-warning btn-xs"><i class="fas fa-file-code"></i></button></a> 
 				<a href="' . $rutaCdr . '" style="pointer-events: none;"> 
 				<button class="btn btn-danger btn-xs"><i class="fas fa-file-archive"></i></button></a>';
 
-			$pdf = '<a target="_blank" title="PDF" onclick="PDF(1,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
+				$pdf = '<a target="_blank" title="PDF" onclick="PDF(1,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
 				<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
 
-			$ticket = '<a target="_blank" title="Ticket" onclick="Ticket(1,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
+				$ticket = '<a target="_blank" title="Ticket" onclick="Ticket(1,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
 
-		} else {
-			$enviarSunat = '<a data-toggle="tooltip" title="Enviar a Sunat" onclick="EnviarSunat(2,' . $reg->idventa . ',' . $reg->idpersonal . ');"> 
+			} else {
+				$enviarSunat = '<a data-toggle="tooltip" title="Enviar a Sunat" onclick="EnviarSunat(2,' . $reg->idventa . ',' . $reg->idpersonal . ');"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-paper-plane"></i></button></a> 
 				<a href="' . $ruta . '" style="pointer-events: none;"> 
 				<button class="btn btn-warning btn-xs"><i class="fas fa-file-code"></i></button></a> 
 				<a href="' . $rutaCdr . '" style="pointer-events: none;"> 
 				<button class="btn btn-danger btn-xs"><i class="fas fa-file-archive"></i></button></a>';
 
-			$pdf = '<a target="_blank" title="PDF" onclick="PDF(2,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
+				$pdf = '<a target="_blank" title="PDF" onclick="PDF(2,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
 				<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
 
-			$ticket = '<a target="_blank" title="Ticket" onclick="Ticket(2,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
+				$ticket = '<a target="_blank" title="Ticket" onclick="Ticket(2,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
-		}
+			}
 
-		$urlComprobarEstado = 'public/FACT_WebService/Facturacion/consultacdr.php?idventa=' . $reg->idventa . '&codColab=' . $reg->idpersonal;
+			$urlComprobarEstado = 'public/FACT_WebService/Facturacion/consultacdr.php?idventa=' . $reg->idventa . '&codColab=' . $reg->idpersonal;
 
-		if ($reg->estado == 'Aceptado') {
-			$estado = '<span class="badge badge-neon neon-green">ACEPTADO</span>';
-			$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
+			if ($reg->estado == 'Aceptado') {
+				$estado = '<span class="badge badge-neon neon-green">ACEPTADO</span>';
+				$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
 				<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-			$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
+				$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
 
-		} else if ($reg->estado == 'Por Enviar') {
-			$estado = '<span class="badge badge-neon neon-yellow">POR ENVIAR</span>';
+			} else if ($reg->estado == 'Por Enviar') {
+				$estado = '<span class="badge badge-neon neon-yellow">POR ENVIAR</span>';
 
-		} else if ($reg->estado == 'En Resumen') {
-			$estado = '<span class="badge badge-neon neon-blue">EN RESUMEN</span>';
+			} else if ($reg->estado == 'En Resumen') {
+				$estado = '<span class="badge badge-neon neon-blue">EN RESUMEN</span>';
 
-		} else if ($reg->estado == 'Anulado') {
-			$estado = '<span class="badge badge-neon neon-red">ANULADO</span>';
+			} else if ($reg->estado == 'Anulado') {
+				$estado = '<span class="badge badge-neon neon-red">ANULADO</span>';
 
-		} else if ($reg->estado == 'Nota Credito') {
-			$estado = '<span class="badge badge-neon neon-red">NOTA DE CRÉDITO</span>';
-			$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
+			} else if ($reg->estado == 'Nota Credito') {
+				$estado = '<span class="badge badge-neon neon-red">NOTA DE CRÉDITO</span>';
+				$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
 				<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-			$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
+				$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
 
-		} else if ($reg->estado == 'Rechazado') {
-			$estado = '<span class="badge badge-neon neon-red">RECHAZADO</span>';
-			$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
+			} else if ($reg->estado == 'Rechazado') {
+				$estado = '<span class="badge badge-neon neon-red">RECHAZADO</span>';
+				$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
 				<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-			$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
+				$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
 
-		} else if ($reg->estado == 'Aceptado por resumen') {
-			$estado = '<span class="badge badge-neon neon-green">ACEPTADO POR RESUMEN</span>';
-			$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
+			} else if ($reg->estado == 'Aceptado por resumen') {
+				$estado = '<span class="badge badge-neon neon-green">ACEPTADO POR RESUMEN</span>';
+				$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
 				<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-			$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
+				$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
 
-		} else {
-			$estado = '<span class="badge badge-neon neon-blue">ACTIVADO</span>';
-			$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
+			} else {
+				$estado = '<span class="badge badge-neon neon-blue">ACTIVADO</span>';
+				$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
 				<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-			$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
+				$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
-		}
+			}
 
-		if ($reg->estado == 'Por Enviar') {
-			$sunat = $enviarSunat;
-		} else if ($reg->estado == 'Activado' || $reg->estado == 'Anulado') {
-			$sunat = '<a style="pointer-events: none;"> 
+			if ($reg->estado == 'Por Enviar') {
+				$sunat = $enviarSunat;
+			} else if ($reg->estado == 'Activado' || $reg->estado == 'Anulado') {
+				$sunat = '<a style="pointer-events: none;"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-paper-plane"></i></button></a> 
 				<a href="' . $ruta . '" style="pointer-events: none;"> 
 				<button class="btn btn-warning btn-xs"><i class="fas fa-file-code"></i></button></a> 
 				<a href="' . $rutaCdr . '" style="pointer-events: none;"> 
 				<button class="btn btn-danger btn-xs"><i class="fas fa-file-archive"></i></button></a>';
-		} else if ($reg->estado == 'Aceptado' || $reg->estado == 'Aceptado por resumen') {
-			// Solo cuando está ACEPTADO se pueden descargar los archivos
-			$sunat = '<a style="pointer-events: none;"> 
+			} else if ($reg->estado == 'Aceptado' || $reg->estado == 'Aceptado por resumen') {
+				// Solo cuando está ACEPTADO se pueden descargar los archivos
+				$sunat = '<a style="pointer-events: none;"> 
 				<button class="btn btn-primary btn-xs" title="No Disponible"><i class="fas fa-paper-plane"></i></button></a> 
 				<a href="' . $ruta . '" download="' . $reg->dov_Nombre . '.xml" class="btn btn-warning btn-xs ml-1" title="Descargar XML"> 
 				<i class="fas fa-file-code"></i></a> 
 				<a href="' . $rutaCdr . '" target="_blank" class="btn btn-danger btn-xs ml-1" title="Descargar CDR ZIP"> 
 				<i class="fas fa-file-archive"></i></a>';
-		} else {
-			// Para 'En Resumen', 'Nota Credito', 'Rechazado' - botones deshabilitados
-			$sunat = '<a style="pointer-events: none;"> 
+			} else {
+				// Para 'En Resumen', 'Nota Credito', 'Rechazado' - botones deshabilitados
+				$sunat = '<a style="pointer-events: none;"> 
 				<button class="btn btn-primary btn-xs" title="No Disponible"><i class="fas fa-paper-plane"></i></button></a> 
 				<a style="pointer-events: none;"> 
 				<button class="btn btn-warning btn-xs ml-1" title="No Disponible"><i class="fas fa-file-code"></i></button></a> 
 				<a style="pointer-events: none;"> 
 				<button class="btn btn-danger btn-xs ml-1" title="No Disponible"><i class="fas fa-file-archive"></i></button></a>';
-		}
+			}
 
-		if ($reg->tipo_comprobante == 'Nota de Venta') {
-			$comprobarEstado = '<center><a style="pointer-events: none;"> 
+			if ($reg->tipo_comprobante == 'Nota de Venta') {
+				$comprobarEstado = '<center><a style="pointer-events: none;"> 
 				<button class="btn btn-warning btn-xs" onclick="ComprobarEstado(' . $reg->idventa . ')"><i class="fas fa-exclamation-circle"></i></button></a></center>';
-		} else {
-			$comprobarEstado = '<center><a onclick="comprobarEstado(' . $reg->idventa . ',' . $reg->idpersonal . ');"> 
+			} else {
+				$comprobarEstado = '<center><a onclick="comprobarEstado(' . $reg->idventa . ',' . $reg->idpersonal . ');"> 
 				<button class="btn btn-warning btn-xs"><i class="fas fa-exclamation-circle"></i></button></a></center>';
-		}
+			}
 
-		if ($reg->estado == 'Anulado') {
-		    // Mostrar solo el botón de ojo para ver los productos de la nota anulada
-		    $mostrarResumen = '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idventa . ')"><i class="fas fa-eye"></i></button>';
-		    $enviarComprobante = '';
-		    $mostrar = " ";
-		    $sunatE = "-";
-		} else {
-		    // Casos normales
-		    $mostrarResumen = '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idventa . ')"><i class="fas fa-eye"></i></button>';
-		    $enviarComprobante = '<a target="_blank" title="Enviar Comprobantes"> 
+			if ($reg->estado == 'Anulado') {
+				// Mostrar solo el botón de ojo para ver los productos de la nota anulada
+				$mostrarResumen = '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idventa . ')"><i class="fas fa-eye"></i></button>';
+				$enviarComprobante = '';
+				$mostrar = " ";
+				$sunatE = "-";
+			} else {
+				// Casos normales
+				$mostrarResumen = '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idventa . ')"><i class="fas fa-eye"></i></button>';
+				$enviarComprobante = '<a target="_blank" title="Enviar Comprobantes"> 
 		        <button class="btn btn-success btn-xs" onclick="EnviarComprobante(' . $reg->idventa . ')"><i class="fab fa-whatsapp"></i></button></a>';
-		    $mostrar = $pdf . $ticket;
-		    $sunatE = $sunat;
-		}
+				$mostrar = $pdf . $ticket;
+				$sunatE = $sunat;
+			}
 
-		// --- NUEVO BOTÓN DE NOTA DE CRÉDITO ---
-		if ($reg->estado == 'Aceptado') {
-		    $notaCreditoBtn = '<a title="Pasar a Nota de Crédito" onclick="notaCredito(' . $reg->idventa . ','.$reg->idsucursal.')"> 
+			// --- NUEVO BOTÓN DE NOTA DE CRÉDITO ---
+			if ($reg->estado == 'Aceptado') {
+				$notaCreditoBtn = '<a title="Pasar a Nota de Crédito" onclick="notaCredito(' . $reg->idventa . ',' . $reg->idsucursal . ')"> 
 		        <button class="btn btn-danger btn-xs"><i class="fas fa-ban"></i></button></a>';
-		} else {
-		    $notaCreditoBtn = '';
-		}
+			} else {
+				$notaCreditoBtn = '';
+			}
 
 
-		if ($reg->estadoS == '') {
-			$estadoS = '-';
-		} else if ($reg->estadoS == 'PENDIENTE') {
-			$estadoS = '<span class="badge bg-red">PENDIENTE</span>';
-		} else if ($reg->estadoS == 'TERMINADO') {
-			$estadoS = '<span class="badge bg-green">TERMINADO</span>';
-		} else {
-			$estadoS = '<span class="badge bg-yellow">ENTREGADO</span>';
-		}
+			if ($reg->estadoS == '') {
+				$estadoS = '-';
+			} else if ($reg->estadoS == 'PENDIENTE') {
+				$estadoS = '<span class="badge bg-red">PENDIENTE</span>';
+			} else if ($reg->estadoS == 'TERMINADO') {
+				$estadoS = '<span class="badge bg-green">TERMINADO</span>';
+			} else {
+				$estadoS = '<span class="badge bg-yellow">ENTREGADO</span>';
+			}
 
-		$data[] = array(
-			"0" => $reg->fecha,
-			"1" => $reg->cliente . ' - ' . $reg->num_documento,
-			"2" => $reg->sucursal,
-			"3" => $reg->tipo_comprobante . ' - ' . $reg->serie_comprobante . ' - ' . $reg->num_comprobante,
-			"4" => '<span class="badge badge-neon neon-purple sm">S/ ' . number_format($reg->total_venta, 2) . '</span>',
-			"5" => $reg->formapago,
-			"6" => ($reg->ventacredito == 'Si') ? '<center><span class="badge badge-neon neon-red">Crédito</span></center>' : '<center><span class="badge badge-neon neon-blue">Contado</span></center>',
-			"7" => $estado,
-			"8" => $sunatE,
-			"9" => $comprobarEstado,
-			"10" => (($reg->estado == 'Activado') ?
-				    '<div class="dropdown">
+			$data[] = array(
+				"0" => $reg->fecha,
+				"1" => $reg->cliente . ' - ' . $reg->num_documento,
+				"2" => $reg->sucursal,
+				"3" => $reg->tipo_comprobante . ' - ' . $reg->serie_comprobante . ' - ' . $reg->num_comprobante,
+				"4" => '<span class="badge badge-neon neon-purple sm">S/ ' . number_format($reg->total_venta, 2) . '</span>',
+				"5" => $reg->formapago,
+				"6" => ($reg->ventacredito == 'Si') ? '<center><span class="badge badge-neon neon-red">Crédito</span></center>' : '<center><span class="badge badge-neon neon-blue">Contado</span></center>',
+				"7" => $estado,
+				"8" => $sunatE,
+				"9" => $comprobarEstado,
+				"10" => (($reg->estado == 'Activado') ?
+					'<div class="dropdown">
 				        <button class="btn dropdown-toggle" type="button" data-toggle="dropdown"> 
 				            <i class="fas fa-list-ul"></i>
 				        <span class="caret"></span></button>
 
-				        <div class="dropdown-menu">' 
-				        . (tienePermiso('Pos','Venta Pos','Editar') ? 
-				            '<a class="dropdown-item" style="cursor:pointer;" onclick="generarComprobante('.$reg->idventa.')">Editar</a>' 
-				        : '') 
-				        . (tienePermiso('Pos','Venta Pos','Eliminar') ? 
-				            '<a class="dropdown-item" style="cursor:pointer;" onclick="anularComprobante('.$reg->idventa.')">Eliminar</a>' 
-				        : '') 
-				        . (($reg->tipo_comprobante == 'Nota de Venta') ?
-				            '<a class="dropdown-item" style="cursor:pointer;" onclick="cambiarComprobante('.$reg->idventa.','.$reg->idsucursal.')">
+				        <div class="dropdown-menu">'
+					. (tienePermiso('Pos', 'Venta Pos', 'Editar') ?
+						'<a class="dropdown-item" style="cursor:pointer;" onclick="generarComprobante(' . $reg->idventa . ')">Editar</a>'
+						: '')
+					. (tienePermiso('Pos', 'Venta Pos', 'Eliminar') ?
+						'<a class="dropdown-item" style="cursor:pointer;" onclick="anularComprobante(' . $reg->idventa . ')">Eliminar</a>'
+						: '')
+					. (($reg->tipo_comprobante == 'Nota de Venta') ?
+						'<a class="dropdown-item" style="cursor:pointer;" onclick="cambiarComprobante(' . $reg->idventa . ',' . $reg->idsucursal . ')">
 				                Cambiar a Boleta/Factura
 				            </a>'
-				        : '') 
-				        . '</div>
+						: '')
+					. '</div>
 
 				        <button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idventa . ')"><i class="fas fa-eye"></i></button>
 				        <a target="_blank" title="Enviar Comprobantes"> 
 				            <button class="btn btn-success btn-xs" onclick="EnviarComprobante(' . $reg->idventa . ')"><i class="fab fa-whatsapp"></i></button></a>'
-				    :
-				    $mostrarResumen . $enviarComprobante . ''
-				) 
-				. $mostrar 
-				. $notaCreditoBtn 
-				. '</div>'
-		);
-	}
+					:
+					$mostrarResumen . $enviarComprobante . ''
+				)
+					. $mostrar
+					. $notaCreditoBtn
+					. '</div>'
+			);
+		}
 
-	$results = array(
-		"sEcho" => 1,
-		"iTotalRecords" => count($data),
-		"iTotalDisplayRecords" => count($data),
-		"aaData" => $data
-	);
-	echo json_encode($results);
-	break;
+		$results = array(
+			"sEcho" => 1,
+			"iTotalRecords" => count($data),
+			"iTotalDisplayRecords" => count($data),
+			"aaData" => $data
+		);
+		echo json_encode($results);
+		break;
 
 
 	case 'selectSucursal3':
-	    require_once "../modelos/Venta.php";
-	    $venta = new Venta();
+		require_once "../modelos/Venta.php";
+		$venta = new Venta();
 
-	    $rspta = $venta->listarSucursal2($_SESSION['idpersonal'], $_SESSION['idsucursal']);
+		$rspta = $venta->listarSucursal2($_SESSION['idpersonal'], $_SESSION['idsucursal']);
 
-	    // Opción "Todas" SOLO si tiene acceso total
-	    if ((int)$_SESSION['idsucursal'] === 0) {
-	        echo '<option value="0">Todas las Sucursales</option>';
-	    }
-		$selectedSucursal = isset($_SESSION['idsucursal']) ? (int)$_SESSION['idsucursal'] : 0;
-	    while ($reg = $rspta->fetch_object()) {
-			if ((int)$reg->idsucursal === $selectedSucursal) {
-	            echo '<option value="' . (int)$reg->idsucursal . '" selected>' . $reg->nombre . '</option>';
-	        } else {
-	       		echo '<option value="' . (int)$reg->idsucursal . '">' . $reg->nombre . '</option>';
+		// Opción "Todas" SOLO si tiene acceso total
+		if ((int) $_SESSION['idsucursal'] === 0) {
+			echo '<option value="0">Todas las Sucursales</option>';
+		}
+		$selectedSucursal = isset($_SESSION['idsucursal']) ? (int) $_SESSION['idsucursal'] : 0;
+		while ($reg = $rspta->fetch_object()) {
+			if ((int) $reg->idsucursal === $selectedSucursal) {
+				echo '<option value="' . (int) $reg->idsucursal . '" selected>' . $reg->nombre . '</option>';
+			} else {
+				echo '<option value="' . (int) $reg->idsucursal . '">' . $reg->nombre . '</option>';
 			}
-	    }
-	break;
+		}
+		break;
 
 	case 'selectSucursal':
 		require_once "../modelos/Venta.php";
@@ -1095,7 +1170,7 @@ switch ($_GET["op"]) {
 			}
 		}
 		break;
-	
+
 
 	case 'selectSucursal2':
 		require_once "../modelos/Venta.php";
@@ -1111,37 +1186,37 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'selectCliente':
-	    require_once "../modelos/Persona.php";
-	    $persona = new Persona();
-	    $tipo_documento = isset($_POST["tipo_documento"]) ? $_POST["tipo_documento"] : "";
-	    $es_factura = isset($_POST["es_factura"]) ? $_POST["es_factura"] : "0";
-	    $rspta = $persona->listarc($tipo_documento);
-	    
-	    
-	    while ($reg = $rspta->fetch_object()) {
-	        echo '<option value="' . $reg->idpersona . '">' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
-	    }
-	    break;
+		require_once "../modelos/Persona.php";
+		$persona = new Persona();
+		$tipo_documento = isset($_POST["tipo_documento"]) ? $_POST["tipo_documento"] : "";
+		$es_factura = isset($_POST["es_factura"]) ? $_POST["es_factura"] : "0";
+		$rspta = $persona->listarc($tipo_documento);
+
+
+		while ($reg = $rspta->fetch_object()) {
+			echo '<option value="' . $reg->idpersona . '">' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
+		}
+		break;
 
 
 
 	case 'obtenerCliente':
-	    require_once "../modelos/Persona.php";
-	    $persona = new Persona();
-	    
-	    // Obtener el idcliente de la solicitud
-	    $idcliente = $_POST['idcliente'];
+		require_once "../modelos/Persona.php";
+		$persona = new Persona();
 
-	    // Realizamos la consulta para obtener los datos del cliente
-	    $rspta = $persona->obtenerPorId($idcliente);
+		// Obtener el idcliente de la solicitud
+		$idcliente = $_POST['idcliente'];
 
-	    // Verificar si el cliente existe y devolver el nombre
-	    if ($reg = $rspta->fetch_object()) {
-	        echo json_encode(array('nombre_cliente' => $reg->nombre));
-	    } else {
-	        echo json_encode(array('error' => 'Cliente no encontrado'));
-	    }
-	    break;
+		// Realizamos la consulta para obtener los datos del cliente
+		$rspta = $persona->obtenerPorId($idcliente);
+
+		// Verificar si el cliente existe y devolver el nombre
+		if ($reg = $rspta->fetch_object()) {
+			echo json_encode(array('nombre_cliente' => $reg->nombre));
+		} else {
+			echo json_encode(array('error' => 'Cliente no encontrado'));
+		}
+		break;
 
 
 	case 'selectCliente2':
@@ -1202,7 +1277,7 @@ switch ($_GET["op"]) {
 		$fecha_fin = $_REQUEST["fecha_fin"];
 		$estado = $_REQUEST["estado"];
 		$idsucursal = $_REQUEST["idsucursal2"];
-		$rspta = $venta->listarNC($fecha_inicio, $fecha_fin, $estado,$idsucursal);
+		$rspta = $venta->listarNC($fecha_inicio, $fecha_fin, $estado, $idsucursal);
 		$data = array();
 
 		while ($reg = $rspta->fetch_object()) {
@@ -1284,41 +1359,41 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'selectProducto':
-	    $idsucursal = $_REQUEST["idsucursal2"]; // Obtiene el ID de la sucursal seleccionada
+		$idsucursal = $_REQUEST["idsucursal2"]; // Obtiene el ID de la sucursal seleccionada
 
-	    $producto = new Producto();
+		$producto = new Producto();
 
-	    if ($idsucursal === 'all') {
-	        $rspta = $producto->listarTodos(); // Llama a la función que devuelve todos los productos
-	    } else {
-	        $rspta = $producto->listar($idsucursal); // Llama a la función que filtra por sucursal
-	    }
+		if ($idsucursal === 'all') {
+			$rspta = $producto->listarTodos(); // Llama a la función que devuelve todos los productos
+		} else {
+			$rspta = $producto->listar($idsucursal); // Llama a la función que filtra por sucursal
+		}
 
-	    echo '<option value="Todos">Todos</option>'; // Opción por defecto
+		echo '<option value="Todos">Todos</option>'; // Opción por defecto
 
-	    while ($reg = $rspta->fetch_object()) {
-	        echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
-	    }
-	    break;
+		while ($reg = $rspta->fetch_object()) {
+			echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
+		}
+		break;
 
 	case 'selectProductoV':
-	    $idsucursal = $_REQUEST["idsucursal2"]; // Obtiene el ID de la sucursal seleccionada
+		$idsucursal = $_REQUEST["idsucursal2"]; // Obtiene el ID de la sucursal seleccionada
 
-	    $producto = new Producto();
+		$producto = new Producto();
 
-	    // Si seleccionas 'all', listar todos los productos
-	    if ($idsucursal === 'all' || $idsucursal === null) {
-	        $rspta = $producto->listarTodosV(); // Llama a la función que devuelve todos los productos
-	    } else {
-	        $rspta = $producto->listarV($idsucursal); // Llama a la función que filtra por sucursal
-	    }
+		// Si seleccionas 'all', listar todos los productos
+		if ($idsucursal === 'all' || $idsucursal === null) {
+			$rspta = $producto->listarTodosV(); // Llama a la función que devuelve todos los productos
+		} else {
+			$rspta = $producto->listarV($idsucursal); // Llama a la función que filtra por sucursal
+		}
 
-	    echo '<option value="Todos">Todos</option>'; // Opción por defecto
+		echo '<option value="Todos">Todos</option>'; // Opción por defecto
 
-	    while ($reg = $rspta->fetch_object()) {
-	        echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
-	    }
-	    break;
+		while ($reg = $rspta->fetch_object()) {
+			echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
+		}
+		break;
 
 
 
@@ -1345,43 +1420,43 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'selectVendedor':
-	    require_once "../modelos/Persona.php";
-	    $persona = new Persona();
+		require_once "../modelos/Persona.php";
+		$persona = new Persona();
 
-	    $cargo = $persona->obtenerCargo($_SESSION['idusuario']);
-	    $idsucursal = isset($_POST['idsucursal']) ? (int)$_POST['idsucursal'] : 0;
+		$cargo = $persona->obtenerCargo($_SESSION['idusuario']);
+		$idsucursal = isset($_POST['idsucursal']) ? (int) $_POST['idsucursal'] : 0;
 
-	    if ($cargo === 'Administrador') {
+		if ($cargo === 'Administrador') {
 
-	        // Todas las sucursales
-	        if ($idsucursal === 0) {
-	            $rspta = $persona->listarv();
-	        } else {
-	            $rspta = $persona->listarvPorSucursal($idsucursal);
-	        }
+			// Todas las sucursales
+			if ($idsucursal === 0) {
+				$rspta = $persona->listarv();
+			} else {
+				$rspta = $persona->listarvPorSucursal($idsucursal);
+			}
 
-	        echo '<option value="0">Todos</option>';
-	        while ($reg = $rspta->fetch_object()) {
-	            echo '<option value="' . (int)$reg->idpersonal . '">' . $reg->nombre . '</option>';
-	        }
+			echo '<option value="0">Todos</option>';
+			while ($reg = $rspta->fetch_object()) {
+				echo '<option value="' . (int) $reg->idpersonal . '">' . $reg->nombre . '</option>';
+			}
 
-	    } else {
+		} else {
 
-	        // Vendedor normal: solo él mismo
-	        $sql = "SELECT p.idpersonal, p.nombre
+			// Vendedor normal: solo él mismo
+			$sql = "SELECT p.idpersonal, p.nombre
 	                FROM personal p
 	                INNER JOIN usuario u ON u.idpersonal = p.idpersonal
 	                WHERE u.idusuario = '{$_SESSION['idusuario']}'";
 
-	        $rspta = ejecutarConsultaSimpleFila($sql);
+			$rspta = ejecutarConsultaSimpleFila($sql);
 
-	        if ($rspta) {
-	            echo '<option value="' . (int)$rspta['idpersonal'] . '" selected>' . $rspta['nombre'] . '</option>';
-	        } else {
-	            echo '<option value="">No asignado</option>';
-	        }
-	    }
-	break;
+			if ($rspta) {
+				echo '<option value="' . (int) $rspta['idpersonal'] . '" selected>' . $rspta['nombre'] . '</option>';
+			} else {
+				echo '<option value="">No asignado</option>';
+			}
+		}
+		break;
 
 	case 'selectProveedor':
 		require_once "../modelos/Persona.php";
@@ -1411,12 +1486,12 @@ switch ($_GET["op"]) {
 
 		while ($reg = $rspta->fetch_object()) {
 			$data[] = array(
-				"0" => (($reg->stock == 0) ? 
-				    '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>' : 
-				    '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->unidadmedida . '\'); mostrarAlerta(\'Se agrego correctamente al carrito\');"><span class="fa fa-shopping-cart"></span></a>'),
+				"0" => (($reg->stock == 0) ?
+					'<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>' :
+					'<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->unidadmedida . '\'); mostrarAlerta(\'Se agrego correctamente al carrito\');"><span class="fa fa-shopping-cart"></span></a>'),
 
-				"1"=>"<img src='files/productos/".$reg->imagen."' height='50px' width='50px'>",
-				"2" => '<span style="font-weight: bold;">'.$reg->nombre.'</span>'.' - '.'<span style="font-size:10px">'.$reg->descripcion.'</span>',
+				"1" => "<img src='files/productos/" . $reg->imagen . "' height='50px' width='50px'>",
+				"2" => '<span style="font-weight: bold;">' . $reg->nombre . '</span>' . ' - ' . '<span style="font-size:10px">' . $reg->descripcion . '</span>',
 				"3" => $reg->categoria,
 				"4" => $reg->unidadmedida,
 				"5" => $reg->stock,
@@ -1486,11 +1561,11 @@ switch ($_GET["op"]) {
 		while ($reg = $rspta->fetch_object()) {
 			$data[] = array(
 				"0" => ('<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
-				"1"=>"<img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio . "\")' src='files/productos/".$reg->imagen."' height='35px' width='35px' >". '<span style="font-weight: bold;">'.$reg->nombre.'</span>'.' - '.'<span class="badge bg-green">'.$reg->cantidad_contenedor.' Und.</span>'.' - '.'<span style="font-size:10px">'.$reg->contenedor.'</span>',
+				"1" => "<img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio . "\")' src='files/productos/" . $reg->imagen . "' height='35px' width='35px' >" . '<span style="font-weight: bold;">' . $reg->nombre . '</span>' . ' - ' . '<span class="badge bg-green">' . $reg->cantidad_contenedor . ' Und.</span>' . ' - ' . '<span style="font-size:10px">' . $reg->contenedor . '</span>',
 				//"2" => $reg->categoria,
 				//"2" => $reg->codigo,
 				"2" => floor($reg->stock / $reg->cantidad_contenedor),
-				"3" => '<span class="badge bg-info">'.'S/ ' . $reg->precio . '</span>',
+				"3" => '<span class="badge bg-info">' . 'S/ ' . $reg->precio . '</span>',
 			);
 		}
 		$results = array(
@@ -1504,41 +1579,41 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarArticulosSearch':
-	$fechaActual = date('Y-m-d');
-	$idsucursal = isset($_REQUEST["idsucursal"]) ? $_REQUEST["idsucursal"] : "";
-	$search = isset($_REQUEST["search"]) ? $_REQUEST["search"] : "";
-	$type = isset($_REQUEST["type"]) ? $_REQUEST["type"] : "";
-	require_once "../modelos/Producto.php";
-	$producto = new Producto();
-	$rspta = $producto->listarArticulosSearch($idsucursal, $search, $type);
-	$data = array();
+		$fechaActual = date('Y-m-d');
+		$idsucursal = isset($_REQUEST["idsucursal"]) ? $_REQUEST["idsucursal"] : "";
+		$search = isset($_REQUEST["search"]) ? $_REQUEST["search"] : "";
+		$type = isset($_REQUEST["type"]) ? $_REQUEST["type"] : "";
+		require_once "../modelos/Producto.php";
+		$producto = new Producto();
+		$rspta = $producto->listarArticulosSearch($idsucursal, $search, $type);
+		$data = array();
 
-	while ($reg = $rspta->fetch_object()) {
-		$data[] = array(
-			'id' => $reg->id,
-			'idproducto' => $reg->idproducto,
-			'nombre' => $reg->nombre,
-			'precio_venta' => $reg->precio_venta,
-			'preciocigv' => $reg->preciocigv,
-			'precioB' => $reg->precioB,
-			'precioC' => $reg->precioC,
-			'precioD' => $reg->precioD ,
-			'stock1' => $reg->stock,
-			'stock_num' => $reg->stock,
-			'proigv' => $reg->proigv,
-			'cantidad_contenedor' => $reg->cantidad_contenedor,
-			'contenedor' => $reg->contenedor,
-			'idcategoria' => $reg->idcategoria,
-			'unidadmedida' =>$reg->unidadmedida,
-			"stock" => (($reg->stock == 0) 
-				? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>' 
-				: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ',\''.$reg->unidadmedida.'\')"><span class="fa fa-shopping-cart"></span></a>'),
-			
-			"product"=>"
+		while ($reg = $rspta->fetch_object()) {
+			$data[] = array(
+				'id' => $reg->id,
+				'idproducto' => $reg->idproducto,
+				'nombre' => $reg->nombre,
+				'precio_venta' => $reg->precio_venta,
+				'preciocigv' => $reg->preciocigv,
+				'precioB' => $reg->precioB,
+				'precioC' => $reg->precioC,
+				'precioD' => $reg->precioD,
+				'stock1' => $reg->stock,
+				'stock_num' => $reg->stock,
+				'proigv' => $reg->proigv,
+				'cantidad_contenedor' => $reg->cantidad_contenedor,
+				'contenedor' => $reg->contenedor,
+				'idcategoria' => $reg->idcategoria,
+				'unidadmedida' => $reg->unidadmedida,
+				"stock" => (($reg->stock == 0)
+					? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
+					: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ',\'' . $reg->unidadmedida . '\')"><span class="fa fa-shopping-cart"></span></a>'),
+
+				"product" => "
 				<div style='display: flex; align-items: center; gap: 6px;'>
 				    <!-- Imagen -->
 				    <img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->fabricante . "\",\"" . $reg->descripcion . "\")' 
-				         src='files/productos/".$reg->imagen."' 
+				         src='files/productos/" . $reg->imagen . "' 
 				         height='35px' width='35px' 
 				         style='border-radius: 6px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);'>
 
@@ -1563,101 +1638,101 @@ switch ($_GET["op"]) {
 				    </div>
 			    </div>",
 
-			"code" => $reg->codigo_extra,
-			"cat" => $reg->categoria,
-			"quantity" => number_format(($reg->stock / $reg->cantidad_contenedor), 2, '.', ''),
-			"price" => '<span class="badge bg-info">'.'S/ ' . $reg->precio_venta . '</span>',
-		);
-	}
+				"code" => $reg->codigo_extra,
+				"cat" => $reg->categoria,
+				"quantity" => number_format(($reg->stock / $reg->cantidad_contenedor), 2, '.', ''),
+				"price" => '<span class="badge bg-info">' . 'S/ ' . $reg->precio_venta . '</span>',
+			);
+		}
 
-	echo json_encode($data);
-	break;
+		echo json_encode($data);
+		break;
 
 	case 'listarArticulosSearchFIFO':
-	    require_once "../modelos/Producto.php";
-	    $producto = new Producto();
-	    $idsucursal = $_GET['idsucursal'] ?? '';
-	    $search     = $_GET['search'] ?? '';
-	    $type       = $_GET['type'] ?? 1;
-	    
-	    $rspta = $producto->listarActivosVentaFIFO($idsucursal, $search, $type);
-	    $data = [];
-	    
-	    while ($reg = $rspta->fetch_object()) {
-	        // ← Validar que haya stock
-	        $stockLoteFifo = floatval($reg->stock_lote_fifo);
-	        
-	        // ← Si no hay lote FIFO activo, saltar este contenedor
-	        if ($stockLoteFifo <= 0) {
-	            $btnStock = '<a class="btn btn-danger btn-sm" onclick="nostock()">
+		require_once "../modelos/Producto.php";
+		$producto = new Producto();
+		$idsucursal = $_GET['idsucursal'] ?? '';
+		$search = $_GET['search'] ?? '';
+		$type = $_GET['type'] ?? 1;
+
+		$rspta = $producto->listarActivosVentaFIFO($idsucursal, $search, $type);
+		$data = [];
+
+		while ($reg = $rspta->fetch_object()) {
+			// ← Validar que haya stock
+			$stockLoteFifo = floatval($reg->stock_lote_fifo);
+
+			// ← Si no hay lote FIFO activo, saltar este contenedor
+			if ($stockLoteFifo <= 0) {
+				$btnStock = '<a class="btn btn-danger btn-sm" onclick="nostock()">
 	                            <span class="fa fa-shopping-cart"></span>
 	                         </a>';
-	        } else {
-	            $btnStock = '<a class="btn btn-success btn-sm"
+			} else {
+				$btnStock = '<a class="btn btn-success btn-sm"
 	                onclick="agregarDetalle(
-	                    '.$reg->id_producto_config.',
-	                    '.$reg->id_producto_real.',
-	                    \''.addslashes($reg->nombre).'\',
+	                    ' . $reg->id_producto_config . ',
+	                    ' . $reg->id_producto_real . ',
+	                    \'' . addslashes($reg->nombre) . '\',
 	                    1,
 	                    0,
-	                    '.$reg->precio_venta_fifo.',
+	                    ' . $reg->precio_venta_fifo . ',
 	                    0, 0, 0, 0,
-	                    '.$stockLoteFifo.',
-	                    \''.$reg->proigv.'\',
-	                    '.$reg->cantidad_contenedor.',
-	                    \''.addslashes($reg->contenedor).'\',
-	                    '.$reg->idcategoria.',
-	                    \''.addslashes($reg->unidadmedida).'\',
-	                    '.$reg->id_fifo.'
+	                    ' . $stockLoteFifo . ',
+	                    \'' . $reg->proigv . '\',
+	                    ' . $reg->cantidad_contenedor . ',
+	                    \'' . addslashes($reg->contenedor) . '\',
+	                    ' . $reg->idcategoria . ',
+	                    \'' . addslashes($reg->unidadmedida) . '\',
+	                    ' . $reg->id_fifo . '
 	                )">
 	                <span class="fa fa-shopping-cart"></span>
 	            </a>';
-	        }
-	        
-	        // ← Calcular cantidad disponible en contenedores
-	        $cantidadContenedor = max(1, floatval($reg->cantidad_contenedor));
-	        $cantidadDisponible = floor($stockLoteFifo / $cantidadContenedor);
-	        
-	        $data[] = [
-	            "stock" => $btnStock,
-	            "product" => "
+			}
+
+			// ← Calcular cantidad disponible en contenedores
+			$cantidadContenedor = max(1, floatval($reg->cantidad_contenedor));
+			$cantidadDisponible = floor($stockLoteFifo / $cantidadContenedor);
+
+			$data[] = [
+				"stock" => $btnStock,
+				"product" => "
 	            <div style='display:flex; align-items:center; gap:6px;'>
-	                <img src='files/productos/".$reg->imagen."'
+	                <img src='files/productos/" . $reg->imagen . "'
 	                     height='35' width='35'
 	                     style='border-radius: 6px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);'
 	                     onclick='verimagen(
-	                        ".$reg->id_producto_real.",
-	                        \"".$reg->imagen."\",
-	                        \"".addslashes($reg->nombre)."\",
-	                        \"".$stockLoteFifo."\",
-	                        \"".$reg->precio_venta_fifo."\"
+	                        " . $reg->id_producto_real . ",
+	                        \"" . $reg->imagen . "\",
+	                        \"" . addslashes($reg->nombre) . "\",
+	                        \"" . $stockLoteFifo . "\",
+	                        \"" . $reg->precio_venta_fifo . "\"
 	                     )'>
 	                <div style='min-width:250px; line-height:1.3;'>
 	                    <span style='font-weight:bold; font-size:12px; display:block;'>
-	                        ".wordwrap($reg->nombre, 30, "<br>", true)."
+	                        " . wordwrap($reg->nombre, 30, "<br>", true) . "
 	                    </span>
 	                    <span style='font-size:10px; background:#28a745; color:#fff;
 	                          padding:2px 6px; border-radius:6px; display:inline-block; margin:2px 0;'>
-	                        ".$reg->cantidad_contenedor." Und.
+	                        " . $reg->cantidad_contenedor . " Und.
 	                    </span>
 	                    <span style='font-size:11px; color:#0056b3; font-weight:bold;'>
-	                        ".$reg->unidadmedida."
+	                        " . $reg->unidadmedida . "
 	                        <span style='color:#d9534f;'> x </span>
-	                        ".addslashes($reg->contenedor)."
+	                        " . addslashes($reg->contenedor) . "
 	                    </span>
 	                </div>
 	            </div>",
-	            "cat"      => $reg->categoria,
-	            "code"     => $reg->codigo,
-	            "quantity" => number_format($cantidadDisponible, 0),
-	            "price"    => '<span class="badge bg-info">S/ '
-	                            .number_format($reg->precio_venta_fifo, 2).
-	                          '</span>'
-	        ];
-	    }
-	    
-	    echo json_encode($data);
-	break;
+				"cat" => $reg->categoria,
+				"code" => $reg->codigo,
+				"quantity" => number_format($cantidadDisponible, 0),
+				"price" => '<span class="badge bg-info">S/ '
+					. number_format($reg->precio_venta_fifo, 2) .
+					'</span>'
+			];
+		}
+
+		echo json_encode($data);
+		break;
 
 	case 'listarArticulos':
 
@@ -1674,11 +1749,11 @@ switch ($_GET["op"]) {
 
 		while ($reg = $rspta->fetch_object()) {
 			$data[] = array(
-				"0" => (($reg->stock == 0) ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>' 
-				: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
+				"0" => (($reg->stock == 0) ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
+					: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
 				"1" => "<div style='display: flex; align-items: center; gap: 1px;'>
 				            <img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->precioB . "\",\"" . $reg->precioC . "\",\"" . $reg->precioD . "\",\"" . $reg->precioE . "\" ,\"" . $reg->margenpubl . "\",\"" . $reg->margendes . "\",\"" . $reg->margenp1 . "\",\"" . $reg->margenp2 . "\",\"" . $reg->margendist . "\",\"" . $reg->utilprecio . "\",\"" . $reg->utilprecioB . "\",\"" . $reg->utilprecioC . "\",\"" . $reg->utilprecioD . "\",\"" . $reg->utilprecioE . "\")' 
-				                 src='files/productos/".$reg->imagen."' 
+				                 src='files/productos/" . $reg->imagen . "' 
 				                 height='35px' width='35px' 
 				                 style='border-radius: 5px; cursor: pointer;'>
 
@@ -1691,13 +1766,13 @@ switch ($_GET["op"]) {
 				//"2" => $reg->categoria,
 				"2" => "<div style='min-width: 120px; text-align: left;'>" . $reg->codigo . "</div>",
 				"3" => floor($reg->stock / $reg->cantidad_contenedor),
-				"4" => '<span class="badge bg-info">'.'S/ ' . $reg->precio_venta . '</span>',
-				"5" => '<span class="badge bg-orange text-white">'.'S/ '.$reg->precioB.'</span>',
-				"6" => '<span class="badge bg-purple">'.' S/ '.$reg->precioC.'</span>',
-				"7" => '<span class="badge bg-primary">'.'S/ '.$reg->precioD.'</span>',
-				"8"=>'<span class="badge bg-orange">'.'S/ '.$reg->precioE.'</span>',
- 					//' '.'<span class="badge bg-purple">'.'PrecioII '.' S/ '.$reg->precioC.'</span>'.
- 					//' '.'<span class="badge bg-primary">'.'PrecioIII '.'S/ '.$reg->precioD.'</span>',
+				"4" => '<span class="badge bg-info">' . 'S/ ' . $reg->precio_venta . '</span>',
+				"5" => '<span class="badge bg-orange text-white">' . 'S/ ' . $reg->precioB . '</span>',
+				"6" => '<span class="badge bg-purple">' . ' S/ ' . $reg->precioC . '</span>',
+				"7" => '<span class="badge bg-primary">' . 'S/ ' . $reg->precioD . '</span>',
+				"8" => '<span class="badge bg-orange">' . 'S/ ' . $reg->precioE . '</span>',
+				//' '.'<span class="badge bg-purple">'.'PrecioII '.' S/ '.$reg->precioC.'</span>'.
+				//' '.'<span class="badge bg-primary">'.'PrecioIII '.'S/ '.$reg->precioD.'</span>',
 			);
 		}
 		$results = array(
@@ -1743,17 +1818,17 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'selectDocumentos':
-	    require_once "../modelos/Comprobantes.php";
-	    $comprobantes = new Comprobantes();
+		require_once "../modelos/Comprobantes.php";
+		$comprobantes = new Comprobantes();
 
-	    $idsucursal = isset($_POST["idsucursal2"]) ? limpiarCadena($_POST["idsucursal2"]) : "";
+		$idsucursal = isset($_POST["idsucursal2"]) ? limpiarCadena($_POST["idsucursal2"]) : "";
 
-	    $rspta = $comprobantes->selectDocumentos($idsucursal);
+		$rspta = $comprobantes->selectDocumentos($idsucursal);
 
-	    while ($reg = $rspta->fetch_object()) {
-	        echo '<option value="' . $reg->idventa . '">' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</option>';
-	    }
-	break;
+		while ($reg = $rspta->fetch_object()) {
+			echo '<option value="' . $reg->idventa . '">' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</option>';
+		}
+		break;
 
 	case 'selectMotivos':
 		require_once "../modelos/Comprobantes.php";
@@ -1793,22 +1868,22 @@ switch ($_GET["op"]) {
 
 			$data[] = array(
 				0 => $reg->id,
-                1 => $reg->idproducto,
-                2 => $reg->producto,
-                3 => $reg->cantidad,
-                4 => $reg->descuento,
-                5 => $reg->precio_venta,
-                6 => $reg->precioB,
-                7 => $reg->precioC,
-                8 => $reg->precioD,
-                9 => $reg->preciocigv,
-                10 => $reg->stock,
-                11 => $reg->proigv,
-                12 => $reg->unidadmedida,
-                13 => $reg->cantidad_contenedor,
-                14 => $reg->contenedor,
-                15 => $reg->subtotal,
-                16 => $reg->idcategoria
+				1 => $reg->idproducto,
+				2 => $reg->producto,
+				3 => $reg->cantidad,
+				4 => $reg->descuento,
+				5 => $reg->precio_venta,
+				6 => $reg->precioB,
+				7 => $reg->precioC,
+				8 => $reg->precioD,
+				9 => $reg->preciocigv,
+				10 => $reg->stock,
+				11 => $reg->proigv,
+				12 => $reg->unidadmedida,
+				13 => $reg->cantidad_contenedor,
+				14 => $reg->contenedor,
+				15 => $reg->subtotal,
+				16 => $reg->idcategoria
 			);
 		}
 
@@ -1818,131 +1893,148 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarhistorialcliente':
-	    $idcliente = $_GET['idcliente'];
-	    $fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : null;
-	    $fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : null;
-	    $ventas = $venta->listarHistorialCliente($idcliente, $fecha_inicio, $fecha_fin);
+		$idcliente = $_GET['idcliente'];
+		$fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : null;
+		$fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : null;
+		$ventas = $venta->listarHistorialCliente($idcliente, $fecha_inicio, $fecha_fin);
 
-	   // print_r($ventas);
-	    //exit();
+		// print_r($ventas);
+		//exit();
 
-	    // Verificar el resultado de la función
-	    if ($ventas === false) {
-	        echo "Error en la consulta.";
-	    } else {
-	        echo  json_encode($ventas);
-	    }
-	    break;
+		// Verificar el resultado de la función
+		if ($ventas === false) {
+			echo "Error en la consulta.";
+		} else {
+			echo json_encode($ventas);
+		}
+		break;
 
 	// Listar pisos disponibles
 
 
-// ===================== LISTAR PRODUCTOS =========================
+	// ===================== LISTAR PRODUCTOS =========================
 
 
 
-case 'selectProductoFiltro':
-    require_once "../modelos/Producto.php";
-    $producto = new Producto();
-    $rspta = $producto->selectProductosVenta();
+	case 'selectProductoFiltro':
+		require_once "../modelos/Producto.php";
+		$producto = new Producto();
+		$rspta = $producto->selectProductosVenta();
 
-    echo '<option value="Todos">Todos</option>';  // ← ESTA ES LA LÍNEA NECESARIA
+		echo '<option value="Todos">Todos</option>';  // ← ESTA ES LA LÍNEA NECESARIA
 
-    while ($reg = $rspta->fetch_object()) {
-        echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
-    }
-break;
+		while ($reg = $rspta->fetch_object()) {
+			echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
+		}
+		break;
 
-case 'exportar_excel':
-    $venta = new Venta();
+	case 'exportar_excel':
+		$venta = new Venta();
 
-    $fecha_inicio = $_GET["fecha_inicio"];
-    $fecha_fin = $_GET["fecha_fin"];
-    $estado = $_GET["estado"];
-    $idsucursal = $_GET["idsucursal"];
-    $idproducto = $_GET["idproducto"];
+		$fecha_inicio = $_GET["fecha_inicio"];
+		$fecha_fin = $_GET["fecha_fin"];
+		$estado = $_GET["estado"];
+		$idsucursal = $_GET["idsucursal"];
+		$idproducto = $_GET["idproducto"];
 
-    $venta->exportarExcel($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto);
-break;
+		$venta->exportarExcel($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto);
+		break;
 
-case 'cambiar_comprobante':
-    $idventa = $_POST['idventa'];
-    $idsucursal = $_POST['idsucursal'];
-    $tipo = $_POST['tipo']; // Boleta o Factura
-    $rspta = $venta->cambiarComprobante($idventa, $tipo, $idsucursal);
-    echo $rspta;
-break;
+	case 'cambiar_comprobante':
+		$idventa = $_POST['idventa'];
+		$idsucursal = $_POST['idsucursal'];
+		$tipo = $_POST['tipo']; // Boleta o Factura
+		$rspta = $venta->cambiarComprobante($idventa, $tipo, $idsucursal);
+		echo $rspta;
+		break;
 
-case 'selectClienteRUC':
+	case 'selectClienteRUC':
 
-    $sql = "SELECT idpersona, nombre, num_documento 
+		$sql = "SELECT idpersona, nombre, num_documento 
             FROM persona 
             WHERE tipo_documento='RUC'";
 
-    $rspta = ejecutarConsulta($sql);
+		$rspta = ejecutarConsulta($sql);
 
-    while ($reg = $rspta->fetch_object()) {
-        echo '<option value="'.$reg->idpersona.'">'.$reg->nombre.' - '.$reg->num_documento.'</option>';
-    }
-break;
+		while ($reg = $rspta->fetch_object()) {
+			echo '<option value="' . $reg->idpersona . '">' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
+		}
+		break;
 
-case 'actualizarClienteVentaFactura':
+	case 'actualizarClienteVentaFactura':
 
-    $idventa = $_POST["idventa"];
-    $idcliente = $_POST["idcliente"];
+		$idventa = $_POST["idventa"];
+		$idcliente = $_POST["idcliente"];
 
-    $sql = "UPDATE venta SET idcliente='$idcliente' WHERE idventa='$idventa'";
-    echo ejecutarConsulta($sql);
-break;
+		$sql = "UPDATE venta SET idcliente='$idcliente' WHERE idventa='$idventa'";
+		echo ejecutarConsulta($sql);
+		break;
 
-case 'selectProductoFiltro':
-    require_once "../modelos/Producto.php";
-    $producto = new Producto();
-    $rspta = $producto->selectProductosVenta();
+	case 'selectProductoFiltro':
+		require_once "../modelos/Producto.php";
+		$producto = new Producto();
+		$rspta = $producto->selectProductosVenta();
 
-    echo '<option value="Todos">Todos</option>';  // ← ESTA ES LA LÍNEA NECESARIA
+		echo '<option value="Todos">Todos</option>';  // ← ESTA ES LA LÍNEA NECESARIA
 
-    while ($reg = $rspta->fetch_object()) {
-        echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
-    }
-break;
+		while ($reg = $rspta->fetch_object()) {
+			echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
+		}
+		break;
 
-case 'listarProductosCliente':
-    $idcliente = isset($_POST["idcliente"]) ? $_POST["idcliente"] : "";
-    // 1. RECIBIMOS LA SUCURSAL
-    $idsucursal = isset($_POST["idsucursal"]) ? $_POST["idsucursal"] : ""; 
-    
-    $ids_carrito = isset($_POST["ids_carrito"]) ? $_POST["ids_carrito"] : [];
-    $ids_carrito = array_map('intval', $ids_carrito);
+	case 'listarProductosCliente':
+		$idcliente = isset($_POST["idcliente"]) ? $_POST["idcliente"] : "";
+		// 1. RECIBIMOS LA SUCURSAL
+		$idsucursal = isset($_POST["idsucursal"]) ? $_POST["idsucursal"] : "";
 
-    if($idcliente == "") {
-        echo json_encode([]);
-        break;
-    }
+		$ids_carrito = isset($_POST["ids_carrito"]) ? $_POST["ids_carrito"] : [];
+		$ids_carrito = array_map('intval', $ids_carrito);
 
-    // 2. PASAMOS LA SUCURSAL COMO SEGUNDO PARÁMETRO
-    $rspta = $venta->listarUltimosProductosCliente($idcliente, $idsucursal, $ids_carrito);
-    
-    $data = array();
+		if ($idcliente == "") {
+			echo json_encode([]);
+			break;
+		}
 
-    while ($reg = $rspta->fetch_object()) {
-        // ... (Tu código del while sigue igual) ...
-        $id_db = intval($reg->id_real);
-        $coincide = in_array($id_db, $ids_carrito);
-        $fecha_visual = str_replace(' ', '<br><small class="text-muted">', $reg->fecha) . ' HORAS</small>';
+		// 2. PASAMOS LA SUCURSAL COMO SEGUNDO PARÁMETRO
+		$rspta = $venta->listarUltimosProductosCliente($idcliente, $idsucursal, $ids_carrito);
 
-        $data[] = array(
-            "fecha" => $fecha_visual,
-            "producto" => $reg->nombre_producto,
-            "cantidad" => number_format($reg->cantidad, 0) . ' <small class="text-muted">' . $reg->contenedor . '</small>',
-            "precio" => 'S/ ' . number_format($reg->precio_venta, 2),
-            "descuento" => $reg->descuento > 0 ? number_format($reg->descuento, 2) : '-',
-            "subtotal" => 'S/ ' . number_format($reg->subtotal, 2),
-            "comprobante" => $reg->tipo_comprobante . ' ' . $reg->serie_comprobante . '-' . $reg->num_comprobante,
-            "coincide" => $coincide
-        );
-    }
-    echo json_encode($data);
-break;
+		$data = array();
 
+		while ($reg = $rspta->fetch_object()) {
+			// ... (Tu código del while sigue igual) ...
+			$id_db = intval($reg->id_real);
+			$coincide = in_array($id_db, $ids_carrito);
+			$fecha_visual = str_replace(' ', '<br><small class="text-muted">', $reg->fecha) . ' HORAS</small>';
+
+			$data[] = array(
+				"fecha" => $fecha_visual,
+				"producto" => $reg->nombre_producto,
+				"cantidad" => number_format($reg->cantidad, 0) . ' <small class="text-muted">' . $reg->contenedor . '</small>',
+				"precio" => 'S/ ' . number_format($reg->precio_venta, 2),
+				"descuento" => $reg->descuento > 0 ? number_format($reg->descuento, 2) : '-',
+				"subtotal" => 'S/ ' . number_format($reg->subtotal, 2),
+				"comprobante" => $reg->tipo_comprobante . ' ' . $reg->serie_comprobante . '-' . $reg->num_comprobante,
+				"coincide" => $coincide
+			);
+		}
+		echo json_encode($data);
+		break;
+
+	case "buscarGarante":
+
+		$search = $_GET["search"] ?? '';
+
+		$rspta = $venta->buscarGarante($search);
+
+		$data = [];
+
+		while ($reg = $rspta->fetch_object()) {
+			$data[] = [
+				"id" => $reg->idpersona,
+				"text" => $reg->nombre
+			];
+		}
+
+		echo json_encode($data);
+		break;
 }

@@ -36,7 +36,7 @@
                                                 </span>
                                             </div>
                                             <input type="date" class="form-control" name="fecha_inicio"
-                                                id="fecha_inicio" value="<?php echo date("Y-m-d"); ?>">
+                                                id="fecha_inicio" value="<?php echo date('Y-m-01'); ?>">
                                         </div>
                                     </div>
 
@@ -63,23 +63,11 @@
                                                     <i class="fas fa-store-alt"></i>
                                                 </span>
                                             </div>
-                                            <select id="idsucursal2" name="idsucursal2" class="form-control select2">
+                                            <select id="idsucursal" name="idsucursal" class="form-control select2">
                                             </select>
                                         </div>
                                     </div>
-                                    <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
-                                        <label>Producto:</label>
-                                        <div class="input-group">
-                                            <div class="input-group-prepend">
-                                                <span class="input-group-text">
-                                                    <i class="fas fa-box"></i>
-                                                </span>
-                                            </div>
-                                            <select id="idproducto" name="idproducto" class="form-control select2">
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
+                                    <!--div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                         <label>Estado:</label>
 
                                         <div class="input-group">
@@ -91,7 +79,7 @@
                                                 <option value="Rechazado">Rechazado</option>
                                             </select>
                                         </div>
-                                    </div>
+                                    </div-->
 
                                 </div>
 
@@ -177,27 +165,27 @@
 
                             <div class="col-md-3 mb-4" id="btnDescargarContrato">
                                 <div class="pdf-card">
-                                    <input type="hidden" id="idcontrato"/>
+                                    <input type="hidden" id="idventa" />
                                     <i class="fa fa-file-pdf pdf-icon"></i>
                                     <p>Contrato</p>
                                 </div>
                             </div>
 
-                            <div class="col-md-3 mb-4">
+                            <div class="col-md-3 mb-4" id="btnDescargarActaEntrega">
                                 <div class="pdf-card">
                                     <i class="fa fa-file-pdf pdf-icon"></i>
                                     <p>Acta de entrega</p>
                                 </div>
                             </div>
 
-                            <div class="col-md-3 mb-4">
+                            <div class="col-md-3 mb-4" id="btnDescargarOrdenRecojo">
                                 <div class="pdf-card">
                                     <i class="fa fa-file-pdf pdf-icon"></i>
                                     <p>Orden de recojo</p>
                                 </div>
                             </div>
 
-                            <div class="col-md-3 mb-4">
+                            <div class="col-md-3 mb-4" id="btnDescargarCronogramaPagos">
                                 <div class="pdf-card">
                                     <i class="fa fa-file-pdf pdf-icon"></i>
                                     <p>Cronograma de pagos</p>
