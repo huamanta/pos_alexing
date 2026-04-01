@@ -209,6 +209,36 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="modal-retener-contrato" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Retener Contrato</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form id="form-retener-contrato" action="">
+                    <div class="modal-body">
+                        <div class="alert alert-warning" role="alert">
+                            <strong>Advertencia:</strong> Retener un contrato significa que no se podrá realizar ninguna acción adicional sobre él, como imprimir o descargar documentos relacionados. Asegúrese de que esta es la acción correcta antes de proceder.
+                        </div>
+                        <input type="hidden" id="idventa_retenida" name="idventa" />
+                        <div class="form-group">
+                            <label for="motivoRetencion">Motivo de la retención:</label>
+                            <textarea class="form-control" id="motivoRetencion" name="motivo" rows="3" placeholder="Ingrese el motivo por el cual se retiene este contrato..."></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger" id="confirmarRetencion">Sí, Retener</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

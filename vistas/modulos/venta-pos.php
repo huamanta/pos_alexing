@@ -67,7 +67,6 @@
     #formularioregistros.pos-form-shell #datosgenerales,
     #formularioregistros.pos-form-shell #datosgenerales2 {
         background: #ffffff;
-        border: 1px solid #e4edf7;
         border-radius: 12px;
     }
 
@@ -701,19 +700,25 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                         </div>
 
                                                         <!-- Botón para desplegar datos -->
-                                                        <div class="card-header bg-light py-2 d-flex gap-2">
+                                                        <div class="card-header bg-light py-2 d-flex justify-content-end gap-2">
+                                                        <div class="ms-auto d-flex gap-2">
                                                             <button type="button"
                                                                 class="btn btn-sm btn-primary shadow-sm"
                                                                 onclick="toggleCard()"
                                                                 title="Completa los datos de tu pedido">
-                                                                <i class="fas fa-info-circle"></i> Datos cliente <i class="fas fa-chevron-down" id="chevron-down"></i><i class="fas fa-chevron-up" id="chevron-up" style="display:none;"></i>
+                                                                <i class="fas fa-info-circle"></i> Datos cliente 
+                                                                <i class="fas fa-chevron-down" id="chevron-down"></i>
+                                                                <i class="fas fa-chevron-up" id="chevron-up" style="display:none;"></i>
                                                             </button>
 
-                                                            <button type="button" class="btn btn-outline-info btn-sm"
-                                                                    data-toggle="modal" data-target="#modalAcompananteGarante">
+                                                            <button type="button" 
+                                                                class="btn btn-outline-info btn-sm"
+                                                                data-toggle="modal" 
+                                                                data-target="#modalAcompananteGarante">
                                                                 <i class="fas fa-user-friends"></i> Datos adicionales
                                                             </button>
                                                         </div>
+                                                    </div>
 
                                                         <!-- Cuerpo del formulario (oculto inicialmente) -->
                                                         <div class="card-body" id="datosgenerales" hidden>

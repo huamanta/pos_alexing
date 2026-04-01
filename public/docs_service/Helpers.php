@@ -99,4 +99,22 @@ class Helpers
 
         return "$dia de $mes del $anio";
     }
+
+
+    public function tiposDocumentacion($tipo)
+    {
+        if ($tipo == 1) {
+            return "C";
+        } elseif ($tipo == 2) {
+            return "AE";
+        } elseif ($tipo == 3) {
+            return "OR";
+        } elseif ($tipo == 4) {
+            return "CP";
+        }elseif ($tipo == 5) {
+            return "CV";
+        } else {
+            return "";
+        }
+    }
 }

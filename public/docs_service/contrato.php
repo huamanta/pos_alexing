@@ -140,7 +140,8 @@ if (!$resultActa) {
     ';
     exit;
 }
-$numeroContrato = "C" . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
+
+$numeroContrato = $helpers->tiposDocumentacion($resultActa['tipo']) . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
 
 
 ob_start();

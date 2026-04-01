@@ -115,8 +115,9 @@ $sqlVenta = "SELECT * FROM venta v
              INNER JOIN persona p ON v.idcliente = p.idpersona 
              WHERE v.idventa = $idVenta";
 $resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
-$numeroContrato = "AE" . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
 
+$numeroContrato = $helpers->tiposDocumentacion($resultActa['tipo']) . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
+    
 // Generación PDF con mPDF (server-side)
 ob_start();
 

@@ -66,16 +66,30 @@ class Contratos
         $contratos = ejecutarConsulta($query);
         $data = [];
         foreach ($contratos as $key => $value) {
+            $verifiarRetencion = $this->buscarRetencion($value['idventa']);
+            $statusRetencion = $verifiarRetencion['estado'];
+            if($statusRetencion == true){
+                $btnRetencion = '<button class="btn btn-danger btn-sm" onclick="quitarRetencion(' . $value['idventa'] . ', '.$verifiarRetencion['data']['idretencion'].')" title="Quitar retención">
+                                <i class="fa fa-unlock"></i>
+                            </button>';
+                $btnVerContrato = '<button class="btn btn-info btn-sm" title="Ver documentación del contrato" disabled><i class="fa fa-copy"></i></button>';
+            }else{
+                $btnRetencion = '<button class="btn btn-primary btn-sm" onclick="retenerContrato(' . $value['idventa'] . ')" title="Retener">
+                                <i class="fa fa-lock"></i>
+                            </button>';
+
+                $btnVerContrato = '<button class="btn btn-info btn-sm" onclick="verContrato(' . $value['idventa'] . ')" title="Ver documentación del contrato"><i class="fa fa-copy"></i></button>';
+            }
             $data[] = [
                 "0" => $value['fecha_contrato'],
                 "1" => $value['num_documento'],
                 "2" => $value['nombre'],
-                "3" => $value['tipo'] == 1?"C":$value['tipo'] . str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT),
+                "3" => $this->tiposDocumentacion($value['tipo']) . ($value['tipo'] == 1 ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT) : ''),
                 "4" => $value['estado'] == 1 ? '<span class="badge badge-success">Vigente</span>' : '<span class="badge badge-danger">Finalizado</span>',
                 "5" => $value['formapago'],
                 "6" => number_format($value['total_venta'], 2, '.', ','),
-                "7" => '<button class="btn btn-info btn-sm" onclick="verContrato(' . $value['idventa'] . ')" title="Ver documentación del contrato"><i class="fa fa-copy"></i></button>
-                        <button class="btn btn-primary btn-sm" onclick="descargarContrato(' . $value['idventa'] . ')" title="Descargar contrato"><i class="fa fa-lock"></i></button>
+                "7" => $btnVerContrato . '
+                        '. $btnRetencion .'
                         <button class="btn btn-secondary btn-sm" onclick="imprimirContrato(' . $value['idventa'] . ')" title="Imprimir contrato"><i class="fa fa-trash"></i></button>',
             ];
         }
@@ -87,5 +101,72 @@ class Contratos
             "aaData" => $data
         ];
         return json_encode($results);
+    }
+
+    public function tiposDocumentacion($tipo)
+    {
+        if ($tipo == 1) {
+            return "C";
+        } elseif ($tipo == 2) {
+            return "AE";
+        } elseif ($tipo == 3) {
+            return "OR";
+        } elseif ($tipo == 4) {
+            return "CP";
+        }elseif ($tipo == 5) {
+            return "CV";
+        } else {
+            return "";
+        }
+    }
+
+    public function buscarRetencion($idventa)
+    {
+        $idventa = intval($idventa);
+
+        $sql = "SELECT * FROM retenciones 
+                WHERE idventa = $idventa 
+                AND estado = 1
+                ORDER BY fecha DESC 
+                LIMIT 1";
+
+        $data = ejecutarConsultaSimpleFila($sql);
+
+        $retenido = ($data && $data['estado'] == 1);
+
+        if ($retenido) {
+            return array(
+                "estado" => true,
+                "data" => $data
+            );
+        }
+
+        return array(
+            "estado" => false,
+            "data" => null
+        );
+    }
+
+    public function retenerContrato($idventa, $motivo)
+    {
+        $fecha_retenido = date('Y-m-d H:i:s');
+        $sql = "INSERT INTO retenciones (idventa, motivo, fecha) VALUES ('$idventa', '$motivo', '$fecha_retenido')";
+        $result = ejecutarConsulta($sql);
+        if ($result) {
+            return ["status" => true, "message" => "Contrato retenido exitosamente."];
+        } else {
+            return ["status" => false, "message" => "Error al retener el contrato."];
+        }
+    }
+
+    public function quitarRetencion($idventa, $idretencion)
+    {
+        $sql = "UPDATE retenciones SET estado = 0 WHERE idretencion = '$idretencion' AND idventa = '$idventa'";
+        $result = ejecutarConsulta($sql);
+        if ($result) {
+            return ["status" => true, "message" => "Retención quitada exitosamente."];
+        } else {
+            return ["status" => false, "message" => "Error al quitar la retención."];
+        }
     }
 }

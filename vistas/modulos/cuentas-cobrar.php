@@ -152,6 +152,11 @@ date_default_timezone_set('America/Lima');
     overflow-y: visible !important;
 }
 
+.fila-retenida {
+    background-color: #ffe5e5 !important; /* rojo suave */
+    color: #a77170;
+}
+
 </style>
 
 <div class="content-wrapper">

@@ -1,9 +1,11 @@
 <?php 
 require_once "../modelos/CuentasCobrar.php";
 require_once "../modelos/Negocio.php";
+require_once "../modelos/Contratos.php";
 
 $cuentascobrar=new CuentasCobrar();
 $negocio = new Negocio();
+$contratos = new Contratos();
 
 // Obtener nombre del negocio
 $infoNegocio   = $negocio->mostrarNombreNegocio();
@@ -102,8 +104,21 @@ $op = $_GET["op"] ?? '';
 		        $btnRecordatorio = '<button class="btn btn-info btn-sm" onclick="enviarRecordatorioManual(' . $reg->idcpc . ')">
                         <i class="fas fa-paper-plane"></i>
                     </button>';
+				
+				$retencion = $contratos->buscarRetencion($reg->idventa);
+				$statusRetencion = $retencion['estado'];
+				$btnAbonos = '';
+				if($statusRetencion != true){
+					$btnAbonos = '<a class="dropdown-item" style="cursor:pointer;"
+				                   onclick="mostrar('.$reg->idcpc.')">
+				                   Crear abonos
+				                </a>';
+				}
 
-		        $data[] = array(
+		        $claseFila = $statusRetencion ? 'fila-retenida' : '';
+
+				$data[] = array(
+					"DT_RowClass" => $claseFila,
 		            "0"  => $reg->fecharegistro,
 		            "1"  => $reg->tipo_comprobante . '-' . $reg->serie_comprobante . '-' . $reg->num_comprobante,
 		            "2"  => $reg->nombre,
@@ -137,10 +152,7 @@ $op = $_GET["op"] ?? '';
 				                <i class="fa fa-list-ul"></i><span class="caret"></span>
 				            </button>
 				            <div class="dropdown-menu">
-				                <a class="dropdown-item" style="cursor:pointer;"
-				                   onclick="mostrar('.$reg->idcpc.')">
-				                   Crear abonos
-				                </a>
+				                '.$btnAbonos.'
 				                <a class="dropdown-item" style="cursor:pointer;"
 				                   onclick="mostrarAbonos('.$reg->idcpc.')">
 				                   Ver abonos

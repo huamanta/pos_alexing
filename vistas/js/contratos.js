@@ -175,3 +175,70 @@ $(document).ready(function () {
         descargarCronogramaPagos(idventa);
     });
 });
+
+
+function retenerContrato(idventa) {
+    $("#modal-retener-contrato").modal("show");
+    $("#idventa_retenida").val(idventa);  
+}
+
+$("#form-retener-contrato").on("submit", function (e) {
+    e.preventDefault();
+    var formData = new FormData(this);  
+    $.ajax({
+        url: "controladores/contratos.php?op=retener",
+        type: "POST",   
+        data: formData,
+        contentType: false,
+        processData: false, 
+        success: function (response) {
+            var res = JSON.parse(response);
+            if (res.status) {
+                Swal.fire("¡Contrato retenido!", res.message, "success");
+                $("#modal-retener-contrato").modal("hide");
+                recargarTabla();
+            } else {
+                Swal.fire("Error", res.message, "error");
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("Error en la solicitud AJAX:", error);
+            Swal.fire("Error", "Ocurrió un error al procesar la solicitud.", "error");
+        },
+    });
+});
+
+
+function quitarRetencion(idventa, idretencion) {
+    Swal.fire({
+        title: "¿Estás seguro?", 
+        text: "Esta acción quitará la retención del contrato.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Sí, quitar retención",
+        cancelButtonText: "Cancelar",
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: "controladores/contratos.php?op=quitar_retencion",
+                type: "POST",
+                data: { idventa: idventa, idretencion: idretencion },
+                success: function (response) {
+                    var res = JSON.parse(response);
+                    if (res.status) {
+                        Swal.fire("¡Retención quitada!", res.message, "success");
+                        recargarTabla();
+                    } else {
+                        Swal.fire("Error", res.message, "error");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error en la solicitud AJAX:", error);
+                    Swal.fire("Error", "Ocurrió un error al procesar la solicitud.", "error");
+                }
+            });
+        }
+    });
+}

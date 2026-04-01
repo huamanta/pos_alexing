@@ -1,10 +1,10 @@
 <?php
+require_once "../modelos/Contratos.php";
+$contratos = new Contratos();
 $op = $_GET['op'] ?? '';
 
 switch ($op) {
     case 'listar':
-        require_once "../modelos/Contratos.php";
-        $contratos = new Contratos();
         $fecha_inicio = $_GET['fecha_inicio'] ?? '';
         $fecha_fin = $_GET['fecha_fin'] ?? '';
         $estado = $_GET['estado'] ?? '';
@@ -12,5 +12,19 @@ switch ($op) {
 
         $datos = $contratos->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal);
         echo $datos;
+        break;
+
+    case 'retener':
+        $idventa = $_POST['idventa'] ?? '';
+        $motivo = $_POST['motivo'] ?? '';
+        $resultado = $contratos->retenerContrato($idventa, $motivo);
+        echo json_encode($resultado);
+        break;
+
+    case 'quitar_retencion':
+        $idventa = $_POST['idventa'] ?? '';
+        $idretencion = $_POST['idretencion'] ?? '';
+        $resultado = $contratos->quitarRetencion($idventa, $idretencion);
+        echo json_encode($resultado);
         break;
 }
