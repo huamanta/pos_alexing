@@ -62,168 +62,192 @@ $frecuenciaTexto = $dataFrecuencia->texto;
 
 ob_start();
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <title>Contrato</title>
-
     <style>
         body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-family: "Times New Roman", serif;
+            font-size: 11px;
             margin: 40px;
-        }
-
-        h2,
-        h3 {
-            text-align: center;
-            margin: 5px;
-        }
-
-        p {
-            text-align: justify;
-            line-height: 1.5;
+            line-height: 1.4;
+            color: #000;
         }
 
         .header {
             text-align: center;
         }
 
-        .section-title {
+        .empresa {
+            color: #5b8db8;
             font-weight: bold;
-            margin-top: 15px;
+            font-size: 16px;
+        }
+
+        .subempresa {
+            color: #7a7a7a;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .ruc {
+            color: #7a7a7a;
+            font-size: 13px;
+        }
+
+        .linea {
+            border-top: 1px solid #999;
+            margin: 10px 0;
+        }
+
+        .titulo {
+            font-weight: bold;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .numero {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 13px;
+        }
+
+        p {
+            text-align: justify;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        .clausula {
+            font-weight: bold;
+            text-decoration: underline;
         }
 
         .firma {
-            margin-top: 50px;
+            margin-top: 60px;
             width: 100%;
         }
 
         .firma div {
-            width: 30%;
+            width: 45%;
             display: inline-block;
             text-align: center;
-        }
-
-        @media print {
-            body {
-                margin: 20px;
-            }
+            font-size: 10px;
         }
     </style>
-
 </head>
 
 <body>
 
     <div class="header">
-        <h3><?php echo $resultNegocio['nombre']; ?></h3>
-        <p><?php echo $resultSucursal['razon_social']; ?></p>
-        <p>R.U.C. <?php echo $resultSucursal['ruc']; ?></p>
-        <p>OFICINA: <?php echo $resultSucursal['nombre']; ?></p>
+        <div class="empresa"><?php echo strtoupper($resultNegocio['nombre']); ?></div>
+        <div class="subempresa">ALQUILER VENTA DE VEHÍCULOS MOTORIZADOS</div>
+        <div class="ruc">R.U.C. <?php echo $resultSucursal['ruc']; ?></div>
 
-        <h2>CONTRATO DE COMPRA VENTA A PLAZOS</h2>
-        <h3>N° <?php echo $numeroContrato; ?></h3>
+        <div class="linea"></div>
+
+        <div class="titulo">CONTRATO DE VENTA AL CONTADO DE VEHICULO MOTORIZADO</div>
+        <div class="numero">N° <?php echo $numeroContrato; ?></div>
     </div>
 
     <p>
-        Conste por el presente documento el contrato de compra-venta a plazos con reserva de propiedad que celebran de
-        una parte la empresa <b><?php echo $resultNegocio['nombre']; ?></b>, y de la otra parte el señor(a)
-        <b><?php echo $comprador; ?></b>, identificado con DNI N° <?php echo $dniComprador; ?>, con domicilio en
-        <?php echo $direccionComprador; ?>, celular <?php echo $celularComprador; ?>, con garante
-        <?php echo $garante; ?> con DNI N° <?php echo $dniGarante; ?>.
+        Conste por el presente documento, el contrato de <b>VENTA AL CONTADO</b> de vehículo <b>NUEVO</b>, que celebran
+        de
+        una parte como <b>VENDEDOR</b>, la Empresa "<b><?php echo strtoupper($resultNegocio['nombre']); ?></b>", con RUC
+        Nº <?php echo $resultSucursal['ruc']; ?>, representado
+        por su Gerente General el señor <b>JESUS ROBERTO SURCO KACASACA</b>, identificado con DNI Nº <b>43978509</b>,
+        con
+        domicilio en <b>JR. JIMENEZ PIMENTEL NRO. 886, SAN MARTIN - SAN MARTIN - TARAPOTO</b>; con facultades
+        inscrita en la partida electrónica N° 11070911 del registro de personas jurídicas de la Oficina Registral
+        Tarapoto;
+        y de la otra parte como <b>COMPRADOR</b> el(la) señor(a) <b><?php echo strtoupper($comprador); ?></b>,
+        identificado con DNI
+        Nº <b><?php echo $dniComprador; ?></b>, de estado civil soltero(a), con domicilio en
+        <b><?php echo strtoupper($direccionComprador); ?></b> y con número de celular
+        <b><?php echo $celularComprador; ?></b> en los siguientes términos:
     </p>
 
-    <p class="section-title">PRIMERA: ANTECEDENTES</p>
-    <p>El vendedor es propietario del siguiente vehículo:</p>
+    <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre']); ?>, declara ser propietario y
+        titular registral del vehículo
+        <b>MOTOCICLETA</b> con las siguientes características:
+    </p>
 
     <?php foreach ($data as $item): ?>
-        <ul>
-            <li>Marca:
-                <?php echo $item['marca'] ?? ''; ?>
-            </li>
-            <li>Clase:
-                <?php echo $item['clase'] ?? ''; ?>
-            </li>
-            <li>Combustible:
-                <?php echo $item['combustible'] ?? ''; ?>
-            </li>
-            <li>Carrocería:
-                <?php echo $item['carroceria'] ?? ''; ?>
-            </li>
-            <li>Color:
-                <?php echo $item['color'] ?? ''; ?>
-            </li>
-            <li>Motor:
-                <?php echo $item['motor'] ?? ''; ?>
-            </li>
-            <li>Serie:
-                <?php echo $item['serie'] ?? ''; ?>
-            </li>
-            <li>Año:
-                <?php echo $item['anio'] ?? ''; ?>
-            </li>
-            <li>Placa:
-                <?php echo $item['placa'] ?? ''; ?>
-            </li>
-        </ul>
+        <p>
+            marca <b><?php echo $item['marca'] ?? 'N/A'; ?></b>, modelo <b><?php echo $item['modelo'] ?? 'N/A'; ?></b>, color
+            <b><?php echo $item['color'] ?? 'N/A'; ?></b> con
+            Nº serie <b><?php echo $item['serie'] ?? 'N/A'; ?></b>, Nº de motor <b><?php echo $item['motor'] ?? 'N/A'; ?></b>, año de
+            fabricación <b><?php echo $item['anio'] ?? 'N/A'; ?></b> Nº de cilindro
+            01, N° Placa de Rodaje <b><?php echo $item['placa'] ?? 'NUEVO'; ?></b>. El mismo que es <b>NUEVO</b>.
+        </p>
     <?php endforeach; ?>
 
-    <p class="section-title">SEGUNDA: OBJETO</p>
     <p>
-        El vendedor transfiere el vehículo al comprador bajo modalidad de pago a plazos con reserva de propiedad.
+        Bien mueble que fue reconocido físicamente en su calidad de vehículo MOTOCICLETA <b>NUEVO</b> por ambas partes
+        con anterioridad.
     </p>
 
-    <p class="section-title">TERCERA: PLAZO</p>
-    <p>
-        El contrato tendrá una duración de <?php echo $meses; ?> <?php echo $frecuenciaSm; ?>.
+    <p><b class="clausula">SEGUNDO.-</b> El VENDEDOR, deja constancia que el vehículo MOTOCICLETA descrito en la cláusula primera, se
+        encuentra en perfecto estado de conservación y funcionamiento, por ser este bien mueble en calidad de NUEVO.</p>
+
+    <p><b class="clausula">TERCERO.-</b> El VENDEDOR, declara que, el vehículo MOTOCICLETA se encuentra, al momento de celebrarse
+        este contrato, libre de toda carga, gravamen, derecho real de garantía, medida judicial o extrajudicial,
+        papeletas
+        en el SAT y en general de todo acto o circunstancia que impida, prive o limite la posesión o uso del bien; por
+        tratarse de un bien mueble en calidad de NUEVO; no obstante a ellos se obliga a la evicción o saneamiento de
+        ley; asimismo el alquiler-venta se hace Ad-Corpus.</p>
+
+    <p><b class="clausula">CUARTO.-</b> El PRECIO FINAL pactado por ambas partes por la venta del vehículo MOTOCICLETA descrito en la
+        cláusula primera, es de <b>S/<?php echo number_format($total, 2); ?></b> (
+        <b><?php echo $helpers->numeroALetrasMoneda($total); ?></b> ), suma que el COMPRADOR abonará
+        al VENDEDOR en su totalidad de <b>S/<?php echo number_format($total, 2); ?></b> (
+        <b><?php echo $helpers->numeroALetrasMoneda($total); ?></b> ), importe que deberá ser
+        cancelado en moneda nacional y en efectivo; asimismo, EL VENDEDOR, se le entregará un recibo por el importe
+        pactado.
     </p>
 
-    <p class="section-title">CUARTA: PRECIO Y FORMA DE PAGO</p>
-    <p>
-        El valor total del vehículo es de S/ <?php echo $total; ?> <strong>(<?php echo $helpers->numeroALetrasMoneda($total); ?>)</strong>, con una cuota inicial de S/ <?php echo $inicial; ?>
-        y <?php echo $meses; ?> cuotas <?php echo $frecuenciaTexto; ?> de S/ <?php echo $cuota; ?>.
+    <p><b class="clausula">QUINTO.-</b> EL COMPRADOR acepta que, una vez realizada la compra, no habrá devolución del dinero bajo
+        ninguna circunstancia. El COMPRADOR entendió que la compra es definitiva y no puede ser cancelada.</p>
+
+    <p><b class="clausula">SEXTO.-</b> EL VENDEDOR, garantiza que el vehículo se encuentra en buen estado de funcionamiento sin garantías
+        ni responsabilidades. EL COMPRADOR, declara haber inspeccionado el vehículo y estar satisfecho con su estado.
     </p>
 
-    <p class="section-title">QUINTA: RESERVA DE PROPIEDAD</p>
+    <p><b class="clausula">SÉPTIMO.-</b> El presente contrato es IRREVOCABLE y no puede ser modificado sin el consentimiento por escrito
+        de ambas partes.</p>
+
+    <p><b class="clausula">OCTAVO.-</b> Cualquier disputa o controversia que surja en la relación con el presente contrato será resuelta
+        mediante instancias judiciales.</p>
+
     <p>
-        El vehículo será propiedad del vendedor hasta la cancelación total del monto.
+        <b class="clausula">NOVENO.-</b> Los contratantes declaran que existe la más justa y perfecta equivalencia entre el precio
+        pactado y el
+        valor del bien mueble, no teniendo nada que reclamarse al respecto. En fe y señal de conformidad, las partes
+        firman el presente contrato en <?php echo $resultSucursal['direccion'] ?? 'Jr. Ex Carretera Yurimaguas S/n'; ?>
+        el día <?php echo $helpers->fechaLetras($resultVenta['fecha_hora']); ?>.
     </p>
 
-    <p class="section-title">SEXTA: INCUMPLIMIENTO</p>
-    <p>
-        El incumplimiento de pagos dará lugar a la resolución del contrato.
-    </p>
-
-    <p class="section-title">SÉPTIMA: RESPONSABILIDAD</p>
-    <p>
-        El comprador asume toda responsabilidad del vehículo desde su entrega.
-    </p>
-
-    <p style="text-align:right;"><?php echo $fecha; ?></p>
+    <br><br>
 
     <div class="firma">
         <div>
-            ___________________________<br>
-            VENDEDOR
+            ________________________________________<br>
+            FIRMA Y SELLO DEL GERENTE GENERAL<br>
+            ARRENDADOR-VENDEDOR
         </div>
 
         <div>
-            ___________________________<br>
-            COMPRADOR
-        </div>
-
-        <div>
-            ___________________________<br>
-            GARANTE
+            ________________________________________<br>
+            <?php echo strtoupper($comprador); ?><br>
+            ARRENDADOR-COMPRADOR
         </div>
     </div>
-    </script>
 
 </body>
+
 <?php
 $html = ob_get_clean();
 require_once __DIR__ . '/../../reportes/factura/pdf/vendor/autoload.php';
