@@ -133,20 +133,19 @@ session_start();
 </head>
 
 <body id="body" class="sidebar-mini layout-fixed text-sm">
-
   <?php
 
   if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok" && $_GET["ruta"] != "reset" && $_GET["ruta"] != "recuperar") {
 
 
-    echo '<div class="wrapper">';
-
+    echo '<div class="wrapper">     
+                <input type="text" value="' . ($_SESSION['monto_impuesto'] ?? '') . '" id="valorImpuestoGlobal"/>';
     /*=============================================
     CABEZOTE
     =============================================*/
     if ($_GET["ruta"] != 'pos') {
     include "modulos/cabezote.php";
-    }
+    } 
 
     /*=============================================
     MENU

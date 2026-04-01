@@ -278,8 +278,13 @@ public function listarSucursalesUsuario($idusuario)
 }
 
 
-
-
+public function seleccionarSucursal($idsucursal)
+{
+    $sql = "SELECT * FROM sucursal 
+    INNER JOIN empresas ON sucursal.idempresa = empresas.idempresa
+    WHERE idsucursal='$idsucursal'";
+    return ejecutarConsultaSimpleFila($sql);
+}
 }
 
 ?>

@@ -30,7 +30,76 @@ if ($idVenta == null) {
 $sqlActa = "SELECT * FROM documentacion WHERE idventa = $idVenta AND tipo = '2'";
 $resultActa = ejecutarConsultaSimpleFila($sqlActa);
 if (!$resultActa) {
-    echo "No se encontró el acta de entrega para esta venta.";
+    echo '
+    <style>
+        .notfound-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.4);
+            z-index: 9999;
+        }
+
+        .notfound-box {
+            background: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            width: 350px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .notfound-box i {
+            font-size: 60px;
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+
+        .notfound-box h3 {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .notfound-box p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .notfound-box button {
+            margin-top: 15px;
+            padding: 8px 15px;
+            border: none;
+            background: #dc3545;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .notfound-box button:hover {
+            background: #c82333;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+
+    <div class="notfound-container">
+        <div class="notfound-box">
+            <i class="fa fa-file-circle-xmark"></i>
+            <h3>Documento no encontrado</h3>
+            <p>No se encontró el acta de entrega para esta venta.</p>
+            <button onclick="window.close()">Cerrar</button>
+        </div>
+    </div>
+    ';
     exit;
 }
 
@@ -46,7 +115,7 @@ $sqlVenta = "SELECT * FROM venta v
              INNER JOIN persona p ON v.idcliente = p.idpersona 
              WHERE v.idventa = $idVenta";
 $resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
-$numeroContrato = "AE" . str_pad($resultVenta['idventa'], 9, '0', STR_PAD_LEFT);
+$numeroContrato = "AE" . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
 
 // Generación PDF con mPDF (server-side)
 ob_start();

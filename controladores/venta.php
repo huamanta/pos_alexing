@@ -50,6 +50,8 @@ $tipo = isset($_POST["tipo"]) ? limpiarCadena($_POST["tipo"]) : "";
 
 $banco = isset($_POST["banco"]) ? limpiarCadena($_POST["banco"]) : "";
 $idgarante = isset($_POST["idgarante"]) ? limpiarCadena($_POST["idgarante"]) : "";
+$idacompanante = isset($_POST["idacompanante"]) ? limpiarCadena($_POST["idacompanante"]) : "";
+$idtipoacompanante = isset($_POST["idtipoacompanante"]) ? limpiarCadena($_POST["idtipoacompanante"]) : "";
 
 require_once "../modelos/Persona.php";
 
@@ -184,7 +186,9 @@ switch ($_GET["op"]) {
 				$_POST["check_precio"],
 				$_POST["id_detalle_compra_lote"],
 				$_POST["idcategoria"],
-				$idgarante
+				$idgarante,
+				$idacompanante,
+				$idtipoacompanante
 			);
 			echo $rspta;
 		} else {
@@ -1718,7 +1722,7 @@ switch ($_GET["op"]) {
 	                    <span style='font-size:11px; color:#0056b3; font-weight:bold;'>
 	                        " . $reg->unidadmedida . "
 	                        <span style='color:#d9534f;'> x </span>
-	                        " . addslashes($reg->contenedor) . "
+	                        " . addslashes($reg->cantidad_contenedor) . "
 	                    </span>
 	                </div>
 	            </div>",
@@ -2036,5 +2040,17 @@ switch ($_GET["op"]) {
 		}
 
 		echo json_encode($data);
+		break;
+
+	case "selectTipoAcompanante":
+		$rspta = $venta->buscarTipoAcompanante();
+		echo '<option value="">Seleccione tipo de acompañante</option>';
+		if ($rspta) {
+			while ($reg = $rspta->fetch_object()) {
+				echo '<option value="' . $reg->idtipoacompanante . '">' . $reg->nombre . '</option>';
+			}
+		} else {
+			echo json_encode(null);
+		}
 		break;
 }

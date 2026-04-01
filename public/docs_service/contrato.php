@@ -13,10 +13,12 @@ ORDER BY id_negocio ASC
 LIMIT 1";
 $resultNegocio = ejecutarConsultaSimpleFila($sqlNegocio);
 
-$sqlVenta = "SELECT v.*, p.nombre AS nombre_cliente, p.num_documento AS num_documento_cliente, p.direccion AS direccion_cliente, p.telefono AS telefono_cliente, g.nombre AS nombre_garante, g.num_documento AS num_documento_garante 
+$sqlVenta = "SELECT v.*, ta.nombre AS nombre_tipo_acompanante, a.nombre AS nombre_acompanante, p.nombre AS nombre_cliente, p.num_documento AS num_documento_cliente, p.direccion AS direccion_cliente, p.telefono AS telefono_cliente, g.nombre AS nombre_garante, g.num_documento AS num_documento_garante 
              FROM venta v 
              INNER JOIN persona p ON v.idcliente = p.idpersona 
              INNER JOIN persona g ON v.idgarante = g.idpersona 
+             INNER JOIN persona a ON v.idacompanante = a.idpersona
+             INNER JOIN tipoacompanante ta ON v.idtipoacompanante = ta.idtipoacompanante
              WHERE v.idventa = $idVenta";
 $resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
 
@@ -27,7 +29,9 @@ $celularComprador = $resultVenta['telefono_cliente'] ?? '';
 $total = $resultVenta['total_venta'] ?? '';
 $inicial = $resultVenta['totalrecibido'] ?? '';
 $meses = $resultVenta['meses'] ?? '';
-$numeroContrato = "C" . str_pad($resultVenta['idventa'], 9, '0', STR_PAD_LEFT);
+$nombreAcompanante = $resultVenta['nombre_acompanante'] ?? '';
+$nombreTipoAcompanante = $resultVenta['nombre_tipo_acompanante'] ?? '';
+
 
 $sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $resultVenta['idsucursal'];
 $resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
@@ -59,6 +63,85 @@ $cuota = "619.00";
 $dataFrecuencia = $helpers->getDataFrecuencia($resultVenta['frecuencia']);
 $frecuenciaSm = $dataFrecuencia->short;
 $frecuenciaTexto = $dataFrecuencia->texto;
+
+// buscar actaentrega
+$sqlActa = "SELECT * FROM documentacion WHERE idventa = $idVenta AND tipo = '1'";
+$resultActa = ejecutarConsultaSimpleFila($sqlActa);
+if (!$resultActa) {
+    echo '
+    <style>
+        .notfound-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.4);
+            z-index: 9999;
+        }
+
+        .notfound-box {
+            background: #fff;
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            width: 350px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .notfound-box i {
+            font-size: 60px;
+            color: #dc3545;
+            margin-bottom: 15px;
+        }
+
+        .notfound-box h3 {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .notfound-box p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .notfound-box button {
+            margin-top: 15px;
+            padding: 8px 15px;
+            border: none;
+            background: #dc3545;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .notfound-box button:hover {
+            background: #c82333;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+
+    <div class="notfound-container">
+        <div class="notfound-box">
+            <i class="fa fa-file-circle-xmark"></i>
+            <h3>Documento no encontrado</h3>
+            <p>No se encontró el acta de entrega para esta venta.</p>
+            <button onclick="window.close()">Cerrar</button>
+        </div>
+    </div>
+    ';
+    exit;
+}
+$numeroContrato = "C" . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
+
 
 ob_start();
 ?>
@@ -167,7 +250,7 @@ ob_start();
         identificado con DNI
         Nº <b><?php echo $dniComprador; ?></b>, de estado civil soltero(a), con domicilio en
         <b><?php echo strtoupper($direccionComprador); ?></b> y con número de celular
-        <b><?php echo $celularComprador; ?></b> en los siguientes términos:
+        <b><?php echo $celularComprador; ?></b>, acompañado de <b><?php echo strtoupper($nombreAcompanante); ?></b> en calidad de <b><?php echo strtoupper($nombreTipoAcompanante); ?></b> en los siguientes términos:
     </p>
 
     <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre']); ?>, declara ser propietario y

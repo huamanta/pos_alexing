@@ -4,10 +4,42 @@ var articuloAdd = "";
 var cont = 0;
 var detalles = 0;
 var modoEditar = false;
+var impuesto = 0;
+var no_aplica = 1;
+
+function actualizarResumenVenta(total, subtotal, impuestoCalculado) {
+  const totalFmt = (parseFloat(total) || 0).toFixed(2);
+  const subtotalFmt = (parseFloat(subtotal) || 0).toFixed(2);
+  const impuestoFmt = (parseFloat(impuestoCalculado) || 0).toFixed(2);
+
+  $("#total").html(totalFmt);
+  $("#total_venta").val(totalFmt);
+  $("#most_total2").val(totalFmt);
+  $("#montoDeuda").val(totalFmt);
+
+  $("#most_total, #sp-subtotal").html(subtotalFmt);
+  $("#subtotal").val(subtotalFmt);
+
+  $("#most_imp, #sp-impuesto").html(impuestoFmt);
+  $("#impuesto").val(impuestoFmt);
+}
+function actualizarFilaVaciaDetalles() {
+  var tbody = $("#detalles tbody");
+  if (!tbody.length) return;
+
+  var totalFilas = tbody.find("tr.filas").length;
+  tbody.find("tr.fila-vacia-detalles").remove();
+
+  if (totalFilas === 0) {
+    tbody.append(
+      '<tr class="fila-vacia-detalles"><td colspan="7" class="text-center text-muted">No hay productos agregados</td></tr>',
+    );
+  }
+}
 
 // Función para limpiar y reiniciar completamente el carrito
 function limpiarCarrito() {
-  $("#detalles").html("");
+  $("#detalles tbody").empty();
   articuloAdd = "";
 
   // Reconstruir articuloAdd basándose en lo que realmente está en el carrito (post-limpieza)
@@ -18,6 +50,7 @@ function limpiarCarrito() {
   contador = 0;
   cont = 0;
   detalles = 0;
+  actualizarFilaVaciaDetalles();
   evaluar();
 }
 
@@ -64,10 +97,11 @@ function init() {
     $("#idproducto").html(r);
     $("#idproducto").select2();
   });
+
   //cargamos los items al celect comprobantes
-  /*$.post("controladores/venta.php?op=selectComprobante", function (c) {
-    $("#tipo_comprobante").html(c);
-  });*/
+  $.post("controladores/venta.php?op=selectTipoAcompanante", function (c) {
+    $("#idtipoacompanante").html(c);
+  });
 
   $("#tipo_comprobante").on("change", function () {
     var tipo_comprobante = $(this).val();
@@ -150,32 +184,51 @@ function init() {
   );
 
   generarCuotas(100);
+  actualizarFilaVaciaDetalles();
 }
 
-$("#idgarante").select2({
-    placeholder: "🔍 Buscar sucursal...",
-    allowClear: true,
-    width: '100%',
-    minimumInputLength: 1,
-    ajax: {
-        url: "controladores/venta.php?op=buscarGarante",
-        dataType: 'json',
-        delay: 250,
+function initSelectAcompananteGarante() {
+  const $modal = $("#modalAcompananteGarante");
 
-        data: function (params) {
-            return {
-                search: params.term // lo que escribe el usuario
-            };
-        },
+  ["#idacompanante", "#idgarante"].forEach(function (selector) {
+    const $select = $(selector);
+    if (!$select.length) return;
 
-        processResults: function (data) {
-            return {
-                results: data
-            };
-        },
-
-        cache: true
+    if ($select.hasClass("select2-hidden-accessible")) {
+      $select.select2("destroy");
     }
+
+    $select.select2({
+      placeholder: selector === "#idacompanante" ? "Buscar acompañante..." : "Buscar garante...",
+      allowClear: true,
+      width: "100%",
+      dropdownParent: $modal,
+      minimumInputLength: 1,
+      ajax: {
+        url: "controladores/venta.php?op=buscarGarante",
+        dataType: "json",
+        delay: 250,
+        data: function (params) {
+          return {
+            search: params.term,
+          };
+        },
+        processResults: function (data) {
+          return {
+            results: data,
+          };
+        },
+        cache: true,
+      },
+    });
+  });
+}
+
+initSelectAcompananteGarante();
+
+$("#modalAcompananteGarante").on("shown.bs.modal", function () {
+  initSelectAcompananteGarante();
+  $("#idacompanante").select2("open");
 });
 
 function generarCuotas(max = 100) {
@@ -932,15 +985,7 @@ function obtenerTotalVentaReal() {
     total += subtotal;
   });
 
-  // Actualización de totales
-  total = total.toFixed(2);
-
-  $("#total").text(total);
-  $("#total_venta").val(total);
-  $("#most_total2").val(total);
-  $("#montoDeuda").val(total);
-
-  return parseFloat(total);
+  return parseFloat(total.toFixed(2));
 }
 
 // Actualizar el primer pago automáticamente
@@ -1087,14 +1132,12 @@ function limpiar() {
   $("#num_comprobante").val("");
   // $("#impuesto").val("");
   articuloAdd = "";
-  no_aplica = 16;
+  impuesto = 0;
+  no_aplica = 0;
 
   $("#total_venta").val("");
   $(".filas").remove();
-  $("#total").html("0");
-
-  $("#most_total").html("0");
-  $("#most_imp").html("0");
+  actualizarResumenVenta(0, 0, 0);
 
   //obtenemos la fecha actual
   var now = new Date();
@@ -1213,6 +1256,7 @@ function limpiarDetalle() {
       articuloAdd = "";
     }
   }
+  actualizarFilaVaciaDetalles();
 }
 
 $("#idsucursal").change(function () {
@@ -1265,6 +1309,7 @@ function eliminarProductoDeTabla(idproducto) {
       modificarSubtotales(); // Actualizar subtotales después de eliminar
     }
   });
+  actualizarFilaVaciaDetalles();
 }
 
 $("#search_product").keyup(function (e) {
@@ -2080,8 +2125,9 @@ function mostrar_impuesto() {
     type: "get",
     dataType: "json",
     success: function (i) {
-      impuesto = i;
-      $("#impuesto").val(impuesto);
+      impuesto = parseFloat(i) || 0;
+      no_aplica = impuesto;
+      calcularTotales();
     },
   });
 }
@@ -2149,7 +2195,7 @@ function cargarNumeroSerie(tipoComprobante, idsucursal) {
 
 // Nueva función marcarImpuesto usando la unificada
 function marcarImpuesto(idsucursalSeleccionada) {
-  var tipo_comprobante = $("#tipo_comprobante option:selected").text();
+  var tipo_comprobante = $("#tipo_comprobante option:selected").text().trim();
   if (!idsucursalSeleccionada) {
     idsucursalSeleccionada = $("#idsucursal").val(); // fallback
   }
@@ -2160,11 +2206,11 @@ function marcarImpuesto(idsucursalSeleccionada) {
     tipo_comprobante === "Ticket"
   ) {
     mostrar_impuesto();
-    no_aplica = impuesto;
     cargarNumeroSerie(tipo_comprobante, idsucursalSeleccionada);
   } else {
-    $("#impuesto").val("0");
-    no_aplica = 0;
+    // Evita resetear el IGV por coincidencias de texto del comprobante.
+    // Si el tipo no coincide exactamente, seguimos usando la tasa del negocio.
+    mostrar_impuesto();
     cargarNumeroSerie("Ticket", idsucursalSeleccionada);
   }
 }
@@ -2348,7 +2394,6 @@ function agregarDetalle(
   unidadmedida,
   id_detalle_compra_lote,
 ) {
-  console.log('kkkkkk');
 
   if (precio_venta == 0) {
     Swal.fire({
@@ -2371,6 +2416,7 @@ function agregarDetalle(
       },
     });
   }
+
 
   if (idcategoria != 1) {
     // no aplica a servicios
@@ -2428,7 +2474,6 @@ function agregarDetalle(
   } else {
     precio_venta = precio_venta;
   }
-  console.log('ooooooooo');
 
   //aquí preguntamos si el idarticulo ya fue agregado
   // SOLO evitar duplicados si NO es servicio
@@ -2473,11 +2518,11 @@ function agregarDetalle(
       stock = stock;
     }*/
     var detail = "";
-    if (contenedor != undefined && unidadmedida != undefined) {
+    if (cantidad_contenedor != undefined && unidadmedida != undefined) {
       detail =
         unidadmedida +
         ' <span style="color:#d9534f;font-weight:bold;padding:0 3px;">x</span> ' +
-        contenedor;
+        cantidad_contenedor;
     }
 
     var descuento = desc;
@@ -2630,7 +2675,8 @@ function agregarDetalle(
       cont++;
       detalles = detalles + 1;
       articuloAdd = articuloAdd + idproducto + "-";
-      $("#detalles").append(fila);
+      $("#detalles tbody").append(fila);
+      actualizarFilaVaciaDetalles();
       modificarSubtotales();
       evaluar();
     } else {
@@ -2840,45 +2886,33 @@ function modificarSubtotales(e) {
 }
 
 function calcularTotales() {
-  const sub = document.getElementsByName("subtotal");
+  const sub = document.querySelectorAll('#detalles span[name="subtotal"]');
+  const proigvNodes = document.querySelectorAll('#detalles span[name="proigv"]');
   let total = 0.0;
   let totalConIgv = 0.0;
-  let igv_dec = 0.0;
   let igv = 0.0;
 
   for (let i = 0; i < sub.length; i++) {
-    // 🧩 Tomamos el texto dentro del span, no .value
     const val = parseFloat(sub[i].innerText || sub[i].textContent || 0);
     if (isNaN(val)) continue;
 
     total += val;
 
-    const proigv = document.getElementsByName("proigv")[i].innerHTML;
-    if (proigv === "Gravada") {
+    const proigvNode = proigvNodes[i];
+    const proigv = (proigvNode?.textContent || "").trim();
+
+    if (proigv.toLowerCase() === "gravada" || proigv.toLowerCase() === "gravado") {
       totalConIgv += val;
-      igv = (totalConIgv * no_aplica) / (no_aplica + 100);
-      igv_dec = igv.toFixed(2);
     }
   }
 
-  $.ajax({
-    url: "controladores/negocio.php?op=mostrar_simbolo",
-    type: "get",
-    dataType: "json",
-    success: function (sim) {
-      const simbolo = sim;
-      const total2 = total - igv;
+  if (totalConIgv > 0 && parseFloat(no_aplica) > 0) {
+    igv = (totalConIgv * parseFloat(no_aplica)) / (parseFloat(no_aplica) + 100);
+  }
 
-      $("#total").html(total.toFixed(2));
-      $("#total_venta").val(total.toFixed(2));
-      $("#most_total2").val(total.toFixed(2));
-      $("#most_total").html(esnulo(total2).toFixed(2));
-
-      $("#montoDeuda").val(total);
-      $("#most_imp").html(igv_dec);
-      evaluar();
-    },
-  });
+  const subtotal = total - igv;
+  actualizarResumenVenta(total, esnulo(subtotal), igv);
+  evaluar();
 }
 
 function esnulo(v) {
@@ -2892,15 +2926,13 @@ function esnulo(v) {
 function evaluar() {
   // Contar las filas de detalle que tienen la clase "filas" dentro del contenedor #detalles
   var totalFilas = $("#detalles tr.filas").length;
+  actualizarFilaVaciaDetalles();
   if (totalFilas > 0) {
     $("#btnGuardar").show();
   } else {
     $("#btnGuardar").hide();
     cont = 0;
-    igv = 0;
-    igv_dec = 0;
-    $("#most_total").val("0");
-    $("#most_imp").val("0");
+    actualizarResumenVenta(0, 0, 0);
   }
 }
 
@@ -3098,6 +3130,7 @@ function eliminarDetalle(indice) {
   $("#fila" + indice).remove();
   calcularTotales();
   detalles = detalles - 1;
+  actualizarFilaVaciaDetalles();
   evaluar();
   articuloAdd = "";
 }
@@ -3105,6 +3138,14 @@ function eliminarDetalle(indice) {
 function toggleCard() {
   var card = document.getElementById("datosgenerales");
   card.hidden = !card.hidden;
+
+  if (card.hidden) {
+    $("#chevron-down").show();
+    $("#chevron-up").hide();
+  } else {
+    $("#chevron-down").hide();
+    $("#chevron-up").show();
+  }
 }
 
 var fechaSpan = document.getElementById("fechaActual");
@@ -3171,6 +3212,7 @@ function generarComprobante(idventa) {
 
   // Limpiar detalles y variables
   $("#detalles tbody").empty();
+  actualizarFilaVaciaDetalles();
   detalles = 0;
   articuloAdd = "";
 
@@ -3618,6 +3660,7 @@ function cancelarform02() {
   $("#detallesm tbody").empty();
 }
 
+  actualizarFilaVaciaDetalles();
 function cambiarComprobante(idventa, idsucursal) {
   Swal.fire({
     title: "Convertir Nota de Venta",

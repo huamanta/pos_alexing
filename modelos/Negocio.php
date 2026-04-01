@@ -41,20 +41,20 @@ public function mostrar($id_negocio){
 	return ejecutarConsultaSimpleFila($sql);
 }
 
-public function mostrar_impuesto(){
-	$sql="SELECT monto_impuesto FROM datos_negocio";
+public function mostrar_impuesto($idsucursal){
+	$sql="SELECT e.monto_impuesto FROM sucursal s, empresas e WHERE s.idempresa = e.idempresa AND s.idsucursal='$idsucursal'";
 	return ejecutarConsulta($sql);
 }
-public function nombre_impuesto(){
-	$sql="SELECT nombre_impuesto FROM datos_negocio";
+public function nombre_impuesto($idsucursal){
+	$sql="SELECT e.nombre_impuesto FROM sucursal s, empresas e WHERE s.idempresa = e.idempresa AND s.idsucursal='$idsucursal'";
 	return ejecutarConsulta($sql);
 }
 public function mostrar_registros(){
 	$sql="SELECT id_negocio FROM datos_negocio";
 	return ejecutarConsulta($sql);
 }
-public function mostrar_simbolo(){
-	$sql="SELECT simbolo FROM datos_negocio";
+public function mostrar_simbolo($idsucursal){
+	$sql="SELECT s.simbolo FROM sucursal s, empresas e WHERE s.idempresa = e.idempresa AND s.idsucursal='$idsucursal'";
 	return ejecutarConsulta($sql);
 }
 //listar registros

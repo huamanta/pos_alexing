@@ -94,21 +94,24 @@ switch ($_GET["op"]) {
 		$numeroid_negocio = (int)$numeroid;
 		echo json_encode($numeroid_negocio);
 		break;
+
 	case 'mostrar_impuesto':
-		$rspta = $negocio->mostrar_impuesto();
+		$idsucursal = $_SESSION['idsucursal'];
+		$rspta = $negocio->mostrar_impuesto($idsucursal);
 		$data = array();
 
 		while ($reg = $rspta->fetch_object()) {
 			$data[] = array(
 				$numeroimp = $reg->monto_impuesto
-
 			);
 		}
 		$impuesto = (floatval($numeroimp));
 		echo json_encode($impuesto);
 		break;
+
 	case 'nombre_impuesto':
-		$rspta = $negocio->nombre_impuesto();
+		$idsucursal = $_SESSION['idsucursal'];
+		$rspta = $negocio->nombre_impuesto($idsucursal);
 		$data = array();
 
 		while ($reg = $rspta->fetch_object()) {
@@ -119,8 +122,10 @@ switch ($_GET["op"]) {
 		}
 		echo json_encode($nombreimp);
 		break;
+
 	case 'mostrar_simbolo':
-		$rspta = $negocio->mostrar_simbolo();
+		$idsucursal = $_SESSION['idsucursal'];
+		$rspta = $negocio->mostrar_simbolo($idsucursal);
 		$data = array();
 
 		while ($reg = $rspta->fetch_object()) {

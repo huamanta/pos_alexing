@@ -114,7 +114,7 @@ $sqlVenta = "SELECT * FROM venta v
              INNER JOIN persona p ON v.idcliente = p.idpersona 
              WHERE v.idventa = $idVenta";
 $resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
-$numeroContrato = "OR" . str_pad($resultVenta['idventa'], 9, '0', STR_PAD_LEFT);
+$numeroContrato = "OR" . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
 
 // Generación PDF con mPDF (server-side)
 ob_start();
@@ -245,7 +245,7 @@ _____________________________________________<br>
 
     <div class="firma">
         _________________________<br>
-        JOKABE PAZ ROMERO<br>
+        <?php echo $garante; ?><br>
         GARANTE
     </div>
 </div>

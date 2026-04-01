@@ -144,7 +144,9 @@ class Venta
         $check_precio,
         $id_fifo_lote,
         $idcategoria,
-        $idgarante
+        $idgarante,
+        $idacompanante,
+        $idtipoacompanante
     ) {
         global $conexion;
 
@@ -307,7 +309,7 @@ class Venta
                 interes, formapago, frecuencia, meses, numoperacion, fechadeposito,
                 descuento, totalrecibido, totaldeposito, vuelto,
                 banco, montoPagado, estado, documento_rel, dov_Estado,
-                observacion, fecha_kardex, idgarante
+                observacion, fecha_kardex, idgarante, idacompanante, idtipoacompanante
             ) VALUES (
                 '$idsucursal','$idcaja','$idcliente','$idpersonal','$idmotivo',
                 '$tipo_comprobante','$serie_comprobante','$num_comprobante',
@@ -315,7 +317,7 @@ class Venta
                 '$interes','$formapagoVenta', '$input_frecuencia', '$input_cuotas','$nroOperacion','$fechaDepostivo',
                 '$porcentaje','$totalrecibido','$totaldeposito','$vuelto',
                 '$banco','$montoPagado','$estado','$comprobanteReferencia','$dovEstado',
-                '" . mysqli_real_escape_string($conexion, (string) $observaciones) . "','$fechaActual','$idgarante'
+                '" . mysqli_real_escape_string($conexion, (string) $observaciones) . "','$fechaActual','$idgarante','$idacompanante','$idtipoacompanante'
             )";
 
         $idventanew = ejecutarConsulta_retornarID($sql);
@@ -2104,6 +2106,12 @@ class Venta
     public function buscarGarante($search)
     {
         $sql = "SELECT idpersona, nombre FROM persona WHERE nombre LIKE '%$search%' AND tipo_persona = 'cliente' ORDER BY nombre ASC LIMIT 10";
+        return ejecutarConsulta($sql);
+    }
+
+    public function buscarTipoAcompanante()
+    {
+        $sql = "SELECT * FROM tipoacompanante WHERE estado = 1";
         return ejecutarConsulta($sql);
     }
 }

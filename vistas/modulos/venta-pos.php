@@ -13,13 +13,214 @@
         --small-font-size: 12px;
     }
 
+    /* Bloque principal del formulario de venta */
+    #formularioregistros.pos-form-shell {
+        background:
+            radial-gradient(circle at top right, rgba(39, 122, 192, 0.12), transparent 42%),
+            linear-gradient(180deg, #f8fbff 0%, #f0f5fb 100%);
+        border: 1px solid #d6e2f0;
+        border-radius: 16px;
+        padding: 18px 16px 95px;
+        box-shadow: 0 10px 34px rgba(24, 49, 85, 0.1);
+    }
+
+    #formularioregistros.pos-form-shell .row.mb-3 {
+        margin-bottom: 0 !important;
+    }
+
+    #formularioregistros.pos-form-shell .col-lg-6[style*="margin-top: -20px"] {
+        margin-top: 0 !important;
+    }
+
+    #formularioregistros.pos-form-shell .panel-heading {
+        border: none !important;
+    }
+
+    #formularioregistros.pos-form-shell .card.card-outline.card-danger {
+        margin-top: 0 !important;
+        border: none;
+        background: transparent;
+    }
+
+    #formularioregistros.pos-form-shell .card.shadow.mb-4 {
+        margin-bottom: 14px !important;
+    }
+
+    #formularioregistros.pos-form-shell .card {
+        border-radius: 12px;
+        border: 1px solid #e1eaf5;
+        box-shadow: 0 6px 18px rgba(23, 42, 73, 0.06);
+    }
+
+    #formularioregistros.pos-form-shell .card-header {
+        border-bottom: 1px solid #e7edf6;
+    }
+
+    #formularioregistros.pos-form-shell .card-header.bg-white.border-bottom-primary {
+        background: linear-gradient(90deg, #ffffff 0%, #f5f9ff 100%) !important;
+    }
+
+    #formularioregistros.pos-form-shell .card-title {
+        letter-spacing: 0.3px;
+    }
+
+    #formularioregistros.pos-form-shell #datosgenerales,
+    #formularioregistros.pos-form-shell #datosgenerales2 {
+        background: #ffffff;
+        border: 1px solid #e4edf7;
+        border-radius: 12px;
+    }
+
+    #formularioregistros.pos-form-shell #datosgenerales {
+        padding: 14px;
+    }
+
+    #formularioregistros.pos-form-shell #datosgenerales2 {
+        margin-top: 0 !important;
+        padding: 14px !important;
+    }
+
+    #formularioregistros.pos-form-shell fieldset {
+        border-color: #d9e4f2 !important;
+        background: #fafcff;
+        border-radius: 10px;
+    }
+
+    #formularioregistros.pos-form-shell fieldset legend {
+        margin-bottom: 0;
+        font-size: 12px;
+        color: #2c2fa5;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+    }
+
+    #formularioregistros.pos-form-shell label {
+        font-size: 11.5px;
+        margin-bottom: 4px;
+        color: #24344f;
+    }
+
+    #formularioregistros.pos-form-shell .form-group {
+        margin-bottom: 10px;
+    }
+
+    #formularioregistros.pos-form-shell .form-control {
+        border-color: #d0dceb;
+        border-radius: 8px;
+        min-height: 34px;
+    }
+
+    #formularioregistros.pos-form-shell .form-control:focus {
+        border-color: #7aa7de;
+        box-shadow: 0 0 0 0.2rem rgba(44, 47, 165, 0.12);
+    }
+
+    #formularioregistros.pos-form-shell .input-group-text {
+        background: #f3f7fd;
+        border-color: #d0dceb;
+        color: #49638a;
+    }
+
+    #formularioregistros.pos-form-shell .container-fluid[style*="background-color: #28a745"] {
+        background: linear-gradient(90deg, #1f9f4e 0%, #28b661 100%) !important;
+        border: 1px solid #1b9549;
+        border-radius: 12px !important;
+    }
+
+    #formularioregistros.pos-form-shell #detalles {
+        border: 1px solid #d9e4f2;
+        border-radius: 10px;
+        background-color: #fff;
+        box-shadow: inset 0 0 0 1px rgba(217, 228, 242, 0.3);
+    }
+
+    #formularioregistros.pos-form-shell #detalles thead {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    #formularioregistros.pos-form-shell #detalles thead th {
+        background: linear-gradient(90deg, #0ea4bd 0%, #0b8fa4 100%) !important;
+        color: #fff;
+        border: none;
+        font-size: 11px;
+        letter-spacing: 0.2px;
+    }
+
+    #formularioregistros.pos-form-shell #pagosMixtosContainer {
+        background: #f7faff;
+        border: 1px dashed #cddbf0;
+        border-radius: 10px;
+        padding: 10px 8px 2px;
+    }
+
+    #formularioregistros.pos-form-shell .pagoItem {
+        margin: 0 0 8px !important;
+        padding: 8px 4px;
+        border-radius: 8px;
+        background: #ffffff;
+        border: 1px solid #e6eef8;
+    }
+
+    #formularioregistros.pos-form-shell hr {
+        border-top: 1px solid #dce6f4;
+        margin: 12px 0;
+    }
+
+    #formularioregistros.pos-form-shell .btn-sm {
+        border-radius: 7px;
+    }
+
+    #formularioregistros.pos-form-shell .btn-outline-info {
+        border-color: #18a2b8;
+        color: #117a8b;
+    }
+
+    #formularioregistros.pos-form-shell .btn-outline-info:hover {
+        background: #17a2b8;
+        color: #fff;
+    }
+
+    @media only screen and (max-width: 991px) {
+        #formularioregistros.pos-form-shell {
+            padding: 12px 10px 95px;
+            border-radius: 12px;
+        }
+
+        #formularioregistros.pos-form-shell #datosgenerales,
+        #formularioregistros.pos-form-shell #datosgenerales2 {
+            padding: 10px !important;
+        }
+    }
+
     /* Contenedor de tabla con scroll */
-    #detalles {
+    #detalles-wrapper {
         max-height: 300px;
         overflow-y: auto;
-        display: block;
         width: 100%;
+    }
+
+    #detalles {
+        display: table;
+        width: 100% !important;
+        min-width: 100% !important;
         font-size: var(--light-font-size);
+        table-layout: fixed;
+    }
+
+    #detalles thead th:first-child,
+    #detalles tbody td:first-child {
+        width: 40%;
+        max-width: 40%;
+    }
+
+    #detalles tbody .fila-vacia-detalles td {
+        width: 100% !important;
+        min-width: 100% !important;
+        white-space: normal !important;
+        padding: 14px 10px;
+        text-align: center;
     }
 
     /* Botones flotantes */
@@ -456,7 +657,7 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                             </div>
                             <!-- /.card-body -->
 
-                            <div class="card-body" id="formularioregistros">
+                            <div class="card-body pos-form-shell" id="formularioregistros">
 
                                 <form name="formulario" id="formulario" method="POST">
                                     <input type="hidden" name="idventa" id="idventa">
@@ -500,12 +701,17 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                         </div>
 
                                                         <!-- Botón para desplegar datos -->
-                                                        <div class="card-header bg-light py-2">
+                                                        <div class="card-header bg-light py-2 d-flex gap-2">
                                                             <button type="button"
-                                                                class="btn btn-block btn-sm btn-primary shadow-sm"
+                                                                class="btn btn-sm btn-primary shadow-sm"
                                                                 onclick="toggleCard()"
                                                                 title="Completa los datos de tu pedido">
-                                                                <i class="fas fa-info-circle"></i> Datos
+                                                                <i class="fas fa-info-circle"></i> Datos cliente <i class="fas fa-chevron-down" id="chevron-down"></i><i class="fas fa-chevron-up" id="chevron-up" style="display:none;"></i>
+                                                            </button>
+
+                                                            <button type="button" class="btn btn-outline-info btn-sm"
+                                                                    data-toggle="modal" data-target="#modalAcompananteGarante">
+                                                                <i class="fas fa-user-friends"></i> Datos adicionales
                                                             </button>
                                                         </div>
 
@@ -626,69 +832,69 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-12">
+                                                        <div class="col-md-12">
+                                                                        <label for="">Detalle de la venta</label>
+                                                            <input type="hidden" name="idcaja" id="idcaja"
+                                                                style="right: -15px;">
+                                                            <div id="detalles-wrapper">
+                                                                <table id="detalles"
+                                                                    class="table table-striped table-hover">
+                                                                    <thead class="bg-info">
+                                                                        <th>Producto</th>
+                                                                        <th>UM</th>
+                                                                        <th>Precio</th>
+                                                                        <th>Blz</th>
+                                                                        <th>Cantidad</th>
+                                                                        <th>Descuento</th>
+                                                                        <th>Subtotal</th>
+                                                                    </thead>
+                                                                    <tfoot>
+                                                                    </tfoot>
+                                                                    <tbody>
 
-                                                        <input type="hidden" name="idcaja" id="idcaja"
-                                                            style="right: -15px;">
-                                                        <table id="detalles"
-                                                            class="table table-striped table-responsive-sm">
-                                                            <thead class="bg-info">
-                                                                <th style="width: 500px;">Producto</th>
-                                                                <th>UM</th>
-                                                                <th>Precio</th>
-                                                                <th>Blz</th>
-                                                                <th>Cantidad</th>
-                                                                <th>Descuento</th>
-                                                                <th style="width: 30px;">Subtotal</th>
-                                                            </thead>
-                                                            <tfoot>
-                                                            </tfoot>
-                                                            <tbody>
-
-                                                            </tbody>
-                                                        </table>
-                                                    </div>
-
-
-                                                    <div class="row">
-
-                                                        <!-- AGREGAR PRODUCTO -->
-
-                                                        <div class="col-lg-4" hidden>
-
-                                                            <button type="button"
-                                                                class="btn btn-default mb-3 d-xl-none d-lg-none btnAgregarProducto">Agregar
-                                                                producto</button>
-
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
                                                         </div>
-
                                                         <!-- IMPUESTOS Y TOTAL -->
+                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                            <div class="border rounded shadow-sm overflow-hidden">
 
-                                                        <div class="col-lg-11 mx-auto">
-                                                            <div class="input-group" style="background-color: red;"
-                                                                hidden>
-                                                                <input type="number"
-                                                                    class="form-control form-control-md" min="0"
-                                                                    id="impuesto" name="impuesto" placeholder="0"
-                                                                    readonly
-                                                                    style="background-color: red; color: white; font-weight: bold; font-size: 18px; text-align: center;">
-                                                                <span class="input-group-text"
-                                                                    style="background-color:red">
-                                                                    <i style="color:white" class="fa fa-percent"></i>
-                                                                </span>
-                                                            </div>
-                                                            <div class="container-fluid"
-                                                                style="background-color: #28a745;padding: 10px 20px;border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.2);display: flex;justify-content: center;align-items: center;">
-                                                                <span
-                                                                    style="color: white; font-size: 28px; font-weight: bold;">S/.&nbsp;</span>
-                                                                <span id="total"
-                                                                    style="color: white; font-size: 28px; font-weight: bold;">0.00</span>
-                                                                <input type="hidden" name="total_venta"
-                                                                    id="total_venta">
-                                                            </div>
+                                                                <!-- Fila Impuesto -->
+                                                                <div class="d-flex">
+                                                                    <div class="col-9 py-2 fw-bold text-right">
+                                                                        Impuesto
+                                                                    </div>
+                                                                    <div class="col-3 text-right py-2">
+                                                                        <span class="fw-bold fs-4">S/. </span>
+                                                                        <span id="sp-impuesto" class="fw-bold fs-4">0.00</span>
+                                                                        <input type="hidden" name="impuesto" id="impuesto">
+                                                                    </div>
+                                                                </div>
+                                                                <div class="d-flex">
+                                                                    <div class="col-9 py-2 fw-bold text-right">
+                                                                       Subtotal
+                                                                    </div>
+                                                                    <div class="col-3 text-right py-2">
+                                                                        <span class="fw-bold fs-4">S/. </span>
+                                                                        <span id="sp-subtotal" class="fw-bold fs-4">0.00</span>
+                                                                        <input type="hidden" name="subtotal" id="subtotal">
+                                                                    </div>
+                                                                </div>
 
+                                                                <!-- Fila Total -->
+                                                                <div class="d-flex">
+                                                                    <div class="col-9 py-2 fw-bold text-right">
+                                                                        Total
+                                                                    </div>
+                                                                    <div class="col-3 text-right py-2">
+                                                                        <span class="fw-bold fs-4">S/. </span>
+                                                                        <span id="total" class="fw-bold fs-4">0.00</span>
+                                                                        <input type="hidden" name="total_venta" id="total_venta">
+                                                                    </div>
+                                                                </div>
+                                                            </div>
                                                         </div>
-                                                    </div>
 
                                                     <hr>
 
@@ -915,13 +1121,51 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                                 <button type="button" class="btn btn-success"
                                                                     id="calcular_cuotas">Calcular</button>
                                                             </div>
+                                                        </div>
 
-                                                            <div class="form-group col-lg-9" style="display: none;"
-                                                                id="n5">
-                                                                <label for="">Garante</label>
-                                                                <select class="form-control" id="idgarante" name="idgarante"></select>
+                                                        <div class="modal fade" id="modalAcompananteGarante" tabindex="-1"
+                                                            role="dialog" aria-labelledby="modalAcompananteGaranteLabel"
+                                                            aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                                                            <div class="modal-dialog modal-lg" role="document">
+                                                                <div class="modal-content">
+                                                                    <div class="modal-header">
+                                                                        <h5 class="modal-title" id="modalAcompananteGaranteLabel">Datos de acompañante y garante</h5>
+                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                            <span aria-hidden="true">&times;</span>
+                                                                        </button>
+                                                                    </div>
+                                                                    <div class="modal-body">
+                                                                        <p class="text-muted mb-3">Si el cliente tiene un acompañante o garante, por favor ingresa sus datos aquí.</p>
+                                                                        <div class="form-group">
+                                                                            <label for="idtipoacompanante">Tipo de acompañante</label>
+                                                                            <select class="form-control" id="idtipoacompanante" name="idtipoacompanante">
+                                                                                <option value="" selected hidden>Seleccionar...</option>
+                                                                                <option value="1">Cónyuge</option>
+                                                                                <option value="2">Hijo(a)</option>
+                                                                                <option value="3">Padre</option>
+                                                                                <option value="4">Madre</option>
+                                                                                <option value="5">Hermano(a)</option>
+                                                                                <option value="6">Amigo(a)</option>
+                                                                                <option value="7">Compañero(a) de trabajo</option>
+                                                                                <option value="8">Otro</option>
+                                                                            </select>
+                                                                        </div>
+
+                                                                        <div class="form-group">
+                                                                            <label for="idacompanante">Acompañante</label>
+                                                                            <select class="form-control select2" id="idacompanante" name="idacompanante"></select>
+                                                                        </div>
+
+                                                                        <div class="form-group">
+                                                                            <label for="idgarante">Garante</label>
+                                                                            <select class="form-control select2" id="idgarante" name="idgarante"></select>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="modal-footer">
+                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                                                    </div>
+                                                                </div>
                                                             </div>
-
                                                         </div>
                                                         <div class="row col-md-12 mt-4" style="display: none;" id="n6">
                                                             <div class="col-lg-2">
@@ -1043,6 +1287,9 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                                         class="fas fa-barcode"></span></button>
                                                                 <input type="search" placeholder="Buscar producto"
                                                                     class="form-control" id="search_product">
+                                                                    <button type="button" class="btn btn-default mb-3 d-xl-none d-lg-none btnAgregarProducto">
+                                                                        Agregar producto
+                                                                    </button>
                                                             </div>
                                                             <div class="tab-pane fade show active"
                                                                 id="custom-tabs-two-home" role="tabpanel"

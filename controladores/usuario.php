@@ -540,12 +540,15 @@ break;
 
 case 'seleccionarSucursal':
     $idsucursal = $_POST['idsucursal'];
-    if (in_array($idsucursal, $_SESSION['sucursales'])) {
-        $_SESSION['idsucursal'] = $idsucursal;
-        echo 'ok';
-    } else {
-        echo 'error';
-    }
+	$res = $usuario->seleccionarSucursal($idsucursal);
+	if ($res) {
+		$_SESSION['idsucursal'] = $res['idsucursal'];
+		$_SESSION['nombre_impuesto'] = $res['nombre_impuesto'];
+		$_SESSION['monto_impuesto'] = $res['monto_impuesto'];
+		echo 'ok';
+	}else{
+		echo 'error';
+	}
 break;
 
 

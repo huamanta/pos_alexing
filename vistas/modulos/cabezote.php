@@ -279,7 +279,7 @@
     </ul>
 
     <ul class="navbar-nav ml-auto align-items-center">
-
+        
         <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" role="button" title="Pantalla Completa">
                 <i class="fas fa-expand-arrows-alt"></i>
