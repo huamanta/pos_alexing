@@ -305,6 +305,29 @@ date_default_timezone_set('America/Lima');
 
               <table id="tbllistadocuentasxcobrar" class="table table-striped">
                 <thead>
+                  <th>#</th>
+                  <th>Cliente</th>
+                  <th>Total creditos</th>
+                  <th>Deuda total</th>
+                  <th>Total pagado</th>
+                  <th>Saldo pendiente</th>
+                  <th>Acciones</th>
+                </thead>
+                <tbody>
+                </tbody>
+                <tfoot>
+                  <th>#</th>
+                  <th>Cliente</th>
+                  <th>Total creditos</th>
+                  <th>Deuda total</th>
+                  <th>Total pagado</th>
+                  <th>Saldo pendiente</th>
+                  <th>Acciones</th>
+                </tfoot>
+              </table>
+
+              <!--table id="tbllistadocuentasxcobrar" class="table table-striped">
+                <thead>
                   <th>Fecha Registro</th>
                   <th>Documento</th>
                   <th>Cliente</th>
@@ -332,7 +355,7 @@ date_default_timezone_set('America/Lima');
                   <th>Detalle</th>
                   <th>Acciones</th>
                 </tfoot>
-              </table>
+              </table-->
             </div>
             <!-- /.card-body -->
           </div>

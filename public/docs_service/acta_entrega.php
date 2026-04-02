@@ -1,5 +1,7 @@
 <?php
 require "../../configuraciones/Conexion.php";
+require "./Helpers.php";
+$helpers = new Helpers();
 date_default_timezone_set('America/Lima');
 // Función para encriptar/desencriptar
 function encrypt_decrypt($action, $string)

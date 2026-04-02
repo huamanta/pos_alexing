@@ -1,277 +1,125 @@
-<?php 
+<?php
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-Class CuentasCobrar
+class CuentasCobrar
 {
-	//Implementamos nuestro constructor
-	public function __construct()
-	{
+    //Implementamos nuestro constructor
+    public function __construct()
+    {
 
-	}
-
-	public function insertar(
-    $idcpc,
-    $montopagado,
-    $observacion,
-    $banco,
-    $op,
-    $fechaPago,
-    $formapago,
-    $montoPagarTarjeta,
-    $idcaja,
-    $idpersonal
-) {
-    global $conexion;
-
-    // Normalizar fecha
-    $fechaPago = trim((string)$fechaPago);
-    if ($fechaPago === "") $fechaPago = date("Y-m-d H:i:s");
-
-    // formapago (NOT NULL)
-    $formapago = trim((string)$formapago);
-    if ($formapago === "") $formapago = "Efectivo";
-
-    // 1) validar caja abierta
-    $sqlCaja = "SELECT estado FROM cajas WHERE idcaja='$idcaja'";
-    $caja = ejecutarConsultaSimpleFila($sqlCaja);
-    if (!$caja || intval($caja['estado']) != 2) {
-        return ['success'=>false, 'message'=>'La caja está cerrada, no se puede registrar el pago.'];
     }
 
-    // 2) obtener idventa de la cuota seleccionada
-    $rowVenta = ejecutarConsultaSimpleFila("SELECT idventa FROM cuentas_por_cobrar WHERE idcpc='$idcpc'");
-    if (!$rowVenta) {
-        return ['success'=>false, 'message'=>'Cuenta no encontrada'];
-    }
-    $idventa = intval($rowVenta['idventa']);
+    public function insertar($idcpc, $montopagado, $observacion, $banco, $op, $fechaPago, $formapago, $montoPagarTarjeta, $idcaja, $idpersonal)
+    {
+        // VALIDAR CAJA ABIERTA
+        $sqlCaja = "SELECT estado FROM cajas WHERE idcaja='$idcaja'";
+        $caja = ejecutarConsultaSimpleFila($sqlCaja);
 
-    // 3) pago total y proporciones para registrar detalle
-    $pagoEfe = round(floatval($montopagado), 2);
-    $pagoTar = round(floatval($montoPagarTarjeta), 2);
-    $pagoTotal = round($pagoEfe + $pagoTar, 2);
-
-    if ($pagoTotal <= 0) {
-        return ['success'=>false, 'message'=>'El monto de pago debe ser mayor a 0.'];
-    }
-
-    $ratioEfe = ($pagoTotal > 0) ? ($pagoEfe / $pagoTotal) : 1;
-    $ratioTar = ($pagoTotal > 0) ? ($pagoTar / $pagoTotal) : 0;
-
-    // 4) cuotas pendientes de esa venta
-    $rsCuotas = ejecutarConsulta("
-        SELECT idcpc, fechavencimiento
-        FROM cuentas_por_cobrar
-        WHERE idventa='$idventa' AND estado_pago=1
-        ORDER BY fechavencimiento ASC, idcpc ASC
-    ");
-    if (!$rsCuotas) {
-        return ['success'=>false, 'message'=>'No se pudo obtener las cuotas de la venta.'];
-    }
-
-    $cuotas = [];
-    while ($r = $rsCuotas->fetch_assoc()) $cuotas[] = $r;
-    if (empty($cuotas)) {
-        return ['success'=>false, 'message'=>'No hay cuotas pendientes para esta venta.'];
-    }
-
-    // 5) priorizar la cuota enviada al inicio
-    usort($cuotas, function ($a, $b) use ($idcpc) {
-        if (intval($a['idcpc']) === intval($idcpc)) return -1;
-        if (intval($b['idcpc']) === intval($idcpc)) return 1;
-
-        $fa = strtotime($a['fechavencimiento']);
-        $fb = strtotime($b['fechavencimiento']);
-        if ($fa === $fb) return intval($a['idcpc']) <=> intval($b['idcpc']);
-        return $fa <=> $fb;
-    });
-
-    // 6) transacción
-    ejecutarConsulta("START TRANSACTION");
-
-    try {
-        $restante = $pagoTotal;
-        $saldoFavor = 0.00;
-
-        foreach ($cuotas as $c) {
-            if ($restante <= 0) break;
-
-            $idcpc_i = intval($c['idcpc']);
-
-            // lock cuota
-            $fila = ejecutarConsultaSimpleFila("
-                SELECT idcpc, deudatotal, deuda_base, deuda, mora, mora_pagada, abonototal, fechavencimiento, estado_pago
-                FROM cuentas_por_cobrar
-                WHERE idcpc='$idcpc_i'
-                FOR UPDATE
-            ");
-            if (!$fila) continue;
-            if (intval($fila['estado_pago']) != 1) continue;
-
-            $fechaVenc = $fila['fechavencimiento'];
-
-            // ===== Modelo =====
-            $deuda_base = round(floatval($fila['deuda_base']), 2);
-            $mora       = round(floatval($fila['mora']), 2);
-
-            // abonototal acumulado actual (principal pagado)
-            $abonototalActual = round(floatval($fila['abonototal']), 2);
-            if ($abonototalActual < 0) $abonototalActual = 0;
-            if ($abonototalActual > $deuda_base) $abonototalActual = $deuda_base;
-
-            // deuda pendiente principal
-            $deuda = $fila['deuda'];
-            $deuda = ($deuda === null || $deuda === '') ? round(max(0, $deuda_base - $abonototalActual), 2) : round(floatval($deuda), 2);
-            if ($deuda < 0) $deuda = 0;
-            if ($deuda > $deuda_base) $deuda = $deuda_base;
-
-            // ===== Faltante real =====
-            $faltanteMora  = max(0, $mora);
-            $faltanteBase  = max(0, $deuda);
-            $faltanteTotal = round($faltanteMora + $faltanteBase, 2);
-
-            if ($faltanteTotal <= 0) {
-                // cerrar por seguridad SIN inventar abonototal
-                $close = ejecutarConsulta("
-                    UPDATE cuentas_por_cobrar
-                    SET estado_pago=0, deudatotal=0, deuda=0, mora=0, abonototal='$abonototalActual', fecha_update_mora=CURDATE()
-                    WHERE idcpc='$idcpc_i'
-                ");
-                if (!$close) throw new Exception("No se pudo cerrar cuota (idcpc=$idcpc_i)");
-                continue;
-            }
-
-            // Aplicar solo lo que corresponde a esta cuota
-            $aplicar = min($restante, $faltanteTotal);
-            if ($aplicar <= 0) continue;
-
-            // 1) pagar mora
-            $pagoMora = min($aplicar, $faltanteMora);
-            $aplicar -= $pagoMora;
-
-            // 2) pagar principal
-            $pagoBase = min($aplicar, $faltanteBase);
-            $aplicar -= $pagoBase;
-
-            $pagadoEnEstaCuota = round($pagoMora + $pagoBase, 2);
-            $restante = round($restante - $pagadoEnEstaCuota, 2);
-
-            // Nuevos saldos
-            $moraNueva  = round(max(0, $mora  - $pagoMora), 2);
-            $deudaNueva = round(max(0, $deuda - $pagoBase), 2);
-
-            // Si quieres recalcular mora por atraso, hazlo SOBRE el saldo que queda:
-            $fechaV = new DateTime(date('Y-m-d', strtotime($fechaVenc)));
-            $hoy    = new DateTime(date('Y-m-d'));
-
-            if ($deudaNueva > 0 && $hoy > $fechaV) {
-                $diasRetraso = (int)$hoy->diff($fechaV)->days;
-                $porcMoraMes = 10.0;
-                $moraDiaria  = ($deudaNueva * ($porcMoraMes / 100)) / 30;
-                $moraCalc    = round($moraDiaria * $diasRetraso, 2);
-                if ($moraCalc > $moraNueva) $moraNueva = $moraCalc;
-            }
-
-            $deudatotalNuevo = round($deudaNueva + $moraNueva, 2);
-
-            // ✅ FIX: abonototal acumulado por cuota = lo que ya tenía + lo pagado de principal en esta cuota
-            $abonototalNuevo = round($abonototalActual + $pagoBase, 2);
-            if ($abonototalNuevo > $deuda_base) $abonototalNuevo = $deuda_base;
-            if ($abonototalNuevo < 0) $abonototalNuevo = 0;
-
-            $estadoNuevo = ($deudatotalNuevo <= 0) ? 0 : 1;
-
-            // Update cuota
-            $sqlUpdate = "
-                UPDATE cuentas_por_cobrar
-                SET deuda       = '$deudaNueva',
-                    mora        = '$moraNueva',
-                    deudatotal   = '$deudatotalNuevo',
-                    abonototal   = '$abonototalNuevo',
-                    mora_pagada  = COALESCE(mora_pagada,0) + '".round($pagoMora,2)."',
-                    fecha_update_mora = CURDATE(),
-                    estado_pago  = '$estadoNuevo'
-                WHERE idcpc = '$idcpc_i'
-            ";
-            $save = ejecutarConsulta($sqlUpdate);
-            if (!$save) throw new Exception("No se pudo actualizar la cuenta (idcpc=$idcpc_i)");
-
-            // Insertar detalle SOLO por lo aplicado a ESTA cuota
-            if ($pagadoEnEstaCuota > 0) {
-                $detEfe = round($pagadoEnEstaCuota * $ratioEfe, 2);
-                $detTar = round($pagadoEnEstaCuota * $ratioTar, 2);
-                $diff   = round($pagadoEnEstaCuota - ($detEfe + $detTar), 2);
-                if ($diff != 0) $detEfe = round($detEfe + $diff, 2);
-
-                $obs = (string)$observacion;
-                if ($idcpc_i != intval($idcpc)) {
-                    $obs = trim(($obs ? $obs . " | " : "") . "Amortización automática a otra cuota (misma venta)");
-                }
-
-                $obsEsc   = mysqli_real_escape_string($conexion, $obs);
-                $formaEsc = mysqli_real_escape_string($conexion, $formapago);
-
-                $bancoSQL = (isset($banco) && trim((string)$banco) !== '')
-                    ? "'" . mysqli_real_escape_string($conexion, (string)$banco) . "'"
-                    : "NULL";
-                $opSQL = (isset($op) && trim((string)$op) !== '')
-                    ? "'" . mysqli_real_escape_string($conexion, (string)$op) . "'"
-                    : "NULL";
-
-                $sqlDetalle = "
-                    INSERT INTO detalle_cuentas_por_cobrar
-                    (idcpc, idcaja, idpersonal, montopagado, montotarjeta, banco, op, fechapago, formapago, observacion)
-                    VALUES
-                    ('$idcpc_i', '$idcaja', '$idpersonal', '$detEfe', '$detTar', $bancoSQL, $opSQL, '$fechaPago', '$formaEsc', '$obsEsc')
-                ";
-                $det = ejecutarConsulta($sqlDetalle);
-                if (!$det) {
-                    throw new Exception("No se pudo registrar el detalle del pago (idcpc=$idcpc_i).");
-                }
-            }
+        if (!$caja || intval($caja['estado']) != 2) {
+            return ['success' => false, 'message' => 'La caja está cerrada, no se puede registrar el pago.'];
         }
 
-        if ($restante > 0) $saldoFavor = round($restante, 2);
+        // REGISTRAR DETALLE DE PAGO
+        $sqlDetalle = "INSERT INTO detalle_cuentas_por_cobrar
+        (idcpc, idcaja, idpersonal, montopagado, montotarjeta, banco, op, fechapago, formapago, observacion)
+        VALUES
+        ('$idcpc', '$idcaja', '$idpersonal', '$montopagado', '$montoPagarTarjeta', '$banco', '$op', '$fechaPago', '$formapago', '$observacion')";
 
-        ejecutarConsulta("COMMIT");
+        $det = ejecutarConsulta($sqlDetalle);
 
-        $msg = "Pago registrado correctamente";
-        if ($saldoFavor > 0) $msg .= ". Excedente / saldo a favor: S/ " . number_format($saldoFavor, 2);
+        if (!$det) {
+            return ['success' => false, 'message' => 'No se pudo registrar el detalle del pago.'];
+        }
 
-        return ['success'=>true, 'message'=>$msg, 'saldo_favor'=>$saldoFavor];
+        // OBTENER DATOS ACTUALES
+        $sql = "SELECT deudatotal, deuda, abonototal
+            FROM cuentas_por_cobrar 
+            WHERE idcpc = '$idcpc'";
+        $fila = ejecutarConsultaSimpleFila($sql);
 
-    } catch (Exception $e) {
-        ejecutarConsulta("ROLLBACK");
-        return ['success'=>false, 'message'=>$e->getMessage()];
+        if (!$fila) {
+            return ['success' => false, 'message' => 'Cuenta no encontrada'];
+        }
+
+        // TOTAL PAGADO
+        $montopagado = floatval($montopagado ?? 0);
+        $montoPagarTarjeta = floatval($montoPagarTarjeta ?? 0);
+
+        $montoPagoTotal = $montopagado + $montoPagarTarjeta;
+
+        // VALORES ACTUALES
+        $deudatotal = floatval($fila['deudatotal']);
+        $deuda = floatval($fila['deuda']);
+        $abonototal = floatval($fila['abonototal']);
+
+        // NUEVOS VALORES
+        $nuevaDeudaTotal = $deudatotal - $montoPagoTotal;
+        $nuevaDeuda = $deuda - $montoPagoTotal;
+
+        // EVITAR NEGATIVOS
+        if ($nuevaDeudaTotal < 0)
+            $nuevaDeudaTotal = 0;
+        if ($nuevaDeuda < 0)
+            $nuevaDeuda = 0;
+
+        // SUMAR ABONO
+        $nuevoAbonoTotal = $abonototal + $montoPagoTotal;
+
+        // ACTUALIZAR CUENTA
+        $sqlUpdate = "UPDATE cuentas_por_cobrar
+                  SET deudatotal = '$nuevaDeudaTotal',
+                      deuda = '$nuevaDeuda',
+                      abonototal = '$nuevoAbonoTotal'
+                  WHERE idcpc = '$idcpc'";
+
+        $save = ejecutarConsulta($sqlUpdate);
+
+        if (!$save) {
+            return ['success' => false, 'message' => 'No se pudo actualizar la cuenta'];
+        }
+
+        // ACTUALIZAR ESTADO DE PAGO
+        if ($nuevaDeudaTotal <= 0) {
+            ejecutarConsulta("UPDATE cuentas_por_cobrar 
+                          SET estado_pago = 0
+                          WHERE idcpc = '$idcpc'");
+        } else {
+            ejecutarConsulta("UPDATE cuentas_por_cobrar 
+                          SET estado_pago = 1
+                          WHERE idcpc = '$idcpc'");
+        }
+
+        return ['success' => true, 'message' => 'Pago registrado correctamente'];
     }
-}
 
 
 
-	public function deudacliente($idventa){
+    public function deudacliente($idventa)
+    {
 
-		$sql="SELECT v.idventa,v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal + cc.abonototal,2) as deudatotal, cc.deudatotal as deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
+        $sql = "SELECT v.idventa,v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal + cc.abonototal,2) as deudatotal, cc.deudatotal as deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
 				FROM venta v 
 				INNER JOIN cuentas_por_cobrar cc
 		        ON v.idventa = cc.idventa
 		        INNER JOIN persona c
 		        ON c.idpersona = v.idcliente
 		        WHERE cc.idventa = '$idventa'";
-		return ejecutarConsulta($sql);
-		
-	}
+        return ejecutarConsulta($sql);
 
-public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
-{
-    $filtroCliente = ($idcliente != "Todos" && $idcliente != null)
-        ? "AND v.idcliente = '$idcliente'" : "";
+    }
 
-    $filtroSucursal = ($idsucursal != "Todos" && $idsucursal != null && $idsucursal != "")
-        ? "AND v.idsucursal = '$idsucursal'" : "";
+    public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
+    {
+        $filtroCliente = ($idcliente != "Todos" && $idcliente != null)
+            ? "AND v.idcliente = '$idcliente'" : "";
 
-    $sql = "SELECT 
+        $filtroSucursal = ($idsucursal != "Todos" && $idsucursal != null && $idsucursal != "")
+            ? "AND v.idsucursal = '$idsucursal'" : "";
+
+        $sql = "SELECT 
                 SUM(cpc.abonototal) AS abonototal,
                 SUM(cpc.deudatotal) AS deudatotal,
                 SUM(v.total_venta) AS totalventa,
@@ -284,24 +132,25 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
               $filtroCliente
               $filtroSucursal";
 
-    return ejecutarConsulta($sql)->fetch_object();
-}
+        return ejecutarConsulta($sql)->fetch_object();
+    }
 
 
-	public function verSucursal($idsucursal){
-		$sql = "SELECT * FROM sucursal WHERE idsucursal = '$idsucursal'";
-		$sucursal = ejecutarConsulta($sql)->fetch_object();
-		if($sucursal){
-			return $sucursal->nombre;
-		}else{
-			return "--";
-		}
-	}
-
-	public function listar($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
+    public function verSucursal($idsucursal)
     {
-        $filtroCliente = ($idcliente != "Todos" && $idcliente != null) 
-            ? "AND v.idcliente = '$idcliente'" 
+        $sql = "SELECT * FROM sucursal WHERE idsucursal = '$idsucursal'";
+        $sucursal = ejecutarConsulta($sql)->fetch_object();
+        if ($sucursal) {
+            return $sucursal->nombre;
+        } else {
+            return "--";
+        }
+    }
+
+    public function listar($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
+    {
+        $filtroCliente = ($idcliente != "Todos" && $idcliente != null)
+            ? "AND v.idcliente = '$idcliente'"
             : "";
         $filtroSucursal = "";
         if (!empty($idsucursal) && $idsucursal != "Todos") {
@@ -350,29 +199,31 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
         return ejecutarConsulta($sql);
     }
 
-	//Implementar un método para listar los registros
-	public function listarDetalle($idcpc)
-	{
-		$sql="SELECT cc.iddcpc,cc.iddcpc,cc.montopagado,cc.montotarjeta,date_format(cc.fechapago,'%d/%m/%y | %H:%i:%s %p') as fechapago,cc.formapago,cc.banco,cc.op FROM detalle_cuentas_por_cobrar cc
+    //Implementar un método para listar los registros
+    public function listarDetalle($idcpc)
+    {
+        $sql = "SELECT cc.iddcpc,cc.iddcpc,cc.montopagado,cc.montotarjeta,date_format(cc.fechapago,'%d/%m/%y | %H:%i:%s %p') as fechapago,cc.formapago,cc.banco,cc.op FROM detalle_cuentas_por_cobrar cc
 				WHERE cc.idcpc = '$idcpc'
 		        ORDER BY cc.iddcpc asc";
-		return ejecutarConsulta($sql);		
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	public function mostrar($idcpc)
-	{
-		$sql="SELECT v.idventa, v.total_venta, v.interes, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal,2) as deudatotal, cc.deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
+    public function mostrar($idcpc)
+    {
+        $sql = "SELECT v.idventa, v.total_venta, v.interes, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,
+        cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal,2) as deudatotal, cc.deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento,
+        TRUNCATE(cc.interes, 2) as interes_cuota
 				FROM venta v 
 				INNER JOIN cuentas_por_cobrar cc
 		        ON v.idventa = cc.idventa
 		        INNER JOIN persona c
 		        ON c.idpersona = v.idcliente
 		        WHERE cc.idcpc = '$idcpc'";
-		return ejecutarConsultaSimpleFila($sql);
+        return ejecutarConsultaSimpleFila($sql);
 
-	}
+    }
 
-	public function calcularMora($idcpc)
+    public function calcularMora($idcpc)
     {
         $sql = "SELECT 
                     cc.deudatotal,
@@ -388,8 +239,8 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
         if (!$fila) {
             return [
                 'cuota_sin_mora' => 0.00,
-                'dias_retraso'   => 0,
-                'mora'           => 0.00,
+                'dias_retraso' => 0,
+                'mora' => 0.00,
                 'total_con_mora' => 0.00
             ];
         }
@@ -410,8 +261,8 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
         if ($interes <= 0) {
             return [
                 'cuota_sin_mora' => round($cuotaConInteres, 2),
-                'dias_retraso'   => 0,
-                'mora'           => 0.00,
+                'dias_retraso' => 0,
+                'mora' => 0.00,
                 'total_con_mora' => round($cuotaConInteres, 2)
             ];
         }
@@ -422,15 +273,15 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
 
         $diasRetraso = 0;
         if ($hoy > $fechaV) {
-            $diasRetraso = (int)$hoy->diff($fechaV)->days;
+            $diasRetraso = (int) $hoy->diff($fechaV)->days;
         }
 
         // Si no hay días de retraso → no hay mora
         if ($diasRetraso <= 0) {
             return [
                 'cuota_sin_mora' => round($cuotaConInteres, 2),
-                'dias_retraso'   => 0,
-                'mora'           => 0.00,
+                'dias_retraso' => 0,
+                'mora' => 0.00,
                 'total_con_mora' => round($cuotaConInteres, 2)
             ];
         }
@@ -442,29 +293,30 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
 
         return [
             'cuota_sin_mora' => round($cuotaConInteres, 2),
-            'dias_retraso'   => $diasRetraso,
-            'mora'           => $moraTotal,
+            'dias_retraso' => $diasRetraso,
+            'mora' => $moraTotal,
             'total_con_mora' => round($cuotaConInteres + $moraTotal, 2)
         ];
     }
 
 
-	public function mostrarTicket($idventa)
-	{
+    public function mostrarTicket($idventa)
+    {
 
-		$sql="SELECT v.idventa,v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,DATE(cc.fecharegistro) as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal,2) as deudatotal, cc.deudatotal as deuda, cc.abonototal,cc.fechavencimiento 
+        $sql = "SELECT v.idventa,v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,DATE(cc.fecharegistro) as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal,2) as deudatotal, cc.deudatotal as deuda, cc.abonototal,cc.fechavencimiento 
 				FROM venta v 
 				INNER JOIN cuentas_por_cobrar cc
 		        ON v.idventa = cc.idventa
 		        INNER JOIN persona c
 		        ON c.idpersona = v.idcliente
 		        WHERE cc.idventa = '$idventa'";
-		return ejecutarConsulta($sql);
+        return ejecutarConsulta($sql);
 
-	}
+    }
 
-	public function mostrarDeuda($idVenta){
-	    $sql = "SELECT 
+    public function mostrarDeuda($idVenta)
+    {
+        $sql = "SELECT 
 	                cc.idcpc,
 	                cc.deudatotal,
 	                cc.abonototal,
@@ -477,12 +329,12 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
 	            WHERE cc.idventa = '$idVenta'
 	            GROUP BY cc.idcpc, cc.deudatotal, cc.abonototal
 	            ORDER BY cc.idcpc ASC";
-	    return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	public function listarRecordatorioSemana()
-	{
-	    $sql = "SELECT 
+    public function listarRecordatorioSemana()
+    {
+        $sql = "SELECT 
 	                cc.idcpc, 
 	                v.idventa, 
 	                v.idcliente,
@@ -495,10 +347,10 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
 	            INNER JOIN persona c ON c.idpersona = v.idcliente
 	            WHERE cc.condicion = '1'
 	              AND DATE(cc.fechavencimiento) = DATE_ADD(CURDATE(), INTERVAL 7 DAY)";
-	    return ejecutarConsulta($sql);
-	}
+        return ejecutarConsulta($sql);
+    }
 
-	public function amortizarDeuda($deuda, $idcliente, $fecha_inicio, $fecha_fin, $formapago, $montopago, $idcaja, $idpersonal)
+    public function amortizarDeuda($deuda, $idcliente, $fecha_inicio, $fecha_fin, $formapago, $montopago, $idcaja, $idpersonal)
     {
         // Obtener cuotas del cliente ordenadas por fecha de vencimiento más cercana
         $sql3 = "SELECT cc.idcpc,
@@ -531,7 +383,8 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
 
         while ($reg = $lista->fetch_object()) {
 
-            if ($pago <= 0) break;
+            if ($pago <= 0)
+                break;
             $this->actualizarMoraDiaria($reg->idcpc);
 
             // Obtener deuda actualizada
@@ -547,7 +400,8 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
             $abonototal_actual = floatval($filaAct['abonototal']);
             $deudaPendiente = floatval($filaAct['deudatotal']);
 
-            if ($deudaPendiente <= 0) continue;
+            if ($deudaPendiente <= 0)
+                continue;
             $mora_pagada = min($pago, $mora);
             $mora -= $mora_pagada;
             $pago -= $mora_pagada;
@@ -598,9 +452,9 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
     }
 
 
-	public function actualizarMoraDiaria($idcpc)
+    public function actualizarMoraDiaria($idcpc)
     {
-         $sqlInteres = "
+        $sqlInteres = "
             SELECT v.interes
             FROM cuentas_por_cobrar cc
             INNER JOIN venta v ON cc.idventa = v.idventa
@@ -624,10 +478,11 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
                 WHERE idcpc = '$idcpc'";
 
         $fila = ejecutarConsultaSimpleFila($sql);
-        if (!$fila) return false;
+        if (!$fila)
+            return false;
 
         $estado = ejecutarConsultaSimpleFila("SELECT estado_pago FROM cuentas_por_cobrar WHERE idcpc='$idcpc'");
-        
+
         if ($estado && $estado['estado_pago'] == 0) {
             // Ya pagado → aseguramos que NO genere mora nunca más
             ejecutarConsulta("UPDATE cuentas_por_cobrar
@@ -648,7 +503,8 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
         }
 
         // Si aún así queda en cero → no hacer nada
-        if ($deuda_base <= 0) return true;
+        if ($deuda_base <= 0)
+            return true;
 
         // Calcular días vencidos
         $fechaV = new DateTime(date('Y-m-d', strtotime($fechaVenc)));
@@ -663,7 +519,7 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
         }
 
         // Días de retraso
-        $diasRetraso = (int)$hoy->diff($fechaV)->days;
+        $diasRetraso = (int) $hoy->diff($fechaV)->days;
 
         // Mora diaria = 10% mensual / 30
         $moraDiaria = ($deuda_base * 0.10) / 30;
@@ -712,7 +568,8 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
             $totalConMora = round($moraData['total_con_mora'], 2);
             $diasRetraso = $moraData['dias_retraso'];
 
-            if ($totalConMora <= 0) continue; // No enviar si ya está pagado
+            if ($totalConMora <= 0)
+                continue; // No enviar si ya está pagado
 
             // Verificar si ya se envió hoy
             $yaEnviado = ejecutarConsultaSimpleFila(
@@ -720,7 +577,8 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
                  WHERE idcpc = '{$reg->idcpc}' 
                  LIMIT 1"
             );
-            if ($yaEnviado) continue;
+            if ($yaEnviado)
+                continue;
 
             // Agrupar por cliente
             $clientes[$clienteId]['nombre'] = $reg->nombre;
@@ -791,10 +649,10 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
     }
 
     public function generarNotificaciones($idsucursal)
-{
-    $hoy = date('Y-m-d');
+    {
+        $hoy = date('Y-m-d');
 
-    $sql = "
+        $sql = "
         SELECT 
             cc.idcpc,
             c.nombre AS cliente,
@@ -811,33 +669,33 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
         ORDER BY cc.fechavencimiento ASC
     ";
 
-    $rspta = ejecutarConsulta($sql);
-    $notificaciones = [];
+        $rspta = ejecutarConsulta($sql);
+        $notificaciones = [];
 
-    while ($r = $rspta->fetch_object()) {
+        while ($r = $rspta->fetch_object()) {
 
-        $monto = number_format($r->deudatotal, 2);
-        $fecha = date("d/m/Y", strtotime($r->fechavencimiento));
+            $monto = number_format($r->deudatotal, 2);
+            $fecha = date("d/m/Y", strtotime($r->fechavencimiento));
 
-        if ($r->dias_vencido > 0) {
-            $mensaje = "💸 <b>{$r->cliente}</b> tiene una cuota vencida hace 
+            if ($r->dias_vencido > 0) {
+                $mensaje = "💸 <b>{$r->cliente}</b> tiene una cuota vencida hace 
                         <b>{$r->dias_vencido} día(s)</b> por 
                         <b>S/ {$monto}</b> (venció el {$fecha})";
-        } else {
-            $mensaje = "⏰ <b>{$r->cliente}</b> tiene una cuota que 
+            } else {
+                $mensaje = "⏰ <b>{$r->cliente}</b> tiene una cuota que 
                         <b>vence HOY</b> por <b>S/ {$monto}</b>";
+            }
+
+            $notificaciones[] = [
+                'idcpc' => $r->idcpc,
+                'mensaje' => $mensaje,
+                'fecha' => $fecha,
+                'tipo' => '' // cuota
+            ];
         }
 
-        $notificaciones[] = [
-            'idcpc'      => $r->idcpc,
-            'mensaje'    => $mensaje,
-            'fecha'      => $fecha,
-            'tipo'       => '' // cuota
-        ];
+        return $notificaciones;
     }
-
-    return $notificaciones;
-}
 
 
     public function estadoCuentaDocumento($idcpc)
@@ -892,11 +750,11 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
 
             $html .= '
                 <tr>
-                    <td>'.$r->fecha.'</td>
-                    <td>'.$r->documento.'</td>
-                    <td class="text-right">S/ '.number_format($r->debe, 2).'</td>
-                    <td class="text-right">S/ '.number_format($r->haber, 2).'</td>
-                    <td class="text-right"><strong>S/ '.number_format($saldo, 2).'</strong></td>
+                    <td>' . $r->fecha . '</td>
+                    <td>' . $r->documento . '</td>
+                    <td class="text-right">S/ ' . number_format($r->debe, 2) . '</td>
+                    <td class="text-right">S/ ' . number_format($r->haber, 2) . '</td>
+                    <td class="text-right"><strong>S/ ' . number_format($saldo, 2) . '</strong></td>
                 </tr>
             ';
         }
@@ -911,16 +769,16 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
     }
 
     public function estadoCuentaCliente($idcliente, $fecha_inicio, $fecha_fin)
-{
-    /* ========= CLIENTE ========= */
-    $cliente = ejecutarConsultaSimpleFila("
+    {
+        /* ========= CLIENTE ========= */
+        $cliente = ejecutarConsultaSimpleFila("
         SELECT nombre, num_documento
         FROM persona
         WHERE idpersona = '$idcliente'
     ");
 
-    /* ========= VENTAS ========= */
-    $ventas = ejecutarConsulta("
+        /* ========= VENTAS ========= */
+        $ventas = ejecutarConsulta("
         SELECT *
         FROM venta
         WHERE idcliente = '$idcliente'
@@ -930,11 +788,11 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
         ORDER BY fecha_hora ASC
     ");
 
-    $totalDebe     = 0;
-    $totalHaber    = 0;
-    $saldoGeneral  = 0;
+        $totalDebe = 0;
+        $totalHaber = 0;
+        $saldoGeneral = 0;
 
-    $html = "
+        $html = "
         <div class='card mb-3 shadow-sm'>
             <div class='card-body'>
                 <div class='row align-items-center'>
@@ -969,122 +827,166 @@ public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
             <tbody>
     ";
 
-    while ($v = $ventas->fetch_object()) {
+        while ($v = $ventas->fetch_object()) {
 
-        /* ====== DATOS VENTA ====== */
-        $docVenta   = "{$v->tipo_comprobante}-{$v->serie_comprobante}-{$v->num_comprobante}";
-        $saldoVenta = $v->total_venta;
+            /* ====== DATOS VENTA ====== */
+            $docVenta = "{$v->tipo_comprobante}-{$v->serie_comprobante}-{$v->num_comprobante}";
+            $saldoVenta = $v->total_venta;
 
-        /* ====== VENTA (DEBE) ====== */
-        $totalDebe    += $v->total_venta;
-        $saldoGeneral += $v->total_venta;
+            /* ====== VENTA (DEBE) ====== */
+            $totalDebe += $v->total_venta;
+            $saldoGeneral += $v->total_venta;
 
-        $html .= "
+            $html .= "
             <tr style='background:#eef'>
                 <td>{$v->fecha_hora}</td>
                 <td><b>VENTA $docVenta</b></td>
-                <td class='text-right'>S/ ".number_format($v->total_venta,2)."</td>
+                <td class='text-right'>S/ " . number_format($v->total_venta, 2) . "</td>
                 <td class='text-right'>S/ 0.00</td>
-                <td class='text-right'><b>S/ ".number_format($saldoVenta,2)."</b></td>
+                <td class='text-right'><b>S/ " . number_format($saldoVenta, 2) . "</b></td>
             </tr>
         ";
 
-        /* ====== ANTICIPO (montoPagado) ====== */
-        if ($v->montoPagado > 0) {
+            /* ====== ANTICIPO (montoPagado) ====== */
+            if ($v->montoPagado > 0) {
 
-            $anticipo = $v->montoPagado;
+                $anticipo = $v->montoPagado;
 
-            $saldoVenta   -= $anticipo;
-            $saldoGeneral -= $anticipo;
+                $saldoVenta -= $anticipo;
+                $saldoGeneral -= $anticipo;
 
-            if ($saldoVenta < 0) $saldoVenta = 0;
-            if ($saldoGeneral < 0) $saldoGeneral = 0;
+                if ($saldoVenta < 0)
+                    $saldoVenta = 0;
+                if ($saldoGeneral < 0)
+                    $saldoGeneral = 0;
 
-            $totalHaber += $anticipo;
+                $totalHaber += $anticipo;
 
-            $html .= "
+                $html .= "
                 <tr>
                     <td>{$v->fecha_hora}</td>
                     <td style='padding-left:30px;color:#0d6efd'>
                         ↳ ANTICIPO $docVenta
                     </td>
                     <td class='text-right'>S/ 0.00</td>
-                    <td class='text-right'>S/ ".number_format($anticipo,2)."</td>
-                    <td class='text-right'><b>S/ ".number_format($saldoVenta,2)."</b></td>
+                    <td class='text-right'>S/ " . number_format($anticipo, 2) . "</td>
+                    <td class='text-right'><b>S/ " . number_format($saldoVenta, 2) . "</b></td>
                 </tr>
             ";
-        }
+            }
 
-        /* ====== CUOTAS / ABONOS ====== */
-        $cpcs = ejecutarConsulta("
+            /* ====== CUOTAS / ABONOS ====== */
+            $cpcs = ejecutarConsulta("
             SELECT idcpc
             FROM cuentas_por_cobrar
             WHERE idventa = '$v->idventa'
             AND condicion = 1
         ");
 
-        while ($cc = $cpcs->fetch_object()) {
+            while ($cc = $cpcs->fetch_object()) {
 
-            $abonos = ejecutarConsulta("
+                $abonos = ejecutarConsulta("
                 SELECT fechapago, montopagado, montotarjeta
                 FROM detalle_cuentas_por_cobrar
                 WHERE idcpc = '$cc->idcpc'
                 ORDER BY fechapago ASC
             ");
 
-            while ($ab = $abonos->fetch_object()) {
+                while ($ab = $abonos->fetch_object()) {
 
-                $montoAbono = $ab->montopagado + $ab->montotarjeta;
+                    $montoAbono = $ab->montopagado + $ab->montotarjeta;
 
-                $saldoVenta   -= $montoAbono;
-                $saldoGeneral -= $montoAbono;
+                    $saldoVenta -= $montoAbono;
+                    $saldoGeneral -= $montoAbono;
 
-                if ($saldoVenta < 0) $saldoVenta = 0;
-                if ($saldoGeneral < 0) $saldoGeneral = 0;
+                    if ($saldoVenta < 0)
+                        $saldoVenta = 0;
+                    if ($saldoGeneral < 0)
+                        $saldoGeneral = 0;
 
-                $totalHaber += $montoAbono;
+                    $totalHaber += $montoAbono;
 
-                $html .= "
+                    $html .= "
                     <tr>
                         <td>{$ab->fechapago}</td>
                         <td style='padding-left:30px;color:green'>
                             ↳ ABONO $docVenta
                         </td>
                         <td class='text-right'>S/ 0.00</td>
-                        <td class='text-right'>S/ ".number_format($montoAbono,2)."</td>
-                        <td class='text-right'><b>S/ ".number_format($saldoVenta,2)."</b></td>
+                        <td class='text-right'>S/ " . number_format($montoAbono, 2) . "</td>
+                        <td class='text-right'><b>S/ " . number_format($saldoVenta, 2) . "</b></td>
                     </tr>
                 ";
+                }
             }
-        }
 
-        /* ====== SALDO FINAL DE LA VENTA ====== */
-        $html .= "
+            /* ====== SALDO FINAL DE LA VENTA ====== */
+            $html .= "
             <tr style='background:#f9f9f9'>
                 <td colspan='4' class='text-right'><b>Saldo Venta</b></td>
-                <td class='text-right'><b>S/ ".number_format($saldoVenta,2)."</b></td>
+                <td class='text-right'><b>S/ " . number_format($saldoVenta, 2) . "</b></td>
             </tr>
         ";
-    }
+        }
 
-    /* ====== TOTALES ====== */
-    $html .= "
+        /* ====== TOTALES ====== */
+        $html .= "
             </tbody>
             <tfoot class='bg-light'>
                 <tr>
                     <th colspan='2' class='text-right'>TOTALES</th>
-                    <th class='text-right'>S/ ".number_format($totalDebe,2)."</th>
-                    <th class='text-right'>S/ ".number_format($totalHaber,2)."</th>
-                    <th class='text-right'><b>S/ ".number_format($saldoGeneral,2)."</b></th>
+                    <th class='text-right'>S/ " . number_format($totalDebe, 2) . "</th>
+                    <th class='text-right'>S/ " . number_format($totalHaber, 2) . "</th>
+                    <th class='text-right'><b>S/ " . number_format($saldoGeneral, 2) . "</b></th>
                 </tr>
             </tfoot>
         </table>
     ";
 
-    return $html;
-}
+        return $html;
+    }
 
 
+    public function listaCreditos($idsucursal, $fecha_inicio, $fecha_fin)
+    {
+        $sql = "SELECT 
+                    cl.idpersona,
+                    cl.nombre AS cliente,
+                    COUNT(DISTINCT v.idventa) AS total_creditos,
+                    SUM(c.deudatotal) AS deuda_total,
+                    SUM(c.abonototal) AS total_pagado,
+                    SUM(c.deudatotal - c.abonototal) AS saldo_pendiente
+                FROM persona cl
+                INNER JOIN venta v ON v.idcliente = cl.idpersona
+                INNER JOIN cuentas_por_cobrar c ON c.idventa = v.idventa
+                WHERE v.idsucursal = '$idsucursal' AND DATE(c.fecharegistro) BETWEEN '$fecha_inicio' AND '$fecha_fin' AND c.condicion = '1'
+                GROUP BY cl.idpersona, cl.nombre
+                ORDER BY cl.nombre ASC";
+        $result = ejecutarConsulta($sql);
+        
+        $data = Array();
+        $count = 1;
+        while ($row = $result->fetch_object()) {
+            $data[] = array(
+                "0" => $count++,
+                "1" => $row->cliente,
+                "2" => $row->total_creditos,
+                "3" => number_format($row->deuda_total, 2),
+                "4" => number_format($row->total_pagado, 2),
+                "5"=> number_format($row->saldo_pendiente, 2),
+                "6"=> "<button class='btn btn-sm btn-info' onclick='verDetalleCliente({$row->idpersona})'>
+                        <i class='fas fa-eye'></i> Ver Detalle
+                    </button>"
+            );
+        }
+        $results = array(
+            "sEcho" => 1,
+            "iTotalRecords" => count($data),
+            "iTotalDisplayRecords" => count($data),
+            "aaData" => $data
+        );
+		echo json_encode($results);
+    }
 
 }
 
