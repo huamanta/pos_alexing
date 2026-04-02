@@ -587,22 +587,60 @@ class Venta
 
             $monto_cuota = round((($montoDeuda * ($interes / 100)) + $montoDeuda) / $input_cuotas, 2);
 
-            while ($cuotas < count($fecha_pago)) {
-                $fv = mysqli_real_escape_string($conexion, (string) $fecha_pago[$cuotas]);
+            if ($tipopago == 'Si' && $sw) {
 
-                $sql_cpc = "INSERT INTO cuentas_por_cobrar (
-                idventa, fecharegistro, deudatotal, deuda_base, fechavencimiento, abonototal, deuda, interes
-            ) VALUES (
-                '$idventanew', '$fecha_hora', '$monto_cuota', '$monto_cuota', '$fv', 0, '$monto_cuota', 0
-            )";
+                $cuotas = 0;
+                $montoDeuda = floatval($montoDeuda);
+                $interes = floatval($interes);
+                $input_cuotas = intval($input_cuotas);
 
-                if (!ejecutarConsulta($sql_cpc)) {
-                    error_log("ERROR insert cuentas_por_cobrar: " . mysqli_error($conexion));
-                    error_log("SQL: " . $sql_cpc);
-                    $sw = false;
-                    break;
+                if ($input_cuotas <= 0) {
+                    $input_cuotas = 1;
                 }
-                $cuotas++;
+
+                // 🔹 Calcular interés total
+                $interes_total = round($montoDeuda * ($interes / 100), 2);
+
+                // 🔹 Calcular base por cuota
+                $capital_cuota_base = round($montoDeuda / $input_cuotas, 2);
+                $interes_cuota_base = round($interes_total / $input_cuotas, 2);
+
+                // 🔹 Acumuladores para ajuste final
+                $capital_acumulado = 0;
+                $interes_acumulado = 0;
+
+                while ($cuotas < count($fecha_pago)) {
+
+                    $fv = mysqli_real_escape_string($conexion, (string) $fecha_pago[$cuotas]);
+
+                    // 🔹 Valores por defecto
+                    $capital_cuota = $capital_cuota_base;
+                    $interes_cuota = $interes_cuota_base;
+
+                    // 🔥 Ajuste en la última cuota (evita descuadres)
+                    if ($cuotas == $input_cuotas - 1) {
+                        $capital_cuota = round($montoDeuda - $capital_acumulado, 2);
+                        $interes_cuota = round($interes_total - $interes_acumulado, 2);
+                    }
+
+                    // 🔹 Total cuota
+                    $monto_cuota = round($capital_cuota + $interes_cuota, 2);
+
+                    $sql_cpc = "INSERT INTO cuentas_por_cobrar (idventa, fecharegistro, deudatotal, deuda_base, fechavencimiento, abonototal, deuda, interes)
+                                 VALUES ('$idventanew', '$fecha_hora', '$monto_cuota', '$capital_cuota', '$fv', 0, '$monto_cuota', '$interes_cuota')";
+
+                    if (!ejecutarConsulta($sql_cpc)) {
+                        error_log("ERROR insert cuentas_por_cobrar: " . mysqli_error($conexion));
+                        error_log("SQL: " . $sql_cpc);
+                        $sw = false;
+                        break;
+                    }
+
+                    $capital_acumulado += $capital_cuota;
+                    $interes_acumulado += $interes_cuota;
+
+                    $cuotas++;
+                }
             }
         }
 
@@ -618,18 +656,25 @@ class Venta
             }
         }
 
-        // crear contrato
         if ($ventaCredito == "Si") {
-            $sql = "SELECT IFNULL(MAX(correlativo), 0) + 1 AS correlativo FROM documentacion";
-            $row = ejecutarConsultaSimpleFila($sql);
 
-            $correlativo = $row['correlativo'];
+            $tipos = [1, 2, 3, 4, 5]; // contrato, acta, orden, etc.
 
-            // Insertar
-            $sql_contrato = "INSERT INTO documentacion (`fecha_contrato`, `tipo`, `correlativo`, `estado`, `idventa`) 
-            VALUES ('$fechaActual', '1', '$correlativo', '1', '$idventanew')";
+            foreach ($tipos as $tipo) {
 
-            ejecutarConsulta($sql_contrato);
+                $sql = "SELECT IFNULL(MAX(correlativo), 0) + 1 AS correlativo 
+                        FROM documentacion 
+                        WHERE tipo = '$tipo'";
+                $row = ejecutarConsultaSimpleFila($sql);
+                $correlativo = $row['correlativo'];
+
+                $sql_insert = "INSERT INTO documentacion 
+                    (fecha_contrato, tipo, correlativo, estado, idventa)
+                    VALUES 
+                    ('$fechaActual', '$tipo', '$correlativo', '1', '$idventanew')";
+
+                ejecutarConsulta($sql_insert);
+            }
         }
 
         // =========================

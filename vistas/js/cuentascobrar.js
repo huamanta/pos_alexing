@@ -221,7 +221,7 @@ function listar()
             }],
 		"ajax":
 				{
-					url: 'controladores/cuentascobrar.php?op=listar',
+					url: 'controladores/cuentascobrar.php?op=listaCreditos',
 					data:{fecha_inicio: fecha_inicio,fecha_fin: fecha_fin,idcliente: idcliente,idsucursal: idsucursal},
 					type : "get",
 					dataType : "json",						
@@ -232,7 +232,6 @@ function listar()
 				},
 		"bDestroy": true,
 		"iDisplayLength":10,//Paginación
-	    "order": [[ 0, "desc" ]]//Ordenar (columna,orden)
 	}).DataTable();
 }
 
@@ -451,12 +450,14 @@ async function mostrar(idcpc) {
             data = JSON.parse(data);
             console.log(data);
             
-
+            var total_venta = parseFloat(data.total_venta);
+            var interes = total_venta * (data.interes / 100);
+            var deuda = parseFloat(data.deuda);
             $('#documento').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
-            $("#deutaTotal").text(data.deuda);
-            $("#valorVenta").text(data.total_venta);
-            $("#valorInteres").text(data.total_venta * (data.interes/100));
-            $("#montoAdeudado").val(data.deudatotal);
+            $("#deutaTotal").text(deuda.toFixed(2));
+            $("#valorVenta").text(total_venta.toFixed(2));
+            $("#valorInteres").text(interes.toFixed(2));
+            $("#montoAdeudado").val(deuda.toFixed(2));
             $("#idcpc").val(data.idcpc);
             
             $("#idventa").val(data.idventa);
