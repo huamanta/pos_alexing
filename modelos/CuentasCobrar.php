@@ -947,8 +947,163 @@ class CuentasCobrar
     }
 
 
-    public function listaCreditos($idsucursal, $fecha_inicio, $fecha_fin)
+    public function listaVentasPorCliente($idcliente, $idsucursal, $fecha_inicio, $fecha_fin)
     {
+        $filtroSucursal = "";
+        if (!empty($idsucursal) && $idsucursal != "Todos" && $idsucursal != "null") {
+            $filtroSucursal = "AND v.idsucursal = '$idsucursal'";
+        }
+
+        $sql = "SELECT
+                    v.idventa,
+                    DATE_FORMAT(v.fecha_hora, '%d/%m/%y | %H:%i:%s %p') AS fecha_venta,
+                    v.tipo_comprobante,
+                    v.serie_comprobante,
+                    v.num_comprobante,
+                    v.total_venta,
+                    SUM(cc.abonototal) AS total_abonado,
+                    SUM(cc.deudatotal) AS saldo_pendiente
+                FROM venta v
+                INNER JOIN cuentas_por_cobrar cc ON cc.idventa = v.idventa
+                WHERE v.idcliente = '$idcliente'
+                  AND DATE(cc.fecharegistro) BETWEEN '$fecha_inicio' AND '$fecha_fin'
+                  AND cc.condicion = '1'
+                  $filtroSucursal
+                GROUP BY v.idventa, v.fecha_hora, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta
+                ORDER BY v.idventa DESC";
+
+        $result = ejecutarConsulta($sql);
+        $data = array();
+
+        while ($row = $result->fetch_object()) {
+            $estado = (floatval($row->saldo_pendiente) <= 0)
+                ? '<center><span class="badge bg-green">Cancelado</span></center>'
+                : '<center><span class="badge bg-red">Por Cancelar</span></center>';
+
+            $doc = $row->tipo_comprobante . '-' . $row->serie_comprobante . '-' . $row->num_comprobante;
+            $saldo = round(floatval($row->saldo_pendiente), 2);
+
+            $data[] = array(
+                "0" => $row->fecha_venta,
+                "1" => $doc,
+                "2" => number_format($row->total_venta, 2),
+                "3" => number_format($row->total_abonado, 2),
+                "4" => number_format($row->saldo_pendiente, 2),
+                "5" => $estado,
+                "6" => "<button class='btn btn-sm btn-primary' onclick='verCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\")'>
+                            <i class='fas fa-list'></i> Ver cuotas
+                        </button>"
+            );
+        }
+
+        return json_encode(array(
+            "sEcho" => 1,
+            "iTotalRecords" => count($data),
+            "iTotalDisplayRecords" => count($data),
+            "aaData" => $data
+        ));
+    }
+
+    public function listaCuotasPorCredito($idventa)
+    {
+        $sql = "SELECT
+                    cc.idcpc,
+                    DATE_FORMAT(cc.fecharegistro, '%d/%m/%y | %H:%i:%s %p') AS fecha_registro,
+                    DATE_FORMAT(cc.fechavencimiento, '%d/%m/%y') AS fecha_vencimiento,
+                    DATE(cc.fechavencimiento) AS fecha_venc_raw,
+                    cc.abonototal,
+                    cc.deudatotal,
+                    cc.deuda,
+                    cc.estado_pago,
+                    cc.mora
+                FROM cuentas_por_cobrar cc
+                WHERE cc.idventa = '$idventa'
+                  AND cc.condicion = '1'
+                ORDER BY cc.idcpc DESC";
+
+        $result = ejecutarConsulta($sql);
+        $data = array();
+        $rows = array();
+        $hoy = new DateTime(date('Y-m-d'));
+        $proximaIdcpc = null;
+        $minDias = PHP_INT_MAX;
+
+        while ($row = $result->fetch_object()) {
+            $saldo = floatval($row->deuda);
+            $row->saldo_calculado = $saldo;
+            $rows[] = $row;
+
+            if ($saldo > 0 && !empty($row->fecha_venc_raw)) {
+                $fechaVenc = new DateTime($row->fecha_venc_raw);
+                if ($fechaVenc >= $hoy) {
+                    $dias = (int) $hoy->diff($fechaVenc)->days;
+                    if ($dias < $minDias) {
+                        $minDias = $dias;
+                        $proximaIdcpc = $row->idcpc;
+                    }
+                }
+            }
+        }
+
+        foreach ($rows as $row) {
+            $saldo = floatval($row->saldo_calculado);
+            $estado = ($saldo <= 0)
+                ? '<center><span class="badge bg-green">Cancelado</span></center>'
+                : '<center><span class="badge bg-red">Por Cancelar</span></center>';
+
+            $acciones = ($saldo <= 0)
+                ? "<div class='btn-group'>
+                        <button type='button' class='btn btn-sm btn-info' onclick='mostrarAbonos({$row->idcpc})'>Ver abonos</button>
+                        <button type='button' class='btn btn-sm btn-secondary' onclick='verEstadoCuenta({$row->idcpc})'>Estado cuenta</button>
+                   </div>"
+                : "<div class='btn-group'>
+                        <button type='button' class='btn btn-sm btn-success' onclick='mostrar({$row->idcpc})'>Crear abono</button>
+                        <button type='button' class='btn btn-sm btn-info' onclick='mostrarAbonos({$row->idcpc})'>Ver abonos</button>
+                        <button type='button' class='btn btn-sm btn-secondary' onclick='verEstadoCuenta({$row->idcpc})'>Estado cuenta</button>
+                   </div>";
+
+            $rowClass = '';
+            if ($saldo > 0 && !empty($row->fecha_venc_raw)) {
+                $fechaVenc = new DateTime($row->fecha_venc_raw);
+                if ($fechaVenc < $hoy) {
+                    $rowClass = 'fila-cuota-vencida';
+                } elseif ($proximaIdcpc !== null && intval($row->idcpc) === intval($proximaIdcpc)) {
+                    $rowClass = 'fila-cuota-proxima';
+                }
+            }
+
+            $data[] = array(
+                "DT_RowClass" => $rowClass,
+                "0" => $row->fecha_registro,
+                "1" => $row->fecha_vencimiento,
+                "2" => number_format($row->abonototal, 2),
+                "3" => number_format($row->deudatotal, 2),
+                "4" => number_format($saldo, 2),
+                "5" => $estado,
+                "6" => $acciones
+            );
+        }
+
+        return json_encode(array(
+            "sEcho" => 1,
+            "iTotalRecords" => count($data),
+            "iTotalDisplayRecords" => count($data),
+            "aaData" => $data
+        ));
+    }
+
+    public function listaCreditos($idsucursal, $fecha_inicio, $fecha_fin, $idcliente = null)
+    {
+        $filtroSucursal = "";
+        if (!empty($idsucursal) && $idsucursal != "Todos" && $idsucursal != "null") {
+            $filtroSucursal = "AND v.idsucursal = '$idsucursal'";
+        }
+
+        $filtroCliente = "";
+        if (!empty($idcliente) && $idcliente != "Todos" && $idcliente != "null") {
+            $filtroCliente = "AND cl.idpersona = '$idcliente'";
+        }
+
         $sql = "SELECT 
                     cl.idpersona,
                     cl.nombre AS cliente,
@@ -959,33 +1114,129 @@ class CuentasCobrar
                 FROM persona cl
                 INNER JOIN venta v ON v.idcliente = cl.idpersona
                 INNER JOIN cuentas_por_cobrar c ON c.idventa = v.idventa
-                WHERE v.idsucursal = '$idsucursal' AND DATE(c.fecharegistro) BETWEEN '$fecha_inicio' AND '$fecha_fin' AND c.condicion = '1'
+                WHERE DATE(c.fecharegistro) BETWEEN '$fecha_inicio' AND '$fecha_fin'
+                  AND c.condicion = '1'
+                  $filtroSucursal
+                  $filtroCliente
                 GROUP BY cl.idpersona, cl.nombre
                 ORDER BY cl.nombre ASC";
         $result = ejecutarConsulta($sql);
-        
-        $data = Array();
+
+        $data = array();
         $count = 1;
         while ($row = $result->fetch_object()) {
+            $nombreCliente = addslashes($row->cliente);
             $data[] = array(
                 "0" => $count++,
                 "1" => $row->cliente,
                 "2" => $row->total_creditos,
                 "3" => number_format($row->deuda_total, 2),
                 "4" => number_format($row->total_pagado, 2),
-                "5"=> number_format($row->saldo_pendiente, 2),
-                "6"=> "<button class='btn btn-sm btn-info' onclick='verDetalleCliente({$row->idpersona})'>
+                "5" => number_format($row->saldo_pendiente, 2),
+                "6" => "<button class='btn btn-sm btn-info' onclick='verDetalleCliente({$row->idpersona}, \"{$nombreCliente}\")'>
                         <i class='fas fa-eye'></i> Ver Detalle
                     </button>"
             );
         }
-        $results = array(
+
+        return json_encode(array(
             "sEcho" => 1,
             "iTotalRecords" => count($data),
             "iTotalDisplayRecords" => count($data),
             "aaData" => $data
-        );
-		echo json_encode($results);
+        ));
+    }
+
+    public function amortizarDeudaVenta($idventa, $formapago, $montopago, $idcaja, $idpersonal)
+    {
+        $sql = "SELECT cc.idcpc,
+                       cc.fechavencimiento,
+                       cc.fecharegistro
+                FROM cuentas_por_cobrar cc
+                WHERE cc.idventa = '$idventa'
+                  AND cc.condicion = 1
+                ORDER BY cc.fechavencimiento ASC, cc.fecharegistro ASC";
+
+        $lista = ejecutarConsulta($sql);
+
+        $data = false;
+        $pago = floatval($montopago);
+        $totalAmortizado = 0;
+
+        while ($reg = $lista->fetch_object()) {
+            if ($pago <= 0) {
+                break;
+            }
+
+            $this->actualizarMoraDiaria($reg->idcpc);
+
+            $filaAct = ejecutarConsultaSimpleFila("SELECT deuda_base, mora, deudatotal, abonototal FROM cuentas_por_cobrar WHERE idcpc = '$reg->idcpc'");
+            if (!$filaAct) {
+                continue;
+            }
+
+            $deuda_base = floatval($filaAct['deuda_base']);
+            $mora = floatval($filaAct['mora']);
+            $abonototal_actual = floatval($filaAct['abonototal']);
+            $deudaPendiente = floatval($filaAct['deudatotal']);
+
+            if ($deuda_base <= 0) {
+                $deuda_base = $deudaPendiente;
+            }
+
+            if ($deudaPendiente <= 0) {
+                continue;
+            }
+
+            $mora_pagada = min($pago, $mora);
+            $mora -= $mora_pagada;
+            $pago -= $mora_pagada;
+
+            $capital_pagado = min($pago, $deuda_base);
+            $deuda_base -= $capital_pagado;
+            $pago -= $capital_pagado;
+
+            $montoPagadoTotal = $capital_pagado + $mora_pagada;
+            if ($montoPagadoTotal <= 0) {
+                continue;
+            }
+
+            $sqlDetalle = "INSERT INTO detalle_cuentas_por_cobrar
+                            (idcpc, idcaja, idpersonal, montopagado, montotarjeta, banco, op, fechapago, formapago, observacion)
+                           VALUES
+                            ('$reg->idcpc', '$idcaja', '$idpersonal', '$montoPagadoTotal', 0, '', '', CURDATE(), '$formapago', 'AMORTIZACION CREDITO')";
+            ejecutarConsulta($sqlDetalle);
+
+            $nuevoTotal = round($deuda_base + $mora, 2);
+            $abonototal_nuevo = $abonototal_actual + $montoPagadoTotal;
+
+            $sqlUpdate = "UPDATE cuentas_por_cobrar
+                          SET deuda_base = '$deuda_base',
+                              deudatotal = '$nuevoTotal',
+                              abonototal = '$abonototal_nuevo',
+                              fecha_update_mora = CURDATE()
+                          WHERE idcpc = '$reg->idcpc'";
+            ejecutarConsulta($sqlUpdate);
+
+            if ($nuevoTotal <= 0) {
+                ejecutarConsulta("UPDATE cuentas_por_cobrar SET estado_pago = 0 WHERE idcpc = '$reg->idcpc'");
+            }
+
+            $totalAmortizado += $montoPagadoTotal;
+            $data = true;
+        }
+
+        if ($data) {
+            return [
+                'success' => true,
+                'message' => "Se amortizo correctamente S/ " . number_format($totalAmortizado, 2)
+            ];
+        }
+
+        return [
+            'success' => false,
+            'message' => "No se realizo ninguna amortizacion"
+        ];
     }
 
 }

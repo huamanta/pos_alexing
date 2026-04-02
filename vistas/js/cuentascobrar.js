@@ -1,4 +1,8 @@
 var tabla;
+var tablaCreditosCliente;
+var tablaCuotasCredito;
+var ventaActualCuotas = null;
+var saldoActualCuotas = 0;
 
 //Función que se ejecuta al inicio
 function init(){
@@ -180,7 +184,11 @@ function listar()
         $("#fecha_fin").val(fecha_fin);
     }
 
-	tabla=$('#tbllistadocuentasxcobrar').dataTable(
+    $('#vistaListaClientes').show();
+    $('#vistaCreditosCliente').hide();
+    $('#panelSuperiorCxC').show();
+
+    tabla=$('#tbllistadocuentasxcobrar').dataTable(
 	{
 		//"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
 		"aProcessing": true,//Activamos el procesamiento del datatables
@@ -309,6 +317,7 @@ async function amortizarDeuda(deuda, idcliente, fecha_inicio, fecha_fin) {
     $('#montoAdeudadoAmortizar').val(parseFloat(deuda).toFixed(2));
     $('#deudaTotalAmortizar').html(parseFloat(deuda).toFixed(2));
     $('#idcliente_amortizar').val(idcliente);
+    $('#idventa_amortizar').val('');
     $('#fecha_inicio_amortizar').val(fecha_inicio);
     $('#fecha_fin_amortizar').val(fecha_fin);
 }
@@ -339,10 +348,13 @@ $('#formulario-amortizar').submit(async function(e) {
 		        Swal.fire('Éxito', data.message, 'success'); // ✅ ahora sí sale
 		        listar();
 		        listarSaldos();
+                if (tablaCreditosCliente) tablaCreditosCliente.ajax.reload(null, false);
+                if (tablaCuotasCredito) tablaCuotasCredito.ajax.reload(null, false);
 		        $('#modalAmortizar').modal('hide');
 		        $('#montoAdeudadoAmortizar').val('');
 		        $('#deudaTotalAmortizar').html('');
 		        $('#idcliente_amortizar').val('');
+                $('#idventa_amortizar').val('');
 		        $('#fecha_inicio_amortizar').val('');
 		        $('#fecha_fin_amortizar').val('');
 		    } else {
@@ -511,6 +523,111 @@ function mostrarAbonos(idcpc){
 
 }
 
+function toNumber(valor) {
+    if (valor === null || valor === undefined) return 0;
+    return parseFloat((valor + '').replace(/,/g, '')) || 0;
+}
+
+function verDetalleCliente(idcliente, nombreCliente) {
+    var fecha_inicio = $("#fecha_inicio").val();
+    var fecha_fin = $("#fecha_fin").val();
+    var idsucursal = $("#idsucursal2").val();
+
+    if (!nombreCliente || nombreCliente === "Todos") {
+        nombreCliente = "Cliente";
+    }
+
+    $("#detalleClienteTitulo").text(nombreCliente);
+    $('#panelSuperiorCxC').hide();
+    $('#vistaListaClientes').hide();
+    $('#vistaCreditosCliente').show();
+
+    tablaCreditosCliente = $("#tbllistadoCreditosCliente").dataTable({
+        "aProcessing": true,
+        "aServerSide": false,
+        "responsive": true,
+        "lengthChange": false,
+        "autoWidth": false,
+        "ajax": {
+            url: "controladores/cuentascobrar.php?op=listar_creditos_cliente",
+            data: {
+                idcliente: idcliente,
+                fecha_inicio: fecha_inicio,
+                fecha_fin: fecha_fin,
+                idsucursal: idsucursal
+            },
+            type: "get",
+            dataType: "json",
+            dataSrc: function (json) {
+                return json && json.aaData ? json.aaData : [];
+            },
+            error: function (e) {
+                console.log(e.responseText);
+            }
+        },
+        "bDestroy": true,
+        "iDisplayLength": 10
+    }).DataTable();
+}
+
+function volverListaClientes() {
+    $('#vistaCreditosCliente').hide();
+    $('#vistaListaClientes').show();
+    $('#panelSuperiorCxC').show();
+}
+
+function verCuotasCredito(idventa, saldoPendiente, documento) {
+    ventaActualCuotas = idventa;
+    saldoActualCuotas = toNumber(saldoPendiente);
+    $('#tituloCreditoCuotas').text(documento ? ('- ' + documento) : '');
+
+    if (saldoActualCuotas > 0) {
+        $('#btnAmortizarCuotas').show();
+    } else {
+        $('#btnAmortizarCuotas').hide();
+    }
+
+    $("#modalCuotasCredito").modal("show");
+
+    tablaCuotasCredito = $("#tbllistadoCuotasCredito").dataTable({
+        "aProcessing": true,
+        "aServerSide": true,
+        "responsive": true,
+        "lengthChange": false,
+        "autoWidth": false,
+        "ajax": {
+            url: "controladores/cuentascobrar.php?op=listar_cuotas_credito",
+            data: { idventa: idventa },
+            type: "get",
+            dataType: "json",
+            error: function (e) {
+                console.log(e.responseText);
+            }
+        },
+        "bDestroy": true,
+        "iDisplayLength": 10
+    }).DataTable();
+}
+
+$('#btnAmortizarCuotas').on('click', async function () {
+    const idcaja = await verificarCaja();
+    if (!idcaja) {
+        Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
+        return;
+    }
+
+    $('#idcaja').val(idcaja);
+    $('#idventa_amortizar').val(ventaActualCuotas);
+    $('#idcliente_amortizar').val('');
+    $('#fecha_inicio_amortizar').val('');
+    $('#fecha_fin_amortizar').val('');
+
+    $('#montoAdeudadoAmortizar').val(saldoActualCuotas.toFixed(2));
+    $('#deudaTotalAmortizar').html(saldoActualCuotas.toFixed(2));
+    $('#montoPagarAmortizar').val('');
+    $('#modalAmortizar').modal('show');
+});
+
 function verEstadoCuenta(idcpc){
   $.get(
     "controladores/cuentascobrar.php?op=estado_cuenta",
@@ -542,6 +659,23 @@ function verEstadoCuentaCliente(idcliente, fecha_inicio, fecha_fin) {
         }
     );
 }
+
+// Ajuste para modales apilados: asegura que el modal nuevo quede al frente.
+$(document).on('show.bs.modal', '.modal', function () {
+    var zIndex = 1040 + (10 * $('.modal:visible').length);
+    $(this).css('z-index', zIndex);
+    setTimeout(function () {
+        $('.modal-backdrop').not('.modal-stack')
+            .css('z-index', zIndex - 1)
+            .addClass('modal-stack');
+    }, 0);
+});
+
+$(document).on('hidden.bs.modal', '.modal', function () {
+    if ($('.modal:visible').length) {
+        $('body').addClass('modal-open');
+    }
+});
 
 
 init();

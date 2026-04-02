@@ -235,7 +235,10 @@ switch ($_GET["op"]) {
 				$_POST["idp"],
 				$_POST["check_precio"],
 				$_POST["id_detalle_compra_lote"],
-				$_POST["idcategoria"]
+				$_POST["idcategoria"],
+				$idgarante,
+				$idacompanante,
+				$idtipoacompanante
 			);
 			echo $rspta;
 		}

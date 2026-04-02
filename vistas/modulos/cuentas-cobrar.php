@@ -157,6 +157,14 @@ date_default_timezone_set('America/Lima');
     color: #a77170;
 }
 
+.fila-cuota-vencida {
+  background-color: #ffd6d6 !important;
+}
+
+.fila-cuota-proxima {
+  background-color: #fff4cc !important;
+}
+
 </style>
 
 <div class="content-wrapper">
@@ -196,6 +204,7 @@ date_default_timezone_set('America/Lima');
             </div>
             <!-- /.card-header -->
             <div class="card-body">
+              <div id="panelSuperiorCxC">
               <div class="col-md-3">
                   <button class="btn btn-warning" id="btnEnviarRecordatorioSemana">
                       <i class="fas fa-paper-plane"></i> Enviar recordatorios vencidos
@@ -212,7 +221,7 @@ date_default_timezone_set('America/Lima');
                         <i class="far fa-calendar-alt"></i>
                       </span>
                     </div>
-                    <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio" value="<?php echo date("Y-m-d"); ?>">
+                    <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio" value="<?php echo date("Y-m-01"); ?>">
                   </div>
                 </div>
 
@@ -302,29 +311,63 @@ date_default_timezone_set('America/Lima');
                 </div>
               </div>
               <!-- ./row Tarjetas Informativas -->
+              </div>
 
-              <table id="tbllistadocuentasxcobrar" class="table table-striped">
-                <thead>
-                  <th>#</th>
-                  <th>Cliente</th>
-                  <th>Total creditos</th>
-                  <th>Deuda total</th>
-                  <th>Total pagado</th>
-                  <th>Saldo pendiente</th>
-                  <th>Acciones</th>
-                </thead>
-                <tbody>
-                </tbody>
-                <tfoot>
-                  <th>#</th>
-                  <th>Cliente</th>
-                  <th>Total creditos</th>
-                  <th>Deuda total</th>
-                  <th>Total pagado</th>
-                  <th>Saldo pendiente</th>
-                  <th>Acciones</th>
-                </tfoot>
-              </table>
+              <div id="vistaListaClientes">
+                <table id="tbllistadocuentasxcobrar" class="table table-striped">
+                  <thead>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Total creditos</th>
+                    <th>Deuda total</th>
+                    <th>Total pagado</th>
+                    <th>Saldo pendiente</th>
+                    <th>Acciones</th>
+                  </thead>
+                  <tbody>
+                  </tbody>
+                  <tfoot>
+                    <th>#</th>
+                    <th>Cliente</th>
+                    <th>Total creditos</th>
+                    <th>Deuda total</th>
+                    <th>Total pagado</th>
+                    <th>Saldo pendiente</th>
+                    <th>Acciones</th>
+                  </tfoot>
+                </table>
+              </div>
+
+              <div id="vistaCreditosCliente" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5 style="margin:0;">Créditos / Ventas de <span id="detalleClienteTitulo"></span></h5>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="volverListaClientes()">
+                    <i class="fas fa-arrow-left"></i> Volver
+                  </button>
+                </div>
+
+                <table id="tbllistadoCreditosCliente" class="table table-striped table-bordered" width="100%">
+                  <thead>
+                    <th>Fecha Venta</th>
+                    <th>Documento</th>
+                    <th>Total Venta</th>
+                    <th>Total Abonado</th>
+                    <th>Saldo Pendiente</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </thead>
+                  <tbody></tbody>
+                  <tfoot>
+                    <th>Fecha Venta</th>
+                    <th>Documento</th>
+                    <th>Total Venta</th>
+                    <th>Total Abonado</th>
+                    <th>Saldo Pendiente</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tfoot>
+                </table>
+              </div>
 
               <!--table id="tbllistadocuentasxcobrar" class="table table-striped">
                 <thead>
@@ -371,14 +414,39 @@ date_default_timezone_set('America/Lima');
   <!-- /.content -->
 </div>
 
-<div class="modal fade" id="modalEstadoCuenta">
+<div class="modal fade" id="modalCuotasCredito">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Estado de Cuenta</h4>
+        <h4 class="modal-title">Cuentas por Cobrar del Crédito <small id="tituloCreditoCuotas"></small></h4>
+        <button type="button" class="btn btn-success btn-sm mr-2" id="btnAmortizarCuotas" style="display:none;">
+          Amortizar
+        </button>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
-      <div class="modal-body" id="estadoCuentaContenido"></div>
+      <div class="modal-body">
+        <table id="tbllistadoCuotasCredito" class="table table-striped table-bordered" width="100%">
+          <thead>
+            <th>Fecha Registro</th>
+            <th>Fecha Vencimiento</th>
+            <th>Abonado</th>
+            <th>Deuda</th>
+            <th>Saldo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <th>Fecha Registro</th>
+            <th>Fecha Vencimiento</th>
+            <th>Abonado</th>
+            <th>Deuda</th>
+            <th>Saldo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tfoot>
+        </table>
+      </div>
     </div>
   </div>
 </div>
@@ -681,6 +749,7 @@ date_default_timezone_set('America/Lima');
         <div class="modal-body">
 
           <input type="hidden" name="idcliente_amortizar" id="idcliente_amortizar">
+          <input type="hidden" name="idventa_amortizar" id="idventa_amortizar">
           <input type="hidden"  id="idcaja" name="idcaja">
           <input type="hidden" name="fecha_inicio_amortizar" id="fecha_inicio_amortizar">
           <input type="hidden" name="fecha_fin_amortizar" id="fecha_fin_amortizar">

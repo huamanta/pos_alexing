@@ -139,7 +139,7 @@ session_start();
 
 
     echo '<div class="wrapper">     
-                <input type="text" value="' . ($_SESSION['monto_impuesto'] ?? '') . '" id="valorImpuestoGlobal"/>';
+                <input type="hidden" value="' . ($_SESSION['monto_impuesto'] ?? '') . '" id="valorImpuestoGlobal"/>';
     /*=============================================
     CABEZOTE
     =============================================*/

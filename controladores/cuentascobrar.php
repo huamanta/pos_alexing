@@ -235,22 +235,34 @@ switch ($_GET["op"]) {
 	case 'amortizar_deuda':
 		$deuda = $_POST['montoPagarAmortizar'];
 		$idcliente = $_POST['idcliente_amortizar'];
+		$idventa_amortizar = isset($_POST['idventa_amortizar']) ? limpiarCadena($_POST['idventa_amortizar']) : '';
 		$fecha_inicio = $_POST['fecha_inicio_amortizar'];
 		$fecha_fin = $_POST['fecha_fin_amortizar'];
 		$formapago = $_POST['formapagoAmortizar'];
 		$montopago = $_POST['montoPagarAmortizar'];
 		$idcaja = $_POST['idcaja']; // Caja abierta actual
 		$idpersonal = $_SESSION['idusuario'];
-		$rspta = $cuentascobrar->amortizarDeuda(
-			$deuda,
-			$idcliente,
-			$fecha_inicio,
-			$fecha_fin,
-			$formapago,
-			$montopago,
-			$idcaja,
-			$idpersonal
-		);
+
+		if (!empty($idventa_amortizar)) {
+			$rspta = $cuentascobrar->amortizarDeudaVenta(
+				$idventa_amortizar,
+				$formapago,
+				$montopago,
+				$idcaja,
+				$idpersonal
+			);
+		} else {
+			$rspta = $cuentascobrar->amortizarDeuda(
+				$deuda,
+				$idcliente,
+				$fecha_inicio,
+				$fecha_fin,
+				$formapago,
+				$montopago,
+				$idcaja,
+				$idpersonal
+			);
+		}
 		echo json_encode($rspta);
 		break;
 
@@ -302,17 +314,39 @@ switch ($_GET["op"]) {
 		);
 		break;
 
+	case 'listar_creditos_cliente':
+		$idcliente = $_REQUEST['idcliente'];
+		$fecha_inicio = $_REQUEST['fecha_inicio'];
+		$fecha_fin = $_REQUEST['fecha_fin'];
+		$idsucursal = $_REQUEST['idsucursal'] ?? null;
+
+		if (empty($idsucursal) || $idsucursal == "null" || $idsucursal == "Todos") {
+			if (isset($_SESSION['idsucursal']) && $_SESSION['idsucursal'] != 0) {
+				$idsucursal = $_SESSION['idsucursal'];
+			} else {
+				$idsucursal = "Todos";
+			}
+		}
+
+		echo $cuentascobrar->listaVentasPorCliente($idcliente, $idsucursal, $fecha_inicio, $fecha_fin);
+		break;
+
+	case 'listar_cuotas_credito':
+		$idventa = $_REQUEST['idventa'];
+		echo $cuentascobrar->listaCuotasPorCredito($idventa);
+		break;
+
 
 	case 'listaCreditos':
 		$idsucursal = isset($_GET["idsucursal"]) ? limpiarCadena($_GET["idsucursal"]) : null;
+		$idcliente = isset($_GET["idcliente"]) ? limpiarCadena($_GET["idcliente"]) : null;
 
 		$sucursal = !empty($idsucursal) ? $idsucursal : $_SESSION['idsucursal'];
 
 		$fecha_inicio = $_REQUEST["fecha_inicio"];
 		$fecha_fin = $_REQUEST["fecha_fin"];
 
-		$rspta = $cuentascobrar->listaCreditos($sucursal, $fecha_inicio, $fecha_fin);
-		echo $rspta;
+		echo $cuentascobrar->listaCreditos($sucursal, $fecha_inicio, $fecha_fin, $idcliente);
 		break;
 }
 

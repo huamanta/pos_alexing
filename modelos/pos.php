@@ -152,6 +152,20 @@ final class Pos
             header('Location: /ingreso');
             exit();
         }
+
+        // Evita crear aperturas duplicadas para la misma caja/usuario/sucursal.
+        $sqlCheck = "SELECT aperturacajaid FROM caja_apertura
+                     WHERE idcaja = '$caja_apertura'
+                       AND idusuario = '$idusuario'
+                       AND idsucursal = '$idsucursal'
+                       AND estado = 1
+                       AND fecha_cierre IS NULL
+                     LIMIT 1";
+        $exists = ejecutarConsulta($sqlCheck);
+        if ($exists && $exists->num_rows > 0) {
+            return true;
+        }
+
         $sql = "INSERT INTO caja_apertura (fecha_apertura, efectivo_apertura, idcaja, idusuario, idsucursal) VALUES ('$fecha_hora', '$efectivo_apertura','$caja_apertura','$idusuario','$idsucursal')";
         $update = "UPDATE cajas SET estado = 2 WHERE idcaja = '$caja_apertura'";
         ejecutarConsulta($update);
@@ -160,21 +174,28 @@ final class Pos
 
     public function cerrarCaja($fecha_hora, $efectivo_cierre, $idcaja, $idusuario, $idsucursal)
     {
+        global $conexion;
+
         $sql = "UPDATE caja_apertura SET fecha_cierre = '$fecha_hora', efectivo_cierre='$efectivo_cierre', estado='0'
-        WHERE idcaja = '$idcaja' AND idusuario = '$idusuario' AND idsucursal = '$idsucursal' AND estado = '1' LIMIT 1";
+        WHERE idcaja = '$idcaja' AND idusuario = '$idusuario' AND idsucursal = '$idsucursal' AND estado = '1' AND fecha_cierre IS NULL";
         $update = "UPDATE cajas SET estado = 1 WHERE idcaja = '$idcaja'";
-        ejecutarConsulta($update);
-        return ejecutarConsulta($sql);
+        ejecutarConsulta($sql);
+
+        if ($conexion->affected_rows > 0) {
+            return ejecutarConsulta($update);
+        }
+
+        return false;
     }
 
   public function showResumenCaja($idcaja, $idsucursal, $idusuario)
 {
-    // 1. Obtener el idpersonal del usuario logueado
+    // 1. Obtener idpersonal
     $sql_personal = "SELECT idpersonal FROM usuario WHERE idusuario = '$idusuario' LIMIT 1";
     $row_personal = ejecutarConsulta($sql_personal)->fetch_object();
     $idpersonal = $row_personal ? $row_personal->idpersonal : 0;
 
-    // 2. Obtener apertura de caja para la sucursal y usuario
+    // 2. Obtener apertura de caja
     $sqlap = "SELECT ca.*, c.idsucursal
               FROM caja_apertura ca
               INNER JOIN cajas c ON ca.idcaja = c.idcaja
@@ -186,32 +207,20 @@ final class Pos
     $apertura = ejecutarConsulta($sqlap)->fetch_object();
 
     if (!$apertura) {
-        // No hay caja abierta, devolvemos JSON seguro
         return json_encode([
-            "error" => "No hay caja abierta en esta sucursal para este usuario",
+            "error" => "No hay caja abierta",
             "efectivo_apertura" => 0,
-            "ventas_efectivo" => 0,
-            "cantidad_ventas_efectivo" => 0,
-            "ventas_no_efectivo" => 0,
-            "cantidad_ventas_no_efectivo" => 0,
-            "ventas_credito" => 0,
-            "cantidad_ventas_credito" => 0,
-            "ingresos_efectivo" => 0,
-            "ingresos_no_efectivo" => 0,
-            "egresos_efectivo" => 0,
-            "egresos_no_efectivo" => 0,
-            "abonos_efectivo" => 0,
-            "abonos_no_efectivo" => 0,
-            "total_efectivo" => 0,
-            "detalle_ventas" => []
+            "total_efectivo" => 0
         ]);
     }
 
-    $efectivo_apertura = $apertura->efectivo_apertura;
-    $fecha_hora = date("Y-m-d H:i:s", strtotime($apertura->fecha_apertura));
-    $now = date("Y-m-d H:i:s");
+    $efectivo_apertura = (float)$apertura->efectivo_apertura;
+    $fecha_inicio = date("Y-m-d H:i:s", strtotime($apertura->fecha_apertura));
+    $fecha_fin = date("Y-m-d H:i:s");
 
-    // 3. Total ventas (contado vs crédito)
+    // =========================================
+    // 3. VENTAS
+    // =========================================
     $sql_ventas = "SELECT vp.metodo_pago, v.ventacredito, 
                           SUM(vp.monto) AS total_ventas, 
                           COUNT(*) as cantidad
@@ -220,22 +229,25 @@ final class Pos
                    WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') 
                      AND v.idcaja = '$idcaja' 
                      AND v.idsucursal = '$idsucursal' 
-                     AND v.fecha_hora >= '$fecha_hora' 
-                     AND v.fecha_hora <= NOW()
+                     AND v.fecha_hora BETWEEN '$fecha_inicio' AND '$fecha_fin'
                      AND v.estado NOT IN ('Nota Credito','Anulado')
                    GROUP BY vp.metodo_pago, v.ventacredito";
+
     $ventas_query = ejecutarConsulta($sql_ventas);
 
     $ventas_efectivo = 0;
     $ventas_no_efectivo = 0;
+    $ventas_credito = 0;
+
     $cantidad_ventas_efectivo = 0;
     $cantidad_ventas_no_efectivo = 0;
-    $ventas_credito = 0;
     $cantidad_ventas_credito = 0;
+
     $detalle_ventas = [];
 
     while ($v = $ventas_query->fetch_object()) {
         $detalle_ventas[] = $v;
+
         if (strtolower($v->ventacredito) == 'si') {
             $ventas_credito += $v->total_ventas;
             $cantidad_ventas_credito += $v->cantidad;
@@ -250,13 +262,15 @@ final class Pos
         }
     }
 
-    // 4. Movimientos de ingresos y egresos
+    // =========================================
+    // 4. MOVIMIENTOS
+    // =========================================
     $sql_movs = "SELECT tipo, formapago, monto
                  FROM movimiento
                  WHERE idsucursal = '$idsucursal'
                    AND idcaja = '$idcaja'
-                   AND fecha >= '$fecha_hora'
-                   AND fecha <= '$now'";
+                   AND fecha BETWEEN '$fecha_inicio' AND '$fecha_fin'";
+
     $movimientos_query = ejecutarConsulta($sql_movs);
 
     $ingresos_efectivo = 0;
@@ -266,59 +280,70 @@ final class Pos
 
     while ($m = $movimientos_query->fetch_object()) {
         $fp = strtolower($m->formapago);
+
         if ($m->tipo == 'Ingresos') {
-            if ($fp == 'efectivo') $ingresos_efectivo += $m->monto;
-            else $ingresos_no_efectivo += $m->monto;
+            ($fp == 'efectivo') 
+                ? $ingresos_efectivo += $m->monto 
+                : $ingresos_no_efectivo += $m->monto;
         } elseif ($m->tipo == 'Egresos') {
-            if ($fp == 'efectivo') $egresos_efectivo += $m->monto;
-            else $egresos_no_efectivo += $m->monto;
+            ($fp == 'efectivo') 
+                ? $egresos_efectivo += $m->monto 
+                : $egresos_no_efectivo += $m->monto;
         }
     }
 
-    // 5. Abonos
-    $sql_abonos = "SELECT SUM(montopagado) AS total_efectivo, 
-                          SUM(montotarjeta) AS total_no_efectivo,
-                          LOWER(TRIM(formapago)) AS formapago
+    // =========================================
+    // 5. ABONOS (🔥 CORREGIDO)
+    // =========================================
+    $sql_abonos = "SELECT 
+                      SUM(montopagado) AS total_efectivo, 
+                      SUM(montotarjeta) AS total_no_efectivo
                    FROM detalle_cuentas_por_cobrar
                    WHERE idcaja = '$idcaja'
                      AND idpersonal = '$idpersonal'
-                     AND DATE(fechapago) BETWEEN DATE('$fecha_hora') AND DATE('$now')
-                   GROUP BY iddcpc";
-    $abonos_query = ejecutarConsulta($sql_abonos);
+                     AND fechapago BETWEEN '$fecha_inicio' AND '$fecha_fin'";
 
-    $abonos_efectivo = 0;
-    $abonos_no_efectivo = 0;
-    $detalle_abonos = [];
+    $a = ejecutarConsulta($sql_abonos)->fetch_object();
 
-    while ($a = $abonos_query->fetch_object()) {
-        $abonos_efectivo += $a->total_efectivo;
-        $abonos_no_efectivo += $a->total_no_efectivo;
+    $abonos_efectivo = (float)($a->total_efectivo ?? 0);
+    $abonos_no_efectivo = (float)($a->total_no_efectivo ?? 0);
 
-        if ($a->total_efectivo > 0) $detalle_abonos[] = ["formapago" => "Efectivo", "monto" => $a->total_efectivo];
-        if ($a->total_no_efectivo > 0) $detalle_abonos[] = ["formapago" => ucfirst($a->formapago), "monto" => $a->total_no_efectivo];
-    }
+    // =========================================
+    // 6. TOTAL EFECTIVO
+    // =========================================
+    $total_efectivo = $efectivo_apertura 
+                    + $ventas_efectivo 
+                    + $ingresos_efectivo 
+                    + $abonos_efectivo 
+                    - $egresos_efectivo;
 
-    // 6. Calcular total efectivo esperado
-    $total_efectivo = $efectivo_apertura + $ventas_efectivo + $ingresos_efectivo + $abonos_efectivo - $egresos_efectivo;
-
-    // 7. Retornar datos como JSON limpio
+    // =========================================
+    // 7. RESPUESTA
+    // =========================================
     return json_encode([
         "efectivo_apertura" => $efectivo_apertura,
+
         "ventas_efectivo" => $ventas_efectivo,
         "cantidad_ventas_efectivo" => $cantidad_ventas_efectivo,
+
         "ventas_no_efectivo" => $ventas_no_efectivo,
         "cantidad_ventas_no_efectivo" => $cantidad_ventas_no_efectivo,
+
         "ventas_credito" => $ventas_credito,
         "cantidad_ventas_credito" => $cantidad_ventas_credito,
+
         "ingresos_efectivo" => $ingresos_efectivo,
         "ingresos_no_efectivo" => $ingresos_no_efectivo,
+
         "egresos_efectivo" => $egresos_efectivo,
         "egresos_no_efectivo" => $egresos_no_efectivo,
+
         "abonos_efectivo" => $abonos_efectivo,
         "abonos_no_efectivo" => $abonos_no_efectivo,
+
         "total_efectivo" => $total_efectivo,
-        "detalle_ventas" => $detalle_ventas,
-        "detalle_abonos" => $detalle_abonos
+
+        "detalle_ventas" => $detalle_ventas
     ]);
 }
 

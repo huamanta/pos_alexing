@@ -691,7 +691,7 @@ class Venta
     }
 
 
-    public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $tipopago, $formapago, $nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido, $totaldeposito, $vuelto, $tipo, $banco, $idproducto, $nombre, $cantidad, $precio_venta, $descuento, $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, $idmotivo, $observaciones, $fecha_pago, $interes, $input_cuotas, $cantidad_contenedor, $contenedor, $idp, $check_precio)
+    public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $tipopago, $formapago, $nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido, $totaldeposito, $vuelto, $tipo, $banco, $idproducto, $nombre, $cantidad, $precio_venta, $descuento, $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, $idmotivo, $observaciones, $fecha_pago, $interes, $input_cuotas, $cantidad_contenedor, $contenedor, $idp, $check_precio, $id_fifo_lote = array(), $idcategoria = array(), $idgarante = '', $idacompanante = '', $idtipoacompanante = '')
     {
         $fechaActual = date('Y-m-d H:i:s');
 
@@ -810,7 +810,10 @@ class Venta
         totaldeposito='$totaldeposito',
         meses='$input_cuotas',
         vuelto='$vuelto',
-        fecha_hora='$fecha_hora'
+        fecha_hora='$fecha_hora',
+        idgarante='$idgarante',
+        idacompanante='$idacompanante',
+        idtipoacompanante='$idtipoacompanante'
         WHERE idventa='$idventa'");
 
         // --------- PAGOS: borrar los viejos y grabar los nuevos (venta_pago) ----------

@@ -5,10 +5,15 @@
         height: 24px;
         background-color: #dee2e6;
         margin: 0 12px;
-        display: none; /* Oculto en móvil */
+        display: none;
+        /* Oculto en móvil */
     }
+
     @media (min-width: 576px) {
-        .navbar-divider { display: inline-block; vertical-align: middle; }
+        .navbar-divider {
+            display: inline-block;
+            vertical-align: middle;
+        }
     }
 
     /* Contenedor "Pastilla" del Perfil */
@@ -16,17 +21,19 @@
         display: flex;
         align-items: center;
         padding: 4px 12px !important;
-        border-radius: 50px; /* Bordes redondeados */
+        border-radius: 50px;
+        /* Bordes redondeados */
         transition: all 0.2s ease-in-out;
         border: 1px solid transparent;
         margin-left: 5px;
     }
 
     /* Efecto al pasar el mouse (Hover) */
-    .user-profile-link:hover, .user-menu.show .user-profile-link {
+    .user-profile-link:hover,
+    .user-menu.show .user-profile-link {
         background-color: #f8f9fa;
         border-color: #e9ecef;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
     /* Círculo para el avatar/icono */
@@ -88,11 +95,11 @@
             type: "GET",
             contentType: false,
             processData: false,
-            success: function(datos) {
+            success: function (datos) {
                 var data = JSON.parse(datos);
                 if (!data.status) { sessionExpired(); }
             },
-            error: function(jqXHR, textStatus, errorThrown) { console.error("Error sesión:", textStatus); }
+            error: function (jqXHR, textStatus, errorThrown) { console.error("Error sesión:", textStatus); }
         });
     }
 
@@ -122,23 +129,42 @@
             url: 'controladores/venta.php?op=comprobantesPendientes',
             type: 'GET',
             dataType: 'json',
-            success: function(response){
-               if (response && response.total > 0) {
-                  toastr.warning("Tienes " + response.total + " comprobante(s) sin enviar a SUNAT", "Pendientes de Envío");
-               }
-            },
-            error: function(err) { console.error("Error comprobantes:", err); }
+            success: function (response) {
+
+                if (response && response.total > 0) {
+
+                    let ultima = localStorage.getItem("notif_comprobantes_time");
+                    let ahora = new Date().getTime();
+
+                    // 1 hora = 3600000 ms
+                    if (!ultima || (ahora - ultima) > 3600000) {
+
+                        toastr.warning(
+                            "Tienes " + response.total + " comprobante(s) sin enviar a SUNAT",
+                            "Pendientes de Envío",
+                            {
+                                positionClass: "toast-top-center"
+                            }
+                        );
+
+                        localStorage.setItem("notif_comprobantes_time", ahora);
+                    }
+                }
+            }
         });
     }
-    setInterval(checkComprobantesPendientes, 600000);
+
+    // Ejecuta una vez
     checkComprobantesPendientes();
+
+
 
     // ==================== Notificaciones de Traslados ====================
     let notificacionesMostradas = new Set();
 
     function verificarNuevasNotificaciones() {
         if (currentSucursal <= 0) return;
-        $.getJSON("controladores/traslado.php?op=listarnoti&idsucursal=" + currentSucursal, function(data) {
+        $.getJSON("controladores/traslado.php?op=listarnoti&idsucursal=" + currentSucursal, function (data) {
             if (!data || data.length === 0) return;
             data.forEach(n => {
                 if (!n.tipo || n.tipo.trim() === "") return;
@@ -180,7 +206,7 @@
 
         $("#toastContainer").append(toastHTML);
         const $toast = $('#' + toastId);
-        $toast.find('.toast-close').on('click', function(e) { e.stopPropagation(); cerrarToast($toast, idnotificacion, tipo); });
+        $toast.find('.toast-close').on('click', function (e) { e.stopPropagation(); cerrarToast($toast, idnotificacion, tipo); });
     }
 
     function cerrarToast($toast, idnotificacion, tipo) {
@@ -193,7 +219,7 @@
 
     function cerrarSolicitud(toastId, idnotificacion) {
         const $toast = $('#' + toastId);
-        $.post("controladores/traslado.php?op=marcarleida", { idnotificacion: idnotificacion }, function() {
+        $.post("controladores/traslado.php?op=marcarleida", { idnotificacion: idnotificacion }, function () {
             $toast.fadeOut(300, () => $toast.remove());
         });
     }
@@ -207,13 +233,13 @@
             confirmButtonText: 'Sí, aceptar',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
-            if(result.isConfirmed){
-                $.post("controladores/traslado.php?op=aceptar", { idtraslado: idtraslado }, function(respuesta){
-                    if(respuesta.includes("correctamente")){
+            if (result.isConfirmed) {
+                $.post("controladores/traslado.php?op=aceptar", { idtraslado: idtraslado }, function (respuesta) {
+                    if (respuesta.includes("correctamente")) {
                         Swal.fire('¡Aceptado!', respuesta, 'success');
                         if (idnotificacion) { $.post("controladores/traslado.php?op=marcarleida", { idnotificacion: idnotificacion }); }
                         $('#' + toastId).fadeOut(300, () => $('#' + toastId).remove());
-                        if(typeof tabla !== 'undefined') tabla.ajax.reload();
+                        if (typeof tabla !== 'undefined') tabla.ajax.reload();
                     } else {
                         Swal.fire('Error', respuesta, 'error');
                     }
@@ -271,7 +297,7 @@
 </script>
 
 <nav class="main-header navbar navbar-expand navbar-white navbar-light border-bottom-0 shadow-sm" id="navbar-global">
-    
+
     <ul class="navbar-nav">
         <li class="nav-item">
             <a class="nav-link" data-widget="pushmenu" role="button"><i class="fas fa-bars"></i></a>
@@ -279,7 +305,7 @@
     </ul>
 
     <ul class="navbar-nav ml-auto align-items-center">
-        
+
         <li class="nav-item">
             <a class="nav-link" data-widget="fullscreen" role="button" title="Pantalla Completa">
                 <i class="fas fa-expand-arrows-alt"></i>
@@ -298,7 +324,8 @@
                     <div class="cxcAlertList" style="max-height:300px; overflow-y:auto;"></div>
                 </div>
                 <div class="dropdown-divider"></div>
-                <a href="cuentas-cobrar" class="dropdown-item dropdown-footer text-primary font-weight-bold">Ver todas</a>
+                <a href="cuentas-cobrar" class="dropdown-item dropdown-footer text-primary font-weight-bold">Ver
+                    todas</a>
             </div>
         </li>
 
@@ -322,15 +349,16 @@
 
             <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right border-0 shadow-lg mt-2">
                 <li class="user-header bg-primary text-white">
-                    <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 60px; height: 60px;">
-                         <i class="fas fa-user-tie fa-2x text-primary"></i>
+                    <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                        style="width: 60px; height: 60px;">
+                        <i class="fas fa-user-tie fa-2x text-primary"></i>
                     </div>
                     <p class="mb-0 font-weight-bold">
                         <?php echo $_SESSION['nombre']; ?>
                     </p>
                     <small style="opacity: 0.8;"><?php echo $_SESSION['cargo']; ?></small>
                 </li>
-                
+
                 <li class="user-footer bg-light">
                     <a href="salir" class="btn btn-default btn-flat float-right btn-block text-danger font-weight-bold">
                         <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión

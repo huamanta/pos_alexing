@@ -691,6 +691,7 @@ function guardaryeditar(e) {
     contentType: false,
     processData: false,
     success: function (datos) {
+      console.log("Respuesta del servidor:", datos); // Depuración en la consola
       Swal.close();
 
       if (!datos || datos.trim() === "") {
@@ -718,6 +719,7 @@ function guardaryeditar(e) {
         }
       } catch (e) {
         // Si no es JSON, continúa con el flujo normal
+        console.log(e);
       }
       // ============================================================
 
@@ -2035,16 +2037,42 @@ function cerrarcaja() {
       Swal.fire({
         title: "Cierre de caja",
         html: `
-                    <b>Efectivo apertura:</b> S/. ${parseFloat(resumen.efectivo_apertura).toFixed(2)}<br>
-                    ${ventasHtml}
-                    <b>Resumen de ingresos y egresos:</b><br>${movimientosHtml}
-                    <b>Efectivo final esperado (para cierre):</b> 
-                    <span style="color: red; font-size:20px; font-weight:bold">
-                        S/. ${parseFloat(resumen.total_efectivo).toFixed(2)}
-                    </span>
-                    <hr>
-                    <label>Verifique la cantidad del sistema con la de su caja física</label>`,
-        input: "number",
+          <div style="font-family: Arial, sans-serif; text-align:left">
+
+              <h3 style="margin-bottom:10px;">🧾 Resumen de Caja</h3>
+
+              <div style="padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+                  <b>Efectivo de Apertura:</b><br>
+                  <span style="font-size:18px; color:#2c7be5; font-weight:bold">
+                      S/. ${parseFloat(resumen.efectivo_apertura).toFixed(2)}
+                  </span>
+              </div>
+
+              <div style="padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+                  <b>💰 Ventas:</b><br>
+                  ${ventasHtml}
+              </div>
+
+              <div style="padding:10px; border:1px solid #ddd; border-radius:8px; margin-bottom:10px;">
+                  <b>📊 Ingresos y Egresos:</b><br>
+                  ${movimientosHtml}
+              </div>
+
+              <div style="padding:15px; border:2px solid #dc3545; border-radius:10px; background:#fff5f5; text-align:center;">
+                  <b style="display:block; margin-bottom:5px;">Efectivo Final Esperado</b>
+                  <span style="color:#dc3545; font-size:24px; font-weight:bold">
+                      S/. ${parseFloat(resumen.total_efectivo).toFixed(2)}
+                  </span>
+              </div>
+
+              <hr style="margin:15px 0;">
+
+              <div style="text-align:center; font-size:14px; color:#555;">
+                  ⚠️ Verifique que el monto del sistema coincida con su caja física
+              </div>
+
+          </div>
+          `,input: "number",
         inputAttributes: {
           autocapitalize: "off",
           required: true,
