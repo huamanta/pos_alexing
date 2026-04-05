@@ -98,9 +98,87 @@ function listar() {
 
 initializeContratos();
 
-function verContrato(idventa) {
+function verContrato(idventa, idcliente, nombre) {
     $('#modal-ver-contrato').modal('show');
     $('#idventa').val(idventa);
+    $('#idcliente').val(idcliente);
+    $('#comprador').val(nombre);
+
+}
+
+function limpiarModalClienteCompraVenta() {
+    $('#cliente_idpersona').val('');
+    $('#cliente_tipo_persona').val('Cliente');
+    $('#cliente_nombre').val('');
+    $('#cliente_tipo_documento').val('DNI');
+    $('#cliente_num_documento').val('');
+    $('#cliente_telefono').val('');
+    $('#cliente_direccion').val('');
+    $('#cliente_email').val('');
+}
+
+function abrirModalNuevoComprador() {
+    limpiarModalClienteCompraVenta();
+    $('#modalClienteCompraVentaLabel').text('Nuevo cliente');
+    $('#modal-cliente-compra-venta').modal('show');
+}
+
+function abrirModalEditarComprador() {
+    const idcliente = $('#idcliente').val();
+
+    if (!idcliente) {
+        Swal.fire('Aviso', 'Primero selecciona un comprador para poder editarlo.', 'info');
+        return;
+    }
+
+    limpiarModalClienteCompraVenta();
+    $('#modalClienteCompraVentaLabel').text('Editar cliente');
+
+    $.post('controladores/persona.php?op=mostrar', { idpersona: idcliente }, function (data) {
+        let cliente = null;
+        try {
+            cliente = JSON.parse(data);
+        } catch (e) {
+            Swal.fire('Error', 'No se pudo cargar la información del cliente.', 'error');
+            return;
+        }
+
+        if (!cliente || !cliente.idpersona) {
+            Swal.fire('Error', 'Cliente no encontrado.', 'error');
+            return;
+        }
+
+        $('#cliente_idpersona').val(cliente.idpersona || '');
+        $('#cliente_tipo_persona').val(cliente.tipo_persona || 'Cliente');
+        $('#cliente_nombre').val(cliente.nombre || '');
+        $('#cliente_tipo_documento').val(cliente.tipo_documento || 'DNI');
+        $('#cliente_num_documento').val(cliente.num_documento || '');
+        $('#cliente_telefono').val(cliente.telefono || '');
+        $('#cliente_direccion').val(cliente.direccion || '');
+        $('#cliente_email').val(cliente.email || '');
+
+        $('#modal-cliente-compra-venta').modal('show');
+    });
+}
+
+function seleccionarCompradorEnFormulario(idpersona, nombre) {
+    $('#idcliente').val(idpersona);
+    $('#comprador').val(nombre);
+}
+
+function obtenerClientePorDocumento(numeroDocumento, callback) {
+    $.post('controladores/venta.php?op=selectCliente3&numero=' + numeroDocumento, function (data) {
+        let cliente = null;
+        try {
+            cliente = JSON.parse(data);
+        } catch (e) {
+            callback(null);
+            return;
+        }
+        callback(cliente);
+    }).fail(function () {
+        callback(null);
+    });
 }
 
 function encrypt_decrypt(action, string) {
@@ -154,6 +232,16 @@ function descargarCronogramaPagos(idventa) {
     }   
 }
 
+function descargarCompraVenta(idventa, idvendedor, idcliente, monto) {
+    const encryptedId = encrypt_decrypt('encrypt', idventa);
+    const url = 'public/docs_service/compra_venta?idventa=' + encryptedId + '&idvendedor=' + idvendedor + '&idcliente=' + idcliente + '&monto=' + monto;
+    const win = window.open(url, '_blank');
+    if (!win) {
+        alert('Por favor habilita ventanas emergentes o descarga manualmente: ' + url);
+        return;
+    }  
+}
+
 $(document).ready(function () {
     $('#btnDescargarContrato').on('click', function () {
         const idventa = $('#idventa').val();
@@ -174,7 +262,70 @@ $(document).ready(function () {
         const idventa = $('#idventa').val();
         descargarCronogramaPagos(idventa);
     });
+
+    $('#btnDescargarCompraVenta').on('click', function(){
+        $('#modal-compra-venta').modal('show');
+        const idventa = $('#idventa').val();
+        $('#idventa_compra_venta').val(idventa);
+        listarUsuarios();
+    });
+
+    $('#btnNuevoComprador').on('click', function () {
+        abrirModalNuevoComprador();
+    });
+
+    $('#btnEditarComprador').on('click', function () {
+        abrirModalEditarComprador();
+    });
+
+    $('#form-cliente-compra-venta').on('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const idpersonaActual = $('#cliente_idpersona').val();
+        const numeroDocumento = $('#cliente_num_documento').val();
+
+        $.ajax({
+            url: 'controladores/persona.php?op=guardaryeditar',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function (resp) {
+                if (idpersonaActual) {
+                    seleccionarCompradorEnFormulario(idpersonaActual, $('#cliente_nombre').val());
+                    $('#modal-cliente-compra-venta').modal('hide');
+                    Swal.fire('Cliente', resp, 'success');
+                    return;
+                }
+
+                obtenerClientePorDocumento(numeroDocumento, function (cliente) {
+                    if (cliente && cliente.idpersona) {
+                        seleccionarCompradorEnFormulario(cliente.idpersona, cliente.nombre || $('#cliente_nombre').val());
+                        $('#modal-cliente-compra-venta').modal('hide');
+                        Swal.fire('Cliente', resp, 'success');
+                    } else {
+                        Swal.fire('Aviso', 'Se guardó el cliente, pero no se pudo seleccionar automáticamente. Selecciónalo manualmente.', 'warning');
+                    }
+                });
+            },
+            error: function () {
+                Swal.fire('Error', 'No se pudo guardar el cliente.', 'error');
+            }
+        });
+    });
 });
+
+
+function listarUsuarios(){
+    const idventa = $('#idventa').val();
+    const idsucursal = $('#idsucursal').val();
+    $.post("controladores/contratos.php?op=selectUsuarios", { idventa: idventa, idsucursal: idsucursal }, function (r) {
+        $("#idvendedor").html(r);
+        $("#idvendedor").select2("");
+        listar();
+    });
+}
 
 
 function retenerContrato(idventa) {
@@ -242,3 +393,30 @@ function quitarRetencion(idventa, idretencion) {
         }
     });
 }
+
+
+$("#form-compra-venta").on("submit", function (e) {
+    e.preventDefault();
+    var idventa = $("#idventa_compra_venta").val();
+    var idvendedor = $("#idvendedor").val();
+    var idcliente = $("#idcliente").val();
+    var monto = $("#monto_compra_venta").val();
+
+    if (!idvendedor) {
+        Swal.fire("Error", "Por favor selecciona un vendedor.", "error");
+        return;
+    }
+
+    if (!idcliente) {
+        Swal.fire("Error", "Por favor selecciona un comprador.", "error");
+        return;
+    }
+
+    if(!monto || isNaN(monto) || parseFloat(monto) <= 0) {
+        Swal.fire("Error", "Por favor ingresa un monto válido.", "error");
+        return;
+    }
+
+    descargarCompraVenta(idventa, idvendedor, idcliente, monto);
+});
+

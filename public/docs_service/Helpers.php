@@ -1,6 +1,76 @@
 <?php
 class Helpers
 {
+    public static function getDocumentHeaderStyles()
+    {
+        return '
+        .header {
+            text-align: center;
+        }
+
+        .empresa {
+            color: #5b8db8;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .subempresa {
+            color: #7a7a7a;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .ruc {
+            color: #7a7a7a;
+            font-size: 13px;
+        }
+
+        .line {
+            border-top: 1px solid #999;
+            margin: 10px 0;
+        }
+
+        .titulo {
+            font-weight: bold;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .numero {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 13px;
+        }
+        ';
+    }
+
+    public static function renderDocumentHeader($nombreEmpresa, $ruc, $titulo, $numero = '', $subtitulo = 'ALQUILER VENTA DE VEHICULOS MOTORIZADOS', $tituloClasses = 'titulo')
+    {
+        $empresa = strtoupper(trim((string) $nombreEmpresa));
+        $rucTexto = trim((string) $ruc);
+        $tituloTexto = trim((string) $titulo);
+        $numeroTexto = trim((string) $numero);
+        $subtituloTexto = strtoupper(trim((string) $subtitulo));
+        $clases = trim((string) $tituloClasses);
+
+        $html = '<div class="header">';
+        $html .= '<div class="empresa">' . htmlspecialchars($empresa, ENT_QUOTES, 'UTF-8') . '</div>';
+        $html .= '<div class="subempresa">' . htmlspecialchars($subtituloTexto, ENT_QUOTES, 'UTF-8') . '</div>';
+        $html .= '<div class="ruc">R.U.C. ' . htmlspecialchars($rucTexto, ENT_QUOTES, 'UTF-8') . '</div>';
+        $html .= '<div class="line"></div>';
+        $html .= '<br>';
+        $html .= '<div class="' . htmlspecialchars($clases, ENT_QUOTES, 'UTF-8') . '">' . htmlspecialchars($tituloTexto, ENT_QUOTES, 'UTF-8') . '</div>';
+
+        if ($numeroTexto !== '') {
+            $html .= '<br>';
+            $html .= '<div class="numero">N° ' . htmlspecialchars($numeroTexto, ENT_QUOTES, 'UTF-8') . '</div>';
+        }
+
+        $html .= '</div>';
+
+        return $html;
+    }
+
     public static function getDataFrecuencia($frecuencia)
     {
         $frecuenciaTexto = "";
@@ -116,5 +186,25 @@ class Helpers
         } else {
             return "";
         }
+    }
+
+    public function monedaFormt($monto, $simbolo = 'S/', $local = 'es_PE'){
+        // Validar monto
+        if (!is_numeric($monto)) {
+            return $simbolo . ' 0.00';
+        }
+
+        // Crear formateador
+        $formatter = new NumberFormatter($local, NumberFormatter::CURRENCY);
+
+        // Formatear en soles (PEN)
+        $resultado = $formatter->formatCurrency($monto, 'PEN');
+
+        // Reemplazar símbolo si deseas forzar uno personalizado
+        if ($simbolo !== 'S/') {
+            $resultado = str_replace('S/', $simbolo, $resultado);
+        }
+
+        return $resultado;
     }
 }

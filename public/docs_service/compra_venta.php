@@ -44,18 +44,14 @@ $dniGarante = $resultVenta['num_documento_garante'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // seleccionar detalle de la venta
-$sqlDetalle = "SELECT dv.*, p.fabricante, p.modelo, p.numserie, p.nombre AS producto_nombre
-                FROM detalle_venta dv
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto
-                LEFT JOIN producto p ON pg.idproducto = p.idproducto
-                WHERE dv.idventa = $idVenta";
+$sqlDetalle = "SELECT * FROM detalle_venta dv INNER JOIN producto p ON dv.idproducto = p.idproducto WHERE dv.idventa = $idVenta";
 $resultDetalle = ejecutarConsulta($sqlDetalle);
 
 $data = [];
 foreach ($resultDetalle as $row) {
     $data[] = [
         "idproducto" => $row['idproducto'],
-        'nombre' => $row['producto_nombre'] ?? 'N/A',
+        'nombre' => $row['nombre_producto'],
         "cantidad" => $row['cantidad'],
         "precio_venta" => $row['precio_venta'],
         "descuento" => $row['descuento']
@@ -155,7 +151,7 @@ ob_start();
 
 <head>
     <meta charset="UTF-8">
-    <title>Contrato</title>
+    <title>Compra venta</title>
     <style>
         body {
             font-family: "Times New Roman", serif;
@@ -166,6 +162,19 @@ ob_start();
         }
 
         <?php echo Helpers::getDocumentHeaderStyles(); ?>
+
+        .titulo {
+            font-weight: bold;
+            text-align: center;
+            font-size: 15px;
+            text-decoration: underline;
+        }
+
+        .numero {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 13px;
+        }
 
         p {
             text-align: justify;
@@ -189,6 +198,16 @@ ob_start();
             text-align: center;
             font-size: 10px;
         }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+
+        .text-right {
+            text-align: right;
+        }
     </style>
 </head>
 
@@ -198,87 +217,109 @@ ob_start();
     echo Helpers::renderDocumentHeader(
         $resultNegocio['nombre'] ?? '',
         $resultSucursal['ruc'] ?? '',
-        'CONTRATO DE VENTA AL CONTADO DE VEHICULO MOTORIZADO',
-        $numeroContrato
+        'CONTRATO DE COMPRA - VENTA VEHICULAR'
     );
     ?>
+    <br>
 
     <p>
-        Conste por el presente documento, el contrato de <b>VENTA AL CONTADO</b> de vehículo <b>NUEVO</b>, que celebran
-        de
-        una parte como <b>VENDEDOR</b>, la Empresa "<b><?php echo strtoupper($resultNegocio['nombre']); ?></b>", con RUC
-        Nº <?php echo $resultSucursal['ruc']; ?>, representado
-        por su Gerente General el señor <b>JESUS ROBERTO SURCO KACASACA</b>, identificado con DNI Nº <b>43978509</b>,
-        con
-        domicilio en <b>JR. JIMENEZ PIMENTEL NRO. 886, SAN MARTIN - SAN MARTIN - TARAPOTO</b>; con facultades
-        inscrita en la partida electrónica N° 11070911 del registro de personas jurídicas de la Oficina Registral
-        Tarapoto;
-        y de la otra parte como <b>COMPRADOR</b> el(la) señor(a) <b><?php echo strtoupper($comprador); ?></b>,
-        identificado con DNI
-        Nº <b><?php echo $dniComprador; ?></b>, de estado civil soltero(a), con domicilio en
-        <b><?php echo strtoupper($direccionComprador); ?></b> y con número de celular
-        <b><?php echo $celularComprador; ?></b>, acompañado de <b><?php echo strtoupper($nombreAcompanante); ?></b> en calidad de <b><?php echo strtoupper($nombreTipoAcompanante); ?></b> en los siguientes términos:
-    </p>
-
-    <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre']); ?>, declara ser propietario y
-        titular registral del vehículo
-        <b>MOTOCICLETA</b> con las siguientes características:
-   
-
-    <?php foreach ($data as $item): ?>
-            marca <b><?php echo $item['marca'] ?? 'N/A'; ?></b>, modelo <b><?php echo $item['modelo'] ?? 'N/A'; ?></b>, color
-            <b><?php echo $item['color'] ?? 'N/A'; ?></b> con
-            Nº serie <b><?php echo $item['serie'] ?? 'N/A'; ?></b>, Nº de motor <b><?php echo $item['motor'] ?? 'N/A'; ?></b>, año de
-            fabricación <b><?php echo $item['anio'] ?? 'N/A'; ?></b> Nº de cilindro
-            01, N° Placa de Rodaje <b><?php echo $item['placa'] ?? 'NUEVO'; ?></b>. El mismo que es <b>NUEVO</b>.
-        
-    <?php endforeach; ?>
-
-    
-        Bien mueble que fue reconocido físicamente en su calidad de vehículo MOTOCICLETA <b>NUEVO</b> por ambas partes
-        con anterioridad.
-    </p>
-
-    <p><b class="clausula">SEGUNDO.-</b> El VENDEDOR, deja constancia que el vehículo MOTOCICLETA descrito en la cláusula primera, se
-        encuentra en perfecto estado de conservación y funcionamiento, por ser este bien mueble en calidad de NUEVO.</p>
-
-    <p><b class="clausula">TERCERO.-</b> El VENDEDOR, declara que, el vehículo MOTOCICLETA se encuentra, al momento de celebrarse
-        este contrato, libre de toda carga, gravamen, derecho real de garantía, medida judicial o extrajudicial,
-        papeletas
-        en el SAT y en general de todo acto o circunstancia que impida, prive o limite la posesión o uso del bien; por
-        tratarse de un bien mueble en calidad de NUEVO; no obstante a ellos se obliga a la evicción o saneamiento de
-        ley; asimismo el alquiler-venta se hace Ad-Corpus.</p>
-
-    <p><b class="clausula">CUARTO.-</b> El PRECIO FINAL pactado por ambas partes por la venta del vehículo MOTOCICLETA descrito en la
-        cláusula primera, es de <b><?php echo $helpers->monedaFormt($total); ?></b> (
-        <b><?php echo $helpers->numeroALetrasMoneda($total); ?></b> ), suma que el COMPRADOR abonará
-        al VENDEDOR en su totalidad de <b><?php echo $helpers->monedaFormt($total); ?></b> (
-        <b><?php echo $helpers->numeroALetrasMoneda($total); ?></b> ), importe que deberá ser
-        cancelado en moneda nacional y en efectivo; asimismo, EL VENDEDOR, se le entregará un recibo por el importe
-        pactado.
-    </p>
-
-    <p><b class="clausula">QUINTO.-</b> EL COMPRADOR acepta que, una vez realizada la compra, no habrá devolución del dinero bajo
-        ninguna circunstancia. El COMPRADOR entendió que la compra es definitiva y no puede ser cancelada.</p>
-
-    <p><b class="clausula">SEXTO.-</b> EL VENDEDOR, garantiza que el vehículo se encuentra en buen estado de funcionamiento sin garantías
-        ni responsabilidades. EL COMPRADOR, declara haber inspeccionado el vehículo y estar satisfecho con su estado.
-    </p>
-
-    <p><b class="clausula">SÉPTIMO.-</b> El presente contrato es IRREVOCABLE y no puede ser modificado sin el consentimiento por escrito
-        de ambas partes.</p>
-
-    <p><b class="clausula">OCTAVO.-</b> Cualquier disputa o controversia que surja en la relación con el presente contrato será resuelta
-        mediante instancias judiciales.
+        Conste por el presente documento, el contrato de COMPRA Y VENTA conforme al artículo
+        1529 del C.C. del vehículo de Placa de rodaje <strong>N° <?php echo $item['placa'] ?? 'NUEVO'; ?></strong> que
+        celebran de una parte como
+        <strong>"VENDEDOR"</strong> al Señor(a): <strong><?php echo $item['vendedor'] ?? 'N/A'; ?></strong>.
+        identificado con DNI <strong> Nº <?php echo $item['dni_vendedor'] ?? 'N/A'; ?></strong> domiciliado en
+        el JR. JIMENEZ PIMENTEL NRO. 886 SAN MARTIN - SAN MARTIN - TARAPOTO
+        distrito de TARAPOTO provincia de SAN MARTIN departamento de SAN MARTIN y de otra
+        parte como, <strong>"COMPRADOR"</strong>, El(La) .Sr(a). <strong><?php echo $comprador ?? 'N/A'; ?></strong>,
+        identificado con DNI <strong> Nº <?php echo $dniComprador ?? 'N/A'; ?></strong> con domicilio en
+        <strong><?php echo $direccionComprador ?? 'N/A'; ?></strong>. Quien manifiesta que su
+        <?php echo $nombreAcompanante ?? 'N/A'; ?> no interviene en la aplicación de los artículos
+        Nº 315 y 886 inciso 1 del Código Civil, quien en adelante se les denominaran las partes:
+        VENDEDOR Y COMPRADOR respectivamente, en los términos y condiciones siguientes:
     </p>
 
     <p>
-        <b class="clausula">NOVENO.-</b> Los contratantes declaran que existe la más justa y perfecta equivalencia entre el precio
-        pactado y el
-        valor del bien mueble, no teniendo nada que reclamarse al respecto. En fe y señal de conformidad, las partes
-        firman el presente contrato en <?php echo $resultSucursal['direccion'] ?? 'Jr. Ex Carretera Yurimaguas S/n'; ?>
-        el día <?php echo $helpers->fechaLetras($resultVenta['fecha_hora']); ?>.
+        <b class="clausula">PRIMERO.-</b>
+        El VENDEDOR declara que es propietario del vehículo de las siguientes características:
     </p>
+
+    <table class="table">
+        <tr>
+            <td><strong>CLASE</strong></td>
+            <td>: <?php echo $item['clase'] ?? 'N/A'; ?></td>
+            <td><strong>COLOR</strong></td>
+            <td>: <?php echo $item['color'] ?? 'N/A'; ?></td>
+        </tr>
+        <tr>
+            <td><strong>MARCA</strong></td>
+            <td>: <?php echo $item['marca'] ?? 'N/A'; ?></td>
+            <td><strong>N° SERIE</strong></td>
+            <td>: <?php echo $item['serie'] ?? 'N/A'; ?></td>
+        </tr>
+        <tr>
+            <td><strong>MODELO</strong></td>
+            <td>: <?php echo $item['modelo'] ?? 'N/A'; ?></td>
+            <td><strong>N° MOTOR</strong></td>
+            <td>: <?php echo $item['motor'] ?? 'N/A'; ?></td>
+        </tr>
+        <tr>
+            <td><strong>AÑO FABRICACIÓN</strong></td>
+            <td>: <?php echo $item['anio'] ?? 'N/A'; ?></td>
+            <td><strong>N° PLACA</strong></td>
+            <td>: <?php echo $item['placa'] ?? 'NUEVO'; ?></td>
+    </table>
+
+    <p>
+        Sin reserva ni restricción alguna y por tanto no se encuentra impedido de enajenarlo:
+    </p>
+    <br>
+    <p>
+        <b class="clausula">SEGUNDO.-</b>
+        El precio pactado por la COMPRA – VENTA del vehículo a que se refiere la
+        cláusula anterior es de S/ 0.00 ( CON 00/100 SOLES) cancelado en su totalidad, donde se
+        firmará todo los documentos de acuerdo a Ley del vehículo por su cancelación.
+    </p>
+    <br>
+    <p>
+        <b class="clausula">TERCERO.-</b>
+        Igualmente la parte COMPRADOR a su vez, haber recibido el vehículo materia del
+        presente contrato a su entera satisfacción y sin responsabilidad alguna en el futuro para la
+        parte VENDEDOR en la parte técnica- mecánica por ser vehículo usado.
+    </p>
+    <br>
+    <p>
+        <b class="clausula">CUARTO.-</b>
+        Ambos contratantes declaran conocer la situación legal (embargos, multas,
+        cualquier afectación, cargo, etc). del vehículo mediante el correspondiente certificado de
+        gravamen, expedido por la Dirección de Circulación Terrestre de la jurisdicción en la que Está
+        escrito la unidad que se transfiere y conocida su situación jurídica administrativa antes de
+        celebrar el presente contrato; quedando obligado la parte VENDEDOR en todo caso a la
+        evicción y saneamiento de Ley.
+    </p>
+
+    <p>
+        Así mismo el comprador será de su total responsabilidad cualquier accidente futura que sufra
+        con el vehículo con choques, con heridos y muertos, por atropello o cualquier otro percance.
+
+    </p>
+    <br>
+    <p>
+        <b class="clausula">QUINTO.-</b>
+        Concordante con la cláusula primera la parte VENDEDOR declara que el vehículo,
+        que se enajena, no se encuentra inscrito en el registro fiscal, de ventas a plazos de otro tipo de
+        afección: igualmente tratándose de vehículo de servicio público de empresa legalmente
+        constituida y autorizada, no se encuentra inscrito en el registro de prendas de vehículo,
+        pudiendo a la parte COMPRADOR solicitar constancia certificada de dichos registros para
+        asegurar la eficacia de la operación realizada.
+    </p>
+    <br>
+    <p><b class="clausula">CLAUSULA ADICIONAL.-</b>
+        El COMPRADOR declara recibir la motocicleta en buen estado de
+        funcionamiento, la tarjeta de propiedad, SOAT, placa que derive de ella. En conformidad de todas las clausulas
+        legalizan sus firmas las partes COMPRADOR y la parte VENDEDOR
+    </p>
+    <br>
+    <p class="text-right"><?php echo $fecha; ?></p>
 
     <br><br>
 

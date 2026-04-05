@@ -384,9 +384,13 @@ function imprimir() {
             </style>
         </head>
         <body>
-            <h2>Reporte de Historial de Compras y Cuentas</h2>
-            <p><strong>Fecha de Inicio:</strong> ${fecha_inicio}</p>
-            <p><strong>Fecha de Fin:</strong> ${fecha_fin}</p>
+			<div class="row">
+				<div class="col-md-12">
+					<h2>Reporte de Historial de Compras y Cuentas</h2>
+					<p><strong>Fecha de Inicio:</strong> ${fecha_inicio}</p>
+					<p><strong>Fecha de Fin:</strong> ${fecha_fin}</p>
+				</div>
+			</div>
 
             <div class="section-title">
                 <h3 style="color: green;">Historial de Compras y Cuentas por Cobrar como Cliente</h3>

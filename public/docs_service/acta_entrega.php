@@ -4,32 +4,83 @@ require "./Helpers.php";
 $helpers = new Helpers();
 date_default_timezone_set('America/Lima');
 // Función para encriptar/desencriptar
-function encrypt_decrypt($action, $string)
-{
-    if ($action == 'encrypt') {
-        $output = base64_encode($string);
-        $output = str_replace(['=', '/', '+'], ['', '_', '-'], $output);
-        return $output;
-    } else if ($action == 'decrypt') {
-        $string = str_replace(['_', '-'], ['/', '+'], $string);
-        $mod4 = strlen($string) % 4;
-        if ($mod4) {
-            $string .= substr('====', $mod4);
-        }
-        return base64_decode($string);
-    }
-    return false;
-}
 
 // Obtener ID del venta desde parámetro encriptado
-$idVenta = isset($_GET['idventa']) ? encrypt_decrypt('decrypt', $_GET['idventa']) : null;
+$idVenta = isset($_GET['idventa']) ? $helpers->encryptDecrypt('decrypt', $_GET['idventa']) : null;
 if ($idVenta == null) {
     echo "ID de venta no proporcionado.";
     exit;
 }
 
+
+// DATOS DINÁMICOS (puedes traerlos de BD basado en $idVenta)
+$sqlNegocio = "SELECT * 
+FROM datos_negocio 
+ORDER BY id_negocio ASC 
+LIMIT 1";
+$resultNegocio = ejecutarConsultaSimpleFila($sqlNegocio);
+
+$sqlVenta = "SELECT v.*, ta.nombre AS nombre_tipo_acompanante,
+             a.nombre AS nombre_acompanante, a.num_documento AS dni_acompanante, a.telefono AS telefono_acompanante,
+             p.nombre AS nombre_cliente, p.num_documento AS num_documento_cliente, p.direccion AS direccion_cliente, p.telefono AS telefono_cliente,
+             g.nombre AS nombre_garante, g.num_documento AS num_documento_garante, g.telefono AS telefono_garante, g.direccion AS direccion_garante
+             FROM venta v
+             INNER JOIN persona p ON v.idcliente = p.idpersona
+             LEFT JOIN persona g ON v.idgarante = g.idpersona
+             LEFT JOIN persona a ON v.idacompanante = a.idpersona
+             LEFT JOIN tipoacompanante ta ON v.idtipoacompanante = ta.idtipoacompanante
+             WHERE v.idventa = $idVenta";
+$resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
+
+
+$comprador = $resultVenta['nombre_cliente'] ?? '';
+$dniComprador = $resultVenta['num_documento_cliente'] ?? '';
+$direccionComprador = $resultVenta['direccion_cliente'] ?? '';
+$celularComprador = $resultVenta['telefono_cliente'] ?? '';
+$total = $resultVenta['total_venta'] ?? '';
+$inicial = $resultVenta['totalrecibido'] ?? '';
+$meses = $resultVenta['meses'] ?? '';
+$nombreAcompanante = $resultVenta['nombre_acompanante'] ?? '';
+$dniAcompanante = $resultVenta['dni_acompanante'] ?? '';
+$telefonoAcompanante = $resultVenta['telefono_acompanante'] ?? '';
+$nombreTipoAcompanante = $resultVenta['nombre_tipo_acompanante'] ?? '';
+$telefonoGarante = $resultVenta['telefono_garante'] ?? '';
+$direccionGarante = $resultVenta['direccion_garante'] ?? '';
+
+$sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $resultVenta['idsucursal'];
+$resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
+
+
+// Generación PDF con mPDF (server-side)
+$garante = $resultVenta['nombre_garante'] ?? '';
+$dniGarante = $resultVenta['num_documento_garante'] ?? '';
+$fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
+
+// Detalle del vehículo vendido
+$sqlDetalle = "SELECT dv.*, p.fabricante, p.modelo, p.numserie, p.nombre AS producto_nombre
+                FROM detalle_venta dv
+                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto
+                LEFT JOIN producto p ON pg.idproducto = p.idproducto
+                WHERE dv.idventa = $idVenta";
+
+$resultDetalle = ejecutarConsultaSimpleFila($sqlDetalle);
+$marcaProducto = !empty($resultDetalle['fabricante']) ? $resultDetalle['fabricante'] : '__________';
+$modeloProducto = !empty($resultDetalle['modelo']) ? $resultDetalle['modelo'] : '__________';
+$serieProducto = !empty($resultDetalle['numserie']) ? $resultDetalle['numserie'] : '__________';
+
+// Cuotas y fechas de inicio/fin
+$sqlCuotas = "SELECT deuda, MIN(fechavencimiento) AS fecha_inicio_cuota, MAX(fechavencimiento) AS fecha_fin_cuota
+              FROM cuentas_por_cobrar WHERE idventa = $idVenta";
+$resultCuotas = ejecutarConsultaSimpleFila($sqlCuotas);
+$montoCuota = !empty($resultCuotas['deuda']) ? $resultCuotas['deuda'] : 0;
+$fechaInicio = !empty($resultCuotas['fecha_inicio_cuota']) ? $helpers->fechaLetras($resultCuotas['fecha_inicio_cuota']) : '__________';
+$fechaFin = !empty($resultCuotas['fecha_fin_cuota']) ? $helpers->fechaLetras($resultCuotas['fecha_fin_cuota']) : '__________';
+
+$dataFrecuencia = $helpers->getDataFrecuencia($resultVenta['frecuencia'] ?? '1');
+$frecuenciaTexto = $dataFrecuencia->texto;
+
 // buscar actaentrega
-$sqlActa = "SELECT * FROM documentacion WHERE idventa = $idVenta AND tipo = '2'";
+$sqlActa = "SELECT * FROM documentacion WHERE idventa = $idVenta AND tipo = '1'";
 $resultActa = ejecutarConsultaSimpleFila($sqlActa);
 if (!$resultActa) {
     echo '
@@ -105,44 +156,13 @@ if (!$resultActa) {
     exit;
 }
 
-
-// DATOS DINÁMICOS (puedes traerlos de BD basado en $idVenta)
-$sqlNegocio = "SELECT * 
-FROM datos_negocio 
-ORDER BY id_negocio ASC 
-LIMIT 1";
-$resultNegocio = ejecutarConsultaSimpleFila($sqlNegocio);
-
-$sqlVenta = "SELECT * FROM venta v 
-             INNER JOIN persona p ON v.idcliente = p.idpersona 
-             WHERE v.idventa = $idVenta";
-$resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
-
 $numeroContrato = $helpers->tiposDocumentacion($resultActa['tipo']) . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
-    
-// Generación PDF con mPDF (server-side)
+
+// Hora dinámica de la venta
+$hora = date('H:i', strtotime($resultVenta['fecha_hora']));
+
+// Generación PDF con Dompdf (server-side)
 ob_start();
-
-$fecha = "24 de Marzo del 2026";
-$hora = "18:39";
-
-$arrendatario = "FABIANA DIAZ PAZ";
-$dni_arrendatario = "74615224";
-$direccion = "JR. JOSE CARLOS MARIATEGUI 139";
-$celular = "961518855";
-
-$garante = "JOKABE PAZ ROMERO";
-$dni_garante = "00933140";
-
-$marca = "WANXIN";
-$modelo = "WX150-A";
-$color = "AZUL";
-$serie = "LDAPAK105TGD30726";
-$motor = "WX162FMJ226J30726";
-$anio = "2026";
-$placa = "NUEVO";
-
-$cuota = "619.00";
 ?>
 
 <!DOCTYPE html>
@@ -150,25 +170,40 @@ $cuota = "619.00";
 
 <head>
     <meta charset="UTF-8">
-    <title>Acta de entrega</title>
-
+    <title>Orden entrega</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-family: "Times New Roman", serif;
+            font-size: 11px;
             margin: 40px;
+            line-height: 1.4;
+            color: #000;
         }
 
-        h1,
-        h2,
-        h3 {
-            text-align: center;
-            margin: 5px;
-        }
+        <?php echo Helpers::getDocumentHeaderStyles(); ?>
 
-        .section {
+        .section-title {
+            font-weight: bold;
+            text-decoration: underline;
             margin-top: 15px;
+            font-size: 12px;
+        }
+
+        p {
             text-align: justify;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        .clausula {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .table-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
         }
 
         .table {
@@ -177,120 +212,400 @@ $cuota = "619.00";
             margin-top: 10px;
         }
 
-        .table td,
         .table th {
-            border: 1px solid #000;
-            padding: 5px;
+            background-color: #cccccc;
+            border: 1px solid #ffffff;
+            font-size: 9px;
+            padding: 0;
         }
 
-        .firmas {
+        .table td {
+            border: 1px solid #ffffff;
+            font-size: 9px;
+            padding: 0;
+        }
+
+        .table tr:nth-child(even) {
+            background-color: #e2efd9;
+        }
+
+        .firma {
             margin-top: 60px;
             width: 100%;
         }
 
-        .firma {
-            width: 30%;
+        .firma div {
+            width: 23%;
             display: inline-block;
             text-align: center;
-        }
-
-        .linea {
-            margin-top: 60px;
-            border-top: 1px solid #000;
+            font-size: 10px;
         }
     </style>
-
 </head>
 
 <body>
+    <?php
+    echo Helpers::renderDocumentHeader(
+        $resultNegocio['nombre'] ?? '',
+        $resultSucursal['ruc'] ?? '',
+        'ACTA DE ENTREGA Y RECEPCION DE UN VEHICULO TRIMOTO DE PASAJEROS',
+        $numeroContrato
+    );
+    ?>
 
-    <h2>SURCO MOTORS S.A.C.</h2>
-    <h3>ALQUILER VENTA DE VEHÍCULOS MOTORIZADOS</h3>
-    <h3>R.U.C. 20601614082</h3>
-    <p style="text-align:center;">JR. JIMENEZ PIMENTEL Nº 886</p>
+    <p>
+        Siendo las <strong><?php echo $hora; ?></strong> horas, del día
+        <strong><?php echo $helpers->fechaLetras($resultVenta['fecha_hora']); ?></strong>, en las instalaciones de la
+        empresa <strong>"<?php echo strtoupper($resultNegocio['nombre']); ?>"</strong>,
+        con RUC Nº <strong><?php echo $resultSucursal['ruc']; ?></strong>,
+        sito en
+        <strong><?php echo strtoupper($resultSucursal['direccion'] ?? $resultNegocio['direccion'] ?? ''); ?></strong>,
+        del distrito de <strong><?php echo strtoupper($resultSucursal['distrito'] ?? ''); ?></strong>,
+        se reúnen de una parte el Gerente General señor
+        <strong><?php echo strtoupper($resultNegocio['gerente'] ?? 'NERY MARLENY CONDORI CHIRINOS'); ?></strong>,
+        identificado con DNI Nº <strong><?php echo $resultNegocio['dni_gerente'] ?? '43960822'; ?></strong>,
+        con facultades inscrita en la partida electrónica N° del registro de personas jurídicas de la Oficina Registral
+        <?php echo $resultSucursal['distrito'] ?? 'Tarapoto'; ?>; quien es propietario del bien mueble;
+        y de la otra parte, el(la) arrendatario(a)
+        <strong><?php echo strtoupper($comprador); ?></strong>, identificado con DNI Nº
+        <strong><?php echo $dniComprador; ?></strong>, de estado civil soltero(a), con domicilio en
+        <strong><?php echo strtoupper($direccionComprador); ?></strong> y con número de celular
+        <strong><?php echo $celularComprador; ?></strong>
+        <?php if (!empty($nombreAcompanante)): ?>
+            y su <?php echo strtolower($nombreTipoAcompanante) ?: 'cónyuge'; ?> (el)la señor(a)
+            <strong><?php echo strtoupper($nombreAcompanante); ?></strong>
+            <?php if (!empty($dniAcompanante)): ?> identificado con DNI Nº
+                <strong><?php echo $dniAcompanante; ?></strong><?php endif; ?>
+            <?php if (!empty($telefonoAcompanante)): ?> y número de celular
+                <strong><?php echo $telefonoAcompanante; ?></strong><?php endif; ?>
+        <?php endif; ?>
+        <?php if (!empty($garante)): ?>
+            , con su GARANTE el señor(a) <strong><?php echo strtoupper($garante); ?></strong> con DNI N°
+            <strong><?php echo $dniGarante; ?></strong>
+            <?php if (!empty($direccionGarante)): ?> domiciliado en
+                <strong><?php echo strtoupper($direccionGarante); ?></strong><?php endif; ?>
+            <?php if (!empty($telefonoGarante)): ?> con celular N°
+                <strong><?php echo $telefonoGarante; ?></strong><?php endif; ?>
+        <?php endif; ?>,
+        la finalidad de suscribir el presente ACTA DE ENTREGA Y RECEPCIÓN DE VEHÍCULO TRIMOTO DE PASAJEROS; acto que se
+        efectúa por el ALQUILER del bien mueble que se encuentra en condición de NUEVO destinado única y exclusivamente
+        para su uso como transporte de pasajeros, el mismo que inicia a partir del
+        <strong><?php echo $fechaInicio; ?></strong> y finaliza indefectiblemente el
+        <strong><?php echo $fechaFin; ?></strong> sin necesidad de aviso previo con una cuota
+        <?php echo $frecuenciaTexto; ?> de
+        <strong><?php echo $helpers->monedaFormt($montoCuota); ?>
+            (<?php echo $helpers->numeroALetrasMoneda($montoCuota); ?>)</strong>.
+        Dicho vehículo cuenta con las siguientes características:
+    </p>
 
-    <h3>ACTA DE ENTREGA Y RECEPCIÓN DE VEHÍCULO</h3>
-
-    <div class="section">
-        Siendo las <b><?= $hora ?></b> horas del día <b><?= $fecha ?></b>, se reúnen las partes:
-
-        <br><br>
-
-        El arrendador y el arrendatario <b><?= $arrendatario ?></b>, identificado con DNI Nº
-        <b><?= $dni_arrendatario ?></b>, con domicilio en <b><?= $direccion ?></b>, celular
-        <b><?= $celular ?></b>; y su garante <b><?= $garante ?></b> con DNI Nº
-        <b><?= $dni_garante ?></b>.
-
-        <br><br>
-
-        Se realiza la entrega de un vehículo con las siguientes características:
-    </div>
-
-    <table class="table">
+    <p class="section-title">CARACTERÍSTICAS DEL VEHÍCULO:</p>
+    <table class="table-info">
         <tr>
-            <th>Marca</th>
-            <th>Modelo</th>
-            <th>Color</th>
-            <th>Serie</th>
-            <th>Motor</th>
-            <th>Año</th>
-            <th>Placa</th>
+            <td>Clase</td>
+            <td>:<?php echo strtoupper($resultDetalle['nombre_producto'] ?? 'TRIMOTO DE PASAJEROS'); ?></td>
+            <td>COLOR</td>
+            <td>:__________</td>
         </tr>
         <tr>
-            <td><?= $marca ?></td>
-            <td><?= $modelo ?></td>
-            <td><?= $color ?></td>
-            <td><?= $serie ?></td>
-            <td><?= $motor ?></td>
-            <td><?= $anio ?></td>
-            <td><?= $placa ?></td>
+            <td>Marca</td>
+            <td>:<?php echo strtoupper($marcaProducto); ?></td>
+            <td>Nº Serie</td>
+            <td>:<?php echo strtoupper($serieProducto); ?></td>
+        </tr>
+        <tr>
+            <td>Modelo</td>
+            <td>:<?php echo strtoupper($modeloProducto); ?></td>
+            <td>Nº Motor</td>
+            <td>:__________</td>
+        </tr>
+        <tr>
+            <td>Año</td>
+            <td>:__________</td>
+            <td>Placa</td>
+            <td>:__________</td>
+        </tr>
+    </table>
+    <p>
+        Que, el propietario otorga la posesión del vehículo TRIMOTO DE PASAJEROS descrito líneas arriba al señor(a)
+        <strong><?php echo strtoupper($comprador); ?></strong>, quien declara recibir el vehículo TRIMOTO DE PASAJEROS a
+        su entera satisfacción,
+        el mismo que es NUEVO, y se encuentra en perfecto estado de conservación y funcionamiento. Asimismo, se obliga a
+        conservar el bien mueble en el mismo estado en que es recibido hasta el último pago de su cuota diaria, salvo el
+        deterioro
+        por el uso del servicio; y, se compromete a no introducir mejoras, cambios o modificaciones internas y externas
+        al vehículo
+        trimovil arrendado, sin el consentimiento expreso y por escrito del propietario. También, se le hace entrega de
+        todos los
+        accesorios y documentos; lo cual queda tajantemente prohibido de realizar alguna modificación, asimismo, se
+        compromete
+        a su debida custodia. A continuación detallamos todos las partes mecánicas y estáticas; accesorios y documentos
+        recibidos:
+
+    </p>
+    <p class="section-title">PARTES MECÁNICAS Y ESTÁTICAS</p>
+    <div class="line"></div>
+    <table class="table">
+        <tr>
+            <th>DESCRIPCION</th>
+            <th>TIPO / MARCA</th>
+            <th>ESTADO DE CONSERVACIÓN</th>
+            <th>DESCRIPCION</th>
+            <th>TIPO / MARCA</th>
+            <th>ESTADO DE CONSERVACIÓN</th>
+        </tr>
+        <tr>
+            <td><strong>ESTRUCTURA COMPLETA</strong></td>
+            <td>nannanan</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+            <td><strong>CARBURADOR</strong></td>
+            <td>Original: Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>LLANTA DELANTERA</strong></td>
+            <td>Original: Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+            <td><strong>TUBO ESCAPE</strong></td>
+            <td>Original: Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>LLANTA DERECHA</strong></td>
+            <td>Original: Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+            <td><strong>TACÓMETRO</strong></td>
+            <td>Original: Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>LLANTA IZQUIERDA</strong></td>
+            <td>Original: Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+            <td><strong>FARO</strong></td>
+            <td>Original: Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+        <tr>
+            <td><strong>AMORTIGUADORES</strong></td>
+            <td>Original: Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+            <td><strong>TAPIZ GENERAL</strong></td>
+            <td>Original: Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>TELESCOPIOS</strong></td>
+            <td>Original: Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+            <td></td>
+            <td></td>
+            <td></td>
+    </table>
+    <div class="line"></div>
+    <p class="section-title">ACCESORIOS</p>
+    <div class="line"></div>
+    <table class="table">
+        <tr>
+            <th><strong>ACCESORIOS</strong></th>
+            <th>TIPO / MARCA</th>
+            <th>ESTADO DE CONSERVACIÓN</th>
+
+            <th><strong>ACCESORIOS</strong></th>
+            <th>TIPO / MARCA</th>
+            <th>ESTADO DE CONSERVACIÓN</th>
+        </tr>
+
+        <tr>
+            <td><strong>ESPEJOS</strong></td>
+            <td>-</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+
+            <td><strong>TANQUE</strong></td>
+            <td>Original Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>TAPAS LATERALES</strong></td>
+            <td>-</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+
+            <td><strong>AROS</strong></td>
+            <td>Original Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>PARRILLA</strong></td>
+            <td>-</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+
+            <td><strong>BOCA MASA</strong></td>
+            <td>Original Si[ ] No[ ]</td>
+            <td>Operativo Si[ ] No[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>BUJÍA</strong></td>
+            <td>-</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+
+            <td><strong>LUCES LATERALES</strong></td>
+            <td>Original Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>CHUPÓN</strong></td>
+            <td>Si</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+
+            <td><strong>FRENO DELANTERO Y POSTERIOR</strong></td>
+            <td>Original Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>BATERÍA</strong></td>
+            <td>Original Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+
+            <td><strong>CINTURÓN DE SEGURIDAD</strong></td>
+            <td>Original Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>CATALINAS</strong></td>
+            <td>-</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+
+            <td><strong>PLACA</strong></td>
+            <td>-</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>CADENAS</strong></td>
+            <td>-</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+
+            <td><strong>LOGOTIPO POSTERIOR</strong></td>
+            <td>Original Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>PIÑÓN</strong></td>
+            <td>-</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+
+            <td><strong>RAYOS</strong></td>
+            <td>Original Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+        <tr>
+            <td><strong>ZAPATAS</strong></td>
+            <td>-</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+
+            <td><strong>CARPA</strong></td>
+            <td>Original Si[ ] No[ ]</td>
+            <td>Nuevo[ ] Semi-Nuevo[ ]</td>
+        </tr>
+
+    </table>
+    <div class="line"></div>
+    <p class="section-title">DOCUMENTACIÓN</p>
+    <table>
+        <tr>
+            <td>
+                <li>Copia de Tarjeta de Propiedad Legalizada</li>
+            </td>
+            <td>:<strong>SI[ ] NO[ ]</strong></td>
+        </tr>
+        <tr>
+            <td>
+                <li>SOAT vigente</li>
+            </td>
+            <td>:<strong>SI[ ] NO[ ]</strong></td>
+        </tr>
+        <tr>
+            <td>
+                <li>Llaves</li>
+            </td>
+            <td>:<strong>SI[ ] NO[ ]</strong></td>
+        </tr>
+        <tr>
+            <td>
+                <li>Permiso de circulación</li>
+            </td>
+            <td>:<strong>SI[ ] NO[ ]</strong></td>
         </tr>
     </table>
 
-    <div class="section">
-        El vehículo se entrega en perfectas condiciones y se establece una cuota mensual de
-        <b>S/ <?= $cuota ?></b> soles.
+    <p>
+        En caso de pérdida o robo de los documentos, asumiré la responsabilidad de todo el proceso y costo para la
+        recuperación
+        y/u obtención. Si el bien mueble es robado, asumo la responsabilidad de devolver el vehículo o cancelar la
+        totalidad del valor del bien pactado entre las partes, en un lapso de 30 días calendarios.
+        En caso de incumplimiento del presente acta, estoy obligado a entregar el vehículo trimovil personalmente en las
+        instalaciones de la empresa <strong><?php echo strtoupper($resultNegocio['nombre']); ?></strong>, en las mismas
+        condiciones que fue recibido y todos los
+        documentos
+        dados a mi custodia, con el simple requerimiento verbal o mediante carta notarial, asimismo, pagar en calidad de
+        penalidad compensatorio un importe ascendente a <?php echo $helpers->monedaFormt(35); ?>
+        (<?php echo $helpers->numeroALetrasMoneda(35); ?>), por cada día de demora
+        en la
+        entrega del vehículo trimovil. De igual forma, faculto a la empresa
+        <strong><?php echo strtoupper($resultNegocio['nombre']); ?></strong>, en caso de
+        incumplimiento,
+        retener el vehículo donde se le encuentre ubicado o en su defecto tomar acciones legales frente a las instancias
+        pertinentes, denunciándome por los delitos contra el patrimonio en cualquiera de sus modalidades en que hubiera
+        incurrido.
+    </p>
 
-        <br><br>
-
-        El arrendatario se compromete a conservar el vehículo en buen estado, no realizar
-        modificaciones sin autorización y devolverlo en las mismas condiciones.
-
-        <br><br>
-
-        En caso de incumplimiento, se aplicará una penalidad de S/ 35.00 por día de retraso.
+    <br>
+    <div class="condiciones">
+        <div style="width: 100%; margin-bottom: 4px;">
+            <span style="font-weight: bold;">OBSERVACIONES:</span>
+        </div>
+        <div style="width: 100%; border-bottom: 1px dotted #000; height: 14px;"></div>
+        <div style="width: 100%; border-bottom: 1px dotted #000; height: 20px;"></div>
     </div>
+    <br>
+    <p>
+        No habiendo nada más que hacer constar, se da por concluida la entrega y recepción del vehículo TRIMOTO DE
+        PASAJEROS a las <strong><?php echo $hora; ?></strong> horas del día
+        <strong><?php echo $helpers->fechaLetras($resultVenta['fecha_hora']); ?></strong>
+        firmando la presente acta en señal de conformidad, y para
+        mayor veracidad se certifica notarialmente mi firma.
+    </p>
 
-    <div class="section">
-        <b>OBSERVACIONES:</b>
-        <br><br>
-        ______________________________________________________________
-        <br><br>
-        ______________________________________________________________
-    </div>
+    <br><br>
 
-    <div class="firmas">
-
-        <div class="firma">
-            <div class="linea"></div>
-            GERENTE GENERAL
-        </div>
-
-        <div class="firma">
-            <div class="linea"></div>
-            <?= $arrendatario ?><br>
-            ARRENDATARIO
-        </div>
-
-        <div class="firma">
-            <div class="linea"></div>
-            <?= $garante ?><br>
-            GARANTE
-        </div>
-
+    <div class="firma">
+        <div>_________________<br>GERENTE</div>
+        <div>_________________<br><?php echo strtoupper($comprador); ?></div>
+        <?php if (!empty($nombreAcompanante)): ?>
+            <div>_________________<br><?php echo strtoupper($nombreAcompanante); ?></div>
+        <?php else: ?>
+            <div>_________________<br>PAREJA/CÓNYUGE</div>
+        <?php endif; ?>
+        <?php if (!empty($garante)): ?>
+            <div>_________________<br><?php echo strtoupper($garante); ?></div>
+        <?php else: ?>
+            <div>_________________<br>GARANTE</div>
+        <?php endif; ?>
     </div>
 
 </body>
+
 <?php
 $html = ob_get_clean();
 require_once __DIR__ . '/../../reportes/factura/pdf/vendor/autoload.php';

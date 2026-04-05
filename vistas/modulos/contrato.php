@@ -54,7 +54,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
+                                    <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
                                         <label>Almacén:</label>
 
                                         <div class="input-group">
@@ -62,9 +62,9 @@
                                                 <span class="input-group-text">
                                                     <i class="fas fa-store-alt"></i>
                                                 </span>
-                                            </div>
                                             <select id="idsucursal" name="idsucursal" class="form-control select2">
                                             </select>
+                                            </div>
                                         </div>
                                     </div>
                                     <!--div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
@@ -192,7 +192,7 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-3 mb-4">
+                            <div class="col-md-3 mb-4" id="btnDescargarCompraVenta">
                                 <div class="pdf-card">
                                     <i class="fa fa-file-pdf pdf-icon"></i>
                                     <p>Compra venta</p>
@@ -203,15 +203,13 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                        <button type="button" class="btn btn-primary" id="btnDescargarContrato">Descargar
-                            Contrato</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="modal fade" id="modal-retener-contrato" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
+        <div class="modal fade" id="modal-retener-contrato" tabindex="-1" role="dialog"
+            aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
@@ -221,25 +219,135 @@
                         </button>
                     </div>
                     <form id="form-retener-contrato" action="">
-                    <div class="modal-body">
-                        <div class="alert alert-warning" role="alert">
-                            <strong>Advertencia:</strong> Retener un contrato significa que no se podrá realizar ninguna acción adicional sobre él, como imprimir o descargar documentos relacionados. Asegúrese de que esta es la acción correcta antes de proceder.
+                        <div class="modal-body">
+                            <div class="alert alert-warning" role="alert">
+                                <strong>Advertencia:</strong> Retener un contrato significa que no se podrá realizar
+                                ninguna acción adicional sobre él, como imprimir o descargar documentos relacionados.
+                                Asegúrese de que esta es la acción correcta antes de proceder.
+                            </div>
+                            <input type="hidden" id="idventa_retenida" name="idventa" />
+                            <div class="form-group">
+                                <label for="motivoRetencion">Motivo de la retención:</label>
+                                <textarea class="form-control" id="motivoRetencion" name="motivo" rows="3"
+                                    placeholder="Ingrese el motivo por el cual se retiene este contrato..."></textarea>
+                            </div>
                         </div>
-                        <input type="hidden" id="idventa_retenida" name="idventa" />
-                        <div class="form-group">
-                            <label for="motivoRetencion">Motivo de la retención:</label>
-                            <textarea class="form-control" id="motivoRetencion" name="motivo" rows="3" placeholder="Ingrese el motivo por el cual se retiene este contrato..."></textarea>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger" id="confirmarRetencion">Sí, Retener</button>
                         </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-danger" id="confirmarRetencion">Sí, Retener</button>
-                    </div>
-                </form>
+                    </form>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<script src="vistas/js/contratos.js"></script>
+        <div class="modal fade" id="modal-compra-venta" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-md" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Compra Venta</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form id="form-compra-venta" action="">
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="vendedor">Vendedor:</label>
+                                        <select name="idvendedor" id="idvendedor" class="form-control"></select>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="comprador">Comprador:</label>
+                                        <div class="d-flex align-items-end">
+                                            <input type="hidden" name="idcliente" id="idcliente" />
+                                            <input type="text" name="comprador" id="comprador" class="form-control mr-2" readonly />
+                                            <button type="button" class="btn btn-info mr-1" id="btnEditarComprador" title="Editar cliente"><i class="fas fa-edit"></i></button>
+                                            <button type="button" class="btn btn-primary" id="btnNuevoComprador" title="Nuevo cliente"><i class="fas fa-user-plus"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" id="idventa_compra_venta" name="idventa" />
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label for="monto_compra_venta">Monto:</label>
+                                        <input type="text" class="form-control" id="monto_compra_venta" name="monto_compra_venta"
+                                            placeholder="Ingrese el monto de la compra venta...">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-danger" id="confirmarCompraVenta">Sí, Realizar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modal-cliente-compra-venta" tabindex="-1" role="dialog"
+            aria-labelledby="modalClienteCompraVentaLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="modalClienteCompraVentaLabel">Cliente</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form id="form-cliente-compra-venta" action="">
+                        <div class="modal-body">
+                            <input type="hidden" name="idpersona" id="cliente_idpersona" value="">
+                            <input type="hidden" name="tipo_persona" id="cliente_tipo_persona" value="Cliente">
+
+                            <div class="form-group">
+                                <label for="cliente_nombre">Nombre / Razón social:</label>
+                                <input type="text" class="form-control" name="nombre" id="cliente_nombre" required>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group col-4">
+                                    <label for="cliente_tipo_documento">Tipo Doc:</label>
+                                    <select class="form-control" name="tipo_documento" id="cliente_tipo_documento">
+                                        <option value="DNI">DNI</option>
+                                        <option value="RUC">RUC</option>
+                                        <option value="CE">CE</option>
+                                        <option value="OTROS">OTROS</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-8">
+                                    <label for="cliente_num_documento">N° Documento:</label>
+                                    <input type="text" class="form-control" name="num_documento" id="cliente_num_documento" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cliente_telefono">Teléfono:</label>
+                                <input type="text" class="form-control" name="telefono" id="cliente_telefono">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="cliente_direccion">Dirección:</label>
+                                <input type="text" class="form-control" name="direccion" id="cliente_direccion">
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <label for="cliente_email">Email:</label>
+                                <input type="email" class="form-control" name="email" id="cliente_email">
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" id="btnGuardarClienteCompraVenta">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script src="vistas/js/contratos.js"></script>

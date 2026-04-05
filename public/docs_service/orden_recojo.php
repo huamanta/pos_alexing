@@ -1,33 +1,85 @@
 <?php
 require "../../configuraciones/Conexion.php";
+require "./Helpers.php";
+$helpers = new Helpers();
 date_default_timezone_set('America/Lima');
 // Función para encriptar/desencriptar
-function encrypt_decrypt($action, $string)
-{
-    if ($action == 'encrypt') {
-        $output = base64_encode($string);
-        $output = str_replace(['=', '/', '+'], ['', '_', '-'], $output);
-        return $output;
-    } else if ($action == 'decrypt') {
-        $string = str_replace(['_', '-'], ['/', '+'], $string);
-        $mod4 = strlen($string) % 4;
-        if ($mod4) {
-            $string .= substr('====', $mod4);
-        }
-        return base64_decode($string);
-    }
-    return false;
-}
 
 // Obtener ID del venta desde parámetro encriptado
-$idVenta = isset($_GET['idventa']) ? encrypt_decrypt('decrypt', $_GET['idventa']) : null;
+$idVenta = isset($_GET['idventa']) ? $helpers->encryptDecrypt('decrypt', $_GET['idventa']) : null;
 if ($idVenta == null) {
     echo "ID de venta no proporcionado.";
     exit;
 }
 
+
+// DATOS DINÁMICOS (puedes traerlos de BD basado en $idVenta)
+$sqlNegocio = "SELECT * 
+FROM datos_negocio 
+ORDER BY id_negocio ASC 
+LIMIT 1";
+$resultNegocio = ejecutarConsultaSimpleFila($sqlNegocio);
+
+$sqlVenta = "SELECT v.*, ta.nombre AS nombre_tipo_acompanante,
+             a.nombre AS nombre_acompanante, a.num_documento AS dni_acompanante, a.telefono AS telefono_acompanante,
+             p.nombre AS nombre_cliente, p.num_documento AS num_documento_cliente, p.direccion AS direccion_cliente, p.telefono AS telefono_cliente,
+             g.nombre AS nombre_garante, g.num_documento AS num_documento_garante, g.telefono AS telefono_garante, g.direccion AS direccion_garante
+             FROM venta v
+             INNER JOIN persona p ON v.idcliente = p.idpersona
+             LEFT JOIN persona g ON v.idgarante = g.idpersona
+             LEFT JOIN persona a ON v.idacompanante = a.idpersona
+             LEFT JOIN tipoacompanante ta ON v.idtipoacompanante = ta.idtipoacompanante
+             WHERE v.idventa = $idVenta";
+$resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
+
+
+$comprador = $resultVenta['nombre_cliente'] ?? '';
+$dniComprador = $resultVenta['num_documento_cliente'] ?? '';
+$direccionComprador = $resultVenta['direccion_cliente'] ?? '';
+$celularComprador = $resultVenta['telefono_cliente'] ?? '';
+$total = $resultVenta['total_venta'] ?? '';
+$inicial = $resultVenta['totalrecibido'] ?? '';
+$meses = $resultVenta['meses'] ?? '';
+$nombreAcompanante = $resultVenta['nombre_acompanante'] ?? '';
+$dniAcompanante = $resultVenta['dni_acompanante'] ?? '';
+$telefonoAcompanante = $resultVenta['telefono_acompanante'] ?? '';
+$nombreTipoAcompanante = $resultVenta['nombre_tipo_acompanante'] ?? '';
+$telefonoGarante = $resultVenta['telefono_garante'] ?? '';
+$direccionGarante = $resultVenta['direccion_garante'] ?? '';
+
+$sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $resultVenta['idsucursal'];
+$resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
+
+
+// Generación PDF con mPDF (server-side)
+$garante = $resultVenta['nombre_garante'] ?? '';
+$dniGarante = $resultVenta['num_documento_garante'] ?? '';
+$fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
+
+// Detalle del vehículo vendido
+$sqlDetalle = "SELECT dv.*, p.fabricante, p.modelo, p.numserie, p.nombre AS producto_nombre
+                FROM detalle_venta dv
+                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto
+                LEFT JOIN producto p ON pg.idproducto = p.idproducto
+                WHERE dv.idventa = $idVenta";
+$resultDetalle = ejecutarConsultaSimpleFila($sqlDetalle);
+$marcaProducto = !empty($resultDetalle['fabricante']) ? $resultDetalle['fabricante'] : '__________';
+$modeloProducto = !empty($resultDetalle['modelo']) ? $resultDetalle['modelo'] : '__________';
+$serieProducto = !empty($resultDetalle['numserie']) ? $resultDetalle['numserie'] : '__________';
+
+// Cuotas y fechas de inicio/fin
+$sqlCuotas = "SELECT deuda, MIN(fechavencimiento) AS fecha_inicio_cuota, MAX(fechavencimiento) AS fecha_fin_cuota
+              FROM cuentas_por_cobrar WHERE idventa = $idVenta";
+$resultCuotas = ejecutarConsultaSimpleFila($sqlCuotas);
+$montoCuota = !empty($resultCuotas['deuda']) ? $resultCuotas['deuda'] : 0;
+$fechaInicio = !empty($resultCuotas['fecha_inicio_cuota']) ? $helpers->fechaLetras($resultCuotas['fecha_inicio_cuota']) : '__________';
+$fechaFin = !empty($resultCuotas['fecha_fin_cuota']) ? $helpers->fechaLetras($resultCuotas['fecha_fin_cuota']) : '__________';
+
+$dataFrecuencia = $helpers->getDataFrecuencia($resultVenta['frecuencia'] ?? '1');
+$frecuenciaTexto = $dataFrecuencia->texto;
+
 // buscar actaentrega
-$sqlActa = "SELECT * FROM documentacion WHERE idventa = $idVenta AND tipo = '3'";
+$sqlActa = "SELECT * FROM documentacion WHERE idventa = $idVenta AND tipo = '1'";
 $resultActa = ejecutarConsultaSimpleFila($sqlActa);
 if (!$resultActa) {
     echo '
@@ -103,152 +155,209 @@ if (!$resultActa) {
     exit;
 }
 
-// DATOS DINÁMICOS (puedes traerlos de BD basado en $idVenta)
-$sqlNegocio = "SELECT * 
-FROM datos_negocio 
-ORDER BY id_negocio ASC 
-LIMIT 1";
-$resultNegocio = ejecutarConsultaSimpleFila($sqlNegocio);
+$numeroContrato = $helpers->tiposDocumentacion($resultActa['tipo']) . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
 
-$sqlVenta = "SELECT * FROM venta v 
-             INNER JOIN persona p ON v.idcliente = p.idpersona 
-             WHERE v.idventa = $idVenta";
-$resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
-$numeroContrato = "OR" . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
+// Hora dinámica de la venta
+$hora = date('H:i', strtotime($resultVenta['fecha_hora']));
 
-// Generación PDF con mPDF (server-side)
+// Generación PDF con Dompdf (server-side)
 ob_start();
-$empresa = "SURCO MOTORS S.A.C.";
-$ruc = "20601614082";
-$direccion = "JR: JIMENEZ PIMENTEL Nº 886";
-
-$cliente = "FABIANA DIAZ PAZ";
-$dni = "74615224";
-
-$vehiculo = "TRIMOTO DE PASAJEROS";
-$marca = "WANXIN";
-$modelo = "WX150-A";
-$color = "AZUL";
-$placa = "NUEVO";
-$serie = "LDAPAK105TGD30726";
-
-$fecha = date("d/m/Y");
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-<meta charset="UTF-8">
-<title>Orden de Recojo</title>
+    <meta charset="UTF-8">
+    <title>Orden de Recojo</title>
 
-<style>
-body {
-    font-family: Arial, sans-serif;
-    margin: 40px;
-    font-size: 14px;
-}
+    <style>
+        body {
+            font-family: "Times New Roman", serif;
+            font-size: 11px;
+            margin: 40px;
+            line-height: 1.4;
+            color: #000;
+        }
 
-h1, h2, h3 {
-    text-align: center;
-    margin: 0;
-}
+        .header {
+            text-align: center;
+        }
 
-.titulo {
-    font-weight: bold;
-    text-align: center;
-    margin-top: 15px;
-    margin-bottom: 20px;
-}
+        .empresa {
+            color: #5b8db8;
+            font-weight: bold;
+            font-size: 16px;
+        }
 
-.linea {
-    border-bottom: 1px solid #000;
-    display: inline-block;
-    width: 300px;
-}
+        .subempresa {
+            color: #7a7a7a;
+            font-weight: bold;
+            font-size: 15px;
+        }
 
-.texto {
-    text-align: justify;
-    line-height: 1.6;
-}
+        .ruc {
+            color: #7a7a7a;
+            font-size: 13px;
+        }
 
-.condiciones {
-    margin-top: 20px;
-}
+        .line {
+            border-top: 1px solid #999;
+            margin: 10px 0;
+        }
 
-.firmas {
-    margin-top: 60px;
-    display: flex;
-    justify-content: space-between;
-    text-align: center;
-}
+        .titulo {
+            font-weight: bold;
+            text-align: center;
+            font-size: 13px;
+        }
 
-.firma {
-    width: 30%;
-}
+        .numero {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 13px;
+        }
 
-@media print {
-    button {
-        display: none;
-    }
-}
-</style>
+        .section-title {
+            font-weight: bold;
+            text-decoration: underline;
+            margin-top: 15px;
+            font-size: 15px;
+        }
+
+        p {
+            text-align: justify;
+            margin: 5px 0;
+            font-size: 13px;
+        }
+
+        .clausula {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        .table-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .table th {
+            background-color: #cccccc;
+            border: 1px solid #ffffff;
+            font-size: 9px;
+            padding: 0;
+        }
+
+        .table td {
+            border: 1px solid #ffffff;
+            font-size: 9px;
+            padding: 0;
+        }
+
+        .table tr:nth-child(even) {
+            background-color: #e2efd9;
+        }
+
+        .firma {
+            margin-top: 60px;
+            width: 100%;
+        }
+
+        .firma div {
+            width: 23%;
+            display: inline-block;
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .fecha-derecha {
+            width: 100%;
+            text-align: right;
+            font-size: 12px;
+            margin-top: 6px;
+        }
+    </style>
 </head>
 
 <body>
 
-<h2><?php echo $empresa; ?></h2>
-<p style="text-align:center;">ALQUILER VENTA DE VEHÍCULOS MOTORIZADOS</p>
-<p style="text-align:center;">R.U.C. <?php echo $ruc; ?></p>
-<p style="text-align:center;">OFICINA: <?php echo $direccion; ?></p>
+    <div class="header">
+        <div class="empresa"><?php echo strtoupper($resultNegocio['nombre']); ?></div>
+        <div class="subempresa">ALQUILER VENTA DE VEHÍCULOS MOTORIZADOS</div>
+        <div class="ruc">R.U.C. <?php echo $resultSucursal['ruc']; ?></div>
 
-<h3 class="titulo">ORDEN DE RECOJO DE LA MERCADERÍA</h3>
-
-<p class="texto">
-CLIENTE <?php echo $cliente; ?>, IDENTIFICADO DNI Nº <?php echo $dni; ?>, 
-POR MEDIO DE LA PRESENTE HAGO ENTREGA DE LA(S) SIGUIENTE MERCADERÍA(S): 
-CLASE <?php echo $vehiculo; ?>; MARCA <?php echo $marca; ?>; 
-MODELO <?php echo $modelo; ?>; COLOR <?php echo $color; ?>; 
-PLACA <?php echo $placa; ?>; SERIE <?php echo $serie; ?>. 
-LA(S) MISMA(S) QUE QUEDARÁ(N) EN GARANTÍA HASTA LA CANCELACIÓN DE MI DEUDA 
-EN UN PLAZO MÁXIMO DE 03 DÍAS.
-</p>
-
-<p class="texto">
-CASO CONTRARIO NO TENDRÉ QUE RECLAMAR DE CONFORMIDAD CON LO ESTIPULADO EN LA CLÁUSULA 6 
-DE NUESTRO CONTRATO, AUTORIZO DESDE YA A <?php echo $empresa; ?> DAR ESTRICTO CUMPLIMIENTO 
-A LO SEÑALADO EN LA CLÁUSULA 6 DE LA ACOTADA RELACIÓN CONTRACTUAL.
-</p>
-
-<div class="condiciones">
-<strong>CONDICIONES DEL VEHÍCULO:</strong><br><br>
-_____________________________________________<br><br>
-_____________________________________________<br><br>
-_____________________________________________<br><br>
-_____________________________________________<br>
-</div>
-
-<br><br>
-<strong>FECHA:</strong> <?php echo $fecha; ?>
-
-<div class="firmas">
-    <div class="firma">
-        _________________________<br>
-        FIRMA Y SELLO DEL GERENTE GENERAL<br>
-        ARRENDADOR - VENDEDOR
+        <div class="line"></div>
+        <br>
+        <div class="titulo section-title">ORDEN DE RECOJO DE LA MERCADERÍAS</div>
     </div>
+    <br>
 
-    <div class="firma">
-        _________________________<br>
-        <?php echo $cliente; ?><br>
-        ARRENDADOR - COMPRADOR
-    </div>
+    <p class="texto">
+        CLIENTE <strong><?php echo strtoupper($comprador); ?></strong>, IDENTIFICADO CON DNI N°
+        <strong><?php echo $dniComprador ?: '__________'; ?></strong>, POR MEDIO DE LA PRESENTE HAGO ENTREGA
+        DE LA(S) SIGUIENTE(S) MERCADERIA(S): CLASE
+        <strong><?php echo strtoupper($resultDetalle['producto_nombre'] ?? 'TRIMOTO DE PASAJEROS'); ?></strong>;
+        MARCA <strong><?php echo strtoupper($marcaProducto); ?></strong>;
+        MODELO <strong><?php echo strtoupper($modeloProducto); ?></strong>;
+        COLOR <strong>__________</strong>;
+        PLACA <strong>__________</strong>;
+        SERIE <strong><?php echo strtoupper($serieProducto); ?></strong>. LA(S) MISMA(S) QUE QUEDARA(N)
+        EN GARANTIA HASTA LA CANCELACION DE MI DEUDA EN UN PLAZO MAXIMO DE <strong>03 DIAS</strong>.
+    </p>
+    <p class="texto">
+        CASO CONTRARIO NO TENDRE QUE RECLAMAR DE CONFORMIDAD CON LO ESTIPULADO EN LA CLAUSULA 7
+        DE NUESTRO CONTRATO, AUTORIZO DESDE YA A
+        <strong><?php echo strtoupper($resultNegocio['nombre']); ?></strong> A DAR ESTRICTO CUMPLIMIENTO A LO
+        SENALADO EN LA CLAUSULA 7 DE LA ACOTADA RELACION CONTRACTUAL, ESTO ES LUEGO DE PRODUCIDO EL
+        RECOJO DEL PRODUCTO.
+    </p>
 
-    <div class="firma">
-        _________________________<br>
-        <?php echo $garante; ?><br>
-        GARANTE
+    <br>
+    <div class="condiciones">
+        <div style="width: 100%; margin-bottom: 4px;">
+            <span style="font-weight: bold;">CONDICIONES DEL VEHÍCULO:</span>
+            <span
+                style="display: inline-block; width: 72%; border-bottom: 1px dotted #000; height: 14px; vertical-align: middle;"></span>
+        </div>
+        <div style="width: 100%; border-bottom: 1px dotted #000; height: 14px;"></div>
+        <div style="width: 100%; border-bottom: 1px dotted #000; height: 20px;"></div>
+        <div style="width: 100%; border-bottom: 1px dotted #000; height: 20px;"></div>
     </div>
-</div>
+    <br>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 6px;">
+        <tr>
+            <td style="text-align: right;">
+                <table style="border-collapse: collapse; margin-left: auto; margin-right: 0;">
+                    <tr>
+                        <td>FECHA:........................................................................</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <br><br>
+    <div class="firma">
+        <div>_________________<br>GERENTE</div>
+        <div>_________________<br><?php echo strtoupper($comprador); ?></div>
+        <?php if (!empty($nombreAcompanante)): ?>
+            <div>_________________<br><?php echo strtoupper($nombreAcompanante); ?></div>
+        <?php else: ?>
+            <div>_________________<br>PAREJA/CÓNYUGE</div>
+        <?php endif; ?>
+        <?php if (!empty($garante)): ?>
+            <div>_________________<br><?php echo strtoupper($garante); ?></div>
+        <?php else: ?>
+            <div>_________________<br>GARANTE</div>
+        <?php endif; ?>
+    </div>
 
 </body>
 <?php
@@ -267,4 +376,5 @@ $dompdf->stream('orden_recojo_' . $numeroContrato . '.pdf', array('Attachment' =
 exit;
 
 ?>
+
 </html>

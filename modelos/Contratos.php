@@ -78,7 +78,7 @@ class Contratos
                                 <i class="fa fa-lock"></i>
                             </button>';
 
-                $btnVerContrato = '<button class="btn btn-info btn-sm" onclick="verContrato(' . $value['idventa'] . ')" title="Ver documentación del contrato"><i class="fa fa-copy"></i></button>';
+                $btnVerContrato = '<button class="btn btn-info btn-sm" onclick="verContrato(' . $value['idventa'] . ', '.$value['idpersona'].',\'' . $value['nombre'] . '\')" title="Ver documentación del contrato"><i class="fa fa-copy"></i></button>';
             }
             $data[] = [
                 "0" => $value['fecha_contrato'],
@@ -167,6 +167,25 @@ class Contratos
             return ["status" => true, "message" => "Retención quitada exitosamente."];
         } else {
             return ["status" => false, "message" => "Error al quitar la retención."];
+        }
+    }
+
+    public function selectUsuarios($idventa, $idsucursal){
+        $sql = "SELECT * FROM venta WHERE idventa = $idventa";
+        $venta = ejecutarConsultaSimpleFila($sql);
+
+        $sql = "SELECT *
+                FROM usuario_sucursal us
+                INNER JOIN usuario u ON us.idusuario = u.idusuario
+                INNER JOIN personal p ON p.idpersonal = u.idpersonal
+                WHERE us.idsucursal = '$idsucursal'";
+
+        $result = ejecutarConsulta($sql);
+
+        if ($result) {
+            return ["status"=> true, "data"=> $result, "idvendedor" => $venta['idPersonal']];
+        } else {
+            return ["status"=> false, "data"=> null];
         }
     }
 }

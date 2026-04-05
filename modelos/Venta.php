@@ -658,7 +658,7 @@ class Venta
 
         if ($ventaCredito == "Si") {
 
-            $tipos = [1, 2, 3, 4, 5]; // contrato, acta, orden, etc.
+            $tipos = [1]; // contrato, acta, orden, etc.
 
             foreach ($tipos as $tipo) {
 
