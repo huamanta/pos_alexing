@@ -1,40 +1,36 @@
 var tabla;
 
 //Función que se ejecuta al inicio
-function init(){
-    limpiar();
+function init() {
+	limpiar();
 	listar();
- $("#body").addClass("sidebar-collapse sidebar-mini");
-	$("#myModal").on("submit",function(e)
-	{
-		guardaryeditar(e);	
+	$("#body").addClass("sidebar-collapse sidebar-mini");
+	$("#myModal").on("submit", function (e) {
+		guardaryeditar(e);
 	})
 
-    $('#navVentasActive').addClass("treeview active");
-    $('#navVentas').addClass("treeview menu-open");
-    $('#navCliente').addClass("active");
+	$('#navVentasActive').addClass("treeview active");
+	$('#navVentas').addClass("treeview menu-open");
+	$('#navCliente').addClass("active");
 
 }
 
 //Función limpiar
-function limpiar()
-{
+function limpiar() {
 	$("#nombre").val("");
 	$("#num_documento").val("");
 	$("#direccion").val("");
 	$("#telefono").val("");
 	$("#email").val("");
 	$("#idpersona").val("");
-	$( "#proveedor" ).prop( "checked", false );
+	$("#proveedor").prop("checked", false);
 }
 
-function mostrar(idpersona)
-{
-    limpiar();
-	$.post("controladores/persona.php?op=mostrar",{idpersona : idpersona}, function(data, status)
-	{
-		data = JSON.parse(data);		
-        $('#myModal').modal('show');
+function mostrar(idpersona) {
+	limpiar();
+	$.post("controladores/persona.php?op=mostrar", { idpersona: idpersona }, function (data, status) {
+		data = JSON.parse(data);
+		$('#myModal').modal('show');
 
 		$("#nombre").val(data.nombre);
 		$("#tipo_documento").val(data.tipo_documento);
@@ -42,226 +38,220 @@ function mostrar(idpersona)
 		$("#direccion").val(data.direccion);
 		$("#telefono").val(data.telefono);
 		$("#email").val(data.email);
- 		$("#idpersona").val(data.idpersona);
- 		if(data.isproveedor == 1){
-			$( "#proveedor" ).prop( "checked", true );
-		}else{
-			$( "#proveedor" ).prop( "checked", false );
+		$("#idpersona").val(data.idpersona);
+		if (data.isproveedor == 1) {
+			$("#proveedor").prop("checked", true);
+		} else {
+			$("#proveedor").prop("checked", false);
 		}
 
- 	})
+	})
 }
 
-function guardaryeditar(e)
-{
+function guardaryeditar(e) {
 	e.preventDefault(); //No se activará la acción predeterminada del evento
 	//$("#btnGuardar").prop("disabled",true);
 	var formData = new FormData($("#formulario")[0]);
 
 	$.ajax({
 		url: "controladores/persona.php?op=guardaryeditar",
-	    type: "POST",
-	    data: formData,
-	    contentType: false,
-	    processData: false,
+		type: "POST",
+		data: formData,
+		contentType: false,
+		processData: false,
 
-	    success: function(datos)
-	    {                    
-	          Swal.fire({
-				  title: 'Cliente',
-				  icon: 'success',
-					text:datos
-				});
-				
-              $('#myModal').modal('hide');
-	          tabla.ajax.reload();
+		success: function (datos) {
+			Swal.fire({
+				title: 'Cliente',
+				icon: 'success',
+				text: datos
+			});
+
+			$('#myModal').modal('hide');
+			tabla.ajax.reload();
 
 
-	    }
+		}
 
 	});
 	limpiar();
 }
 
-function BuscarCliente(){
+function BuscarCliente() {
 
-    let numero=$("#num_documento").val();
+	let numero = $("#num_documento").val();
 
-    $.post("controladores/venta.php?op=selectCliente3&numero="+numero,function(data, status){
+	$.post("controladores/venta.php?op=selectCliente3&numero=" + numero, function (data, status) {
 
-		data=JSON.parse(data);
+		data = JSON.parse(data);
 
-		if(data != null){
+		if (data != null) {
 
-            Swal.fire({
-                title: '¡Aviso!',
-                icon: 'info',
-                  text:'El Cliente ya se encuentra registrado'
-              });
+			Swal.fire({
+				title: '¡Aviso!',
+				icon: 'info',
+				text: 'El Cliente ya se encuentra registrado'
+			});
 
 			$("#num_documento").val('');
 
-		}else{
+		} else {
 
-			if ($('#tipo_documento').val()=='DNI'){
-    var cod = $.trim($('#tipo_documento').val());
-    $numero=$("#num_documento").val();
-    if($numero.length<8)
-    {
-        Swal.fire({
-            title: 'Falta Números en el DNI',
-            icon: 'info',
-              text:'El DNI debe tener 8 Carácteres'
-          });	
-    }else{
-    	$('#Buscar_Cliente').hide();
-    	var numdni=$('#num_documento').val();
-        var url = 'https://dniruc.apisperu.com/api/v1/dni/'+numdni+'?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo';
+			if ($('#tipo_documento').val() == 'DNI') {
+				var cod = $.trim($('#tipo_documento').val());
+				$numero = $("#num_documento").val();
+				if ($numero.length < 8) {
+					Swal.fire({
+						title: 'Falta Números en el DNI',
+						icon: 'info',
+						text: 'El DNI debe tener 8 Carácteres'
+					});
+				} else {
+					$('#Buscar_Cliente').hide();
+					var numdni = $('#num_documento').val();
+					var url = 'https://dniruc.apisperu.com/api/v1/dni/' + numdni + '?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo';
 
-    	$('#cargando').show();
-    	$.ajax({
-            type:'GET',
-            url:url,
-            success: function(dat){
-              	if(dat.success == false){
+					$('#cargando').show();
+					$.ajax({
+						type: 'GET',
+						url: url,
+						success: function (dat) {
+							if (dat.success == false) {
 
-                    Swal.fire({
-                        title: 'DNI Inválido',
-                        icon: 'error',
-                          text:'¡No Existe DNI!'
-                      });
-                  
-                    }else{
-                        //$('#nombre').val(dat.success[0]);
-                        $('#nombre').val(dat.nombres + " " + dat.apellidoPaterno + " " + dat.apellidoMaterno);
-                        $('#Buscar_Cliente').hide();
-                        $('#cargando').hide();
-                  }
-                }, complete: function(){
+								Swal.fire({
+									title: 'DNI Inválido',
+									icon: 'error',
+									text: '¡No Existe DNI!'
+								});
 
-                	$('#Buscar_Cliente').show();
-                	$('#cargando').hide();
-                	
-                }, error: function(){
-                	
-                }
-        });
-      }
+							} else {
+								//$('#nombre').val(dat.success[0]);
+								$('#nombre').val(dat.nombres + " " + dat.apellidoPaterno + " " + dat.apellidoMaterno);
+								$('#Buscar_Cliente').hide();
+								$('#cargando').hide();
+							}
+						}, complete: function () {
 
-  	}else{
-    	var cod = $.trim($('#tipo_documento').val());
-        $numero=$("#num_documento").val();
-        if($numero.length<11){
-            Swal.fire({
-                title: 'Falta Números en el RUC',
-                icon: 'info',
-                  text:'El DNI debe tener 11 Carácteres'
-              });
-        }else{
-    		$('#Buscar_Cliente').hide();          
-            var numdni=$('#num_documento').val();
-            var url = 'https://dniruc.apisperu.com/api/v1/ruc/'+numdni+'?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo';
-    		$('#cargando').show();
-            $.ajax({
-	            type:'GET',
-	            url:url,
-	            success: function(dat){
-					console.log(dat);
-	                if(dat.success == false){
-                        Swal.fire({
-                            title: 'Ruc Inválido',
-                            icon: 'info',
-                              text:'¡No Existe RUC!'
-                          });
-	                }else{
-	                    $('#nombre').val(dat.razonSocial);
-	                    $('#direccion').val(dat.direccion);
-						document.getElementById('estado2').innerHTML= dat.estado;
-						document.getElementById('condicion').innerHTML= dat.condicion;
-	                    $('#Buscar_Cliente').hide();
-                        $('#cargando').hide();         
-	        		}
-	            }, complete: function(){
+							$('#Buscar_Cliente').show();
+							$('#cargando').hide();
 
-                	$('#Buscar_Cliente').show();
-                	$('#cargando').hide();
-	            	
-	            }, error: function(){
-	            	
-	            }            
-            });
-        }
-  	}
+						}, error: function () {
+
+						}
+					});
+				}
+
+			} else {
+				var cod = $.trim($('#tipo_documento').val());
+				$numero = $("#num_documento").val();
+				if ($numero.length < 11) {
+					Swal.fire({
+						title: 'Falta Números en el RUC',
+						icon: 'info',
+						text: 'El DNI debe tener 11 Carácteres'
+					});
+				} else {
+					$('#Buscar_Cliente').hide();
+					var numdni = $('#num_documento').val();
+					var url = 'https://dniruc.apisperu.com/api/v1/ruc/' + numdni + '?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo';
+					$('#cargando').show();
+					$.ajax({
+						type: 'GET',
+						url: url,
+						success: function (dat) {
+							console.log(dat);
+							if (dat.success == false) {
+								Swal.fire({
+									title: 'Ruc Inválido',
+									icon: 'info',
+									text: '¡No Existe RUC!'
+								});
+							} else {
+								$('#nombre').val(dat.razonSocial);
+								$('#direccion').val(dat.direccion);
+								document.getElementById('estado2').innerHTML = dat.estado;
+								document.getElementById('condicion').innerHTML = dat.condicion;
+								$('#Buscar_Cliente').hide();
+								$('#cargando').hide();
+							}
+						}, complete: function () {
+
+							$('#Buscar_Cliente').show();
+							$('#cargando').hide();
+
+						}, error: function () {
+
+						}
+					});
+				}
+			}
 
 
 		}
-		
+
 	});
 
 }
 
 //Función Listar
-function listar()
-{
-	tabla=$('#tbllistado').dataTable(
-	{
-		//"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-		"aProcessing": true,//Activamos el procesamiento del datatables
-	    "aServerSide": true,//Paginación y filtrado realizados por el servidor
-	    "processing": true,
-	    "language": 
-		{          
-		"processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-		},
-        "responsive": true, "lengthChange": false, "autoWidth": false,
-	    dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-		lengthMenu: [
-            [5,10, 25, 50, 100, -1],
-            ['5 filas','10 filas', '25 filas', '50 filas','100 filas', 'Mostrar todo']
-        ],
-        buttons: ['pageLength',
-					{
-						extend: 'excelHtml5', 
-						text: "<i class='fas fa-file-csv'></i>", 
-						titleAttr: 'Exportar a Excel', 
-						// className: 'btn btn-success'
-					},
-					{
-						extend: 'pdf', 
-						text: "<i class='fas fa-file-pdf'></i>", 
-						titleAttr: 'Exportar a PDF', 
-						// className: 'btn btn-danger'
-					},
-					{
-						extend: 'colvis', 
-						text: "<i class='fas fa-bars'></i>", 
-						titleAttr: '', 
-						// className: 'btn btn-danger'
-					}],
-		"ajax":
+function listar() {
+	tabla = $('#tbllistado').dataTable(
+		{
+			//"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
+			"aProcessing": true,//Activamos el procesamiento del datatables
+			"aServerSide": true,//Paginación y filtrado realizados por el servidor
+			"processing": true,
+			"language":
+			{
+				"processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+			},
+			"responsive": true, "lengthChange": false, "autoWidth": false,
+			dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+			lengthMenu: [
+				[5, 10, 25, 50, 100, -1],
+				['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
+			],
+			buttons: ['pageLength',
 				{
-					url: 'controladores/persona.php?op=listarc',
-					type : "get",
-					dataType : "json",						
-					error: function(e){
-						console.log(e.responseText);	
-					}
+					extend: 'excelHtml5',
+					text: "<i class='fas fa-file-csv'></i>",
+					titleAttr: 'Exportar a Excel',
+					// className: 'btn btn-success'
 				},
-		"bDestroy": true,
-		"iDisplayLength": 5,//Paginación
-	    "order": [[ 0, "desc" ]]//Ordenar (columna,orden)
-	}).DataTable();
+				{
+					extend: 'pdf',
+					text: "<i class='fas fa-file-pdf'></i>",
+					titleAttr: 'Exportar a PDF',
+					// className: 'btn btn-danger'
+				},
+				{
+					extend: 'colvis',
+					text: "<i class='fas fa-bars'></i>",
+					titleAttr: '',
+					// className: 'btn btn-danger'
+				}],
+			"ajax":
+			{
+				url: 'controladores/persona.php?op=listarc',
+				type: "get",
+				dataType: "json",
+				error: function (e) {
+					console.log(e.responseText);
+				}
+			},
+			"bDestroy": true,
+			"iDisplayLength": 5,//Paginación
+			"order": [[0, "desc"]]//Ordenar (columna,orden)
+		}).DataTable();
 }
 
 //Función cancelarform
-function cancelarform()
-{
+function cancelarform() {
 	limpiar();
 }
 
 //Función para desactivar registros
-function eliminar(idpersona)
-{
+function eliminar(idpersona) {
 
 	Swal.fire({
 		title: 'Eliminar?',
@@ -271,63 +261,63 @@ function eliminar(idpersona)
 		confirmButtonColor: '#3085d6',
 		cancelButtonColor: '#d33',
 		confirmButtonText: 'Si'
-		}).then((result) => {
+	}).then((result) => {
 		if (result.isConfirmed) {
-			$.post("controladores/persona.php?op=eliminar", {idpersona : idpersona}, function(e){
+			$.post("controladores/persona.php?op=eliminar", { idpersona: idpersona }, function (e) {
 
-				if(e == 2){
+				if (e == 2) {
 					Swal.fire(
 						'!!! Alerta !!!',
 						'Cliente asociado a una Operación',
 						'error'
-						)
-				}else if(e == 1){
+					)
+				} else if (e == 1) {
 					Swal.fire(
 						'!!! Eliminado !!!',
 						'Cliente Eliminado',
 						'success'
-						)
-				}else{
+					)
+				} else {
 					Swal.fire(
 						'!!! Eliminado !!!',
 						'Cliente Eliminado',
 						'success'
-						)
+					)
 				}
 
-				
+
 				tabla.ajax.reload();
 			});
-		}else{
+		} else {
 			Swal.fire(
 				'Aviso!',
 				"Se Cancelo la eliminación del Cliente",
 				'info'
-				)
+			)
 		}
-		})
-		
+	})
+
 }
 
 // Función para cerrar el modal
-    function cerrarModal() {
-        $('#listarReporteCliente').modal('hide');
-    }
+function cerrarModal() {
+	$('#listarReporteCliente').modal('hide');
+}
 
 
 function imprimir() {
-    // Obtener el contenido de las tablas generadas
-    var data_compras = $('#data_compras').html();
-    var data_cuentas_pagar = $('#data_cuentas_pagar').html();
-    var data_proveedor = $('#data_proveedor').html();
-    var data_proveedor_pagar = $('#data_proveedor_pagar').html();
+	// Obtener el contenido de las tablas generadas
+	var data_compras = $('#data_compras').html();
+	var data_cuentas_pagar = $('#data_cuentas_pagar').html();
+	var data_proveedor = $('#data_proveedor').html();
+	var data_proveedor_pagar = $('#data_proveedor_pagar').html();
 
-    // Obtener las fechas de inicio y fin seleccionadas
-    var fecha_inicio = $('#fecha_inicio').val();
-    var fecha_fin = $('#fecha_fin').val();
+	// Obtener las fechas de inicio y fin seleccionadas
+	var fecha_inicio = $('#fecha_inicio').val();
+	var fecha_fin = $('#fecha_fin').val();
 
-    // Crear un contenido HTML para la impresión
-    var contenido = `
+	// Crear un contenido HTML para la impresión
+	var contenido = `
         <html>
         <head>
             <title>Reporte de Clientes</title>
@@ -411,57 +401,57 @@ function imprimir() {
         </html>
     `;
 
-    // Crear una ventana para la impresión
-    var ventana = window.open('', '', 'width=800,height=600');
-    ventana.document.write(contenido);
-    ventana.document.close();
+	// Crear una ventana para la impresión
+	var ventana = window.open('', '', 'width=800,height=600');
+	ventana.document.write(contenido);
+	ventana.document.close();
 
-    // Esperar que el contenido se cargue y luego ejecutar la impresión
-    ventana.onload = function() {
-        ventana.print();
-        ventana.close();
-    };
+	// Esperar que el contenido se cargue y luego ejecutar la impresión
+	ventana.onload = function () {
+		ventana.print();
+		ventana.close();
+	};
 }
 
 
 
 
-$("#fecha_inicio").change(function() {
-	var clientes01 =  $('#clientesreporte').val()
-    var fecha_inicio = $("#fecha_inicio").val();
-    var fecha_fin = $("#fecha_fin").val();
-    ListarReportesClientes(clientes01, fecha_inicio, fecha_fin);
+$("#fecha_inicio").change(function () {
+	var clientes01 = $('#clientesreporte').val()
+	var fecha_inicio = $("#fecha_inicio").val();
+	var fecha_fin = $("#fecha_fin").val();
+	ListarReportesClientes(clientes01, fecha_inicio, fecha_fin);
 });
 
-$("#fecha_fin").change(function() {
-	var clientes01 =  $('#clientesreporte').val()
-    var fecha_inicio = $("#fecha_inicio").val();
-    var fecha_fin = $("#fecha_fin").val();
-    ListarReportesClientes(clientes01, fecha_inicio, fecha_fin);
+$("#fecha_fin").change(function () {
+	var clientes01 = $('#clientesreporte').val()
+	var fecha_inicio = $("#fecha_inicio").val();
+	var fecha_fin = $("#fecha_fin").val();
+	ListarReportesClientes(clientes01, fecha_inicio, fecha_fin);
 });
 
 
 function ListarReportesClientes(idcliente) {
-	 $('#data_compras').html('');  
-    $('#data_cuentas_pagar').html('');  
-    $('#data_proveedor').html(''); 
-    $('#data_proveedor_pagar').html(''); 
-    $('#clientesreporte').val(idcliente)
+	$('#data_compras').html('');
+	$('#data_cuentas_pagar').html('');
+	$('#data_proveedor').html('');
+	$('#data_proveedor_pagar').html('');
+	$('#clientesreporte').val(idcliente)
 	var fecha_inicio = $("#fecha_inicio").val();
-  	var fecha_fin = $("#fecha_fin").val();
+	var fecha_fin = $("#fecha_fin").val();
 
 	$('#listarReporteCliente').modal('show');
 	$.ajax({
 		url: "controladores/venta.php?op=listarhistorialcliente&idcliente=" + idcliente + "&fecha_inicio=" + fecha_inicio + "&fecha_fin=" + fecha_fin,
-	    type: "GET",
-	    contentType: false,
-	    processData: false,
-	    success: function(datos) {                    
-	    	console.log(datos);
-	       var data = JSON.parse(datos);
-
-	       // Tabla de Compras
-	       var ventas = data.ventas;
+		type: "GET",
+		contentType: false,
+		processData: false,
+		success: function (datos) {
+			console.log(datos);
+			var data = JSON.parse(datos);
+			var symbol = data.symbol;
+			// Tabla de Compras
+			var ventas = data.ventas;
 			var total = 0;
 			var pagado = 0;
 			var interes = 0;
@@ -475,23 +465,23 @@ function ListarReportesClientes(idcliente) {
 			      <th>Importe</th>
 			      <th>Interes</th>
 			      <th>Total</th>
-			      <th>Mes</th>
+			      <th>Cuotas</th>
 			    </tr>
 			  </thead>
 			  <tbody>`;
-			
+
 			$.each(ventas, function (i, item) {
 				total += parseFloat(ventas[i].total_venta);
 				interes += ventas[i].interes;
 				pagado += parseFloat(ventas[i].totalrecibido);
 				html += `<tr>
-					<td>`+ventas[i].fecha_hora+`</td>
-					<td>`+ventas[i].serie_comprobante+`</td>
+					<td>`+ ventas[i].fecha_hora + `</td>
+					<td>`+ ventas[i].serie_comprobante + `</td>
 					<td></td>
-					<td>`+ventas[i].totalrecibido+`</td>
-					<td>`+ventas[i].interes+`</td>
-					<td>`+ventas[i].total_venta+`</td>
-					<td>`+ventas[i].meses+`</td>
+					<td>`+ symbol + ventas[i].totalrecibido + `</td>
+					<td>`+ symbol + ventas[i].interes + `</td>
+					<td>`+ symbol + ventas[i].total_venta + `</td>
+					<td>`+ ventas[i].meses + `</td>
 				</tr>`;
 
 				var detalle = ventas[i].detalle;
@@ -501,23 +491,22 @@ function ListarReportesClientes(idcliente) {
 					<td style="font-weight:bold !important">Cantidad</td>
 					<td style="font-weight:bold !important">Precio</td>
 				</tr>`;
-				
+
 				$.each(detalle, function (a, item) {
 					html += `<tr>
 						<td colspan="2"></td>
-						<td>`+detalle[a].nombre_producto+`</td>
-						<td>`+detalle[a].cantidad+`</td>
-						<td>`+detalle[a].precio_venta+`</td>
+						<td>`+ detalle[a].nombre_producto + `</td>
+						<td>`+ detalle[a].cantidad + `</td>
+						<td>`+ detalle[a].precio_venta + `</td>
 					</tr>`;
 				});
 			});
 
 			html += `<tr>
-				<td colspan="2"></td>
-				<td style="color: blue">Total</td>
-				<td style="color: blue">`+pagado+`</td>
-				<td style="color: blue">`+interes+`</td>
-				<td style="color: red">`+total+`</td>
+				<td style="color: blue; text-align: right;" colspan="3">TOTAL</td>
+				<td style="color: blue">`+ symbol + pagado + `</td>
+				<td style="color: blue">`+ symbol + interes + `</td>
+				<td style="color: red">`+ symbol + total + `</td>
 				<td></td>
 			</tr>
 			  </tbody>
@@ -542,17 +531,17 @@ function ListarReportesClientes(idcliente) {
 			    </tr>
 			  </thead>
 			  <tbody>`;
-			
+
 			$.each(cuentasxcobrar, function (i, item) {
 				totalc += parseFloat(cuentasxcobrar[i].deudatotal);
 				interesc += parseFloat(cuentasxcobrar[i].interes);
 				htmlform += `<tr>
-					<td>`+cuentasxcobrar[i].fecha_hora+`</td>
-					<td>`+cuentasxcobrar[i].tipo+`</td>
-					<td>`+Number(cuentasxcobrar[i].deudatotal).toFixed(2)+`</td>
-					<td>`+Number(cuentasxcobrar[i].interes).toFixed(2)+`</td>
-					<td>`+Number(cuentasxcobrar[i].abonototal).toFixed(2)+`</td>
-					<td>0</td>
+					<td>`+ cuentasxcobrar[i].fecha_hora + `</td>
+					<td>`+ cuentasxcobrar[i].tipo + `</td>
+					<td>`+ symbol + Number(cuentasxcobrar[i].deudatotal).toFixed(2) + `</td>
+					<td>`+ symbol + Number(cuentasxcobrar[i].interes).toFixed(2) + `</td>
+					<td>`+ symbol + Number(cuentasxcobrar[i].abonototal).toFixed(2) + `</td>
+					<td>`+ symbol + 0 + `</td>
 				</tr>`;
 
 				var detallecuentasxcobrar = cuentasxcobrar[i].detalle;
@@ -560,20 +549,20 @@ function ListarReportesClientes(idcliente) {
 					recibidoc += parseFloat(detallecuentasxcobrar[a].montopagado);
 					htmlform += `<tr>
 						<td colspan="2"></td>
-						<td>`+detallecuentasxcobrar[a].tipo+`</td>
+						<td>`+ detallecuentasxcobrar[a].tipo + `</td>
 						<td></td>
 						<td></td>
-						<td>`+detallecuentasxcobrar[a].montopagado+`</td>
+						<td>`+ symbol + detallecuentasxcobrar[a].montopagado + `</td>
 					</tr>`;
 				});
 			});
 
 			htmlform += `<tr>
-				<td colspan="2"></td>
-				<td style="color: blue">Total</td>
-				<td style="color: blue">`+recibidoc.toFixed(2)+`</td>
-				<td style="color: blue">`+interesc.toFixed(2)+`</td>
-				<td style="color: red">`+totalc.toFixed(2)+`</td>
+				<td style="color: blue; text-align: right;" colspan="2">TOTAL</td>
+				<td style="color: red">`+ symbol + totalc.toFixed(2) + `</td>
+				<td style="color: blue">`+ symbol + interesc.toFixed(2) + `</td>
+				<td style="color: blue">`+ symbol + recibidoc.toFixed(2) + `</td>
+				<td style="color: blue">`+ symbol + recibidoc.toFixed(2) + `</td>
 			</tr>
 			  </tbody>
 			</table>`;
@@ -598,19 +587,19 @@ function ListarReportesClientes(idcliente) {
 			    </tr>
 			  </thead>
 			  <tbody>`;
-			
+
 			$.each(ventas, function (i, item) {
 				total += parseFloat(ventas[i].total_venta);
 				interes += ventas[i].interes;
 				pagado += parseFloat(ventas[i].totalrecibido);
 				html += `<tr>
-					<td>`+ventas[i].fecha_hora+`</td>
-					<td>`+ventas[i].serie_comprobante+`</td>
+					<td>`+ ventas[i].fecha_hora + `</td>
+					<td>`+ ventas[i].serie_comprobante + `</td>
 					<td></td>
-					<td>`+ventas[i].totalrecibido+`</td>
-					<td>`+ventas[i].interes+`</td>
-					<td>`+ventas[i].total_venta+`</td>
-					<td>`+ventas[i].meses+`</td>
+					<td>`+ symbol + ventas[i].totalrecibido + `</td>
+					<td>`+ symbol + ventas[i].interes + `</td>
+					<td>`+ symbol + ventas[i].total_venta + `</td>
+					<td>`+ ventas[i].meses + `</td>
 				</tr>`;
 
 				var detalle = ventas[i].detalle;
@@ -620,23 +609,23 @@ function ListarReportesClientes(idcliente) {
 					<td style="font-weight:bold !important">Cantidad</td>
 					<td style="font-weight:bold !important">Precio</td>
 				</tr>`;
-				
+
 				$.each(detalle, function (a, item) {
 					html += `<tr>
 						<td colspan="2"></td>
-						<td>`+detalle[a].nombre_producto+`</td>
-						<td>`+detalle[a].cantidad+`</td>
-						<td>`+detalle[a].precio_venta+`</td>
+						<td>`+ detalle[a].nombre_producto + `</td>
+						<td>`+ detalle[a].cantidad + `</td>
+						<td>`+ symbol + detalle[a].precio_venta + `</td>
 					</tr>`;
 				});
 			});
 
 			html += `<tr>
 				<td colspan="2"></td>
-				<td style="color: blue">Total</td>
-				<td style="color: blue">`+pagado+`</td>
-				<td style="color: blue">`+interes+`</td>
-				<td style="color: red">`+total+`</td>
+				<td style="color: blue; text-align: right;">TOTAL</td>
+				<td style="color: blue">`+ symbol + pagado + `</td>
+				<td style="color: blue">`+ symbol + interes + `</td>
+				<td style="color: red">`+ symbol + total + `</td>
 				<td></td>
 			</tr>
 			  </tbody>
@@ -661,17 +650,17 @@ function ListarReportesClientes(idcliente) {
 			    </tr>
 			  </thead>
 			  <tbody>`;
-			
+
 			$.each(cuentasxcobrar, function (i, item) {
 				totalc += parseFloat(cuentasxcobrar[i].deudatotal);
 				interesc += parseFloat(cuentasxcobrar[i].interes);
 				htmlform += `<tr>
-					<td>`+cuentasxcobrar[i].fecha_hora+`</td>
-					<td>`+cuentasxcobrar[i].tipo+`</td>
-					<td>`+Number(cuentasxcobrar[i].deudatotal).toFixed(2)+`</td>
-					<td>`+Number(cuentasxcobrar[i].interes).toFixed(2)+`</td>
-					<td>`+Number(cuentasxcobrar[i].abonototal).toFixed(2)+`</td>
-					<td>0</td>
+					<td>`+ cuentasxcobrar[i].fecha_hora + `</td>
+					<td>`+ cuentasxcobrar[i].tipo + `</td>
+					<td>`+ symbol + Number(cuentasxcobrar[i].deudatotal).toFixed(2) + `</td>
+					<td>`+ symbol + Number(cuentasxcobrar[i].interes).toFixed(2) + `</td>
+					<td>`+ symbol + Number(cuentasxcobrar[i].abonototal).toFixed(2) + `</td>
+					<td>`+ symbol + 0 + `</td>
 				</tr>`;
 
 				var detallecuentasxcobrar = cuentasxcobrar[i].detalle;
@@ -679,25 +668,25 @@ function ListarReportesClientes(idcliente) {
 					recibidoc += parseFloat(detallecuentasxcobrar[a].montopagado);
 					htmlform += `<tr>
 						<td colspan="2"></td>
-						<td>`+detallecuentasxcobrar[a].tipo+`</td>
+						<td>`+ detallecuentasxcobrar[a].tipo + `</td>
 						<td></td>
 						<td></td>
-						<td>`+detallecuentasxcobrar[a].montopagado+`</td>
+						<td>`+ symbol + detallecuentasxcobrar[a].montopagado + `</td>
 					</tr>`;
 				});
 			});
 
 			htmlform += `<tr>
-				<td colspan="2"></td>
-				<td style="color: blue">Total</td>
-				<td style="color: blue">`+recibidoc.toFixed(2)+`</td>
-				<td style="color: blue">`+interesc.toFixed(2)+`</td>
-				<td style="color: red">`+totalc.toFixed(2)+`</td>
+				<td style="color: blue; text-align: right;" colspan="2">TOTAL</td>
+				<td style="color: red">`+ symbol + totalc.toFixed(2) + `</td>
+				<td style="color: blue">`+ symbol + interesc.toFixed(2) + `</td>
+				<td style="color: blue">`+ symbol + recibidoc.toFixed(2) + `</td>
+				<td style="color: blue">`+ symbol + recibidoc.toFixed(2) + `</td>
 			</tr>
 			  </tbody>
 			</table>`;
 			$('#data_proveedor_pagar').html(htmlform);
-	    }
+		}
 
 	});
 }

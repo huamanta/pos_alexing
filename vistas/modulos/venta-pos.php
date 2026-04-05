@@ -562,7 +562,7 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                 </span>
                                             </div>
                                             <input type="date" class="form-control" name="fecha_inicio"
-                                                id="fecha_inicio" value="<?php echo date("Y-m-d"); ?>">
+                                                id="fecha_inicio" value="<?php echo date("Y-m-01"); ?>">
                                         </div>
                                     </div>
 

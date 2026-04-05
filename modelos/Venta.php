@@ -1,5 +1,6 @@
 <?php
 require "../configuraciones/Conexion.php";
+require "Helpers.php";
 date_default_timezone_set('America/Lima');
 class Venta
 {
@@ -1729,24 +1730,27 @@ class Venta
 
     public function listarHistorialCliente($idcliente, $fecha_inicio, $fecha_fin)
     {
+        $currency = Helpers::get_currency_code($_SESSION["idsucursal"]);
         $sql = "SELECT * FROM venta v WHERE v.idcliente = '$idcliente' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado IN ('Activado','Por Enviar','Aceptado')";
         //echo  $sql;
         $ventas = ejecutarConsulta($sql);
         $data = array();
         $list = array();
         while ($reg = $ventas->fetch_object()) {
-
+            $currency = Helpers::get_currency_code($reg->idsucursal);
             if ($reg->ventacredito == 'Si') {
-                $sql1 = "SELECT * FROM detalle_venta  WHERE idventa = '$reg->idventa'";
+                $sql1 = "SELECT * FROM detalle_venta dv
+                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto 
+                LEFT JOIN producto a ON pg.idproducto = a.idproducto
+                WHERE dv.idventa = '$reg->idventa'";
                 $detalles = ejecutarConsulta($sql1);
                 $detalle = array();
                 while ($reg2 = $detalles->fetch_object()) {
                     $detalle[] = array(
                         "idproducto" => $reg2->idproducto,
-                        "nombre_producto" => $reg2->nombre_producto,
-                        "cantidad" => $reg2->cantidad . ' Unid.',
-                        "precio_venta" => 'S/. ' . $reg2->precio_venta,
-
+                        "nombre_producto" => $reg2->idproducto . ' - ' . $reg2->nombre_producto,
+                        "cantidad" => $reg2->cantidad . ' ' . $reg2->contenedor,
+                        "precio_venta" => Helpers::get_currency_symbol($reg2->precio_venta, $currency),
                     ); # code...
                 }
 
@@ -1811,7 +1815,7 @@ class Venta
                         "idproducto" => $reg4->idproducto,
                         "nombre_producto" => $reg4->nombre_producto,
                         "cantidad" => $reg4->cantidad . ' Unid.',
-                        "precio_venta" => 'S/. ' . $reg4->precio_venta,
+                        "precio_venta" => $reg4->precio_venta,
 
                     ); # code...
                 }
@@ -1857,7 +1861,19 @@ class Venta
             }
         }
 
-        return array('ventas' => $data, 'cuentasxcobrar' => $list, 'compras' => $data3, 'cuentasxpagar' => $list3);
+        if ($currency) {
+            $symbol = Helpers::get_symbol($currency);
+        } else {
+            $symbol = Helpers::get_symbol();
+        }
+
+        return array(
+            'ventas' => $data,
+            'cuentasxcobrar' => $list,
+            'compras' => $data3,
+            'cuentasxpagar' => $list3,
+            'symbol' => $symbol
+        );
     }
 
 
