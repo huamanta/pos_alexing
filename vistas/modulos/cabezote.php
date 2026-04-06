@@ -1,9 +1,17 @@
 <style>
+    #navbar-global {
+        background-color: #ffffff;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.8rem 1rem;
+    }
+
     /* Separador vertical sutil */
     .navbar-divider {
         width: 1px;
-        height: 24px;
-        background-color: #dee2e6;
+        height: 30px;
+        background-color: #e2e8f0;
         margin: 0 12px;
         display: none;
         /* Oculto en móvil */
@@ -20,19 +28,27 @@
     .user-profile-link {
         display: flex;
         align-items: center;
-        padding: 4px 12px !important;
-        border-radius: 50px;
-        /* Bordes redondeados */
+        padding: 6px 15px !important;
+        border-radius: 30px;
         transition: all 0.2s ease-in-out;
+        background: #f1f5f9;
         border: 1px solid transparent;
         margin-left: 5px;
+    }
+
+    .user-profile-meta {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        line-height: 1.15;
+        min-height: 35px;
     }
 
     /* Efecto al pasar el mouse (Hover) */
     .user-profile-link:hover,
     .user-menu.show .user-profile-link {
-        background-color: #f8f9fa;
-        border-color: #e9ecef;
+        background-color: #e2e8f0;
+        border-color: #e2e8f0;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     }
 
@@ -40,13 +56,14 @@
     .user-avatar-circle {
         width: 35px;
         height: 35px;
-        background-color: #e2e6ea;
-        color: #6c757d;
+        background-color: #4f46e5;
+        color: #ffffff;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.1rem;
+        font-size: 0.95rem;
+        font-weight: 600;
         margin-right: 10px;
     }
 
@@ -59,12 +76,22 @@
 
     /* Ajuste de badges de notificación */
     .navbar-badge-custom {
-        font-size: .6rem;
-        font-weight: 300;
-        padding: 2px 4px;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 4px 6px;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         position: absolute;
-        right: 5px;
-        top: 7px;
+        right: 0;
+        top: 0;
+    }
+
+    .navbar-icon-link {
+        color: #64748b;
+    }
+
+    .navbar-icon-link:hover {
+        color: #334155;
     }
 </style>
 
@@ -296,36 +323,35 @@
     });
 </script>
 
-<nav class="main-header navbar navbar-expand navbar-white navbar-light border-bottom-0 shadow-sm" id="navbar-global">
+<nav class="main-header navbar navbar-expand navbar-white navbar-light sticky-top" id="navbar-global">
 
     <ul class="navbar-nav">
         <li class="nav-item">
-            <a class="nav-link" data-widget="pushmenu" role="button"><i class="fas fa-bars"></i></a>
+            <a class="nav-link navbar-icon-link" data-widget="pushmenu" role="button"><i class="fas fa-bars fa-lg"></i></a>
         </li>
     </ul>
 
     <ul class="navbar-nav ml-auto align-items-center">
 
         <li class="nav-item">
-            <a class="nav-link" data-widget="fullscreen" role="button" title="Pantalla Completa">
+            <a class="nav-link navbar-icon-link" data-widget="fullscreen" role="button" title="Pantalla Completa">
                 <i class="fas fa-expand-arrows-alt"></i>
             </a>
         </li>
 
-        <li class="nav-item dropdown">
-            <a class="nav-link cxcAlertLink" data-toggle="dropdown" href="#" title="Cuentas por Cobrar">
-                <i class="fas fa-file-invoice-dollar"></i>
+        <li class="nav-item dropdown mr-3">
+            <a class="nav-link cxcAlertLink position-relative navbar-icon-link" data-toggle="dropdown" href="#" title="Cuentas por Cobrar">
+                <i class="fas fa-file-invoice-dollar fa-lg"></i>
                 <span class="badge badge-danger navbar-badge-custom cxcAlertCount" style="display:none;">0</span>
             </a>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right p-0 border-0 shadow-lg">
-                <span class="dropdown-header font-weight-bold text-secondary">Cuentas por Cobrar</span>
-                <div class="dropdown-divider"></div>
-                <div class="dropdown-item p-0">
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-lg mt-2">
+                <span class="dropdown-header font-weight-bold bg-light rounded-top py-3">Cuentas por Cobrar</span>
+                <div class="dropdown-item p-3">
                     <div class="cxcAlertList" style="max-height:300px; overflow-y:auto;"></div>
                 </div>
-                <div class="dropdown-divider"></div>
-                <a href="cuentas-cobrar" class="dropdown-item dropdown-footer text-primary font-weight-bold">Ver
-                    todas</a>
+                <div class="dropdown-divider m-0"></div>
+                <a href="cuentas-cobrar" class="dropdown-item dropdown-footer text-primary font-weight-bold py-3">
+                    Ver todas las cuentas <i class="fas fa-arrow-right ml-1"></i></a>
             </div>
         </li>
 
@@ -334,33 +360,33 @@
         <li class="nav-item dropdown user-menu">
             <a href="#" class="nav-link user-profile-link" data-toggle="dropdown">
                 <div class="user-avatar-circle">
-                    <i class="fas fa-user"></i>
+                    <?php echo strtoupper(substr($_SESSION['nombre'], 0, 1)); ?>
                 </div>
-                <div class="d-none d-md-block" style="line-height: 1.1; text-align: left;">
-                    <span class="d-block font-weight-bold text-dark" style="font-size: 0.9rem;">
-                        <?php echo $_SESSION['nombre']; ?>
+                <div class="d-none d-md-flex user-profile-meta ml-2 text-left">
+                    <span class="d-block font-weight-bold text-dark" style="font-size: 0.85rem;">
+                        <?php echo explode(" ", $_SESSION['nombre'])[0]; ?>
                     </span>
-                    <span class="d-block text-muted" style="font-size: 0.75rem;">
-                        <?php echo isset($_SESSION['nombre_negocio']) ? $_SESSION['nombre_negocio'] : 'Sistema'; ?>
+                    <span class="d-block text-muted" style="font-size: 0.7rem;">
+                        <?php echo isset($_SESSION['nombre_negocio']) ? $_SESSION['nombre_negocio'] : 'Admin'; ?>
                     </span>
                 </div>
                 <i class="fas fa-chevron-down user-chevron"></i>
             </a>
 
-            <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right border-0 shadow-lg mt-2">
-                <li class="user-header bg-primary text-white">
-                    <div class="bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
-                        style="width: 60px; height: 60px;">
-                        <i class="fas fa-user-tie fa-2x text-primary"></i>
+            <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right border-0 shadow-xl mt-3 rounded-lg overflow-hidden">
+                <li class="user-header bg-primary text-white p-4 text-center">
+                    <div class="bg-white text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-sm"
+                        style="width: 60px; height: 60px; font-size:1.5rem; font-weight:bold;">
+                        <?php echo strtoupper(substr($_SESSION['nombre'], 0, 1)); ?>
                     </div>
                     <p class="mb-0 font-weight-bold">
                         <?php echo $_SESSION['nombre']; ?>
                     </p>
-                    <small style="opacity: 0.8;"><?php echo $_SESSION['cargo']; ?></small>
+                    <small class="text-white-50"><?php echo $_SESSION['cargo']; ?></small>
                 </li>
 
-                <li class="user-footer bg-light">
-                    <a href="salir" class="btn btn-default btn-flat float-right btn-block text-danger font-weight-bold">
+                <li class="user-footer p-2 bg-white">
+                    <a href="salir" class="btn btn-outline-danger btn-block font-weight-bold border-0 text-left px-3 py-2">
                         <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
                     </a>
                 </li>

@@ -1,5 +1,3 @@
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
 <div class="scale-global">
     <div class="content-wrapper">
         <!-- Main content -->
@@ -11,14 +9,14 @@
                             <div class="card-header" id="header">
                                 <h3 class="card-title"> </h3>
 
-                                <div class="row">
+                                <!--div class="row">
                                     <div class="col-md-1">
                                         <button type="button" class="btn btn-outline-primary btn-block btn-xs"
                                             id="btnNuevo" onclick="mostrarform(true)" title="Crear nuevo contrato"><i
                                                 class="fa fa-plus"></i>
                                             Nuevo</button>
                                     </div>
-                                </div>
+                                </div-->
 
                             </div>
                             <!-- /.card-header -->

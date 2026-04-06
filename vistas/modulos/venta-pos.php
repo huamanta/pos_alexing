@@ -1,4 +1,3 @@
-<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 <style type="text/css">
     /* Variables de colores y tipografías */
     :root {
@@ -337,11 +336,6 @@
         font-weight: bold;
     }
 
-    /* Sólo en el módulo venta-pos: escondemos el navbar por defecto */
-    #navbar-global {
-        display: none !important;
-    }
-
     /* Aseguramos que tu navbar-pos2 esté visible */
     #navbar-pos2 {
         display: flex;
@@ -513,14 +507,7 @@ function tienePermiso($modulo, $accion, $submodulo = null)
 
 ?>
 
-<nav class="main-header navbar navbar-expand navbar-white navbar-light">
-    <!-- Left navbar links -->
-    <ul class="navbar-nav">
-        <li class="nav-item">
-            <a class="nav-link active" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-        </li>
-    </ul>
-
+<nav class="main-header navbar navbar-expand navbar-white navbar-light" hidden id="navbar-pos">
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto" id="navbar-pos2">
 

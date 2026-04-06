@@ -54,6 +54,15 @@ function limpiarCarrito() {
   evaluar();
 }
 
+function setNavbarPosVisible(visible) {
+  if (visible) {
+    $("#navbar-pos").prop("hidden", false).show();
+    return;
+  }
+
+  $("#navbar-pos").prop("hidden", true).hide();
+}
+
 function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
   marcarImpuesto();
@@ -1759,6 +1768,7 @@ async function mostrarform(flag) {
       const tieneCaja = await verificarCajaPorSucursal(idsucursalSeleccionada);
 
       if (tieneCaja) {
+        setNavbarPosVisible(true);
         $("#listadoregistros").hide();
         $("#formularioregistros").show();
         $("#aperturarcaja").hide();
@@ -1801,6 +1811,7 @@ async function mostrarform(flag) {
     $("#btnGuardar").show();
     //$("body").removeClass("sidebar-collapse");
     $("#navbar-pos2").hide().empty();
+    setNavbarPosVisible(false);
     $("#navbar-poss").show();
   }
 }
@@ -1832,6 +1843,7 @@ function verificarCaja() {
         $("#navbar-pos2").show().empty();
         if (response.success) {
           $("#idcaja").val(response.idcaja);
+          setNavbarPosVisible(true);
           $("#navbar-pos2")
             .html(`<li class="nav-item" style="margin-right: 10px;">
             <a class="nav-link"  onclick="cerrarcaja()" title="Cerrar caja" style="background-color: #FA7A31; border-radius: 5px; color: white; font-weight:bold;" href="#" role="button">
@@ -1963,6 +1975,7 @@ $("#formularioappcaja").submit(function (e) {
 
         // 3) abrimos el módulo de ventas y pintamos el navbar-pos2
         mostrarform(true);
+        setNavbarPosVisible(true);
       } else {
         Swal.fire("Error", "No se pudo aperturar la caja.", "error");
       }
