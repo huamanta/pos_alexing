@@ -546,6 +546,19 @@ $("#formapago").change(function () {
   }
 });
 
+function obtenerMontoTotalPagar() {
+  var totalInput = parseFloat($("#total_venta").val());
+  if (!isNaN(totalInput) && totalInput > 0) return totalInput;
+
+  var totalMostrado = parseFloat($("#most_total2").val());
+  if (!isNaN(totalMostrado) && totalMostrado > 0) return totalMostrado;
+
+  var totalReal = obtenerTotalVentaReal();
+  if (!isNaN(totalReal) && totalReal > 0) return totalReal;
+
+  return 0;
+}
+
 $("#tipopago").change(function () {
   if ($("#tipopago").val() == "Si") {
     if (detalles <= 0) {
@@ -553,6 +566,15 @@ $("#tipopago").change(function () {
       $("#tipopago").val("No");
       return false;
     }
+
+    // Reinicio estricto al entrar en crédito para no arrastrar cuotas anteriores
+    $("#datafechas").html(
+      '<tr><td colspan="4" class="text-center">No se han calculado las fechas de pago</td></tr>',
+    );
+    document.getElementById("input_cuotas").selectedIndex = 0;
+    document.getElementById("input_frecuencia").selectedIndex = 0;
+    $("#inputInteres").val("0");
+    $("#fechaOperacion").val("");
 
     $("#n0").show();
     $("#b1").show();
@@ -565,12 +587,32 @@ $("#tipopago").change(function () {
     $("#n5").show();
     $("#panel1").show();
 
+    // Mostrar solo deuda a crédito
+    var totalVentaCredito = obtenerMontoTotalPagar();
+    $("#montoDeuda").val(totalVentaCredito.toFixed(2));
+
+    // En crédito, iniciar pagos mixtos en cero
+    if ($(".pagoItem").length === 0) {
+      resetearPagos();
+    }
+    $(".pagoItem:first .metodoPago").val("Efectivo");
+    $(".pagoItem:first .montoPago").val("0.00");
+    $(".pagoItem:first .montoRealPago").val("0.00");
+    $(".pagoItem:gt(0) .montoPago").val("0.00");
+    $(".pagoItem:gt(0) .montoRealPago").val("0.00");
+    $("#totalrecibido").val("0.00");
+    $("#totaldeposito").val("0.00");
+    recalcularPagos();
+
     // $('#fp2').show();
 
     // document.getElementById("n1").style.display = "none";
     // document.getElementById("f1").style.display = "none";
   } else {
     // $("#formapagoocultar").show();
+
+    // Guardar deuda actual antes de limpiar para usarla como respaldo
+    var deudaActual = parseFloat(("" + $("#montoDeuda").val()).replace(",", ".")) || 0;
 
     document.getElementById("panel1").style.display = "none";
     document.getElementById("b1").style.display = "none";
@@ -583,11 +625,65 @@ $("#tipopago").change(function () {
     document.getElementById("n4").style.display = "none";
     document.getElementById("n5").style.display = "none";
 
-    // $('#n1').hide();
+    // Limpiar cuotas calculadas y resetear campos de crédito
+    $("#datafechas").html(
+      '<tr><td colspan="4" class="text-center">No se han calculado las fechas de pago</td></tr>',
+    );
+    document.getElementById("input_cuotas").selectedIndex = 0;
+    document.getElementById("input_frecuencia").selectedIndex = 0;
+    $("#inputInteres").val("0");
+    var hoy = new Date();
+    var yyyy = hoy.getFullYear();
+    var mm = ("0" + (hoy.getMonth() + 1)).slice(-2);
+    var dd = ("0" + hoy.getDate()).slice(-2);
+    $("#fechaOperacion").val(yyyy + "-" + mm + "-" + dd);
+    $("#montoDeuda").val("");
 
-    // $('#n2').hide();
-
-    // $('#n3').hide();
+    // Restaurar pago mixto al contado con el total de venta
+    var totalVenta = obtenerMontoTotalPagar();
+    if (totalVenta <= 0 && deudaActual > 0) {
+      totalVenta = deudaActual;
+    }
+    if ($(".pagoItem").length === 0) {
+      $("#pagosMixtosContainer").html(`
+        <div class="row mb-2 pagoItem">
+          <div class="col-md-3">
+            <select class="form-control metodoPago" name="metodo_pago[]">
+              <option value="Efectivo" selected>Efectivo</option>
+              <option value="Transferencia">Transferencia bancaria</option>
+              <option value="Tarjeta">Tarjeta POS</option>
+              <option value="Deposito">Depósito</option>
+              <option value="Yape">Yape</option>
+              <option value="Plin">Plin</option>
+            </select>
+          </div>
+          <div class="col-md-2">
+            <input type="text" class="form-control montoPago" name="monto_pago[]" placeholder="Monto" value="${totalVenta.toFixed(2)}">
+            <input type="hidden" class="montoRealPago" name="monto_real_pago[]" value="${totalVenta.toFixed(2)}">
+          </div>
+          <div class="col-md-2">
+            <input type="text" class="form-control nroOperacion" name="nroOperacion_pago[]" placeholder="N° Operación">
+          </div>
+          <div class="col-md-2 bancoContainer" style="display:none;">
+            <input type="text" class="form-control bancoPago" name="banco_pago[]" placeholder="Banco">
+          </div>
+          <div class="col-md-3 fechaContainer" style="display:none;">
+            <input type="date" class="form-control fechaDeposito" name="fecha_deposito_pago[]" placeholder="Fecha">
+          </div>
+          <div class="col-md-2">
+            <button type="button" class="btn btn-danger btn-sm removePago"><i class="fa fa-trash"></i></button>
+          </div>
+        </div>`);
+    } else {
+      $(".pagoItem:first .metodoPago").val("Efectivo");
+      $(".pagoItem:first .montoPago").val(totalVenta.toFixed(2));
+      $(".pagoItem:first .montoRealPago").val(totalVenta.toFixed(2));
+      $(".pagoItem:gt(0) .montoPago").val("0.00");
+      $(".pagoItem:gt(0) .montoRealPago").val("0.00");
+    }
+    $("#totalrecibido").val(totalVenta.toFixed(2));
+    $("#totaldeposito").val("0.00");
+    recalcularPagos();
   }
 });
 
@@ -682,6 +778,25 @@ function guardaryeditar(e) {
       "warning",
     );
     return false;
+  }
+
+  if (tipopago === "No") {
+    const totalVenta = parseFloat($("#total_venta").val()) || 0;
+    let totalPagado = 0;
+
+    $(".montoPago").each(function () {
+      const monto = parseFloat(("" + $(this).val()).replace(",", ".")) || 0;
+      totalPagado += monto;
+    });
+
+    if (totalPagado + 0.0001 < totalVenta) {
+      Swal.fire(
+        "Monto insuficiente",
+        "La suma de pagos (efectivo y depósito) es menor al total de la venta.",
+        "warning",
+      );
+      return false;
+    }
   }
 
   var formData = new FormData($("#formulario")[0]);

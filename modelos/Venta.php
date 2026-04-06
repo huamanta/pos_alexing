@@ -1322,7 +1322,7 @@ class Venta
                 (v.total_venta - v.descuento) AS total_venta,
                 v.impuesto,
                 COALESCE((SELECT SUM(vp.monto) FROM venta_pago vp WHERE vp.idventa = dv.idventa AND vp.metodo_pago = 'Efectivo'),0) AS total_efectivo,
-                COALESCE((SELECT SUM(vp.monto) FROM venta_pago vp WHERE vp.idventa = dv.idventa AND vp.metodo_pago <> 'Efectivo'),0) AS total_otro_pago,
+                COALESCE((SELECT SUM(vp.monto) FROM venta_pago vp WHERE vp.idventa = dv.idventa AND vp.metodo_pago != 'Efectivo'),0) AS total_otro_pago,
                 (SELECT GROUP_CONCAT(vp.nroOperacion SEPARATOR ' ') FROM venta_pago vp WHERE vp.idventa = dv.idventa) AS numoperacion,
                 (SELECT GROUP_CONCAT(vp.banco SEPARATOR ' ') FROM venta_pago vp WHERE vp.idventa = dv.idventa) AS banco,
                 (SELECT GROUP_CONCAT(vp.fechaDeposito SEPARATOR ' ') FROM venta_pago vp WHERE vp.idventa = dv.idventa) AS fechadeposito
