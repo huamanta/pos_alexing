@@ -1694,7 +1694,7 @@ switch ($_GET["op"]) {
 	                    ' . $reg->idcategoria . ',
 	                    \'' . addslashes($reg->unidadmedida) . '\',
 	                    ' . $reg->id_fifo . ',
-	                    \'' . addslashes($reg->fabricante ?? '') . '\',
+	                    \'' . addslashes($reg->marca ?? '') . '\',
 	                    \'' . addslashes($reg->modelo ?? '') . '\',
 	                    \'' . addslashes($reg->color ?? '') . '\'
 	                )">
@@ -1724,7 +1724,7 @@ switch ($_GET["op"]) {
 	                    <span style='font-weight:bold; font-size:12px; display:block;'>
 	                        " . wordwrap($reg->nombre, 30, "<br>", true) . "
 	                    </span>
-	                    " . ($reg->fabricante ? "<span style='font-size:10px; display:block; color:#555;'>Marca: <strong>" . htmlspecialchars($reg->fabricante) . "</strong></span>" : "") . "
+	                    " . ($reg->marca ? "<span style='font-size:10px; display:block; color:#555;'>Marca: <strong>" . htmlspecialchars($reg->marca) . "</strong></span>" : "") . "
 	                    " . ($reg->modelo ? "<span style='font-size:10px; display:block; color:#555;'>Modelo: " . htmlspecialchars($reg->modelo) . "</span>" : "") . "
 	                    " . ($reg->color ? "<span style='font-size:10px; display:block; color:#555;'>Color: " . htmlspecialchars($reg->color) . "</span>" : "") . "
 	                    <span style='font-size:10px; background:#28a745; color:#fff;

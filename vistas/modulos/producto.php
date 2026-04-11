@@ -565,13 +565,16 @@ function tienePermiso($modulo, $submodulo, $accion) {
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Marca</label>
-                        <input type="text" class="form-control" name="fabricante" id="fabricante" maxlength="256" placeholder="Digite la marca.">
+                        <select name="idmarca" id="idmarca" class="form-control">
+                        </select>
                       </div>
                     </div>
                     <div class="col-sm-4">
                       <div class="form-group">
-                        <label class="control-label">Modelo</label>
-                        <input type="text" class="form-control" name="modelo" id="modelo" maxlength="256" placeholder="Digite el modelo.">
+                          <label class="control-label">Modelo</label>
+                        <select name="idmodelo" id="idmodelo" class="form-control">
+
+                        </select>
                       </div>
                     </div>
                   </div>
@@ -678,21 +681,13 @@ function tienePermiso($modulo, $submodulo, $accion) {
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Tipo Vehículo</label>
-                        <select id="tipo_vehiculo" name="tipo_vehiculo" class="form-control">
-                          <option value="">-Seleccione-</option>
-                          <option value="Lineal">Lineal</option>
-                          <option value="Trimovil">Trimóvil</option>
-                        </select>
+                        <input type="text" class="form-control" id="tipo_vehiculo" name="tipo_vehiculo" placeholder="Lineal/Trimovil">
                       </div>
                     </div>
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Clase</label>
-                        <select id="clase_vehiculo" name="clase_vehiculo" class="form-control">
-                          <option value="">-Seleccione-</option>
-                          <option value="L3">L3</option>
-                          <option value="L5">L5</option>
-                        </select>
+                        <input type="text" class="form-control" id="clase_vehiculo" name="clase_vehiculo" placeholder="L3/L5">              
                       </div>
                     </div>
                     <div class="col-sm-4">

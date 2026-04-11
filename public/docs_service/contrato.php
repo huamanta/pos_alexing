@@ -48,12 +48,14 @@ $dniGarante = $resultVenta['num_documento_garante'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // seleccionar detalle de la venta
-$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, p.fabricante AS marca, p.modelo, p.color,
+$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, m.nombre AS marca, mo.nombre AS modelo, p.color,
                        p.numserie AS serie, p.motor, p.anio_fabricacion AS anio, p.placa,
                        p.clase_vehiculo AS clase, p.tipo_vehiculo
                 FROM detalle_venta dv
-          LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
-          LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
+                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
+                LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
+                LEFT JOIN marca m ON m.idmarca = p.idmarca
+                LEFT JOIN modelo mo ON mo.idmodelo = p.idmodelo
                 WHERE dv.idventa = $idVenta";
 $resultDetalle = ejecutarConsulta($sqlDetalle);
 
@@ -232,39 +234,46 @@ ob_start();
         identificado con DNI
         Nº <b><?php echo $dniComprador; ?></b>, de estado civil soltero(a), con domicilio en
         <b><?php echo strtoupper($direccionComprador); ?></b> y con número de celular
-        <b><?php echo $celularComprador; ?></b>, acompañado de <b><?php echo strtoupper($nombreAcompanante); ?></b> en calidad de <b><?php echo strtoupper($nombreTipoAcompanante); ?></b> en los siguientes términos:
+        <b><?php echo $celularComprador; ?></b>, acompañado de <b><?php echo strtoupper($nombreAcompanante); ?></b> en
+        calidad de <b><?php echo strtoupper($nombreTipoAcompanante); ?></b> en los siguientes términos:
     </p>
 
-    <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre']); ?>, declara ser propietario y
+    <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre']); ?>, declara ser
+        propietario y
         titular registral del vehículo
         <b>MOTOCICLETA</b> con las siguientes características:
-   
 
-    <?php foreach ($data as $item): ?>
-            marca <b><?php echo $item['marca'] ?? 'N/A'; ?></b>, modelo <b><?php echo $item['modelo'] ?? 'N/A'; ?></b>, color
+
+        <?php foreach ($data as $item): ?>
+            marca <b><?php echo $item['marca'] ?? 'N/A'; ?></b>, modelo <b><?php echo $item['modelo'] ?? 'N/A'; ?></b>,
+            color
             <b><?php echo $item['color'] ?? 'N/A'; ?></b> con
-            Nº serie <b><?php echo $item['serie'] ?? 'N/A'; ?></b>, Nº de motor <b><?php echo $item['motor'] ?? 'N/A'; ?></b>, año de
+            Nº serie <b><?php echo $item['serie'] ?? 'N/A'; ?></b>, Nº de motor
+            <b><?php echo $item['motor'] ?? 'N/A'; ?></b>, año de
             fabricación <b><?php echo $item['anio'] ?? 'N/A'; ?></b> Nº de cilindro
             01, N° Placa de Rodaje <b><?php echo $item['placa'] ?? 'NUEVO'; ?></b>. El mismo que es <b>NUEVO</b>.
-        
-    <?php endforeach; ?>
 
-    
+        <?php endforeach; ?>
+
+
         Bien mueble que fue reconocido físicamente en su calidad de vehículo MOTOCICLETA <b>NUEVO</b> por ambas partes
         con anterioridad.
     </p>
 
-    <p><b class="clausula">SEGUNDO.-</b> El VENDEDOR, deja constancia que el vehículo MOTOCICLETA descrito en la cláusula primera, se
+    <p><b class="clausula">SEGUNDO.-</b> El VENDEDOR, deja constancia que el vehículo MOTOCICLETA descrito en la
+        cláusula primera, se
         encuentra en perfecto estado de conservación y funcionamiento, por ser este bien mueble en calidad de NUEVO.</p>
 
-    <p><b class="clausula">TERCERO.-</b> El VENDEDOR, declara que, el vehículo MOTOCICLETA se encuentra, al momento de celebrarse
+    <p><b class="clausula">TERCERO.-</b> El VENDEDOR, declara que, el vehículo MOTOCICLETA se encuentra, al momento de
+        celebrarse
         este contrato, libre de toda carga, gravamen, derecho real de garantía, medida judicial o extrajudicial,
         papeletas
         en el SAT y en general de todo acto o circunstancia que impida, prive o limite la posesión o uso del bien; por
         tratarse de un bien mueble en calidad de NUEVO; no obstante a ellos se obliga a la evicción o saneamiento de
         ley; asimismo el alquiler-venta se hace Ad-Corpus.</p>
 
-    <p><b class="clausula">CUARTO.-</b> El PRECIO FINAL pactado por ambas partes por la venta del vehículo MOTOCICLETA descrito en la
+    <p><b class="clausula">CUARTO.-</b> El PRECIO FINAL pactado por ambas partes por la venta del vehículo MOTOCICLETA
+        descrito en la
         cláusula primera, es de <b><?php echo $helpers->monedaFormt($total, $currency); ?></b> (
         <b><?php echo $helpers->numeroALetrasMoneda($total, $currency); ?></b> ), suma que el COMPRADOR abonará
         al VENDEDOR en su totalidad de <b><?php echo $helpers->monedaFormt($total, $currency); ?></b> (
@@ -273,22 +282,27 @@ ob_start();
         pactado.
     </p>
 
-    <p><b class="clausula">QUINTO.-</b> EL COMPRADOR acepta que, una vez realizada la compra, no habrá devolución del dinero bajo
+    <p><b class="clausula">QUINTO.-</b> EL COMPRADOR acepta que, una vez realizada la compra, no habrá devolución del
+        dinero bajo
         ninguna circunstancia. El COMPRADOR entendió que la compra es definitiva y no puede ser cancelada.</p>
 
-    <p><b class="clausula">SEXTO.-</b> EL VENDEDOR, garantiza que el vehículo se encuentra en buen estado de funcionamiento sin garantías
+    <p><b class="clausula">SEXTO.-</b> EL VENDEDOR, garantiza que el vehículo se encuentra en buen estado de
+        funcionamiento sin garantías
         ni responsabilidades. EL COMPRADOR, declara haber inspeccionado el vehículo y estar satisfecho con su estado.
     </p>
 
-    <p><b class="clausula">SÉPTIMO.-</b> El presente contrato es IRREVOCABLE y no puede ser modificado sin el consentimiento por escrito
+    <p><b class="clausula">SÉPTIMO.-</b> El presente contrato es IRREVOCABLE y no puede ser modificado sin el
+        consentimiento por escrito
         de ambas partes.</p>
 
-    <p><b class="clausula">OCTAVO.-</b> Cualquier disputa o controversia que surja en la relación con el presente contrato será resuelta
+    <p><b class="clausula">OCTAVO.-</b> Cualquier disputa o controversia que surja en la relación con el presente
+        contrato será resuelta
         mediante instancias judiciales.
     </p>
 
     <p>
-        <b class="clausula">NOVENO.-</b> Los contratantes declaran que existe la más justa y perfecta equivalencia entre el precio
+        <b class="clausula">NOVENO.-</b> Los contratantes declaran que existe la más justa y perfecta equivalencia entre
+        el precio
         pactado y el
         valor del bien mueble, no teniendo nada que reclamarse al respecto. En fe y señal de conformidad, las partes
         firman el presente contrato en <?php echo $resultSucursal['direccion'] ?? 'Jr. Ex Carretera Yurimaguas S/n'; ?>

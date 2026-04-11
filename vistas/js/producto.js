@@ -45,6 +45,19 @@ function init() {
     $("#idcategoria").select2("");
   });
 
+  //marca 
+  $.post("controladores/producto.php?op=selectMarca", function (r) {
+    $("#idmarca").html(r);
+    $("#idmarca").select2("");
+  });
+
+
+  //marca 
+  $.post("controladores/producto.php?op=selectModelo", function (r) {
+    $("#idmodelo").html(r);
+    $("#idmodelo").select2("");
+  });
+
   $.post("controladores/producto.php?op=selectUnidadMedida", function (r) {
     $("#idunidad_medida").html(r);
     $("#idunidad_medida").select2("");
@@ -383,7 +396,8 @@ function mostrar(idproducto) {
       $("#idrubro").val(data.idrubro).select2("");
       $("#idcondicionventa").val(data.idcondicionventa).select2("");
       $("#registrosan").val(data.registrosan);
-      $("#fabricante").val(data.fabricante);
+      $("#idmodelo").val(data.idmodelo).select2("");
+      $("#idmarca").val(data.idmarca).select2("");
       $("#codigo").val(data.codigo);
       $("#nombre").val(data.nombre);
       $("#stock").val(data.stock);
@@ -410,7 +424,6 @@ function mostrar(idproducto) {
       $("#imagenmuestra").show().attr("src", "files/productos/" + data.imagen);
       $("#imagenactual").val(data.imagen);
       $("#idproducto").val(data.idproducto);
-      $("#modelo").val(data.modelo);
       $("#nserie").val(data.numserie);
       $("#placa").val(data.placa || "");
       $("#color").val(data.color || "");

@@ -2,11 +2,11 @@
 require_once "../modelos/Producto.php";
 session_start();
 if (!isset($_SESSION['idusuario']) || empty($_SESSION['idusuario'])) {
-    echo json_encode([
-        'status' => 0,
-        'message' => 'Sesión expirada. Inicie sesión nuevamente para continuar.'
-    ]);
-    exit;
+	echo json_encode([
+		'status' => 0,
+		'message' => 'Sesión expirada. Inicie sesión nuevamente para continuar.'
+	]);
+	exit;
 }
 $producto = new Producto();
 
@@ -18,7 +18,7 @@ $idunidad_medida = isset($_POST["idunidad_medida"]) ? limpiarCadena($_POST["idun
 $idrubro = isset($_POST["idrubro"]) ? limpiarCadena($_POST["idrubro"]) : "";
 $idcondicionventa = isset($_POST["idcondicionventa"]) ? limpiarCadena($_POST["idcondicionventa"]) : "";
 $registrosan = isset($_POST["registrosan"]) ? limpiarCadena($_POST["registrosan"]) : "";
-$fabricante = isset($_POST["fabricante"]) ? limpiarCadena($_POST["fabricante"]) : "";
+$idmarca = isset($_POST["idmarca"]) ? limpiarCadena($_POST["idmarca"]) : "";
 $codigo = isset($_POST["codigo"]) ? limpiarCadena($_POST["codigo"]) : "";
 $nombre = isset($_POST["nombre"]) ? limpiarCadena($_POST["nombre"]) : "";
 $stock = isset($_POST["stock"]) ? limpiarCadena($_POST["stock"]) : "";
@@ -43,7 +43,7 @@ $precioCompra = isset($_POST["precioCompra"]) ? limpiarCadena($_POST["precioComp
 $fecha = isset($_POST["fecha_hora"]) ? limpiarCadena($_POST["fecha_hora"]) : "";
 $descripcion = isset($_POST["descripcion"]) ? limpiarCadena($_POST["descripcion"]) : "";
 $imagen = isset($_POST["imagen"]) ? limpiarCadena($_POST["imagen"]) : "";
-$modelo = isset($_POST["modelo"]) ? limpiarCadena($_POST["modelo"]) : "";
+$idmodelo = isset($_POST["idmodelo"]) ? limpiarCadena($_POST["idmodelo"]) : "";
 $nserie = isset($_POST["nserie"]) ? limpiarCadena($_POST["nserie"]) : "";
 $placa = isset($_POST["placa"]) ? limpiarCadena($_POST["placa"]) : "";
 $color = isset($_POST["color"]) ? limpiarCadena($_POST["color"]) : "";
@@ -74,8 +74,9 @@ $productoTrasladar = isset($_POST["idproducto2"]) ? limpiarCadena($_POST["idprod
 $productoTraslado = isset($_POST["idproducto3"]) ? limpiarCadena($_POST["idproducto3"]) : "";
 $cantidadTrasladar = isset($_POST["cantidadT"]) ? limpiarCadena($_POST["cantidadT"]) : "";
 $tipo_producto = isset($_POST["tipo_producto"]) ? limpiarCadena($_POST["tipo_producto"]) : "Producto";
-function tienePermiso($modulo, $submodulo, $accion) {
-    return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
+function tienePermiso($modulo, $submodulo, $accion)
+{
+	return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
 }
 
 function obtenerIdCategoriaVehiculo()
@@ -111,97 +112,97 @@ switch ($_GET["op"]) {
 			}
 		}
 		if (empty($idproducto)) {
-			$rspta = $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $fabricante, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $modelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV, $_POST['sucursales']);
+			$rspta = $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV, $_POST['sucursales']);
 			echo $rspta ? "Datos registrados correctamente" : "No se pudo completar el registro";
 		} else {
-			$rspta = $producto->editar($idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $fabricante, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $modelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV);
+			$rspta = $producto->editar($idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV);
 			echo $rspta ? "Datos actualizados" : "No se pudo actualizar";
 		}
 		break;
 
 	case 'guardarimagenes':
-	  $idsucursal = $_SESSION['idsucursal'];
+		$idsucursal = $_SESSION['idsucursal'];
 
-	  // Primero eliminamos las imágenes anteriores
-	  $rspta1 = $producto->eliminarImagenesCatalogo($idsucursal);
+		// Primero eliminamos las imágenes anteriores
+		$rspta1 = $producto->eliminarImagenesCatalogo($idsucursal);
 
-	  $orden = 1;
-	  foreach ($_FILES['imagenes']['name'] as $key => $nombre) {
-	    $tmp = $_FILES['imagenes']['tmp_name'][$key];
-	    $nombre_final = uniqid() . "_" . basename($nombre);
-	    move_uploaded_file($tmp, "../files/" . $nombre_final);
-	    $producto->guardarImagenCatalogo($idsucursal, $nombre_final, $orden++);
-	  }
-	  echo json_encode(["status" => "ok"]);
-	  break;
+		$orden = 1;
+		foreach ($_FILES['imagenes']['name'] as $key => $nombre) {
+			$tmp = $_FILES['imagenes']['tmp_name'][$key];
+			$nombre_final = uniqid() . "_" . basename($nombre);
+			move_uploaded_file($tmp, "../files/" . $nombre_final);
+			$producto->guardarImagenCatalogo($idsucursal, $nombre_final, $orden++);
+		}
+		echo json_encode(["status" => "ok"]);
+		break;
 
 	case 'obtenerimagenes':
-	  $rspta = $producto->obtenerImagenesCatalogo($_SESSION['idsucursal']);
-	  $data = [];
-	  while ($reg = $rspta->fetch_object()) {
-	    $data[] = $reg;
-	  }
-	  echo json_encode($data);
-	  break;
+		$rspta = $producto->obtenerImagenesCatalogo($_SESSION['idsucursal']);
+		$data = [];
+		while ($reg = $rspta->fetch_object()) {
+			$data[] = $reg;
+		}
+		echo json_encode($data);
+		break;
 
 	case 'guardarimagenindividual':
-	  $idsucursal = $_SESSION['idsucursal'];
+		$idsucursal = $_SESSION['idsucursal'];
 
-	  if (isset($_FILES['imagen'])) {
-	    $tmp = $_FILES['imagen']['tmp_name'];
-	    $nombre = $_FILES['imagen']['name'];
-	    $nombre_final = uniqid() . "_" . basename($nombre);
+		if (isset($_FILES['imagen'])) {
+			$tmp = $_FILES['imagen']['tmp_name'];
+			$nombre = $_FILES['imagen']['name'];
+			$nombre_final = uniqid() . "_" . basename($nombre);
 
-	    if (move_uploaded_file($tmp, "../files/" . $nombre_final)) {
-	      $orden = 1; // O calcula último orden si deseas ordenarlos
-	      $producto->guardarImagenCatalogo($idsucursal, $nombre_final, $orden);
-	      echo json_encode(["status" => "ok"]);
-	    } else {
-	      echo json_encode(["status" => "error", "msg" => "No se pudo mover el archivo"]);
-	    }
-	  } else {
-	    echo json_encode(["status" => "error", "msg" => "No se recibió imagen"]);
-	  }
-	  break;
+			if (move_uploaded_file($tmp, "../files/" . $nombre_final)) {
+				$orden = 1; // O calcula último orden si deseas ordenarlos
+				$producto->guardarImagenCatalogo($idsucursal, $nombre_final, $orden);
+				echo json_encode(["status" => "ok"]);
+			} else {
+				echo json_encode(["status" => "error", "msg" => "No se pudo mover el archivo"]);
+			}
+		} else {
+			echo json_encode(["status" => "error", "msg" => "No se recibió imagen"]);
+		}
+		break;
 
 	case 'eliminarimagenindividual':
-	  $nombre_imagen = isset($_POST['nombre_imagen']) ? limpiarCadena($_POST['nombre_imagen']) : '';
+		$nombre_imagen = isset($_POST['nombre_imagen']) ? limpiarCadena($_POST['nombre_imagen']) : '';
 
-	  if (!empty($nombre_imagen)) {
-	    $rspta = $producto->eliminarImagenCatalogo($nombre_imagen);
+		if (!empty($nombre_imagen)) {
+			$rspta = $producto->eliminarImagenCatalogo($nombre_imagen);
 
-	    $ruta = "../files/" . $nombre_imagen;
-	    if (file_exists($ruta)) {
-	      if (unlink($ruta)) {
-	        echo json_encode(['status' => 'ok']);
-	      } else {
-	        echo json_encode(['status' => 'error', 'msg' => 'No se pudo eliminar el archivo físico']);
-	      }
-	    } else {
-	      echo json_encode(['status' => 'ok']); // Imagen ya no existe en disco, pero se eliminó de BD
-	    }
-	  } else {
-	    echo json_encode(['status' => 'error', 'msg' => 'Nombre de imagen no recibido']);
-	  }
-	  break;
+			$ruta = "../files/" . $nombre_imagen;
+			if (file_exists($ruta)) {
+				if (unlink($ruta)) {
+					echo json_encode(['status' => 'ok']);
+				} else {
+					echo json_encode(['status' => 'error', 'msg' => 'No se pudo eliminar el archivo físico']);
+				}
+			} else {
+				echo json_encode(['status' => 'ok']); // Imagen ya no existe en disco, pero se eliminó de BD
+			}
+		} else {
+			echo json_encode(['status' => 'error', 'msg' => 'Nombre de imagen no recibido']);
+		}
+		break;
 
 	case 'obtenercategorias':
-	  $rspta = $producto->selectcateg(); // Asegúrate de tener este método en tu modelo
-	  $data = [];
-	  while ($reg = $rspta->fetch_object()) {
-	    $data[] = $reg;
-	  }
-	  echo json_encode($data);
-	  break;
+		$rspta = $producto->selectcateg(); // Asegúrate de tener este método en tu modelo
+		$data = [];
+		while ($reg = $rspta->fetch_object()) {
+			$data[] = $reg;
+		}
+		echo json_encode($data);
+		break;
 
 	case 'obtenerprecios':
-	  $rspta = $producto->obtenerPrecios();
-	  $data = [];
-	  while ($reg = $rspta->fetch_object()) {
-	    $data[] = $reg;
-	  }
-	  echo json_encode($data);
-	  break;
+		$rspta = $producto->obtenerPrecios();
+		$data = [];
+		while ($reg = $rspta->fetch_object()) {
+			$data[] = $reg;
+		}
+		echo json_encode($data);
+		break;
 
 	case 'listarStockBajoAlert':
 		$fechaActual = date('Y-m-d');
@@ -268,19 +269,19 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'sucursales':
-	    $idusuario = $_SESSION['idusuario']; // usuario logueado
-	    $idsucursalSeleccionada = isset($_POST['idsucursal']) ? $_POST['idsucursal'] : $_SESSION['idsucursal'];
-	    
-	    $rspta = $producto->listarsucursales($idusuario);
+		$idusuario = $_SESSION['idusuario']; // usuario logueado
+		$idsucursalSeleccionada = isset($_POST['idsucursal']) ? $_POST['idsucursal'] : $_SESSION['idsucursal'];
 
-	    while ($reg = $rspta->fetch_object()) {
-	        $checked = ($reg->idsucursal == $idsucursalSeleccionada) ? 'checked' : '';
-	        echo '<li>
+		$rspta = $producto->listarsucursales($idusuario);
+
+		while ($reg = $rspta->fetch_object()) {
+			$checked = ($reg->idsucursal == $idsucursalSeleccionada) ? 'checked' : '';
+			echo '<li>
 	                <input type="checkbox" name="sucursales[]" value="' . $reg->idsucursal . '" ' . $checked . '> 
 	                ' . htmlspecialchars($reg->nombre) . '
 	              </li>';
-	    }
-	    break;
+		}
+		break;
 
 	case 'listarServicio':
 
@@ -329,33 +330,33 @@ switch ($_GET["op"]) {
 
 
 	case 'listar':
-    $idsucursal2 = $_GET['idsucursal2'];
-    $stock_filtro = isset($_GET["stock_filtro"]) ? floatval($_GET["stock_filtro"]) : 0;
-    
-    $start = isset($_GET['start']) ? intval($_GET['start']) : 0;
-    $length = isset($_GET['length']) ? intval($_GET['length']) : 10;
-    $search = isset($_GET['search']['value']) ? $_GET['search']['value'] : '';
-    $draw = isset($_GET['draw']) ? intval($_GET['draw']) : 1;
+		$idsucursal2 = $_GET['idsucursal2'];
+		$stock_filtro = isset($_GET["stock_filtro"]) ? floatval($_GET["stock_filtro"]) : 0;
 
-    $es_admin = ($_SESSION['idsucursal'] == 0);
-    
-    $rspta = $producto->listarPaginado($idsucursal2, $_SESSION['idsucursal'], $stock_filtro, $start, $length, $search, $es_admin);
-    $total = $producto->contarTotalPaginado($idsucursal2, $_SESSION['idsucursal'], $stock_filtro, $search);
+		$start = isset($_GET['start']) ? intval($_GET['start']) : 0;
+		$length = isset($_GET['length']) ? intval($_GET['length']) : 10;
+		$search = isset($_GET['search']['value']) ? $_GET['search']['value'] : '';
+		$draw = isset($_GET['draw']) ? intval($_GET['draw']) : 1;
 
-    $data = array();
+		$es_admin = ($_SESSION['idsucursal'] == 0);
 
-    while ($reg = $rspta->fetch_object()) {
-        // Truncar nombre si es muy largo
-        $nombre_corto = strlen($reg->nombre) > 80 ? substr($reg->nombre, 0, 50) . '...' : $reg->nombre;
-        $descripcion_corta = strlen($reg->descripcion) > 40 ? substr($reg->descripcion, 0, 40) . '...' : $reg->descripcion;
-        
-        // Escapar correctamente para evitar problemas con comillas
-        $nombre_tooltip = htmlspecialchars($reg->nombre, ENT_QUOTES, 'UTF-8');
-        $descripcion_tooltip = htmlspecialchars($reg->descripcion, ENT_QUOTES, 'UTF-8');
-        
-        $data[] = array(
-            "0" => '<div style="display:flex;gap:8px;align-items:flex-start;max-width:350px;">
-                    <div class="img-container" onclick="verimagen(' . $reg->idproducto . ', \'' . addslashes($reg->imagen) . '\', \'' . addslashes($reg->nombre) . '\',\'' . $reg->stock . '\',\'' . addslashes($reg->categoria) . '\',\'' . addslashes($reg->registrosan) . '\',\'' . addslashes($reg->rubro) . '\',\'' . addslashes($reg->condicionventa) . '\',\'' . $reg->precio . '\',\'' . $reg->precio_compra . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . addslashes($reg->fabricante) . '\',\'' . addslashes($reg->descripcion) . '\')" style="width:45px;height:45px;flex-shrink:0;cursor:pointer;border-radius:3px;overflow:hidden;border:1px solid #ddd;">
+		$rspta = $producto->listarPaginado($idsucursal2, $_SESSION['idsucursal'], $stock_filtro, $start, $length, $search, $es_admin);
+		$total = $producto->contarTotalPaginado($idsucursal2, $_SESSION['idsucursal'], $stock_filtro, $search);
+
+		$data = array();
+
+		while ($reg = $rspta->fetch_object()) {
+			// Truncar nombre si es muy largo
+			$nombre_corto = strlen($reg->nombre) > 80 ? substr($reg->nombre, 0, 50) . '...' : $reg->nombre;
+			$descripcion_corta = strlen($reg->descripcion) > 40 ? substr($reg->descripcion, 0, 40) . '...' : $reg->descripcion;
+
+			// Escapar correctamente para evitar problemas con comillas
+			$nombre_tooltip = htmlspecialchars($reg->nombre, ENT_QUOTES, 'UTF-8');
+			$descripcion_tooltip = htmlspecialchars($reg->descripcion, ENT_QUOTES, 'UTF-8');
+
+			$data[] = array(
+				"0" => '<div style="display:flex;gap:8px;align-items:flex-start;max-width:350px;">
+                    <div class="img-container" onclick="verimagen(' . $reg->idproducto . ', \'' . addslashes($reg->imagen) . '\', \'' . addslashes($reg->nombre) . '\',\'' . $reg->stock . '\',\'' . addslashes($reg->categoria) . '\',\'' . addslashes($reg->registrosan) . '\',\'' . addslashes($reg->rubro) . '\',\'' . addslashes($reg->condicionventa) . '\',\'' . $reg->precio . '\',\'' . $reg->precio_compra . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . addslashes($reg->marca) . '\',\'' . addslashes($reg->descripcion) . '\')" style="width:45px;height:45px;flex-shrink:0;cursor:pointer;border-radius:3px;overflow:hidden;border:1px solid #ddd;">
                         <img src="files/productos/' . $reg->imagen . '" alt="' . $nombre_tooltip . '" style="width:100%;height:100%;object-fit:cover;">
                     </div>
                     <div style="flex:1;min-width:0;">
@@ -366,50 +367,50 @@ switch ($_GET["op"]) {
                         </div>
                     </div>
                 </div>',
-            "1" => $reg->categoria,
-            "2" => $reg->fabricante,
-            "3" => $reg->codigo,
-            "4" => ($reg->stock <= $reg->stock_minimo) ? 
-                '<span class="badge badge-neon neon-red">' . $reg->stock . '</span>' :
-                '<span class="badge badge-neon neon-green">' . $reg->stock . '</span>',
-            "5" => '<span class="editable-price badge badge-neon neon-blue" contenteditable="false" data-id="' . $reg->idproducto . '" data-field="precio">' . $reg->precio . '</span>',
-            "6" => '<span class="editable-price badge badge-neon neon-yellow" contenteditable="false" data-id="' . $reg->idproducto . '" data-field="precio_compra">' . $reg->precio_compra . '</span>',
-            "7" => ($reg->condicion) ? 
-                '<span class="badge badge-neon neon-green">ACTIVADO</span>' :
-                '<span class="badge badge-neon neon-red">DESACTIVADO</span>',
-            "8" => ($reg->condicion) ?
-                (tienePermiso('Almacen', 'Productos', 'Editar Productos') ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idproducto . ')"><i class="fas fa-edit"></i></button> ' : '') .
-                (tienePermiso('Almacen', 'Productos', 'Movimientos Productos') ? '<button class="btn btn-primary btn-xs" onclick="entradaSalida(' . $reg->idproducto . ',' . $reg->idsucursal . ')"><i class="fas fa-archive"></i></button> ' : '') .
-                (tienePermiso('Almacen', 'Productos', 'Configurar Productos') ? '<button class="btn btn-success btn-xs" onclick=\'config(' . json_encode($reg) . ')\'><i class="fas fa-cog"></i></button> ' : '') .
-                (tienePermiso('Almacen', 'Productos', 'Listar Vencimientos') ? '<button class="btn btn-info btn-xs" onclick="fechaVencimiento(' . $reg->idproducto . ')"><i class="fa fa-list"></i></button> ' : '') .
-                (tienePermiso('Almacen', 'Productos', 'Desactivar Productos') ? '<button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idproducto . ')"><i class="fas fa-times-circle"></i></button> ' :'') .
-                (tienePermiso('Almacen', 'Productos', 'Eliminar Productos') ? '<button class="btn btn-danger btn-xs" onclick="eliminarProducto(' . $reg->idproducto . ')"><i class="fas fa-trash"></i></button>' : '') :
-                '<button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idproducto . ')"><i class="fa fa-check"></i></button>'
-        );
-    }
-    
-    $results = array(
-        "draw" => $draw,
-        "recordsTotal" => $total,
-        "recordsFiltered" => $total,
-        "data" => $data
-    );
-    echo json_encode($results);
+				"1" => $reg->categoria,
+				"2" => $reg->marca,
+				"3" => $reg->codigo,
+				"4" => ($reg->stock <= $reg->stock_minimo) ?
+					'<span class="badge badge-neon neon-red">' . $reg->stock . '</span>' :
+					'<span class="badge badge-neon neon-green">' . $reg->stock . '</span>',
+				"5" => '<span class="editable-price badge badge-neon neon-blue" contenteditable="false" data-id="' . $reg->idproducto . '" data-field="precio">' . $reg->precio . '</span>',
+				"6" => '<span class="editable-price badge badge-neon neon-yellow" contenteditable="false" data-id="' . $reg->idproducto . '" data-field="precio_compra">' . $reg->precio_compra . '</span>',
+				"7" => ($reg->condicion) ?
+					'<span class="badge badge-neon neon-green">ACTIVADO</span>' :
+					'<span class="badge badge-neon neon-red">DESACTIVADO</span>',
+				"8" => ($reg->condicion) ?
+					(tienePermiso('Almacen', 'Productos', 'Editar Productos') ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idproducto . ')"><i class="fas fa-edit"></i></button> ' : '') .
+					(tienePermiso('Almacen', 'Productos', 'Movimientos Productos') ? '<button class="btn btn-primary btn-xs" onclick="entradaSalida(' . $reg->idproducto . ',' . $reg->idsucursal . ')"><i class="fas fa-archive"></i></button> ' : '') .
+					(tienePermiso('Almacen', 'Productos', 'Configurar Productos') ? '<button class="btn btn-success btn-xs" onclick=\'config(' . json_encode($reg) . ')\'><i class="fas fa-cog"></i></button> ' : '') .
+					(tienePermiso('Almacen', 'Productos', 'Listar Vencimientos') ? '<button class="btn btn-info btn-xs" onclick="fechaVencimiento(' . $reg->idproducto . ')"><i class="fa fa-list"></i></button> ' : '') .
+					(tienePermiso('Almacen', 'Productos', 'Desactivar Productos') ? '<button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idproducto . ')"><i class="fas fa-times-circle"></i></button> ' : '') .
+					(tienePermiso('Almacen', 'Productos', 'Eliminar Productos') ? '<button class="btn btn-danger btn-xs" onclick="eliminarProducto(' . $reg->idproducto . ')"><i class="fas fa-trash"></i></button>' : '') :
+					'<button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idproducto . ')"><i class="fa fa-check"></i></button>'
+			);
+		}
 
-    break;
+		$results = array(
+			"draw" => $draw,
+			"recordsTotal" => $total,
+			"recordsFiltered" => $total,
+			"data" => $data
+		);
+		echo json_encode($results);
+
+		break;
 
 	case 'eliminar':
-	    $idproducto = $_POST['idproducto'];
+		$idproducto = $_POST['idproducto'];
 
-	    // Llamar al modelo para eliminar
-	    $rspta = $producto->eliminar($idproducto);
+		// Llamar al modelo para eliminar
+		$rspta = $producto->eliminar($idproducto);
 
-	    if($rspta){
-	        echo json_encode(['status' => true]);
-	    } else {
-	        echo json_encode(['status' => false, 'msg' => 'No se pudo eliminar el producto']);
-	    }
-	break;
+		if ($rspta) {
+			echo json_encode(['status' => true]);
+		} else {
+			echo json_encode(['status' => false, 'msg' => 'No se pudo eliminar el producto']);
+		}
+		break;
 
 
 	case "selectCategoria2":
@@ -442,6 +443,31 @@ switch ($_GET["op"]) {
 		}
 		break;
 
+	case 'selectMarca':
+		require_once '../modelos/Marca.php';
+		$marca = new Marca();
+		$rspta = $marca->select();
+
+		// Agrega manualmente la opción vacía
+		echo '<option value="" selected>Seleccionar...</option>';
+
+		while ($reg = $rspta->fetch_object()) {
+			echo '<option value=' . $reg->idmarca . '>' . $reg->nombre . '</option>';
+		}
+		break;
+
+	case 'selectModelo':
+		require_once '../modelos/Modelo.php';
+		$modelo = new Modelo();
+		$rspta = $modelo->select();
+
+		// Agrega manualmente la opción vacía
+		echo '<option value="" selected>Seleccionar...</option>';
+
+		while ($reg = $rspta->fetch_object()) {
+			echo '<option value=' . $reg->idmodelo . '>' . $reg->nombre . '</option>';
+		}
+		break;
 
 	case "selectUnidadMedida":
 		require_once "../modelos/UnidadMedida.php";
@@ -537,26 +563,26 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarvencimiento':
-	    ob_clean();
-	    header('Content-Type: application/json');
-	    
-	    $idproducto = intval($_GET["id"]);
-	    
-	    // Calcular stock total
-	    $sql_total = "SELECT SUM(cantidad_restante) as total_stock
+		ob_clean();
+		header('Content-Type: application/json');
+
+		$idproducto = intval($_GET["id"]);
+
+		// Calcular stock total
+		$sql_total = "SELECT SUM(cantidad_restante) as total_stock
 	                  FROM stock_fifo
 	                  WHERE idproducto='$idproducto' AND estado=1";
-	    
-	    $result_total = ejecutarConsultaSimpleFila($sql_total);
-	    $total_stock_actual_producto = isset($result_total['total_stock']) ? $result_total['total_stock'] : 0;
-	    
-	    // Obtener nombre del producto
-	    $sql_nombre = "SELECT nombre FROM producto WHERE idproducto='$idproducto'";
-	    $result_nombre = ejecutarConsultaSimpleFila($sql_nombre);
-	    $nombre_producto = isset($result_nombre['nombre']) ? $result_nombre['nombre'] : '';
-	    
-	    // Obtener el ID del lote activo
-	    $sql_lote_activo = "SELECT idfifo 
+
+		$result_total = ejecutarConsultaSimpleFila($sql_total);
+		$total_stock_actual_producto = isset($result_total['total_stock']) ? $result_total['total_stock'] : 0;
+
+		// Obtener nombre del producto
+		$sql_nombre = "SELECT nombre FROM producto WHERE idproducto='$idproducto'";
+		$result_nombre = ejecutarConsultaSimpleFila($sql_nombre);
+		$nombre_producto = isset($result_nombre['nombre']) ? $result_nombre['nombre'] : '';
+
+		// Obtener el ID del lote activo
+		$sql_lote_activo = "SELECT idfifo 
 	                        FROM stock_fifo 
 	                        WHERE idproducto='$idproducto' 
 	                        AND cantidad_restante > 0 
@@ -567,39 +593,39 @@ switch ($_GET["op"]) {
 	                            fecha_ingreso ASC,
 	                            idfifo ASC 
 	                        LIMIT 1";
-	    
-	    $lote_activo_result = ejecutarConsultaSimpleFila($sql_lote_activo);
-	    $idfifo_activo = isset($lote_activo_result['idfifo']) ? $lote_activo_result['idfifo'] : null;
-	    
-	    echo json_encode([
-	        'nombre_producto' => $nombre_producto,
-	        'total_stock' => number_format($total_stock_actual_producto,2),
-	        'idfifo_activo' => $idfifo_activo
-	    ]);
-	    exit;
-	break;
+
+		$lote_activo_result = ejecutarConsultaSimpleFila($sql_lote_activo);
+		$idfifo_activo = isset($lote_activo_result['idfifo']) ? $lote_activo_result['idfifo'] : null;
+
+		echo json_encode([
+			'nombre_producto' => $nombre_producto,
+			'total_stock' => number_format($total_stock_actual_producto, 2),
+			'idfifo_activo' => $idfifo_activo
+		]);
+		exit;
+		break;
 
 	case 'listarvencimiento_datatable':
-	    ob_clean();
-	    header('Content-Type: application/json');
-	    
-	    $idproducto = intval($_GET["id"]);
-	    
-	    // Parámetros de DataTables
-	    $draw = isset($_GET['draw']) ? intval($_GET['draw']) : 1;
-	    $start = isset($_GET['start']) ? intval($_GET['start']) : 0;
-	    $length = isset($_GET['length']) ? intval($_GET['length']) : 10;
-	    $searchValue = isset($_GET['search']['value']) ? $_GET['search']['value'] : '';
-	    
-	    // Ordenamiento
-	    $orderColumnIndex = isset($_GET['order'][0]['column']) ? intval($_GET['order'][0]['column']) : 1;
-	    $orderDir = isset($_GET['order'][0]['dir']) ? $_GET['order'][0]['dir'] : 'asc';
-	    
-	    $columns = ['', 'sf.fecha_ingreso', 'dc.fvencimiento', 'dias_transcurridos', 'sf.cantidad_ingreso', 'sf.cantidad_restante', 'dc.nlote', 'sf.precio_compra', 'sf.precio_venta'];
-	    $orderColumn = isset($columns[$orderColumnIndex]) ? $columns[$orderColumnIndex] : 'sf.fecha_ingreso';
-	    
-	    // Obtener el lote activo
-	    $sql_lote_activo = "SELECT idfifo 
+		ob_clean();
+		header('Content-Type: application/json');
+
+		$idproducto = intval($_GET["id"]);
+
+		// Parámetros de DataTables
+		$draw = isset($_GET['draw']) ? intval($_GET['draw']) : 1;
+		$start = isset($_GET['start']) ? intval($_GET['start']) : 0;
+		$length = isset($_GET['length']) ? intval($_GET['length']) : 10;
+		$searchValue = isset($_GET['search']['value']) ? $_GET['search']['value'] : '';
+
+		// Ordenamiento
+		$orderColumnIndex = isset($_GET['order'][0]['column']) ? intval($_GET['order'][0]['column']) : 1;
+		$orderDir = isset($_GET['order'][0]['dir']) ? $_GET['order'][0]['dir'] : 'asc';
+
+		$columns = ['', 'sf.fecha_ingreso', 'dc.fvencimiento', 'dias_transcurridos', 'sf.cantidad_ingreso', 'sf.cantidad_restante', 'dc.nlote', 'sf.precio_compra', 'sf.precio_venta'];
+		$orderColumn = isset($columns[$orderColumnIndex]) ? $columns[$orderColumnIndex] : 'sf.fecha_ingreso';
+
+		// Obtener el lote activo
+		$sql_lote_activo = "SELECT idfifo 
 	                        FROM stock_fifo 
 	                        WHERE idproducto='$idproducto' 
 	                        AND cantidad_restante > 0 
@@ -610,34 +636,34 @@ switch ($_GET["op"]) {
 	                            fecha_ingreso ASC,
 	                            idfifo ASC 
 	                        LIMIT 1";
-	    
-	    $lote_activo_result = ejecutarConsultaSimpleFila($sql_lote_activo);
-	    $idfifo_activo = isset($lote_activo_result['idfifo']) ? $lote_activo_result['idfifo'] : null;
-	    
-	    // Consulta base
-	    $sql_base = "FROM stock_fifo sf
+
+		$lote_activo_result = ejecutarConsultaSimpleFila($sql_lote_activo);
+		$idfifo_activo = isset($lote_activo_result['idfifo']) ? $lote_activo_result['idfifo'] : null;
+
+		// Consulta base
+		$sql_base = "FROM stock_fifo sf
 	                 INNER JOIN producto p ON p.idproducto = sf.idproducto
 	                 LEFT JOIN detalle_compra dc ON dc.iddetalle_compra = sf.referencia_id AND sf.origen = 'COMPRA'
 	                 WHERE sf.idproducto = '$idproducto' AND sf.estado = 1";
-	    
-	    // Búsqueda
-	    $whereSearch = "";
-	    if (!empty($searchValue)) {
-	        $whereSearch = " AND (dc.nlote LIKE '%$searchValue%' 
+
+		// Búsqueda
+		$whereSearch = "";
+		if (!empty($searchValue)) {
+			$whereSearch = " AND (dc.nlote LIKE '%$searchValue%' 
 	                         OR DATE_FORMAT(sf.fecha_ingreso, '%d-%m-%Y') LIKE '%$searchValue%'
 	                         OR DATE_FORMAT(dc.fvencimiento, '%d-%m-%Y') LIKE '%$searchValue%')";
-	    }
-	    
-	    // Contar total de registros
-	    $sql_count = "SELECT COUNT(*) as total $sql_base";
-	    $total_records = ejecutarConsultaSimpleFila($sql_count)['total'];
-	    
-	    // Contar registros filtrados
-	    $sql_count_filtered = "SELECT COUNT(*) as total $sql_base $whereSearch";
-	    $total_filtered = ejecutarConsultaSimpleFila($sql_count_filtered)['total'];
-	    
-	    // Consulta con paginación
-	    $sql = "SELECT
+		}
+
+		// Contar total de registros
+		$sql_count = "SELECT COUNT(*) as total $sql_base";
+		$total_records = ejecutarConsultaSimpleFila($sql_count)['total'];
+
+		// Contar registros filtrados
+		$sql_count_filtered = "SELECT COUNT(*) as total $sql_base $whereSearch";
+		$total_filtered = ejecutarConsultaSimpleFila($sql_count_filtered)['total'];
+
+		// Consulta con paginación
+		$sql = "SELECT
 	                sf.idfifo,
 	                sf.fecha_ingreso,
 	                dc.fvencimiento,
@@ -650,101 +676,101 @@ switch ($_GET["op"]) {
 	            $sql_base $whereSearch
 	            ORDER BY $orderColumn $orderDir
 	            LIMIT $start, $length";
-	    
-	    $rspta = ejecutarConsulta($sql);
-	    
-	    $data = [];
-	    $numero = $start + 1;
-	    
-	    while ($reg = $rspta->fetch_object()) {
-	        $fecha_ingreso = date('d-m-Y', strtotime($reg->fecha_ingreso));
-	        $fvencimiento = ($reg->fvencimiento != '0000-00-00 00:00:00' && !empty($reg->fvencimiento)) 
-	            ? date('d-m-Y', strtotime($reg->fvencimiento)) 
-	            : 'Sin fecha';
-	        
-	        // Calcular días restantes
-	        if ($fvencimiento != 'Sin fecha') {
-	            $producto = new Producto();
-	            $dias_restantes = $producto->calcularDiasVencimiento($reg->dias_transcurridos);
-	            $estado = $reg->stock_lote <= 0 ? 'agotado' : ($reg->dias_transcurridos < 7 ? 'por_vencer' : 'ok');
-	        } else {
-	            $dias_restantes = '<span class="badge bg-secondary">N/A</span>';
-	            $estado = 'sin_fecha';
-	        }
-	        
-	        // Stock por lote
-	        if ($reg->stock_lote === null) {
-	            $stock_lote = '<span class="badge bg-secondary">Antiguo</span>';
-	        } elseif ($reg->stock_lote <= 0) {
-	            $stock_lote = '<span class="badge bg-danger">Agotado</span>';
-	        } elseif ($reg->stock_lote / $reg->cantidad < 0.3) {
-	            $stock_lote = '<span class="badge bg-warning">' . number_format($reg->stock_lote,2) . ' Unid.</span>';
-	        } else {
-	            $stock_lote = '<span class="badge bg-success">' . number_format($reg->stock_lote,2) . ' Unid.</span>';
-	        }
-	        
-	        // Identificar si es el lote activo
-	        $es_lote_activo = ($idfifo_activo && $reg->idfifo == $idfifo_activo);
-	        $claseResaltado = $es_lote_activo ? 'table-info' : '';
-	        $indicadorActivo = $es_lote_activo ? '<span class="badge bg-primary" style="margin-left:5px"><i class="fa fa-star"></i> EN VENTA</span>' : '';
-	        
-	        $nlote_display = ($reg->nlote ? $reg->nlote : 'N/A') . $indicadorActivo;
-	        
-	        $data[] = [
-	            'numero' => $numero++,
-	            'fecha_ingreso' => $fecha_ingreso,
-	            'fvencimiento' => $fvencimiento,
-	            'dias_restantes' => $dias_restantes,
-	            'cantidad' => number_format($reg->cantidad,2),
-	            'stock_lote' => $stock_lote,
-	            'nlote' => $nlote_display,
-	            'precio_compra' => 'S/ ' . number_format($reg->precio_compra,2),
-	            'precio_venta' => 'S/ ' . number_format($reg->precio_venta,2),
-	            'clase' => $claseResaltado
-	        ];
-	    }
-	    
-	    echo json_encode([
-	        'draw' => $draw,
-	        'recordsTotal' => $total_records,
-	        'recordsFiltered' => $total_filtered,
-	        'data' => $data
-	    ]);
-	    exit;
-	break;
+
+		$rspta = ejecutarConsulta($sql);
+
+		$data = [];
+		$numero = $start + 1;
+
+		while ($reg = $rspta->fetch_object()) {
+			$fecha_ingreso = date('d-m-Y', strtotime($reg->fecha_ingreso));
+			$fvencimiento = ($reg->fvencimiento != '0000-00-00 00:00:00' && !empty($reg->fvencimiento))
+				? date('d-m-Y', strtotime($reg->fvencimiento))
+				: 'Sin fecha';
+
+			// Calcular días restantes
+			if ($fvencimiento != 'Sin fecha') {
+				$producto = new Producto();
+				$dias_restantes = $producto->calcularDiasVencimiento($reg->dias_transcurridos);
+				$estado = $reg->stock_lote <= 0 ? 'agotado' : ($reg->dias_transcurridos < 7 ? 'por_vencer' : 'ok');
+			} else {
+				$dias_restantes = '<span class="badge bg-secondary">N/A</span>';
+				$estado = 'sin_fecha';
+			}
+
+			// Stock por lote
+			if ($reg->stock_lote === null) {
+				$stock_lote = '<span class="badge bg-secondary">Antiguo</span>';
+			} elseif ($reg->stock_lote <= 0) {
+				$stock_lote = '<span class="badge bg-danger">Agotado</span>';
+			} elseif ($reg->stock_lote / $reg->cantidad < 0.3) {
+				$stock_lote = '<span class="badge bg-warning">' . number_format($reg->stock_lote, 2) . ' Unid.</span>';
+			} else {
+				$stock_lote = '<span class="badge bg-success">' . number_format($reg->stock_lote, 2) . ' Unid.</span>';
+			}
+
+			// Identificar si es el lote activo
+			$es_lote_activo = ($idfifo_activo && $reg->idfifo == $idfifo_activo);
+			$claseResaltado = $es_lote_activo ? 'table-info' : '';
+			$indicadorActivo = $es_lote_activo ? '<span class="badge bg-primary" style="margin-left:5px"><i class="fa fa-star"></i> EN VENTA</span>' : '';
+
+			$nlote_display = ($reg->nlote ? $reg->nlote : 'N/A') . $indicadorActivo;
+
+			$data[] = [
+				'numero' => $numero++,
+				'fecha_ingreso' => $fecha_ingreso,
+				'fvencimiento' => $fvencimiento,
+				'dias_restantes' => $dias_restantes,
+				'cantidad' => number_format($reg->cantidad, 2),
+				'stock_lote' => $stock_lote,
+				'nlote' => $nlote_display,
+				'precio_compra' => 'S/ ' . number_format($reg->precio_compra, 2),
+				'precio_venta' => 'S/ ' . number_format($reg->precio_venta, 2),
+				'clase' => $claseResaltado
+			];
+		}
+
+		echo json_encode([
+			'draw' => $draw,
+			'recordsTotal' => $total_records,
+			'recordsFiltered' => $total_filtered,
+			'data' => $data
+		]);
+		exit;
+		break;
 
 	case 'movimientoEntradaSalida':
-	    $idproducto = limpiarCadena($_POST["idproducto"]);
-	    $idsucursal = limpiarCadena($_POST["idsucursal"]);
-	    $tipo_movimiento = limpiarCadena($_POST["tipo_movimiento"]);
-	    $cantidad = limpiarCadena($_POST["cantidad"]);
-	    $motivo = limpiarCadena($_POST["motivo"]);
-	    $precio_venta  = $_POST["precio_venta"] ?? null;
-	    $precio_compra = $_POST["precio_compra"] ?? null;
-	    
-	    // Convertir cadena vacía o "0" a 0
+		$idproducto = limpiarCadena($_POST["idproducto"]);
+		$idsucursal = limpiarCadena($_POST["idsucursal"]);
+		$tipo_movimiento = limpiarCadena($_POST["tipo_movimiento"]);
+		$cantidad = limpiarCadena($_POST["cantidad"]);
+		$motivo = limpiarCadena($_POST["motivo"]);
+		$precio_venta = $_POST["precio_venta"] ?? null;
+		$precio_compra = $_POST["precio_compra"] ?? null;
+
+		// Convertir cadena vacía o "0" a 0
 		$idfifo = $_POST["idfifo"] ?? '';
 		$idfifo = ($idfifo === '' || $idfifo === null || $idfifo === '0') ? 0 : intval($idfifo);
-	    
-	    $rspta = $producto->movimientoEntradaSalida(
-	        $idproducto,
-	        $idsucursal,
-	        $tipo_movimiento,
-	        $cantidad,
-	        $motivo,
-	        1,
-	        $precio_compra,
-	        $precio_venta,
-	        $idfifo
-	    );
-	    echo json_encode($rspta);
-	break;
+
+		$rspta = $producto->movimientoEntradaSalida(
+			$idproducto,
+			$idsucursal,
+			$tipo_movimiento,
+			$cantidad,
+			$motivo,
+			1,
+			$precio_compra,
+			$precio_venta,
+			$idfifo
+		);
+		echo json_encode($rspta);
+		break;
 
 	case 'listarLotesFifo':
-	    $idproducto = limpiarCadena($_POST['idproducto']);
-	    $idsucursal = limpiarCadena($_POST['idsucursal']);
-	    
-	    $sql = "SELECT 
+		$idproducto = limpiarCadena($_POST['idproducto']);
+		$idsucursal = limpiarCadena($_POST['idsucursal']);
+
+		$sql = "SELECT 
 	                idfifo, 
 	                cantidad_restante, 
 	                precio_venta, 
@@ -755,30 +781,30 @@ switch ($_GET["op"]) {
 	              AND idsucursal='$idsucursal' 
 	              AND estado=1
 	            ORDER BY fecha_ingreso ASC";
-	    
-	    $rs = ejecutarConsulta($sql);
-	    
-	    // Opciones iniciales
-	    $opt = "<option value=''>── Seleccionar lote ──</option>";
-	    $opt .= "<option value='0'>➕ Crear nuevo lote</option>";
-	    $opt .= "<option disabled>──────────────────</option>";
-	    
-	    // Listar lotes existentes con formato mejorado
-	    while($r = $rs->fetch_object()){
-	        $idfifo = $r->idfifo;
-	        $stock = number_format($r->cantidad_restante, 2);
-	        $pv = number_format($r->precio_venta, 2);
-	        $pc = number_format($r->precio_compra, 2);
-	        $fecha = $r->fecha_ingreso_format;
-	        
-	        // Formato mejorado con información clara
-	        $texto = "Lote #$idfifo │ Stock: $stock │ PC: S/ $pc │ PV: S/ $pv │ $fecha";
-	        
-	        $opt .= "<option value='$idfifo'>$texto</option>";
-	    }
-	    
-	    echo $opt;
-	break;
+
+		$rs = ejecutarConsulta($sql);
+
+		// Opciones iniciales
+		$opt = "<option value=''>── Seleccionar lote ──</option>";
+		$opt .= "<option value='0'>➕ Crear nuevo lote</option>";
+		$opt .= "<option disabled>──────────────────</option>";
+
+		// Listar lotes existentes con formato mejorado
+		while ($r = $rs->fetch_object()) {
+			$idfifo = $r->idfifo;
+			$stock = number_format($r->cantidad_restante, 2);
+			$pv = number_format($r->precio_venta, 2);
+			$pc = number_format($r->precio_compra, 2);
+			$fecha = $r->fecha_ingreso_format;
+
+			// Formato mejorado con información clara
+			$texto = "Lote #$idfifo │ Stock: $stock │ PC: S/ $pc │ PV: S/ $pv │ $fecha";
+
+			$opt .= "<option value='$idfifo'>$texto</option>";
+		}
+
+		echo $opt;
+		break;
 
 	case 'listarservice':
 		$rspta = $producto->listarService();
@@ -824,19 +850,19 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'precios_adicionales':
-	    $idusuario = $_SESSION['idusuario'];
+		$idusuario = $_SESSION['idusuario'];
 
-	    $sqlCargo = "SELECT p.cargo 
+		$sqlCargo = "SELECT p.cargo 
 	                 FROM usuario u 
 	                 INNER JOIN personal p ON u.idpersonal = p.idpersonal 
 	                 WHERE u.idusuario = '$idusuario' LIMIT 1";
-	    $cargoRow = ejecutarConsultaSimpleFila($sqlCargo);
-	    $cargoUsuario = $cargoRow ? $cargoRow['cargo'] : '';
-	    $es_admin = ($cargoUsuario == 'Administrador'); 
+		$cargoRow = ejecutarConsultaSimpleFila($sqlCargo);
+		$cargoUsuario = $cargoRow ? $cargoRow['cargo'] : '';
+		$es_admin = ($cargoUsuario == 'Administrador');
 
-	    $idproducto = isset($_POST["idproducto"]) ? limpiarCadena($_POST["idproducto"]) : 0;
+		$idproducto = isset($_POST["idproducto"]) ? limpiarCadena($_POST["idproducto"]) : 0;
 
-	    $sql = "SELECT 
+		$sql = "SELECT 
 	                pc.id AS idconfig,
 	                pc.contenedor,
 	                pc.cantidad_contenedor,
@@ -855,33 +881,33 @@ switch ($_GET["op"]) {
 	            WHERE pc.estado = 1 AND pc.idproducto = '$idproducto'
 	            ORDER BY pc.id, np.idnombre_p ASC";
 
-	    $res = ejecutarConsulta($sql);
+		$res = ejecutarConsulta($sql);
 
-	    $configuraciones = [];
-	    while ($row = $res->fetch_object()) {
-	        $id = $row->idconfig;
+		$configuraciones = [];
+		while ($row = $res->fetch_object()) {
+			$id = $row->idconfig;
 
-	        if (!isset($configuraciones[$id])) {
-	            $configuraciones[$id] = [
-	                'contenedor' => $row->contenedor,
-	                'cantidad_contenedor' => $row->cantidad_contenedor,
-	                'precio_venta' => $row->precio_venta,
-	                'precio_promocion' => $row->precio_promocion,
-	                'precios' => []
-	            ];
-	        }
+			if (!isset($configuraciones[$id])) {
+				$configuraciones[$id] = [
+					'contenedor' => $row->contenedor,
+					'cantidad_contenedor' => $row->cantidad_contenedor,
+					'precio_venta' => $row->precio_venta,
+					'precio_promocion' => $row->precio_promocion,
+					'precios' => []
+				];
+			}
 
-	        if (!is_null($row->nombre_precio)) {
-	            $configuraciones[$id]['precios'][] = [
-	                'nombre' => $row->nombre_precio,
-	                'precio' => $row->precio,
-	                'margen' => $row->margen
-	            ];
-	        }
-	    }
+			if (!is_null($row->nombre_precio)) {
+				$configuraciones[$id]['precios'][] = [
+					'nombre' => $row->nombre_precio,
+					'precio' => $row->precio,
+					'margen' => $row->margen
+				];
+			}
+		}
 
-	    //  Estilos exactamente iguales, pero limitados al modal
-	    $html = '<style>
+		//  Estilos exactamente iguales, pero limitados al modal
+		$html = '<style>
 	        #modalDetalleProducto .card { 
 	            border:2px solid #4a68ff;
 	            border-radius:10px;
@@ -950,12 +976,12 @@ switch ($_GET["op"]) {
 	        #modalDetalleProducto .margen-medio { background:#ffc107; color:black; } /* Amarillo */
 	        #modalDetalleProducto .margen-alto { background:#2ecc71; color:white; }  /* Verde */
 	    </style>';
-	    $contador = 1;
+		$contador = 1;
 
-	    foreach ($configuraciones as $id => $config) {
-	        $collapseId = 'collapseConfig' . $id;
+		foreach ($configuraciones as $id => $config) {
+			$collapseId = 'collapseConfig' . $id;
 
-	        $html .= '
+			$html .= '
 	        <div class="card mb-2">
 	          <div class="card-header p-2">
 	            <h6 class="mb-0 d-flex justify-content-between align-items-center">
@@ -980,95 +1006,99 @@ switch ($_GET["op"]) {
 	                    <th>Tipo de Precio</th>
 	                    <th>Valor (S/)</th>';
 
-	        if ($es_admin) {
-	            $html .= '<th>Margen %</th>';
-	        }
+			if ($es_admin) {
+				$html .= '<th>Margen %</th>';
+			}
 
-	        $html .= '</tr>
+			$html .= '</tr>
 	                </thead>
 	                <tbody>';
 
-	        if (count($config['precios']) > 0) {
-	            foreach ($config['precios'] as $p) {
-	                $margenClass = '';
-	                if ($es_admin) {
-	                    if ($p['margen'] < 15) { $margenClass = 'margen-bajo'; }
-	                    elseif ($p['margen'] < 30) { $margenClass = 'margen-medio'; }
-	                    else { $margenClass = 'margen-alto'; }
-	                }
+			if (count($config['precios']) > 0) {
+				foreach ($config['precios'] as $p) {
+					$margenClass = '';
+					if ($es_admin) {
+						if ($p['margen'] < 15) {
+							$margenClass = 'margen-bajo';
+						} elseif ($p['margen'] < 30) {
+							$margenClass = 'margen-medio';
+						} else {
+							$margenClass = 'margen-alto';
+						}
+					}
 
-	                $html .= '<tr>
+					$html .= '<tr>
 	                  <td><strong>' . $p['nombre'] . '</strong></td>
 	                  <td><span class="badge-precio">S/ ' . number_format($p['precio'], 2) . '</span></td>';
 
-	                if ($es_admin) {
-	                    $html .= '<td><span class="margen-box ' . $margenClass . '">' . number_format($p['margen'], 2) . '%</span></td>';
-	                }
+					if ($es_admin) {
+						$html .= '<td><span class="margen-box ' . $margenClass . '">' . number_format($p['margen'], 2) . '%</span></td>';
+					}
 
-	                $html .= '</tr>';
-	            }
-	        } else {
-	            $colspan = $es_admin ? 3 : 2;
-	            $html .= '<tr><td colspan="' . $colspan . '"><em>Sin precios adicionales</em></td></tr>';
-	        }
+					$html .= '</tr>';
+				}
+			} else {
+				$colspan = $es_admin ? 3 : 2;
+				$html .= '<tr><td colspan="' . $colspan . '"><em>Sin precios adicionales</em></td></tr>';
+			}
 
-	        $html .= '
+			$html .= '
 	                </tbody>
 	              </table>
 	            </div>
 	          </div>
 	        </div>';
-	    }
+		}
 
-	    echo $html;
-	break;
+		echo $html;
+		break;
 
 
 
 	case 'consultarStockOtrasSucursales':
-	    $idproducto = $_POST['idproducto'];
-	    $idsucursalActual = $_SESSION['idsucursal'];
-	    $producto = new Producto();
+		$idproducto = $_POST['idproducto'];
+		$idsucursalActual = $_SESSION['idsucursal'];
+		$producto = new Producto();
 
-	    $rspta = $producto->consultarStockOtrasSucursales($idproducto, $idsucursalActual);
-	    $data = array();
+		$rspta = $producto->consultarStockOtrasSucursales($idproducto, $idsucursalActual);
+		$data = array();
 
-	    while ($reg = $rspta->fetch_object()) {
-	        $data[] = array(
-	            "sucursal" => $reg->sucursal,
-	            "stock" => $reg->stock
-	        );
-	    }
+		while ($reg = $rspta->fetch_object()) {
+			$data[] = array(
+				"sucursal" => $reg->sucursal,
+				"stock" => $reg->stock
+			);
+		}
 
-	    echo json_encode($data);
-	break;
+		echo json_encode($data);
+		break;
 
 	case 'buscarStockPorSucursales':
-	    $termino = $_POST['termino'];
-	    $idsucursalActual = $_SESSION['idsucursal'];
-	    $idsucursalFiltro = isset($_POST['idsucursalFiltro']) ? $_POST['idsucursalFiltro'] : '';
-	    $producto = new Producto();
-	    $rspta = $producto->buscarStockPorSucursales($termino, $idsucursalActual, $idsucursalFiltro);
-	    $data = [];
-	    while ($reg = $rspta->fetch_object()) {
-	        $data[] = [
-	            "idproducto" => $reg->idproducto,
-	            "nombre" => $reg->nombre,
-	            "codigo" => $reg->codigo,
-	            "idsucursal" => $reg->idsucursal,
-	            "sucursal" => $reg->sucursal,
-	            "stock" => $reg->stock
-	        ];
-	    }
-	    echo json_encode($data);
-	break;
+		$termino = $_POST['termino'];
+		$idsucursalActual = $_SESSION['idsucursal'];
+		$idsucursalFiltro = isset($_POST['idsucursalFiltro']) ? $_POST['idsucursalFiltro'] : '';
+		$producto = new Producto();
+		$rspta = $producto->buscarStockPorSucursales($termino, $idsucursalActual, $idsucursalFiltro);
+		$data = [];
+		while ($reg = $rspta->fetch_object()) {
+			$data[] = [
+				"idproducto" => $reg->idproducto,
+				"nombre" => $reg->nombre,
+				"codigo" => $reg->codigo,
+				"idsucursal" => $reg->idsucursal,
+				"sucursal" => $reg->sucursal,
+				"stock" => $reg->stock
+			];
+		}
+		echo json_encode($data);
+		break;
 
 	case 'generar_codigo':
-	  require_once "../modelos/Producto.php";
-	  $producto = new Producto();
-	  $codigo = $producto->generarCodigo();
-	  echo json_encode(["codigo" => $codigo]);
-	  break;
+		require_once "../modelos/Producto.php";
+		$producto = new Producto();
+		$codigo = $producto->generarCodigo();
+		echo json_encode(["codigo" => $codigo]);
+		break;
 
 
 }

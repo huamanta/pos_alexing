@@ -69,12 +69,14 @@ $dniGarante = $resultVenta['num_documento_garante'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // Detalle del vehículo vendido
-$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, p.fabricante AS marca, p.modelo, p.color,
+$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, m.nombre AS marca, mo.nombre AS modelo, p.color,
                        p.numserie AS serie, p.motor, p.anio_fabricacion AS anio, p.placa,
                        p.clase_vehiculo AS clase, p.tipo_vehiculo
                 FROM detalle_venta dv
                 LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
                 LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
+                LEFT JOIN marca m ON m.idmarca = p.idmarca
+                LEFT JOIN modelo mo ON mo.idmodelo = p.idmodelo
                 WHERE dv.idventa = $idVenta";
 $resultDetalle = ejecutarConsulta($sqlDetalle);
 
