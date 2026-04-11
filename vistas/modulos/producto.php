@@ -511,253 +511,303 @@ function tienePermiso($modulo, $submodulo, $accion) {
       </div>
       <form class="form-horizontal" role="form" name="formulario" id="formulario" method="POST">
         <div class="modal-body">
-          <div class="row" style="margin-top:-15px">
-            <div class="col-sm-8" style="margin-top:-15px">
-              <div class="row">
-                <div class="col-sm-10">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Nombre:</label>
-                    <input type="hidden" name="idproducto" id="idproducto">
-                    <input type="text" class="form-control" name="nombre" id="nombre" maxlength="250" placeholder="Nombre" required>
-                  </div>
-                </div>
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Stock:</label>
+          <div class="row">
+            <div class="col-sm-8">
+              <input type="hidden" name="idproducto" id="idproducto">
 
-                    <input type="number" class="form-control" step="any" name="stock" id="stock" value="0" readonly>
+              <ul class="nav nav-tabs" id="tabsProductoVehiculo" role="tablist" style="margin-bottom: 10px;">
+                <li class="nav-item">
+                  <a class="nav-link active" id="tab-basico-link" data-toggle="tab" href="#tab-basico" role="tab" aria-controls="tab-basico" aria-selected="true">Datos Básicos</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="tab-producto-link" data-toggle="tab" href="#tab-producto" role="tab" aria-controls="tab-producto" aria-selected="false">Productos</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" id="tab-stock-link" data-toggle="tab" href="#tab-stock" role="tab" aria-controls="tab-stock" aria-selected="false">Stock / Precio</a>
+                </li>
+              </ul>
 
-                  </div>
-                </div>
-              </div>
-
-              <div class="row" style="margin-top:-15px">
-                <div class="col-sm-12">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Descripción:</label>
-                    <input type="text" class="form-control" name="descripcion" id="descripcion" maxlength="50" placeholder="Descripción">
-                  </div>
-                </div>
-                <!-- <div class="col-sm-3"hidden >
-                   <div class="form-group">
-                    <label for="name" class="control-label">Lote: </label>
-                    <input type="text" class="form-control" name="modelo" id="modelo" maxlength="256" placeholder="N° de Lote">
-                  </div>
-                </div>-->
-              </div>
-
-              <div class="row" style="margin-top:-15px">
-                <div class="col-sm-6" hidden>
-                  <div class="form-group">
-                    <label for="name" class="control-label">Almacén:</label>
-                    <select id="idsucursal" name="idsucursal" class="form-control select2" style="width: 100%; height: 100%;">
-                    </select>
-                  </div>
-                </div>
-
-                <div class="col-sm-5">
-                  <div class="form-group">
-                    <label for="name" class="control-label"><i class="fas fa-users fs-6"></i>
-                      <span class="control-label">Unidad de Medidad: </span><a class="input-group-addon" style="cursor: pointer;color: blue;" data-toggle="modal" data-target="#ModalUM"> <i class="fa fa-plus fa-xs"></i> Nuevo</a></label>
-                    <select id="idunidad_medida" name="idunidad_medida" class="form-control select2" style="width: 100%; height: 100%;" required></select>
-                  </div>
-                </div>
-
-                <div class="col-sm-5">
-                  <div class="form-group">
-                    <label for="name" class="control-label"><i class="fas fa-users fs-6"></i>
-                      <span class="control-label">Categoria: </span><a class="input-group-addon" style="cursor: pointer; color: blue;" data-toggle="modal" data-target="#myModalCategoria"><i class="fa fa-plus fa-xs"></i> Nueva Categoría</a></label>
-                    <select id="idcategoria" name="idcategoria" class="form-control select2" style="width: 100%; height: 100%;" required>
-                      <option value="" selected></option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Stock Mínimo:</label>
-
-                    <input type="number" class="form-control" name="stockMinimo" id="stockMinimo" value="5" required>
-
-                  </div>
-                </div>
-              </div>
-
-
-
-
-
-              <div class="row" style="margin-top:-15px">
-
-
-                <div class="col-sm-4">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Precio de Compra:</label>
-                    <input type="number" step="any" class="form-control" name="precioCompra" id="precioCompra" min="0" placeholder="S/ 0.00">
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Proveedor: </label>
-                    <input type="text" class="form-control" name="fabricante" id="fabricante" maxlength="256" placeholder="Fabricante">
-                  </div>
-                </div>
-
-                <div class="col-sm-3" hidden>
-                  <div class="form-group">
-                    <label for="name" class="control-label">Rubro:</label>
-                    <select id="idrubro" name="idrubro" class="form-control select2" style="width: 100%; height: 100%;"></select>
-                  </div>
-                </div>
-
-                <div class="col-sm-4">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Tipo Igv:</label>
-                    <select id="tipoigv" name="tipoigv" class="form-control" style="width: 100%; height: 100%;" required>
-                      <option value="No Gravada">No Gravada</option>
-                      <option value="Gravada">Gravada</option>
-                    </select>
-                  </div>
-                </div>
-
-
-
-                <div class="col-sm-3" hidden>
-                  <div class="form-group">
-                    <label for="name" class="control-label">R Sanitario: </label>
-                    <input type="text" class="form-control" name="registrosan" id="registrosan" maxlength="256" placeholder="N° de R Sanitario">
-                  </div>
-                </div>
-              </div>
-
-              <div class="row" style="margin-top:-15px">
-                <div class="col-sm-4">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Precio de Venta:</label>
-                    <input type="number" step="any" class="form-control" name="precio" id="precio" min="0" placeholder="S/ 0.00">
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Utilidad PVP:</label>
-                    <input style="border-color: red; " type="number" step="any" class="form-control" name="utilprecio" id="utilprecio" readonly>
-                  </div>
-                </div>
-                <div class="col-sm-4">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Marg.P.PUBLICO %:</label>
-                    <input style="border-color: green; " type="number" step="any" class="form-control" name="margenpubl" id="margenpubl" readonly>
-                  </div>
-                </div>
-                <div class="col-sm-2" hidden>
-                  <div class="form-group">
-                    <label for="name" class="control-label">P.DESCUENTO:</label>
-                    <input type="number" step="any" class="form-control" name="precioB" id="precioB" placeholder="S/ 0.00">
-                  </div>
-                </div>
-                <div class="col-sm-2" hidden>
-                  <div class="form-group">
-                    <label for="name" class="control-label">PMAY 1:</label>
-                    <input type="number" step="any" class="form-control" name="precioC" id="precioC" placeholder="S/ 0.00">
-                  </div>
-                </div>
-                <div class="col-sm-2" hidden>
-                  <div class="form-group">
-                    <label for="name" class="control-label">PMAY 2:</label>
-                    <input type="number" step="any" class="form-control" name="precioD" id="precioD" placeholder="S/ 0.00">
-                  </div>
-                </div>
-                <div class="col-sm-3" hidden>
-                  <div class="form-group">
-                    <label for="name" class="control-label">P.DISTRIBUIDOR:</label>
-                    <input type="number" step="any" class="form-control" name="precioE" id="precioE" placeholder="S/ 0.00">
-                  </div>
-                </div>
-              </div>
-
-              <div class="row" style="margin-top:-15px" hidden>
-
-                <div class="col-sm-2" >
-                  <div class="form-group">
-                    <label for="name" class="control-label">Marg.Desc %:</label>
-                    <input style="border-color: green; " type="number" step="any" class="form-control" name="margendes" id="margendes" readonly>
-                  </div>
-                </div>
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Marg.P1 %:</label>
-                    <input style="border-color: green; " type="number" step="any" class="form-control" name="margenp1" id="margenp1" readonly>
-                  </div>
-                </div>
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Marg.P2 %:</label>
-                    <input style="border-color: green; " type="number" step="any" class="form-control" name="margenp2" id="margenp2" readonly>
-                  </div>
-                </div>
-                <div class="col-sm-3">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Marg.Dist %:</label>
-                    <input style="border-color: green; " type="number" step="any" class="form-control" name="margendist" id="margendist" readonly>
-                  </div>
-                </div>
-              </div>
-              <div class="row" style="margin-top:-15px" hidden>
-                
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Utilidad Desc:</label>
-                    <input style="border-color: red; " type="number" step="any" class="form-control" name="utilprecioB" id="utilprecioB" readonly>
-                  </div>
-                </div>
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Utilidad P1:</label>
-                    <input style="border-color: red; " type="number" step="any" class="form-control" name="utilprecioC" id="utilprecioC" readonly>
-                  </div>
-                </div>
-                <div class="col-sm-2">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Utilidad P2:</label>
-                    <input style="border-color: red;" type="number" step="any" class="form-control" name="utilprecioD" id="utilprecioD" readonly>
-                  </div>
-                </div>
-                <div class="col-sm-3">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Utilidad Dist:</label>
-                    <input style="border-color: red;" type="number" step="any" class="form-control" name="utilprecioE" id="utilprecioE" readonly>
-                  </div>
-                </div>
-              </div>
-
-
-
-              <div class="row" style="margin-top:-15px">
-                <div class="col-sm-3" hidden>
-                  <div class="form-group">
-                    <label for="name" class="control-label">Comisión Vendedor:</label>
-                    <input type="number" step="any" class="form-control" name="comisionV" id="comisionV">
-                  </div>
-                </div>
-              </div>
-
-              <div class="row">
-                <div class="col-sm-4" hidden>
-                  <div class="form-group">
-                    <label for="name" class="control-label">Condicion de Venta:</label>
-                    <select id="idcondicionventa" name="idcondicionventa" class="form-control select2" style="width: 100%; height: 100%;"></select>
-                  </div>
-                </div>
-
-
-                <div class="col-sm-6">
-                  <div class="form-group">
-                    <label for="name" class="control-label">Sucursales:</label>
-                    <div class="col-sm-12">
-                      <ul style="list-style: none;" id="sucursales">
-
-                      </ul>
+              <div class="tab-content border rounded p-2 bg-light" id="tabsProductoVehiculoContent">
+                <div class="tab-pane fade show active" id="tab-basico" role="tabpanel" aria-labelledby="tab-basico-link">
+                  <div class="row">
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Línea de Producto *</label>
+                        <select id="idrubro" name="idrubro" class="form-control select2" style="width: 100%; height: 100%;"></select>
+                      </div>
                     </div>
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Categoría *</label>
+                        <select id="idcategoria" name="idcategoria" class="form-control select2" style="width: 100%; height: 100%;" required>
+                          <option value="" selected></option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Activo Fijo</label>
+                        <select id="activo_fijo" name="activo_fijo" class="form-control">
+                          <option value="No" selected>No</option>
+                          <option value="Si">Sí</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:-15px">
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Unidad *</label>
+                        <select id="idunidad_medida" name="idunidad_medida" class="form-control select2" style="width: 100%; height: 100%;" required></select>
+                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Marca</label>
+                        <input type="text" class="form-control" name="fabricante" id="fabricante" maxlength="256" placeholder="Digite la marca.">
+                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Modelo</label>
+                        <input type="text" class="form-control" name="modelo" id="modelo" maxlength="256" placeholder="Digite el modelo.">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:-15px">
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Condición</label>
+                        <select id="idcondicionventa" name="idcondicionventa" class="form-control select2" style="width: 100%; height: 100%;"></select>
+                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Tipo</label>
+                        <select id="tipo_producto" name="tipo_producto" class="form-control">
+                          <option value="Producto" selected>Producto</option>
+                          <option value="Vehiculo">Vehículo</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-sm-4" hidden>
+                      <div class="form-group">
+                        <label class="control-label">Almacén:</label>
+                        <select id="idsucursal" name="idsucursal" class="form-control select2" style="width: 100%; height: 100%;"></select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:-15px">
+                    <div class="col-sm-12">
+                      <div class="form-group">
+                        <label class="control-label">Sucursales:</label>
+                        <ul style="list-style: none;" id="sucursales"></ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-producto" role="tabpanel" aria-labelledby="tab-producto-link">
+                  <div class="row">
+                    <div class="col-sm-12">
+                      <div class="form-group">
+                        <label class="control-label">Producto / Servicio *</label>
+                        <input type="text" class="form-control" name="nombre" id="nombre" maxlength="250" placeholder="Digite el nombre del Producto o Servicio" required>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:-15px">
+                    <div class="col-sm-12">
+                      <div class="form-group">
+                        <label class="control-label">Descripción Detallada</label>
+                        <input type="text" class="form-control" name="descripcion" id="descripcion" maxlength="250" placeholder="Digite una descripción detallada.">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:-15px">
+                    <div class="col-sm-6">
+                      <div class="form-group">
+                        <label class="control-label">Placa</label>
+                        <input type="text" class="form-control" name="placa" id="placa" maxlength="20" placeholder="Digite el N° de placa.">
+                      </div>
+                    </div>
+                    <div class="col-sm-6">
+                      <div class="form-group">
+                        <label class="control-label">Color *</label>
+                        <input type="text" class="form-control" name="color" id="color" maxlength="50" placeholder="Digite el color.">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:-15px">
+                    <div class="col-sm-6">
+                      <div class="form-group">
+                        <label class="control-label">Serie / Chasis *</label>
+                        <input type="text" class="form-control" name="nserie" id="nserie" maxlength="80" placeholder="Digite el N° de serie.">
+                      </div>
+                    </div>
+                    <div class="col-sm-6">
+                      <div class="form-group">
+                        <label class="control-label">Motor *</label>
+                        <input type="text" class="form-control" name="motor" id="motor" maxlength="80" placeholder="Digite el N° de motor.">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:-15px">
+                    <div class="col-sm-6">
+                      <div class="form-group">
+                        <label class="control-label">Permiso de Circulación</label>
+                        <input type="text" class="form-control" name="permiso_circulacion" id="permiso_circulacion" maxlength="100" placeholder="Digite Permiso Circulación">
+                      </div>
+                    </div>
+                    <div class="col-sm-6">
+                      <div class="form-group">
+                        <label class="control-label">Año de Fabricación</label>
+                        <input type="number" class="form-control" name="anio_fabricacion" id="anio_fabricacion" min="1900" max="2100" placeholder="Digite el Año de fabricación.">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:-15px">
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Tipo Vehículo</label>
+                        <select id="tipo_vehiculo" name="tipo_vehiculo" class="form-control">
+                          <option value="">-Seleccione-</option>
+                          <option value="Lineal">Lineal</option>
+                          <option value="Trimovil">Trimóvil</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Clase</label>
+                        <select id="clase_vehiculo" name="clase_vehiculo" class="form-control">
+                          <option value="">-Seleccione-</option>
+                          <option value="L3">L3</option>
+                          <option value="L5">L5</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Propietario</label>
+                        <select id="propietario_vehiculo" name="propietario_vehiculo" class="form-control">
+                          <option value="">::SELECCIONE::</option>
+                          <option value="Empresa">Empresa</option>
+                          <option value="Cliente">Cliente</option>
+                          <option value="Tercero">Tercero</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="tab-pane fade" id="tab-stock" role="tabpanel" aria-labelledby="tab-stock-link">
+                  <div class="row">
+                    <div class="col-sm-3">
+                      <div class="form-group">
+                        <label class="control-label">Stock Mínimo</label>
+                        <input type="number" class="form-control" name="stockMinimo" id="stockMinimo" value="0" required>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="form-group">
+                        <label class="control-label">Stock Máximo</label>
+                        <input type="number" class="form-control" name="stockMaximo" id="stockMaximo" value="0">
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="form-group">
+                        <label class="control-label">Stock</label>
+                        <input type="number" class="form-control" step="any" name="stock" id="stock" value="0" readonly>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="form-group">
+                        <label class="control-label">Controla Stock</label>
+                        <select id="controla_stock" name="controla_stock" class="form-control">
+                          <option value="Si" selected>Sí</option>
+                          <option value="No">No</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:-15px">
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Precio Compra</label>
+                        <input type="number" step="any" class="form-control" name="precioCompra" id="precioCompra" min="0" placeholder="0.00">
+                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Precio Venta</label>
+                        <input type="number" step="any" class="form-control" name="precio" id="precio" min="0" placeholder="0.00">
+                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">P. Venta Crédito</label>
+                        <input type="number" step="any" class="form-control" name="precioB" id="precioB" placeholder="0.00">
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" style="margin-top:-15px">
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Generar Alerta Stock</label>
+                        <select id="alerta_stock" name="alerta_stock" class="form-control">
+                          <option value="Si" selected>Sí</option>
+                          <option value="No">No</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-sm-4">
+                      <div class="form-group">
+                        <label class="control-label">Aplica IGV</label>
+                        <select id="tipoigv" name="tipoigv" class="form-control" required>
+                          <option value="No Gravada">No Gravada</option>
+                          <option value="Gravada">Gravada</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row" hidden>
+                    <div class="col-sm-3">
+                      <div class="form-group">
+                        <label class="control-label">Utilidad PVP</label>
+                        <input type="number" step="any" class="form-control" name="utilprecio" id="utilprecio" readonly>
+                      </div>
+                    </div>
+                    <div class="col-sm-3">
+                      <div class="form-group">
+                        <label class="control-label">Marg. Público</label>
+                        <input type="number" step="any" class="form-control" name="margenpubl" id="margenpubl" readonly>
+                      </div>
+                    </div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="precioC" id="precioC"></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="precioD" id="precioD"></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="precioE" id="precioE"></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margendes" id="margendes" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margenp1" id="margenp1" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margenp2" id="margenp2" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margendist" id="margendist" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioB" id="utilprecioB" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioC" id="utilprecioC" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioD" id="utilprecioD" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioE" id="utilprecioE" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="comisionV" id="comisionV"></div>
+                    <div class="col-sm-2"><input type="text" class="form-control" name="registrosan" id="registrosan"></div>
                   </div>
                 </div>
               </div>

@@ -45,6 +45,17 @@ $descripcion = isset($_POST["descripcion"]) ? limpiarCadena($_POST["descripcion"
 $imagen = isset($_POST["imagen"]) ? limpiarCadena($_POST["imagen"]) : "";
 $modelo = isset($_POST["modelo"]) ? limpiarCadena($_POST["modelo"]) : "";
 $nserie = isset($_POST["nserie"]) ? limpiarCadena($_POST["nserie"]) : "";
+$placa = isset($_POST["placa"]) ? limpiarCadena($_POST["placa"]) : "";
+$color = isset($_POST["color"]) ? limpiarCadena($_POST["color"]) : "";
+$motor = isset($_POST["motor"]) ? limpiarCadena($_POST["motor"]) : "";
+$permiso_circulacion = isset($_POST["permiso_circulacion"]) ? limpiarCadena($_POST["permiso_circulacion"]) : "";
+$anio_fabricacion = isset($_POST["anio_fabricacion"]) ? limpiarCadena($_POST["anio_fabricacion"]) : "";
+$tipo_vehiculo = isset($_POST["tipo_vehiculo"]) ? limpiarCadena($_POST["tipo_vehiculo"]) : "";
+$clase_vehiculo = isset($_POST["clase_vehiculo"]) ? limpiarCadena($_POST["clase_vehiculo"]) : "";
+$propietario_vehiculo = isset($_POST["propietario_vehiculo"]) ? limpiarCadena($_POST["propietario_vehiculo"]) : "";
+$stockMaximo = isset($_POST["stockMaximo"]) ? limpiarCadena($_POST["stockMaximo"]) : "0";
+$controla_stock = isset($_POST["controla_stock"]) ? limpiarCadena($_POST["controla_stock"]) : "Si";
+$alerta_stock = isset($_POST["alerta_stock"]) ? limpiarCadena($_POST["alerta_stock"]) : "Si";
 
 
 $tipoigv = isset($_POST["tipoigv"]) ? limpiarCadena($_POST["tipoigv"]) : "";
@@ -62,12 +73,33 @@ $almacenDestino = isset($_POST["idsucursal4"]) ? limpiarCadena($_POST["idsucursa
 $productoTrasladar = isset($_POST["idproducto2"]) ? limpiarCadena($_POST["idproducto2"]) : "";
 $productoTraslado = isset($_POST["idproducto3"]) ? limpiarCadena($_POST["idproducto3"]) : "";
 $cantidadTrasladar = isset($_POST["cantidadT"]) ? limpiarCadena($_POST["cantidadT"]) : "";
+$tipo_producto = isset($_POST["tipo_producto"]) ? limpiarCadena($_POST["tipo_producto"]) : "Producto";
 function tienePermiso($modulo, $submodulo, $accion) {
     return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
 }
 
+function obtenerIdCategoriaVehiculo()
+{
+	$categoriaVehiculo = ejecutarConsultaSimpleFila("SELECT idcategoria FROM categoria WHERE UPPER(nombre)='VEHICULO' LIMIT 1");
+
+	if (!empty($categoriaVehiculo) && isset($categoriaVehiculo['idcategoria'])) {
+		return $categoriaVehiculo['idcategoria'];
+	}
+
+	ejecutarConsulta("INSERT INTO categoria (nombre, condicion) VALUES ('VEHICULO', '1')");
+	$categoriaVehiculoNueva = ejecutarConsultaSimpleFila("SELECT idcategoria FROM categoria WHERE UPPER(nombre)='VEHICULO' ORDER BY idcategoria DESC LIMIT 1");
+
+	return isset($categoriaVehiculoNueva['idcategoria']) ? $categoriaVehiculoNueva['idcategoria'] : null;
+}
+
 switch ($_GET["op"]) {
 	case 'guardaryeditar':
+		if (strtolower($tipo_producto) === 'vehiculo') {
+			$idcategoriaVehiculo = obtenerIdCategoriaVehiculo();
+			if (!empty($idcategoriaVehiculo)) {
+				$idcategoria = $idcategoriaVehiculo;
+			}
+		}
 
 		if (!file_exists($_FILES['imagen']['tmp_name']) || !is_uploaded_file($_FILES['imagen']['tmp_name'])) {
 			$imagen = $_POST["imagenactual"];
@@ -79,10 +111,10 @@ switch ($_GET["op"]) {
 			}
 		}
 		if (empty($idproducto)) {
-			$rspta = $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $fabricante, $codigo, strtoupper($nombre), $stock, $stockMinimo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $modelo, $nserie, $tipoigv, $comisionV, $_POST['sucursales']);
+			$rspta = $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $fabricante, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $modelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV, $_POST['sucursales']);
 			echo $rspta ? "Datos registrados correctamente" : "No se pudo completar el registro";
 		} else {
-			$rspta = $producto->editar($idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $fabricante, $codigo, $nombre, $stock, $stockMinimo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $modelo, $nserie, $tipoigv, $comisionV);
+			$rspta = $producto->editar($idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $fabricante, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $modelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV);
 			echo $rspta ? "Datos actualizados" : "No se pudo actualizar";
 		}
 		break;

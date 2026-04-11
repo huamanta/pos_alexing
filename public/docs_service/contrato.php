@@ -35,7 +35,11 @@ $nombreTipoAcompanante = $resultVenta['nombre_tipo_acompanante'] ?? '';
 
 $sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $resultVenta['idsucursal'];
 $resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
-
+$idSucursal = $resultVenta['idsucursal'] ?? 0;
+if (!$idSucursal) {
+    $idSucursal = $resultSucursal['idsucursal'] ?? 0; // Valor por defecto si no se encuentra la sucursal
+}
+$currency = $helpers->getCurrencyCode($idSucursal);
 
 
 // Generación PDF con mPDF (server-side)
@@ -44,10 +48,12 @@ $dniGarante = $resultVenta['num_documento_garante'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // seleccionar detalle de la venta
-$sqlDetalle = "SELECT dv.*, p.fabricante, p.modelo, p.numserie, p.nombre AS producto_nombre
+$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, p.fabricante AS marca, p.modelo, p.color,
+                       p.numserie AS serie, p.motor, p.anio_fabricacion AS anio, p.placa,
+                       p.clase_vehiculo AS clase, p.tipo_vehiculo
                 FROM detalle_venta dv
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto
-                LEFT JOIN producto p ON pg.idproducto = p.idproducto
+          LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
+          LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
                 WHERE dv.idventa = $idVenta";
 $resultDetalle = ejecutarConsulta($sqlDetalle);
 
@@ -56,6 +62,15 @@ foreach ($resultDetalle as $row) {
     $data[] = [
         "idproducto" => $row['idproducto'],
         'nombre' => $row['producto_nombre'] ?? 'N/A',
+        'marca' => $row['marca'] ?? 'N/A',
+        'modelo' => $row['modelo'] ?? 'N/A',
+        'color' => $row['color'] ?? 'N/A',
+        'serie' => $row['serie'] ?? 'N/A',
+        'motor' => $row['motor'] ?? 'N/A',
+        'anio' => $row['anio'] ?? 'N/A',
+        'placa' => $row['placa'] ?? 'NUEVO',
+        'clase' => $row['clase'] ?? 'N/A',
+        'tipo_vehiculo' => $row['tipo_vehiculo'] ?? 'N/A',
         "cantidad" => $row['cantidad'],
         "precio_venta" => $row['precio_venta'],
         "descuento" => $row['descuento']
@@ -250,10 +265,10 @@ ob_start();
         ley; asimismo el alquiler-venta se hace Ad-Corpus.</p>
 
     <p><b class="clausula">CUARTO.-</b> El PRECIO FINAL pactado por ambas partes por la venta del vehículo MOTOCICLETA descrito en la
-        cláusula primera, es de <b><?php echo $helpers->monedaFormt($total); ?></b> (
-        <b><?php echo $helpers->numeroALetrasMoneda($total); ?></b> ), suma que el COMPRADOR abonará
-        al VENDEDOR en su totalidad de <b><?php echo $helpers->monedaFormt($total); ?></b> (
-        <b><?php echo $helpers->numeroALetrasMoneda($total); ?></b> ), importe que deberá ser
+        cláusula primera, es de <b><?php echo $helpers->monedaFormt($total, $currency); ?></b> (
+        <b><?php echo $helpers->numeroALetrasMoneda($total, $currency); ?></b> ), suma que el COMPRADOR abonará
+        al VENDEDOR en su totalidad de <b><?php echo $helpers->monedaFormt($total, $currency); ?></b> (
+        <b><?php echo $helpers->numeroALetrasMoneda($total, $currency); ?></b> ), importe que deberá ser
         cancelado en moneda nacional y en efectivo; asimismo, EL VENDEDOR, se le entregará un recibo por el importe
         pactado.
     </p>

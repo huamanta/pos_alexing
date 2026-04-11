@@ -12,7 +12,6 @@ FROM datos_negocio
 ORDER BY id_negocio ASC 
 LIMIT 1";
 $resultNegocio = ejecutarConsultaSimpleFila($sqlNegocio);
-
 $sqlVenta = "SELECT v.*, ta.nombre AS nombre_tipo_acompanante, a.nombre AS nombre_acompanante, p.nombre AS nombre_cliente, p.num_documento AS num_documento_cliente, p.direccion AS direccion_cliente, p.telefono AS telefono_cliente, g.nombre AS nombre_garante, g.num_documento AS num_documento_garante 
              FROM venta v 
              INNER JOIN persona p ON v.idcliente = p.idpersona 
@@ -35,28 +34,52 @@ $nombreTipoAcompanante = $resultVenta['nombre_tipo_acompanante'] ?? '';
 
 $sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $resultVenta['idsucursal'];
 $resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
-
+$idSucursal = $resultVenta['idsucursal'] ?? 0;
+if (!$idSucursal) {
+    $idSucursal = $resultSucursal['idsucursal'] ?? 0; // Valor por defecto si no se encuentra la sucursal
+}
+$currency = $helpers->getCurrencyCode($idSucursal);
 
 
 // Generación PDF con mPDF (server-side)
 $garante = $resultVenta['nombre_garante'] ?? '';
 $dniGarante = $resultVenta['num_documento_garante'] ?? '';
+$simbolo = $resultSucursal['moneda'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // seleccionar detalle de la venta
-$sqlDetalle = "SELECT * FROM detalle_venta dv INNER JOIN producto p ON dv.idproducto = p.idproducto WHERE dv.idventa = $idVenta";
+$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, p.fabricante AS marca, p.modelo, p.color,
+              p.numserie AS serie, p.motor, p.anio_fabricacion AS anio, p.placa,
+              p.clase_vehiculo AS clase, p.tipo_vehiculo
+          FROM detalle_venta dv
+          LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
+          LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
+          WHERE dv.idventa = $idVenta";
 $resultDetalle = ejecutarConsulta($sqlDetalle);
+
+$monto = $helpers->monedaFormt($_GET["monto"] ?? '0.00', $currency);
 
 $data = [];
 foreach ($resultDetalle as $row) {
     $data[] = [
         "idproducto" => $row['idproducto'],
-        'nombre' => $row['nombre_producto'],
+        'nombre' => $row['producto_nombre'] ?? 'N/A',
+        'marca' => $row['marca'] ?? 'N/A',
+        'modelo' => $row['modelo'] ?? 'N/A',
+        'color' => $row['color'] ?? 'N/A',
+        'serie' => $row['serie'] ?? 'N/A',
+        'motor' => $row['motor'] ?? 'N/A',
+        'anio' => $row['anio'] ?? 'N/A',
+        'placa' => $row['placa'] ?? 'NUEVO',
+        'clase' => $row['clase'] ?? 'N/A',
+        'tipo_vehiculo' => $row['tipo_vehiculo'] ?? 'N/A',
         "cantidad" => $row['cantidad'],
         "precio_venta" => $row['precio_venta'],
         "descuento" => $row['descuento']
     ];
 }
+
+$item = $data[0] ?? [];
 
 $cuota = "619.00";
 
@@ -276,7 +299,7 @@ ob_start();
     <p>
         <b class="clausula">SEGUNDO.-</b>
         El precio pactado por la COMPRA – VENTA del vehículo a que se refiere la
-        cláusula anterior es de S/ 0.00 ( CON 00/100 SOLES) cancelado en su totalidad, donde se
+        cláusula anterior es de <?php echo $monto ?? '0.00'; ?> ( <?php echo $helpers->numeroALetrasMoneda($total, $currency); ?>) cancelado en su totalidad, donde se
         firmará todo los documentos de acuerdo a Ley del vehículo por su cancelación.
     </p>
     <br>

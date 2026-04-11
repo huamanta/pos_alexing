@@ -176,6 +176,29 @@ function seleccionarCategoria(nombre, idcategoria) {
   $("#idcategoria").val(idcategoria);
   $("#idcategoria").select2("");
 }
+
+function obtenerIdCategoriaVehiculoEnSelect() {
+  let idVehiculo = "";
+  $("#idcategoria option").each(function () {
+    const texto = (($(this).text() || "") + "").trim().toUpperCase();
+    if (texto === "VEHICULO") {
+      idVehiculo = $(this).val();
+      return false;
+    }
+  });
+  return idVehiculo;
+}
+
+function sincronizarTipoProductoConCategoria() {
+  const idSeleccionado = (("" + $("#idcategoria").val()) || "").trim();
+  const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
+
+  if (idVehiculo && idSeleccionado === idVehiculo) {
+    $("#tipo_producto").val("Vehiculo");
+  } else {
+    $("#tipo_producto").val("Producto");
+  }
+}
 //Función limpiar
 function limpiar() {
   $("#codigo").val("");
@@ -216,6 +239,17 @@ function limpiar() {
   $("#fabricante").val("");
   $("#modelo").val("");
   $("#nserie").val("");
+  $("#placa").val("");
+  $("#color").val("");
+  $("#motor").val("");
+  $("#permiso_circulacion").val("");
+  $("#anio_fabricacion").val("");
+  $("#tipo_vehiculo").val("");
+  $("#clase_vehiculo").val("");
+  $("#propietario_vehiculo").val("");
+  $("#stockMaximo").val("0");
+  $("#controla_stock").val("Si");
+  $("#alerta_stock").val("Si");
   $("#porc").val("");
   $("#precioCompra").val("");
   $("#margenUtilidad").val("");
@@ -344,6 +378,7 @@ function mostrar(idproducto) {
 
       $("#idsucursal").val(data.idsucursal).select2("");
       $("#idcategoria").val(data.idcategoria).select2("");
+      sincronizarTipoProductoConCategoria();
       $("#idunidad_medida").val(data.idunidad_medida).select2("");
       $("#idrubro").val(data.idrubro).select2("");
       $("#idcondicionventa").val(data.idcondicionventa).select2("");
@@ -377,6 +412,17 @@ function mostrar(idproducto) {
       $("#idproducto").val(data.idproducto);
       $("#modelo").val(data.modelo);
       $("#nserie").val(data.numserie);
+      $("#placa").val(data.placa || "");
+      $("#color").val(data.color || "");
+      $("#motor").val(data.motor || "");
+      $("#permiso_circulacion").val(data.permiso_circulacion || "");
+      $("#anio_fabricacion").val(data.anio_fabricacion || "");
+      $("#tipo_vehiculo").val(data.tipo_vehiculo || "");
+      $("#clase_vehiculo").val(data.clase_vehiculo || "");
+      $("#propietario_vehiculo").val(data.propietario_vehiculo || "");
+      $("#stockMaximo").val(data.stock_maximo || "0");
+      $("#controla_stock").val(data.controla_stock || "Si");
+      $("#alerta_stock").val(data.alerta_stock || "Si");
       $("#tipoigv").val(data.proigv);
       $("#comisionV").val(data.comisionV);
       generarbarcode();
@@ -565,6 +611,13 @@ function guardaryeditar(e) {
 
   var btnGuardar = $("#btnGuardarP");
 
+  if ($("#tipo_producto").val() === "Vehiculo") {
+    const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
+    if (idVehiculo) {
+      $("#idcategoria").val(idVehiculo).trigger("change");
+    }
+  }
+
   // Verificar si el botón ya está deshabilitado
   if (btnGuardar.prop("disabled")) {
     return;
@@ -646,6 +699,7 @@ function nuevo() {
   $("#myModal").modal("show");
   limpiarFormulario();
   limpiarProducto();
+  $("#tipo_producto").val("Producto");
 
   var idsucursalSeleccionada = $("#idsucursal2").val();
   $("#idsucursal2").val(idsucursalSeleccionada); 
@@ -701,9 +755,25 @@ function limpiarProducto() {
   $("#idproducto").val("");
   $("#idcategoria").val("");
   $("#idcategoria").select2("");
+  $("#tipo_producto").val("Producto");
   $("#imagenmuestra").attr("src", "files/productos/anonymous.png");
   $("#imagenactual").val("anonymous.png");
 }
+
+$(document).on("change", "#idcategoria", function () {
+  sincronizarTipoProductoConCategoria();
+});
+
+$(document).on("change", "#tipo_producto", function () {
+  if ($(this).val() !== "Vehiculo") {
+    return;
+  }
+
+  const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
+  if (idVehiculo) {
+    $("#idcategoria").val(idVehiculo).trigger("change");
+  }
+});
 
 function trasladarProducto(e) {
   e.preventDefault(); //no se activara la accion predeterminada

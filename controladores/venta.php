@@ -1614,12 +1614,12 @@ switch ($_GET["op"]) {
 				'unidadmedida' => $reg->unidadmedida,
 				"stock" => (($reg->stock == 0)
 					? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
-					: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ',\'' . $reg->unidadmedida . '\')"><span class="fa fa-shopping-cart"></span></a>'),
+				: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . addslashes($reg->nombre) . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ',\'' . $reg->unidadmedida . '\',undefined,\'' . addslashes($reg->fabricante ?? '') . '\',\'' . addslashes($reg->modelo ?? '') . '\',\'' . addslashes($reg->color ?? '') . '\')"><span class="fa fa-shopping-cart"></span></a>'),
 
-				"product" => "
-				<div style='display: flex; align-items: center; gap: 6px;'>
-				    <!-- Imagen -->
-				    <img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->fabricante . "\",\"" . $reg->descripcion . "\")' 
+			"product" => "
+			<div style='display: flex; align-items: center; gap: 6px;'>
+			    <!-- Imagen -->
+			    <img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->fabricante . "\",\"" . $reg->descripcion . "\")' 
 				         src='files/productos/" . $reg->imagen . "' 
 				         height='35px' width='35px' 
 				         style='border-radius: 6px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);'>
@@ -1630,6 +1630,9 @@ switch ($_GET["op"]) {
 				        <span style='font-weight:bold; font-size:12px; display:block; color:#222;'>
 				            " . wordwrap($reg->nombre, 30, "<br>", true) . "
 				        </span>
+				        " . ($reg->fabricante ? "<span style='font-size:10px; display:block; color:#555;'>Marca: <strong>" . htmlspecialchars($reg->fabricante) . "</strong></span>" : "") . "
+				        " . ($reg->modelo ? "<span style='font-size:10px; display:block; color:#555;'>Modelo: " . htmlspecialchars($reg->modelo) . "</span>" : "") . "
+				        " . ($reg->color ? "<span style='font-size:10px; display:block; color:#555;'>Color: " . htmlspecialchars($reg->color) . "</span>" : "") . "
 				        
 				        <!-- Cantidad contenedor -->
 				        <span style='font-size:10px; background:#28a745; color:#fff; padding:2px 6px; border-radius:6px; display:inline-block; margin:2px 0;'>
@@ -1690,7 +1693,10 @@ switch ($_GET["op"]) {
 	                    \'' . addslashes($reg->contenedor) . '\',
 	                    ' . $reg->idcategoria . ',
 	                    \'' . addslashes($reg->unidadmedida) . '\',
-	                    ' . $reg->id_fifo . '
+	                    ' . $reg->id_fifo . ',
+	                    \'' . addslashes($reg->fabricante ?? '') . '\',
+	                    \'' . addslashes($reg->modelo ?? '') . '\',
+	                    \'' . addslashes($reg->color ?? '') . '\'
 	                )">
 	                <span class="fa fa-shopping-cart"></span>
 	            </a>';
@@ -1718,6 +1724,9 @@ switch ($_GET["op"]) {
 	                    <span style='font-weight:bold; font-size:12px; display:block;'>
 	                        " . wordwrap($reg->nombre, 30, "<br>", true) . "
 	                    </span>
+	                    " . ($reg->fabricante ? "<span style='font-size:10px; display:block; color:#555;'>Marca: <strong>" . htmlspecialchars($reg->fabricante) . "</strong></span>" : "") . "
+	                    " . ($reg->modelo ? "<span style='font-size:10px; display:block; color:#555;'>Modelo: " . htmlspecialchars($reg->modelo) . "</span>" : "") . "
+	                    " . ($reg->color ? "<span style='font-size:10px; display:block; color:#555;'>Color: " . htmlspecialchars($reg->color) . "</span>" : "") . "
 	                    <span style='font-size:10px; background:#28a745; color:#fff;
 	                          padding:2px 6px; border-radius:6px; display:inline-block; margin:2px 0;'>
 	                        " . $reg->cantidad_contenedor . " Und.

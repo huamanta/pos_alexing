@@ -624,7 +624,7 @@ $("#tipopago").change(function () {
     document.getElementById("input_frecuencia").selectedIndex = 0;
     $("#numeroMeses").val("");
     $("#inputInteres").val("0");
-    $("#fechaOperacion").val("");
+    $("#fechaOperacion").val(obtenerFechaHoyISO());
 
     $("#n0").show();
     $("#b1").show();
@@ -2601,6 +2601,9 @@ function agregarDetalle(
   idcategoria,
   unidadmedida,
   id_detalle_compra_lote,
+  fabricante = "",
+  modelo = "",
+  color = "",
 ) {
 
   if (precio_venta == 0) {
@@ -2822,6 +2825,12 @@ function agregarDetalle(
         'oninput="autoResize(this)" onfocus="this.select()" ' +
         'style="font-weight:bold;width:300px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:1.2;">' +
         producto +
+        (fabricante || modelo || color
+          ? ' ' +
+            (fabricante ? fabricante + ' ' : '') +
+            (modelo     ? modelo     + ' ' : '') +
+            (color      ? color            : '')
+          : '') +
         '</textarea>' +
 
         '</div>' +
@@ -3223,6 +3232,14 @@ function validarDatos({ cuotas, frecuencia, deuda }) {
   return true;
 }
 
+function obtenerFechaHoyISO() {
+  const hoy = new Date();
+  const yyyy = hoy.getFullYear();
+  const mm = ("0" + (hoy.getMonth() + 1)).slice(-2);
+  const dd = ("0" + hoy.getDate()).slice(-2);
+  return yyyy + "-" + mm + "-" + dd;
+}
+
 $("#calcular_cuotas").click(function (e) {
   e.preventDefault();
 
@@ -3231,12 +3248,18 @@ $("#calcular_cuotas").click(function (e) {
     calcularCuotasDesdeNumeroMeses();
   }
 
+  let fechaOperacion = (("" + $("#fechaOperacion").val()) || "").trim();
+  if (!fechaOperacion) {
+    fechaOperacion = obtenerFechaHoyISO();
+    $("#fechaOperacion").val(fechaOperacion);
+  }
+
   let data = {
     cuotas: parseInt($("#input_cuotas").val()),
     frecuencia: parseInt($("#input_frecuencia").val()),
     interes: parseFloat($("#inputInteres").val()),
     deuda: parseFloat($("#montoDeuda").val()),
-    fechaBase: new Date($("#fechaOperacion").val())
+    fechaBase: new Date(fechaOperacion)
   };
 
   if (!validarDatos(data)) return;

@@ -57,15 +57,19 @@ $dniGarante = $resultVenta['num_documento_garante'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // Detalle del vehículo vendido
-$sqlDetalle = "SELECT dv.*, p.fabricante, p.modelo, p.numserie, p.nombre AS producto_nombre
+$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, p.fabricante AS marca, p.modelo, p.color,
+                       p.numserie AS serie, p.motor, p.anio_fabricacion AS anio, p.placa,
+                       p.clase_vehiculo AS clase, p.tipo_vehiculo
                 FROM detalle_venta dv
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto
-                LEFT JOIN producto p ON pg.idproducto = p.idproducto
+                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
+                LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
                 WHERE dv.idventa = $idVenta";
 $resultDetalle = ejecutarConsultaSimpleFila($sqlDetalle);
-$marcaProducto = !empty($resultDetalle['fabricante']) ? $resultDetalle['fabricante'] : '__________';
+$marcaProducto = !empty($resultDetalle['marca']) ? $resultDetalle['marca'] : '__________';
 $modeloProducto = !empty($resultDetalle['modelo']) ? $resultDetalle['modelo'] : '__________';
-$serieProducto = !empty($resultDetalle['numserie']) ? $resultDetalle['numserie'] : '__________';
+$serieProducto = !empty($resultDetalle['serie']) ? $resultDetalle['serie'] : '__________';
+$colorProducto = !empty($resultDetalle['color']) ? $resultDetalle['color'] : '__________';
+$placaProducto = !empty($resultDetalle['placa']) ? $resultDetalle['placa'] : '__________';
 
 // Cuotas y fechas de inicio/fin
 $sqlCuotas = "SELECT deuda, MIN(fechavencimiento) AS fecha_inicio_cuota, MAX(fechavencimiento) AS fecha_fin_cuota
@@ -306,8 +310,8 @@ ob_start();
         <strong><?php echo strtoupper($resultDetalle['producto_nombre'] ?? 'TRIMOTO DE PASAJEROS'); ?></strong>;
         MARCA <strong><?php echo strtoupper($marcaProducto); ?></strong>;
         MODELO <strong><?php echo strtoupper($modeloProducto); ?></strong>;
-        COLOR <strong>__________</strong>;
-        PLACA <strong>__________</strong>;
+        COLOR <strong><?php echo strtoupper($colorProducto); ?></strong>;
+        PLACA <strong><?php echo strtoupper($placaProducto); ?></strong>;
         SERIE <strong><?php echo strtoupper($serieProducto); ?></strong>. LA(S) MISMA(S) QUE QUEDARA(N)
         EN GARANTIA HASTA LA CANCELACION DE MI DEUDA EN UN PLAZO MAXIMO DE <strong>03 DIAS</strong>.
     </p>

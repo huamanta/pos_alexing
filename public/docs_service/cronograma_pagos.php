@@ -57,6 +57,11 @@ $direccionGarante = $resultVenta['direccion_garante'] ?? '';
 
 $sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $resultVenta['idsucursal'];
 $resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
+$idSucursal = $resultVenta['idsucursal'] ?? 0;
+if (!$idSucursal) {
+    $idSucursal = $resultSucursal['idsucursal'] ?? 0; // Valor por defecto si no se encuentra la sucursal
+}
+$currency = $helpers->getCurrencyCode($idSucursal);
 
 // Generación PDF con mPDF (server-side)
 $garante = $resultVenta['nombre_garante'] ?? '';
@@ -64,10 +69,12 @@ $dniGarante = $resultVenta['num_documento_garante'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // Detalle del vehículo vendido
-$sqlDetalle = "SELECT dv.*, p.fabricante, p.modelo, p.numserie, p.nombre AS producto_nombre
+$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, p.fabricante AS marca, p.modelo, p.color,
+                       p.numserie AS serie, p.motor, p.anio_fabricacion AS anio, p.placa,
+                       p.clase_vehiculo AS clase, p.tipo_vehiculo
                 FROM detalle_venta dv
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto
-                LEFT JOIN producto p ON pg.idproducto = p.idproducto
+                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
+                LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
                 WHERE dv.idventa = $idVenta";
 $resultDetalle = ejecutarConsulta($sqlDetalle);
 
@@ -340,12 +347,12 @@ ob_start();
             <table class="table-info">
                 <tr>
                     <td><strong>Monto Total:</strong>
-                        <?php echo $helpers->monedaFormt($resultVenta['total_venta'] ?? 0, $resultSucursal['simbolo']); ?>
+                        <?php echo $helpers->monedaFormt($resultVenta['total_venta'] ?? 0, $currency); ?>
                     </td>
                     <td><strong>Inicial:</strong>
-                        <?php echo $helpers->monedaFormt(($resultVenta['totalrecibido'] ?? 0) + ($resultVenta['totaldeposito'] ?? 0), $resultSucursal['simbolo']); ?>
+                        <?php echo $helpers->monedaFormt(($resultVenta['totalrecibido'] ?? 0) + ($resultVenta['totaldeposito'] ?? 0), $currency); ?>
                     </td>
-                    <td><strong>Capital:</strong> <?php echo $helpers->monedaFormt(0, $resultSucursal['simbolo']); ?>
+                    <td><strong>Capital:</strong> <?php echo $helpers->monedaFormt(0, $currency); ?>
                     </td>
                 </tr>
             </table>
@@ -449,10 +456,10 @@ ob_start();
                     echo '<td>' . ($row['fechavencimiento'] ?? '-') . '</td>';
                     echo '<td>' . ($row['fecha_hora'] ?? '-') . '</td>';
                     echo '<td>-</td>';
-                    echo '<td>' . $helpers->monedaFormt($deuda, $resultSucursal['simbolo']) . '</td>';
-                    echo '<td>' . $helpers->monedaFormt($mora, $resultSucursal['simbolo']) . '</td>';
-                    echo '<td>' . $helpers->monedaFormt($totalFilaPendiente, $resultSucursal['simbolo']) . '</td>';
-                    echo '<td>' . $helpers->monedaFormt($abonototal, $resultSucursal['simbolo']) . '</td>';
+                    echo '<td>' . $helpers->monedaFormt($deuda, $currency) . '</td>';
+                    echo '<td>' . $helpers->monedaFormt($mora, $currency) . '</td>';
+                    echo '<td>' . $helpers->monedaFormt($totalFilaPendiente, $currency) . '</td>';
+                    echo '<td>' . $helpers->monedaFormt($abonototal, $currency) . '</td>';
                     echo '</tr>';
                 }
 
@@ -467,10 +474,10 @@ ob_start();
             <tr>
                 <td><strong>Letras atrasadas:</strong> <?php echo number_format($cantidadLetrasAtrasadas, 0); ?></td>
                 <td><strong>Monto atrasado:</strong>
-                    <?php echo $helpers->monedaFormt($montoAtrasado, $resultSucursal['simbolo']); ?></td>
+                    <?php echo $helpers->monedaFormt($montoAtrasado, $currency); ?></td>
                 <td><strong>Letras pendientes:</strong> <?php echo number_format($cantidadLetrasPendientes, 0); ?></td>
                 <td><strong>Total pendiente:</strong>
-                    <?php echo $helpers->monedaFormt($montoTotalPendiente, $resultSucursal['simbolo']); ?></td>
+                    <?php echo $helpers->monedaFormt($montoTotalPendiente, $currency); ?></td>
             </tr>
         </table>
 
@@ -486,17 +493,17 @@ ob_start();
             </tr>
             <tr>
                 <td><strong>Monto Pagado:</strong></td>
-                <td><?php echo $helpers->monedaFormt($montoPagado, $resultSucursal['simbolo']); ?></td>
-                <td><?php echo $helpers->monedaFormt($interesPagado, $resultSucursal['simbolo']); ?></td>
-                <td><?php echo $helpers->monedaFormt($descuentoPagado, $resultSucursal['simbolo']); ?></td>
-                <td><?php echo $helpers->monedaFormt($totalPagado, $resultSucursal['simbolo']); ?></td>
+                <td><?php echo $helpers->monedaFormt($montoPagado, $currency); ?></td>
+                <td><?php echo $helpers->monedaFormt($interesPagado, $currency); ?></td>
+                <td><?php echo $helpers->monedaFormt($descuentoPagado, $currency); ?></td>
+                <td><?php echo $helpers->monedaFormt($totalPagado, $currency); ?></td>
             </tr>
             <tr>
                 <td><strong>Saldo x pagar:</strong></td>
-                <td><?php echo $helpers->monedaFormt($saldoMonto, $resultSucursal['simbolo']); ?></td>
-                <td><?php echo $helpers->monedaFormt($saldoInteres, $resultSucursal['simbolo']); ?></td>
-                <td><?php echo $helpers->monedaFormt($saldoDescuento, $resultSucursal['simbolo']); ?></td>
-                <td><?php echo $helpers->monedaFormt($totalSaldo, $resultSucursal['simbolo']); ?></td>
+                <td><?php echo $helpers->monedaFormt($saldoMonto, $currency); ?></td>
+                <td><?php echo $helpers->monedaFormt($saldoInteres, $currency); ?></td>
+                <td><?php echo $helpers->monedaFormt($saldoDescuento, $currency); ?></td>
+                <td><?php echo $helpers->monedaFormt($totalSaldo, $currency); ?></td>
             </tr>
         </table>
 

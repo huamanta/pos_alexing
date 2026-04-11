@@ -49,6 +49,11 @@ $direccionGarante = $resultVenta['direccion_garante'] ?? '';
 
 $sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $resultVenta['idsucursal'];
 $resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
+$idSucursal = $resultVenta['idsucursal'] ?? 0;
+if (!$idSucursal) {
+    $idSucursal = $resultSucursal['idsucursal'] ?? 0; // Valor por defecto si no se encuentra la sucursal
+}
+$currency = $helpers->getCurrencyCode($idSucursal);
 
 
 // Generación PDF con mPDF (server-side)
@@ -57,16 +62,22 @@ $dniGarante = $resultVenta['num_documento_garante'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // Detalle del vehículo vendido
-$sqlDetalle = "SELECT dv.*, p.fabricante, p.modelo, p.numserie, p.nombre AS producto_nombre
+$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, p.fabricante AS marca, p.modelo, p.color,
+                       p.numserie AS serie, p.motor, p.anio_fabricacion AS anio, p.placa,
+                       p.clase_vehiculo AS clase, p.tipo_vehiculo
                 FROM detalle_venta dv
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto
-                LEFT JOIN producto p ON pg.idproducto = p.idproducto
+                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
+                LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
                 WHERE dv.idventa = $idVenta";
 
 $resultDetalle = ejecutarConsultaSimpleFila($sqlDetalle);
-$marcaProducto = !empty($resultDetalle['fabricante']) ? $resultDetalle['fabricante'] : '__________';
+$marcaProducto = !empty($resultDetalle['marca']) ? $resultDetalle['marca'] : '__________';
 $modeloProducto = !empty($resultDetalle['modelo']) ? $resultDetalle['modelo'] : '__________';
-$serieProducto = !empty($resultDetalle['numserie']) ? $resultDetalle['numserie'] : '__________';
+$serieProducto = !empty($resultDetalle['serie']) ? $resultDetalle['serie'] : '__________';
+$colorProducto = !empty($resultDetalle['color']) ? $resultDetalle['color'] : '__________';
+$motorProducto = !empty($resultDetalle['motor']) ? $resultDetalle['motor'] : '__________';
+$anioProducto = !empty($resultDetalle['anio']) ? $resultDetalle['anio'] : '__________';
+$placaProducto = !empty($resultDetalle['placa']) ? $resultDetalle['placa'] : '__________';
 
 // Cuotas y fechas de inicio/fin
 $sqlCuotas = "SELECT deuda, MIN(fechavencimiento) AS fecha_inicio_cuota, MAX(fechavencimiento) AS fecha_fin_cuota
@@ -293,8 +304,8 @@ ob_start();
         <strong><?php echo $fechaInicio; ?></strong> y finaliza indefectiblemente el
         <strong><?php echo $fechaFin; ?></strong> sin necesidad de aviso previo con una cuota
         <?php echo $frecuenciaTexto; ?> de
-        <strong><?php echo $helpers->monedaFormt($montoCuota); ?>
-            (<?php echo $helpers->numeroALetrasMoneda($montoCuota); ?>)</strong>.
+        <strong><?php echo $helpers->monedaFormt($montoCuota, $currency); ?>
+            (<?php echo $helpers->numeroALetrasMoneda($montoCuota, $currency); ?>)</strong>.
         Dicho vehículo cuenta con las siguientes características:
     </p>
 
@@ -304,7 +315,7 @@ ob_start();
             <td>Clase</td>
             <td>:<?php echo strtoupper($resultDetalle['nombre_producto'] ?? 'TRIMOTO DE PASAJEROS'); ?></td>
             <td>COLOR</td>
-            <td>:__________</td>
+            <td>:<?php echo strtoupper($colorProducto); ?></td>
         </tr>
         <tr>
             <td>Marca</td>
@@ -316,13 +327,13 @@ ob_start();
             <td>Modelo</td>
             <td>:<?php echo strtoupper($modeloProducto); ?></td>
             <td>Nº Motor</td>
-            <td>:__________</td>
+            <td>:<?php echo strtoupper($motorProducto); ?></td>
         </tr>
         <tr>
             <td>Año</td>
-            <td>:__________</td>
+            <td>:<?php echo strtoupper($anioProducto); ?></td>
             <td>Placa</td>
-            <td>:__________</td>
+            <td>:<?php echo strtoupper($placaProducto); ?></td>
         </tr>
     </table>
     <p>
@@ -559,8 +570,8 @@ ob_start();
         condiciones que fue recibido y todos los
         documentos
         dados a mi custodia, con el simple requerimiento verbal o mediante carta notarial, asimismo, pagar en calidad de
-        penalidad compensatorio un importe ascendente a <?php echo $helpers->monedaFormt(35); ?>
-        (<?php echo $helpers->numeroALetrasMoneda(35); ?>), por cada día de demora
+        penalidad compensatorio un importe ascendente a <?php echo $helpers->monedaFormt(35, $currency); ?>
+        (<?php echo $helpers->numeroALetrasMoneda(35, $currency); ?>), por cada día de demora
         en la
         entrega del vehículo trimovil. De igual forma, faculto a la empresa
         <strong><?php echo strtoupper($resultNegocio['nombre']); ?></strong>, en caso de

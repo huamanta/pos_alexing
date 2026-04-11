@@ -9,7 +9,7 @@ class Producto
 	public function __construct() {}
 
 	//Implementamos un método para insertar registros
-	public function insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $fabricante, $codigo, $nombre, $stock, $stockMinimo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $modelo, $nserie, $tipoigv, $comisionV, $sucursales)
+	public function insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $fabricante, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $modelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV, $sucursales)
 	{
 		if ($codigo == "") {
 			$codigo = "SIN CODIGO";
@@ -20,8 +20,8 @@ class Producto
 
 		while ($num_elementos < count($sucursales)) {
 
-			$sql = "INSERT INTO producto (idsucursal,idcategoria,idunidad_medida,idrubro,idcondicionventa,registrosan,fabricante,codigo,nombre,stock,stock_minimo,precio,preciocigv,precioB,precioC,precioD,precioE,margenpubl,margendes,margenp1,margenp2,margendist,utilprecio,utilprecioB,utilprecioC,utilprecioD,utilprecioE,precio_compra,fecha,descripcion,imagen,modelo,numserie,proigv,comisionV,condicion)
-			VALUES ('$sucursales[$num_elementos]','$idcategoria','$idunidad_medida','$idrubro','$idcondicionventa','$registrosan','$fabricante','$codigo','$nombre','$stock','$stockMinimo','$precio','$preciocigv','$precioB','$precioC','$precioD','$precioE','$margenpubl','$margendes','$margenp1','$margenp2','$margendist','$utilprecio','$utilprecioB','$utilprecioC','$utilprecioD','$utilprecioE','$precioCompra','$fecha','$descripcion','$imagen','$modelo','$nserie','$tipoigv','$comisionV','1')";
+			$sql = "INSERT INTO producto (idsucursal,idcategoria,idunidad_medida,idrubro,idcondicionventa,registrosan,fabricante,codigo,nombre,stock,stock_minimo,stock_maximo,precio,preciocigv,precioB,precioC,precioD,precioE,margenpubl,margendes,margenp1,margenp2,margendist,utilprecio,utilprecioB,utilprecioC,utilprecioD,utilprecioE,precio_compra,fecha,descripcion,imagen,modelo,numserie,placa,color,motor,permiso_circulacion,anio_fabricacion,tipo_vehiculo,clase_vehiculo,propietario_vehiculo,controla_stock,alerta_stock,proigv,comisionV,condicion)
+			VALUES ('$sucursales[$num_elementos]','$idcategoria','$idunidad_medida','$idrubro','$idcondicionventa','$registrosan','$fabricante','$codigo','$nombre','$stock','$stockMinimo','$stockMaximo','$precio','$preciocigv','$precioB','$precioC','$precioD','$precioE','$margenpubl','$margendes','$margenp1','$margenp2','$margendist','$utilprecio','$utilprecioB','$utilprecioC','$utilprecioD','$utilprecioE','$precioCompra','$fecha','$descripcion','$imagen','$modelo','$nserie','$placa','$color','$motor','$permiso_circulacion','$anio_fabricacion','$tipo_vehiculo','$clase_vehiculo','$propietario_vehiculo','$controla_stock','$alerta_stock','$tipoigv','$comisionV','1')";
 			$idproducto = ejecutarConsulta_retornarID($sql);
 			$idproducto or $sw = false;
 			$sql1 = "INSERT INTO producto_configuracion (codigo_extra, contenedor, cantidad_contenedor, precio_venta, precio_promocion, idproducto) 
@@ -34,9 +34,9 @@ class Producto
 	}
 
 	//Implementamos un método para editar registros
-	public function editar($idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $fabricante, $codigo, $nombre, $stock, $stockMinimo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $modelo, $nserie, $tipoigv, $comisionV)
+	public function editar($idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $fabricante, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $modelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV)
 	{
-		$sql = "UPDATE producto SET idsucursal='$idsucursal',idcategoria='$idcategoria',idunidad_medida='$idunidad_medida',idrubro='$idrubro',idcondicionventa='$idcondicionventa',registrosan='$registrosan',fabricante='$fabricante',codigo='$codigo',nombre='$nombre',stock='$stock',stock_minimo='$stockMinimo',precio='$precio',preciocigv='$preciocigv',comisionV='$comisionV',precioB='$precioB',precioC='$precioC',precioD='$precioD',precioE='$precioE',margenpubl='$margenpubl',margendes='$margendes',margenp1='$margenp1',margenp2='$margenp2',margendist='$margendist',utilprecio='$utilprecio',utilprecioB='$utilprecioB',utilprecioC='$utilprecioC',utilprecioD='$utilprecioD',utilprecioE='$utilprecioE',precio_compra='$precioCompra',fecha='$fecha',descripcion='$descripcion', modelo='$modelo', numserie='$nserie',proigv='$tipoigv',imagen='$imagen' WHERE idproducto='$idproducto'";
+		$sql = "UPDATE producto SET idsucursal='$idsucursal',idcategoria='$idcategoria',idunidad_medida='$idunidad_medida',idrubro='$idrubro',idcondicionventa='$idcondicionventa',registrosan='$registrosan',fabricante='$fabricante',codigo='$codigo',nombre='$nombre',stock='$stock',stock_minimo='$stockMinimo',stock_maximo='$stockMaximo',precio='$precio',preciocigv='$preciocigv',comisionV='$comisionV',precioB='$precioB',precioC='$precioC',precioD='$precioD',precioE='$precioE',margenpubl='$margenpubl',margendes='$margendes',margenp1='$margenp1',margenp2='$margenp2',margendist='$margendist',utilprecio='$utilprecio',utilprecioB='$utilprecioB',utilprecioC='$utilprecioC',utilprecioD='$utilprecioD',utilprecioE='$utilprecioE',precio_compra='$precioCompra',fecha='$fecha',descripcion='$descripcion', modelo='$modelo', numserie='$nserie', placa='$placa', color='$color', motor='$motor', permiso_circulacion='$permiso_circulacion', anio_fabricacion='$anio_fabricacion', tipo_vehiculo='$tipo_vehiculo', clase_vehiculo='$clase_vehiculo', propietario_vehiculo='$propietario_vehiculo', controla_stock='$controla_stock', alerta_stock='$alerta_stock', proigv='$tipoigv',imagen='$imagen' WHERE idproducto='$idproducto'";
 		ejecutarConsulta($sql);
 
 		$editar = "UPDATE producto_configuracion SET precio_venta = '$precio', codigo_extra='$codigo' WHERE idproducto = '$idproducto' AND cantidad_contenedor = 1";
@@ -749,46 +749,26 @@ public function contarActivos($idsucursal, $buscar = "")
             $searching = "AND REPLACE(pg.codigo_extra, ' ', '') 
                           LIKE CONCAT('%', REPLACE('$search_escaped', ' ', ''), '%') COLLATE utf8mb4_general_ci";
         } elseif ($type == 1) {
-            // Búsqueda por nombre con palabras múltiples
+            // Búsqueda por nombre, marca, modelo, color con palabras múltiples
             $palabras = explode(" ", $search_escaped);
             $condiciones = [];
-            
+
             foreach ($palabras as $palabra) {
                 $palabra = trim($palabra);
                 if (strlen($palabra) > 0) {
-                    // Normalización para ignorar acentos y ñ
-                    $condiciones[] = "REPLACE(
-                        REPLACE(
-                            REPLACE(
-                                REPLACE(
-                                    REPLACE(
-                                        REPLACE(
-                                            REPLACE(
-                                                LOWER(p.nombre),
-                                                'á', 'a'),
-                                            'é', 'e'),
-                                        'í', 'i'),
-                                    'ó', 'o'),
-                                'ú', 'u'),
-                            'ñ', 'n'),
-                        'ü', 'u') LIKE CONCAT('%', REPLACE(
-                            REPLACE(
-                                REPLACE(
-                                    REPLACE(
-                                        REPLACE(
-                                            REPLACE(
-                                                REPLACE(
-                                                    LOWER('$palabra'),
-                                                    'á', 'a'),
-                                                'é', 'e'),
-                                            'í', 'i'),
-                                        'ó', 'o'),
-                                    'ú', 'u'),
-                                'ñ', 'n'),
-                            'ü', 'u'), '%')";
+                    $norm_p      = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER('$palabra'),'á','a'),'é','e'),'í','i'),'ó','o'),'ú','u'),'ñ','n'),'ü','u')";
+                    $norm_nombre = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(p.nombre),'á','a'),'é','e'),'í','i'),'ó','o'),'ú','u'),'ñ','n'),'ü','u')";
+                    $norm_fab    = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(COALESCE(p.fabricante,'')),'á','a'),'é','e'),'í','i'),'ó','o'),'ú','u'),'ñ','n'),'ü','u')";
+                    $norm_modelo = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(COALESCE(p.modelo,'')),'á','a'),'é','e'),'í','i'),'ó','o'),'ú','u'),'ñ','n'),'ü','u')";
+                    $norm_color  = "REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(COALESCE(p.color,'')),'á','a'),'é','e'),'í','i'),'ó','o'),'ú','u'),'ñ','n'),'ü','u')";
+
+                    $condiciones[] = "($norm_nombre LIKE CONCAT('%',$norm_p,'%')
+                                   OR $norm_fab    LIKE CONCAT('%',$norm_p,'%')
+                                   OR $norm_modelo LIKE CONCAT('%',$norm_p,'%')
+                                   OR $norm_color  LIKE CONCAT('%',$norm_p,'%'))";
                 }
             }
-            
+
             if ($condiciones) {
                 $searching = "AND (" . implode(" AND ", $condiciones) . ")";
             }
@@ -1568,7 +1548,10 @@ public function listarActivosVentaFIFO($idsucursal, $search = null, $type = null
             $condiciones = [];
             foreach ($palabras as $palabra) {
                 if (!empty($palabra)) {
-                    $condiciones[] = "p.nombre LIKE '%$palabra%'";
+                    $condiciones[] = "(p.nombre LIKE '%$palabra%'
+                                   OR COALESCE(p.fabricante,'') LIKE '%$palabra%'
+                                   OR COALESCE(p.modelo,'')     LIKE '%$palabra%'
+                                   OR COALESCE(p.color,'')      LIKE '%$palabra%')";
                 }
             }
             if (!empty($condiciones)) {
@@ -1583,6 +1566,9 @@ public function listarActivosVentaFIFO($idsucursal, $search = null, $type = null
                 p.imagen,
                 p.codigo,
                 p.proigv,
+                p.modelo,
+                p.fabricante,
+                p.color,
                 c.idcategoria,
                 c.nombre AS categoria,
                 um.nombre AS unidadmedida,
