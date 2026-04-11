@@ -251,6 +251,55 @@ function generarCuotas(max = 100) {
   select.html(html);
 }
 
+function calcularCuotasDesdeNumeroMeses() {
+  const frecuencia = parseInt($("#input_frecuencia").val(), 10);
+
+  if (isNaN(frecuencia) || frecuencia <= 0) {
+    swal.fire("Error", "La frecuencia ingresada no es válida.", "error");
+    $("#numeroMeses").val("");
+    return;
+  }
+  const mesesRaw = (("" + $("#numeroMeses").val()) || "")
+    .replace(",", ".")
+    .trim();
+
+  if (!mesesRaw || !frecuencia) {
+    $("#input_cuotas").val("");
+    return;
+  }
+
+  const numeroMeses = parseFloat(mesesRaw);
+  if (isNaN(numeroMeses) || numeroMeses <= 0) {
+    $("#input_cuotas").val("");
+    return;
+  }
+
+  const mesesPorCuota = {
+    1: 1 / 30,
+    2: 1 / 4,
+    3: 1 / 2,
+    4: 1,
+    5: 2,
+    6: 3,
+    7: 6,
+    8: 12,
+  }[frecuencia];
+
+  if (!mesesPorCuota) return;
+
+  const cuotasCalculadas = Math.max(1, Math.ceil(numeroMeses / mesesPorCuota));
+  const maxCuotasActuales = $("#input_cuotas option").length - 1;
+
+  if (cuotasCalculadas > maxCuotasActuales) {
+    generarCuotas(cuotasCalculadas);
+  }
+
+  $("#input_cuotas").val(String(cuotasCalculadas));
+}
+
+$("#numeroMeses").on("input", calcularCuotasDesdeNumeroMeses);
+$("#input_frecuencia").on("change", calcularCuotasDesdeNumeroMeses);
+
 $("#comprobanteReferencia").on("change", function () {
   if (!$(this).val()) return; // prevenir ejecución automática
   mostrarE();
@@ -573,6 +622,7 @@ $("#tipopago").change(function () {
     );
     document.getElementById("input_cuotas").selectedIndex = 0;
     document.getElementById("input_frecuencia").selectedIndex = 0;
+    $("#numeroMeses").val("");
     $("#inputInteres").val("0");
     $("#fechaOperacion").val("");
 
@@ -631,6 +681,7 @@ $("#tipopago").change(function () {
     );
     document.getElementById("input_cuotas").selectedIndex = 0;
     document.getElementById("input_frecuencia").selectedIndex = 0;
+    $("#numeroMeses").val("");
     $("#inputInteres").val("0");
     var hoy = new Date();
     var yyyy = hoy.getFullYear();
@@ -1301,6 +1352,7 @@ function limpiar() {
   $("#vuelto").val(0);
   $("#montoDeuda").val(0);
   $("#input_cuotas").val('');
+  $("#numeroMeses").val('');
 
   $("#panel1").hide();
   $("#b1").hide();
@@ -3173,6 +3225,11 @@ function validarDatos({ cuotas, frecuencia, deuda }) {
 
 $("#calcular_cuotas").click(function (e) {
   e.preventDefault();
+
+  // Si no se eligio cuotas manualmente, intentar autocalcular desde N° meses + frecuencia.
+  if (!$("#input_cuotas").val()) {
+    calcularCuotasDesdeNumeroMeses();
+  }
 
   let data = {
     cuotas: parseInt($("#input_cuotas").val()),

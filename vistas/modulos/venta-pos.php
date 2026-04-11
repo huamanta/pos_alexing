@@ -1054,6 +1054,14 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                                 </select>
                                                             </div>
 
+                                                            <div class="form-group col-lg-3">
+                                                                <label style="font-size: 11px;">N° meses:</label>
+                                                                <div class="input-group">
+                                                                    <input style="text-align:center" type="text"
+                                                                        class="form-control" id="numeroMeses" name="numeroMeses">
+                                                                </div>
+                                                            </div>
+
                                                             <div class="form-group col-lg-3" id="n2">
                                                                 <label style="font-size: 11px;">Fecha Inicio:</label>
                                                                 <div class="input-group">
