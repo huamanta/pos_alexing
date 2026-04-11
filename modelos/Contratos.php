@@ -68,28 +68,29 @@ class Contratos
         foreach ($contratos as $key => $value) {
             $verifiarRetencion = $this->buscarRetencion($value['idventa']);
             $statusRetencion = $verifiarRetencion['estado'];
-            if($statusRetencion == true){
-                $btnRetencion = '<button class="btn btn-danger btn-sm" onclick="quitarRetencion(' . $value['idventa'] . ', '.$verifiarRetencion['data']['idretencion'].')" title="Quitar retención">
+            if ($statusRetencion == true) {
+                $btnRetencion = '<button class="btn btn-danger btn-sm" onclick="quitarRetencion(' . $value['idventa'] . ', ' . $verifiarRetencion['data']['idretencion'] . ')" title="Quitar retención">
                                 <i class="fa fa-unlock"></i>
                             </button>';
                 $btnVerContrato = '<button class="btn btn-info btn-sm" title="Ver documentación del contrato" disabled><i class="fa fa-copy"></i></button>';
-            }else{
+            } else {
                 $btnRetencion = '<button class="btn btn-primary btn-sm" onclick="retenerContrato(' . $value['idventa'] . ')" title="Retener">
                                 <i class="fa fa-lock"></i>
                             </button>';
 
-                $btnVerContrato = '<button class="btn btn-info btn-sm" onclick="verContrato(' . $value['idventa'] . ', '.$value['idpersona'].',\'' . $value['nombre'] . '\')" title="Ver documentación del contrato"><i class="fa fa-copy"></i></button>';
+                $btnVerContrato = '<button class="btn btn-info btn-sm" onclick="verContrato(' . $value['idventa'] . ', ' . $value['idpersona'] . ',\'' . $value['nombre'] . '\')" title="Ver documentación del contrato"><i class="fa fa-copy"></i></button>';
             }
             $data[] = [
                 "0" => $value['fecha_contrato'],
-                "1" => $value['num_documento'],
-                "2" => $value['nombre'],
-                "3" => $this->tiposDocumentacion($value['tipo']) . ($value['tipo'] == 1 ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT) : ''),
-                "4" => $value['estado'] == 1 ? '<span class="badge badge-success">Vigente</span>' : '<span class="badge badge-danger">Finalizado</span>',
-                "5" => $value['formapago'],
-                "6" => number_format($value['total_venta'], 2, '.', ','),
-                "7" => $btnVerContrato . '
-                        '. $btnRetencion .'
+                "1" => $this->estadoCuotas($value['idventa']),
+                "2" => $value['num_documento'],
+                "3" => $value['nombre'],
+                "4" => $this->tiposDocumentacion($value['tipo']) . ($value['tipo'] == 1 ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT) : ''),
+                "5" => $statusRetencion ? '<span class="badge badge-danger">Retenido</span>' : '<span class="badge badge-success">Vigente</span>',
+                "6" => $value['formapago'],
+                "7" => number_format($value['total_venta'], 2, '.', ','),
+                "8" => $btnVerContrato . '
+                        ' . $btnRetencion . '
                         <button class="btn btn-secondary btn-sm" onclick="imprimirContrato(' . $value['idventa'] . ')" title="Imprimir contrato"><i class="fa fa-trash"></i></button>',
             ];
         }
@@ -103,6 +104,42 @@ class Contratos
         return json_encode($results);
     }
 
+
+    public function estadoCuotas($idventa)
+    {
+        $sql = "SELECT 
+                COUNT(*) as total,
+                SUM(CASE 
+                    WHEN abonototal < deudatotal 
+                    AND fechavencimiento < CURDATE()
+                    THEN 1 ELSE 0 
+                END) as atrasadas
+            FROM cuentas_por_cobrar
+            WHERE idventa = '$idventa'";
+
+        $row = ejecutarConsultaSimpleFila($sql);
+
+        $total = $row['total'] ?? 0;
+        $atrasadas = $row['atrasadas'] ?? 0;
+
+        $porcentaje = ($total > 0) ? ($atrasadas / $total) * 100 : 0;
+
+        // COLOR
+        if ($porcentaje == 0) {
+            $color = "success";
+        } elseif ($porcentaje <= 30) {
+            $color = "warning";
+        } elseif ($porcentaje <= 60) {
+            $color = "orange";
+        } else {
+            $color = "danger";
+        }
+
+        return "<span class='badge bg-$color' style='font-size: 12px; padding: 10px;'>
+                $atrasadas
+            </span>";
+    }
+
     public function tiposDocumentacion($tipo)
     {
         if ($tipo == 1) {
@@ -113,7 +150,7 @@ class Contratos
             return "OR";
         } elseif ($tipo == 4) {
             return "CP";
-        }elseif ($tipo == 5) {
+        } elseif ($tipo == 5) {
             return "CV";
         } else {
             return "";
@@ -170,7 +207,8 @@ class Contratos
         }
     }
 
-    public function selectUsuarios($idventa, $idsucursal){
+    public function selectUsuarios($idventa, $idsucursal)
+    {
         $sql = "SELECT * FROM venta WHERE idventa = $idventa";
         $venta = ejecutarConsultaSimpleFila($sql);
 
@@ -183,9 +221,9 @@ class Contratos
         $result = ejecutarConsulta($sql);
 
         if ($result) {
-            return ["status"=> true, "data"=> $result, "idvendedor" => $venta['idPersonal']];
+            return ["status" => true, "data" => $result, "idvendedor" => $venta['idPersonal']];
         } else {
-            return ["status"=> false, "data"=> null];
+            return ["status" => false, "data" => null];
         }
     }
 }

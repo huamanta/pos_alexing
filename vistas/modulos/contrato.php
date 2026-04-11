@@ -84,10 +84,11 @@
                                 <table id="tbllistado" class="table table-tailpanel dt-responsive">
                                     <thead>
                                         <th>Fecha</th>
+                                        <th>Estado pagos</th>
                                         <th>N° Documento</th>
                                         <th>Cliente / Razón Social</th>
                                         <th>N° Contrato</th>
-                                        <th>Estado</th>
+                                        <th>Estado contrato</th>
                                         <th>Forma de pago</th>
                                         <th>Monto</th>
                                         <th width="180px;">Acciones</th>
@@ -96,10 +97,11 @@
                                     </tbody>
                                     <tfoot>
                                         <th>Fecha</th>
+                                        <th>Estado pagos</th>
                                         <th>N° Documento</th>
                                         <th>Cliente / Razón Social</th>
                                         <th>N° Contrato</th>
-                                        <th>Estado</th>
+                                        <th>Estado contrato</th>
                                         <th>Forma de pago</th>
                                         <th>Monto</th>
                                         <th width="180px;">Acciones</th>

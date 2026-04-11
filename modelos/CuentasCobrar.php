@@ -1,6 +1,7 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
+require "Contratos.php";
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -976,9 +977,16 @@ class CuentasCobrar
         $data = array();
 
         while ($row = $result->fetch_object()) {
+            $contratos = new Contratos();
+            $retension = $contratos->buscarRetencion($row->idventa);
+            $estadoRetension = $retension['estado'];
             $estado = (floatval($row->saldo_pendiente) <= 0)
                 ? '<center><span class="badge bg-green">Cancelado</span></center>'
                 : '<center><span class="badge bg-red">Por Cancelar</span></center>';
+
+            if ($estadoRetension === true) {
+                $estado = '<center><span class="badge bg-orange">Retenido</span></center>';
+            }
 
             $doc = $row->tipo_comprobante . '-' . $row->serie_comprobante . '-' . $row->num_comprobante;
             $saldo = round(floatval($row->saldo_pendiente), 2);
@@ -1015,7 +1023,8 @@ class CuentasCobrar
                     cc.deudatotal,
                     cc.deuda,
                     cc.estado_pago,
-                    cc.mora
+                    cc.mora,
+                    cc.idventa
                 FROM cuentas_por_cobrar cc
                 WHERE cc.idventa = '$idventa'
                   AND cc.condicion = '1'
@@ -1047,11 +1056,18 @@ class CuentasCobrar
 
         foreach ($rows as $row) {
             $saldo = floatval($row->saldo_calculado);
+            $contratos = new Contratos();
+            $retension = $contratos->buscarRetencion($row->idventa);
+            $estadoRetension = $retension['estado'];
             $estado = ($saldo <= 0)
                 ? '<center><span class="badge bg-green">Cancelado</span></center>'
                 : '<center><span class="badge bg-red">Por Cancelar</span></center>';
 
-            $acciones = ($saldo <= 0)
+            if ($estadoRetension === true) {
+                $estado = '<center><span class="badge bg-orange">Retenido</span></center>';
+            }
+
+            $acciones = ($saldo <= 0 || $estadoRetension === true)
                 ? "<div class='btn-group'>
                         <button type='button' class='btn btn-sm btn-info' onclick='mostrarAbonos({$row->idcpc})'>Ver abonos</button>
                         <button type='button' class='btn btn-sm btn-secondary' onclick='verEstadoCuenta({$row->idcpc})'>Estado cuenta</button>
@@ -1070,6 +1086,10 @@ class CuentasCobrar
                 } elseif ($proximaIdcpc !== null && intval($row->idcpc) === intval($proximaIdcpc)) {
                     $rowClass = 'fila-cuota-proxima';
                 }
+            }
+
+            if ($estadoRetension === true) {
+                $rowClass = 'fila-retenida';
             }
 
             $data[] = array(
