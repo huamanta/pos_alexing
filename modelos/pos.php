@@ -83,49 +83,55 @@ final class Pos
     }
 
     public function listarVentas2($aperturacajaid)
-    {
-        $sqlap = "SELECT * FROM caja_apertura WHERE aperturacajaid = '$aperturacajaid'";
-        $apertura = ejecutarConsulta($sqlap)->fetch_object();
+{
+    $sqlap = "SELECT * FROM caja_apertura WHERE aperturacajaid = '$aperturacajaid'";
+    $apertura = ejecutarConsulta($sqlap)->fetch_object();
 
-        $fecha_apertura = $apertura->fecha_apertura;
-        $fecha_cierre = $apertura->fecha_cierre;
-        $idcaja = $apertura->idcaja;
+    if (!$apertura) return [];
 
-        $sql = "
-            SELECT 
-                v.idventa,
-                DATE(v.fecha_hora) as fecha,
-                s.nombre as sucursal,
-                DATE_FORMAT(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex,
-                v.idcliente,
-                p.nombre as cliente,
-                p.num_documento,
-                v.estadoS,
-                u.idpersonal,
-                u.nombre as personal, 
-                v.tipo_comprobante,
-                v.serie_comprobante,
-                v.num_comprobante,
-                (v.total_venta - v.descuento) as total_venta,
-                v.ventacredito,
-                v.impuesto,
-                v.dov_Nombre,
-                v.estado,
-                GROUP_CONCAT(CONCAT(vp.metodo_pago, ': S/. ', FORMAT(vp.monto,2)) SEPARATOR ' | ') as pagos
-            FROM venta v
-            INNER JOIN venta_pago vp ON v.idventa = vp.idventa 
-            INNER JOIN persona p ON v.idcliente = p.idpersona 
-            INNER JOIN personal u ON v.idpersonal = u.idpersonal 
-            INNER JOIN sucursal s ON s.idsucursal = v.idsucursal
-            WHERE v.tipo_comprobante IN ('Boleta', 'Factura', 'Nota de Venta') 
-                AND v.idcaja = '$idcaja' 
-                AND v.fecha_hora >= '$fecha_apertura' 
-                AND v.fecha_hora <= '$fecha_cierre'
-            GROUP BY v.idventa
-            ORDER BY v.idventa DESC";
+    $fecha_apertura = $apertura->fecha_apertura;
+    $fecha_cierre = $apertura->fecha_cierre;
+    $idcaja = $apertura->idcaja;
 
-        return ejecutarConsulta($sql);
+    // 🔥 SI NO HAY CIERRE, USA FECHA ACTUAL
+    if (empty($fecha_cierre)) {
+        $fecha_cierre = date('Y-m-d H:i:s');
     }
+
+    $sql = "
+        SELECT 
+            v.idventa,
+            DATE(v.fecha_hora) as fecha,
+            s.nombre as sucursal,
+            DATE_FORMAT(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex,
+            v.idcliente,
+            p.nombre as cliente,
+            p.num_documento,
+            v.estadoS,
+            u.idpersonal,
+            u.nombre as personal, 
+            v.tipo_comprobante,
+            v.serie_comprobante,
+            v.num_comprobante,
+            (v.total_venta - v.descuento) as total_venta,
+            v.ventacredito,
+            v.impuesto,
+            v.dov_Nombre,
+            v.estado,
+            GROUP_CONCAT(CONCAT(vp.metodo_pago, ': S/. ', FORMAT(vp.monto,2)) SEPARATOR ' | ') as pagos
+        FROM venta v
+        INNER JOIN venta_pago vp ON v.idventa = vp.idventa 
+        INNER JOIN persona p ON v.idcliente = p.idpersona 
+        INNER JOIN personal u ON v.idpersonal = u.idpersonal 
+        INNER JOIN sucursal s ON s.idsucursal = v.idsucursal
+        WHERE v.tipo_comprobante IN ('Boleta', 'Factura', 'Nota de Venta') 
+            AND v.idcaja = '$idcaja' 
+            AND v.fecha_hora BETWEEN '$fecha_apertura' AND '$fecha_cierre'
+        GROUP BY v.idventa
+        ORDER BY v.idventa DESC";
+
+    return ejecutarConsulta($sql);
+}
 
 
     public function verificarCaja($idusurio, $idsucursal)

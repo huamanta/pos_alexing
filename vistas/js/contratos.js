@@ -6,7 +6,7 @@ function initializeContratos() {
     });
 
     // Agregar event listeners para filtros
-    $("#fecha_inicio, #fecha_fin, #estado, #idsucursal").on('change', function () {
+    $("#fecha_inicio, #fecha_fin, #estado, #idsucursal, #condicion, #input_frecuencia").on('change', function () {
         tabla.ajax.reload();
     });
 };
@@ -22,6 +22,8 @@ function limpiarFiltros() {
     $("#fecha_fin").val('');
     $("#estado").val('Todos');
     $("#idsucursal").trigger('change');
+    $("#condicion").val('Todos');
+    $("#input_frecuencia").val('');
     recargarTabla();
 }
 
@@ -30,9 +32,8 @@ function listar() {
 
     tabla = $("#tbllistado")
         .dataTable({
-            //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-            aProcessing: true, //Activamos el procesamiento del datatables
-            aServerSide: true, //Paginación y filtrado realizados por el servidor
+            aProcessing: true,
+            aServerSide: true,
             processing: true,
             language: {
                 processing:
@@ -41,7 +42,16 @@ function listar() {
             responsive: true,
             lengthChange: false,
             autoWidth: false,
-            dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+
+            // 🔥 DOM PERSONALIZADO CON LEYENDA
+            dom:
+                '<"row"' +
+                '<"col-sm-12 col-md-7 text-center"<"leyenda">>' +
+                '<"col-sm-12 col-md-5 d-flex justify-content-end gap-2"<"dt-buttons btn-group flex-wrap"B>f>' +
+                '>' +
+                't' +
+                '<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+
             lengthMenu: [
                 [5, 10, 25, 50, 100, -1],
                 [
@@ -53,34 +63,35 @@ function listar() {
                     "Mostrar todo",
                 ],
             ],
+
             buttons: [
                 "pageLength",
                 {
                     extend: "excelHtml5",
                     text: "<i class='fas fa-file-csv'></i>",
                     titleAttr: "Exportar a Excel",
-                    // className: 'btn btn-success'
                 },
                 {
                     extend: "pdf",
                     text: "<i class='fas fa-file-pdf'></i>",
                     titleAttr: "Exportar a PDF",
-                    // className: 'btn btn-danger'
                 },
                 {
                     extend: "colvis",
                     text: "<i class='fas fa-bars'></i>",
                     titleAttr: "",
-                    // className: 'btn btn-danger'
                 },
             ],
+
             ajax: {
                 url: "controladores/contratos.php?op=listar",
                 data: function (d) {
                     d.fecha_inicio = $("#fecha_inicio").val();
                     d.fecha_fin = $("#fecha_fin").val();
-                    d.estado = $("#estado").val();
                     d.idsucursal = $("#idsucursal").val();
+                    d.estado = $("#estado").val();
+                    d.condicion = $("#condicion").val();
+                    d.frecuencia = $("#input_frecuencia").val();
                 },
                 type: "get",
                 dataType: "json",
@@ -88,9 +99,37 @@ function listar() {
                     console.log(e.responseText);
                 },
             },
+
             bDestroy: true,
-            iDisplayLength: 5, //Paginación
-            order: [[0, "desc"]], //Ordenar (columna,orden)
+            iDisplayLength: 5,
+            order: [[0, "desc"]],
+            initComplete: function () {
+                $(".leyenda").html(`
+                    <div class="d-flex gap-3 flex-wrap align-items-center">
+    
+    <div class="d-flex align-items-center gap-1">
+        <span class="badge bg-success d-inline-block" style="width: 15px; height: 15px;"></span>
+        <small>Normal</small>
+    </div>
+
+    <div class="d-flex align-items-center gap-1">
+        <span class="badge bg-warning d-inline-block" style="width: 15px; height: 15px;"></span>
+        <small>1 - 30% Letras atrasadas</small>
+    </div>
+
+    <div class="d-flex align-items-center gap-1">
+        <span class="badge bg-orange d-inline-block" style="width: 15px; height: 15px;"></span>
+        <small>31 - 60% Letras atrasadas</small>
+    </div>
+
+    <div class="d-flex align-items-center gap-1">
+        <span class="badge bg-danger d-inline-block" style="width: 15px; height: 15px;"></span>
+        <small>+60% Letras atrasadas</small>
+    </div>
+
+</div>
+                `);
+            }
         })
         .DataTable();
 }
@@ -229,7 +268,7 @@ function descargarCronogramaPagos(idventa) {
     if (!win) {
         alert('Por favor habilita ventanas emergentes o descarga manualmente: ' + url);
         return;
-    }   
+    }
 }
 
 function descargarCompraVenta(idventa, idvendedor, idcliente, monto) {
@@ -239,7 +278,7 @@ function descargarCompraVenta(idventa, idvendedor, idcliente, monto) {
     if (!win) {
         alert('Por favor habilita ventanas emergentes o descarga manualmente: ' + url);
         return;
-    }  
+    }
 }
 
 $(document).ready(function () {
@@ -263,7 +302,7 @@ $(document).ready(function () {
         descargarCronogramaPagos(idventa);
     });
 
-    $('#btnDescargarCompraVenta').on('click', function(){
+    $('#btnDescargarCompraVenta').on('click', function () {
         $('#modal-compra-venta').modal('show');
         const idventa = $('#idventa').val();
         $('#idventa_compra_venta').val(idventa);
@@ -317,7 +356,7 @@ $(document).ready(function () {
 });
 
 
-function listarUsuarios(){
+function listarUsuarios() {
     const idventa = $('#idventa').val();
     const idsucursal = $('#idsucursal').val();
     $.post("controladores/contratos.php?op=selectUsuarios", { idventa: idventa, idsucursal: idsucursal }, function (r) {
@@ -330,18 +369,18 @@ function listarUsuarios(){
 
 function retenerContrato(idventa) {
     $("#modal-retener-contrato").modal("show");
-    $("#idventa_retenida").val(idventa);  
+    $("#idventa_retenida").val(idventa);
 }
 
 $("#form-retener-contrato").on("submit", function (e) {
     e.preventDefault();
-    var formData = new FormData(this);  
+    var formData = new FormData(this);
     $.ajax({
         url: "controladores/contratos.php?op=retener",
-        type: "POST",   
+        type: "POST",
         data: formData,
         contentType: false,
-        processData: false, 
+        processData: false,
         success: function (response) {
             var res = JSON.parse(response);
             if (res.status) {
@@ -362,7 +401,7 @@ $("#form-retener-contrato").on("submit", function (e) {
 
 function quitarRetencion(idventa, idretencion) {
     Swal.fire({
-        title: "¿Estás seguro?", 
+        title: "¿Estás seguro?",
         text: "Esta acción quitará la retención del contrato.",
         icon: "warning",
         showCancelButton: true,
@@ -412,7 +451,7 @@ $("#form-compra-venta").on("submit", function (e) {
         return;
     }
 
-    if(!monto || isNaN(monto) || parseFloat(monto) <= 0) {
+    if (!monto || isNaN(monto) || parseFloat(monto) <= 0) {
         Swal.fire("Error", "Por favor ingresa un monto válido.", "error");
         return;
     }

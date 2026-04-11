@@ -81,7 +81,8 @@ switch ($_GET["op"]) {
     case 'historialcajas':
         $fecha_inicio = isset($_REQUEST["fecha_inicio"]) ? limpiarCadena($_REQUEST["fecha_inicio"]) : "";
         $fecha_fin = isset($_REQUEST["fecha_fin"]) ? limpiarCadena($_REQUEST["fecha_fin"]) : "";
-        $rspta = $caja->historialCajas($fecha_inicio, $fecha_fin);
+        $idsucursal = isset($_REQUEST["idsucursal"]) ? limpiarCadena($_REQUEST["idsucursal"]) : $_SESSION['idsucursal'];
+        $rspta = $caja->historialCajas($fecha_inicio, $fecha_fin, $idsucursal);
         echo json_encode($rspta);
         break;
 

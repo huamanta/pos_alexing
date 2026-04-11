@@ -24,7 +24,7 @@
 
                                 <div class="row">
 
-                                    <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                                    <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                         <label>Fecha Inicio:</label>
 
                                         <div class="input-group">
@@ -38,7 +38,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                                    <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                         <label>Fecha Fin:</label>
 
                                         <div class="input-group">
@@ -52,7 +52,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                                    <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                         <label>Almacén:</label>
 
                                         <div class="input-group">
@@ -60,24 +60,49 @@
                                                 <span class="input-group-text">
                                                     <i class="fas fa-store-alt"></i>
                                                 </span>
-                                            <select id="idsucursal" name="idsucursal" class="form-control select2">
-                                            </select>
+                                                <select id="idsucursal" name="idsucursal" class="form-control select2">
+                                                </select>
                                             </div>
                                         </div>
                                     </div>
-                                    <!--div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
-                                        <label>Estado:</label>
 
+                                    <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
+                                        <label>Estado:</label>
                                         <div class="input-group">
                                             <select id="estado" name="estado" class="form-control select2">
-                                                <option value="Todos">Todos</option>
-                                                <option value="Aceptado">Aceptado</option>
-                                                <option value="Por Enviar">Por Enviar</option>
-                                                <option value="Nota Credito">Nota de Crédito</option>
-                                                <option value="Rechazado">Rechazado</option>
+                                                <option value="">Todos</option>
+                                                <option value="1">Pagados</option>
+                                                <option value="2">Pendientes</option>
                                             </select>
                                         </div>
-                                    </div-->
+                                    </div>
+
+                                    <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
+                                        <label>Condicion:</label>
+                                        <div class="input-group">
+                                            <select id="condicion" name="condicion" class="form-control select2">
+                                                <option value="">Todos</option>
+                                                <option value="1">Normal</option>
+                                                <option value="2">Moroso</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
+                                        <label>Frecuencia:</label>
+                                        <select name="input_frecuencia" id="input_frecuencia" class="form-control"
+                                            placeholder="Frecuencia">
+                                            <option value="" selected hidden>Seleccionar...
+                                            </option>
+                                            <option value="1">Diario</option>
+                                            <option value="2">Semanal</option>
+                                            <option value="3">Quincenal</option>
+                                            <option value="4">Mensual</option>
+                                            <option value="5">Bimestral</option>
+                                            <option value="6">Trimestral</option>
+                                            <option value="7">Semestral</option>
+                                            <option value="8">Anual</option>
+                                        </select>
+                                    </div>
 
                                 </div>
 
@@ -90,6 +115,7 @@
                                         <th>N° Contrato</th>
                                         <th>Estado contrato</th>
                                         <th>Forma de pago</th>
+                                        <th>Frecuencia</th>
                                         <th>Monto</th>
                                         <th width="180px;">Acciones</th>
                                     </thead>
@@ -103,6 +129,7 @@
                                         <th>N° Contrato</th>
                                         <th>Estado contrato</th>
                                         <th>Forma de pago</th>
+                                        <th>Frecuencia</th>
                                         <th>Monto</th>
                                         <th width="180px;">Acciones</th>
                                     </tfoot>
@@ -265,9 +292,12 @@
                                         <label for="comprador">Comprador:</label>
                                         <div class="d-flex align-items-end">
                                             <input type="hidden" name="idcliente" id="idcliente" />
-                                            <input type="text" name="comprador" id="comprador" class="form-control mr-2" readonly />
-                                            <button type="button" class="btn btn-info mr-1" id="btnEditarComprador" title="Editar cliente"><i class="fas fa-edit"></i></button>
-                                            <button type="button" class="btn btn-primary" id="btnNuevoComprador" title="Nuevo cliente"><i class="fas fa-user-plus"></i></button>
+                                            <input type="text" name="comprador" id="comprador" class="form-control mr-2"
+                                                readonly />
+                                            <button type="button" class="btn btn-info mr-1" id="btnEditarComprador"
+                                                title="Editar cliente"><i class="fas fa-edit"></i></button>
+                                            <button type="button" class="btn btn-primary" id="btnNuevoComprador"
+                                                title="Nuevo cliente"><i class="fas fa-user-plus"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -275,7 +305,8 @@
                                 <div class="col-12">
                                     <div class="form-group">
                                         <label for="monto_compra_venta">Monto:</label>
-                                        <input type="text" class="form-control" id="monto_compra_venta" name="monto_compra_venta"
+                                        <input type="text" class="form-control" id="monto_compra_venta"
+                                            name="monto_compra_venta"
                                             placeholder="Ingrese el monto de la compra venta...">
                                     </div>
                                 </div>
@@ -322,7 +353,8 @@
                                 </div>
                                 <div class="form-group col-8">
                                     <label for="cliente_num_documento">N° Documento:</label>
-                                    <input type="text" class="form-control" name="num_documento" id="cliente_num_documento" required>
+                                    <input type="text" class="form-control" name="num_documento"
+                                        id="cliente_num_documento" required>
                                 </div>
                             </div>
 
@@ -343,7 +375,8 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                            <button type="submit" class="btn btn-primary" id="btnGuardarClienteCompraVenta">Guardar</button>
+                            <button type="submit" class="btn btn-primary"
+                                id="btnGuardarClienteCompraVenta">Guardar</button>
                         </div>
                     </form>
                 </div>

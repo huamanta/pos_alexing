@@ -8,10 +8,11 @@ switch ($op) {
     case 'listar':
         $fecha_inicio = $_GET['fecha_inicio'] ?? '';
         $fecha_fin = $_GET['fecha_fin'] ?? '';
-        $estado = $_GET['estado'] ?? '';
         $idsucursal = $_GET['idsucursal'] ?? '';
-
-        $datos = $contratos->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal);
+        $estado = $_GET['estado'] ?? '';
+        $condicion = $_GET['condicion'] ?? '';
+        $frecuencia = $_GET['frecuencia'] ?? '';
+        $datos = $contratos->listar($fecha_inicio, $fecha_fin, $idsucursal, $estado, $condicion, $frecuencia);
         echo $datos;
         break;
 

@@ -9,7 +9,7 @@ class Contratos
     {
     }
 
-    public function listar($fecha_inicio, $fecha_fin, $estado = '', $idsucursal = '')
+    public function listar($fecha_inicio, $fecha_fin, $idsucursal = '', $estado = '', $condicion = '', $frecuencia = '')
     {
         $query = "SELECT 
                     c.idpersona,
@@ -26,7 +26,8 @@ class Contratos
                     d.fecha_contrato,
                     d.tipo,
                     d.correlativo,
-                    d.estado
+                    d.estado,
+                    v.frecuencia
                     FROM documentacion d 
                     INNER JOIN venta v ON d.idventa = v.idventa 
                     LEFT JOIN persona c ON v.idcliente = c.idpersona
@@ -37,22 +38,61 @@ class Contratos
             $query .= " AND DATE(d.fecha_contrato) BETWEEN '$fecha_inicio' AND '$fecha_fin'";
         }
 
-        // Agregar filtro de estado
-        if (!empty($estado) && $estado != 'Todos') {
-            $estado_map = [
-                'Aceptado' => 1,
-                'Por Enviar' => 2,
-                'Nota Credito' => 3,
-                'Rechazado' => 4
-            ];
-            if (isset($estado_map[$estado])) {
-                $query .= " AND d.estado = " . $estado_map[$estado];
+        // Agregar filtro de estado (1 = pagado, 2 = pendiente)
+        if (!empty($estado)) {
+            if ($estado == 1) {
+                $query .= " AND NOT EXISTS (
+                    SELECT 1 
+                    FROM cuentas_por_cobrar cpc
+                    WHERE cpc.idventa = v.idventa
+                    AND cpc.abonototal < cpc.deudatotal
+                )";
+            }
+
+            if ($estado == 2) {
+                $query .= " AND EXISTS (
+                    SELECT 1 
+                    FROM cuentas_por_cobrar cpc
+                    WHERE cpc.idventa = v.idventa
+                    AND cpc.abonototal < cpc.deudatotal
+                )";
             }
         }
 
         // Agregar filtro de sucursal
         if (!empty($idsucursal)) {
             $query .= " AND v.idsucursal = '$idsucursal'";
+        }
+
+        // Agregar filtro de condición (1 = normal, 2 = moroso)
+        if (!empty($condicion)) {
+
+            // MOROSOS 
+            if ($condicion == 2) {
+                $query .= " AND EXISTS (
+                    SELECT 1 
+                    FROM cuentas_por_cobrar cpc
+                    WHERE cpc.idventa = v.idventa
+                    AND cpc.abonototal < cpc.deudatotal
+                    AND cpc.fechavencimiento < CURDATE()
+                )";
+            }
+
+            //NORMALES
+            if ($condicion == 1) {
+                $query .= " AND NOT EXISTS (
+                    SELECT 1 
+                    FROM cuentas_por_cobrar cpc
+                    WHERE cpc.idventa = v.idventa
+                    AND cpc.abonototal < cpc.deudatotal
+                    AND cpc.fechavencimiento < CURDATE()
+                )";
+            }
+        }
+
+        // Agregar filtro de frecuencia
+        if (!empty($frecuencia)) {
+            $query .= " AND v.frecuencia = '$frecuencia'";
         }
 
         // Obtener total de registros sin paginación
@@ -88,8 +128,9 @@ class Contratos
                 "4" => $this->tiposDocumentacion($value['tipo']) . ($value['tipo'] == 1 ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT) : ''),
                 "5" => $statusRetencion ? '<span class="badge badge-danger">Retenido</span>' : '<span class="badge badge-success">Vigente</span>',
                 "6" => $value['formapago'],
-                "7" => number_format($value['total_venta'], 2, '.', ','),
-                "8" => $btnVerContrato . '
+                '7' => $this->getDataFrecuencia($value['frecuencia'])->texto,
+                "8" => number_format($value['total_venta'], 2, '.', ','),
+                "9" => $btnVerContrato . '
                         ' . $btnRetencion . '
                         <button class="btn btn-secondary btn-sm" onclick="imprimirContrato(' . $value['idventa'] . ')" title="Imprimir contrato"><i class="fa fa-trash"></i></button>',
             ];
@@ -102,6 +143,55 @@ class Contratos
             "aaData" => $data
         ];
         return json_encode($results);
+    }
+
+    public static function getDataFrecuencia($frecuencia)
+    {
+        $frecuenciaTexto = "";
+        $frecuenciaSm = "";
+
+        switch ($frecuencia) {
+            case '1':
+                $frecuenciaTexto = "diarias";
+                $frecuenciaSm = "dias";
+                break;
+            case '2':
+                $frecuenciaTexto = "semanales";
+                $frecuenciaSm = "semanas";
+                break;
+            case '3':
+                $frecuenciaTexto = "quincenales";
+                $frecuenciaSm = "quincenas";
+                break;
+            case '4':
+                $frecuenciaTexto = "mensuales";
+                $frecuenciaSm = "meses";
+                break;
+            case "5":
+                $frecuenciaTexto = "bimestrales";
+                $frecuenciaSm = "bimestres";
+                break;
+            case "6":
+                $frecuenciaTexto = "trimestrales";
+                $frecuenciaSm = "trimestres";
+                break;
+            case '7':
+                $frecuenciaTexto = "semestrales";
+                $frecuenciaSm = "semestres";
+                break;
+            case "8":
+                $frecuenciaTexto = "anuales";
+                $frecuenciaSm = "años";
+                break;
+            default:
+                $frecuenciaTexto = "mensuales";
+                $frecuenciaSm = "meses";
+        }
+
+        return (object) [
+            "texto" => $frecuenciaTexto,
+            "short" => $frecuenciaSm
+        ];
     }
 
 

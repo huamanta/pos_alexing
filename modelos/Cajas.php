@@ -7,14 +7,14 @@ class Cajas
     {
     }
 
-     //Implementamos un mÃ©todo para insertar registros
+    //Implementamos un mÃ©todo para insertar registros
     public function insertar($nombre, $numero, $idsucursal)
     {
         $sql = "INSERT INTO cajas (nombre,numero,idsucursal)
         VALUES ('$nombre','$numero','$idsucursal')";
         return ejecutarConsulta($sql);
     }
-    
+
     //Implementamos un método para editar registros
     public function editar($idcaja, $nombre, $numero)
     {
@@ -23,10 +23,10 @@ class Cajas
     }
 
     public function listar($cargo, $idsucursal)
-{
-    $condicion = ($cargo == 'Administrador') ? '' : " AND c.idsucursal = '$idsucursal'";
+    {
+        $condicion = ($cargo == 'Administrador') ? '' : " AND c.idsucursal = '$idsucursal'";
 
-    $sql = "SELECT 
+        $sql = "SELECT 
                 c.*, 
                 CASE 
                     WHEN c.estado = 2 THEN pe.nombre 
@@ -49,13 +49,13 @@ class Cajas
             LEFT JOIN sucursal s ON c.idsucursal = s.idsucursal
             WHERE c.deleted_at IS NULL $condicion";
 
-    return ejecutarConsulta($sql);
-}
+        return ejecutarConsulta($sql);
+    }
 
 
 
     //Implementamos un método para desactivar 
-     public function desactivar($idcaja)
+    public function desactivar($idcaja)
     {
         $sql = "UPDATE cajas SET estado='0' WHERE idcaja='$idcaja'";
         return ejecutarConsulta($sql);
@@ -75,44 +75,80 @@ class Cajas
         return ejecutarConsultaSimpleFila($sql);
     }
 
-    public function historialCajas($fecha_inicio, $fecha_fin)
+    public function historialCajas($fecha_inicio, $fecha_fin, $idsucursal)
     {
-        $sql = "SELECT c.*, ca.*, pe.nombre as personal FROM caja_apertura ca 
+        $sql = "SELECT 
+                ca.aperturacajaid,
+                ca.idcaja,
+                ca.fecha_apertura,
+                ca.fecha_cierre,
+                ca.efectivo_apertura,
+                ca.efectivo_cierre,
+                c.numero,
+                c.nombre,
+                pe.nombre as personal,
+
+                -- 🔥 TOTAL DE VENTAS POR CAJA
+                (
+                    SELECT COUNT(*) 
+                    FROM venta v 
+                    WHERE v.idcaja = ca.idcaja
+                    AND v.idsucursal = '$idsucursal'
+                    AND v.fecha_hora BETWEEN ca.fecha_apertura 
+                        AND IFNULL(ca.fecha_cierre, NOW())
+                ) as cantventas
+
+            FROM caja_apertura ca 
             INNER JOIN cajas c ON c.idcaja = ca.idcaja 
-            INNER JOIN usuario u ON ca.idusuario= u.idusuario
+            INNER JOIN usuario u ON ca.idusuario = u.idusuario
             INNER JOIN personal pe ON u.idpersonal = pe.idpersonal 
-            WHERE DATE(ca.fecha_apertura)>='$fecha_inicio' AND DATE(ca.fecha_cierre)<='$fecha_fin'";
+
+            WHERE ca.fecha_apertura BETWEEN '$fecha_inicio 00:00:00' 
+                                       AND '$fecha_fin 23:59:59'
+              AND c.idsucursal = '$idsucursal'
+
+            ORDER BY ca.aperturacajaid DESC";
+
         $rspta = ejecutarConsulta($sql);
         $data = array();
 
         while ($reg = $rspta->fetch_object()) {
-            $m = 0;
-            if ($reg->fecha_cierre != '') {
-                $sql2 = "SELECT * FROM venta WHERE idcaja = '$reg->idcaja' AND fecha_hora>='$reg->fecha_apertura' AND fecha_hora<= '$reg->fecha_cierre'";
-            } else {
-                $sql2 = "SELECT * FROM venta WHERE idcaja = '$reg->idcaja' AND fecha_hora>='$reg->fecha_apertura' AND fecha_hora<= NOW()";
-            }
+
+            // 🔥 SOLO SI NECESITAS EL DETALLE DE VENTAS
+            $sql2 = "SELECT 
+                    v.idventa,
+                    v.fecha_hora,
+                    v.total_venta
+                 FROM venta v
+                 WHERE v.idcaja = '$reg->idcaja'
+                 AND v.idsucursal = '$idsucursal'
+                 AND v.fecha_hora BETWEEN '$reg->fecha_apertura' 
+                     AND IFNULL('$reg->fecha_cierre', NOW())";
+
             $rspta2 = ejecutarConsulta($sql2);
             $ventasdata = array();
+
             while ($reg2 = $rspta2->fetch_object()) {
-                $m++;
                 $ventasdata[] = $reg2;
             }
+
             $data[] = array(
                 'aperturacajaid' => $reg->aperturacajaid,
                 'numero' => $reg->numero,
                 'nombre' => $reg->nombre,
                 'personal' => $reg->personal,
                 'fecha_apertura' => $reg->fecha_apertura,
-                'efectivo_apertura' => '<span class="badge bg-red">'.'S/ '.$reg->efectivo_apertura.'</span>',
+                'efectivo_apertura' => '<span class="badge bg-danger">S/ ' . $reg->efectivo_apertura . '</span>',
                 'fecha_cierre' => $reg->fecha_cierre,
-                'efectivo_cierre' => '<span class="badge bg-green">'.'S/ '.$reg->efectivo_cierre.'</span>',
-                'cantventas' => $m,
+                'efectivo_cierre' => '<span class="badge bg-success">S/ ' . $reg->efectivo_cierre . '</span>',
+                'cantventas' => $reg->cantventas,
                 'ventas' => $ventasdata
             );
         }
+
         return $data;
     }
+
 
     public function listarPorApertura($aperturacajaid)
     {

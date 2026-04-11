@@ -7,7 +7,7 @@ function init() {
   $.post("controladores/venta.php?op=selectSucursal3", function (r) {
     $("#idsucursal2").html(r);
   });
-  //cargamos los items al select almacen
+  $("#idsucursal2").change(historial);
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
     $("#idsucursal").html(r);
     $("#idsucursal").select2("");
@@ -187,11 +187,10 @@ function historial() {
   let idsucursal = $("#idsucursal2").val();
   $.ajax({
     url: "controladores/cajas.php?op=historialcajas",
-    data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin },
+    data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, idsucursal: idsucursal },
     type: "get",
     dataType: "json",
     success: function (data) {
-      console.log(data);
       var html = "";
       if (data != '') {
         $.each(data, function (i, item) {
