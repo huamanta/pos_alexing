@@ -1613,7 +1613,10 @@ class Producto
 
 	public function selectProductosVenta()
 	{
-		$sql = "SELECT idproducto, nombre FROM producto WHERE condicion='1'";
+		$sql = "SELECT p.idproducto, CONCAT(p.nombre, ' - ', COALESCE(m.nombre, '')) AS nombre 
+		        FROM producto p 
+		        LEFT JOIN marca m ON p.idmarca = m.idmarca 
+		        WHERE p.condicion='1'";
 		return ejecutarConsulta($sql);
 	}
 

@@ -312,6 +312,9 @@ function cargarSucursales() {
 
     $("#idsucursal2").html(r);
     $("#idsucursal2").select2("");
+
+    $("#idsucursalVentas").html(r);
+    $("#idsucursalVentas").select2("").readonly(true);
   });
 }
 
@@ -2018,7 +2021,7 @@ function verificarCaja() {
             </a>
           </li>
           <li class="nav-item"  style="margin-right: 10px;">
-            <a class="nav-link" title="Ver reportes" onclick="" style="background-color: #FA7A31; border-radius: 5px; color: white; font-weight:bold;" href="#" role="button">
+            <a class="nav-link" title="Ver reportes" onclick="verReportes()" style="background-color: #FA7A31; border-radius: 5px; color: white; font-weight:bold;" href="#" role="button">
               <i class="fas fa-chart-bar"></i>
             </a>
           </li>
@@ -2055,9 +2058,87 @@ function verificarCaja() {
   });
 }
 
+function verReportes() {
+  $("#myModal2").modal("show");
+  listarVentas();
+}
+
+function listarVentas() {
+  var estado = $("#estadoVentas").val();
+  var idcaja = $("#idcaja").val();
+  var idsucursal = $("#idsucursalVentas").val();
+
+  tabla = $("#tbllistadoVentas")
+    .dataTable({
+      //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
+      aProcessing: true, //Activamos el procesamiento del datatables
+      aServerSide: true, //Paginación y filtrado realizados por el servidor
+      processing: true,
+      language: {
+        processing:
+          "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+      },
+      responsive: true,
+      lengthChange: false,
+      autoWidth: false,
+      dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+      lengthMenu: [
+        [5, 10, 25, 50, 100, -1],
+        [
+          "5 filas",
+          "10 filas",
+          "25 filas",
+          "50 filas",
+          "100 filas",
+          "Mostrar todo",
+        ],
+      ],
+      buttons: [
+        "pageLength",
+        {
+          extend: "excelHtml5",
+          text: "<i class='fas fa-file-csv'></i>",
+          titleAttr: "Exportar a Excel",
+          // className: 'btn btn-success'
+        },
+        {
+          extend: "pdf",
+          text: "<i class='fas fa-file-pdf'></i>",
+          titleAttr: "Exportar a PDF",
+          // className: 'btn btn-danger'
+        },
+        {
+          extend: "colvis",
+          text: "<i class='fas fa-bars'></i>",
+          titleAttr: "",
+          // className: 'btn btn-danger'
+        },
+      ],
+      ajax: {
+        url:
+          "controladores/pos.php?op=listarVentas&estado=" +
+          estado +
+          "&idcaja=" +
+          idcaja +
+          "&idsucursal=" +
+          idsucursal,
+        type: "get",
+        dataType: "json",
+        error: function (e) {
+          console.log(e.responseText);
+        },
+      },
+      bDestroy: true,
+      iDisplayLength: 5, //Paginación
+      order: [[0, "desc"]], //Ordenar (columna,orden)
+    })
+    .DataTable();
+}
+
 // =======================================
 // Verificar si hay caja abierta por sucursal
 // =======================================
+$("#estadoVentas").change(listarVentas);
 function verificarCajaPorSucursal(idsucursal) {
   return new Promise((resolve, reject) => {
     $.ajax({

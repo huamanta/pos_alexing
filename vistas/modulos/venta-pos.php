@@ -1440,6 +1440,97 @@ function tienePermiso($modulo, $accion, $submodulo = null)
         <!-- /.content -->
     </div>
 
+    <div class="modal fade" id="myModal2">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Lista de ventas</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+
+          <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+
+          </div>
+
+          <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+
+          </div>
+
+          <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+            <label>Almacén:</label>
+
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  <i class="fas fa-store-alt"></i>
+                </span>
+              </div>
+              <select id="idsucursalVentas" name="idsucursalVentas" class="form-control" readonly>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+            <label>Estado:</label>
+
+            <div class="input-group">
+              <select id="estadoVentas" name="estadoVentas" class="form-control select2" required>
+                <option value="Todos">Todos</option>
+                <option value="Aceptado">Aceptado</option>
+                <option value="Por Enviar">Por Enviar</option>
+                <option value="Nota Credito">Nota de Crédito</option>
+                <option value="Rechazado">Rechazado</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+        <div class="tale-resposive">
+          <table id="tbllistadoVentas" class="table table-striped">
+            <thead>
+              <th>ID</th>
+              <th>Cliente / N° Documento</th>
+              <th>Sucursal</th>
+              <th>Número</th>
+              <th>Total Venta</th>
+              <th>Tipo Pago</th>
+              <th>Estado</th>
+              <th width="70px;">Sunat</th>
+              <th style="text-align: center;"><i class="fa fa-shield" aria-hidden="true" title="Comprobar estado"></i></th>
+              <th width="180px;">Acciones</th>
+            </thead>
+            <tbody>
+            </tbody>
+            <tfoot>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Sucursal</th>
+              <th>Número</th>
+              <th>Total Venta</th>
+              <th>Tipo Pago</th>
+              <th>Estado</th>
+              <th>Sunat</th>
+              <th></th>
+              <th>Acciones</th>
+            </tfoot>
+          </table>
+        </div>
+
+      </div>
+      <div class="modal-footer justify-content-between">
+        <div></div>
+        <button type="button" class="btn btn-primary" data-dismiss="modal">CERRAR</button>
+      </div>
+    </div>
+    <!-- /.modal-content -->
+  </div>
+  <!-- /.modal-dialog -->
+</div>
+
     <div class="modal fade" id="myModal">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
