@@ -1490,7 +1490,7 @@ switch ($_GET["op"]) {
 
 		while ($reg = $rspta->fetch_object()) {
 			$data[] = array(
-				"0" => (($reg->stock == 0) ?
+				"0" => (($reg->stock == 0 && $reg->controla_stock == 'Si') ?
 					'<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>' :
 					'<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->unidadmedida . '\'); mostrarAlerta(\'Se agrego correctamente al carrito\');"><span class="fa fa-shopping-cart"></span></a>'),
 
@@ -1593,6 +1593,7 @@ switch ($_GET["op"]) {
 		$data = array();
 
 		while ($reg = $rspta->fetch_object()) {
+			$allowSell = ($reg->controla_stock === 'Si' && floatval($reg->stock) > 0);
 			$data[] = array(
 				'id' => $reg->id,
 				'idproducto' => $reg->idproducto,
@@ -1609,9 +1610,10 @@ switch ($_GET["op"]) {
 				'contenedor' => $reg->contenedor,
 				'idcategoria' => $reg->idcategoria,
 				'unidadmedida' => $reg->unidadmedida,
-				"stock" => (($reg->stock == 0)
-					? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
-				: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . addslashes($reg->nombre) . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ',\'' . $reg->unidadmedida . '\',undefined,\'' . addslashes($reg->fabricante ?? '') . '\',\'' . addslashes($reg->modelo ?? '') . '\',\'' . addslashes($reg->color ?? '') . '\')"><span class="fa fa-shopping-cart"></span></a>'),
+				'controla_stock' => $reg->controla_stock,
+				"stock" => ($allowSell
+					? '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . addslashes($reg->nombre) . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ',\'' . $reg->unidadmedida . '\',undefined,\'' . addslashes($reg->fabricante ?? '') . '\',\'' . addslashes($reg->modelo ?? '') . '\',\'' . addslashes($reg->color ?? '') . '\')"><span class="fa fa-shopping-cart"></span></a>'
+					: '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'),
 
 			"product" => "
 			<div style='display: flex; align-items: center; gap: 6px;'>
@@ -1670,7 +1672,7 @@ switch ($_GET["op"]) {
 			$stockLoteFifo = floatval($reg->stock_lote_fifo);
 
 			// ← Si no hay lote FIFO activo, saltar este contenedor
-			if ($stockLoteFifo <= 0) {
+			if ($stockLoteFifo <= 0 && $reg->controla_stock === 'Si') {
 				$btnStock = '<a class="btn btn-danger btn-sm" onclick="nostock()">
 	                            <span class="fa fa-shopping-cart"></span>
 	                         </a>';
@@ -1762,7 +1764,7 @@ switch ($_GET["op"]) {
 
 		while ($reg = $rspta->fetch_object()) {
 			$data[] = array(
-				"0" => (($reg->stock == 0) ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
+				"0" => (($reg->stock == 0 && $reg->controla_stock == 'Si') ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
 					: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
 				"1" => "<div style='display: flex; align-items: center; gap: 1px;'>
 				            <img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->precioB . "\",\"" . $reg->precioC . "\",\"" . $reg->precioD . "\",\"" . $reg->precioE . "\" ,\"" . $reg->margenpubl . "\",\"" . $reg->margendes . "\",\"" . $reg->margenp1 . "\",\"" . $reg->margenp2 . "\",\"" . $reg->margendist . "\",\"" . $reg->utilprecio . "\",\"" . $reg->utilprecioB . "\",\"" . $reg->utilprecioC . "\",\"" . $reg->utilprecioD . "\",\"" . $reg->utilprecioE . "\")' 

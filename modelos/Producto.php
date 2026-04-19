@@ -1754,6 +1754,7 @@ public function insertar(
                 f.idfifo AS id_fifo,
                 f.precio_venta AS precio_base_fifo,
                 f.cantidad_restante AS stock_lote_fifo,
+				p.controla_stock,
                 CASE 
                     WHEN UPPER(TRIM(pg.contenedor)) = 'UNIDAD' THEN COALESCE(f.precio_venta, 0)
                     ELSE COALESCE(NULLIF(pg.precio_venta, 0), 0)

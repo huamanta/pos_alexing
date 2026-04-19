@@ -224,7 +224,7 @@ public function listarSucursalesUsuario($idusuario)
 	//Función para verificar el acceso al sistema
 	public function verificar($login,$clave)
     {
-    	$sql="SELECT a.idusuario,a.idpersonal,c.imagen,c.nombre as nombre,c.cargo,a.login,a.idsucursal FROM usuario a INNER JOIN personal c ON a.idpersonal=c.idpersonal WHERE a.login='$login' AND a.clave='$clave' AND a.condicion='1'"; 
+    	$sql="SELECT a.idusuario, a.idpersonal,c.imagen,c.nombre as nombre,c.cargo,a.login,a.idsucursal FROM usuario a INNER JOIN personal c ON a.idpersonal=c.idpersonal WHERE a.login='$login' AND a.clave='$clave' AND a.condicion='1'"; 
     	return ejecutarConsulta($sql);
     }
 

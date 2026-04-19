@@ -3,11 +3,7 @@ ob_start();
 if (strlen(session_id()) < 1) {
 	session_start(); //Validamos si existe o no la sesión
 }
-if (!isset($_SESSION["nombre"])) {
-	header("Location: ../vistas/login.html"); //Validamos el acceso solo a los usuarios logueados al sistema.
-} else {
-	//Validamos el acceso solo al usuario logueado y autorizado.
-	if ($_SESSION['compras'] == 1) {
+
 		require_once "../modelos/Compra.php";
 
 		$compra = new Compra();
@@ -722,8 +718,6 @@ if (!isset($_SESSION["nombre"])) {
 
 		}
 		//Fin de las validaciones de acceso
-	} else {
-		require 'noacceso.php';
-	}
-}
+	
+
 ob_end_flush();
