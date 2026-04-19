@@ -1,8 +1,3 @@
-<?php
-function tienePermiso($modulo, $submodulo, $accion) {
-    return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
-}
-?>
 
 <!-- Content Wrapper. Contains page content -->
 
@@ -34,7 +29,7 @@ function tienePermiso($modulo, $submodulo, $accion) {
               <h3 class="card-title"> </h3>
 
               <div class="row">
-                <?php if (tienePermiso('Almacen', 'Marcas', 'Crear Marca')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Crear Marca')) { ?>
                 <div class="col-md-1">
                   <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Nueva Marca</button>
                 </div>

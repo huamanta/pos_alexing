@@ -1,4 +1,45 @@
 <!-- Content Wrapper. Contains page content -->
+ echo "
+<style>
+.permiso-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    width: 100%;
+    height: 400px;
+    overflow-y: auto;
+}
+
+.permiso-card {
+    width: 23%;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px 15px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-left: 4px solid #007bff;
+}
+
+.permiso-title {
+    font-weight: bold;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.subpermiso {
+    margin-left: 15px;
+    margin-top: 5px;
+}
+
+.accion {
+    margin-left: 30px;
+    font-size: 13px;
+    color: #555;
+}
+
+input[type='checkbox'] {
+    margin-right: 5px;
+}
+</style>
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
   <section class="content-header">
@@ -112,9 +153,13 @@
             </div>
           <div class="form-group">
             <label for="name" class="col-sm-2 control-label">Permisos:</label>
+            <div class="col-sm-12 mb-2">
+              <input type="text" id="buscarPermisos" class="form-control" placeholder="Buscar permisos...">
+            </div>
             <div class="col-sm-12">
-              <ul style="list-style: none;" id="permisos">
+              <ul style="list-style: none;" id="permisos" class="permiso-container">
               </ul>
+              <div id="noPermisosFound" class="alert alert-warning mt-2" style="display:none;">No se encontraron permisos.</div>
             </div>
           </div>
         </div>

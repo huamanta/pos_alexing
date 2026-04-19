@@ -21,8 +21,9 @@ Class Categoria
 	//Implementamos un método para insertar registros
 	public function insertarSucursal($nombre,$direccion,$telefono,$nombreSucursal,$serie_comprobante,$num_comprobante,$distrito,$provincia,$departamento,$ubigeo, $idempresa, $moneda, $simbolo)
 	{
+		$idempresa_value = $idempresa ? "'$idempresa'" : "NULL";
 		$sql="INSERT INTO sucursal (nombre,direccion,telefono,distrito,provincia,departamento,ubigeo,idempresa,moneda,simbolo)
-		VALUES ('$nombre','$direccion','$telefono','$distrito','$provincia','$departamento','$ubigeo','$idempresa','$moneda','$simbolo')";
+		VALUES ('$nombre','$direccion','$telefono','$distrito','$provincia','$departamento','$ubigeo',$idempresa_value,'$moneda','$simbolo')";
 
 		$idsucursalnew=ejecutarConsulta_retornarID($sql);
 

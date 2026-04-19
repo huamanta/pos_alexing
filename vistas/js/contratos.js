@@ -9,6 +9,10 @@ function initializeContratos() {
     $("#fecha_inicio, #fecha_fin, #estado, #idsucursal, #condicion, #input_frecuencia").on('change', function () {
         tabla.ajax.reload();
     });
+
+    $('#navPosActive').addClass("treeview active");
+    $('#navPos').addClass("treeview menu-open");
+    $('#navContratos').addClass("active");
 };
 
 function recargarTabla() {

@@ -238,44 +238,50 @@ switch ($_GET["op"]){
 	        $acciones[$row->idsubpermiso][] = $row;
 	    }
 
-	    echo "<div style='display: flex; flex-wrap: wrap;'>";
 	    while ($perm = $rspta->fetch_object()) {
-	        $checked = in_array($perm->idpermiso, $permisosMarcados) ? 'checked' : '';
+			$checked = in_array($perm->idpermiso, $permisosMarcados) ? 'checked' : '';
 
-	        echo "
-	        <div style='width: 25%; padding: 5px 10px; box-sizing: border-box;'>
-	            <label style='font-weight:bold;'>
-	                <input type='checkbox' name='permiso[]' value='{$perm->idpermiso}' $checked> {$perm->nombre}
-	            </label>";
+			echo "
+			<div class='permiso-card'>
+				<label class='permiso-title'>
+					<input type='checkbox' name='permiso[]' value='{$perm->idpermiso}' $checked>
+					{$perm->nombre}
+				</label>
+			";
 
-	        if (isset($subpermisos[$perm->idpermiso])) {
-	            foreach ($subpermisos[$perm->idpermiso] as $sub) {
-	                $sub_checked = in_array($sub->idsubpermiso, $subpermisosMarcados) ? 'checked' : '';
+			if (isset($subpermisos[$perm->idpermiso])) {
+				foreach ($subpermisos[$perm->idpermiso] as $sub) {
+					$sub_checked = in_array($sub->idsubpermiso, $subpermisosMarcados) ? 'checked' : '';
 
-	                echo "
-	                <div style='margin-left: 20px;'>
-	                    <label>
-	                        <input type='checkbox' name='subpermisos[]' value='{$sub->idsubpermiso}' $sub_checked> {$sub->nombre}
-	                    </label>";
+					echo "
+					<div class='subpermiso'>
+						<label>
+							<input type='checkbox' name='subpermisos[]' value='{$sub->idsubpermiso}' $sub_checked>
+							{$sub->nombre}
+						</label>
+					";
 
-	                if (isset($acciones[$sub->idsubpermiso])) {
-	                    foreach ($acciones[$sub->idsubpermiso] as $accion) {
-	                        $accion_checked = in_array($accion->idaccion_permiso, $accionesMarcadas) ? 'checked' : '';
-	                        echo "
-	                        <div style='margin-left: 20px;'>
-	                            <label>
-	                                <input type='checkbox' name='acciones[]' value='{$accion->idaccion_permiso}' $accion_checked> {$accion->nombre}
-	                            </label>
-	                        </div>";
-	                    }
-	                }
+					if (isset($acciones[$sub->idsubpermiso])) {
+						foreach ($acciones[$sub->idsubpermiso] as $accion) {
+							$accion_checked = in_array($accion->idaccion_permiso, $accionesMarcadas) ? 'checked' : '';
 
-	                echo "</div>";
-	            }
-	        }
+							echo "
+							<div class='accion'>
+								<label>
+									<input type='checkbox' name='acciones[]' value='{$accion->idaccion_permiso}' $accion_checked>
+									{$accion->nombre}
+								</label>
+							</div>
+							";
+						}
+					}
 
-	        echo "</div>";
-	    }
+					echo "</div>";
+				}
+			}
+
+			echo "</div>";
+		}
 	    echo "</div>";
 	break;
 
@@ -549,6 +555,62 @@ case 'seleccionarSucursal':
 	}else{
 		echo 'error';
 	}
+break;
+
+case 'crearSucursal':
+    require_once "../modelos/Empresas.php";
+    $empresa = new Empresa();
+    $ruc = isset($_POST["ruc"]) ? limpiarCadena($_POST["ruc"]) : "";
+    $razon_social = isset($_POST["razon_social"]) ? limpiarCadena($_POST["razon_social"]) : "";
+    $nombre_impuesto = isset($_POST["nombre_impuesto"]) ? limpiarCadena($_POST["nombre_impuesto"]) : "";
+    $monto_impuesto = isset($_POST["monto_impuesto"]) ? limpiarCadena($_POST["monto_impuesto"]) : "";
+    $estado = 1; // Activo por defecto
+    // Insertar empresa
+    $res_empresa = $empresa->guardaryeditar("", $ruc, $razon_social, "", "", "", "", "", "", "", $nombre_impuesto, $monto_impuesto, $estado);
+    if ($res_empresa['status'] == 'success') {
+        // Obtener idempresa
+        $sql_emp = "SELECT idempresa FROM empresas ORDER BY idempresa DESC LIMIT 1";
+        $emp = ejecutarConsultaSimpleFila($sql_emp);
+        $idempresa = $emp['idempresa'];
+        
+        require_once "../modelos/Categoria.php";
+        $categoria = new Categoria();
+        $nombre = isset($_POST["nombre"]) ? limpiarCadena($_POST["nombre"]) : "";
+        $direccion = isset($_POST["direccion"]) ? limpiarCadena($_POST["direccion"]) : "";
+        $telefono = isset($_POST["telefono"]) ? limpiarCadena($_POST["telefono"]) : "";
+        $rspta = $categoria->insertarSucursal(
+            $nombre,
+            $direccion,
+            $telefono,
+            ['Factura', 'Boleta', 'Nota de Crédito', 'Nota de Débito'],
+            ['F001', 'B001', 'NC01', 'ND01'],
+            [1, 1, 1, 1],
+            '', '', '', '',
+            $idempresa,
+            'PEN',
+            'S/'
+        );
+        if ($rspta) {
+            $sql_new = "SELECT idsucursal FROM sucursal ORDER BY idsucursal DESC LIMIT 1";
+            $new_suc = ejecutarConsultaSimpleFila($sql_new);
+            $idsucursal_new = $new_suc['idsucursal'];
+            $sql_asignar = "INSERT INTO usuario_sucursal (idusuario, idsucursal) VALUES ('{$_SESSION['idusuario']}', '$idsucursal_new')";
+            ejecutarConsulta($sql_asignar);
+            $res = $usuario->seleccionarSucursal($idsucursal_new);
+            if ($res) {
+                $_SESSION['idsucursal'] = $res['idsucursal'];
+                $_SESSION['nombre_impuesto'] = $res['nombre_impuesto'];
+                $_SESSION['monto_impuesto'] = $res['monto_impuesto'];
+                echo 'ok';
+            } else {
+                echo 'error al seleccionar';
+            }
+        } else {
+            echo 'error al crear sucursal';
+        }
+    } else {
+        echo 'error al crear empresa';
+    }
 break;
 
 

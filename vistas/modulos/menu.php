@@ -1,3 +1,6 @@
+<?php
+require_once __DIR__ . '/../../modelos/Helpers.php';
+?>
 <aside class="main-sidebar sidebar-light elevation-0 tailpanel-sidebar">
   <!-- Brand Logo -->
   <a href="inicio" class="brand-link">
@@ -5,13 +8,6 @@
       <span class="brand-text" id="nombreNegocio" style="font-size: 20px;color: black !important;"></span>
     </center>
   </a>
-
-<?php
-function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
-  return isset($_SESSION['subpermisos'][$idpermiso]) && 
-         in_array($nombreSubpermiso, $_SESSION['subpermisos'][$idpermiso]);
-}
-?>
   <!-- Sidebar -->
   <div class="sidebar">
     <!-- Sidebar user panel (optional) -->
@@ -35,7 +31,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         
 
         <?php
-        if ($_SESSION['inicio'] == 1) {
+        if (Helpers::getUserPermisoModulo('inicio')) {
         ?>
           <li class="nav-item">
             <a href="inicio" class="nav-link" id="navInicio">
@@ -50,7 +46,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
 
         <?php
-        if ($_SESSION['procesar'] == 1) {
+        if (Helpers::getUserPermisoModulo('procesar')) {
         ?>
           <li class="nav-item">
             <a href="procesar" class="nav-link" id="navProcesar">
@@ -65,7 +61,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
         
         <?php
-        if ($_SESSION['pos'] == 1) {
+        if (Helpers::getUserPermisoModulo('pos')) {
         ?>
           <li class="nav-item" id="navPos">
             <a href="#" class="nav-link" id="navPosActive">
@@ -76,16 +72,16 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </p>
             </a>
             <ul class="nav nav-treeview">
-            <?php if (tieneSubpermiso(12, 'Contratos')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Contratos', 'pos')): ?>
             <li class="nav-item" style="font-size: 14px">
-                <a href="contrato" class="nav-link" id="navContrato">
+                <a href="contrato" class="nav-link" id="navContratos">
                   <i class="fas fa-file-contract nav-icon text-primary" style="font-size: 14px"></i>
                   <p>Contratos</p>
                 </a>
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(12, 'Venta Pos')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Venta Pos', 'pos')): ?>
               <li class="nav-item" style="font-size: 14px">
               <a href="venta-pos" class="nav-link" id="navCrearVenta">
                 <i class="fas fa-shopping-cart nav-icon text-primary" style="font-size: 14px"></i>
@@ -94,7 +90,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
             </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(12, 'Guia de Remision')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Guia de Remision', 'pos')): ?>
               <li class="nav-item" style="font-size: 14px">
               <a href="guia" class="nav-link" id="navGuia">
                 <i class="fas fa-truck nav-icon text-primary" style="font-size: 14px"></i>
@@ -103,7 +99,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
             </li>
             <?php endif; ?>
 
-          <?php if (tieneSubpermiso(12, 'Cotizaciones')): ?>
+          <?php if (Helpers::getUserPermisoModulo('Cotizaciones', 'pos')): ?>
           <li class="nav-item" style="font-size: 14px">
                 <a href="cotizacion" class="nav-link" id="navCotizaciones">
                   <i class="fas fa-file-invoice-dollar nav-icon text-primary" style="font-size: 14px"></i>
@@ -112,7 +108,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
           <?php endif; ?>
             
-            <?php if (tieneSubpermiso(12, 'NotasCredito')): ?>  
+            <?php if (Helpers::getUserPermisoModulo('NotasCredito', 'pos')): ?>  
               <li class="nav-item" style="font-size: 14px">
                 <a href="nota-credito" class="nav-link" id="navNotasCredito">
                   <i class="fas fa-receipt nav-icon text-primary" style="font-size: 14px"></i>
@@ -128,7 +124,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
 
         <?php
-        if ($_SESSION['crearservicio'] == 1) {
+        if (Helpers::getUserPermisoModulo('crearservicio')) {
         ?>
           <li class="nav-item" >
             <a href="service" class="nav-link" id="navCrearVenta">
@@ -143,7 +139,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
 
         <?php
-        if ($_SESSION['ventas'] == 1) {
+        if (Helpers::getUserPermisoModulo('ventas')) {
         ?>
           <li class="nav-item" id="navVentas">
             <a href="#" class="nav-link" id="navVentasActive">
@@ -154,10 +150,10 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </p>
             </a>
             <ul class="nav nav-treeview">
-            <?php if (tieneSubpermiso(4, 'Comprobantes')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Comprobantes', 'ventas')): ?>
             <li class="nav-item" style="font-size: 14px">
                 <a href="venta" class="nav-link" id="navVenta">
-                  <i class="fas fa-file-invoice nav-icon text-orange" style="font-size: 14px"></i>
+                  <i class="fas fa-file-invoice nav-icon te xt-orange" style="font-size: 14px"></i>
                   <p>Lista de Comprobantes</p>
                 </a>
               </li>
@@ -170,7 +166,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                 </a>
               </li>
 
-            <?php if (tieneSubpermiso(4, 'Cajas')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Cajas', 'ventas')): ?>
             <li class="nav-item" style="font-size: 14px">
             <a href="cajas" class="nav-link" id="navCajas">
               <i class="fas fa-cash-register nav-icon text-orange" style="font-size: 14px"></i>
@@ -179,7 +175,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
           </li>
           <?php endif; ?>
 
-          <?php if (tieneSubpermiso(4, 'Clientes')): ?>
+          <?php if (Helpers::getUserPermisoModulo('Clientes', 'ventas')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="cliente" class="nav-link" id="navCliente">
                   <i class="fas fa-users nav-icon text-orange" style="font-size: 14px"></i>
@@ -196,7 +192,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
 
 
         <?php
-          if ($_SESSION['almacen'] == 1) {
+          if (Helpers::getUserPermisoModulo('almacen')) {
           ?>
             <li class="nav-item" id="navAlmacen">
               <a href="#" class="nav-link" id="navAlmacenActive">
@@ -207,7 +203,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                 </p>
               </a>
               <ul class="nav nav-treeview">
-                <?php if (tieneSubpermiso(2, 'Productos')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Productos', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="producto" class="nav-link" id="navProducto">
                       <i class="fas fa-boxes nav-icon text-purple" style="font-size: 14px"></i>
@@ -216,7 +212,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                   </li>
                 <?php endif; ?>
 
-                <?php if (tieneSubpermiso(2, 'Servicios')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Servicios', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="servicio" class="nav-link" id="navServicio">
                       <i class="fas fa-concierge-bell nav-icon text-purple" style="font-size: 14px"></i>
@@ -225,7 +221,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                   </li>
                 <?php endif; ?>
 
-                <?php if (tieneSubpermiso(2, 'Nombres Precios')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Nombres Precios', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="nombres-precios" class="nav-link" id="navNombrep">
                       <i class="fas fa-tags nav-icon text-purple" style="font-size: 14px"></i>
@@ -234,7 +230,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                   </li>
                 <?php endif; ?>
 
-                <?php if (tieneSubpermiso(2, 'Categorias')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Categorias', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="categoria" class="nav-link" id="navCategoria">
                       <i class="fas fa-layer-group nav-icon text-purple" style="font-size: 14px"></i>
@@ -242,7 +238,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                     </a>
                   </li>
                 <?php endif; ?>
-                <?php if (tieneSubpermiso(2, 'Marcas')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Marcas', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="marca" class="nav-link" id="navMarca">
                       <i class="fas fa-newspaper nav-icon text-purple" style="font-size: 14px"></i>
@@ -251,7 +247,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                   </li>
                 <?php endif; ?>
 
-                <?php if (tieneSubpermiso(2, 'Modelos')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Modelos', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="modelo" class="nav-link" id="navModelo">
                       <i class="fas fa-tags nav-icon text-purple" style="font-size: 14px"></i>
@@ -260,7 +256,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                   </li>
                 <?php endif; ?>
 
-                <?php if (tieneSubpermiso(2, 'Lineas')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Lineas', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="rubro" class="nav-link" id="navLinea">
                       <i class="fas fa-server nav-icon text-purple" style="font-size: 14px"></i>
@@ -269,7 +265,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                   </li>
                 <?php endif; ?>
 
-                <?php if (tieneSubpermiso(2, 'Condicion de venta')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Condicion de venta', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="condicionventa" class="nav-link" id="navCondicionVenta">
                       <i class="fas fa-server nav-icon text-purple" style="font-size: 14px"></i>
@@ -278,7 +274,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                   </li>
                 <?php endif; ?>
 
-                <?php if (tieneSubpermiso(2, 'Unidad de medida')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Unidad de medida', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="unidad-medida" class="nav-link" id="navUnidadMedida">
                       <i class="fas fa-ruler-combined nav-icon text-purple" style="font-size: 14px"></i>
@@ -287,7 +283,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                   </li>
                 <?php endif; ?>
 
-                <?php if (tieneSubpermiso(2, 'Traslados')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Traslados', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="traslado" class="nav-link" id="navTraslado">
                       <i class="fas fa-concierge-bell nav-icon text-purple" style="font-size: 14px"></i>
@@ -296,7 +292,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                   </li>
                 <?php endif; ?>
 
-                <?php if (tieneSubpermiso(2, 'Reportes')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Reportes', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="reportes-digemid" class="nav-link" id="navReportes">
                       <i class="fas fa-chart-bar nav-icon text-purple" style="font-size: 14px"></i>
@@ -305,7 +301,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                   </li>
                 <?php endif; ?>
 
-                <?php if (tieneSubpermiso(2, 'Vencimiento')): ?>
+                <?php if (Helpers::getUserPermisoModulo('Vencimiento', 'almacen')): ?>
                   <li class="nav-item" style="font-size: 14px">
                     <a href="reportes-vencimiento" class="nav-link" id="navVencimiento">
                       <i class="fas fa-hourglass-end nav-icon text-purple" style="font-size: 14px"></i>
@@ -320,7 +316,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
           ?>
 
         <?php
-        if ($_SESSION['inventario'] == 1) {
+        if (Helpers::getUserPermisoModulo('inventario')) {
         ?>
           <li class="nav-item" id="navInventario">
             <a href="#" class="nav-link" id="navInventarioActive">
@@ -332,7 +328,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
             </a>
             <ul class="nav nav-treeview">
 
-            <?php if (tieneSubpermiso(15, 'Ajuste Inventario')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Ajuste Inventario', 'inventario')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="toma-inventario" class="nav-link" id="navtoma-inventario">
                   <i class="fas fa-clipboard-list nav-icon text-orange" style="font-size: 14px"></i>
@@ -341,7 +337,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(15, 'Toma Inventario')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Toma Inventario', 'inventario')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="ajuste-inventario" class="nav-link" id="navajuste-inventario">
                   <i class="fas fa-sliders-h nav-icon text-orange" style="font-size: 14px"></i>
@@ -357,7 +353,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
 
         <?php
-        if ($_SESSION['compras'] == 1) {
+        if (Helpers::getUserPermisoModulo('compras')) {
         ?>
           <li class="nav-item" id="navCompras">
             <a href="#" class="nav-link" id="navComprasActive">
@@ -369,7 +365,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
             </a>
             <ul class="nav nav-treeview">
 
-              <?php if (tieneSubpermiso(3, 'CrearCompras')): ?>
+              <?php if (Helpers::getUserPermisoModulo('CrearCompras', 'compras')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="compra" class="nav-link" id="navCompra">
                     <i class="fas fa-cart-arrow-down nav-icon text-orange" style="font-size: 14px"></i>
@@ -378,7 +374,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                 </li>
               <?php endif; ?>
 
-              <?php if (tieneSubpermiso(3, 'Proveedores')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Proveedores', 'compras')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="proveedor" class="nav-link" id="navProveedor">
                     <i class="fas fa-truck nav-icon text-orange" style="font-size: 14px"></i>
@@ -394,7 +390,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
 
         <?php
-        if ($_SESSION['cajachica'] == 1) {
+        if (Helpers::getUserPermisoModulo('cajachica')) {
         ?>
           <li class="nav-item">
             <a href="caja-chica" class="nav-link" id="navCajaChica">
@@ -409,7 +405,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
 
         <?php
-        if ($_SESSION['cuentascobrar'] == 1) {
+        if (Helpers::getUserPermisoModulo('cuentascobrar')) {
         ?>
           <li class="nav-item">
             <a href="cuentas-cobrar" class="nav-link" id="navCuentasPorCobrar">
@@ -424,10 +420,10 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
 
         <?php
-          if ($_SESSION['cuentasxpagar'] == 1) {
+          if (Helpers::getUserPermisoModulo('cuentasxpagar')) {
         ?>
           <li class="nav-item">
-            <a href="cuentasxpagar" class="nav-link" id="navCuentasPorCobrar">
+            <a href="cuentasxpagar" class="nav-link" id="navCuentasPorPagar">
               <i class="nav-icon fa fa-list-ul"></i>
               <p>
               Cuentas por Pagar
@@ -439,7 +435,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
         
         <?php
-        if ($_SESSION['kardex'] == 1) {
+        if (Helpers::getUserPermisoModulo('kardex')) {
         ?>
           <li class="nav-item">
             <a href="kardex" class="nav-link" id="navKardex">
@@ -458,7 +454,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         
 
         <?php
-        if ($_SESSION['personal'] == 1) {
+        if (Helpers::getUserPermisoModulo('personal')) {
         ?>
           <li class="nav-item" id="navPersonal">
             <a href="#" class="nav-link" id="navPersonalActive">
@@ -470,7 +466,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
             </a>
             <ul class="nav nav-treeview">
 
-            <?php if (tieneSubpermiso(5, 'Asistencia')): ?>  
+            <?php if (Helpers::getUserPermisoModulo('Asistencia', 'personal')): ?>  
               <li class="nav-item" style="font-size: 14px">
                 <a href="asistencia" class="nav-link" id="navAsistencia">
                   <i class="fas fa-calendar-check nav-icon text-orange" style="font-size: 14px"></i>
@@ -479,7 +475,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(5, 'Personal')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Personal', 'personal')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="personal" class="nav-link" id="navPersonalI">
                   <i class="fas fa-user-tie nav-icon text-orange" style="font-size: 14px"></i>
@@ -488,7 +484,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(5, 'Usuarios')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Usuarios', 'personal')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="usuario" class="nav-link" id="navUsuario">
                   <i class="fas fa-users-cog nav-icon text-orange" style="font-size: 14px"></i>
@@ -497,7 +493,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(5, 'Permisos')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Permisos', 'personal')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="permiso" class="nav-link">
                   <i class="fas fa-key nav-icon text-orange" style="font-size: 14px"></i>
@@ -514,7 +510,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
 
         <?php
-        if ($_SESSION['configuracion'] == 1) {
+        if (Helpers::getUserPermisoModulo('configuracion')) {
         ?>
           <li class="nav-item" id="navConfiguracion">
             <a href="#" class="nav-link" id="navConfiguracionActive">
@@ -525,7 +521,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </p>
             </a>
             <ul class="nav nav-treeview">
-            <?php if (tieneSubpermiso(8, 'Datos Generales')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Datos Generales', 'configuracion')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="negocio" class="nav-link" id="navDatosGeneralesI">
                   <i class="fas fa-building nav-icon text-orange" style="font-size: 14px"></i>
@@ -534,7 +530,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(8, 'Facturadores')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Facturadores', 'configuracion')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="empresas" class="nav-link" id="navFacturadores">
                   <i class="fas fa-file-alt nav-icon text-orange" style="font-size: 14px"></i>
@@ -543,7 +539,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(8, 'Sucursales')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Sucursales', 'configuracion')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="sucursal" class="nav-link" id="navSucursal">
                   <i class="fas fa-map-marker-alt nav-icon text-orange" style="font-size: 14px"></i>
@@ -559,7 +555,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
 
         <?php
-        if ($_SESSION['consultac'] == 1) {
+        if (Helpers::getUserPermisoModulo('consultac')) {
         ?>
           <li class="nav-item" id="navConsultaCompras">
             <a href="#" class="nav-link" id="navConsultaComprasActive">
@@ -571,7 +567,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
             </a>
             <ul class="nav nav-treeview">
 
-              <?php if (tieneSubpermiso(6, 'Consulta Compras')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Consulta Compras', 'consultac')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="compras-fecha" class="nav-link" id="navConsultaComprasI">
                     <i class="fas fa-calendar-alt nav-icon text-info" style="font-size: 14px"></i>
@@ -580,7 +576,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                 </li>
               <?php endif; ?>
 
-              <?php if (tieneSubpermiso(6, 'Consulta Compras XP')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Consulta Compras XP', 'consultac')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="compras-proveedor" class="nav-link" id="navConsultaComprasII">
                     <i class="fas fa-truck-loading nav-icon text-purple" style="font-size: 14px"></i>
@@ -596,7 +592,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
         ?>
 
         <?php
-        if ($_SESSION['consultav'] == 1) {
+        if (Helpers::getUserPermisoModulo('consultav')) {
         ?>
           <li class="nav-item" id="navConsultaVentas">
             <a href="#" class="nav-link" id="navConsultaVentasActive">
@@ -608,7 +604,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
             </a>
             <ul class="nav nav-treeview">
 
-            <?php if (tieneSubpermiso(7, 'Ventas Cliente')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Ventas Cliente', 'consultav')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="ventas-cliente" class="nav-link" id="navVentasCliente">
                   <i class="fas fa-user-tag nav-icon text-primary" style="font-size: 14px"></i>
@@ -617,7 +613,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(7, 'Ventas Vendedor')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Ventas Vendedor', 'consultav')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="ventas-vendedor" class="nav-link" id="navVentasVendedor">
                   <i class="fas fa-user-tie nav-icon text-primary" style="font-size: 14px"></i>
@@ -626,7 +622,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(7, 'Ventas Utilidades')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Ventas Utilidades', 'consultav')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="ventas-producto" class="nav-link" id="navVentasProducto">
                   <i class="fas fa-chart-line nav-icon text-primary" style="font-size: 14px"></i>
@@ -635,7 +631,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(7, 'Creditos Utilidades')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Creditos Utilidades', 'consultav')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="ventas-credito" class="nav-link" id="navVentasCredito">
                   <i class="fas fa-credit-card nav-icon text-primary" style="font-size: 14px"></i>
@@ -644,7 +640,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(7, 'Consolidado')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Consolidado', 'consultav')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="reporte" class="nav-link" id="navVentasCredito">
                   <i class="fas fa-credit-card nav-icon text-primary" style="font-size: 14px"></i>
@@ -653,7 +649,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(7, 'Ventas Servicios')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Ventas Servicios', 'consultav')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="ventas-servicio" class="nav-link" id="navVentasServicio">
                   <i class="fas fa-concierge-bell nav-icon text-primary" style="font-size: 14px"></i>
@@ -662,7 +658,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </li>
             <?php endif; ?>
 
-            <?php if (tieneSubpermiso(7, 'Ventas Detalle')): ?>
+            <?php if (Helpers::getUserPermisoModulo('Ventas Detalle', 'consultav')): ?>
               <li class="nav-item" style="font-size: 14px">
                 <a href="detalle-venta-comprobante" class="nav-link" id="navVentasDetalle">
                   <i class="fas fa-receipt nav-icon text-primary" style="font-size: 14px"></i>

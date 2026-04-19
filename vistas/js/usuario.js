@@ -26,7 +26,11 @@ function init(){
         $("#idpersonal").html(r);
         $('#idpersonal').select2();
 	});
-	
+
+    $(document).on('keyup', '#buscarPermisos', function() {
+        filtrarPermisos();
+    });
+    
     $('#navPersonalActive').addClass("treeview active");
     $('#navPersonal').addClass("treeview menu-open");
     $('#navUsuario').addClass("active");
@@ -41,6 +45,25 @@ function limpiar()
 	$("#clave").val("");
     $("#idsucursal").val(null).trigger('change');
 	$("#idusuario").val("");
+    $("#buscarPermisos").val('');
+    $("#noPermisosFound").hide();
+}
+
+function filtrarPermisos()
+{
+    var search = $("#buscarPermisos").val().toLowerCase().trim();
+    var found = false;
+
+    $("#permisos .permiso-card").each(function() {
+        var text = $(this).text().toLowerCase();
+        var visible = search === '' || text.indexOf(search) !== -1;
+        $(this).toggle(visible);
+        if (visible) {
+            found = true;
+        }
+    });
+
+    $("#noPermisosFound").toggle(!found);
 }
 
 //Función cancelarform
@@ -49,6 +72,7 @@ function cancelarform()
 	limpiar();
 	$.post("controladores/usuario.php?op=permisos&id=",function(r){
 		$("#permisos").html(r);
+        filtrarPermisos();
 	});
 }
 function nuevoUsuario() {
@@ -60,8 +84,7 @@ function nuevoUsuario() {
 
     // Carga permisos vacíos
     $.post("controladores/usuario.php?op=permisos&id=", function (r) {
-        $("#permisos").html(r);
-    });
+        $("#permisos").html(r);        filtrarPermisos();    });
 }
 
 function verificarUsuario(nombre){
@@ -132,6 +155,7 @@ function mostrar(idusuario)
     }).always(function(){
         $.post("controladores/usuario.php?op=permisos&id="+idusuario,function(r){
             $("#permisos").html(r);
+            filtrarPermisos();
         });
     });
 }

@@ -113,10 +113,10 @@ switch ($_GET["op"]) {
 		}
 		if (empty($idproducto)) {
 			$rspta = $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV, $_POST['sucursales']);
-			echo $rspta ? "Datos registrados correctamente" : "No se pudo completar el registro";
+			echo json_encode($rspta);
 		} else {
 			$rspta = $producto->editar($idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV);
-			echo $rspta ? "Datos actualizados" : "No se pudo actualizar";
+			echo json_encode($rspta);
 		}
 		break;
 
@@ -1074,11 +1074,11 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'buscarStockPorSucursales':
-		$termino = $_POST['termino'];
+		$search = $_POST['search'];
 		$idsucursalActual = $_SESSION['idsucursal'];
 		$idsucursalFiltro = isset($_POST['idsucursalFiltro']) ? $_POST['idsucursalFiltro'] : '';
 		$producto = new Producto();
-		$rspta = $producto->buscarStockPorSucursales($termino, $idsucursalActual, $idsucursalFiltro);
+		$rspta = $producto->buscarStockPorSucursales($search, $idsucursalActual, $idsucursalFiltro);
 		$data = [];
 		while ($reg = $rspta->fetch_object()) {
 			$data[] = [

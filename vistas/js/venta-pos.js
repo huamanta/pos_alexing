@@ -2200,39 +2200,34 @@ function listarCajas() {
   });
 }
 
-$("#formularioappcaja").submit(function (e) {
-  e.preventDefault();
-  var $form = $(this); // guardamos una referencia al form
-  var data = new FormData(this);
+// $("#formularioappcaja").submit(function (e) {
+//   e.preventDefault();
+//   var $form = $(this); // guardamos una referencia al form
+//   var data = new FormData(this);
 
-  $.ajax({
-    url: "controladores/venta.php?op=aperturar_caja",
-    type: "POST",
-    data: data,
-    contentType: false,
-    processData: false,
+//   $.ajax({
+//     url: "controladores/venta.php?op=aperturar_caja",
+//     type: "POST",
+//     data: data,
+//     contentType: false,
+//     processData: false,
 
-    success: function (resp) {
-      var json = JSON.parse(resp);
-      if (json.success) {
-        // 1) reseteamos todos los campos del form
-        $form[0].reset();
-
-        // 2) volvemos a poblar el select de cajas (opcional, si quieres recargarlo)
-        listarCajas();
-
-        // 3) abrimos el módulo de ventas y pintamos el navbar-pos2
-        mostrarform(true);
-        setNavbarPosVisible(true);
-      } else {
-        Swal.fire("Error", "No se pudo aperturar la caja.", "error");
-      }
-    },
-    error: function () {
-      Swal.fire("Error", "Fallo en la petición de apertura.", "error");
-    },
-  });
-});
+//     success: function (resp) {
+//       var json = JSON.parse(resp);
+//       if (json.success) {
+//         $form[0].reset();
+//         listarCajas();
+//         mostrarform(true);
+//         setNavbarPosVisible(true);
+//       } else {
+//         Swal.fire("Error", "No se pudo aperturar la caja.", "error");
+//       }
+//     },
+//     error: function () {
+//       Swal.fire("Error", "Fallo en la petición de apertura.", "error");
+//     },
+//   });
+// });
 
 function cerrarcaja() {
   var idcaja = $("#idcaja").val();

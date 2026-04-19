@@ -103,11 +103,15 @@ public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $pe
     }
 
     // 4. Limpiar permisos y acciones previas
-    if (!ejecutarConsulta("DELETE FROM usuario_permiso WHERE idusuario='$idusuario'")) {
+    $sql_permisos = "DELETE FROM usuario_permiso WHERE idusuario='$idusuario'";
+    $d_permisos = ejecutarConsulta($sql_permisos);
+    if (!$d_permisos) {
         ejecutarConsulta("ROLLBACK");
         return false;
     }
-    if (!ejecutarConsulta("DELETE FROM usuario_accion WHERE idusuario='$idusuario'")) {
+    $sql_acciones = "DELETE FROM usuario_accion WHERE idusuario='$idusuario'";
+    $d_acciones = ejecutarConsulta($sql_acciones);
+    if (!$d_acciones) {
         ejecutarConsulta("ROLLBACK");
         return false;
     }
