@@ -10,32 +10,29 @@ switch ($_GET["op"]){
 	case 'guardaryeditar':
 		if (empty($idcondicionventa)){
 			$rspta=$condicionventa->insertar($nombre);
-			echo $rspta ? "Unidad de Medida registrada" : "Unidad de Medida no se pudo registrar";
+			echo $rspta ? "Condición de Venta registrada" : "Condición de Venta no se pudo registrar";
 		}
 		else {
 			$rspta=$condicionventa->editar($idcondicionventa,$nombre);
-			echo $rspta ? "Unidad de Medida actualizada" : "Unidad de Medida no se pudo actualizar";
+			echo $rspta ? "Condición de Venta actualizada" : "Condición de Venta no se pudo actualizar";
 		}
 	break;
 
 	case 'desactivar':
 		$rspta=$condicionventa->desactivar($idcondicionventa);
- 		echo $rspta ? "Unidad de Medida Desactivada" : "Unidad de Medida no se puede desactivar";
- 		break;
-	break;
+ 		echo $rspta ? "Condición de Venta Desactivada" : "Condición de Venta no se puede desactivar";
+ 	break;
 
 	case 'activar':
 		$rspta=$condicionventa->activar($idcondicionventa);
- 		echo $rspta ? "Unidad de Medida activada" : "Unidad de Medida no se puede activar";
- 		break;
-	break;
+ 		echo $rspta ? "Condición de Venta activada" : "Condición de Venta no se puede activar";
+ 	break;
 
 	case 'mostrar':
 		$rspta=$condicionventa->mostrar($idcondicionventa);
  		//Codificar el resultado utilizando json
  		echo json_encode($rspta);
- 		break;
-	break;
+ 	break;
 
 	case 'listar':
 		$rspta=$condicionventa->listar();

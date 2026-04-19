@@ -1,16 +1,23 @@
+<?php
+function tienePermiso($modulo, $submodulo, $accion) {
+    return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
+}
+?>
+
 <!-- Content Wrapper. Contains page content -->
+
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
   <section class="content-header">
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1>Rubro</h1>
+          <h1>Marca</h1>
         </div>
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
             <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item active">Rubro</li>
+            <li class="breadcrumb-item active">Marca</li>
           </ol>
         </div>
       </div>
@@ -27,9 +34,11 @@
               <h3 class="card-title"> </h3>
 
               <div class="row">
+                <?php if (tienePermiso('Almacen', 'Marcas', 'Crear Marca')) { ?>
                 <div class="col-md-1">
-                  <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Nuevo Rubro</button>
+                  <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Nueva Marca</button>
                 </div>
+                <?php } ?>
               </div>
               
             </div>
@@ -38,7 +47,8 @@
               <table id="tbllistado" class="table table-striped">
                 <thead>
                   <tr>
-                    <th style="width: 550px;">Nombre</th>
+                    <th style="width: 300px;">Nombre</th>
+                    <th style="width: 400px;">Descripción</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                   </tr>
@@ -48,6 +58,7 @@
                 <tfoot>
                   <tr>
                     <th>Nombre</th>
+                    <th>Descripción</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                   </tr>
@@ -72,7 +83,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Rubro</h4>
+        <h4 class="modal-title">Marca</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -82,8 +93,14 @@
           <div class="form-group">
             <label for="name" class="col-sm-2 control-label">Nombre:</label>
             <div class="col-sm-12">
-              <input type="hidden" name="idunidad_medida" id="idunidad_medida">
+              <input type="hidden" name="idmarca" id="idmarca">
               <input type="text" class="form-control" name="nombre" id="nombre" maxlength="50" placeholder="Nombre" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="descripcion" class="col-sm-2 control-label">Descripción:</label>
+            <div class="col-sm-12">
+              <textarea class="form-control" name="descripcion" id="descripcion" rows="3" placeholder="Descripción"></textarea>
             </div>
           </div>
         </div>
@@ -98,4 +115,4 @@
   <!-- /.modal-dialog -->
 </div>
 
-<script src="vistas/js/rubro.js"></script>
+<script src="vistas/js/marca.js"></script>

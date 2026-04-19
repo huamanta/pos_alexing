@@ -212,6 +212,9 @@ session_start();
         $_GET["ruta"] == "resumen" ||
         $_GET["ruta"] == "empresas" ||
         $_GET["ruta"] == "contrato" ||
+        $_GET["ruta"] == "marca" ||
+        $_GET["ruta"] == "modelo" ||
+        $_GET["ruta"] == "condicionventa" ||
         $_GET["ruta"] == "salir"
       ) {
 

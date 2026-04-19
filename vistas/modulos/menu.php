@@ -76,7 +76,7 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
               </p>
             </a>
             <ul class="nav nav-treeview">
-            <?php if (tieneSubpermiso(12, 'Contrato')): ?>
+            <?php if (tieneSubpermiso(12, 'Contratos')): ?>
             <li class="nav-item" style="font-size: 14px">
                 <a href="contrato" class="nav-link" id="navContrato">
                   <i class="fas fa-file-contract nav-icon text-primary" style="font-size: 14px"></i>
@@ -242,6 +242,41 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                     </a>
                   </li>
                 <?php endif; ?>
+                <?php if (tieneSubpermiso(2, 'Marcas')): ?>
+                  <li class="nav-item" style="font-size: 14px">
+                    <a href="marca" class="nav-link" id="navMarca">
+                      <i class="fas fa-newspaper nav-icon text-purple" style="font-size: 14px"></i>
+                      <p>Marcas</p>
+                    </a>
+                  </li>
+                <?php endif; ?>
+
+                <?php if (tieneSubpermiso(2, 'Modelos')): ?>
+                  <li class="nav-item" style="font-size: 14px">
+                    <a href="modelo" class="nav-link" id="navModelo">
+                      <i class="fas fa-tags nav-icon text-purple" style="font-size: 14px"></i>
+                      <p>Modelos</p>
+                    </a>
+                  </li>
+                <?php endif; ?>
+
+                <?php if (tieneSubpermiso(2, 'Lineas')): ?>
+                  <li class="nav-item" style="font-size: 14px">
+                    <a href="rubro" class="nav-link" id="navLinea">
+                      <i class="fas fa-server nav-icon text-purple" style="font-size: 14px"></i>
+                      <p>Lineas</p>
+                    </a>
+                  </li>
+                <?php endif; ?>
+
+                <?php if (tieneSubpermiso(2, 'Condicion de venta')): ?>
+                  <li class="nav-item" style="font-size: 14px">
+                    <a href="condicionventa" class="nav-link" id="navCondicionVenta">
+                      <i class="fas fa-server nav-icon text-purple" style="font-size: 14px"></i>
+                      <p>Condición de Venta</p>
+                    </a>
+                  </li>
+                <?php endif; ?>
 
                 <?php if (tieneSubpermiso(2, 'Unidad de medida')): ?>
                   <li class="nav-item" style="font-size: 14px">
@@ -257,15 +292,6 @@ function tieneSubpermiso($idpermiso, $nombreSubpermiso) {
                     <a href="traslado" class="nav-link" id="navTraslado">
                       <i class="fas fa-concierge-bell nav-icon text-purple" style="font-size: 14px"></i>
                       <p>Traslados</p>
-                    </a>
-                  </li>
-                <?php endif; ?>
-
-                <?php if (tieneSubpermiso(2, 'Rubro')): ?>
-                  <li class="nav-item" style="font-size: 14px">
-                    <a href="rubro" class="nav-link" id="navRubro">
-                      <i class="fas fa-industry nav-icon text-purple" style="font-size: 14px"></i>
-                      <p>Rubro</p>
                     </a>
                   </li>
                 <?php endif; ?>

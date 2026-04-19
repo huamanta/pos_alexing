@@ -1,3 +1,9 @@
+<?php
+function tienePermiso($modulo, $submodulo, $accion) {
+    return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
+}
+?>
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
@@ -5,12 +11,12 @@
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1>Rubro</h1>
+          <h1>Condición de Venta</h1>
         </div>
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
             <li class="breadcrumb-item"><a href="#">Home</a></li>
-            <li class="breadcrumb-item active">Rubro</li>
+            <li class="breadcrumb-item active">Condición de Venta</li>
           </ol>
         </div>
       </div>
@@ -24,27 +30,27 @@
         <div class="col-12">
           <div class="card">
             <div class="card-header">
-              <h3 class="card-title"> </h3>
+              <h3 class="card-title"></h3>
 
               <div class="row">
+                <?php if (tienePermiso('Almacen', 'Condicion de venta', 'Crear CondicionVenta')) { ?>
                 <div class="col-md-1">
-                  <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Nuevo Rubro</button>
+                  <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Nueva Condición</button>
                 </div>
+                <?php } ?>
               </div>
-              
             </div>
             <!-- /.card-header -->
             <div class="card-body">
               <table id="tbllistado" class="table table-striped">
                 <thead>
                   <tr>
-                    <th style="width: 550px;">Nombre</th>
+                    <th style="width: 400px;">Nombre</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                   </tr>
                 </thead>
-                <tbody>
-                </tbody>
+                <tbody></tbody>
                 <tfoot>
                   <tr>
                     <th>Nombre</th>
@@ -57,7 +63,6 @@
             <!-- /.card-body -->
           </div>
           <!-- /.card -->
-
         </div>
         <!-- /.col -->
       </div>
@@ -72,7 +77,7 @@
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Rubro</h4>
+        <h4 class="modal-title">Condición de Venta</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -80,9 +85,9 @@
       <form class="form-horizontal" role="form" name="formulario" id="formulario" method="POST">
         <div class="modal-body">
           <div class="form-group">
-            <label for="name" class="col-sm-2 control-label">Nombre:</label>
+            <label for="nombre" class="col-sm-2 control-label">Nombre:</label>
             <div class="col-sm-12">
-              <input type="hidden" name="idunidad_medida" id="idunidad_medida">
+              <input type="hidden" name="idcondicionventa" id="idcondicionventa">
               <input type="text" class="form-control" name="nombre" id="nombre" maxlength="50" placeholder="Nombre" required>
             </div>
           </div>
@@ -98,4 +103,4 @@
   <!-- /.modal-dialog -->
 </div>
 
-<script src="vistas/js/rubro.js"></script>
+<script src="vistas/js/condicionventa.js"></script>
