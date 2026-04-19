@@ -188,11 +188,6 @@
     }
   });
 </script>
-<?php
-function tienePermiso($modulo, $submodulo, $accion) {
-    return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
-}
-?>
 
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
@@ -222,13 +217,13 @@ function tienePermiso($modulo, $submodulo, $accion) {
               <h3 class="card-title"> </h3>
 
               <div class="row">
-                <?php if (tienePermiso('Almacen', 'Productos', 'Agregar Productos')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Agregar Productos')) { ?>
                   <div class="col-md-1">
                     <button type="button" class="btn btn-primary btn-block float-right btn-xs" onclick="nuevo()"><i class="fa fa-plus"></i> Nuevo</button>
                   </div>
                 <?php } ?>
 
-                <?php if (tienePermiso('Almacen', 'Productos', 'Catalago')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Catalago')) { ?>
                   <div class="col-md-1">
                     <button type="button" class="btn btn-success btn-block float-right btn-xs" data-toggle="modal" data-target="#modalCatalogoConfig">
                       <i class="fas fa-file"></i> Catálogo
@@ -237,19 +232,19 @@ function tienePermiso($modulo, $submodulo, $accion) {
                 <?php } ?>
 
 
-                <?php if (tienePermiso('Almacen', 'Productos', 'Traslados')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Traslados')) { ?>
                 <div class="col-md-1">
                   <button type="button" class="btn btn-success btn-block btn-xs" data-toggle="modal" data-target="#myModalTraslados"><i class="fas fa-file"></i> Traslados</button>
                 </div>
                 <?php } ?>
 
-                <?php if (tienePermiso('Almacen', 'Productos', 'Empaque')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Empaque')) { ?>
                 <div class="col-md-1">
                   <button type="button" class="btn btn-warning btn-block btn-xs" data-toggle="modal" data-target="#myModalDesempaquetar" onclick="llenarProductos()"><i class="fas fa-file"></i> Empaque</button>
                 </div>
                 <?php } ?>
 
-                <?php if (tienePermiso('Almacen', 'Productos', 'InversionPP')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('InversionPP')) { ?>
                 <div class="col-md-1">
                   <a href="reportes/rptproductoscompra.php" target="_blank"><button type="button" class="btn btn-info btn-block btn-xs"><i class="fas fa-file"></i> Inversión</button></a>
                 </div>
@@ -260,13 +255,13 @@ function tienePermiso($modulo, $submodulo, $accion) {
                   <select id="idsucursal2" name="idsucursal2" class="form-control select2" style="width: 100%; height: 100%;">
                   </select>
                 </div>
-                <?php if (tienePermiso('Almacen', 'Productos', 'Filtrar Stock')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Filtrar Stock')) { ?>
                 <div class="form-group">
                   <input type="number" class="form-control" id="stock_filtro" placeholder="Filtrar stock..." min="0" style="width: 200px;" />
                 </div>
                 <?php } ?>
 
-                <?php if (tienePermiso('Almacen', 'Productos', 'Consultar Producto Sucursal')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Consultar Producto Sucursal')) { ?>
                   <div class="col-md-2">
                     <button class="btn btn-info btn-block btn-xs" onclick="abrirModalStockSucursales()">
                       <i class="fas fa-search-location"></i> Ver en otras sucursales

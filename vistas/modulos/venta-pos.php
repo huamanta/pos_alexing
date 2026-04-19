@@ -493,20 +493,6 @@
 date_default_timezone_set('America/Lima');
 ?>
 
-<?php
-function tienePermiso($modulo, $accion, $submodulo = null)
-{
-    if ($submodulo === null) {
-        return isset($_SESSION['acciones'][$modulo][$accion])
-            && $_SESSION['acciones'][$modulo][$accion] === true;
-    } else {
-        return isset($_SESSION['acciones'][$modulo][$submodulo][$accion])
-            && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
-    }
-}
-
-?>
-
 <nav class="main-header navbar navbar-expand navbar-white navbar-light" hidden id="navbar-pos">
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto" id="navbar-pos2">
@@ -756,13 +742,13 @@ function tienePermiso($modulo, $accion, $submodulo = null)
                                                                             <i class="fas fa-file-alt"></i> Tipo Documento
                                                                         </label>
                                                                         <select class="form-control" name="tipo_comprobante" id="tipo_comprobante">
-                                                                            <?php if (tienePermiso('Pos', 'Crear Boleta', 'Venta Pos')): ?>
+                                                                            <?php if (Helpers::getUserPermissionAccion('Crear Boleta')): ?>
                                                                                 <option value="Boleta">Boleta</option>
                                                                             <?php endif; ?>
-                                                                            <?php if (tienePermiso('Pos', 'Crear Factura', 'Venta Pos')): ?>
+                                                                            <?php if (Helpers::getUserPermissionAccion('Crear Factura')): ?>
                                                                                 <option value="Factura">Factura</option>
                                                                             <?php endif; ?>
-                                                                            <?php if (tienePermiso('Pos', 'Crear Nota de Venta', 'Venta Pos')): ?>
+                                                                            <?php if (Helpers::getUserPermissionAccion('Crear Nota de Venta')): ?>
                                                                                 <option value="Nota de Venta">Nota de Venta</option>
                                                                             <?php endif; ?>
                                                                         </select>

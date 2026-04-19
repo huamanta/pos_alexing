@@ -1,6 +1,7 @@
 <?php
 require_once "../modelos/Venta.php";
 require_once "../modelos/Producto.php";
+require_once "../modelos/Helpers.php";
 if (strlen(session_id()) < 1)
 	session_start();
 
@@ -69,10 +70,6 @@ $fecha_hora = date("Y-m-d H:i:s");
 $input_cuotas = isset($_POST["input_cuotas"]) ? limpiarCadena($_POST["input_cuotas"]) : "";
 $input_frecuencia = isset($_POST["input_frecuencia"]) ? limpiarCadena($_POST["input_frecuencia"]) : "";
 $inputInteres = isset($_POST["inputInteres"]) ? limpiarCadena($_POST["inputInteres"]) : "";
-function tienePermiso($modulo, $submodulo, $accion)
-{
-	return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
-}
 
 switch ($_GET["op"]) {
 
@@ -1108,10 +1105,10 @@ switch ($_GET["op"]) {
 				        <span class="caret"></span></button>
 
 				        <div class="dropdown-menu">'
-					. (tienePermiso('Pos', 'Venta Pos', 'Editar') ?
+					. (Helpers::getUserPermissionAccion('Editar') ?
 						'<a class="dropdown-item" style="cursor:pointer;" onclick="generarComprobante(' . $reg->idventa . ')">Editar</a>'
 						: '')
-					. (tienePermiso('Pos', 'Venta Pos', 'Eliminar') ?
+					. (Helpers::getUserPermissionAccion('Eliminar') ?
 						'<a class="dropdown-item" style="cursor:pointer;" onclick="anularComprobante(' . $reg->idventa . ')">Eliminar</a>'
 						: '')
 					. (($reg->tipo_comprobante == 'Nota de Venta') ?

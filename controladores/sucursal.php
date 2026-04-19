@@ -18,12 +18,11 @@ $simbolo=isset($_POST["simbolo"])? limpiarCadena($_POST["simbolo"]):"";
 switch ($_GET["op"]){
 	case 'guardaryeditar':
 		if (empty($idsucursal)){
-			$rspta=$categoria->insertarSucursal($nombre,$direccion,$telefono,$_POST["nombreSucursal"],$_POST["serie"],$_POST["numero"],$distrito,$provincia,$departamento,$ubigeo, $idempresa, $moneda, $simbolo);
+			$rspta=$categoria->insertarSucursal($nombre,$direccion,$telefono,$distrito,$provincia,$departamento,$ubigeo, $idempresa, $moneda, $simbolo);
 			echo $rspta ? "Sucursal registrada" : "Sucursal no se pudo registrar";
 		}
 		else {
 			$rspta = $categoria->editarSucursal($idsucursal,$nombre,$direccion,$telefono,$distrito,$provincia,$departamento,$ubigeo, $idempresa, $moneda, $simbolo);
-		    $categoria->actualizarComprobantes($idsucursal,$_POST["nombreSucursal"],$_POST["serie"],$_POST["numero"]);
 		    echo $rspta ? "Sucursal actualizada" : "Sucursal no se pudo actualizar";
 				}
 	break;

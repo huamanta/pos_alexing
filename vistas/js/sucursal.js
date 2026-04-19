@@ -21,7 +21,6 @@ function init() {
     $('#navConfiguracion').addClass("treeview menu-open");
     $('#navSucursal').addClass("active");
 
-    comprobantes();
     cargarDepartamentos();
 
     // Event listeners for Ubigeo dropdowns
@@ -184,8 +183,6 @@ function mostrarform(flag) {
 
     if (flag) {
         $("#listadoregistros").show();
-        $("#detalles tbody").html("");
-        comprobantes();
 
         $('#myModal').modal('show');
 
@@ -206,66 +203,6 @@ $("#btnNuevoSucursal").on("click", function () {
     mostrarform(true);
 });
 
-
-function comprobantes() {
-
-    var fila = '<tr class="filas" id="fila">' +
-        '<td><input class="form-control" style="text-align:center; width: 150px;" type="text" name="nombreSucursal[]" id="nombreSucursal[]" value="Boleta"></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="serie[]" id="serie[]" value=""></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="numero[]" id="numero[]" value="9999999"></td>' +
-        '</tr>';
-
-    var fila1 = '<tr class="filas" id="fila">' +
-        '<td><input class="form-control" style="text-align:center; width: 150px;" type="text" name="nombreSucursal[]" id="nombreSucursal[]" value="Factura"></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="serie[]" id="serie[]" value=""></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="numero[]" id="numero[]" value="9999999"></td>' +
-        '</tr>';
-
-    var fila2 = '<tr class="filas" id="fila">' +
-        '<td><input class="form-control" style="text-align:center; width: 150px;" type="text" name="nombreSucursal[]" id="nombreSucursal[]" value="Nota de Venta"></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="serie[]" id="serie[]" value=""></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="numero[]" id="numero[]" value="9999999"></td>' +
-        '</tr>';
-
-    var fila3 = '<tr class="filas" id="fila">' +
-        '<td><input class="form-control" style="text-align:center; width: 150px;" type="text" name="nombreSucursal[]" id="nombreSucursal[]" value="Cotización"></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="serie[]" id="serie[]" value=""></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="numero[]" id="numero[]" value="9999999"></td>' +
-        '</tr>';
-
-    var fila4 = '<tr class="filas" id="fila">' +
-        '<td><input class="form-control" style="text-align:center; width: 150px;" type="text" name="nombreSucursal[]" id="nombreSucursal[]" value="NC"></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="serie[]" id="serie[]" value=""></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="numero[]" id="numero[]" value="9999999"></td>' +
-        '</tr>';
-
-    var fila5 = '<tr class="filas" id="fila">' +
-        '<td><input class="form-control" style="text-align:center; width: 150px;" type="text" name="nombreSucursal[]" id="nombreSucursal[]" value="NCB"></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="serie[]" id="serie[]" value=""></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="numero[]" id="numero[]" value="9999999"></td>' +
-        '</tr>';
-
-    var fila6 = '<tr class="filas" id="fila">' +
-        '<td><input class="form-control" style="text-align:center; width: 150px;" type="text" name="nombreSucursal[]" id="nombreSucursal[]" value="Orden Compra"></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="serie[]" id="serie[]" value=""></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="numero[]" id="numero[]" value="9999999"></td>' +
-        '</tr>';
-
-    var fila7 = '<tr class="filas" id="fila">' +
-        '<td><input class="form-control" style="text-align:center; width: 150px;" type="text" name="nombreSucursal[]" id="nombreSucursal[]" value="Ticket"></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="serie[]" id="serie[]" value=""></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="numero[]" id="numero[]" value="9999999"></td>' +
-        '</tr>';
-
-    var fila8 = '<tr class="filas" id="fila">' +
-        '<td><input class="form-control" style="text-align:center; width: 150px;" type="text" name="nombreSucursal[]" id="nombreSucursal[]" value="Guia de Remision"></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="serie[]" id="serie[]" value=""></td>' +
-        '<td><input class="form-control" style="text-align:center; width: 80px;" type="text" name="numero[]" id="numero[]" value="9999999"></td>' +
-        '</tr>';
-
-    $('#detalles').append(fila + fila1 + fila2 + fila3 + fila4 + fila5 + fila6 + fila7 + fila8);
-
-}
 
 //Función cancelarform
 function cancelarform() {

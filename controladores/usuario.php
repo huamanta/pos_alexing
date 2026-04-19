@@ -335,47 +335,6 @@ switch ($_GET["op"]){
 			while ($row = $rs_suc->fetch_object()) {
 				$_SESSION['sucursales'][] = $row->idsucursal;
 			}
-			//$_SESSION['idsucursal'] = $_SESSION['sucursales'][0] ?? null;
-
-			// Obtener permisos, subpermisos y acciones
-			$marcados = $usuario->listarmarcados($fetch->idusuario);
-			$valores = array();
-			while ($per = $marcados->fetch_object()) {
-				array_push($valores, $per->idpermiso);
-			}
-			// Accesos del usuario
-			in_array(1, $valores) ? $_SESSION['inicio'] = 1 : $_SESSION['inicio'] = 0;
-			in_array(2, $valores) ? $_SESSION['almacen'] = 1 : $_SESSION['almacen'] = 0;
-			in_array(3, $valores) ? $_SESSION['compras'] = 1 : $_SESSION['compras'] = 0;
-			in_array(4, $valores) ? $_SESSION['ventas'] = 1 : $_SESSION['ventas'] = 0;
-			in_array(5, $valores) ? $_SESSION['personal'] = 1 : $_SESSION['personal'] = 0;
-			in_array(6, $valores) ? $_SESSION['consultac'] = 1 : $_SESSION['consultac'] = 0;
-			in_array(7, $valores) ? $_SESSION['consultav'] = 1 : $_SESSION['consultav'] = 0;
-			in_array(8, $valores) ? $_SESSION['configuracion'] = 1 : $_SESSION['configuracion'] = 0;
-			in_array(9, $valores) ? $_SESSION['cajachica'] = 1 : $_SESSION['cajachica'] = 0;
-			in_array(10, $valores) ? $_SESSION['cuentascobrar'] = 1 : $_SESSION['cuentascobrar'] = 0;
-			in_array(11, $valores) ? $_SESSION['kardex'] = 1 : $_SESSION['kardex'] = 0;
-			in_array(12, $valores) ? $_SESSION['pos'] = 1 : $_SESSION['pos'] = 0;
-			in_array(13, $valores) ? $_SESSION['cuentasxpagar'] = 1 : $_SESSION['cuentasxpagar'] = 0;
-			in_array(14, $valores) ? $_SESSION['crearventa'] = 1 : $_SESSION['crearventa'] = 0;
-			in_array(15, $valores) ? $_SESSION['inventario'] = 1 : $_SESSION['inventario'] = 0;
-			in_array(16, $valores) ? $_SESSION['crearservicio'] = 1 : $_SESSION['crearservicio'] = 0;
-			in_array(17, $valores) ? $_SESSION['procesar'] = 1 : $_SESSION['procesar'] = 0;
-
-			// Subpermisos
-			$subpermisos = $usuario->listarsubpermisos($fetch->idusuario);
-			$_SESSION['subpermisos'] = array();
-			while ($sub = $subpermisos->fetch_object()) {
-				$_SESSION['subpermisos'][$sub->idpermiso][] = $sub->nombre;
-			}
-
-			// Acciones
-			$acciones = $usuario->listaracciones($fetch->idusuario);
-			$_SESSION['acciones'] = array();
-			while ($act = $acciones->fetch_object()) {
-				$_SESSION['acciones'][$act->modulo][$act->submodulo][$act->accion] = true;
-			}
-
 		} else {
 			// Login fallido
 			$usuario->registrarHistorial(0, $ip, $user_agent, 0);
@@ -566,8 +525,13 @@ case 'crearSucursal':
     $monto_impuesto = isset($_POST["monto_impuesto"]) ? limpiarCadena($_POST["monto_impuesto"]) : "";
     $estado = 1; // Activo por defecto
     // Insertar empresa
-    $res_empresa = $empresa->guardaryeditar("", $ruc, $razon_social, "", "", "", "", "", "", "", $nombre_impuesto, $monto_impuesto, $estado);
-    if ($res_empresa['status'] == 'success') {
+    $res_empresa = $empresa->guardaryeditar("", $ruc, $razon_social, "", "", "", "", "", "", "", 
+	$nombre_impuesto, $monto_impuesto, $estado, 
+	['Nota de Venta', 'Factura', 'Boleta', 'Nota de Crédito', 'Nota de Débito', 'Cotización', 'Orden de Compra'],
+	['NV001', 'F001', 'B001', 'NC01', 'ND01', 'COT01', 'OC01'], 
+	[0, 0, 0, 0, 0, 0, 0]
+	);
+	if (intval($res_empresa['code']) === 200) {
         // Obtener idempresa
         $sql_emp = "SELECT idempresa FROM empresas ORDER BY idempresa DESC LIMIT 1";
         $emp = ejecutarConsultaSimpleFila($sql_emp);
@@ -582,14 +546,12 @@ case 'crearSucursal':
             $nombre,
             $direccion,
             $telefono,
-            ['Factura', 'Boleta', 'Nota de Crédito', 'Nota de Débito'],
-            ['F001', 'B001', 'NC01', 'ND01'],
-            [1, 1, 1, 1],
             '', '', '', '',
             $idempresa,
             'PEN',
             'S/'
         );
+
         if ($rspta) {
             $sql_new = "SELECT idsucursal FROM sucursal ORDER BY idsucursal DESC LIMIT 1";
             $new_suc = ejecutarConsultaSimpleFila($sql_new);

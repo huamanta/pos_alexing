@@ -19,7 +19,7 @@ Class Categoria
 	}
 
 	//Implementamos un método para insertar registros
-	public function insertarSucursal($nombre,$direccion,$telefono,$nombreSucursal,$serie_comprobante,$num_comprobante,$distrito,$provincia,$departamento,$ubigeo, $idempresa, $moneda, $simbolo)
+	public function insertarSucursal($nombre,$direccion,$telefono, $distrito,$provincia,$departamento,$ubigeo, $idempresa, $moneda, $simbolo)
 	{
 		$idempresa_value = $idempresa ? "'$idempresa'" : "NULL";
 		$sql="INSERT INTO sucursal (nombre,direccion,telefono,distrito,provincia,departamento,ubigeo,idempresa,moneda,simbolo)
@@ -27,37 +27,7 @@ Class Categoria
 
 		$idsucursalnew=ejecutarConsulta_retornarID($sql);
 
-		$num_elementos=0;
-
-		$sw=true;
-
-		while ($num_elementos < count($nombreSucursal)) {
-            // Get the current serie and numero from the arrays
-            $current_nombre = $nombreSucursal[$num_elementos];
-            $current_serie = $serie_comprobante[$num_elementos];
-
-            // Query to find the maximum num_comprobante for the current comprobante type and serie
-           $current_numero = $num_comprobante[$num_elementos];
-
-            $sql="INSERT INTO comp_pago 
-		      (nombre, serie_comprobante, num_comprobante, idsucursal, condicion)
-		      VALUES 
-		      ('$current_nombre', '$current_serie', '$current_numero', '$idsucursalnew', '1')";
-
-				ejecutarConsulta($sql) or $sw=false;
-
-				$num_elementos=$num_elementos+1;
-
-		}
-		
-		return $sw;
-		
-	}
-
-	public function insertarComprobantes($nombre,$serie_comprobante,$num_comprobante,$idsucursal)
-	{
-
-		
+		return $idsucursalnew;
 
 	}
 
@@ -120,7 +90,7 @@ Class Categoria
 	{
 	    $sql = "SELECT s.*, c.id_comp_pago, c.nombre AS comp_nombre, c.serie_comprobante, c.num_comprobante 
 	            FROM sucursal s
-	            LEFT JOIN comp_pago c ON s.idsucursal = c.idsucursal
+	            LEFT JOIN comp_pago c ON (s.idempresa = c.idempresa OR (c.idempresa IS NULL AND s.idsucursal = c.idsucursal))
 	            WHERE s.idsucursal = '$idsucursal'";
 	    return ejecutarConsulta($sql);
 	}
@@ -136,14 +106,18 @@ Class Categoria
 
 	public function actualizarComprobantes($idsucursal, $nombre, $serie, $numero)
 	{
-	    $sql="DELETE FROM comp_pago WHERE idsucursal='$idsucursal'";
+	    $empresa = ejecutarConsultaSimpleFila("SELECT idempresa FROM sucursal WHERE idsucursal='$idsucursal'");
+	    $fk_column = ($empresa && $empresa['idempresa']) ? 'idempresa' : 'idsucursal';
+	    $fk_value = ($empresa && $empresa['idempresa']) ? $empresa['idempresa'] : $idsucursal;
+
+	    $sql="DELETE FROM comp_pago WHERE $fk_column='$fk_value'";
 	    ejecutarConsulta($sql);
 
 	    $num_elementos=0;
 	    $sw=true;
 	    while ($num_elementos < count($nombre)) {
-	        $sql="INSERT INTO comp_pago (nombre,serie_comprobante,num_comprobante,idsucursal,condicion)
-	              VALUES ('$nombre[$num_elementos]','$serie[$num_elementos]','$numero[$num_elementos]','$idsucursal','1')";
+	        $sql="INSERT INTO comp_pago (nombre,serie_comprobante,num_comprobante,$fk_column,condicion)
+	              VALUES ('$nombre[$num_elementos]','$serie[$num_elementos]','$numero[$num_elementos]','$fk_value','1')";
 	        ejecutarConsulta($sql) or $sw=false;
 	        $num_elementos++;
 	    }
@@ -193,13 +167,7 @@ Class Categoria
         // Start transaction
         $conexion->begin_transaction();
         try {
-            // Delete associated comp_pago records
-            $sql_comp_pago = "DELETE FROM comp_pago WHERE idsucursal='$idsucursal'";
-            if (!ejecutarConsulta($sql_comp_pago)) {
-                throw new Exception("Error al eliminar comprobantes de pago.");
-            }
-
-            // Delete the sucursal record
+            // Delete the sucursal record only; comp_pago es por empresa y no debe eliminarse al borrar una sucursal
             $sql_sucursal = "DELETE FROM sucursal WHERE idsucursal='$idsucursal'";
             if (!ejecutarConsulta($sql_sucursal)) {
                 throw new Exception("Error al eliminar la sucursal.");
@@ -212,7 +180,7 @@ Class Categoria
             // Rollback transaction on error
             $conexion->rollback();
             // Log the error for debugging purposes, if necessary
-            error_log("Error al eliminar sucursal y sus comprobantes: " . $e->getMessage());
+            error_log("Error al eliminar sucursal: " . $e->getMessage());
             return false;
         }
     }
@@ -223,6 +191,28 @@ public function obtenerUltimaSerie()
             FROM comp_pago";
     return ejecutarConsultaSimpleFila($sql);
 }
+
+	public function mostrarComprobantesEmpresa($idempresa)
+	{
+	    $sql = "SELECT * FROM comp_pago WHERE idempresa = '$idempresa'";
+	    return ejecutarConsulta($sql);
+	}
+
+	public function actualizarComprobantesEmpresa($idempresa, $nombre, $serie, $numero)
+	{
+	    $sql="DELETE FROM comp_pago WHERE idempresa='$idempresa'";
+	    ejecutarConsulta($sql);
+
+	    $num_elementos=0;
+	    $sw=true;
+	    while ($num_elementos < count($nombre)) {
+	        $sql="INSERT INTO comp_pago (nombre,serie_comprobante,num_comprobante,idempresa,condicion)
+	              VALUES ('$nombre[$num_elementos]','$serie[$num_elementos]','$numero[$num_elementos]','$idempresa','1')";
+	        ejecutarConsulta($sql) or $sw=false;
+	        $num_elementos++;
+	    }
+	    return $sw;
+	}
 
 	public function selectEmpresas() {
 		$sql = "SELECT * FROM empresas";

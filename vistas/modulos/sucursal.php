@@ -85,9 +85,6 @@
                         <li class="nav-item">
                             <a class="nav-link active" id="tab-general" data-toggle="tab" href="#general-content" role="tab">Información General</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" id="tab-comprobantes" data-toggle="tab" href="#comprobantes-content" role="tab">Comprobantes y Series</a>
-                        </li>
                     </ul>
 
                     <!-- Tab content -->
@@ -191,24 +188,6 @@
                                         <input class="form-control" type="text" name="simbolo" id="simbolo" placeholder="S/ - $">
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Comprobantes y Series Tab -->
-                        <div class="tab-pane fade" id="comprobantes-content" role="tabpanel" aria-labelledby="tab-comprobantes">
-                            <div class="table-responsive">
-                                <table id="detalles" class="table table-striped table-bordered table-condensed table-hover" width="100%">
-                                    <thead>
-                                        <th>Comprobante</th>
-                                        <th>Serie</th>
-                                        <th>Número</th>
-                                    </thead>
-                                    <tfoot>
-                                    </tfoot>
-                                    <tbody>
-
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
                     </div>

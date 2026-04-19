@@ -1,9 +1,3 @@
-<?php
-function tienePermiso($modulo, $submodulo, $accion) {
-    return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) 
-        && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
-}
-?>
 <style>
   .btn {
     transition: all 0.3s ease;

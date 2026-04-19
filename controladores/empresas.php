@@ -17,6 +17,9 @@ $nombre_impuesto = isset($_POST["nombre_impuesto"]) ? limpiarCadena($_POST["nomb
 $monto_impuesto = isset($_POST["monto_impuesto"]) ? limpiarCadena($_POST["monto_impuesto"]) : "";
 $idempresa = isset($_POST["idempresa"]) ? limpiarCadena($_POST["idempresa"]) : "";
 $estado = isset($_POST["estado"]) ? limpiarCadena($_POST["estado"]) : "";
+$nombreSucursal = isset($_POST["nombreSucursal"]) ? $_POST["nombreSucursal"] : [];
+$serie = isset($_POST["serie"]) ? $_POST["serie"] : [];
+$numero = isset($_POST["numero"]) ? $_POST["numero"] : [];
 
 switch ($op) {
     case 'listarEmpresas':
@@ -47,7 +50,7 @@ switch ($op) {
         break;
 
     case 'guardaryeditar':
-        $res = $empresa->guardaryeditar($idempresa, $ruc, $razon_social, $usuario_sol, $clave_sol, $ruta_certificado, $clave_certificado, $client_id, $client_secret, $estado_certificado, $nombre_impuesto, $monto_impuesto, $estado);
+        $res = $empresa->guardaryeditar($idempresa, $ruc, $razon_social, $usuario_sol, $clave_sol, $ruta_certificado, $clave_certificado, $client_id, $client_secret, $estado_certificado, $nombre_impuesto, $monto_impuesto, $estado, $nombreSucursal, $serie, $numero);
         echo json_encode($res);
         break;
 
@@ -59,4 +62,34 @@ switch ($op) {
     case 'activar_descativar':
         $res = $empresa->activarDesactivar($idempresa, $estado);
         echo json_encode($res);
+        break;
+
+    case 'mostrarComprobantes':
+        require_once "../modelos/Categoria.php";
+        $categoria = new Categoria();
+        $rspta = $categoria->mostrarComprobantesEmpresa($idempresa);
+        $data = array();
+
+        while ($reg = $rspta->fetch_object()) {
+            $data[] = array(
+                "id_comp_pago" => $reg->id_comp_pago,
+                "nombre" => $reg->nombre,
+                "serie" => $reg->serie_comprobante,
+                "numero" => $reg->num_comprobante
+            );
+        }
+
+        echo json_encode($data);
+        break;
+
+    case 'guardarComprobantes':
+        require_once "../modelos/Categoria.php";
+        $categoria = new Categoria();
+        $nombreSucursal = isset($_POST["nombreSucursal"]) ? $_POST["nombreSucursal"] : [];
+        $serie = isset($_POST["serie"]) ? $_POST["serie"] : [];
+        $numero = isset($_POST["numero"]) ? $_POST["numero"] : [];
+        
+        $rspta = $categoria->actualizarComprobantesEmpresa($idempresa, $nombreSucursal, $serie, $numero);
+        echo $rspta ? "Comprobantes actualizados" : "Error al actualizar comprobantes";
+        break;
 }

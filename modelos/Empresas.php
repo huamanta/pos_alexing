@@ -17,7 +17,8 @@ class Empresa
     }
 
     //Implementamos un método para insertar o editar registros
-    public function guardaryeditar($idempresa, $ruc, $razon_social, $usuario_sol, $clave_sol, $ruta_certificado, $clave_certificado, $client_id, $client_secret, $estado_certificado, $nombre_impuesto, $monto_impuesto, $estado)
+    public function guardaryeditar($idempresa, $ruc, $razon_social, $usuario_sol, $clave_sol, $ruta_certificado, $clave_certificado, $client_id, $client_secret, $estado_certificado, $nombre_impuesto, $monto_impuesto, 
+    $estado, $nombreComprobante, $serie_comprobante, $num_comprobante)
     {
         try {
 
@@ -26,11 +27,28 @@ class Empresa
                 $sql = "INSERT INTO empresas (ruc, razon_social, usuario_sol, clave_sol, ruta_certificado, clave_certificado, client_id, client_secret, estado_certificado, nombre_impuesto, monto_impuesto, estado)
                 VALUES ('$ruc', '$razon_social', '$usuario_sol', '$clave_sol', '$ruta_certificado', '$clave_certificado', '$client_id', '$client_secret', '$estado_certificado', '$nombre_impuesto', '$monto_impuesto', '$estado')";
 
-                $res = ejecutarConsulta($sql);
+                $idempresa = ejecutarConsulta_retornarID($sql);
 
-                if (!$res) {
+                if (!$idempresa) {
                     throw new Exception("Error al insertar en la BD");
                 }
+
+                $num_elementos=0;
+			    while ($num_elementos < count($nombreComprobante)) {
+                    
+                    $current_nombre = $nombreComprobante[$num_elementos];
+                    $current_serie = $serie_comprobante[$num_elementos];
+                    $current_numero = $num_comprobante[$num_elementos];
+
+                        $sql="INSERT INTO comp_pago (nombre, serie_comprobante, num_comprobante, idempresa, condicion)
+                    VALUES ('$current_nombre', '$current_serie', '$current_numero', '$idempresa', '1')";
+
+                        ejecutarConsulta($sql);
+
+                        $num_elementos=$num_elementos+1;
+
+                }
+
 
                 return [
                     "status" => "success",

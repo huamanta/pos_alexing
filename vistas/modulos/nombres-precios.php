@@ -1,8 +1,4 @@
-<?php
-function tienePermiso($modulo, $submodulo, $accion) {
-    return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
-}
-?>
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
@@ -32,7 +28,7 @@ function tienePermiso($modulo, $submodulo, $accion) {
               <h3 class="card-title"> </h3>
 
               <div class="row">
-                <?php if (tienePermiso('Almacen', 'Nombres Precios', 'Crear Precios')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Crear Precios')) { ?>
                 <div class="col-md-1">
                   <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Nuevo</button>
                 </div>

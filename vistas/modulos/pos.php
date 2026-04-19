@@ -1,15 +1,4 @@
 
-<?php
-function tienePermiso($modulo, $accion, $submodulo = null) {
-    if ($submodulo === null) {
-        return isset($_SESSION['acciones'][$modulo][$accion]) 
-            && $_SESSION['acciones'][$modulo][$accion] === true;
-    } else {
-        return isset($_SESSION['acciones'][$modulo][$submodulo][$accion]) 
-            && $_SESSION['acciones'][$modulo][$submodulo][$accion] === true;
-    }
-}
-?>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <!-- Navbar -->
@@ -96,13 +85,13 @@ function tienePermiso($modulo, $accion, $submodulo = null) {
                     <div class="col-sm-6">
                       <div class="form-group">
                         <select class="form-control" name="tipo_comprobante" id="tipo_comprobante">
-                          <?php if (tienePermiso('Pos', 'Crear Nota de Venta', 'Punto de Venta')): ?>
+                          <?php if (Helpers::getUserPermissionAccion('Crear Nota de Venta')): ?>
                             <option>Nota de Venta</option>
                           <?php endif; ?>
-                          <?php if (tienePermiso('Pos', 'Crear Boleta', 'Punto de Venta')): ?>
+                          <?php if (Helpers::getUserPermissionAccion('Crear Boleta')): ?>
                             <option>Boleta</option>
                           <?php endif; ?>
-                          <?php if (tienePermiso('Pos', 'Crear Factura', 'Punto de Venta')): ?>
+                          <?php if (Helpers::getUserPermissionAccion('Crear Factura')): ?>
                             <option>Factura</option>
                           <?php endif; ?>
                         </select>

@@ -39,15 +39,25 @@ function mostrarform(flag) {
     if (flag) {
         $("#listadoregistros").show();
         $("#detalles tbody").html("");
+        
+        // Llenar tabla con comprobantes por defecto para nueva empresa
+        var comprobantes = ['Factura', 'Boleta', 'Nota de Venta', 'Cotización', 'NC', 'NCB', 'Orden Compra', 'Ticket', 'Guia de Remision'];
+        var series = ['F001', 'B001', 'NV01', 'Q001', 'NC01', 'ND01', 'OC01', 'T001', 'G001'];
+        
+        comprobantes.forEach(function(comp, index) {
+            var fila = '<tr>' +
+                '<td><input class="form-control" type="text" name="nombreSucursal[]" value="' + comp + '"></td>' +
+                '<td><input class="form-control" type="text" name="serie[]" value="' + series[index] + '"></td>' +
+                '<td><input class="form-control" type="text" name="numero[]" value="1"></td>' +
+                '</tr>';
+            $("#detalles tbody").append(fila);
+        });
+        
         $('#myModal').modal('show');
 
         $('#myModal').off('shown.bs.modal').on('shown.bs.modal', function () {
-
-
-            if ($("#idsucursal").val() === "") {
-                obtenerSerieIncrementada();
-            }
-
+            // Resetear al tab de información general
+            $('#tab-general').tab('show');
         });
     }
 }
@@ -163,12 +173,12 @@ function mostrar(idempresa) {
             console.log(data);
             
 
-            // 👉 abrir modal SIN autogenerar serie
+            // 👉 abrir modal
             limpiar();
             $("#detalles tbody").html("");
             $('#myModal').modal('show');
 
-            // 👉 setear idsucursal ANTES
+            // 👉 setear idempresa
             $("#idempresa").val(data.idempresa);
             // datos generales
             $("#ruc").val(data.ruc);
@@ -182,8 +192,43 @@ function mostrar(idempresa) {
             $("#client_secret").val(data.client_secret);
             $("#nombre_impuesto").val(data.nombre_impuesto);
             $("#monto_impuesto").val(data.monto_impuesto);
+
+            // Cargar comprobantes
+            cargarComprobantes(data.idempresa);
         });
 }
+
+// Función para cargar comprobantes desde servidor
+function cargarComprobantes(idempresa) {
+    $.post("controladores/empresas.php?op=mostrarComprobantes",
+        { idempresa: idempresa },
+        function (datos) {
+            var data = JSON.parse(datos);
+            $("#detalles tbody").html("");
+            
+            if (data && data.length > 0) {
+                data.forEach(function(comp) {
+                    var fila = '<tr>' +
+                        '<td><input class="form-control" type="text" name="nombreSucursal[]" value="' + comp.nombre + '"></td>' +
+                        '<td><input class="form-control" type="text" name="serie[]" value="' + comp.serie + '"></td>' +
+                        '<td><input class="form-control" type="text" name="numero[]" value="' + comp.numero + '"></td>' +
+                        '</tr>';
+                    $("#detalles tbody").append(fila);
+                });
+            }
+        }
+    );
+}
+
+// Event listener para el tab de comprobantes
+$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function(e) {
+    if ($(e.target).attr('href') === '#comprobantes-content') {
+        var idempresa = $("#idempresa").val();
+        if (idempresa) {
+            cargarComprobantes(idempresa);
+        }
+    }
+});
 
 
 //Función para desactivar registros
