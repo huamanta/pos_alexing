@@ -10,8 +10,54 @@ class Producto
 	}
 
 
-public function insertar(
-    $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV, $sucursales
+	public function insertar(
+		$idsucursal,
+		$idcategoria,
+		$idunidad_medida,
+		$idrubro,
+		$idcondicionventa,
+		$registrosan,
+		$idmarca,
+		$codigo,
+		$nombre,
+		$stock,
+		$stockMinimo,
+		$stockMaximo,
+		$precio,
+		$preciocigv,
+		$precioB,
+		$precioC,
+		$precioD,
+		$precioE,
+		$margenpubl,
+		$margendes,
+		$margenp1,
+		$margenp2,
+		$margendist,
+		$utilprecio,
+		$utilprecioB,
+		$utilprecioC,
+		$utilprecioD,
+		$utilprecioE,
+		$precioCompra,
+		$fecha,
+		$descripcion,
+		$imagen,
+		$idmodelo,
+		$nserie,
+		$placa,
+		$color,
+		$motor,
+		$permiso_circulacion,
+		$anio_fabricacion,
+		$tipo_vehiculo,
+		$clase_vehiculo,
+		$propietario_vehiculo,
+		$controla_stock,
+		$alerta_stock,
+		$tipoigv,
+		$comisionV,
+		$sucursales
 	) {
 
 		global $conexion; // asegúrate de tener tu conexión
@@ -89,7 +135,54 @@ public function insertar(
 
 	//Implementamos un método para editar registros
 	public function editar(
-    $idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV
+		$idproducto,
+		$idsucursal,
+		$idcategoria,
+		$idunidad_medida,
+		$idrubro,
+		$idcondicionventa,
+		$registrosan,
+		$idmarca,
+		$codigo,
+		$nombre,
+		$stock,
+		$stockMinimo,
+		$stockMaximo,
+		$precio,
+		$preciocigv,
+		$precioB,
+		$precioC,
+		$precioD,
+		$precioE,
+		$margenpubl,
+		$margendes,
+		$margenp1,
+		$margenp2,
+		$margendist,
+		$utilprecio,
+		$utilprecioB,
+		$utilprecioC,
+		$utilprecioD,
+		$utilprecioE,
+		$precioCompra,
+		$fecha,
+		$descripcion,
+		$imagen,
+		$idmodelo,
+		$nserie,
+		$placa,
+		$color,
+		$motor,
+		$permiso_circulacion,
+		$anio_fabricacion,
+		$tipo_vehiculo,
+		$clase_vehiculo,
+		$propietario_vehiculo,
+		$controla_stock,
+		$alerta_stock,
+		$tipoigv,
+		$comisionV,
+		$sucursales
 	) {
 
 		global $conexion;
@@ -98,75 +191,124 @@ public function insertar(
 
 			mysqli_begin_transaction($conexion);
 
-			$sql = "UPDATE producto SET 
-				idsucursal='$idsucursal',
-				idcategoria='$idcategoria',
-				idunidad_medida='$idunidad_medida',
-				idrubro='$idrubro',
-				idcondicionventa='$idcondicionventa',
-				registrosan='$registrosan',
-				idmarca='$idmarca',
-				codigo='$codigo',
-				nombre='$nombre',
-				stock='$stock',
-				stock_minimo='$stockMinimo',
-				stock_maximo='$stockMaximo',
-				precio='$precio',
-				preciocigv='$preciocigv',
-				comisionV='$comisionV',
-				precioB='$precioB',
-				precioC='$precioC',
-				precioD='$precioD',
-				precioE='$precioE',
-				margenpubl='$margenpubl',
-				margendes='$margendes',
-				margenp1='$margenp1',
-				margenp2='$margenp2',
-				margendist='$margendist',
-				utilprecio='$utilprecio',
-				utilprecioB='$utilprecioB',
-				utilprecioC='$utilprecioC',
-				utilprecioD='$utilprecioD',
-				precio_compra='$precioCompra',
-				fecha='$fecha',
-				descripcion='$descripcion',
-				idmodelo='$idmodelo',
-				numserie='$nserie',
-				placa='$placa',
-				color='$color',
-				motor='$motor',
-				permiso_circulacion='$permiso_circulacion',
-				anio_fabricacion='$anio_fabricacion',
-				tipo_vehiculo='$tipo_vehiculo',
-				clase_vehiculo='$clase_vehiculo',
-				propietario_vehiculo='$propietario_vehiculo',
-				controla_stock='$controla_stock',
-				alerta_stock='$alerta_stock',
-				proigv='$tipoigv',
-				imagen='$imagen'
-			WHERE idproducto='$idproducto'";
+			foreach ($sucursales as $idsuc) {
 
-			$updateProducto = ejecutarConsulta($sql);
+				if (!empty($codigo)) {
+					$validar = "SELECT idproducto FROM producto 
+                            WHERE codigo='$codigo' AND idsucursal='$idsuc' LIMIT 1";
+				} else {
+					$validar = "SELECT idproducto FROM producto 
+                            WHERE nombre='$nombre' AND idsucursal='$idsuc' LIMIT 1";
+				}
 
-			if (!$updateProducto) {
-				throw new Exception("Error al actualizar producto: " . mysqli_error($conexion));
-			}
+				$res = ejecutarConsulta($validar);
 
-			$editar = "UPDATE producto_configuracion 
-				SET precio_venta = '$precio', codigo_extra ='$codigo' 
-				WHERE idproducto = '$idproducto' AND cantidad_contenedor = 1";
+				if ($res && mysqli_num_rows($res) > 0) {
 
-			$updateConfig = ejecutarConsulta($editar);
+					$row = mysqli_fetch_assoc($res);
+					$idproductoSucursal = $row['idproducto'];
 
-			if (!$updateConfig) {
-				throw new Exception("Error al actualizar configuración: " . mysqli_error($conexion));
+					$sql = "UPDATE producto SET 
+                    idsucursal='$idsuc',
+                    idcategoria='$idcategoria',
+                    idunidad_medida='$idunidad_medida',
+                    idrubro='$idrubro',
+                    idcondicionventa='$idcondicionventa',
+                    registrosan='$registrosan',
+                    idmarca='$idmarca',
+                    codigo='$codigo',
+                    nombre='$nombre',
+                    stock='$stock',
+                    stock_minimo='$stockMinimo',
+                    stock_maximo='$stockMaximo',
+                    precio='$precio',
+                    preciocigv='$preciocigv',
+                    comisionV='$comisionV',
+                    precioB='$precioB',
+                    precioC='$precioC',
+                    precioD='$precioD',
+                    precioE='$precioE',
+                    margenpubl='$margenpubl',
+                    margendes='$margendes',
+                    margenp1='$margenp1',
+                    margenp2='$margenp2',
+                    margendist='$margendist',
+                    utilprecio='$utilprecio',
+                    utilprecioB='$utilprecioB',
+                    utilprecioC='$utilprecioC',
+                    utilprecioD='$utilprecioD',
+                    precio_compra='$precioCompra',
+                    fecha='$fecha',
+                    descripcion='$descripcion',
+                    idmodelo='$idmodelo',
+                    numserie='$nserie',
+                    placa='$placa',
+                    color='$color',
+                    motor='$motor',
+                    permiso_circulacion='$permiso_circulacion',
+                    anio_fabricacion='$anio_fabricacion',
+                    tipo_vehiculo='$tipo_vehiculo',
+                    clase_vehiculo='$clase_vehiculo',
+                    propietario_vehiculo='$propietario_vehiculo',
+                    controla_stock='$controla_stock',
+                    alerta_stock='$alerta_stock',
+                    proigv='$tipoigv',
+                    imagen='$imagen'
+                WHERE idproducto='$idproductoSucursal'";
+
+					if (!ejecutarConsulta($sql)) {
+						throw new Exception("Error al actualizar producto en sucursal $idsuc");
+					}
+
+					$editar = "UPDATE producto_configuracion 
+                    SET precio_venta = '$precio', codigo_extra ='$codigo' 
+                    WHERE idproducto = '$idproductoSucursal' AND cantidad_contenedor = 1";
+
+					if (!ejecutarConsulta($editar)) {
+						throw new Exception("Error config en sucursal $idsuc");
+					}
+
+				} else {
+
+					$insertSucursal = "INSERT INTO producto (
+                    idsucursal, idcategoria, idunidad_medida, idrubro, idcondicionventa,
+                    registrosan, idmarca, codigo, nombre, stock, stock_minimo, stock_maximo,
+                    precio, preciocigv, precioB, precioC, precioD, precioE,
+                    margenpubl, margendes, margenp1, margenp2, margendist,
+                    utilprecio, utilprecioB, utilprecioC, utilprecioD, utilprecioE,
+                    precio_compra, fecha, descripcion, imagen, idmodelo
+                ) VALUES (
+                    '$idsuc', '$idcategoria', '$idunidad_medida', '$idrubro', '$idcondicionventa',
+                    '$registrosan', '$idmarca', '$codigo', '$nombre', '$stock', '$stockMinimo', '$stockMaximo',
+                    '$precio', '$preciocigv', '$precioB', '$precioC', '$precioD', '$precioE',
+                    '$margenpubl', '$margendes', '$margenp1', '$margenp2', '$margendist',
+                    '$utilprecio', '$utilprecioB', '$utilprecioC', '$utilprecioD', '$utilprecioE',
+                    '$precioCompra', '$fecha', '$descripcion', '$imagen', '$idmodelo'
+                )";
+
+					$idproductoaAdd = ejecutarConsulta_retornarID($insertSucursal);
+
+					if (!$idproductoaAdd) {
+						throw new Exception("Error al insertar en sucursal $idsuc");
+					}
+
+					$sql1 = "INSERT INTO producto_configuracion (
+                    codigo_extra, contenedor, cantidad_contenedor, precio_venta, precio_promocion, idproducto
+                ) VALUES (
+                    '$codigo', 'UNIDAD', '1', '$precio', '$precioB', '$idproductoaAdd'
+                )";
+
+					if (!ejecutarConsulta($sql1)) {
+						throw new Exception("Error config insert en sucursal $idsuc");
+					}
+				}
 			}
 
 			mysqli_commit($conexion);
 
 			return [
 				'status' => 'success',
-				'message' => 'Actualizado correctamente.'
+				'message' => 'Actualizado correctamente en todas las sucursales.'
 			];
 
 		} catch (Exception $e) {
@@ -273,6 +415,25 @@ public function insertar(
 	{
 		$sql = "SELECT * from producto p WHERE p.idproducto = '$idproducto'";
 		return ejecutarConsultaSimpleFila($sql);
+	}
+
+	public function obtenerSucursalesProducto($idproducto)
+	{
+		$producto = ejecutarConsultaSimpleFila("SELECT codigo, nombre FROM producto WHERE idproducto = '$idproducto' LIMIT 1");
+		if (empty($producto)) {
+			return false;
+		}
+
+		$codigo = $producto['codigo'];
+		$nombre = $producto['nombre'];
+
+		if (!empty($codigo) && $codigo !== 'SIN CODIGO') {
+			$sql = "SELECT idsucursal FROM producto WHERE codigo = '$codigo'";
+		} else {
+			$sql = "SELECT idsucursal FROM producto WHERE nombre = '$nombre'";
+		}
+
+		return ejecutarConsulta($sql);
 	}
 
 	public function listarsucursales($idusuario)
@@ -1651,10 +1812,10 @@ public function insertar(
 	}
 
 	public function buscarStockPorSucursales($search, $idsucursalActual, $idsucursalFiltro = '')
-{
-    $termino = "%$search%";
+	{
+		$termino = "%$search%";
 
-    $sql = "
+		$sql = "
     SELECT 
         p.idproducto,
         p.nombre,
@@ -1674,8 +1835,8 @@ public function insertar(
     LIMIT 100
     ";
 
-    return ejecutarConsulta($sql);
-}
+		return ejecutarConsulta($sql);
+	}
 
 	public function generarCodigo()
 	{
@@ -1755,6 +1916,7 @@ public function insertar(
                 f.precio_venta AS precio_base_fifo,
                 f.cantidad_restante AS stock_lote_fifo,
 				p.controla_stock,
+				pg.precio_venta,
                 CASE 
                     WHEN UPPER(TRIM(pg.contenedor)) = 'UNIDAD' THEN COALESCE(f.precio_venta, 0)
                     ELSE COALESCE(NULLIF(pg.precio_venta, 0), 0)

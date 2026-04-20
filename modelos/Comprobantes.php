@@ -19,10 +19,7 @@ class Comprobantes
 	private function getEmpresaFilter($idsucursal)
 	{
 		$idempresa = $this->getIdEmpresaBySucursal($idsucursal);
-		if ($idempresa) {
-			return "idempresa = '$idempresa'";
-		}
-		return "idsucursal = '$idsucursal'";
+		return "idempresa = '$idempresa'";
 	}
 
 	public function editar($id_comp_pago, $nombre, $serie_comprobante, $num_comprobante)
@@ -94,100 +91,101 @@ class Comprobantes
 	}
 	public function mostrar_serie_ticket($idsucursal)
 	{
-		$sql = "SELECT serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Nota de Venta' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Nota de Venta' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 	public function mostrar_numero_ticket($idsucursal)
 	{
-		$sql = "SELECT num_comprobante FROM comp_pago WHERE nombre='Nota de Venta' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT  idempresa, num_comprobante FROM comp_pago WHERE nombre='Nota de Venta' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 
 	public function mostrar_serie_ticket2($idsucursal)
 	{
-		$sql = "SELECT serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Ticket' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Ticket' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 	public function mostrar_numero_ticket2($idsucursal)
 	{
-		$sql = "SELECT num_comprobante FROM comp_pago WHERE nombre='Ticket' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, num_comprobante FROM comp_pago WHERE nombre='Ticket' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 
 	public function mostrar_serie_boleta($idsucursal)
-	{
-		$sql = "SELECT serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Boleta' AND " . $this->getEmpresaFilter($idsucursal);
+	{  
+
+		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Boleta' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 	public function mostrar_numero_boleta($idsucursal)
 	{
-		$sql = "SELECT num_comprobante FROM comp_pago WHERE nombre='Boleta' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT  idempresa, num_comprobante FROM comp_pago WHERE nombre='Boleta' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 	public function mostrar_numero_nc($idsucursal)
 	{
-		$sql = "SELECT num_comprobante FROM comp_pago WHERE nombre='NC' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, num_comprobante FROM comp_pago WHERE nombre='NC' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 
 	public function mostrar_numero_ncb($idsucursal)
 	{
-		$sql = "SELECT num_comprobante FROM comp_pago WHERE nombre='NCB' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, num_comprobante FROM comp_pago WHERE nombre='NCB' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 
 	public function mostrar_serie_nc($idsucursal)
 	{
-		$sql = "SELECT serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='NC' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='NC' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 
 	public function mostrar_serie_ncb($idsucursal)
 	{
-		$sql = "SELECT serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='NCB' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='NCB' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 
 	public function mostrar_serie_factura($idsucursal)
 	{
-		$sql = "SELECT serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Factura' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Factura' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 	public function mostrar_numero_factura($idsucursal)
 	{
-		$sql = "SELECT num_comprobante FROM comp_pago WHERE nombre='Factura' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, num_comprobante FROM comp_pago WHERE nombre='Factura' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 	public function mostrar_serie_cotizacion($idsucursal)
 	{
-		$sql = "SELECT serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Cotización' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Cotización' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 	public function mostrar_numero_cotizacion($idsucursal)
 	{
-		$sql = "SELECT num_comprobante FROM comp_pago WHERE nombre='Cotización' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, num_comprobante FROM comp_pago WHERE nombre='Cotización' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 	public function mostrar_numero_ordencompra($idsucursal)
 	{
-		$sql = "SELECT num_comprobante FROM comp_pago WHERE nombre='Orden Compra' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, num_comprobante FROM comp_pago WHERE nombre='Orden Compra' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 	public function numero_venta_ordencompra($idsucursal)
 	{
-
-		$sql = "SELECT num_comprobante FROM compra WHERE tipo_c='Orden Compra' AND idsucursal = '$idsucursal' ORDER BY idcompra DESC limit 1";
+		$idempresa = $this->getIdEmpresaBySucursal($idsucursal);
+		$sql = "SELECT idempresa, num_comprobante FROM compra WHERE tipo_c='Orden Compra' AND idempresa = '$idempresa' ORDER BY idcompra DESC limit 1";
 		return ejecutarConsulta($sql);
 	}
 	public function mostrar_serie_ordencompra($idsucursal)
 	{
-		$sql = "SELECT serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Orden Compra' AND " . $this->getEmpresaFilter($idsucursal);
+		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Orden Compra' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
 	public function numero_serie_ordencompra($idsucursal)
 	{
-
-		$sql = "SELECT serie_comprobante ,num_comprobante FROM compra WHERE tipo_c='Orden Compra' AND idsucursal = '$idsucursal' ORDER BY idcompra DESC limit 1";
+		$idempresa = $this->getIdEmpresaBySucursal($idsucursal);
+		$sql = "SELECT idempresa, serie_comprobante ,num_comprobante FROM compra WHERE tipo_c='Orden Compra' AND idempresa = '$idempresa' ORDER BY idcompra DESC limit 1";
 
 		return ejecutarConsulta($sql);
 	}
@@ -241,11 +239,7 @@ class Comprobantes
 		$rspta = ejecutarConsultaSimpleFila($sql);
 
 		$empresaId = $this->getIdEmpresaBySucursal($idsucursal);
-		if ($empresaId) {
-			$sql_ultima_guia = "SELECT num_comprobante FROM guia_remision WHERE serie_comprobante = '$serie' AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa='$empresaId') ORDER BY idguia DESC LIMIT 1";
-		} else {
-			$sql_ultima_guia = "SELECT num_comprobante FROM guia_remision WHERE serie_comprobante = '$serie' AND idsucursal = '$idsucursal' ORDER BY idguia DESC LIMIT 1";
-		}
+		$sql_ultima_guia = "SELECT num_comprobante FROM guia_remision WHERE serie_comprobante = '$serie' AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa='$empresaId') ORDER BY idguia DESC LIMIT 1";
 		$ultima_guia = ejecutarConsultaSimpleFila($sql_ultima_guia);
 
 		if ($ultima_guia) {

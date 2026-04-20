@@ -398,7 +398,6 @@ class Venta
             if ($factor_conten <= 0)
                 $factor_conten = 1;
 
-            // normalizar descuento: '' => 0
             $desc_raw = $descuento[$num_elementos] ?? 0;
             $desc_raw = trim((string) $desc_raw);
             $desc_val = ($desc_raw === '' ? 0 : (float) $desc_raw);
@@ -413,28 +412,27 @@ class Venta
             $cat = intval($idcategoria[$num_elementos] ?? 0);
 
             // =========================
-            // 11.1) SERVICIO: NO FIFO / NO STOCK / NO KARDEX
+            // 11.1) SERVICIO
             // =========================
             if ($cat === 1) {
+
                 $sql_detalle_servicio = "INSERT INTO detalle_venta (
-                idsucursal, idventa, idproducto, id_fifo, nombre_producto,
-                cantidad, contenedor, cantidad_contenedor, precio_venta,
-                descuento, tipo, check_precio
-            ) VALUES (
-                '$idsucursal', '$idventanew', '$id_producto_config', 0,
-                '$nomProd',
-                '$cant_solicitada',
-                '$contVal',
-                1,
-                '$precio_final',
-                '$desc_val',
-                '$tipo',
-                '$checkPr'
-            )";
+            idsucursal, idventa, idproducto, id_fifo, nombre_producto,
+            cantidad, contenedor, cantidad_contenedor, precio_venta,
+            descuento, tipo, check_precio
+        ) VALUES (
+            '$idsucursal', '$idventanew', '$id_producto_config', 0,
+            '$nomProd',
+            '$cant_solicitada',
+            '$contVal',
+            1,
+            '$precio_final',
+            '$desc_val',
+            '$tipo',
+            '$checkPr'
+        )";
 
                 if (!ejecutarConsulta($sql_detalle_servicio)) {
-                    error_log("ERROR insert detalle SERVICIO: " . mysqli_error($conexion));
-                    error_log("SQL: " . $sql_detalle_servicio);
                     $sw = false;
                     break;
                 }
@@ -444,136 +442,133 @@ class Venta
             }
 
             // =========================
-            // 11.2) PRODUCTO: FIFO
+            // 🔥 NUEVO: VALIDAR CONTROL STOCK
             // =========================
-            $cantidad_total_unidades = $cant_solicitada * $factor_conten;
-            $cantidad_restante_a_vender = $cantidad_total_unidades;
+            $rowControl = ejecutarConsultaSimpleFila("
+                SELECT controla_stock 
+                FROM producto 
+                WHERE idproducto = '$id_producto_real'
+                AND idsucursal = '$idsucursal'
+            ");
 
-            // obtener lotes
-            $lotes_disponibles = null;
+            $controlaStock = $rowControl['controla_stock'] ?? 'Si';
 
-            if ($id_fifo_sugerido != 0) {
-                $sql_lote_especifico = "SELECT idfifo, cantidad_restante
-                                    FROM stock_fifo
-                                    WHERE idfifo = '$id_fifo_sugerido'
-                                      AND idproducto = '$id_producto_real'
-                                      AND idsucursal = '$idsucursal'
-                                      AND cantidad_restante > 0
-                                      AND estado = 1
-                                    LIMIT 1";
-                $lotes_disponibles = ejecutarConsulta($sql_lote_especifico);
-            }
+            // =========================
+            // SI CONTROLA STOCK → TU FIFO ORIGINAL
+            // =========================
+            if ($controlaStock === 'Si') {
 
-            if (!$lotes_disponibles || $lotes_disponibles->num_rows == 0 || $id_fifo_sugerido == 0) {
-                $sql_fifo = "SELECT idfifo, cantidad_restante
-                         FROM stock_fifo
-                         WHERE idproducto = '$id_producto_real'
-                           AND idsucursal = '$idsucursal'
-                           AND cantidad_restante > 0
-                           AND estado = 1
-                         ORDER BY fecha_ingreso ASC";
-                $lotes_disponibles = ejecutarConsulta($sql_fifo);
-            }
+                $cantidad_total_unidades = $cant_solicitada * $factor_conten;
+                $cantidad_restante_a_vender = $cantidad_total_unidades;
 
-            if (!$lotes_disponibles) {
-                error_log("ERROR consultar FIFO: " . mysqli_error($conexion));
-                $sw = false;
-                break;
-            }
+                $lotes_disponibles = null;
 
-            $stock_global_descontado = 0;
+                if ($id_fifo_sugerido != 0) {
+                    $sql_lote_especifico = "SELECT idfifo, cantidad_restante
+                FROM stock_fifo
+                WHERE idfifo = '$id_fifo_sugerido'
+                AND idproducto = '$id_producto_real'
+                AND idsucursal = '$idsucursal'
+                AND cantidad_restante > 0
+                AND estado = 1
+                LIMIT 1";
+                    $lotes_disponibles = ejecutarConsulta($sql_lote_especifico);
+                }
 
-            while (($lote = $lotes_disponibles->fetch_object()) && $cantidad_restante_a_vender > 0) {
+                if (!$lotes_disponibles || $lotes_disponibles->num_rows == 0 || $id_fifo_sugerido == 0) {
+                    $sql_fifo = "SELECT idfifo, cantidad_restante
+                FROM stock_fifo
+                WHERE idproducto = '$id_producto_real'
+                AND idsucursal = '$idsucursal'
+                AND cantidad_restante > 0
+                AND estado = 1
+                ORDER BY fecha_ingreso ASC";
+                    $lotes_disponibles = ejecutarConsulta($sql_fifo);
+                }
 
-                $cantidad_disponible_lote = floatval($lote->cantidad_restante);
-                $id_lote_actual = intval($lote->idfifo);
+                $stock_global_descontado = 0;
 
-                $cantidad_a_tomar = min($cantidad_restante_a_vender, $cantidad_disponible_lote);
+                while (($lote = $lotes_disponibles->fetch_object()) && $cantidad_restante_a_vender > 0) {
 
-                // actualizar fifo
-                $sql_update_fifo = "UPDATE stock_fifo
-                                SET cantidad_restante = cantidad_restante - '$cantidad_a_tomar'
-                                WHERE idfifo = '$id_lote_actual'";
+                    $cantidad_disponible_lote = floatval($lote->cantidad_restante);
+                    $id_lote_actual = intval($lote->idfifo);
 
-                if (!ejecutarConsulta($sql_update_fifo)) {
-                    error_log("ERROR update stock_fifo: " . mysqli_error($conexion));
-                    error_log("SQL: " . $sql_update_fifo);
+                    $cantidad_a_tomar = min($cantidad_restante_a_vender, $cantidad_disponible_lote);
+
+                    ejecutarConsulta("UPDATE stock_fifo
+                    SET cantidad_restante = cantidad_restante - '$cantidad_a_tomar'
+                    WHERE idfifo = '$id_lote_actual'");
+
+                    ejecutarConsulta("INSERT INTO detalle_venta (
+                        idsucursal, idventa, idproducto, id_fifo, nombre_producto,
+                        cantidad, contenedor, cantidad_contenedor, precio_venta,
+                        descuento, tipo, check_precio
+                    ) VALUES (
+                        '$idsucursal', '$idventanew', '$id_producto_config', '$id_lote_actual',
+                        '$nomProd',
+                        '$cantidad_a_tomar',
+                        '$contVal',
+                        '$factor_conten',
+                        '$precio_final',
+                        '$desc_val',
+                        '$tipo',
+                        '$checkPr'
+                    )");
+
+                    $cantidad_restante_a_vender -= $cantidad_a_tomar;
+                    $stock_global_descontado += $cantidad_a_tomar;
+                }
+
+                if ($cantidad_restante_a_vender > 0) {
                     $sw = false;
                     break;
                 }
 
-                // insertar detalle (SIN comentarios --)
+                ejecutarConsulta("UPDATE producto
+                SET stock = stock - '$stock_global_descontado'
+                WHERE idproducto = '$id_producto_real'
+                AND idsucursal = '$idsucursal'");
+
+                ejecutarConsulta("INSERT INTO kardex (
+                    idsucursal, idproducto, cantidad, cantidad_contenedor,
+                    precio_unitario, stock_actual, tipo_movimiento,
+                    motivo, descripcion, fecha_kardex
+                ) VALUES (
+                    '$idsucursal', '$id_producto_real', '$stock_global_descontado', '$factor_conten',
+                    '$precio_final',
+                    (SELECT stock FROM producto WHERE idproducto = '$id_producto_real' AND idsucursal = '$idsucursal'),
+                    1, 'Venta', 'Venta #$num_comprobante', '$fechaActual'
+                )");
+
+            } else {
+
+                // =========================
+                // NO CONTROLA STOCK → SOLO DETALLE
+                // =========================
                 $sql_detalle = "INSERT INTO detalle_venta (
-                idsucursal, idventa, idproducto, id_fifo, nombre_producto,
-                cantidad, contenedor, cantidad_contenedor, precio_venta,
-                descuento, tipo, check_precio
-            ) VALUES (
-                '$idsucursal', '$idventanew', '$id_producto_config', '$id_lote_actual',
-                '$nomProd',
-                '$cantidad_a_tomar',
-                '$contVal',
-                '$factor_conten',
-                '$precio_final',
-                '$desc_val',
-                '$tipo',
-                '$checkPr'
-            )";
-
-                if (!ejecutarConsulta($sql_detalle)) {
-                    error_log("ERROR insert detalle_venta: " . mysqli_error($conexion));
-                    error_log("SQL: " . $sql_detalle);
-                    $sw = false;
-                    break;
-                }
-
-                $cantidad_restante_a_vender -= $cantidad_a_tomar;
-                $stock_global_descontado += $cantidad_a_tomar;
-            }
-
-            if (!$sw)
-                break;
-
-            if ($cantidad_restante_a_vender > 0) {
-                error_log("Stock insuficiente FIFO para producto ID: $id_producto_real. Faltante: $cantidad_restante_a_vender");
-                $sw = false;
-                break;
-            }
-
-            // actualizar stock global producto
-            $sql_update_producto_stock = "UPDATE producto
-                                      SET stock = stock - '$stock_global_descontado'
-                                      WHERE idproducto = '$id_producto_real'
-                                        AND idsucursal = '$idsucursal'";
-
-            if (!ejecutarConsulta($sql_update_producto_stock)) {
-                error_log("ERROR update producto stock: " . mysqli_error($conexion));
-                error_log("SQL: " . $sql_update_producto_stock);
-                $sw = false;
-                break;
-            }
-
-            // insertar kardex
-            $sql_kardex = "INSERT INTO kardex (
-            idsucursal, idproducto, cantidad, cantidad_contenedor,
-            precio_unitario, stock_actual, tipo_movimiento,
-            motivo, descripcion, fecha_kardex
+            idsucursal, idventa, idproducto, id_fifo, nombre_producto,
+            cantidad, contenedor, cantidad_contenedor, precio_venta,
+            descuento, tipo, check_precio
         ) VALUES (
-            '$idsucursal', '$id_producto_real', '$stock_global_descontado', '$factor_conten',
+            '$idsucursal', '$idventanew', '$id_producto_config', 0,
+            '$nomProd',
+            '$cant_solicitada',
+            '$contVal',
+            '$factor_conten',
             '$precio_final',
-            (SELECT stock FROM producto WHERE idproducto = '$id_producto_real' AND idsucursal = '$idsucursal'),
-            1, 'Venta', 'Venta #$num_comprobante', '$fechaActual'
+            '$desc_val',
+            '$tipo',
+            '$checkPr'
         )";
 
-            if (!ejecutarConsulta($sql_kardex)) {
-                error_log("ERROR insert kardex: " . mysqli_error($conexion));
-                error_log("SQL: " . $sql_kardex);
-                $sw = false;
-                break;
+                if (!ejecutarConsulta($sql_detalle)) {
+                    $sw = false;
+                    break;
+                }
             }
 
             $num_elementos++;
         }
-
         // =========================
         // 12) Crédito (cuentas por cobrar)
         // =========================
@@ -1602,36 +1597,39 @@ class Venta
     //funcion para selecciolnar el numero de factura
     public function numero_venta($idsucursal)
     {
-
-        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Factura' AND idsucursal = '$idsucursal' ORDER BY idventa DESC limit 1";
+        $idempresa = $this->getIdEmpresaBySucursal($idsucursal);
+        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Factura' AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa = '$idempresa') ORDER BY idventa DESC limit 1";
         return ejecutarConsulta($sql);
     }
 
     //funcion para seleccionar la serie de la factura
     public function numero_serie($idsucursal)
     {
-
+        $idempresa = $this->getIdEmpresaBySucursal($idsucursal);
         $sql = "SELECT REPLACE(serie_comprobante,'F','') AS serie_comprobante ,num_comprobante FROM venta WHERE tipo_comprobante='Factura'
-			AND idsucursal = '$idsucursal'
+			AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa = '$idempresa')
 			ORDER BY idventa DESC limit 1";
 
         return ejecutarConsulta($sql);
     }
 
     //funcion para selecciolnar el numero de boleta
-    public function numero_venta_boleta($idsucursal)
+    public function numero_venta_boleta($idempresa)
     {
 
-        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Boleta' 
-			AND idsucursal = '$idsucursal'
-			ORDER BY idventa DESC limit 1 ";
+        $sql = "SELECT v.num_comprobante FROM venta v
+        INNER JOIN sucursal s ON v.idsucursal = s.idsucursal AND s.idempresa = '$idempresa'
+        WHERE v.tipo_comprobante='Boleta'
+         ORDER BY v.idventa DESC limit 1";
         return ejecutarConsulta($sql);
     }
     //funcion para seleccionar la serie de la boleta
-    public function numero_serie_boleta($idsucursal)
+    public function numero_serie_boleta($idempresa)
     {
 
-        $sql = "SELECT REPLACE(serie_comprobante,'B','') AS serie_comprobante, num_comprobante FROM venta WHERE tipo_comprobante='Boleta' AND idsucursal = '$idsucursal' ORDER BY idventa DESC limit 1";
+        $sql = "SELECT REPLACE(v.serie_comprobante,'B','') AS serie_comprobante, v.num_comprobante FROM venta v
+        INNER JOIN sucursal s ON v.idsucursal = s.idsucursal
+        WHERE v.tipo_comprobante='Boleta' AND s.idempresa = '$idempresa' ORDER BY v.idventa DESC limit 1";
 
         return ejecutarConsulta($sql);
     }
@@ -1639,9 +1637,9 @@ class Venta
     //funcion para seleccionar la serie de la boleta
     public function numero_serie_nc($idsucursal)
     {
-
+        $idempresa = $this->getIdEmpresaBySucursal($idsucursal);
         $sql = "SELECT REPLACE(serie_comprobante,'FN','') AS serie_comprobante, num_comprobante FROM venta WHERE tipo_comprobante='NC' 
-	AND idsucursal = '$idsucursal'
+	AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa = '$idempresa')
 	ORDER BY idventa DESC limit 1";
 
         return ejecutarConsulta($sql);
@@ -1650,9 +1648,9 @@ class Venta
     //funcion para seleccionar la serie de la boleta
     public function numero_serie_ncb($idsucursal)
     {
-
+        $idempresa = $this->getIdEmpresaBySucursal($idsucursal);
         $sql = "SELECT REPLACE(serie_comprobante,'BN','') AS serie_comprobante, num_comprobante FROM venta WHERE tipo_comprobante='NCB' 
-	AND idsucursal = '$idsucursal'
+	AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa = '$idempresa')
 	ORDER BY idventa DESC limit 1";
 
         return ejecutarConsulta($sql);
@@ -1661,9 +1659,9 @@ class Venta
     //funcion para selecciolnar el numero de nota de crédito
     public function numero_venta_nc($idsucursal)
     {
-
+        $idempresa = $this->getIdEmpresaBySucursal($idsucursal);
         $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='NC' 
-			AND idsucursal = '$idsucursal'
+			AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa = '$idempresa')
 			ORDER BY idventa DESC limit 1";
         return ejecutarConsulta($sql);
     }
@@ -1671,9 +1669,9 @@ class Venta
     //funcion para selecciolnar el numero de nota de crédito
     public function numero_venta_ncb($idsucursal)
     {
-
+        $idempresa = $this->getIdEmpresaBySucursal($idsucursal);
         $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='NCB' 
-	AND idsucursal = '$idsucursal'
+	AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa = '$idempresa')
 	ORDER BY idventa DESC limit 1";
         return ejecutarConsulta($sql);
     }
@@ -1681,21 +1679,28 @@ class Venta
     //funcion para selecciolnar el numero de ticket
     public function numero_venta_ticket($idsucursal)
     {
-
+        $idempresa = $this->getIdEmpresaBySucursal($idsucursal);
         $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Nota de Venta' 
-			AND idsucursal = '$idsucursal'
+			AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa = '$idempresa')
 			ORDER BY idventa DESC limit 1";
         return ejecutarConsulta($sql);
     }
     //funcion para seleccionar la serie de la ticket
     public function numero_serie_ticket($idsucursal)
     {
-
+        $idempresa = $this->getIdEmpresaBySucursal($idsucursal);
         $sql = "SELECT REPLACE(serie_comprobante,'P','') AS serie_comprobante, num_comprobante 
-		FROM venta WHERE tipo_comprobante='Nota de Venta' AND idsucursal = '$idsucursal' 
+		FROM venta WHERE tipo_comprobante='Nota de Venta' AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa = '$idempresa') 
 		ORDER BY idventa DESC limit 1";
 
         return ejecutarConsulta($sql);
+    }
+
+    public function getIdEmpresaBySucursal($idsucursal)
+    {
+        $sql = "SELECT idempresa FROM sucursal WHERE idsucursal = '$idsucursal'";
+        $result = ejecutarConsultaSimpleFila($sql);
+        return $result ? $result['idempresa'] : null;
     }
 
     public function buscarProducto($codigo)

@@ -45,14 +45,13 @@ function init() {
     $("#idcategoria").select2("");
   });
 
-  //marca 
+  //marca
   $.post("controladores/producto.php?op=selectMarca", function (r) {
     $("#idmarca").html(r);
     $("#idmarca").select2("");
   });
 
-
-  //marca 
+  //marca
   $.post("controladores/producto.php?op=selectModelo", function (r) {
     $("#idmodelo").html(r);
     $("#idmodelo").select2("");
@@ -83,7 +82,6 @@ function init() {
     $("#idsucursal2").html(r);
     $("#idsucursal2").select2("");
   });
-
 
   //cargamos los items al select almacen
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
@@ -168,7 +166,7 @@ function guardarcat(e) {
           data = JSON.parse(data);
 
           seleccionarCategoria(data.nombre, data.idcategoria);
-        }
+        },
       );
     },
   });
@@ -203,7 +201,7 @@ function obtenerIdCategoriaVehiculoEnSelect() {
 }
 
 function sincronizarTipoProductoConCategoria() {
-  const idSeleccionado = (("" + $("#idcategoria").val()) || "").trim();
+  const idSeleccionado = ("" + $("#idcategoria").val() || "").trim();
   const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
 
   if (idVehiculo && idSeleccionado === idVehiculo) {
@@ -322,7 +320,7 @@ function llenarProductos() {
         })
         .val(null)
         .trigger("change");
-    }
+    },
   );
 
   $.post(
@@ -336,7 +334,7 @@ function llenarProductos() {
         })
         .val(null)
         .trigger("change");
-    }
+    },
   );
 }
 
@@ -352,7 +350,7 @@ function stockProductoE() {
 
       var label = document.querySelector("#productoDesempaquetar");
       label.textContent = data.stock + " - UM: " + data.unidadmedida;
-    }
+    },
   );
 }
 
@@ -365,7 +363,7 @@ function stockProductoD() {
       data = JSON.parse(data);
 
       $("#productoD").val(data.stock);
-    }
+    },
   );
 }
 
@@ -421,7 +419,9 @@ function mostrar(idproducto) {
       $("#precioCompra").val(data.precio_compra);
       $("#fecha_hora").val(data.fecha);
       $("#descripcion").val(data.descripcion);
-      $("#imagenmuestra").show().attr("src", "files/productos/" + data.imagen);
+      $("#imagenmuestra")
+        .show()
+        .attr("src", "files/productos/" + data.imagen);
       $("#imagenactual").val(data.imagen);
       $("#idproducto").val(data.idproducto);
       $("#nserie").val(data.numserie);
@@ -444,7 +444,9 @@ function mostrar(idproducto) {
         // Ya tiene código: mostrar como bloqueado, pero editable con confirmación
         $("#codigo").prop("readonly", true);
         $("#modoCodigo").prop("checked", false);
-        $("label[for='modoCodigo']").html('<i class="fa fa-lock text-danger"></i> Manual (bloqueado)');
+        $("label[for='modoCodigo']").html(
+          '<i class="fa fa-lock text-danger"></i> Manual (bloqueado)',
+        );
 
         // Guardamos un flag para saber que proviene de un producto con código
         $("#codigo").data("tieneCodigo", true);
@@ -452,26 +454,29 @@ function mostrar(idproducto) {
         // No tiene código: permitir edición libre
         $("#codigo").prop("readonly", false);
         $("#modoCodigo").prop("checked", false);
-        $("label[for='modoCodigo']").html('<i class="fa fa-edit text-success"></i> Manual');
+        $("label[for='modoCodigo']").html(
+          '<i class="fa fa-edit text-success"></i> Manual',
+        );
         $("#codigo").data("tieneCodigo", false);
       }
 
-      $("#myModal").off("shown.bs.modal").on("shown.bs.modal", function () {
-        var idsucursalSeleccionada = $("#idsucursal2").val();
-        console.log("Sucursal activa:", idsucursalSeleccionada);
+      $("#myModal")
+        .off("shown.bs.modal")
+        .on("shown.bs.modal", function () {
+          var idsucursalSeleccionada = $("#idsucursal2").val();
+          console.log("Sucursal activa:", idsucursalSeleccionada);
 
-        $.post(
-          "controladores/producto.php?op=sucursales",
-          { idsucursal: idsucursalSeleccionada, idproducto: data.idproducto },
-          function (r) {
-            $("#sucursales").html(r);
-          }
-        );
-      });
-    }
+          $.post(
+            "controladores/producto.php?op=sucursales",
+            { idsucursal: idsucursalSeleccionada, idproducto: data.idproducto },
+            function (r) {
+              $("#sucursales").html(r);
+            },
+          );
+        });
+    },
   );
 }
-
 
 function calcularPrecioIGV() {
   var numero = $("#precio").val();
@@ -557,17 +562,17 @@ function listar() {
       { data: "5" },
       { data: "6" },
       { data: "7" },
-      { data: "8" }
-    ]
+      { data: "8" },
+    ],
   });
 }
 
 toastr.options = {
-  "closeButton": false,
-  "progressBar": true,
-  "positionClass": "toast-top-right",
-  "timeOut": "4000",
-  "extendedTimeOut": "1000"
+  closeButton: false,
+  progressBar: true,
+  positionClass: "toast-top-right",
+  timeOut: "4000",
+  extendedTimeOut: "1000",
 };
 
 let timeout = null;
@@ -579,7 +584,10 @@ $(document).on("input", "#stock_filtro", function () {
     const valor = parseInt($("#stock_filtro").val());
 
     if (!isNaN(valor) && valor >= 0) {
-      toastr.info(`Listando productos con stock menor o igual a ${valor}`, 'Filtro aplicado');
+      toastr.info(
+        `Listando productos con stock menor o igual a ${valor}`,
+        "Filtro aplicado",
+      );
     } else {
       toastr.warning("Listando todos los productos", "Sin filtro");
     }
@@ -587,7 +595,6 @@ $(document).on("input", "#stock_filtro", function () {
     listar(); // Recargar la tabla
   }, 1200); // Espera 1.2 segundos después de escribir
 });
-
 
 function generarbarcode(e = null) {
   if (e) e.preventDefault(); // Solo prevenir si viene de un evento
@@ -619,9 +626,75 @@ $(document).ready(function () {
   });
 });
 
+function validarDatosProducto() {
+  const idrubro = $("#idrubro").val();
+  const nombre = $("#nombre").val().trim();
+  const precio = parseFloat($("#precio").val());
+  const codigo = $("#codigo").val().trim();
+  const idcategoria = $("#idcategoria").val();
+  const idunidad_medida = $("#idunidad_medida").val();
+  const idmarca = $("#idmarca").val();
+  const idmodelo = $("#idmodelo").val();
+  const idcondicionventa = $("#idcondicionventa").val();
+
+  if (!idrubro) {
+    Swal.fire("Error", "El rubro es obligatorio", "error");
+    return false;
+  }
+
+  if (!idcategoria) {
+    Swal.fire("Error", "La categoría es obligatoria", "error");
+    return false;
+  }
+
+  if (!idunidad_medida) {
+    Swal.fire("Error", "La unidad de medida es obligatoria", "error");
+    return false;
+  }
+
+  if (!idmarca) {
+    Swal.fire("Error", "La marca es obligatoria", "error");
+    return false;
+  }
+
+  if (!idmodelo) {
+    Swal.fire("Error", "El modelo es obligatorio", "error");
+    return false;
+  }
+
+  if (!idcondicionventa) {
+    Swal.fire("Error", "La condición de venta es obligatoria", "error");
+    return false;
+  }
+
+  if (nombre === "") {
+    Swal.fire("Error", "El nombre del producto es obligatorio", "error");
+    return false;
+  }
+
+  if (isNaN(precio) || precio < 0) {
+    Swal.fire(
+      "Error",
+      "El precio debe ser un número válido mayor o igual a 0",
+      "error",
+    );
+    return false;
+  }
+
+  if (codigo === "") {
+    Swal.fire("Error", "El código del producto es obligatorio", "error");
+    return false;
+  }
+
+  return true;
+}
+
 function guardaryeditar(e) {
   e.preventDefault(); // No se activará la acción predeterminada del evento
-
+  
+  if (!validarDatosProducto()) {
+    return;
+  }
   var btnGuardar = $("#btnGuardarP");
 
   if ($("#tipo_producto").val() === "Vehiculo") {
@@ -654,7 +727,7 @@ function guardaryeditar(e) {
         icon: datos.status,
         text: datos.message,
       });
-      if (datos.status === 'success') {
+      if (datos.status === "success") {
         $("#myModal").modal("hide");
         tabla.ajax.reload();
         limpiarFormulario();
@@ -719,9 +792,13 @@ function nuevo() {
   var idsucursalSeleccionada = $("#idsucursal2").val();
   $("#idsucursal2").val(idsucursalSeleccionada);
 
-  $.post("controladores/producto.php?op=sucursales", { idsucursal: idsucursalSeleccionada }, function (r) {
-    $("#sucursales").html(r);
-  });
+  $.post(
+    "controladores/producto.php?op=sucursales",
+    { idsucursal: idsucursalSeleccionada },
+    function (r) {
+      $("#sucursales").html(r);
+    },
+  );
 }
 
 /*function guardaryeditar(e) {
@@ -859,7 +936,7 @@ function desactivar(idproducto) {
         function (e) {
           Swal.fire("Desactivado!", e, "success");
           tabla.ajax.reload();
-        }
+        },
       );
     } else {
       Swal.fire("Aviso!", "Se Cancelo la desactivacion de el Producto", "info");
@@ -885,7 +962,7 @@ function activar(idproducto) {
         function (e) {
           Swal.fire("Activado!", e, "success");
           tabla.ajax.reload();
-        }
+        },
       );
     } else {
       Swal.fire("Aviso!", "Se Cancelo la activación de el Producto", "info");
@@ -893,7 +970,23 @@ function activar(idproducto) {
   });
 }
 
-function verimagen(idproducto, imagen, nombre, stock, categoria, registrosan, rubro, condicionventa, precio, precio_compra, precioB, precioC, precioD, fabricante, descripcion) {
+function verimagen(
+  idproducto,
+  imagen,
+  nombre,
+  stock,
+  categoria,
+  registrosan,
+  rubro,
+  condicionventa,
+  precio,
+  precio_compra,
+  precioB,
+  precioC,
+  precioD,
+  fabricante,
+  descripcion,
+) {
   $("#modalDetalleProducto").modal("show");
 
   // Mostrar imagen
@@ -926,11 +1019,14 @@ function verimagen(idproducto, imagen, nombre, stock, categoria, registrosan, ru
   $("#detalleProductoContenido").html(html);
 
   // Obtener precios adicionales
-  $.post("controladores/producto.php?op=precios_adicionales", { idproducto: idproducto }, function (data) {
-    $("#detallePreciosAdicionales").html(data);
-  });
+  $.post(
+    "controladores/producto.php?op=precios_adicionales",
+    { idproducto: idproducto },
+    function (data) {
+      $("#detallePreciosAdicionales").html(data);
+    },
+  );
 }
-
 
 // Cerrar y resetear el modal al hacer clic en el botón
 $(document).on("click", "#btnCerrarModalProducto", function () {
@@ -943,13 +1039,12 @@ $(document).on("click", "#btnCerrarModalProducto", function () {
 
     // Vaciar contenido de detalles y precios
     $("#detalleProductoContenido").html("");
-    $("#detallePreciosAdicionales").html('<i>Cargando...</i>');
+    $("#detallePreciosAdicionales").html("<i>Cargando...</i>");
 
     // Volver a activar el tab de imagen
-    $('#detalleProductoTabs a[href="#tab-imagen"]').tab('show');
+    $('#detalleProductoTabs a[href="#tab-imagen"]').tab("show");
   }, 300); // espera a que el modal se oculte completamente
 });
-
 
 /*=============================================
 SUBIENDO LA FOTO DEL PRODUCTO
@@ -1000,7 +1095,11 @@ var configuracionesState = [];
 
 function config(producto) {
   $("#ModalConfigProducto").modal("show");
-  $("#p-producto").html('<span class="badge bg-info" style="font-size:20px">' + producto.nombre + "</span>");
+  $("#p-producto").html(
+    '<span class="badge bg-info" style="font-size:20px">' +
+      producto.nombre +
+      "</span>",
+  );
   $("#idproductoconfig").val(producto.idproducto);
 
   // Inicializamos con los valores del producto principal
@@ -1009,17 +1108,18 @@ function config(producto) {
 
   $("#p-unitario").html(
     '<span class="badge bg-info" style="font-size:20px">Precio Venta Lote: S/. ' +
-    precioVentaBase.toFixed(2) + "</span>"
+      precioVentaBase.toFixed(2) +
+      "</span>",
   );
 
   configuracionesState = [];
   listarDataCofig(producto.idproducto);
 }
 
-
 function listarDataCofig(idproducto) {
   $.ajax({
-    url: "controladores/producto.php?op=listCofiguration&idproducto=" + idproducto,
+    url:
+      "controladores/producto.php?op=listCofiguration&idproducto=" + idproducto,
     type: "GET",
     success: function (response) {
       var response = JSON.parse(response);
@@ -1031,23 +1131,30 @@ function listarDataCofig(idproducto) {
 
         $("#p-unitario").html(
           '<span class="badge bg-info" style="font-size:20px">Precio Venta Lote: S/. ' +
-          precioVentaBase.toFixed(2) + "</span>"
+            precioVentaBase.toFixed(2) +
+            "</span>",
         );
       }
 
-      configuracionesState = response.length ? response.map(item => ({
-        id: item.id || 0,
-        codigo_extra: item.codigo_extra || "",
-        contenedor: item.contenedor || "",
-        cantidad_contenedor: parseFloat(item.cantidad_contenedor) || 1,
-        precio_venta: item.precio_venta ? parseFloat(item.precio_venta) : null,
-        precio_venta_manual: item.precio_venta_manual ? parseFloat(item.precio_venta_manual) : null,
-        precios: item.precios || []
-      })) : [];
+      configuracionesState = response.length
+        ? response.map((item) => ({
+            id: item.id || 0,
+            codigo_extra: item.codigo_extra || "",
+            contenedor: item.contenedor || "",
+            cantidad_contenedor: parseFloat(item.cantidad_contenedor) || 1,
+            precio_venta: item.precio_venta
+              ? parseFloat(item.precio_venta)
+              : null,
+            precio_venta_manual: item.precio_venta_manual
+              ? parseFloat(item.precio_venta_manual)
+              : null,
+            precios: item.precios || [],
+          }))
+        : [];
 
       p = configuracionesState.length;
       renderizarTabla();
-    }
+    },
   });
 }
 
@@ -1055,11 +1162,14 @@ function renderizarTabla() {
   var html = "";
   configuracionesState.forEach((item, idx) => {
     let cantidad = parseFloat(item.cantidad_contenedor) || 1;
-    let esUnidad = (cantidad === 1 || (item.contenedor && item.contenedor.toUpperCase().trim() === 'UNIDAD'));
+    let esUnidad =
+      cantidad === 1 ||
+      (item.contenedor && item.contenedor.toUpperCase().trim() === "UNIDAD");
 
     // El precio sugerido se basa en el PRECIO DE VENTA del lote
     let precioCalculado = (precioVentaBase * cantidad).toFixed(2);
-    let precioFinal = (item.precio_venta_manual || item.precio_venta || precioCalculado);
+    let precioFinal =
+      item.precio_venta_manual || item.precio_venta || precioCalculado;
 
     html += `<tr id="fila${idx}">
             <td><input type="text" class="form-control" value="${item.codigo_extra}" onchange="actualizarConfig(${idx}, 'codigo_extra', this.value)"></td>
@@ -1081,11 +1191,11 @@ function resetearPrecio(idx) {
     delete configuracionesState[idx].precio_venta_manual;
     renderizarTabla();
     Swal.fire({
-      icon: 'success',
-      title: 'Precio restaurado',
-      text: 'Se restauró el precio automático',
+      icon: "success",
+      title: "Precio restaurado",
+      text: "Se restauró el precio automático",
       timer: 1500,
-      showConfirmButton: false
+      showConfirmButton: false,
     });
   }
 }
@@ -1093,31 +1203,32 @@ function resetearPrecio(idx) {
 function actualizarConfig(index, campo, valor) {
   if (!configuracionesState[index]) return;
 
-  let cantidadContenedor = parseFloat(configuracionesState[index].cantidad_contenedor) || 1;
-  let esUnidad = (cantidadContenedor === 1 ||
+  let cantidadContenedor =
+    parseFloat(configuracionesState[index].cantidad_contenedor) || 1;
+  let esUnidad =
+    cantidadContenedor === 1 ||
     (configuracionesState[index].contenedor &&
-      configuracionesState[index].contenedor.toUpperCase().trim() === 'UNIDAD'));
+      configuracionesState[index].contenedor.toUpperCase().trim() === "UNIDAD");
 
-  if (campo === 'cantidad_contenedor') {
+  if (campo === "cantidad_contenedor") {
     let cantidad = parseFloat(valor) || 1;
     if (cantidad <= 0) cantidad = 1;
     configuracionesState[index][campo] = cantidad;
 
     // Solo resetear precio si no es UNIDAD
-    let nuevaEsUnidad = (cantidad === 1);
+    let nuevaEsUnidad = cantidad === 1;
     if (!nuevaEsUnidad) {
       delete configuracionesState[index].precio_venta_manual;
       delete configuracionesState[index].precio_venta;
     }
-  }
-  else if (campo === 'precio_venta_manual') {
+  } else if (campo === "precio_venta_manual") {
     // UNIDAD no permite edición manual
     if (esUnidad) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Precio bloqueado',
-        text: 'El contenedor UNIDAD usa precio automático del lote FIFO',
-        timer: 2000
+        icon: "warning",
+        title: "Precio bloqueado",
+        text: "El contenedor UNIDAD usa precio automático del lote FIFO",
+        timer: 2000,
       });
       return;
     }
@@ -1132,8 +1243,7 @@ function actualizarConfig(index, campo, valor) {
 
     // Guardar precio manual para contenedores no-UNIDAD
     configuracionesState[index].precio_venta_manual = valorNum;
-  }
-  else {
+  } else {
     configuracionesState[index][campo] = valor;
   }
 }
@@ -1201,12 +1311,14 @@ function calcularMargen(input) {
   // COSTO TOTAL DEL CONTENEDOR = Costo Compra Base x Cantidad
   let costoTotalContenedor = costoCompraBase * cantidadContenedor;
 
-  let item = $(input).closest('.precio-item');
+  let item = $(input).closest(".precio-item");
 
   if (costoTotalContenedor > 0) {
     // Fórmula: ((Venta - Costo) / Costo) * 100
-    let margen = ((precioVentaAdicional - costoTotalContenedor) / costoTotalContenedor) * 100;
-    item.find('.margen_utilidad').val(margen.toFixed(2));
+    let margen =
+      ((precioVentaAdicional - costoTotalContenedor) / costoTotalContenedor) *
+      100;
+    item.find(".margen_utilidad").val(margen.toFixed(2));
   }
 }
 
@@ -1220,11 +1332,11 @@ function actualizarMargen(input) {
   // BASE DE COSTO PARA EL CÁLCULO
   let costoTotalContenedor = costoCompraBase * cantidadContenedor;
 
-  let item = $(input).closest('.precio-item');
+  let item = $(input).closest(".precio-item");
   if (costoTotalContenedor <= 0) return;
 
   // Calculamos el precio de venta necesario para ese margen sobre el costo
-  let precioVentaCalculado = costoTotalContenedor * (1 + (margen / 100));
+  let precioVentaCalculado = costoTotalContenedor * (1 + margen / 100);
 
   item.find(".precio_precio").val(precioVentaCalculado.toFixed(2));
 }
@@ -1292,13 +1404,21 @@ $("#savePrecios").on("submit", function (e) {
     let precio = $(this).find(".precio_precio").val();
 
     if (!idnombre_p) {
-      toastr.warning("Error", `El campo "Nombre precio" es obligatorio en la fila ${fila}.`, "error");
+      toastr.warning(
+        "Error",
+        `El campo "Nombre precio" es obligatorio en la fila ${fila}.`,
+        "error",
+      );
       error = true;
       return false;
     }
 
     if (!precio) {
-      toastr.warning("Error", `El campo "Precio" es obligatorio en la fila ${fila}.`, "error");
+      toastr.warning(
+        "Error",
+        `El campo "Precio" es obligatorio en la fila ${fila}.`,
+        "error",
+      );
       error = true;
       return false;
     }
@@ -1310,9 +1430,8 @@ $("#savePrecios").on("submit", function (e) {
       id: parseInt(idPrecio),
       idnombre_p,
       precio: parseFloat(precio),
-      margen_utilidad: parseFloat(margen_utilidad) // ✅ sin error
+      margen_utilidad: parseFloat(margen_utilidad), // ✅ sin error
     });
-
   });
 
   if (error) return;
@@ -1322,25 +1441,36 @@ $("#savePrecios").on("submit", function (e) {
   Swal.fire("¡Precios guardados!", "", "success");
 });
 
-
-
 function validarDatos() {
   for (let i = 0; i < configuracionesState.length; i++) {
     const item = configuracionesState[i];
     const fila = i + 1;
 
-    if (!item.codigo_extra || item.codigo_extra.trim() === '') {
-      toastr.warning("Error", `El campo "Código extra" es obligatorio en la fila ${fila}.`, "error");
+    if (!item.codigo_extra || item.codigo_extra.trim() === "") {
+      toastr.warning(
+        "Error",
+        `El campo "Código extra" es obligatorio en la fila ${fila}.`,
+        "error",
+      );
       return false;
     }
 
-    if (!item.contenedor || item.contenedor.trim() === '') {
-      toastr.warning("Error", `El campo "Contenedor" es obligatorio en la fila ${fila}.`, "error");
+    if (!item.contenedor || item.contenedor.trim() === "") {
+      toastr.warning(
+        "Error",
+        `El campo "Contenedor" es obligatorio en la fila ${fila}.`,
+        "error",
+      );
       return false;
     }
 
-    if (!item.cantidad_contenedor || item.cantidad_contenedor <= 0) { // ← modificar validación
-      toastr.warning("Error", `La cantidad debe ser mayor a 0 en la fila ${fila}.`, "error");
+    if (!item.cantidad_contenedor || item.cantidad_contenedor <= 0) {
+      // ← modificar validación
+      toastr.warning(
+        "Error",
+        `La cantidad debe ser mayor a 0 en la fila ${fila}.`,
+        "error",
+      );
       return false;
     }
 
@@ -1355,7 +1485,11 @@ $("#saveCofigurtion").submit(function (e) {
   e.preventDefault();
 
   if (configuracionesState.length === 0) {
-    toastr.warning("Error", "Debe agregar al menos una configuración.", "error");
+    toastr.warning(
+      "Error",
+      "Debe agregar al menos una configuración.",
+      "error",
+    );
     return;
   }
 
@@ -1397,7 +1531,7 @@ function eliminarItemPrecio(btn) {
 function comprobarData() {
   if (p === 0) {
     $("#detalle").html(
-      `<tr><td colspan="6" class="text-center">No hay configuraciones</td></tr>`
+      `<tr><td colspan="6" class="text-center">No hay configuraciones</td></tr>`,
     );
   }
 }
@@ -1422,63 +1556,70 @@ function fechaVencimiento(id) {
       $("#totareal").html(json.total_stock + " Unid.");
 
       // Destruir DataTable si existe
-      if ($.fn.DataTable.isDataTable('#tbllistadoKardex')) {
-        $('#tbllistadoKardex').DataTable().destroy();
+      if ($.fn.DataTable.isDataTable("#tbllistadoKardex")) {
+        $("#tbllistadoKardex").DataTable().destroy();
       }
 
       // Inicializar DataTable con server-side processing
-      $('#tbllistadoKardex').DataTable({
+      $("#tbllistadoKardex").DataTable({
         processing: true,
         serverSide: true,
         ajax: {
-          url: "controladores/producto.php?op=listarvencimiento_datatable&id=" + id,
+          url:
+            "controladores/producto.php?op=listarvencimiento_datatable&id=" +
+            id,
           type: "GET",
           error: function (xhr, error, thrown) {
             Swal.fire("Error", "No se pudo cargar los datos", "error");
-          }
+          },
         },
         columns: [
-          { data: 'numero', orderable: false },
-          { data: 'fecha_ingreso' },
-          { data: 'fvencimiento' },
-          { data: 'dias_restantes', orderable: true },
-          { data: 'cantidad' },
-          { data: 'stock_lote' },
-          { data: 'nlote' },
-          { data: 'precio_compra' },
-          { data: 'precio_venta' }
+          { data: "numero", orderable: false },
+          { data: "fecha_ingreso" },
+          { data: "fvencimiento" },
+          { data: "dias_restantes", orderable: true },
+          { data: "cantidad" },
+          { data: "stock_lote" },
+          { data: "nlote" },
+          { data: "precio_compra" },
+          { data: "precio_venta" },
         ],
         createdRow: function (row, data, dataIndex) {
           if (data.clase) {
             $(row).addClass(data.clase);
           }
         },
-        dom: 'Bfrtip',
-        buttons: ['copy', 'excel', 'pdf', 'print'],
+        dom: "Bfrtip",
+        buttons: ["copy", "excel", "pdf", "print"],
         responsive: true,
         pageLength: 10,
-        order: [[1, 'asc']],
+        order: [[1, "asc"]],
         language: {
           processing: "Procesando...",
           lengthMenu: "Mostrar _MENU_ registros",
           zeroRecords: "No se encontraron resultados",
           emptyTable: "Ningún dato disponible en esta tabla",
           info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-          infoEmpty: "Mostrando registros del 0 al 0 de un total de 0 registros",
+          infoEmpty:
+            "Mostrando registros del 0 al 0 de un total de 0 registros",
           infoFiltered: "(filtrado de un total de _MAX_ registros)",
           search: "Buscar:",
           paginate: {
             first: "Primero",
             last: "Último",
             next: "Siguiente",
-            previous: "Anterior"
-          }
-        }
+            previous: "Anterior",
+          },
+        },
       });
     },
     error: function () {
-      Swal.fire("Error", "No se pudo cargar la información del producto", "error");
-    }
+      Swal.fire(
+        "Error",
+        "No se pudo cargar la información del producto",
+        "error",
+      );
+    },
   });
 }
 
@@ -1512,7 +1653,7 @@ function imprimirCodigosBarras() {
             lineColor: "#000",
             width: 2,
             height: 40,
-            margin: 0
+            margin: 0,
           });
 
           // Convertir SVG a PNG
@@ -1527,9 +1668,13 @@ function imprimirCodigosBarras() {
               canvas.height = img.height;
               ctx.drawImage(img, 0, 0);
               var pngFile = canvas.toDataURL("image/png");
-              $(svg).replaceWith('<img src="' + pngFile + '" style="width:100%;" />');
+              $(svg).replaceWith(
+                '<img src="' + pngFile + '" style="width:100%;" />',
+              );
             };
-            img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+            img.src =
+              "data:image/svg+xml;base64," +
+              btoa(unescape(encodeURIComponent(svgData)));
           }, 200);
         });
       }
@@ -1540,9 +1685,9 @@ function imprimirCodigosBarras() {
 function imprSelec(nombre) {
   var ficha = document.getElementById(nombre);
   var ventimp = window.open("", "popimpr");
-  ventimp.document.write('<html><head><title>Impresión</title></head><body>');
+  ventimp.document.write("<html><head><title>Impresión</title></head><body>");
   ventimp.document.write(ficha.innerHTML);
-  ventimp.document.write('</body></html>');
+  ventimp.document.write("</body></html>");
   ventimp.document.close();
 
   // Dar tiempo a que las imágenes carguen
@@ -1552,7 +1697,6 @@ function imprSelec(nombre) {
     $("#ModalCodigosProducto").modal("hide");
   }, 1000);
 }
-
 
 function guardarCategoria(e) {
   e.preventDefault(); // No se activará la acción predeterminada del evento
@@ -1636,7 +1780,6 @@ function seleccionarum(nombre, idunidad_medidad) {
   $("#idunidad_medidad").select2("");
 }
 
-
 // Mostrar alerta con SweetAlert
 function mostrarAlerta(mensaje) {
   Swal.fire({
@@ -1653,21 +1796,24 @@ function filtrarEntrada(valor) {
   return valor.replace(/[^0-9.]/g, "");
 }
 
-
 function entradaSalida(idproducto, idsucursal) {
   $("#myModalEntradas").modal("show");
   $("#input-idproducto").val(idproducto);
   $("#input-idsucursal").val(idsucursal);
 
-  $.post("controladores/producto.php?op=listarLotesFifo", {
-    idproducto: idproducto,
-    idsucursal: idsucursal
-  }, function (r) {
-    $("#idfifo").html(r);
-    // Reiniciar los campos cuando se abre el modal
-    $("#tipo_movimiento").val("");
-    actualizarPreciosBox();
-  });
+  $.post(
+    "controladores/producto.php?op=listarLotesFifo",
+    {
+      idproducto: idproducto,
+      idsucursal: idsucursal,
+    },
+    function (r) {
+      $("#idfifo").html(r);
+      // Reiniciar los campos cuando se abre el modal
+      $("#tipo_movimiento").val("");
+      actualizarPreciosBox();
+    },
+  );
 }
 
 $("#formularioIngreso").submit(function (e) {
@@ -1681,11 +1827,16 @@ $("#formularioIngreso").submit(function (e) {
     var precioVenta = $("#precio_venta").val();
     var precioCompra = $("#precio_compra").val();
 
-    if (!precioVenta || !precioCompra || precioVenta <= 0 || precioCompra <= 0) {
+    if (
+      !precioVenta ||
+      !precioCompra ||
+      precioVenta <= 0 ||
+      precioCompra <= 0
+    ) {
       Swal.fire({
         title: "Advertencia",
         icon: "warning",
-        text: "Debe ingresar precio de compra y venta para crear un nuevo lote"
+        text: "Debe ingresar precio de compra y venta para crear un nuevo lote",
       });
       return false;
     }
@@ -1724,9 +1875,9 @@ $("#formularioIngreso").submit(function (e) {
       Swal.fire({
         title: "Error",
         icon: "error",
-        text: "Error al procesar la solicitud: " + error
+        text: "Error al procesar la solicitud: " + error,
       });
-    }
+    },
   });
 });
 
@@ -1744,17 +1895,17 @@ function actualizarPreciosBox() {
       $(".precio-box").show();
 
       // Hacer los campos requeridos solo cuando se muestran
-      $("#precio_venta").prop('required', true);
-      $("#precio_compra").prop('required', true);
+      $("#precio_venta").prop("required", true);
+      $("#precio_compra").prop("required", true);
     } else {
       // Lote existente seleccionado - quitar required
-      $("#precio_venta").prop('required', false);
-      $("#precio_compra").prop('required', false);
+      $("#precio_venta").prop("required", false);
+      $("#precio_compra").prop("required", false);
     }
   } else {
     // SALIDA (1) - quitar required
-    $("#precio_venta").prop('required', false);
-    $("#precio_compra").prop('required', false);
+    $("#precio_venta").prop("required", false);
+    $("#precio_compra").prop("required", false);
   }
 }
 
@@ -1787,7 +1938,7 @@ document.addEventListener("DOMContentLoaded", function () {
       let precioVenta = parseFloat(document.getElementById(inputId).value) || 0;
       document.getElementById(margenId).value = calcularMargen1(
         precioCompra,
-        precioVenta
+        precioVenta,
       );
     }
 
@@ -1896,8 +2047,8 @@ $(document).on("blur keypress", ".editable-price", function (e) {
 });
 
 // Asignar evento una sola vez
-$('#btnGenerarCatalogo').on('click', function () {
-  const idcategoria = $('#categoriaCatalogo').val();
+$("#btnGenerarCatalogo").on("click", function () {
+  const idcategoria = $("#categoriaCatalogo").val();
 
   // Obtener todos los precios seleccionados
   const preciosSeleccionados = [];
@@ -1907,26 +2058,29 @@ $('#btnGenerarCatalogo').on('click', function () {
 
   if (preciosSeleccionados.length === 0) {
     Swal.fire({
-      icon: 'warning',
-      title: 'Seleccione al menos un tipo de precio',
-      confirmButtonText: 'Aceptar'
+      icon: "warning",
+      title: "Seleccione al menos un tipo de precio",
+      confirmButtonText: "Aceptar",
     });
     return;
   }
 
-  const precios = preciosSeleccionados.join(',');
-  const url = 'reportes/rptproductos.php?idcategoria=' + idcategoria + '&precios=' + precios;
+  const precios = preciosSeleccionados.join(",");
+  const url =
+    "reportes/rptproductos.php?idcategoria=" +
+    idcategoria +
+    "&precios=" +
+    precios;
 
-  window.open(url, '_blank');
-  $('#modalCatalogoConfig').modal('hide');
+  window.open(url, "_blank");
+  $("#modalCatalogoConfig").modal("hide");
 });
 
-
 // Al abrir el modal, cargar las imágenes
-$('#modalCatalogoConfig').on('shown.bs.modal', function () {
-  $.post('controladores/producto.php?op=obtenerimagenes', function (data) {
+$("#modalCatalogoConfig").on("shown.bs.modal", function () {
+  $.post("controladores/producto.php?op=obtenerimagenes", function (data) {
     let imagenes = JSON.parse(data);
-    let html = '';
+    let html = "";
 
     if (imagenes.length === 0) {
       html = crearBloqueImagen();
@@ -1944,10 +2098,9 @@ $('#modalCatalogoConfig').on('shown.bs.modal', function () {
       });
     }
 
-    $('#contenedor-imagenes').html(html);
+    $("#contenedor-imagenes").html(html);
   });
 });
-
 
 let contadorImagenes = 0;
 
@@ -1965,25 +2118,25 @@ function crearBloqueImagen() {
 
 $(document).ready(function () {
   // Al abrir el modal, se inicializa con una imagen
-  $('#modalCatalogoConfig').on('shown.bs.modal', function () {
-    $('#contenedor-imagenes').html(crearBloqueImagen());
+  $("#modalCatalogoConfig").on("shown.bs.modal", function () {
+    $("#contenedor-imagenes").html(crearBloqueImagen());
   });
 
   // Botón para agregar otra imagen
-  $('#btnAgregarImagen').click(function () {
-    $('#contenedor-imagenes').append(crearBloqueImagen());
+  $("#btnAgregarImagen").click(function () {
+    $("#contenedor-imagenes").append(crearBloqueImagen());
   });
 
   // Eliminar bloque de imagen
-  $('#contenedor-imagenes').on('click', '.btnEliminarImagen', function () {
-    $(this).closest('.bloque-imagen').remove();
+  $("#contenedor-imagenes").on("click", ".btnEliminarImagen", function () {
+    $(this).closest(".bloque-imagen").remove();
   });
 
   // Vista previa cuando se selecciona imagen
-  $('#contenedor-imagenes').on('change', 'input[type="file"]', function () {
+  $("#contenedor-imagenes").on("change", 'input[type="file"]', function () {
     const input = this;
     const reader = new FileReader();
-    const imgId = 'imagenmuestra_' + input.id.split('_')[1];
+    const imgId = "imagenmuestra_" + input.id.split("_")[1];
 
     reader.onload = function (e) {
       document.getElementById(imgId).src = e.target.result;
@@ -1992,113 +2145,116 @@ $(document).ready(function () {
   });
 });
 
-$('#contenedor-imagenes').on('click', '.btnGuardarImagen', function () {
-  const bloque = $(this).closest('.bloque-imagen');
+$("#contenedor-imagenes").on("click", ".btnGuardarImagen", function () {
+  const bloque = $(this).closest(".bloque-imagen");
   const inputFile = bloque.find('input[type="file"]')[0];
 
   if (!inputFile.files[0]) {
     Swal.fire({
-      icon: 'warning',
-      title: 'Imagen no seleccionada',
-      text: 'Por favor, seleccione una imagen antes de guardar.',
-      confirmButtonColor: '#3085d6',
-      confirmButtonText: 'Aceptar'
+      icon: "warning",
+      title: "Imagen no seleccionada",
+      text: "Por favor, seleccione una imagen antes de guardar.",
+      confirmButtonColor: "#3085d6",
+      confirmButtonText: "Aceptar",
     });
     return;
   }
 
-
   const formData = new FormData();
-  formData.append('imagen', inputFile.files[0]);
+  formData.append("imagen", inputFile.files[0]);
 
   $.ajax({
-    url: 'controladores/producto.php?op=guardarimagenindividual',
-    type: 'POST',
+    url: "controladores/producto.php?op=guardarimagenindividual",
+    type: "POST",
     data: formData,
     contentType: false,
     processData: false,
     success: function (response) {
       const res = JSON.parse(response);
-      if (res.status === 'ok') {
+      if (res.status === "ok") {
         Swal.fire({
-          icon: 'success',
-          title: 'Éxito',
-          text: 'Imagen guardada correctamente.',
-          confirmButtonColor: '#28a745',
-          confirmButtonText: 'Aceptar'
+          icon: "success",
+          title: "Éxito",
+          text: "Imagen guardada correctamente.",
+          confirmButtonColor: "#28a745",
+          confirmButtonText: "Aceptar",
         });
       } else {
         Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error al guardar la imagen.',
-          confirmButtonColor: '#dc3545',
-          confirmButtonText: 'Aceptar'
+          icon: "error",
+          title: "Error",
+          text: "Error al guardar la imagen.",
+          confirmButtonColor: "#dc3545",
+          confirmButtonText: "Aceptar",
         });
       }
-    }
+    },
   });
 });
 
-$('#contenedor-imagenes').on('click', '.btnEliminarImagen', function () {
-  const bloque = $(this).closest('.bloque-imagen');
-  const imgElement = bloque.find('img');
-  const src = imgElement.attr('src');
+$("#contenedor-imagenes").on("click", ".btnEliminarImagen", function () {
+  const bloque = $(this).closest(".bloque-imagen");
+  const imgElement = bloque.find("img");
+  const src = imgElement.attr("src");
 
   // Extraer nombre de archivo desde "files/nombre.jpg"
-  const nombreImagen = src.split('/').pop();
+  const nombreImagen = src.split("/").pop();
 
   // Si la imagen es una precargada (ej. anonymous.png), no la elimines del servidor
-  if (nombreImagen === 'anonymous.png' || !src.includes('files/')) {
+  if (nombreImagen === "anonymous.png" || !src.includes("files/")) {
     bloque.remove();
     return;
   }
 
   // Confirmar antes de eliminar con Swal
   Swal.fire({
-    title: '¿Estás seguro?',
-    text: 'Esta acción eliminará la imagen permanentemente.',
-    icon: 'warning',
+    title: "¿Estás seguro?",
+    text: "Esta acción eliminará la imagen permanentemente.",
+    icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#6c757d',
-    confirmButtonText: 'Sí, eliminar',
-    cancelButtonText: 'Cancelar'
+    confirmButtonColor: "#d33",
+    cancelButtonColor: "#6c757d",
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar",
   }).then((result) => {
     if (result.isConfirmed) {
       // Ejecutar eliminación vía AJAX
-      $.post('controladores/producto.php?op=eliminarimagenindividual', { nombre_imagen: nombreImagen }, function (response) {
-        const res = JSON.parse(response);
-        if (res.status === 'ok') {
-          bloque.remove();
-        } else {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error al eliminar',
-            text: 'Error al eliminar la imagen: ' + res.msg,
-            confirmButtonColor: '#dc3545',
-            confirmButtonText: 'Aceptar'
-          });
-        }
-      });
+      $.post(
+        "controladores/producto.php?op=eliminarimagenindividual",
+        { nombre_imagen: nombreImagen },
+        function (response) {
+          const res = JSON.parse(response);
+          if (res.status === "ok") {
+            bloque.remove();
+          } else {
+            Swal.fire({
+              icon: "error",
+              title: "Error al eliminar",
+              text: "Error al eliminar la imagen: " + res.msg,
+              confirmButtonColor: "#dc3545",
+              confirmButtonText: "Aceptar",
+            });
+          }
+        },
+      );
     }
   });
 });
 
 function cargarCategoriasCatalogo() {
-  $.post('controladores/producto.php?op=obtenercategorias', function (data) {
+  $.post("controladores/producto.php?op=obtenercategorias", function (data) {
     let categorias = JSON.parse(data);
     let html = '<option value="0">Todas las categorías</option>';
-    categorias.forEach(cat => {
+    categorias.forEach((cat) => {
       html += `<option value="${cat.idcategoria}">${cat.nombre}</option>`;
     });
-    $('#categoriaCatalogo').html(html);
+    $("#categoriaCatalogo").html(html);
   });
 }
 
 $(document).ready(function () {
   function cargarPreciosCatalogo() {
-    $.post('controladores/producto.php?op=obtenerprecios', function (data) {
+    $.post("controladores/producto.php?op=obtenerprecios", function (data) {
       const precios = JSON.parse(data);
       let html = `
         <label class="precio-chip active">
@@ -2107,7 +2263,7 @@ $(document).ready(function () {
         </label>
       `;
 
-      precios.forEach(p => {
+      precios.forEach((p) => {
         html += `
           <label class="precio-chip">
             <input type="checkbox" value="${p.idnombre_p}">
@@ -2116,19 +2272,19 @@ $(document).ready(function () {
         `;
       });
 
-      $('#contenedor-precios').html(html);
+      $("#contenedor-precios").html(html);
     });
   }
 
   // Al abrir el modal, carga precios y categorías
-  $('#modalCatalogoConfig').on('shown.bs.modal', function () {
+  $("#modalCatalogoConfig").on("shown.bs.modal", function () {
     cargarCategoriasCatalogo();
     cargarPreciosCatalogo();
   });
 
   // Evento para el botón Generar
-  $('#btnGenerarCatalogo').on('click', function () {
-    const idcategoria = $('#categoriaCatalogo').val();
+  $("#btnGenerarCatalogo").on("click", function () {
+    const idcategoria = $("#categoriaCatalogo").val();
     const preciosSeleccionados = [];
 
     $('#contenedor-precios input[type="checkbox"]:checked').each(function () {
@@ -2137,75 +2293,93 @@ $(document).ready(function () {
 
     if (preciosSeleccionados.length === 0) {
       Swal.fire({
-        icon: 'warning',
-        title: 'Seleccione al menos un tipo de precio',
-        confirmButtonText: 'Aceptar'
+        icon: "warning",
+        title: "Seleccione al menos un tipo de precio",
+        confirmButtonText: "Aceptar",
       });
       return;
     }
 
-    const precios = preciosSeleccionados.join(',');
-    const url = 'reportes/rptproductos.php?idcategoria=' + idcategoria + '&precios=' + precios;
-    window.open(url, '_blank');
-    $('#modalCatalogoConfig').modal('hide');
+    const precios = preciosSeleccionados.join(",");
+    const url =
+      "reportes/rptproductos.php?idcategoria=" +
+      idcategoria +
+      "&precios=" +
+      precios;
+    window.open(url, "_blank");
+    $("#modalCatalogoConfig").modal("hide");
   });
 
   // Delegar el evento de toggle visual
-  $('#contenedor-precios').on('click', '.precio-chip', function () {
+  $("#contenedor-precios").on("click", ".precio-chip", function () {
     const checkbox = $(this).find('input[type="checkbox"]');
-    checkbox.prop('checked', !checkbox.prop('checked'));
-    $(this).toggleClass('active', checkbox.prop('checked'));
+    checkbox.prop("checked", !checkbox.prop("checked"));
+    $(this).toggleClass("active", checkbox.prop("checked"));
   });
 });
 
-
-
 function eliminarProducto(idproducto) {
-  if (confirm("¿Está seguro que desea eliminar este producto y toda su configuración?")) {
-    $.post("controladores/producto.php?op=eliminar", { idproducto: idproducto }, function (data) {
-      data = JSON.parse(data);
-      if (data.status) {
-        alert("Producto eliminado correctamente");
-        tabla.ajax.reload(); //Recargar DataTable
-      } else {
-        alert("Error al eliminar el producto: " + data.msg);
-      }
-    });
+  if (
+    confirm(
+      "¿Está seguro que desea eliminar este producto y toda su configuración?",
+    )
+  ) {
+    $.post(
+      "controladores/producto.php?op=eliminar",
+      { idproducto: idproducto },
+      function (data) {
+        data = JSON.parse(data);
+        if (data.status) {
+          alert("Producto eliminado correctamente");
+          tabla.ajax.reload(); //Recargar DataTable
+        } else {
+          alert("Error al eliminar el producto: " + data.msg);
+        }
+      },
+    );
   }
 }
 
 // Abrir modal vacío
 function abrirModalStockSucursales() {
-  $('#buscarProducto').val('');
-  $('#tablaStockSucursales tbody').html('<tr><td colspan="6" class="text-center">Ingrese un producto para ver el stock.</td></tr>');
-  $('#modalStockSucursales').modal('show');
+  $("#buscarProducto").val("");
+  $("#tablaStockSucursales tbody").html(
+    '<tr><td colspan="6" class="text-center">Ingrese un producto para ver el stock.</td></tr>',
+  );
+  $("#modalStockSucursales").modal("show");
 }
 
 // Buscar producto al escribir (con delay)
 let buscarTimeout;
-$('#buscarProducto').on('keyup', function () {
+$("#buscarProducto").on("keyup", function () {
   clearTimeout(buscarTimeout);
   let termino = $(this).val().trim();
-  let idsucursalFiltro = $('#sucursalFiltro').val();
+  let idsucursalFiltro = $("#sucursalFiltro").val();
 
   if (termino.length < 2) {
-    $('#tablaStockSucursales tbody').html('<tr><td colspan="6" class="text-center">Ingrese al menos 2 caracteres para buscar.</td></tr>');
+    $("#tablaStockSucursales tbody").html(
+      '<tr><td colspan="6" class="text-center">Ingrese al menos 2 caracteres para buscar.</td></tr>',
+    );
     return;
   }
 
   buscarTimeout = setTimeout(function () {
-    $.post("controladores/producto.php?op=buscarStockPorSucursales", {
-      search: termino,
-      idsucursalFiltro: idsucursalFiltro
-    }, function (data) {
-      data = JSON.parse(data);
+    $.post(
+      "controladores/producto.php?op=buscarStockPorSucursales",
+      {
+        search: termino,
+        idsucursalFiltro: idsucursalFiltro,
+      },
+      function (data) {
+        data = JSON.parse(data);
 
-      let tbody = '';
-      if (data.length === 0) {
-        tbody = '<tr><td colspan="6" class="text-center">No se encontraron resultados.</td></tr>';
-      } else {
-        data.forEach(row => {
-          tbody += `
+        let tbody = "";
+        if (data.length === 0) {
+          tbody =
+            '<tr><td colspan="6" class="text-center">No se encontraron resultados.</td></tr>';
+        } else {
+          data.forEach((row) => {
+            tbody += `
             <tr>
               <td>
                 <input type="checkbox" class="chkProductoStock" 
@@ -2227,53 +2401,52 @@ $('#buscarProducto').on('keyup', function () {
                        style="width: 80px">
               </td>
             </tr>`;
-        });
-      }
-      $('#tablaStockSucursales tbody').html(tbody);
-
-      // 🔹 Agrega validación de cantidad una vez generada la tabla
-      $('.cantidadSolicitud').on('input', function () {
-        let max = parseInt($(this).attr('max'));
-        let val = parseInt($(this).val());
-
-        if (val > max) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Cantidad excede el stock disponible',
-            text: `Solo hay ${max} unidades disponibles.`,
-            confirmButtonText: 'Entendido',
-            confirmButtonColor: '#3085d6'
           });
-          $(this).val(max); // Restablece al máximo permitido
-        } else if (val < 1 || isNaN(val)) {
-          $(this).val(1); // Evita valores vacíos o negativos
         }
-      });
+        $("#tablaStockSucursales tbody").html(tbody);
 
-    });
+        // 🔹 Agrega validación de cantidad una vez generada la tabla
+        $(".cantidadSolicitud").on("input", function () {
+          let max = parseInt($(this).attr("max"));
+          let val = parseInt($(this).val());
+
+          if (val > max) {
+            Swal.fire({
+              icon: "warning",
+              title: "Cantidad excede el stock disponible",
+              text: `Solo hay ${max} unidades disponibles.`,
+              confirmButtonText: "Entendido",
+              confirmButtonColor: "#3085d6",
+            });
+            $(this).val(max); // Restablece al máximo permitido
+          } else if (val < 1 || isNaN(val)) {
+            $(this).val(1); // Evita valores vacíos o negativos
+          }
+        });
+      },
+    );
   }, 400);
 });
 
-
 // 🔹 Cuando el usuario haga clic en "Generar Solicitud"
-$('#btnGenerarSolicitudDesdeStock').on('click', function () {
+$("#btnGenerarSolicitudDesdeStock").on("click", function () {
   console.log("➡️ Botón Generar Solicitud clicado");
 
   let productosSeleccionados = [];
 
-  $('#tablaStockSucursales tbody tr').each(function () {
-    const chk = $(this).find('.chkProductoStock');
-    const inputCantidad = $(this).find('.cantidadSolicitud');
+  $("#tablaStockSucursales tbody tr").each(function () {
+    const chk = $(this).find(".chkProductoStock");
+    const inputCantidad = $(this).find(".cantidadSolicitud");
 
-    if (chk.is(':checked')) {
+    if (chk.is(":checked")) {
       productosSeleccionados.push({
-        idproducto: chk.data('idproducto'),
-        nombre: chk.data('nombre'),
-        codigo: chk.data('codigo'),
-        stock: chk.data('stock'),
+        idproducto: chk.data("idproducto"),
+        nombre: chk.data("nombre"),
+        codigo: chk.data("codigo"),
+        stock: chk.data("stock"),
         cantidad: parseFloat(inputCantidad.val()) || 1,
-        idsucursal_origen: chk.data('idsucursal_origen'),
-        sucursal_origen: chk.data('sucursal')
+        idsucursal_origen: chk.data("idsucursal_origen"),
+        sucursal_origen: chk.data("sucursal"),
       });
     }
   });
@@ -2286,13 +2459,13 @@ $('#btnGenerarSolicitudDesdeStock').on('click', function () {
   }
 
   // 🔹 Obtener sucursal destino seleccionada
-  const iddestino_solicitud = $('#sucursalFiltro').val();
+  const iddestino_solicitud = $("#sucursalFiltro").val();
   if (!iddestino_solicitud) {
     Swal.fire("Atención", "Debe seleccionar la sucursal destino.", "warning");
     return;
   }
 
-  $('#modalStockSucursales').modal('hide');
+  $("#modalStockSucursales").modal("hide");
   console.log("🔒 Modal de stock cerrado");
 
   $.ajax({
@@ -2300,7 +2473,7 @@ $('#btnGenerarSolicitudDesdeStock').on('click', function () {
     type: "POST",
     data: {
       productos: JSON.stringify(productosSeleccionados),
-      iddestino_solicitud: iddestino_solicitud
+      iddestino_solicitud: iddestino_solicitud,
     },
     success: function (resp) {
       console.log("📨 Respuesta guardarSolicitud:", resp);
@@ -2327,29 +2500,28 @@ $('#btnGenerarSolicitudDesdeStock').on('click', function () {
   });
 });
 
-
 function abrirModalStockSucursales() {
-  $('#buscarProducto').val('');
-  $('#tablaStockSucursales tbody').html('<tr><td colspan="6" class="text-center">Ingrese un producto para ver el stock.</td></tr>');
-  $('#modalStockSucursales').modal('show');
+  $("#buscarProducto").val("");
+  $("#tablaStockSucursales tbody").html(
+    '<tr><td colspan="6" class="text-center">Ingrese un producto para ver el stock.</td></tr>',
+  );
+  $("#modalStockSucursales").modal("show");
 
   // 🔹 Llenar sucursales excepto la actual
   $.post("controladores/traslado.php?op=almacenesDestino", {}, function (data) {
     // data viene como <option>...</option>
-    $('#sucursalFiltro').html(data);
+    $("#sucursalFiltro").html(data);
 
     // 🔸 Seleccionar automáticamente la primera sucursal diferente a la actual
-    let $primera = $('#sucursalFiltro option:first');
+    let $primera = $("#sucursalFiltro option:first");
     if ($primera.length) {
-      $primera.prop('selected', true);
+      $primera.prop("selected", true);
       console.log("🏬 Sucursal por defecto:", $primera.text());
     } else {
       console.warn("⚠️ No se encontraron sucursales disponibles.");
     }
   });
 }
-
-
 
 function limpiarSolicitud() {
   $("#tablaDetalleSolicitud tbody").html("");
@@ -2367,11 +2539,15 @@ $("#modoCodigo").on("change", function () {
   if ($(this).is(":checked")) {
     // ===== MODO AUTOMÁTICO =====
     $("#codigo").prop("readonly", true);
-    $("label[for='modoCodigo']").html('<i class="fa fa-robot text-primary"></i> Automático');
+    $("label[for='modoCodigo']").html(
+      '<i class="fa fa-robot text-primary"></i> Automático',
+    );
 
     // Si ya tiene un código automático, NO generes otro
     if (esCodigoAutomatico) {
-      console.log("El código actual ya es automático. No se generará uno nuevo.");
+      console.log(
+        "El código actual ya es automático. No se generará uno nuevo.",
+      );
       generarbarcode();
       return;
     }
@@ -2400,22 +2576,28 @@ $("#modoCodigo").on("change", function () {
         icon: "question",
         showCancelButton: true,
         confirmButtonText: "Sí, editar",
-        cancelButtonText: "No, mantener igual"
+        cancelButtonText: "No, mantener igual",
       }).then((result) => {
         if (result.isConfirmed) {
           $("#codigo").prop("readonly", false);
-          $("label[for='modoCodigo']").html('<i class="fa fa-edit text-success"></i> Manual (editable)');
+          $("label[for='modoCodigo']").html(
+            '<i class="fa fa-edit text-success"></i> Manual (editable)',
+          );
         } else {
           // Vuelve al estado automático sin tocar el código
           $("#modoCodigo").prop("checked", true);
           $("#codigo").prop("readonly", true);
-          $("label[for='modoCodigo']").html('<i class="fa fa-robot text-primary"></i> Automático');
+          $("label[for='modoCodigo']").html(
+            '<i class="fa fa-robot text-primary"></i> Automático',
+          );
         }
       });
     } else {
       // Si el código no es automático (manual o vacío), se puede escribir normalmente
       $("#codigo").prop("readonly", false);
-      $("label[for='modoCodigo']").html('<i class="fa fa-edit text-success"></i> Manual');
+      $("label[for='modoCodigo']").html(
+        '<i class="fa fa-edit text-success"></i> Manual',
+      );
       generarbarcode();
     }
   }
@@ -2425,7 +2607,7 @@ $("#modoCodigo").on("change", function () {
 $("#modoCodigo").prop("checked", false).trigger("change");
 
 // Solución al warning aria-hidden + foco retenido
-$(document).on('hide.bs.modal', function () {
+$(document).on("hide.bs.modal", function () {
   setTimeout(() => document.activeElement.blur(), 10);
 });
 init();

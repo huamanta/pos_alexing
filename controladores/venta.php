@@ -475,8 +475,11 @@ switch ($_GET["op"]) {
 		$comprobantes = new Comprobantes();
 
 		$rspta = $comprobantes->mostrar_numero_boleta($idsucursal);
+		
 		$data = array();
+		$idempresa = 0;
 		while ($reg = $rspta->fetch_object()) {
+			$idempresa = $reg->idempresa;
 			$data[] = array(
 				$num_comp = $reg->num_comprobante
 			);
@@ -484,7 +487,7 @@ switch ($_GET["op"]) {
 		$numero_bol_comp = (int) $num_comp;
 		//fin de mostrar numero de boleta de la tabla comprobantes
 
-		$rspta = $venta->numero_venta_boleta($idsucursal);
+		$rspta = $venta->numero_venta_boleta($idempresa);
 		$data = array();
 		$numerob = $numero_bol_comp;
 
@@ -519,7 +522,9 @@ switch ($_GET["op"]) {
 
 		$rspta = $comprobantes->mostrar_serie_boleta($idsucursal);
 		$data = array();
+		$idempresa = 0;
 		while ($reg = $rspta->fetch_object()) {
+			$idempresa = $reg->idempresa;
 			$data[] = array(
 				$serie_comp_bol = $reg->serie_comprobante,
 				$num_comp_bol = $reg->num_comprobante
@@ -528,7 +533,7 @@ switch ($_GET["op"]) {
 		$serie_bol_comp = (int) $serie_comp_bol;
 		$num_bol_comp = (int) $num_comp_bol;
 		//fin de mostrar numero de factura de la tabla comprobantes
-		$rspta = $venta->numero_serie_boleta($idsucursal);
+		$rspta = $venta->numero_serie_boleta($idempresa);
 		$data = array();
 		$numero_s_bol = $serie_bol_comp;
 		$numero_bol = $num_bol_comp;
@@ -1593,7 +1598,7 @@ switch ($_GET["op"]) {
 		$data = array();
 
 		while ($reg = $rspta->fetch_object()) {
-			$allowSell = ($reg->controla_stock === 'Si' && floatval($reg->stock) > 0);
+			$allowSell = ($reg->controla_stock !== 'Si' || floatval($reg->stock) > 0);
 			$data[] = array(
 				'id' => $reg->id,
 				'idproducto' => $reg->idproducto,
@@ -1684,7 +1689,7 @@ switch ($_GET["op"]) {
 	                    \'' . addslashes($reg->nombre) . '\',
 	                    1,
 	                    0,
-	                    ' . $reg->precio_venta_fifo . ',
+	                    ' . ($reg->precio_venta_fifo == 0 ? $reg->precio_venta : $reg->precio_venta_fifo) . ',
 	                    0, 0, 0, 0,
 	                    ' . $stockLoteFifo . ',
 	                    \'' . $reg->proigv . '\',
@@ -1692,10 +1697,11 @@ switch ($_GET["op"]) {
 	                    \'' . addslashes($reg->contenedor) . '\',
 	                    ' . $reg->idcategoria . ',
 	                    \'' . addslashes($reg->unidadmedida) . '\',
-	                    ' . $reg->id_fifo . ',
+	                    ' . ($reg->id_fifo ?? 0) . ',
 	                    \'' . addslashes($reg->marca ?? '') . '\',
 	                    \'' . addslashes($reg->modelo ?? '') . '\',
-	                    \'' . addslashes($reg->color ?? '') . '\'
+	                    \'' . addslashes($reg->color ?? '') . '\',
+						\'' . addslashes($reg->controla_stock ?? '') . '\'
 	                )">
 	                <span class="fa fa-shopping-cart"></span>
 	            </a>';
@@ -1717,7 +1723,7 @@ switch ($_GET["op"]) {
 	                        \"" . $reg->imagen . "\",
 	                        \"" . addslashes($reg->nombre) . "\",
 	                        \"" . $stockLoteFifo . "\",
-	                        \"" . $reg->precio_venta_fifo . "\"
+	                        \"" . ($reg->precio_venta_fifo == 0 ? $reg->precio_venta : $reg->precio_venta_fifo) . "\"
 	                     )'>
 	                <div style='min-width:250px; line-height:1.3;'>
 	                    <span style='font-weight:bold; font-size:12px; display:block;'>

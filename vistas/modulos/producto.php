@@ -534,7 +534,7 @@
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Categoría *</label>
-                        <select id="idcategoria" name="idcategoria" class="form-control select2" style="width: 100%; height: 100%;" required>
+                        <select id="idcategoria" name="idcategoria" class="form-control select2" style="width: 100%; height: 100%;" >
                           <option value="" selected></option>
                         </select>
                       </div>
@@ -554,7 +554,7 @@
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Unidad *</label>
-                        <select id="idunidad_medida" name="idunidad_medida" class="form-control select2" style="width: 100%; height: 100%;" required></select>
+                        <select id="idunidad_medida" name="idunidad_medida" class="form-control select2" style="width: 100%; height: 100%;"></select>
                       </div>
                     </div>
                     <div class="col-sm-4">
@@ -613,7 +613,7 @@
                     <div class="col-sm-12">
                       <div class="form-group">
                         <label class="control-label">Producto / Servicio *</label>
-                        <input type="text" class="form-control" name="nombre" id="nombre" maxlength="250" placeholder="Digite el nombre del Producto o Servicio" required>
+                        <input type="text" class="form-control" name="nombre" id="nombre" maxlength="250" placeholder="Digite el nombre del Producto o Servicio">
                       </div>
                     </div>
                   </div>
@@ -704,7 +704,7 @@
                     <div class="col-sm-3">
                       <div class="form-group">
                         <label class="control-label">Stock Mínimo</label>
-                        <input type="number" class="form-control" name="stockMinimo" id="stockMinimo" value="0" required>
+                        <input type="number" class="form-control" name="stockMinimo" id="stockMinimo" value="0">
                       </div>
                     </div>
                     <div class="col-sm-3">
@@ -764,7 +764,7 @@
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Aplica IGV</label>
-                        <select id="tipoigv" name="tipoigv" class="form-control" required>
+                        <select id="tipoigv" name="tipoigv" class="form-control">
                           <option value="No Gravada">No Gravada</option>
                           <option value="Gravada">Gravada</option>
                         </select>
@@ -882,7 +882,7 @@
             <label for="name" class="col-sm-2 control-label">Nombre:</label>
             <div class="col-sm-12">
               <input type="hidden" name="idcategoria" id="idcategoria">
-              <input type="text" class="form-control" name="nombre" id="nombre" maxlength="50" placeholder="Nombre" required>
+              <input type="text" class="form-control" name="nombre" id="nombre" maxlength="50" placeholder="Nombre">
             </div>
           </div>
         </div>
@@ -918,7 +918,7 @@
             <label for="name" class="col-sm-2 control-label">Nombre:</label>
             <div class="col-sm-12">
               <input type="hidden" name="idunidad_medida" id="idunidad_medida">
-              <input type="text" class="form-control" name="nombre" id="nombre" maxlength="50" placeholder="Nombre" required>
+              <input type="text" class="form-control" name="nombre" id="nombre" maxlength="50" placeholder="Nombre">
             </div>
           </div>
         </div>
@@ -983,7 +983,7 @@
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">¿Cantidad de Productos a Trasladar?</label>
-                <input type="text" class="form-control" name="cantidadT" id="cantidadT" placeholder="Cantidad" required>
+                <input type="text" class="form-control" name="cantidadT" id="cantidadT" placeholder="Cantidad">
               </div>
             </div>
           </div>

@@ -314,7 +314,7 @@ function cargarSucursales() {
     $("#idsucursal2").select2("");
 
     $("#idsucursalVentas").html(r);
-    $("#idsucursalVentas").select2("").readonly(true);
+    $("#idsucursalVentas").select2("");
   });
 }
 
@@ -2680,6 +2680,7 @@ function agregarDetalle(
   fabricante = "",
   modelo = "",
   color = "",
+  controla_stock = "",
 ) {
 
   if (precio_venta == 0) {
@@ -2705,7 +2706,7 @@ function agregarDetalle(
   }
 
 
-  if (idcategoria != 1) {
+  if (idcategoria != 1 && controla_stock == "Si") {
     // no aplica a servicios
     if (cantidad_contenedor > 1) {
       // Caso caja u otro contenedor
@@ -2780,7 +2781,7 @@ function agregarDetalle(
         let total = Number(cant[i].value) + 1;
         let stockverify = Number(cant[i].value) + Number(cantidad_contenedor);
         if (idcategoria != 1) {
-          if (stock < stockverify) {
+          if (stock < stockverify && controla_stock == "Si") {
             Swal.fire("Alerta", "No hay suficiente stock!", "error");
             return false;
           }
@@ -2794,7 +2795,7 @@ function agregarDetalle(
     var cantidad = cant;
     var stockverify = cant * cantidad_contenedor;
 
-    if (idcategoria != 1 && stock < stockverify) {
+    if (idcategoria != 1 && controla_stock == "Si" && stock < stockverify ) {
       Swal.fire("Alerta", "No hay suficiente stock!", "error");
       return false;
     }
@@ -2937,7 +2938,7 @@ function agregarDetalle(
         '<input class="form-control" ' +
         'style="text-align:center;width:80px;background-color:transparent;color:blue;font-weight:bold;" ' +
         'type="number" step="0.001" min="0" ' +
-        'oninput="validarCantidad(this,' + stock + ',' + cantidad_contenedor + ');modificarSubtotales()" ' +
+        'oninput="validarCantidad(this,' + stock + ',' + cantidad_contenedor + ', \'' + controla_stock + '\');modificarSubtotales()" ' +
         'name="cantidad[]" value="' + cantidad + '">' +
         '</td>' +
 
@@ -3039,7 +3040,7 @@ function verPreciosItem(idproducto) {
   });
 }
 
-function validarCantidad(input, stock, cantidad_contenedor) {
+function validarCantidad(input, stock, cantidad_contenedor, controla_stock) {
   const max = Math.floor(stock / cantidad_contenedor);
   let val = parseInt(input.value, 10);
 
@@ -3048,7 +3049,7 @@ function validarCantidad(input, stock, cantidad_contenedor) {
     return;
   }
 
-  if (val > max) {
+  if (val > max && controla_stock === "Si") {
     Swal.fire("Alerta", "No hay suficiente stock disponible", "warning");
     input.value = max;
   }

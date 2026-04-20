@@ -112,7 +112,7 @@ switch ($_GET["op"]) {
 			$rspta = $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV, $_POST['sucursales']);
 			echo json_encode($rspta);
 		} else {
-			$rspta = $producto->editar($idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV);
+			$rspta = $producto->editar($idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV, isset($_POST['sucursales']) ? $_POST['sucursales'] : []);
 			echo json_encode($rspta);
 		}
 		break;
@@ -269,10 +269,22 @@ switch ($_GET["op"]) {
 		$idusuario = $_SESSION['idusuario']; // usuario logueado
 		$idsucursalSeleccionada = isset($_POST['idsucursal']) ? $_POST['idsucursal'] : $_SESSION['idsucursal'];
 
+		$productosAsignados = [];
+		if (!empty($_POST['idproducto'])) {
+			$rsptaAsignadas = $producto->obtenerSucursalesProducto($_POST['idproducto']);
+			while ($regAsignada = $rsptaAsignadas->fetch_object()) {
+				$productosAsignados[] = $regAsignada->idsucursal;
+			}
+		}
+
 		$rspta = $producto->listarsucursales($idusuario);
 
 		while ($reg = $rspta->fetch_object()) {
-			$checked = ($reg->idsucursal == $idsucursalSeleccionada) ? 'checked' : '';
+			if (!empty($productosAsignados)) {
+				$checked = in_array($reg->idsucursal, $productosAsignados) ? 'checked' : '';
+			} else {
+				$checked = ($reg->idsucursal == $idsucursalSeleccionada) ? 'checked' : '';
+			}
 			echo '<li>
 	                <input type="checkbox" name="sucursales[]" value="' . $reg->idsucursal . '" ' . $checked . '> 
 	                ' . htmlspecialchars($reg->nombre) . '
