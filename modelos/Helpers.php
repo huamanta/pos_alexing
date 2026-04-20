@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../configuraciones/local.php';
-
 class Helpers
 {
     private static $conexion = null;
@@ -126,7 +125,7 @@ class Helpers
 
 
 
-    public function getUserPermisoModulo($modulo, $modulo_parent = null){
+    public static function getUserPermisoModulo($modulo, $modulo_parent = null){
         $idusuario = $_SESSION['idusuario'] ?? NULL;
         
         if ($idusuario === NULL){

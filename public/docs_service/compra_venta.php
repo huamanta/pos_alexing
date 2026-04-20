@@ -1,7 +1,7 @@
 <?php
 require "../../configuraciones/Conexion.php";
-require "./Helpers.php";
-$helpers = new Helpers();
+require "./HelpersService.php";
+$helpers = new HelpersService();
 date_default_timezone_set('America/Lima');
 
 // Obtener ID del contrato desde parámetro encriptado
@@ -186,7 +186,7 @@ ob_start();
             color: #000;
         }
 
-        <?php echo Helpers::getDocumentHeaderStyles(); ?>
+        <?php echo HelpersService::getDocumentHeaderStyles(); ?>
 
         .titulo {
             font-weight: bold;
@@ -239,7 +239,7 @@ ob_start();
 <body>
 
     <?php
-    echo Helpers::renderDocumentHeader(
+    echo HelpersService::renderDocumentHeader(
         $resultNegocio['nombre'] ?? '',
         $resultSucursal['ruc'] ?? '',
         'CONTRATO DE COMPRA - VENTA VEHICULAR'

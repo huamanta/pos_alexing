@@ -955,10 +955,10 @@ switch ($_GET["op"]) {
 				<a href="' . $rutaCdr . '" style="pointer-events: none;"> 
 				<button class="btn btn-danger btn-xs"><i class="fas fa-file-archive"></i></button></a>';
 
-				$pdf = '<a target="_blank" title="PDF" onclick="PDF(1,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
+				$pdf = '<a target="_blank" title="PDF" onclick="imprimirFactura(' . $reg->idventa . ')"> 
 				<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
 
-				$ticket = '<a target="_blank" title="Ticket" onclick="Ticket(1,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
+				$ticket = '<a target="_blank" title="Ticket" onclick="imprimirBoleta(' . $reg->idventa . ')"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
 
 			} else {
@@ -969,10 +969,10 @@ switch ($_GET["op"]) {
 				<a href="' . $rutaCdr . '" style="pointer-events: none;"> 
 				<button class="btn btn-danger btn-xs"><i class="fas fa-file-archive"></i></button></a>';
 
-				$pdf = '<a target="_blank" title="PDF" onclick="PDF(2,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
+				$pdf = '<a target="_blank" title="PDF" onclick="imprimirFactura(' . $reg->idventa . ')"> 
 				<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
 
-				$ticket = '<a target="_blank" title="Ticket" onclick="Ticket(2,' . $reg->idventa . ',' . $reg->idpersonal . ')"> 
+				$ticket = '<a target="_blank" title="Ticket" onclick="imprimirBoleta(' . $reg->idventa . ')"> 
 				<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
 			}
 

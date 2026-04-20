@@ -4202,6 +4202,109 @@ function hacerArrastrable(elmnt) {
     document.removeEventListener("mousemove", elementDrag);
   }
 }
+function cancelarmodalCelular() {
+    // Limpiar el campo de número celular
+    $('#numeroCelular').val("");
+
+    // Resetear otros posibles estados (por ejemplo, eliminar clases activas o desactivar botones)
+    $('#modalCelular').find('.is-invalid').removeClass('is-invalid'); // Si hay alguna validación
+    $('#modalCelular').find('.is-valid').removeClass('is-valid'); // Si hay alguna validación
+
+    // Cerrar el modal
+    $('#modalCelular').modal('hide');
+}
+
+function abrirWhatsApp() {
+    let telefono = document.getElementById('numeroCelular').value;
+    let tipo_comprobante = document.getElementById('tipoComprobante').value;
+    let num_comprobante = document.getElementById('numComprobante').value;
+    let serie_comprobante = document.getElementById('serieComprobante').value;
+    let idventa = document.getElementById('idventa').value;  // Obtener el idventa desde el modal
+
+    if (telefono) {
+        telefono = telefono.startsWith("51") ? telefono : "51" + telefono;
+
+        // Creamos el mensaje con los detalles del comprobante
+        let mensaje = `Estimado cliente, por favor cargue su comprabante descargado desde el gestor de descargas:\n\n` +
+                      ` ${tipo_comprobante}\n` +
+                      `- ${serie_comprobante}\n` +
+                      `- ${num_comprobante}\n\n`;
+
+        // Mostramos el SweetAlert con los detalles del comprobante
+        Swal.fire({
+            title: 'Confirmar envío',
+            text: mensaje,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, enviar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Verificar si el archivo ya fue descargado usando localStorage
+                let archivoDescargado = localStorage.getItem(`descargado_${idventa}`);
+
+                if (!archivoDescargado) {
+                    // Forzar la descarga del archivo PDF solo si no ha sido descargado
+                    let urlPDF = `reportes/factura/generaFactura.php?id=${idventa}`;
+                    let link = document.createElement('a');
+                    link.href = urlPDF;
+                    link.download = `${tipo_comprobante}-${serie_comprobante}-${num_comprobante}.pdf`;  // El nombre del archivo a descargar
+                    link.click();  // Inicia la descarga
+
+                    // Marcar el archivo como descargado
+                    localStorage.setItem(`descargado_${idventa}`, 'true');
+                } else {
+                    console.log("El archivo ya ha sido descargado previamente.");
+                }
+
+                // Después de que la descarga comience, abrir WhatsApp
+                let urlWhatsApp = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+                window.open(urlWhatsApp);
+
+                $('#modalCelular').modal('hide');  // Cierra el modal
+            } else {
+                // Si el usuario cancela, solo cierra el modal
+                $('#modalCelular').modal('hide');
+            }
+        });
+    } else {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Por favor, ingrese un número de celular.'
+        });
+    }
+}
+
+
+function EnviarComprobante(idventa) {
+    $.post("controladores/venta.php?op=mostrar", { idventa: idventa }, function(data, status) {
+        if (status === "success") {
+            data = JSON.parse(data);
+
+            // Si el cliente tiene teléfono, agrega el prefijo '51'
+            let telefono = data.telefono ? (data.telefono.startsWith("51") ? data.telefono : "51" + data.telefono) : '';
+            let urlPdf = window.location.origin + "/reportes/documentos/" + data.tipo_comprobante + "-" + data.num_comprobante + ".pdf";
+
+            // Mostrar el modal para ingresar el número de celular
+            $('#modalCelular').modal('show');
+
+            // Si hay teléfono registrado, precargarlo en el modal
+            if (telefono) {
+                document.getElementById('numeroCelular').value = telefono;
+            }
+
+            // Mostrar los datos del comprobante en el modal
+            document.getElementById('tipoComprobante').value = data.tipo_comprobante;
+            document.getElementById('numComprobante').value = data.num_comprobante;
+            document.getElementById('serieComprobante').value = data.serie_comprobante;
+            document.getElementById('idventa').value = idventa;
+        } else {
+            alert("Error al obtener los datos de la venta.");
+        }
+    });
+}
 
 // --- 3. TRIGGER AUTOMÁTICO (OPCIONAL) ---
 // Si quieres que se actualice cada vez que agregas un producto:

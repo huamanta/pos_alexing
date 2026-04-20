@@ -1,5 +1,5 @@
 <?php
-class Helpers
+class HelpersService
 {
     public static function getDocumentHeaderStyles()
     {

@@ -1,7 +1,7 @@
 <?php
 require "../../configuraciones/Conexion.php";
-require "./Helpers.php";
-$helpers = new Helpers();
+require "./HelpersService.php";
+$helpers = new HelpersService();
 date_default_timezone_set('America/Lima');
 // Función para encriptar/desencriptar
 
@@ -193,7 +193,7 @@ ob_start();
             color: #000;
         }
 
-        <?php echo Helpers::getDocumentHeaderStyles(); ?>
+        <?php echo HelpersService::getDocumentHeaderStyles(); ?>
 
         .section-title {
             font-weight: bold;
@@ -258,7 +258,7 @@ ob_start();
 
 <body>
     <?php
-    echo Helpers::renderDocumentHeader(
+    echo HelpersService::renderDocumentHeader(
         $resultNegocio['nombre'] ?? '',
         $resultSucursal['ruc'] ?? '',
         'ACTA DE ENTREGA Y RECEPCION DE UN VEHICULO TRIMOTO DE PASAJEROS',

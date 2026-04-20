@@ -6,9 +6,8 @@ if (strlen(session_id()) < 1)
 
 if (!isset($_SESSION["nombre"])) {
     echo 'Debe ingresar al sistema correctamente para visualizar el reporte';
-} else {
-    if ($_SESSION['pos'] == 1) {
-
+    exit();
+} 
         //Incluímos la clase Venta
         require_once "../modelos/Venta.php";
         require_once "Letras.php";
@@ -330,9 +329,5 @@ if (!isset($_SESSION["nombre"])) {
 </body>
 </html>
 <?php
-    } else {
-        echo 'No tiene permiso para visualizar el reporte';
-    }
-}
 ob_end_flush();
 ?>
