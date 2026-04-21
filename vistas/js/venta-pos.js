@@ -789,7 +789,6 @@ function EnviarSunat(tipoc, idventa, idcol) {
         title: "SUNAT",
         icon: "success",
         text: resp,
-        timer: 1000,
         timerProgressBar: true,
         onClose: function () { },
       });
@@ -914,10 +913,10 @@ function guardaryeditar(e) {
 
       $("#ModalTipocomprobante").modal("show");
       $("#pant-imprimir").html(`
-        <div onclick="imprimirBoleta(${datos})" class="col-sm-6 btn btn-success">
+        <div onclick="imprimirBoleta(${datos}, true)" class="col-sm-6 btn btn-success">
           <i class="fas fa-ticket-alt"></i> TICKET
         </div>
-        <div onclick="imprimirFactura(${datos})" class="col-sm-6 btn btn-info">
+        <div onclick="imprimirFactura(${datos}, true)" class="col-sm-6 btn btn-info">
           <i class="fas fa-file-pdf"></i> PDF
         </div>
       `);
@@ -1229,19 +1228,19 @@ function limpiardatafecha() {
   $("#datafechas").val("");
 }
 
-function imprimirBoleta(id) {
+function imprimirBoleta(id, status=false) {
   $("#ModalTipocomprobante").modal("hide");
   window.open("reportes/exTicket.php?id=" + id, "IMPRIMIR BOLETA");
-  mostrarform(true);
+  mostrarform(status);
 }
 
-function imprimirFactura(id) {
+function imprimirFactura(id, status=false) {
   $("#ModalTipocomprobante").modal("hide");
   window.open(
     "reportes/factura/generaFactura.php?id=" + id,
     "IMPRIMIR FACTURA",
   );
-  mostrarform(true);
+  mostrarform(status);
 }
 
 function sinComprobante() {

@@ -238,10 +238,10 @@ $opgrav = 0;
           <td colspan="2" rowspan="6" style="text-align: center; vertical-align: middle; border: none;">
             <?php
               require "../../phpqrcode/qrlib.php";
-              $ruta_qr = '../qr/img2.png';
+              $ruta_qr = './qr/img2.png';
               $texto = $configuracion['documento'] . "|" . $factura['serie_comprobante'] . "|" . $factura['num_comprobante'] . "|" . $iva . "|" . $factura['total_venta'] . "|" . $factura['fecha'] . "|" . $factura['num_documento'] . "|";
               QRcode::png($texto, $ruta_qr, "Q", 10, 3);
-              echo '<img src="../qr/img2.png" width="130px" style="margin-top: 10px;"><br>';
+              echo '<img src="./qr/img2.png" width="130px" style="margin-top: 10px;"><br>';
             ?>
           </td>
 
