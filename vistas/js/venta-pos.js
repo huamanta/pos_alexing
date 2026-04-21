@@ -43,9 +43,11 @@ function limpiarCarrito() {
   articuloAdd = "";
 
   // Reconstruir articuloAdd basándose en lo que realmente está en el carrito (post-limpieza)
-  document.querySelectorAll('input[name="idproducto[]"]').forEach(function (input) {
-    articuloAdd = articuloAdd + input.value + "-";
-  });
+  document
+    .querySelectorAll('input[name="idproducto[]"]')
+    .forEach(function (input) {
+      articuloAdd = articuloAdd + input.value + "-";
+    });
 
   contador = 0;
   cont = 0;
@@ -208,7 +210,10 @@ function initSelectAcompananteGarante() {
     }
 
     $select.select2({
-      placeholder: selector === "#idacompanante" ? "Buscar acompañante..." : "Buscar garante...",
+      placeholder:
+        selector === "#idacompanante"
+          ? "Buscar acompañante..."
+          : "Buscar garante...",
       allowClear: true,
       width: "100%",
       dropdownParent: $modal,
@@ -259,7 +264,7 @@ function calcularCuotasDesdeNumeroMeses() {
     $("#numeroMeses").val("");
     return;
   }
-  const mesesRaw = (("" + $("#numeroMeses").val()) || "")
+  const mesesRaw = ("" + $("#numeroMeses").val() || "")
     .replace(",", ".")
     .trim();
 
@@ -425,10 +430,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                    " " +
-                    dat.apellidoPaterno +
-                    " " +
-                    dat.apellidoMaterno,
+                      " " +
+                      dat.apellidoPaterno +
+                      " " +
+                      dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -438,7 +443,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         } else {
@@ -483,7 +488,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         }
@@ -665,7 +670,8 @@ $("#tipopago").change(function () {
     // $("#formapagoocultar").show();
 
     // Guardar deuda actual antes de limpiar para usarla como respaldo
-    var deudaActual = parseFloat(("" + $("#montoDeuda").val()).replace(",", ".")) || 0;
+    var deudaActual =
+      parseFloat(("" + $("#montoDeuda").val()).replace(",", ".")) || 0;
 
     document.getElementById("panel1").style.display = "none";
     document.getElementById("b1").style.display = "none";
@@ -790,7 +796,7 @@ function EnviarSunat(tipoc, idventa, idcol) {
         icon: "success",
         text: resp,
         timerProgressBar: true,
-        onClose: function () { },
+        onClose: function () {},
       });
     },
     complete: function () {
@@ -1228,13 +1234,13 @@ function limpiardatafecha() {
   $("#datafechas").val("");
 }
 
-function imprimirBoleta(id, status=false) {
+function imprimirBoleta(id, status = false) {
   $("#ModalTipocomprobante").modal("hide");
   window.open("reportes/exTicket.php?id=" + id, "IMPRIMIR BOLETA");
   mostrarform(status);
 }
 
-function imprimirFactura(id, status=false) {
+function imprimirFactura(id, status = false) {
   $("#ModalTipocomprobante").modal("hide");
   window.open(
     "reportes/factura/generaFactura.php?id=" + id,
@@ -1353,8 +1359,8 @@ function limpiar() {
   $("#totaldeposito").val(0);
   $("#vuelto").val(0);
   $("#montoDeuda").val(0);
-  $("#input_cuotas").val('');
-  $("#numeroMeses").val('');
+  $("#input_cuotas").val("");
+  $("#numeroMeses").val("");
 
   $("#panel1").hide();
   $("#b1").hide();
@@ -1467,8 +1473,8 @@ function verificarProductosDisponibles() {
           Swal.fire(
             "Advertencia",
             "El producto con ID " +
-            idproducto +
-            " no existe en el almacén seleccionado.",
+              idproducto +
+              " no existe en el almacén seleccionado.",
             "warning",
           );
         });
@@ -2327,7 +2333,8 @@ function cerrarcaja() {
               </div>
 
           </div>
-          `,input: "number",
+          `,
+        input: "number",
         inputAttributes: {
           autocapitalize: "off",
           required: true,
@@ -2681,7 +2688,6 @@ function agregarDetalle(
   color = "",
   controla_stock = "",
 ) {
-
   if (precio_venta == 0) {
     Swal.fire({
       title: "Alerta",
@@ -2703,7 +2709,6 @@ function agregarDetalle(
       },
     });
   }
-
 
   if (idcategoria != 1 && controla_stock == "Si") {
     // no aplica a servicios
@@ -2738,8 +2743,8 @@ function agregarDetalle(
         Swal.fire(
           "Aviso",
           "El stock es menor a 1, se agregará solo la cantidad disponible (" +
-          stock +
-          "), ajustando el precio proporcionalmente.",
+            stock +
+            "), ajustando el precio proporcionalmente.",
           "info",
         );
       }
@@ -2794,7 +2799,7 @@ function agregarDetalle(
     var cantidad = cant;
     var stockverify = cant * cantidad_contenedor;
 
-    if (idcategoria != 1 && controla_stock == "Si" && stock < stockverify ) {
+    if (idcategoria != 1 && controla_stock == "Si" && stock < stockverify) {
       Swal.fire("Alerta", "No hay suficiente stock!", "error");
       return false;
     }
@@ -2878,93 +2883,120 @@ function agregarDetalle(
     if (idpc !== "") {
       contador = contador + 1;
       var fila =
-        '<tr class="filas custom-row" id="fila' + cont + '" style="margin-bottom:-10px;border-radius:10px;box-shadow:0 0 5px rgba(0,0,0,0.3);">' +
-
+        '<tr class="filas custom-row" id="fila' +
+        cont +
+        '" style="margin-bottom:-10px;border-radius:10px;box-shadow:0 0 5px rgba(0,0,0,0.3);">' +
         '<td style="text-align:center;vertical-align:middle;">' +
-
-        '<input type="hidden" name="contenedor[]" value="' + contenedor + '">' +
-        '<input type="hidden" name="cantidad_contenedor[]" value="' + cantidad_contenedor + '">' +
-        '<input type="hidden" name="idp[]" value="' + idpc + '">' +
-        '<input type="hidden" name="check_precio[]" id="check_precio_' + idpc + '" value="0">' +
-        '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
-        '<input type="hidden" name="idcategoria[]" value="' + idcategoria + '">' +
-        '<input type="hidden" name="id_detalle_compra_lote[]" value="' + id_detalle_compra_lote + '">' +
-
+        '<input type="hidden" name="contenedor[]" value="' +
+        contenedor +
+        '">' +
+        '<input type="hidden" name="cantidad_contenedor[]" value="' +
+        cantidad_contenedor +
+        '">' +
+        '<input type="hidden" name="idp[]" value="' +
+        idpc +
+        '">' +
+        '<input type="hidden" name="check_precio[]" id="check_precio_' +
+        idpc +
+        '" value="0">' +
+        '<input type="hidden" name="idproducto[]" value="' +
+        idproducto +
+        '">' +
+        '<input type="hidden" name="idcategoria[]" value="' +
+        idcategoria +
+        '">' +
+        '<input type="hidden" name="id_detalle_compra_lote[]" value="' +
+        id_detalle_compra_lote +
+        '">' +
         '<div style="display:flex;align-items:center;justify-content:center;gap:5px;">' +
-
         (modoEditar
           ? ""
-          : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' + cont + ')"></i>') +
-
+          : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' +
+            cont +
+            ')"></i>') +
         '<textarea class="form-control nombre-producto" ' +
         'name="nombreProducto[]" rows="1" ' +
         'oninput="autoResize(this)" onfocus="this.select()" ' +
         'style="font-weight:bold;width:300px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:1.2;">' +
         producto +
         (fabricante || modelo || color
-          ? ' ' +
-            (fabricante ? fabricante + ' ' : '') +
-            (modelo     ? modelo     + ' ' : '') +
-            (color      ? color            : '')
-          : '') +
-        '</textarea>' +
-
-        '</div>' +
-        '</td>' +
-
+          ? " " +
+            (fabricante ? fabricante + " " : "") +
+            (modelo ? modelo + " " : "") +
+            (color ? color : "")
+          : "") +
+        "</textarea>" +
+        "</div>" +
+        "</td>" +
         '<td style="text-align:center;vertical-align:middle;">' +
         '<span class="badge bg-green" style="white-space:nowrap;font-size:11px;">' +
         detail +
-        '</span>' +
-        '</td>' +
-
+        "</span>" +
+        "</td>" +
         '<td class="text-center align-middle">' +
         '<div style="position:relative;display:inline-block;">' +
         precioInput +
         btnVerPrecios +
-        '</div>' +
-        '</td>' +
-
+        "</div>" +
+        "</td>" +
         '<td style="text-align:center; vertical-align:middle;">' +
         '<div style="display:flex; justify-content:center; align-items:center; width:100%;">' +
         '<input type="checkbox" ' +
-        'id="chkPrecioSegunCantidad-' + idpc + '" ' +
-        'onchange="toggleCheckPrecio(' + idpc + ', this)">' +
-        '</div>' +
-        '</td>' +
-
+        'id="chkPrecioSegunCantidad-' +
+        idpc +
+        '" ' +
+        'onchange="toggleCheckPrecio(' +
+        idpc +
+        ', this)">' +
+        "</div>" +
+        "</td>" +
         '<td style="text-align:center;vertical-align:middle;">' +
         '<input class="form-control" ' +
         'style="text-align:center;width:80px;background-color:transparent;color:blue;font-weight:bold;" ' +
         'type="number" step="0.001" min="0" ' +
-        'oninput="validarCantidad(this,' + stock + ',' + cantidad_contenedor + ', \'' + controla_stock + '\');modificarSubtotales()" ' +
-        'name="cantidad[]" value="' + cantidad + '">' +
-        '</td>' +
-
+        'oninput="validarCantidad(this,' +
+        stock +
+        "," +
+        cantidad_contenedor +
+        ", '" +
+        controla_stock +
+        "');modificarSubtotales()\" " +
+        'name="cantidad[]" value="' +
+        cantidad +
+        '">' +
+        "</td>" +
         '<td style="text-align:center;vertical-align:middle;">' +
         '<input class="form-control" ' +
         'style="text-align:center;width:70px;background-color:#fff3cd;font-weight:bold;" ' +
         'type="number" step="0.01" ' +
-        'oninput="modificarSubtotales(' + cont + ')" ' +
-        'name="descuento[]" value="' + descuento + '">' +
-        '</td>' +
-
+        'oninput="modificarSubtotales(' +
+        cont +
+        ')" ' +
+        'name="descuento[]" value="' +
+        descuento +
+        '">' +
+        "</td>" +
         '<td style="display:none;text-align:center;vertical-align:middle;">' +
-        '<input type="hidden" name="stock[]" value="' + stock + '">' +
+        '<input type="hidden" name="stock[]" value="' +
+        stock +
+        '">' +
         '<span class="btn btn-warning" style="font-size:12px;font-weight:bold;">' +
         stock +
-        '</span>' +
-        '</td>' +
-
+        "</span>" +
+        "</td>" +
         '<td style="text-align:center;vertical-align:middle;width:100px;">' +
-        'S/. <span id="subtotal' + cont + '" name="subtotal" style="font-size:14px;font-weight:bold;"></span>' +
-        '</td>' +
-
+        'S/. <span id="subtotal' +
+        cont +
+        '" name="subtotal" style="font-size:14px;font-weight:bold;"></span>' +
+        "</td>" +
         '<td style="display:none;">' +
-        '<span id="proigv' + cont + '" name="proigv">' + proigv + '</span>' +
-        '</td>' +
-
-        '</tr>';
+        '<span id="proigv' +
+        cont +
+        '" name="proigv">' +
+        proigv +
+        "</span>" +
+        "</td>" +
+        "</tr>";
       cont++;
       detalles = detalles + 1;
       articuloAdd = articuloAdd + idproducto + "-";
@@ -3180,7 +3212,9 @@ function modificarSubtotales(e) {
 
 function calcularTotales() {
   const sub = document.querySelectorAll('#detalles span[name="subtotal"]');
-  const proigvNodes = document.querySelectorAll('#detalles span[name="proigv"]');
+  const proigvNodes = document.querySelectorAll(
+    '#detalles span[name="proigv"]',
+  );
   let total = 0.0;
   let totalConIgv = 0.0;
   let igv = 0.0;
@@ -3194,7 +3228,10 @@ function calcularTotales() {
     const proigvNode = proigvNodes[i];
     const proigv = (proigvNode?.textContent || "").trim();
 
-    if (proigv.toLowerCase() === "gravada" || proigv.toLowerCase() === "gravado") {
+    if (
+      proigv.toLowerCase() === "gravada" ||
+      proigv.toLowerCase() === "gravado"
+    ) {
       totalConIgv += val;
     }
   }
@@ -3255,23 +3292,43 @@ function generarTabla(cuotas, frecuencia, fechaBase, deuda, interes) {
 }
 
 function formatearFecha(fecha) {
-  return fecha.getFullYear() + "-" +
-    ("0" + (fecha.getMonth() + 1)).slice(-2) + "-" +
-    ("0" + fecha.getDate()).slice(-2);
+  return (
+    fecha.getFullYear() +
+    "-" +
+    ("0" + (fecha.getMonth() + 1)).slice(-2) +
+    "-" +
+    ("0" + fecha.getDate()).slice(-2)
+  );
 }
 
 function sumarFrecuencia(fecha, frecuencia) {
   let nuevaFecha = new Date(fecha);
 
   switch (frecuencia) {
-    case 1: nuevaFecha.setDate(nuevaFecha.getDate() + 1); break;
-    case 2: nuevaFecha.setDate(nuevaFecha.getDate() + 7); break;
-    case 3: nuevaFecha.setDate(nuevaFecha.getDate() + 15); break;
-    case 4: nuevaFecha.setMonth(nuevaFecha.getMonth() + 1); break;
-    case 5: nuevaFecha.setMonth(nuevaFecha.getMonth() + 2); break;
-    case 6: nuevaFecha.setMonth(nuevaFecha.getMonth() + 3); break;
-    case 7: nuevaFecha.setMonth(nuevaFecha.getMonth() + 6); break;
-    case 8: nuevaFecha.setFullYear(nuevaFecha.getFullYear() + 1); break;
+    case 1:
+      nuevaFecha.setDate(nuevaFecha.getDate() + 1);
+      break;
+    case 2:
+      nuevaFecha.setDate(nuevaFecha.getDate() + 7);
+      break;
+    case 3:
+      nuevaFecha.setDate(nuevaFecha.getDate() + 15);
+      break;
+    case 4:
+      nuevaFecha.setMonth(nuevaFecha.getMonth() + 1);
+      break;
+    case 5:
+      nuevaFecha.setMonth(nuevaFecha.getMonth() + 2);
+      break;
+    case 6:
+      nuevaFecha.setMonth(nuevaFecha.getMonth() + 3);
+      break;
+    case 7:
+      nuevaFecha.setMonth(nuevaFecha.getMonth() + 6);
+      break;
+    case 8:
+      nuevaFecha.setFullYear(nuevaFecha.getFullYear() + 1);
+      break;
   }
 
   return nuevaFecha;
@@ -3285,7 +3342,7 @@ function calcularMontos(deuda, interes, cuotas) {
   return {
     interesTotal,
     deudaTotal,
-    montoCuota
+    montoCuota,
   };
 }
 
@@ -3324,7 +3381,7 @@ $("#calcular_cuotas").click(function (e) {
     calcularCuotasDesdeNumeroMeses();
   }
 
-  let fechaOperacion = (("" + $("#fechaOperacion").val()) || "").trim();
+  let fechaOperacion = ("" + $("#fechaOperacion").val() || "").trim();
   if (!fechaOperacion) {
     fechaOperacion = obtenerFechaHoyISO();
     $("#fechaOperacion").val(fechaOperacion);
@@ -3335,23 +3392,19 @@ $("#calcular_cuotas").click(function (e) {
     frecuencia: parseInt($("#input_frecuencia").val()),
     interes: parseFloat($("#inputInteres").val()),
     deuda: parseFloat($("#montoDeuda").val()),
-    fechaBase: new Date(fechaOperacion)
+    fechaBase: new Date(fechaOperacion),
   };
 
   if (!validarDatos(data)) return;
 
-  let { montoCuota } = calcularMontos(
-    data.deuda,
-    data.interes,
-    data.cuotas
-  );
+  let { montoCuota } = calcularMontos(data.deuda, data.interes, data.cuotas);
 
   let html = generarTabla(
     data.cuotas,
     data.frecuencia,
     data.fechaBase,
     data.deuda,
-    data.interes
+    data.interes,
   );
 
   $("#datafechas").html(html);
@@ -3903,11 +3956,11 @@ function mostrar(idventa) {
       $("#tipo_comprobantem").html(
         data.tipo_comprobante == "Boleta"
           ? '<span class="badge badge-primary">' +
-          data.tipo_comprobante +
-          "</span>"
+              data.tipo_comprobante +
+              "</span>"
           : '<span class="badge badge-info">' +
-          data.tipo_comprobante +
-          "</span>",
+              data.tipo_comprobante +
+              "</span>",
       );
       $("#correlativo").text(
         data.serie_comprobante + " - " + data.num_comprobante,
@@ -3972,7 +4025,7 @@ function cancelarform02() {
   $("#detallesm tbody").empty();
 }
 
-  actualizarFilaVaciaDetalles();
+actualizarFilaVaciaDetalles();
 function cambiarComprobante(idventa, idsucursal) {
   Swal.fire({
     title: "Convertir Nota de Venta",
@@ -4202,107 +4255,139 @@ function hacerArrastrable(elmnt) {
   }
 }
 function cancelarmodalCelular() {
-    // Limpiar el campo de número celular
-    $('#numeroCelular').val("");
+  // Limpiar el campo de número celular
+  $("#numeroCelular").val("");
 
-    // Resetear otros posibles estados (por ejemplo, eliminar clases activas o desactivar botones)
-    $('#modalCelular').find('.is-invalid').removeClass('is-invalid'); // Si hay alguna validación
-    $('#modalCelular').find('.is-valid').removeClass('is-valid'); // Si hay alguna validación
+  // Resetear otros posibles estados (por ejemplo, eliminar clases activas o desactivar botones)
+  $("#modalCelular").find(".is-invalid").removeClass("is-invalid"); // Si hay alguna validación
+  $("#modalCelular").find(".is-valid").removeClass("is-valid"); // Si hay alguna validación
 
-    // Cerrar el modal
-    $('#modalCelular').modal('hide');
+  // Cerrar el modal
+  $("#modalCelular").modal("hide");
 }
 
 function abrirWhatsApp() {
-    let telefono = document.getElementById('numeroCelular').value;
-    let tipo_comprobante = document.getElementById('tipoComprobante').value;
-    let num_comprobante = document.getElementById('numComprobante').value;
-    let serie_comprobante = document.getElementById('serieComprobante').value;
-    let idventa = document.getElementById('idventa').value;  // Obtener el idventa desde el modal
+  let nombre_empresa = '';
+  let telefono_empresa = '';
+  let telefono = document.getElementById("numeroCelular").value;
+  let tipo_comprobante = document.getElementById("tipoComprobante").value;
+  let num_comprobante = document.getElementById("numComprobante").value;
+  let serie_comprobante = document.getElementById("serieComprobante").value;
+  let idventa = document.getElementById("idventa").value; // Obtener el idventa desde el modal
 
-    if (telefono) {
-        telefono = telefono.startsWith("51") ? telefono : "51" + telefono;
+  if (telefono) {
+    telefono = telefono.startsWith("51") ? telefono : "51" + telefono;
 
-        // Creamos el mensaje con los detalles del comprobante
-        let mensaje = `Estimado cliente, por favor cargue su comprabante descargado desde el gestor de descargas:\n\n` +
-                      ` ${tipo_comprobante}\n` +
-                      `- ${serie_comprobante}\n` +
-                      `- ${num_comprobante}\n\n`;
+    // Creamos el mensaje con los detalles del comprobante
+    let dominio = window.location.origin; // Obtiene el dominio actual (ejemplo: https://tudominio.com)
+    let url = `${dominio}/reportes/factura.php?id=${idventa}`;
+    let qr = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
 
-        // Mostramos el SweetAlert con los detalles del comprobante
-        Swal.fire({
-            title: 'Confirmar envío',
-            text: mensaje,
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Sí, enviar',
-            cancelButtonText: 'Cancelar',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Verificar si el archivo ya fue descargado usando localStorage
-                let archivoDescargado = localStorage.getItem(`descargado_${idventa}`);
+    let mensaje =
+      `🏢 *${nombre_empresa || "Mi Empresa"}*\n` +
+      `━━━━━━━━━━━━━━━━━━\n` +
+      `🧾 *Comprobante Electrónico*\n\n` +
+      `Estimado cliente 👋,\n` +
+      `Su comprobante ya está disponible.\n\n` +
+      `📄 *Detalles:*\n` +
+      `• Tipo: ${tipo_comprobante}\n` +
+      `• Serie: ${serie_comprobante}\n` +
+      `• Número: ${num_comprobante}\n\n` +
+      `🔗 *Descargar aquí:*\n${url}\n\n` +
+      `📷 *Escanee el QR:*\n${qr}\n\n` +
+      `🙏 Gracias por confiar en nosotros.\n` +
+      `📞 Soporte: ${telefono_empresa || "999 999 999"}\n` +
+      `━━━━━━━━━━━━━━━━━━`;
 
-                if (!archivoDescargado) {
-                    // Forzar la descarga del archivo PDF solo si no ha sido descargado
-                    let urlPDF = `reportes/factura/generaFactura.php?id=${idventa}`;
-                    let link = document.createElement('a');
-                    link.href = urlPDF;
-                    link.download = `${tipo_comprobante}-${serie_comprobante}-${num_comprobante}.pdf`;  // El nombre del archivo a descargar
-                    link.click();  // Inicia la descarga
+    // Mostramos el SweetAlert con los detalles del comprobante
+    Swal.fire({
+      title: "Confirmar envío",
+      text: '¿Desea enviar el comprobante al número de WhatsApp proporcionado?',
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Sí, enviar",
+      cancelButtonText: "Cancelar",
+      reverseButtons: true,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Verificar si el archivo ya fue descargado usando localStorage
+        let archivoDescargado = localStorage.getItem(`descargado_${idventa}`);
 
-                    // Marcar el archivo como descargado
-                    localStorage.setItem(`descargado_${idventa}`, 'true');
-                } else {
-                    console.log("El archivo ya ha sido descargado previamente.");
-                }
+        if (!archivoDescargado) {
+          // Forzar la descarga del archivo PDF solo si no ha sido descargado
+          let urlPDF = `reportes/factura/generaFactura.php?id=${idventa}`;
+          let link = document.createElement("a");
+          link.href = urlPDF;
+          link.download = `${tipo_comprobante}-${serie_comprobante}-${num_comprobante}.pdf`; // El nombre del archivo a descargar
+          link.click(); // Inicia la descarga
 
-                // Después de que la descarga comience, abrir WhatsApp
-                let urlWhatsApp = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
-                window.open(urlWhatsApp);
+          // Marcar el archivo como descargado
+          localStorage.setItem(`descargado_${idventa}`, "true");
+        } else {
+          console.log("El archivo ya ha sido descargado previamente.");
+        }
 
-                $('#modalCelular').modal('hide');  // Cierra el modal
-            } else {
-                // Si el usuario cancela, solo cierra el modal
-                $('#modalCelular').modal('hide');
-            }
-        });
-    } else {
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'Por favor, ingrese un número de celular.'
-        });
-    }
+        // Después de que la descarga comience, abrir WhatsApp
+        let urlWhatsApp = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+        window.open(urlWhatsApp);
+
+        $("#modalCelular").modal("hide"); // Cierra el modal
+      } else {
+        // Si el usuario cancela, solo cierra el modal
+        $("#modalCelular").modal("hide");
+      }
+    });
+  } else {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Por favor, ingrese un número de celular.",
+    });
+  }
 }
 
-
 function EnviarComprobante(idventa) {
-    $.post("controladores/venta.php?op=mostrar", { idventa: idventa }, function(data, status) {
-        if (status === "success") {
-            data = JSON.parse(data);
+  $.post(
+    "controladores/venta.php?op=mostrar",
+    { idventa: idventa },
+    function (data, status) {
+      if (status === "success") {
+        data = JSON.parse(data);
 
-            // Si el cliente tiene teléfono, agrega el prefijo '51'
-            let telefono = data.telefono ? (data.telefono.startsWith("51") ? data.telefono : "51" + data.telefono) : '';
-            let urlPdf = window.location.origin + "/reportes/documentos/" + data.tipo_comprobante + "-" + data.num_comprobante + ".pdf";
+        // Si el cliente tiene teléfono, agrega el prefijo '51'
+        let telefono = data.telefono
+          ? data.telefono.startsWith("51")
+            ? data.telefono
+            : "51" + data.telefono
+          : "";
+        let urlPdf =
+          window.location.origin +
+          "/reportes/documentos/" +
+          data.tipo_comprobante +
+          "-" +
+          data.num_comprobante +
+          ".pdf";
 
-            // Mostrar el modal para ingresar el número de celular
-            $('#modalCelular').modal('show');
+        // Mostrar el modal para ingresar el número de celular
+        $("#modalCelular").modal("show");
 
-            // Si hay teléfono registrado, precargarlo en el modal
-            if (telefono) {
-                document.getElementById('numeroCelular').value = telefono;
-            }
-
-            // Mostrar los datos del comprobante en el modal
-            document.getElementById('tipoComprobante').value = data.tipo_comprobante;
-            document.getElementById('numComprobante').value = data.num_comprobante;
-            document.getElementById('serieComprobante').value = data.serie_comprobante;
-            document.getElementById('idventa').value = idventa;
-        } else {
-            alert("Error al obtener los datos de la venta.");
+        // Si hay teléfono registrado, precargarlo en el modal
+        if (telefono) {
+          document.getElementById("numeroCelular").value = telefono;
         }
-    });
+
+        // Mostrar los datos del comprobante en el modal
+        document.getElementById("tipoComprobante").value =
+          data.tipo_comprobante;
+        document.getElementById("numComprobante").value = data.num_comprobante;
+        document.getElementById("serieComprobante").value =
+          data.serie_comprobante;
+        document.getElementById("idventa").value = idventa;
+      } else {
+        alert("Error al obtener los datos de la venta.");
+      }
+    },
+  );
 }
 
 // --- 3. TRIGGER AUTOMÁTICO (OPCIONAL) ---
