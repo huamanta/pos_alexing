@@ -126,11 +126,12 @@ class Contratos
                 "2" => $value['num_documento'],
                 "3" => $value['nombre'],
                 "4" => $this->tiposDocumentacion($value['tipo']) . ($value['tipo'] == 1 ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT) : ''),
-                "5" => $statusRetencion ? '<span class="badge badge-danger">Retenido</span>' : '<span class="badge badge-success">Vigente</span>',
-                "6" => $value['formapago'],
-                '7' => $this->getDataFrecuencia($value['frecuencia'])->texto,
-                "8" => number_format($value['total_venta'], 2, '.', ','),
-                "9" => $btnVerContrato . '
+                '5'=> $value['serie_comprobante'].'-'.$value['num_comprobante'],
+                "6" => $statusRetencion ? '<span class="badge badge-danger">Retenido</span>' : '<span class="badge badge-success">Vigente</span>',
+                "7" => $value['formapago'],
+                '8' => $this->getDataFrecuencia($value['frecuencia'])->texto,
+                "9" => number_format($value['total_venta'], 2, '.', ','),
+                "10" => $btnVerContrato . '
                         ' . $btnRetencion . '
                         <button class="btn btn-secondary btn-sm" onclick="imprimirContrato(' . $value['idventa'] . ')" title="Imprimir contrato"><i class="fa fa-trash"></i></button>',
             ];

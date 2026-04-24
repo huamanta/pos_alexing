@@ -345,11 +345,12 @@ $('#formulario-amortizar').submit(async function(e) {
         success: function(data) {
 		    var data = JSON.parse(data);
 		    if (data.success) {
-		        Swal.fire('Éxito', data.message, 'success'); // ✅ ahora sí sale
+		        Swal.fire('Éxito', data.message, 'success');
 		        listar();
 		        listarSaldos();
-                if (tablaCreditosCliente) tablaCreditosCliente.ajax.reload(null, false);
-                if (tablaCuotasCredito) tablaCuotasCredito.ajax.reload(null, false);
+                tabla.ajax.reload();
+                tablaCreditosCliente.ajax.reload();
+                tablaCuotasCredito.ajax.reload();
 		        $('#modalAmortizar').modal('hide');
 		        $('#montoAdeudadoAmortizar').val('');
 		        $('#deudaTotalAmortizar').html('');
@@ -416,6 +417,9 @@ async function guardaryeditar(e) {
                 limpiar();
                 listar();
                 listarSaldos();
+                tabla.ajax.reload();
+                tablaCreditosCliente.ajax.reload();
+                tablaCuotasCredito.ajax.reload();
             } else {
                 Swal.fire('Error', res.message, 'error');
             }
@@ -594,7 +598,7 @@ function verCuotasCredito(idventa, saldoPendiente, documento) {
         "aServerSide": true,
         "responsive": true,
         "lengthChange": false,
-        "autoWidth": false,
+        "autoWidth": true,
         "ajax": {
             url: "controladores/cuentascobrar.php?op=listar_cuotas_credito",
             data: { idventa: idventa },

@@ -1,10 +1,10 @@
 <?php
 session_start();
 
-if (empty($_SESSION['nombre'])) {
-    echo 'Debe ingresar al sistema correctamente para visualizar el reporte';
-    exit();
-}
+// if (empty($_SESSION['nombre'])) {
+//     echo 'Debe ingresar al sistema correctamente para visualizar el reporte';
+//     exit();
+// }
 
 include "../../configuraciones/Conexion.php";
 require_once 'pdf/vendor/autoload.php';

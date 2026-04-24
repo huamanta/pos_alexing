@@ -4280,7 +4280,7 @@ function abrirWhatsApp() {
 
     // Creamos el mensaje con los detalles del comprobante
     let dominio = window.location.origin; // Obtiene el dominio actual (ejemplo: https://tudominio.com)
-    let url = `${dominio}/reportes/factura.php?id=${idventa}`;
+    let url = `${dominio}/factura/generaFactura.php?id=${idventa}`;
     let qr = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
 
     let mensaje =

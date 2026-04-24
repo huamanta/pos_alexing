@@ -55,6 +55,7 @@ $total = $reg->total_venta;
 // ===== CREDITO =====
 $total_abono = 0;
 $total_deuda = 0;
+$inicial = $reg->totalrecibido;
 
 if ($reg->ventacredito == "Si") {
     $rs = $cc->mostrarDeuda($_GET["id"]);
@@ -225,7 +226,7 @@ $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
             <table>
                 <tr>
                     <td>Inicial:</td>
-                    <td class="right"><?php echo $helpers->monedaFormt($total_abono, $currency); ?></td>
+                    <td class="right"><?php echo $helpers->monedaFormt($inicial, $currency); ?></td>
                 </tr>
                 <tr class="bold">
                     <td>Saldo:</td>

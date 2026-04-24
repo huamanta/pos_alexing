@@ -113,6 +113,7 @@
                                         <th>N° Documento</th>
                                         <th>Cliente / Razón Social</th>
                                         <th>N° Contrato</th>
+                                        <th>Venta referencia</th>
                                         <th>Estado contrato</th>
                                         <th>Forma de pago</th>
                                         <th>Frecuencia</th>
@@ -127,6 +128,7 @@
                                         <th>N° Documento</th>
                                         <th>Cliente / Razón Social</th>
                                         <th>N° Contrato</th>
+                                        <th>Venta referencia</th>
                                         <th>Estado contrato</th>
                                         <th>Forma de pago</th>
                                         <th>Frecuencia</th>
