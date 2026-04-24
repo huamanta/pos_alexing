@@ -36,7 +36,7 @@ class CuentasCobrar
         }
 
         // OBTENER DATOS ACTUALES
-        $sql = "SELECT deudatotal, deuda, abonototal
+        $sql = "SELECT deudatotal, deuda, abonototal, interes
             FROM cuentas_por_cobrar 
             WHERE idcpc = '$idcpc'";
         $fila = ejecutarConsultaSimpleFila($sql);
@@ -71,8 +71,7 @@ class CuentasCobrar
 
         // ACTUALIZAR CUENTA
         $sqlUpdate = "UPDATE cuentas_por_cobrar
-                  SET deudatotal = '$nuevaDeudaTotal',
-                      deuda = '$nuevaDeuda',
+                  SET deuda = '$nuevaDeuda',
                       abonototal = '$nuevoAbonoTotal'
                   WHERE idcpc = '$idcpc'";
 
@@ -84,11 +83,20 @@ class CuentasCobrar
 
         // ACTUALIZAR ESTADO DE PAGO
         if ($nuevaDeudaTotal <= 0) {
-            ejecutarConsulta("UPDATE cuentas_por_cobrar 
+            ejecutarConsulta("UPDATE cuentas_por_cobrar
                           SET estado_pago = 0
                           WHERE idcpc = '$idcpc'");
+
+            // ACTUALIZAR ESTADO DEL CONTRATO A FINALIZADO
+            $sqlVenta = "SELECT idventa FROM cuentas_por_cobrar WHERE idcpc = '$idcpc'";
+            $venta = ejecutarConsultaSimpleFila($sqlVenta);
+            if ($venta && !empty($venta['idventa'])) {
+                ejecutarConsulta("UPDATE documentacion
+                                SET estado = 'finalizado'
+                                WHERE idventa = '{$venta['idventa']}' AND tipo = '1'");
+            }
         } else {
-            ejecutarConsulta("UPDATE cuentas_por_cobrar 
+            ejecutarConsulta("UPDATE cuentas_por_cobrar
                           SET estado_pago = 1
                           WHERE idcpc = '$idcpc'");
         }
@@ -433,6 +441,13 @@ class CuentasCobrar
                     SET estado_pago = 0
                     WHERE idcpc = '$reg->idcpc'
                 ");
+
+                // ACTUALIZAR ESTADO DEL CONTRATO A FINALIZADO
+                ejecutarConsulta("
+                    UPDATE documentacion
+                    SET estado = 'finalizado'
+                    WHERE idventa = '{$reg->idventa}' AND tipo = '1'
+                ");
             }
 
             $totalAmortizado += $montoPagadoTotal;
@@ -452,6 +467,28 @@ class CuentasCobrar
         }
     }
 
+
+    public function verificarYActualizarEstadoContrato($idventa)
+    {
+        // Verificar si todas las cuotas de la venta están pagadas
+        $sql = "SELECT COUNT(*) as total_cuotas,
+                       SUM(CASE WHEN estado_pago = 0 THEN 1 ELSE 0 END) as cuotas_pagadas
+                FROM cuentas_por_cobrar
+                WHERE idventa = '$idventa' AND condicion = 1";
+
+        $resultado = ejecutarConsultaSimpleFila($sql);
+
+        if ($resultado && $resultado['total_cuotas'] > 0) {
+            // Si todas las cuotas están pagadas
+            if ($resultado['total_cuotas'] == $resultado['cuotas_pagadas']) {
+                ejecutarConsulta("UPDATE documentacion
+                                SET estado = 'finalizado'
+                                WHERE idventa = '$idventa' AND tipo = '1'");
+                return true;
+            }
+        }
+        return false;
+    }
 
     public function actualizarMoraDiaria($idcpc)
     {
@@ -963,7 +1000,7 @@ class CuentasCobrar
                     v.num_comprobante,
                     v.total_venta,
                     SUM(cc.abonototal) AS total_abonado,
-                    SUM(cc.deudatotal) AS saldo_pendiente
+                    SUM(cc.deuda) AS saldo_pendiente
                 FROM venta v
                 INNER JOIN cuentas_por_cobrar cc ON cc.idventa = v.idventa
                 WHERE v.idcliente = '$idcliente'
@@ -1097,7 +1134,7 @@ class CuentasCobrar
                 "0" => $row->fecha_registro,
                 "1" => $row->fecha_vencimiento,
                 "2" => number_format($row->abonototal, 2),
-                "3" => number_format($row->deudatotal, 2),
+                "3" => number_format($row->deuda, 2),
                 "4" => number_format($saldo, 2),
                 "5" => $estado,
                 "6" => $acciones
@@ -1170,92 +1207,128 @@ class CuentasCobrar
     public function amortizarDeudaVenta($idventa, $formapago, $montopago, $idcaja, $idpersonal)
     {
         $sql = "SELECT cc.idcpc,
-                       cc.fechavencimiento,
-                       cc.fecharegistro
+                    cc.fechavencimiento,
+                    cc.fecharegistro
                 FROM cuentas_por_cobrar cc
                 WHERE cc.idventa = '$idventa'
-                  AND cc.condicion = 1
+                AND cc.condicion = 1
+                AND cc.deudatotal > 0
                 ORDER BY cc.fechavencimiento ASC, cc.fecharegistro ASC";
 
         $lista = ejecutarConsulta($sql);
 
         $data = false;
-        $pago = floatval($montopago);
+        $pago = round(floatval($montopago), 2);
         $totalAmortizado = 0;
 
         while ($reg = $lista->fetch_object()) {
+
             if ($pago <= 0) {
                 break;
             }
 
+            // Actualiza mora antes de calcular
             $this->actualizarMoraDiaria($reg->idcpc);
 
-            $filaAct = ejecutarConsultaSimpleFila("SELECT deuda_base, mora, deudatotal, abonototal FROM cuentas_por_cobrar WHERE idcpc = '$reg->idcpc'");
-            if (!$filaAct) {
+            $filaAct = ejecutarConsultaSimpleFila("
+                SELECT deuda, interes, mora, deudatotal, abonototal 
+                FROM cuentas_por_cobrar 
+                WHERE idcpc = '$reg->idcpc'
+            ");
+
+            if (!$filaAct)
                 continue;
-            }
 
-            $deuda_base = floatval($filaAct['deuda_base']);
-            $mora = floatval($filaAct['mora']);
-            $abonototal_actual = floatval($filaAct['abonototal']);
-            $deudaPendiente = floatval($filaAct['deudatotal']);
+            $deuda_base = round(floatval($filaAct['deuda']), 2);
+            $interes = round(floatval($filaAct['interes']), 2);
+            $mora = round(floatval($filaAct['mora']), 2);
+            $abonototal_actual = round(floatval($filaAct['abonototal']), 2);
+            $deudaPendiente = round(floatval($filaAct['deuda']), 2);
 
-            if ($deuda_base <= 0) {
-                $deuda_base = $deudaPendiente;
-            }
-
-            if ($deudaPendiente <= 0) {
+            if ($deudaPendiente <= 0)
                 continue;
-            }
 
+            // =========================
+            // 1. PAGAR MORA
+            // =========================
             $mora_pagada = min($pago, $mora);
             $mora -= $mora_pagada;
             $pago -= $mora_pagada;
 
+            // =========================
+            // 2. PAGAR INTERÉS
+            // =========================
+            $interes_pagado = min($pago, $interes);
+            $interes -= $interes_pagado;
+            $pago -= $interes_pagado;
+
+            // =========================
+            // 3. PAGAR CAPITAL
+            // =========================
             $capital_pagado = min($pago, $deuda_base);
             $deuda_base -= $capital_pagado;
             $pago -= $capital_pagado;
 
-            $montoPagadoTotal = $capital_pagado + $mora_pagada;
-            if ($montoPagadoTotal <= 0) {
-                continue;
-            }
+            $montoPagadoTotal = $mora_pagada + $capital_pagado;
 
+            if ($montoPagadoTotal <= 0)
+                continue;
+
+            // Registrar pago
             $sqlDetalle = "INSERT INTO detalle_cuentas_por_cobrar
                             (idcpc, idcaja, idpersonal, montopagado, montotarjeta, banco, op, fechapago, formapago, observacion)
-                           VALUES
+                        VALUES
                             ('$reg->idcpc', '$idcaja', '$idpersonal', '$montoPagadoTotal', 0, '', '', CURDATE(), '$formapago', 'AMORTIZACION CREDITO')";
             ejecutarConsulta($sqlDetalle);
 
-            $nuevoTotal = round($deuda_base + $mora, 2);
-            $abonototal_nuevo = $abonototal_actual + $montoPagadoTotal;
+            // Recalcular deuda total correctamente
+            $nuevoTotal = round($deuda_base + $interes + $mora, 2);
+
+            if ($nuevoTotal < 0) {
+                $nuevoTotal = 0;
+            }
+
+            $abonototal_nuevo = round($abonototal_actual + $montoPagadoTotal, 2);
+
+            // Actualizar estado financiero
 
             $sqlUpdate = "UPDATE cuentas_por_cobrar
-                          SET deuda_base = '$deuda_base',
-                              deudatotal = '$nuevoTotal',
-                              abonototal = '$abonototal_nuevo',
-                              fecha_update_mora = CURDATE()
-                          WHERE idcpc = '$reg->idcpc'";
+                            SET abonototal = '$abonototal_nuevo',
+                                deuda = $deuda_base,
+                                fecha_update_mora = CURDATE()
+                            WHERE idcpc = '$reg->idcpc'";
             ejecutarConsulta($sqlUpdate);
 
+            // Si ya no hay deuda → cerrar cuota
             if ($nuevoTotal <= 0) {
-                ejecutarConsulta("UPDATE cuentas_por_cobrar SET estado_pago = 0 WHERE idcpc = '$reg->idcpc'");
+                ejecutarConsulta("UPDATE cuentas_por_cobrar 
+                                SET estado_pago = 0 
+                                WHERE idcpc = '$reg->idcpc'");
+
+                // (Opcional: solo si TODAS están pagadas, pero lo dejo como lo tienes)
+                ejecutarConsulta("UPDATE documentacion 
+                                SET estado = 0 
+                                WHERE idventa = '$idventa' AND tipo = '1'");
             }
 
             $totalAmortizado += $montoPagadoTotal;
             $data = true;
         }
 
+        $saldoRestante = round($pago, 2);
+
         if ($data) {
             return [
                 'success' => true,
-                'message' => "Se amortizo correctamente S/ " . number_format($totalAmortizado, 2)
+                'message' => "Se amortizo correctamente S/ " . number_format($totalAmortizado, 2),
+                'saldo_restante' => $saldoRestante
             ];
         }
 
         return [
             'success' => false,
-            'message' => "No se realizo ninguna amortizacion"
+            'message' => "No se realizo ninguna amortizacion",
+            'saldo_restante' => $saldoRestante
         ];
     }
 

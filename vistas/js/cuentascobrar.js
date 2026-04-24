@@ -346,9 +346,7 @@ $('#formulario-amortizar').submit(async function(e) {
 		    var data = JSON.parse(data);
 		    if (data.success) {
 		        Swal.fire('Éxito', data.message, 'success');
-		        listar();
 		        listarSaldos();
-                tabla.ajax.reload();
                 tablaCreditosCliente.ajax.reload();
                 tablaCuotasCredito.ajax.reload();
 		        $('#modalAmortizar').modal('hide');
@@ -415,9 +413,7 @@ async function guardaryeditar(e) {
                 $('#getCodeModal').modal('hide');
                 $("#formulario")[0].reset();
                 limpiar();
-                listar();
                 listarSaldos();
-                tabla.ajax.reload();
                 tablaCreditosCliente.ajax.reload();
                 tablaCuotasCredito.ajax.reload();
             } else {
@@ -578,6 +574,7 @@ function volverListaClientes() {
     $('#vistaCreditosCliente').hide();
     $('#vistaListaClientes').show();
     $('#panelSuperiorCxC').show();
+    listar();
 }
 
 function verCuotasCredito(idventa, saldoPendiente, documento) {
