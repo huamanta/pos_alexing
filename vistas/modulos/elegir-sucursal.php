@@ -1,3 +1,6 @@
+<?php
+require_once __DIR__.'./../../configuraciones/local.php'
+?>
 <div class="content-wrapper">
     <section class="content">
         <div class="container-fluid">
@@ -11,7 +14,7 @@
                             <?php
                             $idusuario = $_SESSION['idusuario'];
                             
-                            $conexion = new mysqli('localhost', 'root', '', 'sistema_pos');
+                            $conexion = new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
                             if ($conexion->connect_error) {
                                 die("Connection failed: " . $conexion->connect_error);
                             }
