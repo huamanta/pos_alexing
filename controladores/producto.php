@@ -348,7 +348,6 @@ switch ($_GET["op"]) {
 		$draw = isset($_GET['draw']) ? intval($_GET['draw']) : 1;
 
 		$es_admin = ($_SESSION['idsucursal'] == 0);
-
 		$rspta = $producto->listarPaginado($idsucursal2, $_SESSION['idsucursal'], $stock_filtro, $start, $length, $search, $es_admin);
 		$total = $producto->contarTotalPaginado($idsucursal2, $_SESSION['idsucursal'], $stock_filtro, $search);
 

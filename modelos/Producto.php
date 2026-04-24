@@ -832,12 +832,10 @@ class Producto
             
             FROM producto a 
             INNER JOIN categoria c ON a.idcategoria = c.idcategoria 
-            INNER JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
-            INNER JOIN rubro r ON a.idrubro = r.idrubro 
-            INNER JOIN condicionventa cv ON a.idcondicionventa = cv.idcondicionventa 
-            INNER JOIN sucursal s ON s.idsucursal = a.idsucursal 
-            INNER JOIN usuario_sucursal us ON us.idsucursal = a.idsucursal
-            INNER JOIN usuario u ON u.idusuario = us.idusuario
+            LEFT JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
+            LEFT JOIN rubro r ON a.idrubro = r.idrubro 
+            LEFT JOIN condicionventa cv ON a.idcondicionventa = cv.idcondicionventa 
+            LEFT JOIN sucursal s ON s.idsucursal = a.idsucursal 
 			LEFT JOIN marca m ON a.idmarca = m.idmarca
 			LEFT JOIN modelo mo ON a.idmodelo = mo.idmodelo
             
@@ -852,7 +850,6 @@ class Producto
             )
 
             WHERE c.nombre != 'SERVICIO' 
-            AND u.idpersonal = '" . $_SESSION['idpersonal'] . "'
             AND a.idsucursal = '$sucursal_final'
             $filtro_stock
             $searching
