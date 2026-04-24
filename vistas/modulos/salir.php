@@ -1,9 +1,7 @@
 <?php
-// Iniciar sesión solo si no está iniciada
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+// No iniciar sesión aquí - ya debería estar iniciada desde plantilla.php
 date_default_timezone_set('America/Lima');
+
 // Función para obtener IP real
 function getClientIP() {
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
@@ -28,10 +26,10 @@ if (isset($_SESSION['idusuario'])) {
     $ip = getClientIP();
 
     // Actualizar el último login exitoso
-    $sql = "UPDATE login_historial 
+    $sql = "UPDATE login_historial
             SET exito = 0, logout = ?, ip = ?
             WHERE idusuario = ? AND exito = 1
-            ORDER BY fecha DESC 
+            ORDER BY fecha DESC
             LIMIT 1";
 
     $stmt = $conexion->prepare($sql);
@@ -39,10 +37,21 @@ if (isset($_SESSION['idusuario'])) {
     $stmt->execute();
 }
 
-// Destruir sesión
+// Destruir sesión completamente
+$_SESSION = array();
+
+// Eliminar la cookie de sesión si existe
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000,
+        $params["path"], $params["domain"],
+        $params["secure"], $params["httponly"]
+    );
+}
+
 session_destroy();
 
-// Redirigir al login
-echo '<script>window.location = "ingreso";</script>';
+// Redirigir al login usando JavaScript (ya que los headers ya fueron enviados)
+echo '<script>window.location.href = "login";</script>';
 exit;
 ?>

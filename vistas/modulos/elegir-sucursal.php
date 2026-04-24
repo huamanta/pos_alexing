@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__.'./../../configuraciones/local.php'
+require_once __DIR__.'/../../configuraciones/local.php'
 ?>
 <div class="content-wrapper">
     <section class="content">
@@ -7,7 +7,7 @@ require_once __DIR__.'./../../configuraciones/local.php'
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="card">
-                        <div class="card-header">
+                        <div class="card-header d-flex justify-content-between align-items-center">
                             <h3 class="card-title" id="cardTitle">Seleccionar Sucursal</h3>
                         </div>
                         <div class="card-body">
@@ -99,6 +99,9 @@ require_once __DIR__.'./../../configuraciones/local.php'
                                 </script>
                             <?php else: ?>
                                 <!-- Seleccionar entre múltiples -->
+                                <div class="alert alert-info">
+                                    <i class="fas fa-building"></i> Tienes <strong><?php echo $count; ?></strong> sucursales asignadas. Selecciona una:
+                                </div>
                                 <form id="formSeleccionarSucursal" method="POST">
                                     <div class="form-group">
                                         <label for="sucursal">Elige una sucursal:</label>
