@@ -11,16 +11,18 @@ $num_documento=isset($_POST["num_documento"])? limpiarCadena($_POST["num_documen
 $direccion=isset($_POST["direccion"])? limpiarCadena($_POST["direccion"]):"";
 $telefono=isset($_POST["telefono"])? limpiarCadena($_POST["telefono"]):"";
 $email=isset($_POST["email"])? limpiarCadena($_POST["email"]):"";
+$latitude=isset($_POST["latitude"])? limpiarCadena($_POST["latitude"]):"";
+$longitude=isset($_POST["longitude"])? limpiarCadena($_POST["longitude"]):"";
 $fecha_hora=isset($_POST["fecha_hora"])? limpiarCadena($_POST["fecha_hora"]):"";
 
 switch ($_GET["op"]){
 	case 'guardaryeditar':
 		if (empty($idpersona)){
-			$rspta=$persona->insertar($tipo_persona,$nombre,$tipo_documento,$num_documento,$direccion,$telefono,$email,$fecha_hora);
+			$rspta=$persona->insertar($tipo_persona,$nombre,$tipo_documento,$num_documento,$direccion,$telefono,$email,$fecha_hora, $latitude, $longitude);
 			echo $rspta ? "Datos registrados correctamente" : "No se pudo completar el registro";
 		}
 		else {
-			$rspta=$persona->editar($idpersona,$tipo_persona,$nombre,$tipo_documento,$num_documento,$direccion,$telefono,$email,$fecha_hora);
+			$rspta=$persona->editar($idpersona,$tipo_persona,$nombre,$tipo_documento,$num_documento,$direccion,$telefono,$email,$fecha_hora, $latitude, $longitude);
 			echo $rspta ? "Datos actualizados" : "No se pudo actualizar";
 		}
 	break;

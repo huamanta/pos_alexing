@@ -32,7 +32,7 @@ date_default_timezone_set('America/Lima');
               <div class="row">
                 <div class="col-md-1">
                   <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal"
-                    data-target="#myModal"><i class="fa fa-plus"></i> Nuevo</button>
+                    data-target="#myModal" onclick="initMap()"><i class="fa fa-plus"></i> Nuevo</button>
                 </div>
               </div>
 
@@ -119,14 +119,20 @@ date_default_timezone_set('America/Lima');
                     style="display: none;"><i><img src="files/plantilla/cargando.gif" width="15px"></i></span>
                 </div>
               </div>
+
+              Estado:<label for="" id="estado2">-</label>
+              Condición:<label for="" id="condicion">-</label>
             </div>
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Dirección:</label>
-                <input type="text" class="form-control" name="direccion" id="direccion" maxlength="70"
-                  placeholder="Dirección">
-                Estado:<label for="" id="estado2">-</label>
-                Condición:<label for="" id="condicion">-</label>
+                <div class="input-group mb-3">
+                  <input type="text" class="form-control" name="direccion" id="direccion" maxlength="70"
+                    placeholder="Dirección">
+                  <div class="input-group-append">
+                    <button type="button" class="btn btn-primary" onclick="buscarDireccion()">Buscar</button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -145,11 +151,19 @@ date_default_timezone_set('America/Lima');
               </div>
             </div>
           </div>
-          <div class="row">
-            <label for="name" class="col-sm-4 control-label">Activar como proveedor:</label>
-            <div class="col-sm-1">
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="name" class="col-sm-4 control-label">Activar como proveedor:</label>
               <input style="border-color: #99C0E7; text-align:center" class="checkbox pull-right" type="checkbox"
                 name="proveedor" id="proveedor" value="1">
+            </div>
+          </div>
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="name" class="col-sm-4 control-label">Mapa:</label>
+              <input type="hidden" id="latitude" name="latitude" value="-6.487595468705555">
+              <input type="hidden" id="longitude" name="longitude" value="-76.3601303100586">
+              <div id="map" style="height:400px;"></div>
             </div>
           </div>
         </div>
@@ -281,5 +295,10 @@ date_default_timezone_set('America/Lima');
 <div class="card" id="card-plantilla">
 
 </div>
+
+
+<script async
+  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEfzrVHyxezdBMPmKlF8Hs-of68DzrRFY&callback=initMap">
+  </script>
 
 <script src="vistas/js/cliente.js"></script>
