@@ -1,14 +1,10 @@
 <?php
-// logout.php
-
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Incluye la conexión a la BD (ajusta la ruta según tu estructura)
 require_once __DIR__ . "/../configuraciones/Conexion.php";
 
-// Si hay un usuario logueado, actualiza la columna exito y logout
 if (isset($_SESSION['idusuario'])) {
     $idusuario = $_SESSION['idusuario'];
 
@@ -22,16 +18,27 @@ if (isset($_SESSION['idusuario'])) {
     ejecutarConsulta($sql);
 }
 
-// Limpiar y destruir sesión
+// 🔥 IMPORTANTE: borrar cookie
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(
+        session_name(),
+        '',
+        time() - 42000,
+        $params["path"],
+        $params["domain"],
+        $params["secure"],
+        $params["httponly"]
+    );
+}
+
+// destruir sesión
 session_unset();
 session_destroy();
 
-// Verificamos si es AJAX o acceso directo
 if (isset($_GET['ajax'])) {
-    // Para llamadas AJAX
     echo json_encode(['status' => true]);
 } else {
-    // Para clic en salir desde el navegador
-    header("Location: ../index.php"); // Ajusta al login
+    header("Location: ../index.php");
     exit;
 }

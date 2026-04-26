@@ -1,17 +1,20 @@
+<?php
+require_once __DIR__.'/../../configuraciones/local.php'
+?>
 <div class="content-wrapper">
     <section class="content">
         <div class="container-fluid">
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="card">
-                        <div class="card-header">
+                        <div class="card-header d-flex justify-content-between align-items-center">
                             <h3 class="card-title" id="cardTitle">Seleccionar Sucursal</h3>
                         </div>
                         <div class="card-body">
                             <?php
                             $idusuario = $_SESSION['idusuario'];
                             
-                            $conexion = new mysqli('localhost', 'root', '', 'sistema_pos');
+                            $conexion = new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
                             if ($conexion->connect_error) {
                                 die("Connection failed: " . $conexion->connect_error);
                             }
@@ -96,6 +99,9 @@
                                 </script>
                             <?php else: ?>
                                 <!-- Seleccionar entre múltiples -->
+                                <div class="alert alert-info">
+                                    <i class="fas fa-building"></i> Tienes <strong><?php echo $count; ?></strong> sucursales asignadas. Selecciona una:
+                                </div>
                                 <form id="formSeleccionarSucursal" method="POST">
                                     <div class="form-group">
                                         <label for="sucursal">Elige una sucursal:</label>

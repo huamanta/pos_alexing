@@ -135,7 +135,13 @@ session_start();
 <body id="body" class="sidebar-mini layout-fixed text-sm">
   <?php
 
-  if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok" && $_GET["ruta"] != "reset" && $_GET["ruta"] != "recuperar") {
+  // Si la ruta es salir, redirigir directamente
+  if (isset($_GET["ruta"]) && $_GET["ruta"] == "salir") {
+    include "modulos/salir.php";
+    exit;
+  }
+
+   if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok" && $_GET["ruta"] != "reset" && $_GET["ruta"] != "recuperar") {
 
 
     echo '<div class="wrapper">     
