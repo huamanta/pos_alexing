@@ -326,15 +326,6 @@ switch ($_GET["op"]){
 			// Registrar historial de login exitoso
 			$usuario->registrarHistorial($fetch->idusuario, $ip, $user_agent, 1);
 
-			// ======================================
-			// Obtener sucursales asignadas
-			// ======================================
-			$sql_suc = "SELECT idsucursal FROM usuario_sucursal WHERE idusuario='{$fetch->idusuario}'";
-			$rs_suc = ejecutarConsulta($sql_suc);
-			$_SESSION['sucursales'] = array();
-			while ($row = $rs_suc->fetch_object()) {
-				$_SESSION['sucursales'][] = $row->idsucursal;
-			}
 		} else {
 			// Login fallido
 			$usuario->registrarHistorial(0, $ip, $user_agent, 0);

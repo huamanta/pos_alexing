@@ -1149,8 +1149,8 @@ switch ($_GET["op"]) {
 		require_once "../modelos/Venta.php";
 		$venta = new Venta();
 
-		$rspta = $venta->listarSucursal2($_SESSION['idpersonal'], $_SESSION['idsucursal']);
-
+		$rspta = $venta->listarSucursal2($_SESSION['idusuario'], $_SESSION['idsucursal']);
+		
 		// Opción "Todas" SOLO si tiene acceso total
 		if ((int) $_SESSION['idsucursal'] === 0) {
 			echo '<option value="0">Todas las Sucursales</option>';

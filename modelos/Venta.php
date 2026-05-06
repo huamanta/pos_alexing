@@ -1338,22 +1338,23 @@ class Venta
         return ejecutarConsulta($sql);
     }
 
-    public function listarSucursal2($idpersonal, $idsucursal)
+    public function listarSucursal2($idusuario, $idsucursal)
     {
-        if ($idsucursal != 0 && isset($_SESSION['sucursales']) && is_array($_SESSION['sucursales'])) {
+        $sql = "SELECT * FROM usuario WHERE idusuario = '$idusuario'";
+        $data = ejecutarConsultaSimpleFila($sql);
 
-            // Si el usuario tiene varias sucursales asignadas en la sesión
-            $ids = implode(",", $_SESSION['sucursales']); // Ej: "1,2,3"
-
-            $sql = "SELECT s.idsucursal, s.nombre 
-                FROM sucursal s 
-                WHERE s.idsucursal IN ($ids)";
+        if ($data['superusuario']) {
+            $sql = "SELECT * FROM sucursal";
+            return ejecutarConsulta($sql);
         } else {
-            // Si el usuario tiene acceso total (administrador, etc.)
-            $sql = "SELECT s.idsucursal, s.nombre FROM sucursal s";
-        }
+            $sql = "SELECT s.* 
+                FROM sucursal s
+                INNER JOIN usuario_sucursal us 
+                ON s.idsucursal = us.idsucursal
+                WHERE us.idusuario = '$idusuario'";
 
-        return ejecutarConsulta($sql);
+            return ejecutarConsulta($sql);
+        }
     }
 
 

@@ -1,10 +1,15 @@
 <?php
 
 session_start();
-
+// Si la ruta es salir, redirigir directamente
+if (isset($_GET["ruta"]) && $_GET["ruta"] == "salir") {
+  include "modulos/salir.php";
+  exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,7 +18,8 @@ session_start();
   <title>SYSPIDER TECHNOLOGY</title>
 
   <!-- Google Font: Source Sans Pro -->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <!-- Font Awesome -->
   <link rel="stylesheet" href="./files/plugins/fontawesome-free/css/all.min.css">
   <!-- icheck bootstrap -->
@@ -79,21 +85,23 @@ session_start();
   <script src="./files/dist/js/jquery.PrintArea.js"></script>
   <script src="./files/plugins/toastr/toastr.min.js"></script>
   <script>
-    $(document).ready(function(){
-        $('[data-toggle="tooltip"]').tooltip(); 
+    $(document).ready(function () {
+      $('[data-toggle="tooltip"]').tooltip();
     });
   </script>
 
   <style>
     .select2-container .select2-selection--single {
-      height: 38px !important; /* Bootstrap 4 */
+      height: 38px !important;
+      /* Bootstrap 4 */
       padding: 6px 12px;
       line-height: 1.42857143;
       box-sizing: border-box;
     }
 
     .select2-container--default .select2-selection--single .select2-selection__rendered {
-      line-height: 24px; /* Ajusta según necesidad */
+      line-height: 24px;
+      /* Ajusta según necesidad */
       padding-left: 0px;
     }
 
@@ -102,32 +110,35 @@ session_start();
     }
 
     .loader-wrapper {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 200px; /* ajusta según tu card */
-}
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      /* ajusta según tu card */
+    }
 
-.spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid #e0e0e0;
-    border-top: 4px solid #0d6efd; /* color azul bootstrap */
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-}
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e0e0e0;
+      border-top: 4px solid #0d6efd;
+      /* color azul bootstrap */
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
 
-.loader-text {
-    margin-top: 10px;
-    font-size: 14px;
-    color: #555;
-}
+    .loader-text {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #555;
+    }
 
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 
 </head>
@@ -135,13 +146,9 @@ session_start();
 <body id="body" class="sidebar-mini layout-fixed text-sm">
   <?php
 
-  // Si la ruta es salir, redirigir directamente
-  if (isset($_GET["ruta"]) && $_GET["ruta"] == "salir") {
-    include "modulos/salir.php";
-    exit;
-  }
 
-   if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok" && $_GET["ruta"] != "reset" && $_GET["ruta"] != "recuperar") {
+
+  if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok" && $_GET["ruta"] != "reset" && $_GET["ruta"] != "recuperar") {
 
 
     echo '<div class="wrapper">     
@@ -150,8 +157,8 @@ session_start();
     CABEZOTE
     =============================================*/
     if ($_GET["ruta"] != 'pos') {
-    include "modulos/cabezote.php";
-    } 
+      include "modulos/cabezote.php";
+    }
 
     /*=============================================
     MENU
@@ -167,74 +174,74 @@ session_start();
 
       if (isset($_GET["ruta"])) {
 
-      if (
-        $_GET["ruta"] == "inicio" ||
-        $_GET["ruta"] == "unidad-medida" ||
-        $_GET["ruta"] == "rubro" ||
-        $_GET["ruta"] == "recuperar" ||
-        $_GET["ruta"] == "reset" ||
-        $_GET["ruta"] == "procesar" ||
-        $_GET["ruta"] == "reportes-digemid" ||
-        $_GET["ruta"] == "reportes-vencimiento" ||
-        $_GET["ruta"] == "categoria" ||
-        $_GET["ruta"] == "servicio" ||
-        $_GET["ruta"] == "producto" ||
-        $_GET["ruta"] == "traslado" ||
-        $_GET["ruta"] == "restaurant" ||
-        $_GET["ruta"] == "nombres-precios" ||
-        $_GET["ruta"] == "orden-compra" ||
-        $_GET["ruta"] == "compra" ||
-        $_GET["ruta"] == "toma-inventario" ||
-        $_GET["ruta"] == "ajuste-inventario" ||
-        $_GET["ruta"] == "caja-chica" ||
-        $_GET["ruta"] == "cuentas-cobrar" ||
-        $_GET["ruta"] == "cuentasxpagar" ||
-        $_GET["ruta"] == "proveedor" ||
-        $_GET["ruta"] == "cotizacion" ||
-        $_GET["ruta"] == "venta" ||
-        $_GET["ruta"] == "cajas" ||
-        $_GET["ruta"] == "pos" ||
-        $_GET["ruta"] == "venta-pos" ||
-        $_GET["ruta"] == "guia" ||
-        $_GET["ruta"] == "service" ||
-        $_GET["ruta"] == "nota-credito" ||
-        $_GET["ruta"] == "cliente" ||
-        $_GET["ruta"] == "asistencia" ||
-        $_GET["ruta"] == "personal" ||
-        $_GET["ruta"] == "usuario" ||
-        $_GET["ruta"] == "permiso" ||
-        $_GET["ruta"] == "negocio" ||
-        $_GET["ruta"] == "sucursal" ||
-        $_GET["ruta"] == "compras-fecha" ||
-        $_GET["ruta"] == "compras-proveedor" ||
-        $_GET["ruta"] == "ventas-cliente" ||
-        $_GET["ruta"] == "ventas-vendedor" ||
-        $_GET["ruta"] == "ventas-producto" ||
-        $_GET["ruta"] == "ventas-credito" ||
-        $_GET["ruta"] == "ventas-servicio" ||
-        $_GET["ruta"] == "detalle-venta-comprobante" ||
-        $_GET["ruta"] == "kardex" ||
-        $_GET["ruta"] == "reporte" ||
-        $_GET["ruta"] == "resumen" ||
-        $_GET["ruta"] == "empresas" ||
-        $_GET["ruta"] == "contrato" ||
-        $_GET["ruta"] == "marca" ||
-        $_GET["ruta"] == "modelo" ||
-        $_GET["ruta"] == "condicionventa" ||
-        $_GET["ruta"] == "salir"
-      ) {
+        if (
+          $_GET["ruta"] == "inicio" ||
+          $_GET["ruta"] == "unidad-medida" ||
+          $_GET["ruta"] == "rubro" ||
+          $_GET["ruta"] == "recuperar" ||
+          $_GET["ruta"] == "reset" ||
+          $_GET["ruta"] == "procesar" ||
+          $_GET["ruta"] == "reportes-digemid" ||
+          $_GET["ruta"] == "reportes-vencimiento" ||
+          $_GET["ruta"] == "categoria" ||
+          $_GET["ruta"] == "servicio" ||
+          $_GET["ruta"] == "producto" ||
+          $_GET["ruta"] == "traslado" ||
+          $_GET["ruta"] == "restaurant" ||
+          $_GET["ruta"] == "nombres-precios" ||
+          $_GET["ruta"] == "orden-compra" ||
+          $_GET["ruta"] == "compra" ||
+          $_GET["ruta"] == "toma-inventario" ||
+          $_GET["ruta"] == "ajuste-inventario" ||
+          $_GET["ruta"] == "caja-chica" ||
+          $_GET["ruta"] == "cuentas-cobrar" ||
+          $_GET["ruta"] == "cuentasxpagar" ||
+          $_GET["ruta"] == "proveedor" ||
+          $_GET["ruta"] == "cotizacion" ||
+          $_GET["ruta"] == "venta" ||
+          $_GET["ruta"] == "cajas" ||
+          $_GET["ruta"] == "pos" ||
+          $_GET["ruta"] == "venta-pos" ||
+          $_GET["ruta"] == "guia" ||
+          $_GET["ruta"] == "service" ||
+          $_GET["ruta"] == "nota-credito" ||
+          $_GET["ruta"] == "cliente" ||
+          $_GET["ruta"] == "asistencia" ||
+          $_GET["ruta"] == "personal" ||
+          $_GET["ruta"] == "usuario" ||
+          $_GET["ruta"] == "permiso" ||
+          $_GET["ruta"] == "negocio" ||
+          $_GET["ruta"] == "sucursal" ||
+          $_GET["ruta"] == "compras-fecha" ||
+          $_GET["ruta"] == "compras-proveedor" ||
+          $_GET["ruta"] == "ventas-cliente" ||
+          $_GET["ruta"] == "ventas-vendedor" ||
+          $_GET["ruta"] == "ventas-producto" ||
+          $_GET["ruta"] == "ventas-credito" ||
+          $_GET["ruta"] == "ventas-servicio" ||
+          $_GET["ruta"] == "detalle-venta-comprobante" ||
+          $_GET["ruta"] == "kardex" ||
+          $_GET["ruta"] == "reporte" ||
+          $_GET["ruta"] == "resumen" ||
+          $_GET["ruta"] == "empresas" ||
+          $_GET["ruta"] == "contrato" ||
+          $_GET["ruta"] == "marca" ||
+          $_GET["ruta"] == "modelo" ||
+          $_GET["ruta"] == "condicionventa" ||
+          $_GET["ruta"] == "salir"
+        ) {
 
-        include "modulos/" . $_GET["ruta"] . ".php";
-        
+          include "modulos/" . $_GET["ruta"] . ".php";
+
+        } else {
+
+          include "modulos/404.php";
+        }
       } else {
 
-        include "modulos/404.php";
-      }
-    } else {
+        include "modulos/inicio.php";
 
-      include "modulos/inicio.php";
-      
-    }
+      }
 
     } else {
 
@@ -252,19 +259,19 @@ session_start();
   } else {
 
     if (isset($_GET["ruta"]) && $_GET["ruta"] == "recuperar") {
-        include "modulos/recuperar.php";
+      include "modulos/recuperar.php";
 
     } elseif (isset($_GET["ruta"]) && $_GET["ruta"] == "reset") {
-        include "modulos/reset.php";
+      include "modulos/reset.php";
 
     } else {
-        include "modulos/login.php";
+      include "modulos/login.php";
     }
-}
 
+    ?>
+  </body>
 
+  </html>
+  <?php
+  }
   ?>
-
-</body>
-
-</html>
