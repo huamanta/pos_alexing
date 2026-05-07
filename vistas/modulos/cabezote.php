@@ -321,13 +321,35 @@
         }, 300);
         setInterval(cargarNotificacionesCXCNavbar, 5000);
     });
+
+    function notificacionToast(tipo, mensaje) {
+
+        switch (tipo) {
+
+            case 'success':
+                toastr.success(mensaje);
+                break;
+
+            case 'error':
+                toastr.error(mensaje);
+                break;
+
+            case 'warning':
+                toastr.warning(mensaje);
+                break;
+
+            default:
+                toastr.info(mensaje);
+        }
+    }
 </script>
 
 <nav class="main-header navbar navbar-expand navbar-white navbar-light sticky-top" id="navbar-global">
 
     <ul class="navbar-nav">
         <li class="nav-item">
-            <a class="nav-link navbar-icon-link" data-widget="pushmenu" role="button"><i class="fas fa-bars fa-lg"></i></a>
+            <a class="nav-link navbar-icon-link" data-widget="pushmenu" role="button"><i
+                    class="fas fa-bars fa-lg"></i></a>
         </li>
     </ul>
 
@@ -340,7 +362,8 @@
         </li>
 
         <li class="nav-item dropdown mr-3">
-            <a class="nav-link cxcAlertLink position-relative navbar-icon-link" data-toggle="dropdown" href="#" title="Cuentas por Cobrar">
+            <a class="nav-link cxcAlertLink position-relative navbar-icon-link" data-toggle="dropdown" href="#"
+                title="Cuentas por Cobrar">
                 <i class="fas fa-file-invoice-dollar fa-lg"></i>
                 <span class="badge badge-danger navbar-badge-custom cxcAlertCount" style="display:none;">0</span>
             </a>
@@ -373,7 +396,8 @@
                 <i class="fas fa-chevron-down user-chevron"></i>
             </a>
 
-            <ul class="dropdown-menu dropdown-menu-lg dropdown-menu-right border-0 shadow-xl mt-3 rounded-lg overflow-hidden">
+            <ul
+                class="dropdown-menu dropdown-menu-lg dropdown-menu-right border-0 shadow-xl mt-3 rounded-lg overflow-hidden">
                 <li class="user-header bg-primary text-white p-4 text-center">
                     <div class="bg-white text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-sm"
                         style="width: 60px; height: 60px; font-size:1.5rem; font-weight:bold;">
@@ -386,7 +410,13 @@
                 </li>
 
                 <li class="user-footer p-2 bg-white">
-                    <a href="salir" class="btn btn-outline-danger btn-block font-weight-bold border-0 text-left px-3 py-2">
+                    <a href="salirsucursal"
+                        class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
+                        <i class="fas fa-box"></i>
+                        Cambiar sucursal
+                    </a>
+                    <a href="salir"
+                        class="btn btn-outline-danger btn-block font-weight-bold border-0 text-left px-3 py-2">
                         <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
                     </a>
                 </li>

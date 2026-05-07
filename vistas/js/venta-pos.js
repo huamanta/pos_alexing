@@ -430,10 +430,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                      " " +
-                      dat.apellidoPaterno +
-                      " " +
-                      dat.apellidoMaterno,
+                    " " +
+                    dat.apellidoPaterno +
+                    " " +
+                    dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -443,7 +443,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         } else {
@@ -488,7 +488,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         }
@@ -796,7 +796,7 @@ function EnviarSunat(tipoc, idventa, idcol) {
         icon: "success",
         text: resp,
         timerProgressBar: true,
-        onClose: function () {},
+        onClose: function () { },
       });
     },
     complete: function () {
@@ -1473,8 +1473,8 @@ function verificarProductosDisponibles() {
           Swal.fire(
             "Advertencia",
             "El producto con ID " +
-              idproducto +
-              " no existe en el almacén seleccionado.",
+            idproducto +
+            " no existe en el almacén seleccionado.",
             "warning",
           );
         });
@@ -2743,8 +2743,8 @@ function agregarDetalle(
         Swal.fire(
           "Aviso",
           "El stock es menor a 1, se agregará solo la cantidad disponible (" +
-            stock +
-            "), ajustando el precio proporcionalmente.",
+          stock +
+          "), ajustando el precio proporcionalmente.",
           "info",
         );
       }
@@ -2912,8 +2912,8 @@ function agregarDetalle(
         (modoEditar
           ? ""
           : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' +
-            cont +
-            ')"></i>') +
+          cont +
+          ')"></i>') +
         '<textarea class="form-control nombre-producto" ' +
         'name="nombreProducto[]" rows="1" ' +
         'oninput="autoResize(this)" onfocus="this.select()" ' +
@@ -2921,9 +2921,9 @@ function agregarDetalle(
         producto +
         (fabricante || modelo || color
           ? " " +
-            (fabricante ? fabricante + " " : "") +
-            (modelo ? modelo + " " : "") +
-            (color ? color : "")
+          (fabricante ? fabricante + " " : "") +
+          (modelo ? modelo + " " : "") +
+          (color ? color : "")
           : "") +
         "</textarea>" +
         "</div>" +
@@ -3956,11 +3956,11 @@ function mostrar(idventa) {
       $("#tipo_comprobantem").html(
         data.tipo_comprobante == "Boleta"
           ? '<span class="badge badge-primary">' +
-              data.tipo_comprobante +
-              "</span>"
+          data.tipo_comprobante +
+          "</span>"
           : '<span class="badge badge-info">' +
-              data.tipo_comprobante +
-              "</span>",
+          data.tipo_comprobante +
+          "</span>",
       );
       $("#correlativo").text(
         data.serie_comprobante + " - " + data.num_comprobante,
@@ -4388,6 +4388,25 @@ function EnviarComprobante(idventa) {
       }
     },
   );
+}
+
+function encrypt_decrypt(action, string) {
+  if (action === 'encrypt') {
+    // Encriptación simple pero efectiva para este caso
+    const encoded = btoa(string);
+    return encoded.replace(/=/g, '').replace(/\//g, '_').replace(/\+/g, '-');
+  }
+  return string;
+}
+
+function verCronogramPago(idventa) {
+  const encryptedId = encrypt_decrypt('encrypt', idventa);
+  const url = 'public/docs_service/cronograma_pagos?idventa=' + encryptedId;
+  const win = window.open(url, '_blank');
+  if (!win) {
+    alert('Por favor habilita ventanas emergentes o descarga manualmente: ' + url);
+    return;
+  }
 }
 
 // --- 3. TRIGGER AUTOMÁTICO (OPCIONAL) ---

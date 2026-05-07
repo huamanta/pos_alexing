@@ -4,63 +4,67 @@ date_default_timezone_set('America/Lima');
 ?>
 
 <style>
-    .modal-header-custom {
-        background: #007bff;
-        color: white;
-        padding: 12px 20px;
-        border-top-left-radius: 4px;
-        border-top-right-radius: 4px;
-    }
-    .info-box-custom {
-        background: #eaf7ff;
-        border-left: 5px solid #007bff;
-        padding: 12px 15px;
-        border-radius: 5px;
-        margin-bottom: 15px;
-        font-size: 14px;
-    }
-    .section-title {
-        font-size: 15px;
-        font-weight: bold;
-        margin-bottom: 8px;
-        margin-top: 10px;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 4px;
-        color: #444;
-    }
+  .modal-header-custom {
+    background: #007bff;
+    color: white;
+    padding: 12px 20px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+  }
 
-    /* =======================================
+  .info-box-custom {
+    background: #eaf7ff;
+    border-left: 5px solid #007bff;
+    padding: 12px 15px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: bold;
+    margin-bottom: 8px;
+    margin-top: 10px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4px;
+    color: #444;
+  }
+
+  /* =======================================
    MODAL DE COBROS – ESTILO PROFESIONAL
    ======================================= */
 
-/* --- Título del modal --- */
-.modal-header-custom {
+  /* --- Título del modal --- */
+  .modal-header-custom {
     background: linear-gradient(45deg, #007bff, #005fcc);
     color: white;
     padding: 14px 22px !important;
     border-bottom: none !important;
-}
-.modal-header-custom .modal-title {
+  }
+
+  .modal-header-custom .modal-title {
     font-size: 18px;
     font-weight: 600;
-}
-.modal-header-custom .close {
+  }
+
+  .modal-header-custom .close {
     font-size: 26px;
     opacity: 1;
     color: white;
-}
+  }
 
-/* --- Caja de información --- */
-.info-box-custom {
+  /* --- Caja de información --- */
+  .info-box-custom {
     background: #f0f8ff;
     border-left: 5px solid #007bff;
     padding: 14px 18px;
     border-radius: 6px;
     box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
-}
+  }
 
-/* --- Secciones del formulario --- */
-.section-title {
+  /* --- Secciones del formulario --- */
+  .section-title {
     background: #fafafa;
     padding: 6px 10px;
     font-size: 15px;
@@ -68,103 +72,120 @@ date_default_timezone_set('America/Lima');
     border-left: 4px solid #007bff;
     margin-top: 18px;
     margin-bottom: 12px;
-}
+  }
 
-/* --- Inputs y selects --- */
-#formulario .form-group label {
+  /* --- Inputs y selects --- */
+  #formulario .form-group label {
     font-weight: 600;
     color: #444;
-}
-#formulario input,
-#formulario select,
-#formulario textarea {
+  }
+
+  #formulario input,
+  #formulario select,
+  #formulario textarea {
     border-radius: 5px !important;
     border: 1px solid #c9c9c9 !important;
-}
-#formulario input:focus,
-#formulario select:focus,
-#formulario textarea:focus {
+  }
+
+  #formulario input:focus,
+  #formulario select:focus,
+  #formulario textarea:focus {
     border-color: #007bff !important;
     box-shadow: 0 0 4px #007bff55 !important;
-}
+  }
 
-/* --- Botones del pie del modal --- */
-.modal-footer .btn {
+  /* --- Botones del pie del modal --- */
+  .modal-footer .btn {
     padding: 10px 22px;
     font-size: 15px;
     border-radius: 6px;
-}
-.btn-primary {
+  }
+
+  .btn-primary {
     background-color: #007bff !important;
     border: none !important;
-}
-.btn-primary:hover {
-    background-color: #0069d9 !important;
-}
+  }
 
-/* --- Botón cerrar --- */
-.btn-secondary {
+  .btn-primary:hover {
+    background-color: #0069d9 !important;
+  }
+
+  /* --- Botón cerrar --- */
+  .btn-secondary {
     background-color: #6c757d !important;
     border: none !important;
-}
-.btn-secondary:hover {
-    background-color: #5a636b !important;
-}
+  }
 
-/* --- Animación suave del modal --- */
-.modal.fade .modal-dialog {
+  .btn-secondary:hover {
+    background-color: #5a636b !important;
+  }
+
+  /* --- Animación suave del modal --- */
+  .modal.fade .modal-dialog {
     transition: transform .2s ease-out;
     transform: translateY(-20px);
-}
-.modal.show .modal-dialog {
-    transform: translateY(0);
-}
+  }
 
-/* --- Mejora visual en selectpicker --- */
-.bootstrap-select .dropdown-toggle {
+  .modal.show .modal-dialog {
+    transform: translateY(0);
+  }
+
+  /* --- Mejora visual en selectpicker --- */
+  .bootstrap-select .dropdown-toggle {
     border-radius: 5px !important;
     border: 1px solid #c0c0c0 !important;
-}
+  }
 
-/* --- Colores para montos --- */
-#montoAdeudado {
+  /* --- Colores para montos --- */
+  #montoAdeudado {
     font-weight: bold;
     color: #a80000;
-}
-#deutaTotal {
+  }
+
+  #deutaTotal {
     color: #d10000;
     font-weight: bold;
-}
+  }
 
-/* --- Mejor espaciado entre elementos --- */
-.modal-body .row {
+  /* --- Mejor espaciado entre elementos --- */
+  .modal-body .row {
     margin-bottom: 4px;
-}
+  }
 
-/* --- Scroll elegante si el modal crece --- */
-.modal-body {
+  /* --- Scroll elegante si el modal crece --- */
+  .modal-body {
     max-height: 65vh;
     overflow-y: auto;
     padding-right: 15px;
-}
-#getCodeModal .modal-body {
+  }
+
+  #getCodeModal .modal-body {
     max-height: none !important;
     overflow-y: visible !important;
-}
+  }
 
-.fila-retenida {
-    background-color: #ffe5e5 !important; /* rojo suave */
+  .fila-retenida {
+    background-color: #ffe5e5 !important;
+    /* rojo suave */
     color: #a77170;
-}
+  }
 
-.fila-cuota-vencida {
-  background-color: #ffd6d6 !important;
-}
+  .fila-cuota-vencida {
+    background-color: #ffd6d6 !important;
+  }
 
-.fila-cuota-proxima {
-  background-color: #fff4cc !important;
-}
+  .fila-cuota-proxima {
+    background-color: #fff4cc !important;
+  }
 
+  .btn-comment {
+    background-color: blue !important;
+    color: white !important;
+  }
+  .btn-amortiar{
+    background-color: green !important;
+    color: white !important;
+  }
 </style>
 
 <div class="content-wrapper">
@@ -197,7 +218,8 @@ date_default_timezone_set('America/Lima');
 
               <div class="row">
                 <div class="col-md-2" hidden>
-                  <button class="btn btn-danger" id="btnGenerarReporte" onclick="generarReporte();"><i class="fa fa-file"></i> Reporte Consolidado</button>
+                  <button class="btn btn-danger" id="btnGenerarReporte" onclick="generarReporte();"><i
+                      class="fa fa-file"></i> Reporte Consolidado</button>
                 </div>
               </div>
 
@@ -205,112 +227,116 @@ date_default_timezone_set('America/Lima');
             <!-- /.card-header -->
             <div class="card-body">
               <div id="panelSuperiorCxC">
-              <div class="col-md-3">
+                <div class="col-md-3">
                   <button class="btn btn-warning" id="btnEnviarRecordatorioSemana">
-                      <i class="fas fa-paper-plane"></i> Enviar recordatorios vencidos
+                    <i class="fas fa-paper-plane"></i> Enviar recordatorios vencidos
                   </button>
-              </div>
-              <div class="row">
-
-                <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
-                  <label>Fecha Inicio:</label>
-
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text">
-                        <i class="far fa-calendar-alt"></i>
-                      </span>
-                    </div>
-                    <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio" value="<?php echo date("Y-m-01"); ?>">
-                  </div>
                 </div>
+                <div class="row">
 
-                <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
-                  <label>Fecha Fin:</label>
+                  <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                    <label>Fecha Inicio:</label>
 
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text">
-                        <i class="far fa-calendar-alt"></i>
-                      </span>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <i class="far fa-calendar-alt"></i>
+                        </span>
+                      </div>
+                      <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio"
+                        value="<?php echo date("Y-m-01"); ?>">
                     </div>
-                    <input type="date" class="form-control" name="fecha_fin" id="fecha_fin" value="<?php echo date("Y-m-d"); ?>">
                   </div>
-                </div>
 
-                <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
-                  <label>Almacén:</label>
+                  <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                    <label>Fecha Fin:</label>
 
-                  <div class="input-group">
-                    <div class="input-group-prepend">
-                      <span class="input-group-text">
-                        <i class="fas fa-store-alt"></i>
-                      </span>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <i class="far fa-calendar-alt"></i>
+                        </span>
+                      </div>
+                      <input type="date" class="form-control" name="fecha_fin" id="fecha_fin"
+                        value="<?php echo date("Y-m-d"); ?>">
                     </div>
-                    <select id="idsucursal2" name="idsucursal2" class="form-control">
-                    </select>
                   </div>
-                </div>
 
-                <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
-                  <label>Cliente:</label>
+                  <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                    <label>Almacén:</label>
 
-                  <div class="input-group mb-3">
-                    <select id="idcliente" name="idcliente" class="form-control select2" required>
-                    </select>
+                    <div class="input-group">
+                      <div class="input-group-prepend">
+                        <span class="input-group-text">
+                          <i class="fas fa-store-alt"></i>
+                        </span>
+                      </div>
+                      <select id="idsucursal2" name="idsucursal2" class="form-control">
+                      </select>
+                    </div>
                   </div>
-                  <div id="btnEstadoCuenta" style="display:none;">
+
+                  <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                    <label>Cliente:</label>
+
+                    <div class="input-group mb-3">
+                      <select id="idcliente" name="idcliente" class="form-control select2" required>
+                      </select>
+                    </div>
+                    <div id="btnEstadoCuenta" style="display:none;">
                       <button type="button" class="btn btn-info btn-sm" id="btnEstadoCuentaAccion">
-                          Estado de Cuenta
+                        Estado de Cuenta
                       </button>
-                  </div>
-                </div>
-
-              </div>
-              <!-- row Tarjetas Informativas -->
-              <div class="row">
-                <div class="col-lg-4" style="color: blue; font-weight: 900; font-size: 25px">
-                  <!-- small box -->
-                  <div class="small-box ">
-                    <div class="inner">
-                      <h4 id=""></h4>
-                      <p>Total: <span id="saldos"></span></p>
-                    </div>
-                    <div class="icon">
-                      <i class="fas fa-money-bill fa-lg" style="font-size:20px !important"></i> <!-- Utilizando la clase fa-lg -->
                     </div>
                   </div>
-                </div>
 
-                <!-- TARJETA TOTAL COMPRAS -->
-                <div class="col-lg-4" style="color: green; font-weight: 900; font-size: 25px">
-                  <!-- small box -->
-                  <div class="small-box ">
-                    <div class="inner">
-                      <h4 id=""></h4>
-                      <p>Abono: <span id="abonos"></span></p>
+                </div>
+                <!-- row Tarjetas Informativas -->
+                <div class="row">
+                  <div class="col-lg-4" style="color: blue; font-weight: 900; font-size: 25px">
+                    <!-- small box -->
+                    <div class="small-box ">
+                      <div class="inner">
+                        <h4 id=""></h4>
+                        <p>Total: <span id="saldos"></span></p>
+                      </div>
+                      <div class="icon">
+                        <i class="fas fa-money-bill fa-lg" style="font-size:20px !important"></i>
+                        <!-- Utilizando la clase fa-lg -->
+                      </div>
                     </div>
-                    <div class="icon">
-                      <i class="fas fa-money-bill fa-lg" style="font-size:20px !important"></i> <!-- Utilizando la clase fa-lg -->
+                  </div>
+
+                  <!-- TARJETA TOTAL COMPRAS -->
+                  <div class="col-lg-4" style="color: green; font-weight: 900; font-size: 25px">
+                    <!-- small box -->
+                    <div class="small-box ">
+                      <div class="inner">
+                        <h4 id=""></h4>
+                        <p>Abono: <span id="abonos"></span></p>
+                      </div>
+                      <div class="icon">
+                        <i class="fas fa-money-bill fa-lg" style="font-size:20px !important"></i>
+                        <!-- Utilizando la clase fa-lg -->
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- TARJETA TOTAL VENTAS -->
+                  <div class="col-lg-4">
+                    <!-- small box -->
+                    <div class="small-box ">
+                      <div class="inner" style="color: red; font-weight: 900; font-size: 25px">
+                        <h4 id=""></h4>
+                        <p>Deuda: <span id="deudas"></span></p>
+                      </div>
+                      <div class="icon" id="panel_amortizar">
+
+                      </div>
                     </div>
                   </div>
                 </div>
-
-                <!-- TARJETA TOTAL VENTAS -->
-                <div class="col-lg-4">
-                  <!-- small box -->
-                  <div class="small-box ">
-                    <div class="inner" style="color: red; font-weight: 900; font-size: 25px">
-                      <h4 id=""></h4>
-                      <p>Deuda: <span id="deudas"></span></p>
-                    </div>
-                    <div class="icon" id="panel_amortizar">
-
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- ./row Tarjetas Informativas -->
+                <!-- ./row Tarjetas Informativas -->
               </div>
 
               <div id="vistaListaClientes">
@@ -419,9 +445,6 @@ date_default_timezone_set('America/Lima');
     <div class="modal-content">
       <div class="modal-header">
         <h4 class="modal-title">Cuentas por Cobrar del Crédito <small id="tituloCreditoCuotas"></small></h4>
-        <button type="button" class="btn btn-success btn-sm mr-2" id="btnAmortizarCuotas" style="display:none;">
-          Amortizar
-        </button>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
@@ -451,6 +474,34 @@ date_default_timezone_set('America/Lima');
   </div>
 </div>
 
+<div class="modal fade" id="modalComentario">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Cuentas por Cobrar del Crédito <small id="tituloCreditoCuotas"></small></h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <input type="hidden" id="idventacuentacobrar">
+          <div class="col-md-12 mb-3">
+            <label>Comentario</label>
+            <textarea id="comentarioCredito" class="form-control" rows="3"
+              placeholder="Escribe un comentario..."></textarea>
+          </div>
+
+          <div class="col-md-12 text-right">
+            <button class="btn btn-primary" onclick="guardarComentarioCredito()">
+              <i class="fas fa-save"></i> Guardar comentario
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="getCodeModal">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -468,126 +519,127 @@ date_default_timezone_set('America/Lima');
           <input type="hidden" name="idcpc" id="idcpc">
           <input type="hidden" id="idcaja" name="idcaja">
           <input type="hidden" name="idventa" id="idventa">
-          <style>.doc-card{
-            border: 1px solid #e9edf3;
-            background: #fff;
-            border-radius: 12px;
-            padding: 14px;
-            box-shadow: 0 6px 18px rgba(16,24,40,.06);
-            max-width: 720px;
-          }
-
-          .doc-head{
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            padding-bottom: 12px;
-            border-bottom: 1px dashed #e9edf3;
-          }
-
-          .doc-icon{
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: grid;
-            place-items: center;
-            background: rgba(25,118,210,.10);
-            color: #1976d2;
-            font-size: 18px;
-          }
-
-          .doc-title strong{
-            display: block;
-            font-size: 15px;
-            color: #0f172a;
-          }
-
-          .doc-sub{
-            margin-top: 2px;
-            font-size: 13px;
-            color: #64748b;
-          }
-
-          .doc-body{
-            padding-top: 12px;
-            display: grid;
-            gap: 12px;
-          }
-
-          .doc-alert{
-            background: #f8fafc;
-            border: 1px solid #eef2f7;
-            border-radius: 12px;
-            padding: 12px;
-          }
-
-          .doc-alert-row{
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            padding: 4px 0;
-            font-size: 14px;
-            color: #334155;
-          }
-
-          .money{
-            color: #0f172a;
-          }
-
-          .doc-totals{
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-          }
-
-          .total-box{
-            border: 1px solid #eef2f7;
-            border-radius: 12px;
-            padding: 12px;
-            background: #ffffff;
-          }
-
-          .total-label{
-            font-size: 12px;
-            color: #64748b;
-            margin-bottom: 6px;
-          }
-
-          .total-value{
-            font-size: 18px;
-            font-weight: 700;
-            color: #0f172a;
-          }
-
-          /* Responsive */
-          @media (max-width: 520px){
-            .doc-totals{
-              grid-template-columns: 1fr;
+          <style>
+            .doc-card {
+              border: 1px solid #e9edf3;
+              background: #fff;
+              border-radius: 12px;
+              padding: 14px;
+              box-shadow: 0 6px 18px rgba(16, 24, 40, .06);
+              max-width: 720px;
             }
-          }
-      </style>
 
-      <div class="doc-body mb-2">
-        <div class="doc-totals">
-          <div class="total-box">
-            <div class="total-label">Total venta</div>
-            <div class="total-value">S/ <span id="valorVenta"></span></div>
-          </div>
+            .doc-head {
+              display: flex;
+              gap: 12px;
+              align-items: center;
+              padding-bottom: 12px;
+              border-bottom: 1px dashed #e9edf3;
+            }
 
-          <div class="total-box">
-            <div class="total-label">Total interés</div>
-            <div class="total-value">S/ <span id="valorInteres"></span></div>
+            .doc-icon {
+              width: 40px;
+              height: 40px;
+              border-radius: 10px;
+              display: grid;
+              place-items: center;
+              background: rgba(25, 118, 210, .10);
+              color: #1976d2;
+              font-size: 18px;
+            }
+
+            .doc-title strong {
+              display: block;
+              font-size: 15px;
+              color: #0f172a;
+            }
+
+            .doc-sub {
+              margin-top: 2px;
+              font-size: 13px;
+              color: #64748b;
+            }
+
+            .doc-body {
+              padding-top: 12px;
+              display: grid;
+              gap: 12px;
+            }
+
+            .doc-alert {
+              background: #f8fafc;
+              border: 1px solid #eef2f7;
+              border-radius: 12px;
+              padding: 12px;
+            }
+
+            .doc-alert-row {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 10px;
+              padding: 4px 0;
+              font-size: 14px;
+              color: #334155;
+            }
+
+            .money {
+              color: #0f172a;
+            }
+
+            .doc-totals {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 12px;
+            }
+
+            .total-box {
+              border: 1px solid #eef2f7;
+              border-radius: 12px;
+              padding: 12px;
+              background: #ffffff;
+            }
+
+            .total-label {
+              font-size: 12px;
+              color: #64748b;
+              margin-bottom: 6px;
+            }
+
+            .total-value {
+              font-size: 18px;
+              font-weight: 700;
+              color: #0f172a;
+            }
+
+            /* Responsive */
+            @media (max-width: 520px) {
+              .doc-totals {
+                grid-template-columns: 1fr;
+              }
+            }
+          </style>
+
+          <div class="doc-body mb-2">
+            <div class="doc-totals">
+              <div class="total-box">
+                <div class="total-label">Total venta</div>
+                <div class="total-value">S/ <span id="valorVenta"></span></div>
+              </div>
+
+              <div class="total-box">
+                <div class="total-label">Total interés</div>
+                <div class="total-value">S/ <span id="valorInteres"></span></div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
 
 
           <!-- Caja de información -->
           <div class="info-box-custom">
             <strong><i class="fa fa-info-circle"></i> Información del Documento</strong><br>
-            El documento <b><span id="documento"></span></b> tiene un pago pendiente de  
-            <b>S/ <span id="deutaTotal"></span></b>.  
+            El documento <b><span id="documento"></span></b> tiene un pago pendiente de
+            <b>S/ <span id="deutaTotal"></span></b>.
             Debe pagarse como máximo el día <b><span id="fechavencimiento"></span></b>.
           </div>
 
@@ -704,7 +756,9 @@ date_default_timezone_set('America/Lima');
           <input type="hidden" name="idventa" id="idventa">
 
           <div class="alert" style="background: #E0F7FA;">
-            <strong><i class="fa fa-info"></i> Info!</strong> El monto total del documento electrónico es de <label for="abonoTotal2" id="abonoTotal2"></label>, y se han registrado abonos por un total de <label for="abonoTotal" id="abonoTotal"></label>.
+            <strong><i class="fa fa-info"></i> Info!</strong> El monto total del documento electrónico es de <label
+              for="abonoTotal2" id="abonoTotal2"></label>, y se han registrado abonos por un total de <label
+              for="abonoTotal" id="abonoTotal"></label>.
           </div>
 
           <table id="tbllistado" class="table table-striped table-bordered table-condensed table-hover" width="100%">
@@ -750,19 +804,22 @@ date_default_timezone_set('America/Lima');
 
           <input type="hidden" name="idcliente_amortizar" id="idcliente_amortizar">
           <input type="hidden" name="idventa_amortizar" id="idventa_amortizar">
-          <input type="hidden"  id="idcaja" name="idcaja">
+          <input type="hidden" id="idcaja" name="idcaja">
           <input type="hidden" name="fecha_inicio_amortizar" id="fecha_inicio_amortizar">
           <input type="hidden" name="fecha_fin_amortizar" id="fecha_fin_amortizar">
 
           <div class="alert" style="background: #E0F7FA;">
-            <strong><i class="fa fa-info"></i> Info!</strong> Amortizacion: tiene un pago pendiente de S/ <label for="deudaTotalAmortizar" id="deudaTotalAmortizar"></label>, el cuál se esta realizando una amortizacion; A continuación Ingresa el total de dinero abonado y luego haz click en Guardar.
+            <strong><i class="fa fa-info"></i> Info!</strong> Amortizacion: tiene un pago pendiente de S/ <label
+              for="deudaTotalAmortizar" id="deudaTotalAmortizar"></label>, el cuál se esta realizando una amortizacion;
+            A continuación Ingresa el total de dinero abonado y luego haz click en Guardar.
           </div>
 
           <div class="row">
             <div class="col-sm-4">
               <div class="form-group">
                 <label for="name" class="control-label">Condición de Pago::</label>
-                <select id="formapagoAmortizar" name="formapagoAmortizar" class="form-control selectpicker" data-live-search="true" required>
+                <select id="formapagoAmortizar" name="formapagoAmortizar" class="form-control selectpicker"
+                  data-live-search="true" required>
 
                   <option value="Efectivo">En Efectivo</option>
 
@@ -778,7 +835,8 @@ date_default_timezone_set('America/Lima');
             <div class="col-sm-4">
               <div class="form-group">
                 <label for="name" class="control-label">Monto Adeudado:</label>
-                <input class="form-control pull-right" type="text" name="montoAdeudadoAmortizar" id="montoAdeudadoAmortizar" readonly="">
+                <input class="form-control pull-right" type="text" name="montoAdeudadoAmortizar"
+                  id="montoAdeudadoAmortizar" readonly="">
               </div>
             </div>
           </div>
@@ -795,7 +853,8 @@ date_default_timezone_set('America/Lima');
   <!-- /.modal-dialog -->
 </div>
 <!-- Modal para mostrar resultados -->
-<div class="modal fade" id="modalRecordatorioResultados" tabindex="-1" role="dialog" aria-labelledby="modalRecordatorioResultadosLabel" aria-hidden="true">
+<div class="modal fade" id="modalRecordatorioResultados" tabindex="-1" role="dialog"
+  aria-labelledby="modalRecordatorioResultadosLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header">

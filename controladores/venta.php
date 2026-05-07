@@ -475,7 +475,7 @@ switch ($_GET["op"]) {
 		$comprobantes = new Comprobantes();
 
 		$rspta = $comprobantes->mostrar_numero_boleta($idsucursal);
-		
+
 		$data = array();
 		$idempresa = 0;
 		while ($reg = $rspta->fetch_object()) {
@@ -1131,7 +1131,7 @@ switch ($_GET["op"]) {
 				)
 					. $mostrar
 					. $notaCreditoBtn
-					. '</div>'
+					. '</div> <a class="btn btn-danger btn-xs" title="descargar cronograma de pagos" onclick="verCronogramPago('.$reg->idventa.')"><i class="fas fa-file-pdf"></i></a>'
 			);
 		}
 
@@ -1150,7 +1150,7 @@ switch ($_GET["op"]) {
 		$venta = new Venta();
 
 		$rspta = $venta->listarSucursal2($_SESSION['idusuario'], $_SESSION['idsucursal']);
-		
+
 		// Opción "Todas" SOLO si tiene acceso total
 		if ((int) $_SESSION['idsucursal'] === 0) {
 			echo '<option value="0">Todas las Sucursales</option>';
@@ -1620,7 +1620,7 @@ switch ($_GET["op"]) {
 					? '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . addslashes($reg->nombre) . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ',\'' . $reg->unidadmedida . '\',undefined,\'' . addslashes($reg->fabricante ?? '') . '\',\'' . addslashes($reg->modelo ?? '') . '\',\'' . addslashes($reg->color ?? '') . '\')"><span class="fa fa-shopping-cart"></span></a>'
 					: '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'),
 
-			"product" => "
+				"product" => "
 			<div style='display: flex; align-items: center; gap: 6px;'>
 			    <!-- Imagen -->
 			    <img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->fabricante . "\",\"" . $reg->descripcion . "\")' 

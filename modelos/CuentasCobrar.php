@@ -999,6 +999,7 @@ class CuentasCobrar
                     v.serie_comprobante,
                     v.num_comprobante,
                     v.total_venta,
+                    v.nota,
                     SUM(cc.abonototal) AS total_abonado,
                     SUM(cc.deuda) AS saldo_pendiente
                 FROM venta v
@@ -1035,7 +1036,7 @@ class CuentasCobrar
                 "3" => number_format($row->total_abonado, 2),
                 "4" => number_format($row->saldo_pendiente, 2),
                 "5" => $estado,
-                "6" => "<button class='btn btn-sm btn-primary' onclick='verCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\")'>
+                "6" => "<button class='btn btn-sm btn-primary' onclick='verCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\", \"{$row->nota}\")'>
                             <i class='fas fa-list'></i> Ver cuotas
                         </button>"
             );
@@ -1167,7 +1168,10 @@ class CuentasCobrar
                     COUNT(DISTINCT v.idventa) AS total_creditos,
                     SUM(c.deudatotal) AS deuda_total,
                     SUM(c.abonototal) AS total_pagado,
-                    SUM(c.deudatotal - c.abonototal) AS saldo_pendiente
+                    SUM(c.deudatotal - c.abonototal) AS saldo_pendiente,
+                    cl.latitude,
+                    cl.longitude,
+                    cl.direccion
                 FROM persona cl
                 INNER JOIN venta v ON v.idcliente = cl.idpersona
                 INNER JOIN cuentas_por_cobrar c ON c.idventa = v.idventa
@@ -1190,9 +1194,22 @@ class CuentasCobrar
                 "3" => number_format($row->deuda_total, 2),
                 "4" => number_format($row->total_pagado, 2),
                 "5" => number_format($row->saldo_pendiente, 2),
-                "6" => "<button class='btn btn-sm btn-info' onclick='verDetalleCliente({$row->idpersona}, \"{$nombreCliente}\")'>
-                        <i class='fas fa-eye'></i> Ver Detalle
-                    </button>"
+                "6" => "
+                        <button class='btn btn-sm btn-success'
+                            onclick='verDetalleCliente({$row->idpersona}, " . json_encode($nombreCliente) . ")'>
+                            <i class='fas fa-eye'></i> Ver Detalle
+                        </button>
+
+                        <button class='btn btn-info btn-sm'
+                            onclick='verUbicacionCliente(
+                                " . json_encode($row->latitude) . ",
+                                " . json_encode($row->longitude) . ",
+                                " . json_encode($row->direccion) . "
+                            )'
+                            title='Ver ubicación del cliente'>
+                            <i class='fas fa-search-location'></i> Ubicación
+                        </button>
+                        "
             );
         }
 
@@ -1330,6 +1347,58 @@ class CuentasCobrar
             'message' => "No se realizo ninguna amortizacion",
             'saldo_restante' => $saldoRestante
         ];
+    }
+
+
+    public function guardarComentario($idventa, $comentario)
+    {
+
+        if (empty($idventa) || empty($comentario)) {
+            return array(
+                'status' => false,
+                'mensaje' => 'Datos incompletos'
+            );
+        }
+
+        $sql = "UPDATE venta 
+            SET nota = '$comentario'
+            WHERE idventa = '$idventa'";
+
+        $rspta = ejecutarConsulta($sql);
+
+        if ($rspta) {
+            $sql = "SELECT
+                    v.idventa,
+                    DATE_FORMAT(v.fecha_hora, '%d/%m/%y | %H:%i:%s %p') AS fecha_venta,
+                    v.tipo_comprobante,
+                    v.serie_comprobante,
+                    v.num_comprobante,
+                    v.total_venta,
+                    v.nota,
+                    SUM(cc.abonototal) AS total_abonado,
+                    SUM(cc.deuda) AS saldo_pendiente
+                FROM venta v
+                INNER JOIN cuentas_por_cobrar cc ON cc.idventa = v.idventa
+                WHERE v.idventa = '$idventa'
+                GROUP BY v.idventa, v.fecha_hora, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta
+                ORDER BY v.idventa DESC";
+
+            $result = ejecutarConsultaSimpleFila($sql);
+            $doc = $result['tipo_comprobante'] . '-' . $result['serie_comprobante'] . '-' . $result['num_comprobante'];
+            return array(
+                'status' => true,
+                'idventa' => $result['idventa'], 
+                'saldoPendiente' => $result['saldo_pendiente'], 
+                'documento' => $doc, 
+                'nota' => $result['nota'],
+                'mensaje' => 'Comentario guardado correctamente'
+            );
+        } else {
+            return array(
+                'status' => false,
+                'mensaje' => 'Error al guardar comentario'
+            );
+        }
     }
 
 }

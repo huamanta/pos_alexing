@@ -5,34 +5,33 @@ var ventaActualCuotas = null;
 var saldoActualCuotas = 0;
 
 //Función que se ejecuta al inicio
-function init(){
-	listar();
-	listarSaldos();
+function init() {
+    listar();
+    listarSaldos();
     enviarRecordatoriosAutomatico();
-	$("#body").addClass("sidebar-collapse sidebar-mini");
+    $("#body").addClass("sidebar-collapse sidebar-mini");
 
-	$("#getCodeModal").on("submit",function(e)
-	{
-		guardaryeditar(e);	
-	})
+    $("#getCodeModal").on("submit", function (e) {
+        guardaryeditar(e);
+    })
 
-	$("#fecha_inicio").change(function (e) {
-		e.preventDefault();
-		listar();
-		listarSaldos();
-	});
-	$("#fecha_fin").change(function (e) {
-		e.preventDefault();
-		listar();
-		listarSaldos();
-	});
-	$("#idcliente").change(function (e) {
-		e.preventDefault();
-		listar();
-		listarSaldos();
+    $("#fecha_inicio").change(function (e) {
+        e.preventDefault();
+        listar();
+        listarSaldos();
+    });
+    $("#fecha_fin").change(function (e) {
+        e.preventDefault();
+        listar();
+        listarSaldos();
+    });
+    $("#idcliente").change(function (e) {
+        e.preventDefault();
+        listar();
+        listarSaldos();
         toggleBtnEstadoCuenta();
-	});
-    
+    });
+
     $("#idsucursal2").change(function (e) {
         e.preventDefault();
         listar();
@@ -42,19 +41,19 @@ function init(){
     $('#navCuentasPorCobrar').addClass("treeview active");
     $('#navCuentasPorCobrar').addClass("active");
 
-	//cargamos los items al select almacen
-	$.post("controladores/venta.php?op=selectSucursal3", function(r){
-		$("#idsucursal2").html(r);
-		$('#idsucursal2').select2('');
-	});
+    //cargamos los items al select almacen
+    $.post("controladores/venta.php?op=selectSucursal3", function (r) {
+        $("#idsucursal2").html(r);
+        $('#idsucursal2').select2('');
+    });
 
-	//Cargamos los items al select cliente
-	$.post("controladores/venta.php?op=selectCliente2", function(r){
-		$("#idcliente").html(r);
-		$('#idcliente').select2('');
-         toggleBtnEstadoCuenta();
-	});
-	
+    //Cargamos los items al select cliente
+    $.post("controladores/venta.php?op=selectCliente2", function (r) {
+        $("#idcliente").html(r);
+        $('#idcliente').select2('');
+        toggleBtnEstadoCuenta();
+    });
+
     $("#btnEstadoCuentaAccion").on("click", function () {
         let idcliente = $("#idcliente").val();
         let fecha_inicio = $("#fecha_inicio").val();
@@ -81,15 +80,15 @@ function toggleBtnEstadoCuenta() {
 
 
 
-document.getElementById('formapago').addEventListener('change', function() {
-        const montoInput = document.getElementById('montoPagarTarjeta');
-        if (this.value !== 'Efectivo') {
-            montoInput.removeAttribute('readonly');
-        } else {
-            montoInput.setAttribute('readonly', true);
-            montoInput.value = ''; // Opcional: limpiar el campo al volver a "Efectivo"
-        }
-    });
+document.getElementById('formapago').addEventListener('change', function () {
+    const montoInput = document.getElementById('montoPagarTarjeta');
+    if (this.value !== 'Efectivo') {
+        montoInput.removeAttribute('readonly');
+    } else {
+        montoInput.setAttribute('readonly', true);
+        montoInput.value = ''; // Opcional: limpiar el campo al volver a "Efectivo"
+    }
+});
 
 function enviarRecordatoriosMasivo() {
     Swal.fire({
@@ -111,7 +110,7 @@ function enviarRecordatoriosMasivo() {
             url: 'controladores/cuentascobrar.php?op=enviar_recordatorio',
             method: 'POST',
             dataType: 'json',
-            success: function(res) {
+            success: function (res) {
                 $btn.prop('disabled', false).html(originalHtml);
 
                 if (!res || !res.success) {
@@ -123,7 +122,7 @@ function enviarRecordatoriosMasivo() {
 
                 let html = `<p>Total recordatorios enviados: <strong>${res.message.split(' ')[0]}</strong></p>`;
                 html += `<p>Se enviaron a todas las cuotas vencidas automáticamente.</p>`;
-                
+
                 // Mostrar respuesta completa del API (opcional, útil para depuración)
                 html += `<pre>Respuesta API: ${JSON.stringify(res.response, null, 2)}</pre>`;
 
@@ -133,7 +132,7 @@ function enviarRecordatoriosMasivo() {
                 // Recargar tabla si existe
                 if (typeof tabla !== 'undefined') tabla.ajax.reload(null, false);
             },
-            error: function(xhr, status, err) {
+            error: function (xhr, status, err) {
                 $btn.prop('disabled', false).html(originalHtml);
                 console.error('XHR Error:', xhr.responseText);
                 Swal.fire('Error', 'Ocurrió un error durante el envío: ' + err, 'error');
@@ -142,7 +141,7 @@ function enviarRecordatoriosMasivo() {
     });
 }
 
-$("#btnEnviarRecordatorioSemana").on("click", function(e) {
+$("#btnEnviarRecordatorioSemana").on("click", function (e) {
     e.preventDefault();
     enviarRecordatoriosMasivo();
 });
@@ -152,28 +151,27 @@ function enviarRecordatoriosAutomatico() {
         url: 'controladores/cuentascobrar.php?op=enviar_recordatorio',
         method: 'POST',
         dataType: 'json',
-        success: function(res) {
+        success: function (res) {
             if (!res || !res.success) return;
             console.log("Recordatorios automáticos enviados:", res.message);
         },
-        error: function(xhr, status, err) {
+        error: function (xhr, status, err) {
             console.error('Error envío automático:', xhr.responseText);
         }
     });
 }
 
-function listar()
-{
+function listar() {
 
-	var fecha_inicio = $("#fecha_inicio").val();
-	var fecha_fin = $("#fecha_fin").val();
-	var idcliente = $("#idcliente").val();
-	var idsucursal = $("#idsucursal2").val();
-	 // Verificar si fecha de inicio es mayor que fecha de fin
+    var fecha_inicio = $("#fecha_inicio").val();
+    var fecha_fin = $("#fecha_fin").val();
+    var idcliente = $("#idcliente").val();
+    var idsucursal = $("#idsucursal2").val();
+    // Verificar si fecha de inicio es mayor que fecha de fin
     var fechaInicio = new Date(fecha_inicio);
     var fechaFin = new Date(fecha_fin);
 
-	if (fechaInicio > fechaFin) {
+    if (fechaInicio > fechaFin) {
         // Establecer fecha de fin en la fecha actual
         var hoy = new Date();
         var dd = String(hoy.getDate()).padStart(2, '0');
@@ -188,73 +186,73 @@ function listar()
     $('#vistaCreditosCliente').hide();
     $('#panelSuperiorCxC').show();
 
-    tabla=$('#tbllistadocuentasxcobrar').dataTable(
-	{
-		//"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-		"aProcessing": true,//Activamos el procesamiento del datatables
-	    "aServerSide": true,//Paginación y filtrado realizados por el servidor
-	    "processing": true,
-	    "language": 
-		{          
-		"processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-		},
-	     "responsive": true, "lengthChange": false, "autoWidth": false,
-	    dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-		lengthMenu: [
-            [5,10, 25, 50, 100, -1],
-            ['5 filas','10 filas', '25 filas', '50 filas','100 filas', 'Mostrar todo']
-        ],
-        buttons: [
-			{
-                extend: 'pageLength',
-                orientation: 'landscape',
-                pageSize: 'LEGAL'
-            },
+    tabla = $('#tbllistadocuentasxcobrar').dataTable(
+        {
+            //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
+            "aProcessing": true,//Activamos el procesamiento del datatables
+            "aServerSide": true,//Paginación y filtrado realizados por el servidor
+            "processing": true,
+            "language":
             {
-                extend: 'pdfHtml5',
-                orientation: 'landscape',
-				title: 'Lista de documentos pendientes por cobrar',
-                pageSize: 'LEGAL'
+                "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
             },
-			{
-                extend: 'copy',
-                orientation: 'landscape',
-                pageSize: 'LEGAL'
-            },
-			{
-                extend: 'excel',
-                orientation: 'landscape',
-				title: 'Lista de documentos pendientes por cobrar',
-                pageSize: 'LEGAL'
-            }],
-		"ajax":
-				{
-					url: 'controladores/cuentascobrar.php?op=listaCreditos',
-					data:{fecha_inicio: fecha_inicio,fecha_fin: fecha_fin,idcliente: idcliente,idsucursal: idsucursal},
-					type : "get",
-					dataType : "json",						
-					error: function(e){
-						console.log(e.responseText);	
-					}
+            "responsive": true, "lengthChange": false, "autoWidth": false,
+            dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+            lengthMenu: [
+                [5, 10, 25, 50, 100, -1],
+                ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
+            ],
+            buttons: [
+                {
+                    extend: 'pageLength',
+                    orientation: 'landscape',
+                    pageSize: 'LEGAL'
+                },
+                {
+                    extend: 'pdfHtml5',
+                    orientation: 'landscape',
+                    title: 'Lista de documentos pendientes por cobrar',
+                    pageSize: 'LEGAL'
+                },
+                {
+                    extend: 'copy',
+                    orientation: 'landscape',
+                    pageSize: 'LEGAL'
+                },
+                {
+                    extend: 'excel',
+                    orientation: 'landscape',
+                    title: 'Lista de documentos pendientes por cobrar',
+                    pageSize: 'LEGAL'
+                }],
+            "ajax":
+            {
+                url: 'controladores/cuentascobrar.php?op=listaCreditos',
+                data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, idcliente: idcliente, idsucursal: idsucursal },
+                type: "get",
+                dataType: "json",
+                error: function (e) {
+                    console.log(e.responseText);
+                }
 
-				},
-		"bDestroy": true,
-		"iDisplayLength":10,//Paginación
-	}).DataTable();
+            },
+            "bDestroy": true,
+            "iDisplayLength": 10,//Paginación
+        }).DataTable();
 }
 
 
 function listarSaldos() {
-	var fecha_inicio = $("#fecha_inicio").val();
+    var fecha_inicio = $("#fecha_inicio").val();
     var fecha_fin = $("#fecha_fin").val();
     var idcliente = $("#idcliente").val();
     var idsucursal = $("#idsucursal2").val();
 
-     // Verificar si fecha de inicio es mayor que fecha de fin
+    // Verificar si fecha de inicio es mayor que fecha de fin
     var fechaInicio = new Date(fecha_inicio);
     var fechaFin = new Date(fecha_fin);
 
-	if (fechaInicio > fechaFin) {
+    if (fechaInicio > fechaFin) {
         // Establecer fecha de fin en la fecha actual
         var hoy = new Date();
         var dd = String(hoy.getDate()).padStart(2, '0');
@@ -265,25 +263,25 @@ function listarSaldos() {
         $("#fecha_fin").val(fecha_fin);
     }
 
-	$.ajax({
-		url: 'controladores/cuentascobrar.php?op=listar_saldos',
-        data:{fecha_inicio: fecha_inicio,fecha_fin: fecha_fin,idcliente: idcliente,idsucursal: idsucursal},
-        type : "get",
-        dataType : "json",
-		success : function (data) {
-			var saldos = 0
-			if (data.abonototal != null && data.deudatotal != null) {
-				saldos = parseFloat(data.deudatotal)+parseFloat(data.abonototal);
-			}
-			$("#saldos").text('S/. '+parseFloat(saldos).toFixed(2));
-			// Corrige la evaluación condicional para #abonos
-			$("#abonos").text('S/. ' + ((data.abonototal != null) ? parseFloat(data.abonototal).toFixed(2) : '0.00'));
+    $.ajax({
+        url: 'controladores/cuentascobrar.php?op=listar_saldos',
+        data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, idcliente: idcliente, idsucursal: idsucursal },
+        type: "get",
+        dataType: "json",
+        success: function (data) {
+            var saldos = 0
+            if (data.abonototal != null && data.deudatotal != null) {
+                saldos = parseFloat(data.deudatotal) + parseFloat(data.abonototal);
+            }
+            $("#saldos").text('S/. ' + parseFloat(saldos).toFixed(2));
+            // Corrige la evaluación condicional para #abonos
+            $("#abonos").text('S/. ' + ((data.abonototal != null) ? parseFloat(data.abonototal).toFixed(2) : '0.00'));
 
-			// Corrige la evaluación condicional para #deudas
-			$("#deudas").text('S/. ' + ((data.deudatotal != null) ? parseFloat(data.deudatotal).toFixed(2) : '0.00'));
+            // Corrige la evaluación condicional para #deudas
+            $("#deudas").text('S/. ' + ((data.deudatotal != null) ? parseFloat(data.deudatotal).toFixed(2) : '0.00'));
 
-			if(idcliente != "Todos" && idcliente != null && data.deudatotal != 0 && data.deudatotal != null){
-				$('#panel_amortizar').html(`
+            if (idcliente != "Todos" && idcliente != null && data.deudatotal != 0 && data.deudatotal != null) {
+                $('#panel_amortizar').html(`
                     <div class="btn-group">
                         <button class="btn btn-success btn-sm"
                             onclick="amortizarDeuda(${data.deudatotal}, ${idcliente}, '${fecha_inicio}', '${fecha_fin}')">
@@ -293,14 +291,14 @@ function listarSaldos() {
                         
                     </div>
                 `);
-			}else{
-				$('#panel_amortizar').html('<i class="fas fa-money-bill fa-lg" style="font-size: 20px !important"></i>');
-			}
-		},                        
-        error: function(e){
-            console.log(e.responseText);    
+            } else {
+                $('#panel_amortizar').html('<i class="fas fa-money-bill fa-lg" style="font-size: 20px !important"></i>');
+            }
+        },
+        error: function (e) {
+            console.log(e.responseText);
         }
-	});
+    });
 }
 
 async function amortizarDeuda(deuda, idcliente, fecha_inicio, fecha_fin) {
@@ -323,7 +321,7 @@ async function amortizarDeuda(deuda, idcliente, fecha_inicio, fecha_fin) {
 }
 
 
-$('#formulario-amortizar').submit(async function(e) {
+$('#formulario-amortizar').submit(async function (e) {
     e.preventDefault();
 
     // Verificamos la caja abierta antes de enviar
@@ -342,25 +340,25 @@ $('#formulario-amortizar').submit(async function(e) {
         type: "POST",
         contentType: false,
         processData: false,
-        success: function(data) {
-		    var data = JSON.parse(data);
-		    if (data.success) {
-		        Swal.fire('Éxito', data.message, 'success');
-		        listarSaldos();
+        success: function (data) {
+            var data = JSON.parse(data);
+            if (data.success) {
+                Swal.fire('Éxito', data.message, 'success');
+                listarSaldos();
                 tablaCreditosCliente.ajax.reload();
                 tablaCuotasCredito.ajax.reload();
-		        $('#modalAmortizar').modal('hide');
-		        $('#montoAdeudadoAmortizar').val('');
-		        $('#deudaTotalAmortizar').html('');
-		        $('#idcliente_amortizar').val('');
+                $('#modalAmortizar').modal('hide');
+                $('#montoAdeudadoAmortizar').val('');
+                $('#deudaTotalAmortizar').html('');
+                $('#idcliente_amortizar').val('');
                 $('#idventa_amortizar').val('');
-		        $('#fecha_inicio_amortizar').val('');
-		        $('#fecha_fin_amortizar').val('');
-		    } else {
-		        Swal.fire('Error', data.message, 'error');
-		    }
-		},
-		        error: function(e) {
+                $('#fecha_inicio_amortizar').val('');
+                $('#fecha_fin_amortizar').val('');
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        },
+        error: function (e) {
             console.log(e.responseText);
         }
     });
@@ -368,23 +366,23 @@ $('#formulario-amortizar').submit(async function(e) {
 
 
 function verificarCaja() {
-  return new Promise((resolve, reject) => {
-    $.ajax({
-      url: "controladores/venta.php?op=verificar_caja",
-      type: "get",
-      dataType: "json",
-      success: function(response) {
-        if (response.success) {
-          resolve(response.idcaja); // Devuelve el id de la caja abierta
-        } else {
-          resolve(null); // No hay caja abierta
-        }
-      },
-      error: function(error) {
-        reject(error);
-      }
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: "controladores/venta.php?op=verificar_caja",
+            type: "get",
+            dataType: "json",
+            success: function (response) {
+                if (response.success) {
+                    resolve(response.idcaja); // Devuelve el id de la caja abierta
+                } else {
+                    resolve(null); // No hay caja abierta
+                }
+            },
+            error: function (error) {
+                reject(error);
+            }
+        });
     });
-  });
 }
 
 
@@ -406,7 +404,7 @@ async function guardaryeditar(e) {
         data: formData,
         contentType: false,
         processData: false,
-        success: function(datos) {
+        success: function (datos) {
             let res = JSON.parse(datos);
             if (res.success) {
                 Swal.fire('Éxito', res.message, 'success');
@@ -442,84 +440,83 @@ async function mostrar(idcpc) {
         return;
     }
 
-    $("#idcaja").val(idcaja); 
+    $("#idcaja").val(idcaja);
     $("#getCodeModal").modal('show');
 
     // 🔹 1. Actualizar la mora en BD antes de mostrar el formulario
-    $.post("controladores/cuentascobrar.php?op=actualizar_mora_diaria", 
-    { 
-        idcpc: idcpc 
-    }, 
-    function() {
+    $.post("controladores/cuentascobrar.php?op=actualizar_mora_diaria",
+        {
+            idcpc: idcpc
+        },
+        function () {
 
-        // 🔹 2. Obtener datos actualizados
-        $.post("controladores/cuentascobrar.php?op=mostrar", 
-        { 
-            idcpc: idcpc 
-        }, 
-        function(data) {
+            // 🔹 2. Obtener datos actualizados
+            $.post("controladores/cuentascobrar.php?op=mostrar",
+                {
+                    idcpc: idcpc
+                },
+                function (data) {
 
-            data = JSON.parse(data);
-            console.log(data);
-            
-            var total_venta = parseFloat(data.total_venta);
-            var interes = total_venta * (data.interes / 100);
-            var deuda = parseFloat(data.deuda);
-            $('#documento').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
-            $("#deutaTotal").text(deuda.toFixed(2));
-            $("#valorVenta").text(total_venta.toFixed(2));
-            $("#valorInteres").text(interes.toFixed(2));
-            $("#montoAdeudado").val(deuda.toFixed(2));
-            $("#idcpc").val(data.idcpc);
-            
-            $("#idventa").val(data.idventa);
-            $("#fechavencimiento").text(data.fechavencimiento);
+                    data = JSON.parse(data);
+                    console.log(data);
 
+                    var total_venta = parseFloat(data.total_venta);
+                    var interes = total_venta * (data.interes / 100);
+                    var deuda = parseFloat(data.deuda);
+                    $('#documento').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
+                    $("#deutaTotal").text(deuda.toFixed(2));
+                    $("#valorVenta").text(total_venta.toFixed(2));
+                    $("#valorInteres").text(interes.toFixed(2));
+                    $("#montoAdeudado").val(deuda.toFixed(2));
+                    $("#idcpc").val(data.idcpc);
+
+                    $("#idventa").val(data.idventa);
+                    $("#fechavencimiento").text(data.fechavencimiento);
+
+                });
         });
-    });
 }
 
 
-function mostrarAbonos(idcpc){
+function mostrarAbonos(idcpc) {
 
-	$("#getCodeModal2").modal('show');
+    $("#getCodeModal2").modal('show');
 
-	$.post("controladores/cuentascobrar.php?op=mostrar",{idcpc : idcpc}, function(data,status)
-	{
+    $.post("controladores/cuentascobrar.php?op=mostrar", { idcpc: idcpc }, function (data, status) {
 
-		data=JSON.parse(data);
+        data = JSON.parse(data);
 
-		var label=document.querySelector('#abonoTotal2');
-		label.textContent=data.deuda;
+        var label = document.querySelector('#abonoTotal2');
+        label.textContent = data.deuda;
 
-		var label=document.querySelector('#abonoTotal');
-		label.textContent=data.abonototal;
+        var label = document.querySelector('#abonoTotal');
+        label.textContent = data.abonototal;
 
-	});
+    });
 
-	tabla=$('#tbllistado').dataTable(
-	{
-		//"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-		"aProcessing": true,//Activamos el procesamiento del datatables
-	    "aServerSide": true,//Paginación y filtrado realizados por el servidor
-	    dom: 'Bfrtip',//Definimos los elementos del control de tabla
-		buttons: [		        
-		            'excelHtml5',
-		            'pdf'
-		        ],
-		"ajax":
-				{
-					url: 'controladores/cuentascobrar.php?op=listarDetalle',
-					data:{idcpc: idcpc},
-					type : "get",
-					dataType : "json",						
-					error: function(e){
-						console.log(e.responseText);	
-					}
-				},
-		"bDestroy": true,
-		"iDisplayLength":10,//Paginación
-	}).DataTable();
+    tabla = $('#tbllistado').dataTable(
+        {
+            //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
+            "aProcessing": true,//Activamos el procesamiento del datatables
+            "aServerSide": true,//Paginación y filtrado realizados por el servidor
+            dom: 'Bfrtip',//Definimos los elementos del control de tabla
+            buttons: [
+                'excelHtml5',
+                'pdf'
+            ],
+            "ajax":
+            {
+                url: 'controladores/cuentascobrar.php?op=listarDetalle',
+                data: { idcpc: idcpc },
+                type: "get",
+                dataType: "json",
+                error: function (e) {
+                    console.log(e.responseText);
+                }
+            },
+            "bDestroy": true,
+            "iDisplayLength": 10,//Paginación
+        }).DataTable();
 
 }
 
@@ -577,40 +574,118 @@ function volverListaClientes() {
     listar();
 }
 
-function verCuotasCredito(idventa, saldoPendiente, documento) {
+function agregarComentario(comentario) {
+    $('#modalComentario').modal('show');
+    $('#comentarioCredito').val(comentario);
+}
+
+function guardarComentarioCredito() {
+    let comentario = $('#comentarioCredito').val();
+
+    if (comentario === '') {
+        notificacionToast('warning', 'Escribe un comentario');
+        return;
+    }
+
+    $.post("controladores/cuentascobrar.php?op=guardar_comentario", {
+        idventacuentacobrar: $('#idventacuentacobrar').val(),
+        comentario: comentario
+    }, function (response) {
+        var data = JSON.parse(response);
+        if (data.status) {
+            notificacionToast('success', data.mensaje);
+            $('#modalComentario').modal('hide');
+            $('#comentarioCredito').val('');
+            verCuotasCredito(data.idventa, data.saldoPendiente, data.documento, data.nota)
+        } else {
+            notificacionToast('error', data.mensaje);
+        }
+
+    });
+}
+
+function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
+    let comentario = nota;
+    $('#idventacuentacobrar').val(idventa);
     ventaActualCuotas = idventa;
     saldoActualCuotas = toNumber(saldoPendiente);
     $('#tituloCreditoCuotas').text(documento ? ('- ' + documento) : '');
 
+    $("#modalCuotasCredito").modal("show");
+    let text_btn_coment = 'Agregar nota';
+    if (comentario) {
+        text_btn_coment = 'Actualizar nota';
+    }
+    let botones = [
+        {
+            text: '<i class="fas fa-comment-dots"></i> ' + text_btn_coment,
+            className: 'btn btn-info btn-sm btn-comment',
+            action: function () {
+                agregarComentario(comentario);
+            }
+        }
+    ];
+
     if (saldoActualCuotas > 0) {
-        $('#btnAmortizarCuotas').show();
-    } else {
-        $('#btnAmortizarCuotas').hide();
+        botones.push({
+            text: '<i class="fas fa-hand-holding-usd"></i> Amortizar',
+            className: 'btn btn-success btn-sm btn-amortiar',
+            action: function () {
+                amortizar();
+            }
+        });
     }
 
-    $("#modalCuotasCredito").modal("show");
+    tablaCuotasCredito = $("#tbllistadoCuotasCredito").DataTable({
+        aProcessing: true,
+        aServerSide: true,
+        responsive: true,
+        lengthChange: false,
+        autoWidth: true,
 
-    tablaCuotasCredito = $("#tbllistadoCuotasCredito").dataTable({
-        "aProcessing": true,
-        "aServerSide": true,
-        "responsive": true,
-        "lengthChange": false,
-        "autoWidth": true,
-        "ajax": {
+        dom:
+            '<"row mb-2"' +
+            '<"col-md-12 msgComentario">' +
+            '>' +
+            '<"row"' +
+            '<"col-md-4"l>' +
+            '<"col-md-4"B>' +
+            '<"col-md-4"f>' +
+            '>' +
+            't' +
+            '<"row"' +
+            '<"col-md-6"i>' +
+            '<"col-md-6"p>' +
+            '>',
+
+        buttons: botones,
+
+        ajax: {
             url: "controladores/cuentascobrar.php?op=listar_cuotas_credito",
             data: { idventa: idventa },
             type: "get",
-            dataType: "json",
-            error: function (e) {
-                console.log(e.responseText);
-            }
+            dataType: "json"
         },
-        "bDestroy": true,
-        "iDisplayLength": 10
-    }).DataTable();
+
+        bDestroy: true,
+        iDisplayLength: 10,
+
+        initComplete: function () {
+            if (comentario) {
+                $('.msgComentario').html(`<div class="alert alert-primary d-flex align-items-center" role="alert">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    </svg>
+                    <div style="margin-left: 10px">
+                        `+ comentario + `
+                    </div>
+                </div>`);
+            }
+        }
+    });
 }
 
-$('#btnAmortizarCuotas').on('click', async function () {
+async function amortizar() {
     const idcaja = await verificarCaja();
     if (!idcaja) {
         Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
@@ -627,17 +702,17 @@ $('#btnAmortizarCuotas').on('click', async function () {
     $('#deudaTotalAmortizar').html(saldoActualCuotas.toFixed(2));
     $('#montoPagarAmortizar').val('');
     $('#modalAmortizar').modal('show');
-});
+};
 
-function verEstadoCuenta(idcpc){
-  $.get(
-    "controladores/cuentascobrar.php?op=estado_cuenta",
-    { idcpc: idcpc },
-    function(data){
-      $("#estadoCuentaContenido").html(data);
-      $("#modalEstadoCuenta").modal("show");
-    }
-  );
+function verEstadoCuenta(idcpc) {
+    $.get(
+        "controladores/cuentascobrar.php?op=estado_cuenta",
+        { idcpc: idcpc },
+        function (data) {
+            $("#estadoCuentaContenido").html(data);
+            $("#modalEstadoCuenta").modal("show");
+        }
+    );
 }
 
 function verEstadoCuentaCliente(idcliente, fecha_inicio, fecha_fin) {
@@ -678,5 +753,22 @@ $(document).on('hidden.bs.modal', '.modal', function () {
     }
 });
 
+function verUbicacionCliente(latitude, longitude, direccion) {
+    if (!latitude && !longitude){
+        notificacionToast('warning', 'El cliente no tiene ubicacion configurada');
+        return;
+    };
+
+    if (direccion){
+
+        const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
+
+        window.open(url, '_blank');
+    }
+
+    const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+    window.open(url, '_blank');
+}
 
 init();

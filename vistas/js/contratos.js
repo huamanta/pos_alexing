@@ -149,6 +149,24 @@ function verContrato(idventa, idcliente, nombre) {
 
 }
 
+function verUbicacionCliente(latitude, longitude, direccion) {
+    if (!latitude && !longitude){
+        notificacionToast('warning', 'El cliente no tiene ubicacion configurada');
+        return;
+    };
+
+    if (direccion){
+
+        const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
+
+        window.open(url, '_blank');
+    }
+
+    const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
+
+    window.open(url, '_blank');
+}
+
 function limpiarModalClienteCompraVenta() {
     $('#cliente_idpersona').val('');
     $('#cliente_tipo_persona').val('Cliente');
@@ -462,4 +480,7 @@ $("#form-compra-venta").on("submit", function (e) {
 
     descargarCompraVenta(idventa, idvendedor, idcliente, monto);
 });
+
+
+
 

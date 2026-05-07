@@ -132,7 +132,7 @@ $(document).ready(function() {
         if (selectedSuc) {
             $.post(baseUrl + '/controladores/usuario.php?op=seleccionarSucursal', { idsucursal: selectedSuc }, function(response) {
                 if (response == 'ok') {
-                    window.location.href = baseUrl + '/inicio';
+                    window.location.reload();
                 } else {
                     alert('Error al seleccionar sucursal');
                 }

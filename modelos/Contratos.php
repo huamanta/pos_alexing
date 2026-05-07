@@ -27,7 +27,9 @@ class Contratos
                     d.tipo,
                     d.correlativo,
                     d.estado,
-                    v.frecuencia
+                    v.frecuencia,
+                    c.latitude,
+                    c.longitude
                     FROM documentacion d 
                     INNER JOIN venta v ON d.idventa = v.idventa 
                     LEFT JOIN persona c ON v.idcliente = c.idpersona
@@ -112,28 +114,53 @@ class Contratos
                 $btnRetencion = '<button class="btn btn-danger btn-sm" onclick="quitarRetencion(' . $value['idventa'] . ', ' . $verifiarRetencion['data']['idretencion'] . ')" title="Quitar retención">
                                 <i class="fa fa-unlock"></i>
                             </button>';
-                $btnVerContrato = '<button class="btn btn-info btn-sm" title="Ver documentación del contrato" disabled><i class="fa fa-copy"></i></button>';
             } else {
                 $btnRetencion = '<button class="btn btn-primary btn-sm" onclick="retenerContrato(' . $value['idventa'] . ')" title="Retener">
                                 <i class="fa fa-lock"></i>
                             </button>';
-
-                $btnVerContrato = '<button class="btn btn-info btn-sm" onclick="verContrato(' . $value['idventa'] . ', ' . $value['idpersona'] . ',\'' . $value['nombre'] . '\')" title="Ver documentación del contrato"><i class="fa fa-copy"></i></button>';
             }
+
             $data[] = [
                 "0" => $value['fecha_contrato'],
                 "1" => $this->estadoCuotas($value['idventa']),
                 "2" => $value['num_documento'],
                 "3" => $value['nombre'],
-                "4" => $this->tiposDocumentacion($value['tipo']) . ($value['tipo'] == 1 ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT) : ''),
-                '5'=> $value['serie_comprobante'].'-'.$value['num_comprobante'],
-                "6" => $statusRetencion ? '<span class="badge badge-danger">Retenido</span>' : '<span class="badge badge-success">Vigente</span>',
-                "7" => $value['formapago'],
-                '8' => $this->getDataFrecuencia($value['frecuencia'])->texto,
-                "9" => number_format($value['total_venta'], 2, '.', ','),
-                "10" => $btnVerContrato . '
+                "4" => $this->verVehiculoVendido($value['idventa']),
+                "5" => $this->tiposDocumentacion($value['tipo']) . ($value['tipo'] == 1 ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT) : ''),
+                '6' => $value['serie_comprobante'] . '-' . $value['num_comprobante'],
+                "7" => $statusRetencion ? '<span class="badge badge-danger">Retenido</span>' : '<span class="badge badge-success">Vigente</span>',
+                "8" => $value['formapago'],
+                '9' => $this->getDataFrecuencia($value['frecuencia'])->texto,
+                "10" => number_format($value['total_venta'], 2, '.', ','),
+                "11" => '
+                        <button class="btn btn-success btn-sm"
+                            onclick=\'verContrato(
+                                ' . (int) $value['idventa'] . ',
+                                ' . (int) $value['idpersona'] . ',
+                                ' . json_encode($value['nombre']) . '
+                            )\'
+                            title="Ver documentación del contrato">
+                            <i class="fa fa-copy"></i>
+                        </button>
+
                         ' . $btnRetencion . '
-                        <button class="btn btn-secondary btn-sm" onclick="imprimirContrato(' . $value['idventa'] . ')" title="Imprimir contrato"><i class="fa fa-trash"></i></button>',
+
+                        <button class="btn btn-info btn-sm"
+                            onclick=\'verUbicacionCliente(
+                                ' . json_encode($value['latitude']) . ',
+                                ' . json_encode($value['longitude']) . ',
+                                ' . json_encode($value['direccion']) . '
+                            )\'
+                            title="Ver ubicación del cliente">
+                            <i class="fas fa-search-location"></i>
+                        </button>
+
+                        <button class="btn btn-danger btn-sm"
+                            onclick="eliminarContrato(' . (int) $value['idventa'] . ')"
+                            title="Eliminar contrato">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                        ',
             ];
         }
 
@@ -144,6 +171,21 @@ class Contratos
             "aaData" => $data
         ];
         return json_encode($results);
+    }
+
+
+    public function verVehiculoVendido($idventa)
+    {
+
+        $idventa = (int) $idventa;
+
+        $sql = "SELECT * FROM detalle_venta 
+            WHERE idventa = $idventa
+            LIMIT 1";
+
+        $data = ejecutarConsultaSimpleFila($sql);
+
+        return $data['nombre_producto'];
     }
 
     public static function getDataFrecuencia($frecuencia)

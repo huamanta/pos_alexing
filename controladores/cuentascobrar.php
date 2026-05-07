@@ -348,6 +348,13 @@ switch ($_GET["op"]) {
 
 		echo $cuentascobrar->listaCreditos($sucursal, $fecha_inicio, $fecha_fin, $idcliente);
 		break;
+
+	case 'guardar_comentario':
+		$idventa = $_POST['idventacuentacobrar'];
+		$comentario = $_POST['comentario'];
+		$data = $cuentascobrar->guardarComentario($idventa, $comentario);
+		echo json_encode($data);
+		break;
 }
 
 ?>

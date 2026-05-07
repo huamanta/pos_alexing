@@ -111,7 +111,8 @@
                                         <th>Fecha</th>
                                         <th>Estado pagos</th>
                                         <th>N° Documento</th>
-                                        <th>Cliente / Razón Social</th>
+                                        <th>Cliente</th>
+                                        <th>Vehiculo </th>
                                         <th>N° Contrato</th>
                                         <th>Venta referencia</th>
                                         <th>Estado contrato</th>
@@ -126,7 +127,8 @@
                                         <th>Fecha</th>
                                         <th>Estado pagos</th>
                                         <th>N° Documento</th>
-                                        <th>Cliente / Razón Social</th>
+                                        <th>Cliente </th>
+                                        <th>Vehiculo </th>
                                         <th>N° Contrato</th>
                                         <th>Venta referencia</th>
                                         <th>Estado contrato</th>

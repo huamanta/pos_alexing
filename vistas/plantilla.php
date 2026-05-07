@@ -1,10 +1,19 @@
 <?php
 
 session_start();
-// Si la ruta es salir, redirigir directamente
-if (isset($_GET["ruta"]) && $_GET["ruta"] == "salir") {
-  include "modulos/salir.php";
-  exit;
+//redirigir directamente
+if (isset($_GET["ruta"])) {
+
+    if ($_GET["ruta"] == "salir") {
+        include "modulos/salir.php";
+        exit;
+    }
+
+    if ($_GET["ruta"] == "salirsucursal") {
+        include "modulos/salirsucursal.php";
+        exit;
+    }
+
 }
 ?>
 <!DOCTYPE html>
@@ -228,6 +237,7 @@ if (isset($_GET["ruta"]) && $_GET["ruta"] == "salir") {
           $_GET["ruta"] == "marca" ||
           $_GET["ruta"] == "modelo" ||
           $_GET["ruta"] == "condicionventa" ||
+          $_GET["ruta"] == "salirsucursal" ||
           $_GET["ruta"] == "salir"
         ) {
 

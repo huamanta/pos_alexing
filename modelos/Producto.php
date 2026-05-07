@@ -438,11 +438,21 @@ class Producto
 
 	public function listarsucursales($idusuario)
 	{
-		$sql = "SELECT s.idsucursal, s.nombre 
-	            FROM sucursal s
-	            INNER JOIN usuario_sucursal us ON us.idsucursal = s.idsucursal
-	            WHERE us.idusuario = '$idusuario'";
-		return ejecutarConsulta($sql);
+		$sql = "SELECT * FROM usuario WHERE idusuario = '$idusuario'";
+        $data = ejecutarConsultaSimpleFila($sql);
+
+        if ($data['superusuario']) {
+            $sql = "SELECT * FROM sucursal";
+            return ejecutarConsulta($sql);
+        } else {
+            $sql = "SELECT s.* 
+                FROM sucursal s
+                INNER JOIN usuario_sucursal us 
+                ON s.idsucursal = us.idsucursal
+                WHERE us.idusuario = '$idusuario'";
+
+            return ejecutarConsulta($sql);
+        }
 	}
 
 
