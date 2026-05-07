@@ -120,6 +120,10 @@ class Contratos
                             </button>';
             }
 
+            $cuenta_cobrar = $this->cuentasCobrar($value['idpersona'], $value['idventa']);
+            $doc = $cuenta_cobrar['tipo_comprobante'] . '-' . $cuenta_cobrar['serie_comprobante'] . '-' . $cuenta_cobrar['num_comprobante'];
+            $saldo = round(floatval($cuenta_cobrar['saldo_pendiente']), 2);
+
             $data[] = [
                 "0" => $value['fecha_contrato'],
                 "1" => $this->estadoCuotas($value['idventa']),
@@ -155,6 +159,16 @@ class Contratos
                             <i class="fas fa-search-location"></i>
                         </button>
 
+                        <button class="btn btn-warning btn-sm"
+                            onclick=\'verCuotasCredito('.$cuenta_cobrar['idventa'].',
+                            ' .json_encode($saldo). ',
+                            ' .json_encode($doc).',
+                            '. json_encode($cuenta_cobrar['nota']).'
+                            )\'
+                            title="Amortizar contrato">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </button>
+
                         <button class="btn btn-danger btn-sm"
                             onclick="eliminarContrato(' . (int) $value['idventa'] . ')"
                             title="Eliminar contrato">
@@ -171,6 +185,29 @@ class Contratos
             "aaData" => $data
         ];
         return json_encode($results);
+    }
+
+
+    public function cuentasCobrar($idcliente, $idventa) {
+         $sql = "SELECT
+                    v.idventa,
+                    DATE_FORMAT(v.fecha_hora, '%d/%m/%y | %H:%i:%s %p') AS fecha_venta,
+                    v.tipo_comprobante,
+                    v.serie_comprobante,
+                    v.num_comprobante,
+                    v.total_venta,
+                    v.nota,
+                    SUM(cc.abonototal) AS total_abonado,
+                    SUM(cc.deuda) AS saldo_pendiente
+                FROM venta v
+                INNER JOIN cuentas_por_cobrar cc ON cc.idventa = v.idventa
+                WHERE v.idcliente = '$idcliente'
+                  AND v.idventa = '$idventa'
+                GROUP BY v.idventa, v.fecha_hora, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta
+                ORDER BY v.idventa DESC LIMIT 1";
+
+            $data = ejecutarConsultaSimpleFila($sql);
+            return $data;
     }
 
 

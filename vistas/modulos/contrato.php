@@ -387,4 +387,206 @@
             </div>
         </div>
 
+        <div class="modal fade" id="modalCuotasCredito">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Cuentas por Cobrar del Crédito <small id="tituloCreditoCuotas"></small>
+                        </h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <table id="tbllistadoCuotasCredito" class="table table-striped table-bordered" width="100%">
+                            <thead>
+                                <th>Fecha Registro</th>
+                                <th>Fecha Vencimiento</th>
+                                <th>Abonado</th>
+                                <th>Deuda</th>
+                                <th>Saldo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </thead>
+                            <tbody></tbody>
+                            <tfoot>
+                                <th>Fecha Registro</th>
+                                <th>Fecha Vencimiento</th>
+                                <th>Abonado</th>
+                                <th>Deuda</th>
+                                <th>Saldo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalComentario">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Cuentas por Cobrar del Crédito <small id="tituloCreditoCuotas"></small>
+                        </h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <input type="hidden" id="idventacuentacobrar">
+                            <div class="col-md-12 mb-3">
+                                <label>Comentario</label>
+                                <textarea id="comentarioCredito" class="form-control" rows="3"
+                                    placeholder="Escribe un comentario..."></textarea>
+                            </div>
+
+                            <div class="col-md-12 text-right">
+                                <button class="btn btn-primary" onclick="guardarComentarioCredito()">
+                                    <i class="fas fa-save"></i> Guardar comentario
+                                </button>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalAmortizar">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title"><span id="titulo-formulario-amortizar">Lista de</span> Abonos</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form class="form-horizontal" role="form" name="formulario-amortizar" id="formulario-amortizar"
+                        method="POST">
+                        <div class="modal-body">
+
+                            <input type="hidden" name="idcliente_amortizar" id="idcliente_amortizar">
+                            <input type="hidden" name="idventa_amortizar" id="idventa_amortizar">
+                            <input type="hidden" id="idcaja" name="idcaja">
+                            <input type="hidden" name="fecha_inicio_amortizar" id="fecha_inicio_amortizar">
+                            <input type="hidden" name="fecha_fin_amortizar" id="fecha_fin_amortizar">
+
+                            <div class="alert" style="background: #E0F7FA;">
+                                <strong><i class="fa fa-info"></i> Info!</strong> Amortizacion: tiene un pago pendiente
+                                de S/ <label for="deudaTotalAmortizar" id="deudaTotalAmortizar"></label>, el cuál se
+                                esta realizando una amortizacion;
+                                A continuación Ingresa el total de dinero abonado y luego haz click en Guardar.
+                            </div>
+
+                            <div class="row">
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label for="name" class="control-label">Condición de Pago::</label>
+                                        <select id="formapagoAmortizar" name="formapagoAmortizar"
+                                            class="form-control selectpicker" data-live-search="true" required>
+
+                                            <option value="Efectivo">En Efectivo</option>
+
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label for="name" class="control-label">Monto a Pagar:</label>
+                                        <input type="text" class="form-control" id="montoPagarAmortizar"
+                                            name="montoPagarAmortizar" required="">
+                                    </div>
+                                </div>
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label for="name" class="control-label">Monto Adeudado:</label>
+                                        <input class="form-control pull-right" type="text" name="montoAdeudadoAmortizar"
+                                            id="montoAdeudadoAmortizar" readonly="">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                            <button class="btn btn-primary" type="submit">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
+        <div class="modal fade" id="getCodeModal2">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title"><span id="titulo-formulario">Lista de</span> Abonos</h4>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form class="form-horizontal" role="form" name="formulario" id="formulario" method="POST">
+                        <div class="modal-body">
+
+                            <input type="hidden" name="idcpc" id="idcpc">
+                            <input type="hidden" id="idcaja" name="idcaja">
+                            <input type="hidden" name="idventa" id="idventa">
+
+                            <div class="alert" style="background: #E0F7FA;">
+                                <strong><i class="fa fa-info"></i> Info!</strong> El monto total del documento
+                                electrónico es de <label for="abonoTotal2" id="abonoTotal2"></label>, y se han
+                                registrado abonos por un total de <label for="abonoTotal" id="abonoTotal"></label>.
+                            </div>
+
+                            <table id="tbllistadoAbonos"
+                                class="table table-striped table-bordered table-condensed table-hover" width="100%">
+                                <thead>
+                                    <th style="width: 100px;">Fecha Registro</th>
+                                    <th style="width: 25px;">Monto Efectivo</th>
+                                    <th style="width: 25px;">Monto Tarjeta</th>
+                                    <th style="width: 150px;">Forma de Pago</th>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                                <tfoot>
+                                    <th>Nombre</th>
+                                    <th>Estado</th>
+                                    <th>Forma de Pago</th>
+                                </tfoot>
+                            </table>
+
+                        </div>
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" onclick="cancelarform()" class="btn btn-default"
+                                data-dismiss="modal">Cerrar</button>
+                            <button class="btn btn-primary" type="submit" id="btnGuardar">Guardar</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+
+
+        <div class="modal fade" id="modalEstadoCuenta">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Estado de Cuenta del Cliente</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div id="estadoCuentaContenido"></div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                        <button class="btn btn-primary" onclick="imprimirEstadoCuenta()">Imprimir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <script src="vistas/js/contratos.js"></script>

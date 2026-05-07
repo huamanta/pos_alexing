@@ -1,3 +1,9 @@
+var ventaActualCuotas = null;
+var saldoActualCuotas = 0;
+var tabla;
+var tablaCuotasCredito;
+var tbllistadoAbonos;
+
 function initializeContratos() {
     $.post("controladores/venta.php?op=selectSucursal", function (r) {
         $("#idsucursal").html(r);
@@ -20,6 +26,203 @@ function recargarTabla() {
         tabla.ajax.reload();
     }
 }
+
+function guardarComentarioCredito() {
+    let comentario = $('#comentarioCredito').val();
+
+    if (comentario === '') {
+        notificacionToast('warning', 'Escribe un comentario');
+        return;
+    }
+
+    $.post("controladores/cuentascobrar.php?op=guardar_comentario", {
+        idventacuentacobrar: $('#idventacuentacobrar').val(),
+        comentario: comentario
+    }, function (response) {
+        var data = JSON.parse(response);
+        if (data.status) {
+            notificacionToast('success', data.mensaje);
+            $('#modalComentario').modal('hide');
+            $('#comentarioCredito').val('');
+            verCuotasCredito(data.idventa, data.saldoPendiente, data.documento, data.nota)
+        } else {
+            notificacionToast('error', data.mensaje);
+        }
+
+    });
+}
+
+function toNumber(valor) {
+    if (valor === null || valor === undefined) return 0;
+    return parseFloat((valor + '').replace(/,/g, '')) || 0;
+}
+
+function agregarComentario(comentario) {
+    $('#modalComentario').modal('show');
+    $('#comentarioCredito').val(comentario);
+}
+
+function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
+    let comentario = nota;
+    $('#idventacuentacobrar').val(idventa);
+    ventaActualCuotas = idventa;
+    saldoActualCuotas = toNumber(saldoPendiente);
+    $('#tituloCreditoCuotas').text(documento ? ('- ' + documento) : '');
+
+    $("#modalCuotasCredito").modal("show");
+    let text_btn_coment = 'Agregar nota';
+    if (comentario) {
+        text_btn_coment = 'Actualizar nota';
+    }
+    let botones = [
+        {
+            text: '<i class="fas fa-comment-dots"></i> ' + text_btn_coment,
+            className: 'btn btn-info btn-sm btn-comment',
+            action: function () {
+                agregarComentario(comentario);
+            }
+        }
+    ];
+
+    if (saldoActualCuotas > 0) {
+        botones.push({
+            text: '<i class="fas fa-hand-holding-usd"></i> Amortizar',
+            className: 'btn btn-success btn-sm btn-amortiar',
+            action: function () {
+                amortizar();
+            }
+        });
+    }
+
+    tablaCuotasCredito = $("#tbllistadoCuotasCredito").DataTable({
+        aProcessing: true,
+        aServerSide: true,
+        responsive: true,
+        lengthChange: false,
+        autoWidth: true,
+
+        dom:
+            '<"row mb-2"' +
+            '<"col-md-12 msgComentario">' +
+            '>' +
+            '<"row"' +
+            '<"col-md-4"l>' +
+            '<"col-md-4"B>' +
+            '<"col-md-4"f>' +
+            '>' +
+            't' +
+            '<"row"' +
+            '<"col-md-6"i>' +
+            '<"col-md-6"p>' +
+            '>',
+
+        buttons: botones,
+
+        ajax: {
+            url: "controladores/cuentascobrar.php?op=listar_cuotas_credito",
+            data: { idventa: idventa },
+            type: "get",
+            dataType: "json"
+        },
+
+        bDestroy: true,
+        iDisplayLength: 10,
+
+        initComplete: function () {
+            if (comentario) {
+                $('.msgComentario').html(`<div class="alert alert-primary d-flex align-items-center" role="alert">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    </svg>
+                    <div style="margin-left: 10px">
+                        `+ comentario + `
+                    </div>
+                </div>`);
+            }
+        }
+    });
+}
+
+function verificarCaja() {
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: "controladores/venta.php?op=verificar_caja",
+            type: "get",
+            dataType: "json",
+            success: function (response) {
+                if (response.success) {
+                    resolve(response.idcaja); // Devuelve el id de la caja abierta
+                } else {
+                    resolve(null); // No hay caja abierta
+                }
+            },
+            error: function (error) {
+                reject(error);
+            }
+        });
+    });
+}
+
+async function amortizar() {
+    const idcaja = await verificarCaja();
+    if (!idcaja) {
+        Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
+        return;
+    }
+
+    $('#idcaja').val(idcaja);
+    $('#idventa_amortizar').val(ventaActualCuotas);
+    $('#idcliente_amortizar').val('');
+    $('#fecha_inicio_amortizar').val('');
+    $('#fecha_fin_amortizar').val('');
+
+    $('#montoAdeudadoAmortizar').val(saldoActualCuotas.toFixed(2));
+    $('#deudaTotalAmortizar').html(saldoActualCuotas.toFixed(2));
+    $('#montoPagarAmortizar').val('');
+    $('#modalAmortizar').modal('show');
+};
+
+$('#formulario-amortizar').submit(async function (e) {
+    e.preventDefault();
+
+    // Verificamos la caja abierta antes de enviar
+    const idcaja = await verificarCaja();
+    if (!idcaja) {
+        Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
+        return;
+    }
+
+    var formData = new FormData(this);
+    formData.set('idcaja', idcaja); // Aseguramos que idcaja esté en los datos enviados
+
+    $.ajax({
+        url: 'controladores/cuentascobrar.php?op=amortizar_deuda',
+        data: formData,
+        type: "POST",
+        contentType: false,
+        processData: false,
+        success: function (data) {
+            var data = JSON.parse(data);
+            if (data.success) {
+                Swal.fire('Éxito', data.message, 'success');
+                tabla.ajax.reload();
+                tablaCuotasCredito.ajax.reload();
+                $('#modalAmortizar').modal('hide');
+                $('#montoAdeudadoAmortizar').val('');
+                $('#deudaTotalAmortizar').html('');
+                $('#idcliente_amortizar').val('');
+                $('#idventa_amortizar').val('');
+                $('#fecha_inicio_amortizar').val('');
+                $('#fecha_fin_amortizar').val('');
+            } else {
+                Swal.fire('Error', data.message, 'error');
+            }
+        },
+        error: function (e) {
+            console.log(e.responseText);
+        }
+    });
+});
 
 function limpiarFiltros() {
     $("#fecha_inicio").val('');
@@ -481,6 +684,55 @@ $("#form-compra-venta").on("submit", function (e) {
     descargarCompraVenta(idventa, idvendedor, idcliente, monto);
 });
 
+function mostrarAbonos(idcpc) {
 
+    $("#getCodeModal2").modal('show');
 
+    $.post("controladores/cuentascobrar.php?op=mostrar", { idcpc: idcpc }, function (data, status) {
 
+        data = JSON.parse(data);
+
+        var label = document.querySelector('#abonoTotal2');
+        label.textContent = data.deuda;
+
+        var label = document.querySelector('#abonoTotal');
+        label.textContent = data.abonototal;
+
+    });
+
+    tbllistadoAbonos = $('#tbllistadoAbonos').dataTable(
+        {
+            //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
+            "aProcessing": true,//Activamos el procesamiento del datatables
+            "aServerSide": true,//Paginación y filtrado realizados por el servidor
+            dom: 'Bfrtip',//Definimos los elementos del control de tabla
+            buttons: [
+                'excelHtml5',
+                'pdf'
+            ],
+            "ajax":
+            {
+                url: 'controladores/cuentascobrar.php?op=listarDetalle',
+                data: { idcpc: idcpc },
+                type: "get",
+                dataType: "json",
+                error: function (e) {
+                    console.log(e.responseText);
+                }
+            },
+            "bDestroy": true,
+            "iDisplayLength": 10,//Paginación
+        }).DataTable();
+
+}
+
+function verEstadoCuenta(idcpc) {
+    $.get(
+        "controladores/cuentascobrar.php?op=estado_cuenta",
+        { idcpc: idcpc },
+        function (data) {
+            $("#estadoCuentaContenido").html(data);
+            $("#modalEstadoCuenta").modal("show");
+        }
+    );
+}
