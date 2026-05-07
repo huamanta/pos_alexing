@@ -353,12 +353,12 @@ function verContrato(idventa, idcliente, nombre) {
 }
 
 function verUbicacionCliente(latitude, longitude, direccion) {
-    if (!latitude && !longitude){
+    if (!latitude && !longitude) {
         notificacionToast('warning', 'El cliente no tiene ubicacion configurada');
         return;
     };
 
-    if (direccion){
+    if (direccion) {
 
         const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
 
