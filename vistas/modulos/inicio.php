@@ -816,7 +816,7 @@ if (session_status() === PHP_SESSION_NONE) {
         cargarNotificacionesCXCNavbar();
         clearInterval(esperaSucursal);
       }
-    }, 300);
+    }, 3000);
 
     // Refresco normal cada 5 segundos
     setInterval(cargarNotificacionesCXCNavbar, 5000);

@@ -265,7 +265,7 @@
                     if (respuesta.includes("correctamente")) {
                         Swal.fire('¡Aceptado!', respuesta, 'success');
                         if (idnotificacion) { $.post("controladores/traslado.php?op=marcarleida", { idnotificacion: idnotificacion }); }
-                        $('#' + toastId).fadeOut(300, () => $('#' + toastId).remove());
+                        $('#' + toastId).fadeOut(3000, () => $('#' + toastId).remove());
                         if (typeof tabla !== 'undefined') tabla.ajax.reload();
                     } else {
                         Swal.fire('Error', respuesta, 'error');

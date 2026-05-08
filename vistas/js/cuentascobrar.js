@@ -320,6 +320,14 @@ async function amortizarDeuda(deuda, idcliente, fecha_inicio, fecha_fin) {
     $('#fecha_fin_amortizar').val(fecha_fin);
 }
 
+function amortizarCuotasCredito(idventa, saldoPendiente, documento, nota){
+    $('#idventacuentacobrar').val(idventa);
+    ventaActualCuotas = idventa;
+    saldoActualCuotas = toNumber(saldoPendiente);
+    $('#tituloCreditoCuotas').text(documento ? ('- ' + documento) : '');
+    amortizar();
+}
+
 
 $('#formulario-amortizar').submit(async function (e) {
     e.preventDefault();
@@ -346,7 +354,9 @@ $('#formulario-amortizar').submit(async function (e) {
                 Swal.fire('Éxito', data.message, 'success');
                 listarSaldos();
                 tablaCreditosCliente.ajax.reload();
-                tablaCuotasCredito.ajax.reload();
+                if(tablaCuotasCredito){
+                    tablaCuotasCredito.ajax.reload();
+                }
                 $('#modalAmortizar').modal('hide');
                 $('#montoAdeudadoAmortizar').val('');
                 $('#deudaTotalAmortizar').html('');

@@ -1036,8 +1036,11 @@ class CuentasCobrar
                 "3" => number_format($row->total_abonado, 2),
                 "4" => number_format($row->saldo_pendiente, 2),
                 "5" => $estado,
-                "6" => "<button class='btn btn-sm btn-primary' onclick='verCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\", \"{$row->nota}\")'>
+                "6" => "<button class='btn btn-sm btn-success' onclick='verCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\", \"{$row->nota}\")'>
                             <i class='fas fa-list'></i> Ver cuotas
+                        </button>
+                        <button class='btn btn-sm btn-primary' onclick='amortizarCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\", \"{$row->nota}\")'>
+                            <i class='fas fa-hand-holding-usd'></i> Amortizar deuda
                         </button>"
             );
         }
