@@ -67,7 +67,7 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
     $('#idventacuentacobrar').val(idventa);
     ventaActualCuotas = idventa;
     saldoActualCuotas = toNumber(saldoPendiente);
-    $('#tituloCreditoCuotas').text(documento ? ('- ' + documento) : '');
+    $('#tituloCreditoCuotas').text(documento ? documento : '');
 
     $("#modalCuotasCredito").modal("show");
     let text_btn_coment = 'Agregar nota';
@@ -735,4 +735,90 @@ function verEstadoCuenta(idcpc) {
             $("#modalEstadoCuenta").modal("show");
         }
     );
+}
+
+
+async function mostrar(idcpc) {
+
+    const idcaja = await verificarCaja(); // Verifica la caja abierta
+
+    if (!idcaja) {
+        Swal.fire('Error', 'Debe tener una caja abierta para realizar abonos', 'error');
+        return;
+    }
+
+    $("#idcaja2").val(idcaja);
+    $("#getCodeModal").modal('show');
+
+    // 🔹 1. Actualizar la mora en BD antes de mostrar el formulario
+    $.post("controladores/cuentascobrar.php?op=actualizar_mora_diaria",
+        {
+            idcpc: idcpc
+        },
+        function () {
+
+            // 🔹 2. Obtener datos actualizados
+            $.post("controladores/cuentascobrar.php?op=mostrar",
+                {
+                    idcpc: idcpc
+                },
+                function (data) {
+
+                    var data = JSON.parse(data);
+                    var total_venta = parseFloat(data.total_venta);
+                    var interes = total_venta * (data.interes / 100);
+                    var deuda = parseFloat(data.deuda);
+                    $('#documento2').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
+                    $("#deutaTotal").text(deuda.toFixed(2));
+                    $("#valorVenta").text(total_venta.toFixed(2));
+                    $("#valorInteres").text(interes.toFixed(2));
+                    $("#montoAdeudado").val(deuda.toFixed(2));
+                    $("#idcpc2").val(data.idcpc);
+
+                    $("#idventa2").val(data.idventa);
+                    $("#fechavencimiento").text(data.fechavencimiento);
+
+                });
+        });
+}
+
+$('#formulario-pagar').submit(function(e){
+    e.preventDefault();
+    guardaryeditar(e);
+});
+
+async function guardaryeditar(e) {
+    e.preventDefault();
+
+    const idcaja = await verificarCaja(); // Verifica caja abierta antes de enviar
+    if (!idcaja) {
+        Swal.fire('Error', 'Debe tener una caja abierta para realizar abonos', 'error');
+        return;
+    }
+
+    var formData = new FormData($("#formulario-pagar")[0]);
+    formData.append('idcaja', idcaja); // Asegura idcaja en el formulario
+
+    $.ajax({
+        url: "controladores/cuentascobrar.php?op=guardaryeditar",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (datos) {
+            let res = JSON.parse(datos);
+            if (res.success) {
+                Swal.fire('Éxito', res.message, 'success');
+                $('#getCodeModal').modal('hide');
+                $("#formulario-pagar")[0].reset();
+                limpiar();
+                tabla.ajax.reload();
+                if(tablaCuotasCredito){
+                    tablaCuotasCredito.ajax.reload();
+                }
+            } else {
+                Swal.fire('Error', res.message, 'error');
+            }
+        }
+    });
 }

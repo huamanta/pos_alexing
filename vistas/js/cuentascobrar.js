@@ -324,7 +324,7 @@ function amortizarCuotasCredito(idventa, saldoPendiente, documento, nota){
     $('#idventacuentacobrar').val(idventa);
     ventaActualCuotas = idventa;
     saldoActualCuotas = toNumber(saldoPendiente);
-    $('#tituloCreditoCuotas').text(documento ? ('- ' + documento) : '');
+    $('#tituloCreditoCuotas').text(documento ? documento : '');
     amortizar();
 }
 
@@ -619,7 +619,7 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
     $('#idventacuentacobrar').val(idventa);
     ventaActualCuotas = idventa;
     saldoActualCuotas = toNumber(saldoPendiente);
-    $('#tituloCreditoCuotas').text(documento ? ('- ' + documento) : '');
+    $('#tituloCreditoCuotas').text(documento ? documento : '');
 
     $("#modalCuotasCredito").modal("show");
     let text_btn_coment = 'Agregar nota';

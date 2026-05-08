@@ -444,7 +444,7 @@ date_default_timezone_set('America/Lima');
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Cuentas por Cobrar del Crédito <small id="tituloCreditoCuotas"></small></h4>
+        <h4 class="modal-title">Cuentas por Cobrar del Crédito: <strong id="tituloCreditoCuotas"></strong></h4>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
@@ -478,7 +478,7 @@ date_default_timezone_set('America/Lima');
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Cuentas por Cobrar del Crédito <small id="tituloCreditoCuotas"></small></h4>
+        <h4 class="modal-title">Cuentas por Cobrar del Crédito: <strong id="tituloCreditoCuotas"></strong></h4>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">

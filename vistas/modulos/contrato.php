@@ -1,3 +1,188 @@
+<style>
+    .modal-header-custom {
+        background: #007bff;
+        color: white;
+        padding: 12px 20px;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+    }
+
+    .info-box-custom {
+        background: #eaf7ff;
+        border-left: 5px solid #007bff;
+        padding: 12px 15px;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        font-size: 14px;
+    }
+
+    .section-title {
+        font-size: 15px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        margin-top: 10px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 4px;
+        color: #444;
+    }
+
+    /* =======================================
+   MODAL DE COBROS – ESTILO PROFESIONAL
+   ======================================= */
+
+    /* --- Título del modal --- */
+    .modal-header-custom {
+        background: linear-gradient(45deg, #007bff, #005fcc);
+        color: white;
+        padding: 14px 22px !important;
+        border-bottom: none !important;
+    }
+
+    .modal-header-custom .modal-title {
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .modal-header-custom .close {
+        font-size: 26px;
+        opacity: 1;
+        color: white;
+    }
+
+    /* --- Caja de información --- */
+    .info-box-custom {
+        background: #f0f8ff;
+        border-left: 5px solid #007bff;
+        padding: 14px 18px;
+        border-radius: 6px;
+        box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
+    }
+
+    /* --- Secciones del formulario --- */
+    .section-title {
+        background: #fafafa;
+        padding: 6px 10px;
+        font-size: 15px;
+        font-weight: bold;
+        border-left: 4px solid #007bff;
+        margin-top: 18px;
+        margin-bottom: 12px;
+    }
+
+    /* --- Inputs y selects --- */
+    #formulario .form-group label {
+        font-weight: 600;
+        color: #444;
+    }
+
+    #formulario input,
+    #formulario select,
+    #formulario textarea {
+        border-radius: 5px !important;
+        border: 1px solid #c9c9c9 !important;
+    }
+
+    #formulario input:focus,
+    #formulario select:focus,
+    #formulario textarea:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 4px #007bff55 !important;
+    }
+
+    /* --- Botones del pie del modal --- */
+    .modal-footer .btn {
+        padding: 10px 22px;
+        font-size: 15px;
+        border-radius: 6px;
+    }
+
+    .btn-primary {
+        background-color: #007bff !important;
+        border: none !important;
+    }
+
+    .btn-primary:hover {
+        background-color: #0069d9 !important;
+    }
+
+    /* --- Botón cerrar --- */
+    .btn-secondary {
+        background-color: #6c757d !important;
+        border: none !important;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a636b !important;
+    }
+
+    /* --- Animación suave del modal --- */
+    .modal.fade .modal-dialog {
+        transition: transform .2s ease-out;
+        transform: translateY(-20px);
+    }
+
+    .modal.show .modal-dialog {
+        transform: translateY(0);
+    }
+
+    /* --- Mejora visual en selectpicker --- */
+    .bootstrap-select .dropdown-toggle {
+        border-radius: 5px !important;
+        border: 1px solid #c0c0c0 !important;
+    }
+
+    /* --- Colores para montos --- */
+    #montoAdeudado {
+        font-weight: bold;
+        color: #a80000;
+    }
+
+    #deutaTotal {
+        color: #d10000;
+        font-weight: bold;
+    }
+
+    /* --- Mejor espaciado entre elementos --- */
+    .modal-body .row {
+        margin-bottom: 4px;
+    }
+
+    /* --- Scroll elegante si el modal crece --- */
+    .modal-body {
+        max-height: 65vh;
+        overflow-y: auto;
+        padding-right: 15px;
+    }
+
+    #getCodeModal .modal-body {
+        max-height: none !important;
+        overflow-y: visible !important;
+    }
+
+    .fila-retenida {
+        background-color: #ffe5e5 !important;
+        /* rojo suave */
+        color: #a77170;
+    }
+
+    .fila-cuota-vencida {
+        background-color: #ffd6d6 !important;
+    }
+
+    .fila-cuota-proxima {
+        background-color: #fff4cc !important;
+    }
+
+    .btn-comment {
+        background-color: blue !important;
+        color: white !important;
+    }
+
+    .btn-amortiar {
+        background-color: green !important;
+        color: white !important;
+    }
+</style>
 <div class="scale-global">
     <div class="content-wrapper">
         <!-- Main content -->
@@ -391,7 +576,8 @@
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title">Cuentas por Cobrar del Crédito <small id="tituloCreditoCuotas"></small>
+                        <h4 class="modal-title">Cuentas por Cobrar del Crédito: <strong
+                                id="tituloCreditoCuotas"></strong>
                         </h4>
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
@@ -426,7 +612,8 @@
             <div class="modal-dialog modal-xl">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h4 class="modal-title">Cuentas por Cobrar del Crédito <small id="tituloCreditoCuotas"></small>
+                        <h4 class="modal-title">Cuentas por Cobrar del Crédito: <strong
+                                id="tituloCreditoCuotas"></strong>
                         </h4>
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                     </div>
@@ -586,6 +773,250 @@
                         <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
                         <button class="btn btn-primary" onclick="imprimirEstadoCuenta()">Imprimir</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="modal fade" id="getCodeModal">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+
+                    <div class="modal-header modal-header-custom">
+                        <h5 class="modal-title"><i class="fa fa-money"></i> Registro de Pago / Abono</h5>
+                        <button type="button" class="close text-white" data-dismiss="modal">×</button>
+                    </div>
+
+                    <form class="form-horizontal" role="form" id="formulario-pagar" method="POST">
+
+                        <div class="modal-body">
+
+                            <!-- Campos ocultos -->
+                            <input type="hidden" name="idcpc" id="idcpc2">
+                            <input type="hidden" id="idcaja2" name="idcaja">
+                            <input type="hidden" name="idventa" id="idventa2">
+                            <style>
+                                .doc-card {
+                                    border: 1px solid #e9edf3;
+                                    background: #fff;
+                                    border-radius: 12px;
+                                    padding: 14px;
+                                    box-shadow: 0 6px 18px rgba(16, 24, 40, .06);
+                                    max-width: 720px;
+                                }
+
+                                .doc-head {
+                                    display: flex;
+                                    gap: 12px;
+                                    align-items: center;
+                                    padding-bottom: 12px;
+                                    border-bottom: 1px dashed #e9edf3;
+                                }
+
+                                .doc-icon {
+                                    width: 40px;
+                                    height: 40px;
+                                    border-radius: 10px;
+                                    display: grid;
+                                    place-items: center;
+                                    background: rgba(25, 118, 210, .10);
+                                    color: #1976d2;
+                                    font-size: 18px;
+                                }
+
+                                .doc-title strong {
+                                    display: block;
+                                    font-size: 15px;
+                                    color: #0f172a;
+                                }
+
+                                .doc-sub {
+                                    margin-top: 2px;
+                                    font-size: 13px;
+                                    color: #64748b;
+                                }
+
+                                .doc-body {
+                                    padding-top: 12px;
+                                    display: grid;
+                                    gap: 12px;
+                                }
+
+                                .doc-alert {
+                                    background: #f8fafc;
+                                    border: 1px solid #eef2f7;
+                                    border-radius: 12px;
+                                    padding: 12px;
+                                }
+
+                                .doc-alert-row {
+                                    display: flex;
+                                    justify-content: space-between;
+                                    align-items: center;
+                                    gap: 10px;
+                                    padding: 4px 0;
+                                    font-size: 14px;
+                                    color: #334155;
+                                }
+
+                                .money {
+                                    color: #0f172a;
+                                }
+
+                                .doc-totals {
+                                    display: grid;
+                                    grid-template-columns: repeat(2, minmax(0, 1fr));
+                                    gap: 12px;
+                                }
+
+                                .total-box {
+                                    border: 1px solid #eef2f7;
+                                    border-radius: 12px;
+                                    padding: 12px;
+                                    background: #ffffff;
+                                }
+
+                                .total-label {
+                                    font-size: 12px;
+                                    color: #64748b;
+                                    margin-bottom: 6px;
+                                }
+
+                                .total-value {
+                                    font-size: 18px;
+                                    font-weight: 700;
+                                    color: #0f172a;
+                                }
+
+                                /* Responsive */
+                                @media (max-width: 520px) {
+                                    .doc-totals {
+                                        grid-template-columns: 1fr;
+                                    }
+                                }
+                            </style>
+
+                            <div class="doc-body mb-2">
+                                <div class="doc-totals">
+                                    <div class="total-box">
+                                        <div class="total-label">Total venta</div>
+                                        <div class="total-value">S/ <span id="valorVenta"></span></div>
+                                    </div>
+
+                                    <div class="total-box">
+                                        <div class="total-label">Total interés</div>
+                                        <div class="total-value">S/ <span id="valorInteres"></span></div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Caja de información -->
+                            <div class="info-box-custom">
+                                <strong><i class="fa fa-info-circle"></i> Información del Documento</strong><br>
+                                El documento <b><span id="documento2"></span></b> tiene un pago pendiente de
+                                <b>S/ <span id="deutaTotal"></span></b>.
+                                Debe pagarse como máximo el día <b><span id="fechavencimiento"></span></b>.
+                            </div>
+
+                            <div class="section-title"><i class="fa fa-credit-card"></i> Datos del Pago</div>
+
+                            <div class="row">
+
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Condición de Pago:</label>
+                                        <select id="formapago" name="formapago" class="form-control" required>
+                                            <option value="Efectivo">Efectivo</option>
+                                            <option value="Transferencia">Transferencia o Tarjeta</option>
+                                            <option value="Yape">Yape</option>
+                                            <option value="Plin">Plin</option>
+                                            <option value="Deposito">Depósito</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Monto Efectivo:</label>
+                                        <input type="text" class="form-control" id="montoPagar" name="montoPagar"
+                                            required>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Monto Tarjeta:</label>
+                                        <input type="text" class="form-control" id="montoPagarTarjeta"
+                                            name="montoPagarTarjeta" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-3">
+                                    <div class="form-group">
+                                        <label>Monto Adeudado:</label>
+                                        <input class="form-control" type="text" name="montoAdeudado" id="montoAdeudado"
+                                            readonly>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="section-title"><i class="fa fa-pencil"></i> Observación</div>
+
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <textarea class="form-control" name="observacion" id="observacion"
+                                        rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="section-title"><i class="fa fa-building"></i> Pago Bancario</div>
+
+                            <div class="row">
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Banco:</label>
+                                        <select id="banco" name="banco" class="form-control selectpicker"
+                                            data-live-search="true">
+                                            <option value="BCP">BCP</option>
+                                            <option value="INTERBANK">INTERBANK</option>
+                                            <option value="BBVA">BBVA</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Número de Operación (OP):</label>
+                                        <input class="form-control" type="text" name="op" id="op">
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-4">
+                                    <div class="form-group">
+                                        <label>Fecha de Pago:</label>
+                                        <input class="form-control" type="date" name="fechaPago" id="fechaPago">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="modal-footer justify-content-between">
+                            <button type="button" onclick="cancelarform()" class="btn btn-secondary"
+                                data-dismiss="modal">
+                                <i class="fa fa-times"></i> Cerrar
+                            </button>
+                            <button class="btn btn-primary" type="submit" id="btnGuardar">
+                                <i class="fa fa-check"></i> Guardar Pago
+                            </button>
+                        </div>
+
+                    </form>
+
                 </div>
             </div>
         </div>
