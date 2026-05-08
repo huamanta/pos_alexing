@@ -116,7 +116,6 @@ function enviarRecordatoriosMasivo() {
                 if (!res || !res.success) {
                     let errorMsg = res && res.response ? res.response : 'No se pudo completar el envío. Revisa los logs del servidor.';
                     Swal.fire('Error', 'Ocurrió un error: ' + errorMsg, 'error');
-                    console.error('Respuesta del API:', res);
                     return;
                 }
 
@@ -134,7 +133,6 @@ function enviarRecordatoriosMasivo() {
             },
             error: function (xhr, status, err) {
                 $btn.prop('disabled', false).html(originalHtml);
-                console.error('XHR Error:', xhr.responseText);
                 Swal.fire('Error', 'Ocurrió un error durante el envío: ' + err, 'error');
             }
         });
@@ -153,7 +151,6 @@ function enviarRecordatoriosAutomatico() {
         dataType: 'json',
         success: function (res) {
             if (!res || !res.success) return;
-            console.log("Recordatorios automáticos enviados:", res.message);
         },
         error: function (xhr, status, err) {
             console.error('Error envío automático:', xhr.responseText);
@@ -269,8 +266,6 @@ function listarSaldos() {
         type: "get",
         dataType: "json",
         success: function (data) {
-            console.log(data);
-
             var saldos = 0
             if (data.abonototal != null && data.deudatotal != null) {
                 saldos = parseFloat(data.deudatotal) - parseFloat(data.abonototal);
@@ -329,7 +324,7 @@ function amortizarCuotasCredito(idventa, saldoPendiente, documento, nota) {
     ventaActualCuotas = idventa;
     saldoActualCuotas = toNumber(saldoPendiente);
     $('#tituloCreditoCuotas').text(documento ? documento : '');
-    amortizar();
+    amortizar(idventa);
 }
 
 
@@ -472,8 +467,6 @@ async function mostrar(idcpc) {
                 function (data) {
 
                     data = JSON.parse(data);
-                    console.log(data);
-
                     var total_venta = parseFloat(data.total_venta);
                     var interes = total_venta * (data.interes / 100);
                     var deuda = parseFloat(data.deuda);
@@ -645,7 +638,7 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
             text: '<i class="fas fa-hand-holding-usd"></i> Amortizar',
             className: 'btn btn-success btn-sm btn-amortiar',
             action: function () {
-                amortizar();
+                amortizar(idventa);
             }
         });
     }
@@ -698,25 +691,84 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
         }
     });
 }
+let inicialCuota = 0;
 
-async function amortizar() {
+async function amortizar(idventa) {
     const idcaja = await verificarCaja();
     if (!idcaja) {
         Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
         return;
     }
+    
+    $("#panel-pagar-cuotas").hide();
+
+    $.ajax({
+        url: 'controladores/cuentascobrar.php?op=cuotasPorPagar',
+        data: { idventa: idventa },
+        type: "GET",
+        success: function (response) {
+            let cuotas = JSON.parse(response);
+
+            let totalCuotas = cuotas.length;
+
+            let html = `
+                <input 
+                    type="range"
+                    id="rangeCuotas"
+                    min="1"
+                    max="${totalCuotas}"
+                    value="1"
+                    step="1"
+                >
+            `;
+
+            $("#contenedorRange").html(html);
+
+            calcularTotal(1);
+
+            $("#rangeCuotas").on("input", function () {
+
+                let cantidad = parseInt($(this).val());
+
+                calcularTotal(cantidad);
+            });
+
+            
+            $("#montoPagarAmortizar").val('');
+            function calcularTotal(cantidad) {
+
+                $("#cantidadSeleccionada").text(cantidad);
+
+                let total = 0;
+
+                for (let i = 0; i < cantidad; i++) {
+                    total += parseFloat(cuotas[i].deudatotal);
+                }
+
+                inicialCuota = cuotas[0].deudatotal
+
+                $("#totalPagar").text(total.toFixed(2));
+                $("#montoPagarAmortizar").val(total.toFixed(2));
+            }
+        }
+    })
 
     $('#idcaja').val(idcaja);
     $('#idventa_amortizar').val(ventaActualCuotas);
     $('#idcliente_amortizar').val('');
     $('#fecha_inicio_amortizar').val('');
     $('#fecha_fin_amortizar').val('');
-
+    $('#montoPagarAmortizar').val('');
     $('#montoAdeudadoAmortizar').val(saldoActualCuotas.toFixed(2));
     $('#deudaTotalAmortizar').html(saldoActualCuotas.toFixed(2));
-    $('#montoPagarAmortizar').val('');
     $('#modalAmortizar').modal('show');
 };
+
+$("#btn-seleccionar-cuotas").click(function(e){
+    e.preventDefault();
+    $("#panel-pagar-cuotas").show();
+    $("#montoPagarAmortizar").val(inicialCuota);
+});
 
 function verEstadoCuenta(idcpc) {
     $.get(

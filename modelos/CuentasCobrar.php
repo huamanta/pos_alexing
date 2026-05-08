@@ -1404,6 +1404,20 @@ class CuentasCobrar
         }
     }
 
+    public function cuotasPorPagar($idventa) {
+    $sql = "SELECT * FROM cuentas_por_cobrar WHERE idventa = $idventa AND estado_pago = 1 AND condicion = 1";
+    
+    $query = ejecutarConsulta($sql);
+
+    $data = [];
+
+    while ($row = $query->fetch_object()) {
+        $data[] = $row;
+    }
+
+    return json_encode($data);
+}
+
 }
 
 ?>

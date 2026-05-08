@@ -89,7 +89,7 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
             text: '<i class="fas fa-hand-holding-usd"></i> Amortizar',
             className: 'btn btn-success btn-sm btn-amortiar',
             action: function () {
-                amortizar();
+                amortizar(idventa);
             }
         });
     }
@@ -163,25 +163,82 @@ function verificarCaja() {
     });
 }
 
-async function amortizar() {
+async function amortizar(idventa) {
     const idcaja = await verificarCaja();
     if (!idcaja) {
         Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
         return;
     }
+    
+    $("#panel-pagar-cuotas").hide();
+
+    $.ajax({
+        url: 'controladores/cuentascobrar.php?op=cuotasPorPagar',
+        data: { idventa: idventa },
+        type: "GET",
+        success: function (response) {
+            let cuotas = JSON.parse(response);
+
+            let totalCuotas = cuotas.length;
+
+            let html = `
+                <input 
+                    type="range"
+                    id="rangeCuotas"
+                    min="1"
+                    max="${totalCuotas}"
+                    value="1"
+                    step="1"
+                >
+            `;
+
+            $("#contenedorRange").html(html);
+
+            calcularTotal(1);
+
+            $("#rangeCuotas").on("input", function () {
+
+                let cantidad = parseInt($(this).val());
+
+                calcularTotal(cantidad);
+            });
+
+            
+            $("#montoPagarAmortizar").val('');
+            function calcularTotal(cantidad) {
+
+                $("#cantidadSeleccionada").text(cantidad);
+
+                let total = 0;
+
+                for (let i = 0; i < cantidad; i++) {
+                    total += parseFloat(cuotas[i].deudatotal);
+                }
+
+                inicialCuota = cuotas[0].deudatotal
+
+                $("#totalPagar").text(total.toFixed(2));
+                $("#montoPagarAmortizar").val(total.toFixed(2));
+            }
+        }
+    })
 
     $('#idcaja').val(idcaja);
     $('#idventa_amortizar').val(ventaActualCuotas);
     $('#idcliente_amortizar').val('');
     $('#fecha_inicio_amortizar').val('');
     $('#fecha_fin_amortizar').val('');
-
+    $('#montoPagarAmortizar').val('');
     $('#montoAdeudadoAmortizar').val(saldoActualCuotas.toFixed(2));
     $('#deudaTotalAmortizar').html(saldoActualCuotas.toFixed(2));
-    $('#montoPagarAmortizar').val('');
     $('#modalAmortizar').modal('show');
 };
 
+$("#btn-seleccionar-cuotas").click(function(e){
+    e.preventDefault();
+    $("#panel-pagar-cuotas").show();
+    $("#montoPagarAmortizar").val(inicialCuota);
+});
 $('#formulario-amortizar').submit(async function (e) {
     e.preventDefault();
 
@@ -782,7 +839,7 @@ async function mostrar(idcpc) {
         });
 }
 
-$('#formulario-pagar').submit(function(e){
+$('#formulario-pagar').submit(function (e) {
     e.preventDefault();
     guardaryeditar(e);
 });
@@ -813,7 +870,7 @@ async function guardaryeditar(e) {
                 $("#formulario-pagar")[0].reset();
                 limpiar();
                 tabla.ajax.reload();
-                if(tablaCuotasCredito){
+                if (tablaCuotasCredito) {
                     tablaCuotasCredito.ajax.reload();
                 }
             } else {

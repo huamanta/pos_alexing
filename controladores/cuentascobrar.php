@@ -355,6 +355,12 @@ switch ($_GET["op"]) {
 		$data = $cuentascobrar->guardarComentario($idventa, $comentario);
 		echo json_encode($data);
 		break;
+
+	case 'cuotasPorPagar':
+		$idventa = $_GET['idventa'];
+		$data = $cuentascobrar->cuotasPorPagar($idventa);
+		echo $data;
+		break;
 }
 
 ?>

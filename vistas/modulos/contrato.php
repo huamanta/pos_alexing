@@ -678,7 +678,9 @@
                                 </div>
                                 <div class="col-sm-4">
                                     <div class="form-group">
-                                        <label for="name" class="control-label">Monto a Pagar:</label>
+                                        <label for="name" class="control-label">Monto a Pagar: <a
+                                                style="float: right; color: blue" id="btn-seleccionar-cuotas">
+                                                Seleccionar cuotas</a></label>
                                         <input type="text" class="form-control" id="montoPagarAmortizar"
                                             name="montoPagarAmortizar" required="">
                                     </div>
@@ -688,6 +690,94 @@
                                         <label for="name" class="control-label">Monto Adeudado:</label>
                                         <input class="form-control pull-right" type="text" name="montoAdeudadoAmortizar"
                                             id="montoAdeudadoAmortizar" readonly="">
+                                    </div>
+                                </div>
+                            </div>
+                            <style>
+                                .card-cuotas {
+                                    background: #ffffff;
+                                    border-radius: 16px;
+                                    padding: 25px;
+                                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+                                    margin: auto;
+                                    font-family: Arial, sans-serif;
+                                }
+
+                                .titulo-cuotas {
+                                    margin-bottom: 20px;
+                                    color: #333;
+                                    text-align: center;
+                                }
+
+                                .range-container {
+                                    margin-bottom: 25px;
+                                }
+
+                                #rangeCuotas {
+                                    width: 100%;
+                                    accent-color: #2563eb;
+                                    cursor: pointer;
+                                }
+
+                                .info-cuotas {
+                                    display: flex;
+                                    gap: 15px;
+                                }
+
+                                .box-info {
+                                    flex: 1;
+                                    background: #f5f7fb;
+                                    padding: 15px;
+                                    border-radius: 12px;
+                                    text-align: center;
+                                }
+
+                                .box-info .label {
+                                    display: block;
+                                    font-size: 14px;
+                                    color: #666;
+                                    margin-bottom: 8px;
+                                }
+
+                                .box-info .valor {
+                                    font-size: 24px;
+                                    font-weight: bold;
+                                    color: #222;
+                                }
+
+                                .box-info.total {
+                                    background: #2563eb;
+                                }
+
+                                .box-info.total .label,
+                                .box-info.total .valor {
+                                    color: white;
+                                }
+                            </style>
+                            <div class="row" id="panel-pagar-cuotas" style="display: none">
+                                <div class="col-sm-12">
+                                    <div class="card-cuotas">
+
+                                        <h3 class="titulo-cuotas">
+                                            Seleccionar cuotas
+                                        </h3>
+
+                                        <div id="contenedorRange" class="range-container"></div>
+
+                                        <div class="info-cuotas">
+
+                                            <div class="box-info">
+                                                <span class="label">Cuotas a pagar</span>
+                                                <span class="valor" id="cantidadSeleccionada">1</span>
+                                            </div>
+
+                                            <div class="box-info total">
+                                                <span class="label">Total a pagar</span>
+                                                <span class="valor">S/ <span id="totalPagar">0.00</span></span>
+                                            </div>
+
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
