@@ -269,31 +269,35 @@ function listarSaldos() {
         type: "get",
         dataType: "json",
         success: function (data) {
+            console.log(data);
+
             var saldos = 0
             if (data.abonototal != null && data.deudatotal != null) {
-                saldos = parseFloat(data.deudatotal) + parseFloat(data.abonototal);
+                saldos = parseFloat(data.deudatotal) - parseFloat(data.abonototal);
             }
-            $("#saldos").text('S/. ' + parseFloat(saldos).toFixed(2));
+            $("#saldos").text('S/. ' + parseFloat(data.deudatotal).toFixed(2));
             // Corrige la evaluación condicional para #abonos
             $("#abonos").text('S/. ' + ((data.abonototal != null) ? parseFloat(data.abonototal).toFixed(2) : '0.00'));
 
             // Corrige la evaluación condicional para #deudas
-            $("#deudas").text('S/. ' + ((data.deudatotal != null) ? parseFloat(data.deudatotal).toFixed(2) : '0.00'));
+            $("#deudas").text('S/. ' + ((data.deudatotal != null) ? parseFloat(saldos).toFixed(2) : '0.00'));
 
-            if (idcliente != "Todos" && idcliente != null && data.deudatotal != 0 && data.deudatotal != null) {
-                $('#panel_amortizar').html(`
-                    <div class="btn-group">
-                        <button class="btn btn-success btn-sm"
-                            onclick="amortizarDeuda(${data.deudatotal}, ${idcliente}, '${fecha_inicio}', '${fecha_fin}')">
-                             Amortizar
-                        </button>
+            // if (idcliente != "Todos" && idcliente != null && data.deudatotal != 0 && data.deudatotal != null) {
+            //     $('#panel_amortizar').html(`
+            //         <div class="btn-group">
+            //             <button class="btn btn-success btn-sm"
+            //                 onclick="amortizarDeuda(${saldos}, ${idcliente}, '${fecha_inicio}', '${fecha_fin}')">
+            //                  Amortizar
+            //             </button>
 
-                        
-                    </div>
-                `);
-            } else {
-                $('#panel_amortizar').html('<i class="fas fa-money-bill fa-lg" style="font-size: 20px !important"></i>');
-            }
+
+            //         </div>
+            //     `);
+            // } else {
+            //     $('#panel_amortizar').html('<i class="fas fa-money-bill fa-lg" style="font-size: 20px !important"></i>');
+            // }
+            $('#panel_amortizar').html('<i class="fas fa-money-bill fa-lg" style="font-size: 20px !important"></i>');
+
         },
         error: function (e) {
             console.log(e.responseText);
@@ -304,7 +308,7 @@ function listarSaldos() {
 async function amortizarDeuda(deuda, idcliente, fecha_inicio, fecha_fin) {
     // Verificamos la caja abierta
     const idcaja = await verificarCaja();
-
+    alert();
     if (!idcaja) {
         Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
         return;
@@ -320,7 +324,7 @@ async function amortizarDeuda(deuda, idcliente, fecha_inicio, fecha_fin) {
     $('#fecha_fin_amortizar').val(fecha_fin);
 }
 
-function amortizarCuotasCredito(idventa, saldoPendiente, documento, nota){
+function amortizarCuotasCredito(idventa, saldoPendiente, documento, nota) {
     $('#idventacuentacobrar').val(idventa);
     ventaActualCuotas = idventa;
     saldoActualCuotas = toNumber(saldoPendiente);
@@ -354,7 +358,7 @@ $('#formulario-amortizar').submit(async function (e) {
                 Swal.fire('Éxito', data.message, 'success');
                 listarSaldos();
                 tablaCreditosCliente.ajax.reload();
-                if(tablaCuotasCredito){
+                if (tablaCuotasCredito) {
                     tablaCuotasCredito.ajax.reload();
                 }
                 $('#modalAmortizar').modal('hide');
@@ -764,12 +768,12 @@ $(document).on('hidden.bs.modal', '.modal', function () {
 });
 
 function verUbicacionCliente(latitude, longitude, direccion) {
-    if (!latitude && !longitude){
+    if (!latitude && !longitude) {
         notificacionToast('warning', 'El cliente no tiene ubicacion configurada');
         return;
     };
 
-    if (direccion){
+    if (direccion) {
 
         const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
 
