@@ -13,97 +13,175 @@ class CuentasCobrar
 
     }
 
-    public function insertar($idcpc, $montopagado, $observacion, $banco, $op, $fechaPago, $formapago, $montoPagarTarjeta, $idcaja, $idpersonal)
-    {
+    public function insertar(
+        $idcpc,
+        $montopagado,
+        $observacion,
+        $banco,
+        $op,
+        $fechaPago,
+        $formapago,
+        $montoPagarTarjeta,
+        $idcaja,
+        $idpersonal
+    ) {
+
+        if (empty($fechaPago)) {
+            $fechaPago = date('Y-m-d H:i:s');
+        }
+
         // VALIDAR CAJA ABIERTA
-        $sqlCaja = "SELECT estado FROM cajas WHERE idcaja='$idcaja'";
+        $sqlCaja = "SELECT estado 
+            FROM cajas 
+            WHERE idcaja='$idcaja'";
+
         $caja = ejecutarConsultaSimpleFila($sqlCaja);
 
         if (!$caja || intval($caja['estado']) != 2) {
-            return ['success' => false, 'message' => 'La caja está cerrada, no se puede registrar el pago.'];
+            return [
+                'success' => false,
+                'message' => 'La caja está cerrada, no se puede registrar el pago.'
+            ];
         }
 
         // REGISTRAR DETALLE DE PAGO
         $sqlDetalle = "INSERT INTO detalle_cuentas_por_cobrar
-        (idcpc, idcaja, idpersonal, montopagado, montotarjeta, banco, op, fechapago, formapago, observacion)
-        VALUES
-        ('$idcpc', '$idcaja', '$idpersonal', '$montopagado', '$montoPagarTarjeta', '$banco', '$op', '$fechaPago', '$formapago', '$observacion')";
+    (
+        idcpc,
+        idcaja,
+        idpersonal,
+        montopagado,
+        montotarjeta,
+        banco,
+        op,
+        fechapago,
+        formapago,
+        observacion
+    )
+    VALUES
+    (
+        '$idcpc',
+        '$idcaja',
+        '$idpersonal',
+        '$montopagado',
+        '$montoPagarTarjeta',
+        '$banco',
+        '$op',
+        '$fechaPago',
+        '$formapago',
+        '$observacion'
+    )";
 
         $det = ejecutarConsulta($sqlDetalle);
 
         if (!$det) {
-            return ['success' => false, 'message' => 'No se pudo registrar el detalle del pago.'];
+            return [
+                'success' => false,
+                'message' => 'No se pudo registrar el detalle del pago.'
+            ];
         }
 
         // OBTENER DATOS ACTUALES
-        $sql = "SELECT deudatotal, deuda, abonototal, interes
-            FROM cuentas_por_cobrar 
-            WHERE idcpc = '$idcpc'";
+        $sql = "SELECT 
+            idventa,
+            deudatotal,
+            deuda,
+            abonototal
+        FROM cuentas_por_cobrar
+        WHERE idcpc = '$idcpc'";
+
         $fila = ejecutarConsultaSimpleFila($sql);
 
         if (!$fila) {
-            return ['success' => false, 'message' => 'Cuenta no encontrada'];
+            return [
+                'success' => false,
+                'message' => 'Cuenta no encontrada'
+            ];
         }
 
         // TOTAL PAGADO
-        $montopagado = floatval($montopagado ?? 0);
-        $montoPagarTarjeta = floatval($montoPagarTarjeta ?? 0);
+        $montopagado = round(floatval($montopagado ?? 0), 2);
+        $montoPagarTarjeta = round(floatval($montoPagarTarjeta ?? 0), 2);
 
-        $montoPagoTotal = $montopagado + $montoPagarTarjeta;
+        $montoPagoTotal = round($montopagado + $montoPagarTarjeta, 2);
 
         // VALORES ACTUALES
-        $deudatotal = floatval($fila['deudatotal']);
-        $deuda = floatval($fila['deuda']);
-        $abonototal = floatval($fila['abonototal']);
+        $deudatotal = round(floatval($fila['deudatotal']), 2);
+        $deuda = round(floatval($fila['deuda']), 2);
+        $abonototal = round(floatval($fila['abonototal']), 2);
 
         // NUEVOS VALORES
-        $nuevaDeudaTotal = $deudatotal - $montoPagoTotal;
-        $nuevaDeuda = $deuda - $montoPagoTotal;
+        $nuevaDeudaTotal = round($deudatotal - $montoPagoTotal, 2);
+        $nuevaDeuda = round($deuda - $montoPagoTotal, 2);
 
-        // EVITAR NEGATIVOS
         if ($nuevaDeudaTotal < 0)
             $nuevaDeudaTotal = 0;
         if ($nuevaDeuda < 0)
             $nuevaDeuda = 0;
 
-        // SUMAR ABONO
-        $nuevoAbonoTotal = $abonototal + $montoPagoTotal;
+        $nuevoAbonoTotal = round($abonototal + $montoPagoTotal, 2);
 
         // ACTUALIZAR CUENTA
         $sqlUpdate = "UPDATE cuentas_por_cobrar
-                  SET deuda = '$nuevaDeuda',
-                      abonototal = '$nuevoAbonoTotal'
-                  WHERE idcpc = '$idcpc'";
+            SET deuda = '$nuevaDeuda',
+                deudatotal = '$nuevaDeudaTotal',
+                abonototal = '$nuevoAbonoTotal'
+            WHERE idcpc = '$idcpc'";
 
         $save = ejecutarConsulta($sqlUpdate);
 
         if (!$save) {
-            return ['success' => false, 'message' => 'No se pudo actualizar la cuenta'];
+            return [
+                'success' => false,
+                'message' => 'No se pudo actualizar la cuenta'
+            ];
         }
 
-        // ACTUALIZAR ESTADO DE PAGO
+        // SI YA NO HAY DEUDA EN ESA CUOTA
         if ($nuevaDeudaTotal <= 0) {
-            ejecutarConsulta("UPDATE cuentas_por_cobrar
-                          SET estado_pago = 0
-                          WHERE idcpc = '$idcpc'");
 
-            // ACTUALIZAR ESTADO DEL CONTRATO A FINALIZADO
-            $sqlVenta = "SELECT idventa FROM cuentas_por_cobrar WHERE idcpc = '$idcpc'";
-            $venta = ejecutarConsultaSimpleFila($sqlVenta);
-            if ($venta && !empty($venta['idventa'])) {
-                ejecutarConsulta("UPDATE documentacion
-                                SET estado = 'finalizado'
-                                WHERE idventa = '{$venta['idventa']}' AND tipo = '1'");
+            // marcar cuota pagada
+            ejecutarConsulta("
+            UPDATE cuentas_por_cobrar
+            SET estado_pago = 0
+            WHERE idcpc = '$idcpc'
+        ");
+
+            $idventa = $fila['idventa'];
+
+            // 🔥 VERIFICAR SOLO POR ESTADO (NO POR MONTO)
+            $pendientes = ejecutarConsultaSimpleFila("
+            SELECT COUNT(*) AS total
+            FROM cuentas_por_cobrar
+            WHERE idventa = '$idventa'
+            AND estado_pago = 1
+        ");
+
+            // SI YA NO QUEDAN CUOTAS → FINALIZAR CONTRATO
+            if (intval($pendientes['total']) === 0) {
+
+                ejecutarConsulta("
+                UPDATE documentacion
+                SET estado = 2
+                WHERE idventa = '$idventa'
+                AND tipo = '1'
+            ");
             }
+
         } else {
-            ejecutarConsulta("UPDATE cuentas_por_cobrar
-                          SET estado_pago = 1
-                          WHERE idcpc = '$idcpc'");
+
+            ejecutarConsulta("
+            UPDATE cuentas_por_cobrar
+            SET estado_pago = 1
+            WHERE idcpc = '$idcpc'
+        ");
         }
 
-        return ['success' => true, 'message' => 'Pago registrado correctamente'];
+        return [
+            'success' => true,
+            'message' => 'Pago registrado correctamente'
+        ];
     }
-
 
 
     public function deudacliente($idventa)
@@ -739,29 +817,33 @@ class CuentasCobrar
     public function estadoCuentaDocumento($idcpc)
     {
         $sql = "
-            SELECT 
-                cc.fecharegistro AS fecha,
-                CONCAT(v.tipo_comprobante,'-',v.serie_comprobante,'-',v.num_comprobante) AS documento,
-                cc.deudatotal AS debe,
-                0 AS haber,
-                'VENTA' AS tipo
-            FROM cuentas_por_cobrar cc
-            INNER JOIN venta v ON cc.idventa = v.idventa
-            WHERE cc.idcpc = '$idcpc'
+        SELECT 
+            cc.fecharegistro AS fecha,
+            CONCAT(v.tipo_comprobante,'-',v.serie_comprobante,'-',v.num_comprobante) AS documento,
 
-            UNION ALL
+            (cc.deuda + cc.abonototal) AS debe,
 
-            SELECT
-                dcc.fechapago AS fecha,
-                'ABONO' AS documento,
-                0 AS debe,
-                (dcc.montopagado + dcc.montotarjeta) AS haber,
-                'PAGO' AS tipo
-            FROM detalle_cuentas_por_cobrar dcc
-            WHERE dcc.idcpc = '$idcpc'
+            0 AS haber,
+            'VENTA' AS tipo
 
-            ORDER BY fecha ASC
-        ";
+        FROM cuentas_por_cobrar cc
+        INNER JOIN venta v ON cc.idventa = v.idventa
+        WHERE cc.idcpc = '$idcpc'
+
+        UNION ALL
+
+        SELECT
+            dcc.fechapago AS fecha,
+            'ABONO' AS documento,
+            0 AS debe,
+            (dcc.montopagado + dcc.montotarjeta) AS haber,
+            'PAGO' AS tipo
+
+        FROM detalle_cuentas_por_cobrar dcc
+        WHERE dcc.idcpc = '$idcpc'
+
+        ORDER BY fecha ASC
+    ";
 
         $rspta = ejecutarConsulta($sql);
 
@@ -769,39 +851,49 @@ class CuentasCobrar
         $html = '';
 
         $html .= '
-        <div class="table-responsive">
-        <table class="table table-bordered table-sm">
-            <thead class="thead-light">
-                <tr>
-                    <th>Fecha</th>
-                    <th>Documento</th>
-                    <th>Debe</th>
-                    <th>Haber</th>
-                    <th>Saldo</th>
-                </tr>
-            </thead>
-            <tbody>
-        ';
+    <div class="table-responsive">
+    <table class="table table-bordered table-sm">
+        <thead class="thead-light">
+            <tr>
+                <th>Fecha</th>
+                <th>Documento</th>
+                <th>Debe</th>
+                <th>Haber</th>
+                <th>Saldo</th>
+            </tr>
+        </thead>
+        <tbody>
+    ';
 
         while ($r = $rspta->fetch_object()) {
+
             $saldo += ($r->debe - $r->haber);
 
             $html .= '
-                <tr>
-                    <td>' . $r->fecha . '</td>
-                    <td>' . $r->documento . '</td>
-                    <td class="text-right">S/ ' . number_format($r->debe, 2) . '</td>
-                    <td class="text-right">S/ ' . number_format($r->haber, 2) . '</td>
-                    <td class="text-right"><strong>S/ ' . number_format($saldo, 2) . '</strong></td>
-                </tr>
-            ';
+            <tr>
+                <td>' . $r->fecha . '</td>
+                <td>' . $r->documento . '</td>
+
+                <td class="text-right">
+                    S/ ' . number_format($r->debe, 2) . '
+                </td>
+
+                <td class="text-right">
+                    S/ ' . number_format($r->haber, 2) . '
+                </td>
+
+                <td class="text-right">
+                    <strong>S/ ' . number_format($saldo * -1, 2) . '</strong>
+                </td>
+            </tr>
+        ';
         }
 
         $html .= '
-            </tbody>
-        </table>
-        </div>
-        ';
+        </tbody>
+    </table>
+    </div>
+    ';
 
         return $html;
     }
@@ -1000,13 +1092,14 @@ class CuentasCobrar
                     v.num_comprobante,
                     v.total_venta,
                     v.nota,
+                    v.estado_venta,
+                    cc.condicion,
                     SUM(cc.abonototal) AS total_abonado,
                     SUM(cc.deuda) AS saldo_pendiente
                 FROM venta v
                 INNER JOIN cuentas_por_cobrar cc ON cc.idventa = v.idventa
                 WHERE v.idcliente = '$idcliente'
                   AND DATE(cc.fecharegistro) BETWEEN '$fecha_inicio' AND '$fecha_fin'
-                  AND cc.condicion = '1'
                   $filtroSucursal
                 GROUP BY v.idventa, v.fecha_hora, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta
                 ORDER BY v.idventa DESC";
@@ -1018,6 +1111,7 @@ class CuentasCobrar
             $contratos = new Contratos();
             $retension = $contratos->buscarRetencion($row->idventa);
             $estadoRetension = $retension['estado'];
+            $buttonAmortizar = '';
             $estado = (floatval($row->saldo_pendiente) <= 0)
                 ? '<center><span class="badge bg-green">Cancelado</span></center>'
                 : '<center><span class="badge bg-red">Por Cancelar</span></center>';
@@ -1026,8 +1120,26 @@ class CuentasCobrar
                 $estado = '<center><span class="badge bg-orange">Retenido</span></center>';
             }
 
+            if (!$row->estado_venta) {
+                $estado = '<center><span class="badge bg-danger">Anulado</span></center>';
+            }
+
             $doc = $row->tipo_comprobante . '-' . $row->serie_comprobante . '-' . $row->num_comprobante;
             $saldo = round(floatval($row->saldo_pendiente), 2);
+
+            if (floatval($row->saldo_pendiente) > 0) {
+                $buttonAmortizar = "<button class='btn btn-sm btn-primary' onclick='amortizarCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\", \"{$row->nota}\")'>
+                            <i class='fas fa-hand-holding-usd'></i> Amortizar deuda
+                        </button>";
+            }
+
+            $buttons = "<button class='btn btn-sm btn-success' onclick='verCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\", \"{$row->nota}\")'>
+                            <i class='fas fa-list'></i> Ver cuotas
+                        </button> " . $buttonAmortizar;
+
+            if ($estadoRetension === true || !$row->estado_venta) {
+                $buttons = "";
+            }
 
             $data[] = array(
                 "0" => $row->fecha_venta,
@@ -1036,12 +1148,7 @@ class CuentasCobrar
                 "3" => number_format($row->total_abonado, 2),
                 "4" => number_format($row->saldo_pendiente, 2),
                 "5" => $estado,
-                "6" => "<button class='btn btn-sm btn-success' onclick='verCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\", \"{$row->nota}\")'>
-                            <i class='fas fa-list'></i> Ver cuotas
-                        </button>
-                        <button class='btn btn-sm btn-primary' onclick='amortizarCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\", \"{$row->nota}\")'>
-                            <i class='fas fa-hand-holding-usd'></i> Amortizar deuda
-                        </button>"
+                "6" => $buttons
             );
         }
 
@@ -1321,14 +1428,30 @@ class CuentasCobrar
 
             // Si ya no hay deuda → cerrar cuota
             if ($nuevoTotal <= 0) {
-                ejecutarConsulta("UPDATE cuentas_por_cobrar 
-                                SET estado_pago = 0 
-                                WHERE idcpc = '$reg->idcpc'");
 
-                // (Opcional: solo si TODAS están pagadas, pero lo dejo como lo tienes)
-                ejecutarConsulta("UPDATE documentacion 
-                                SET estado = 0 
-                                WHERE idventa = '$idventa' AND tipo = '1'");
+                ejecutarConsulta("UPDATE cuentas_por_cobrar 
+                    SET estado_pago = 0 
+                    WHERE idcpc = '$reg->idcpc'");
+
+                // Verificar si quedan cuotas pendientes
+                $pendientes = ejecutarConsultaSimpleFila("
+                    SELECT COUNT(*) AS total
+                    FROM cuentas_por_cobrar
+                    WHERE idventa = '$idventa'
+                    AND estado_pago = 1
+                    AND deudatotal > 0
+                ");
+
+                // Si ya no hay cuotas pendientes → finalizar contrato
+                if ($pendientes['total'] == 0) {
+
+                    ejecutarConsulta("
+                        UPDATE documentacion
+                        SET estado = 2
+                        WHERE idventa = '$idventa'
+                        AND tipo = '1'
+                    ");
+                }
             }
 
             $totalAmortizado += $montoPagadoTotal;
@@ -1390,9 +1513,9 @@ class CuentasCobrar
             $doc = $result['tipo_comprobante'] . '-' . $result['serie_comprobante'] . '-' . $result['num_comprobante'];
             return array(
                 'status' => true,
-                'idventa' => $result['idventa'], 
-                'saldoPendiente' => $result['saldo_pendiente'], 
-                'documento' => $doc, 
+                'idventa' => $result['idventa'],
+                'saldoPendiente' => $result['saldo_pendiente'],
+                'documento' => $doc,
                 'nota' => $result['nota'],
                 'mensaje' => 'Comentario guardado correctamente'
             );
@@ -1404,19 +1527,20 @@ class CuentasCobrar
         }
     }
 
-    public function cuotasPorPagar($idventa) {
-    $sql = "SELECT * FROM cuentas_por_cobrar WHERE idventa = $idventa AND estado_pago = 1 AND condicion = 1";
-    
-    $query = ejecutarConsulta($sql);
+    public function cuotasPorPagar($idventa)
+    {
+        $sql = "SELECT * FROM cuentas_por_cobrar WHERE idventa = $idventa AND estado_pago = 1 AND condicion = 1";
 
-    $data = [];
+        $query = ejecutarConsulta($sql);
 
-    while ($row = $query->fetch_object()) {
-        $data[] = $row;
+        $data = [];
+
+        while ($row = $query->fetch_object()) {
+            $data[] = $row;
+        }
+
+        return json_encode($data);
     }
-
-    return json_encode($data);
-}
 
 }
 

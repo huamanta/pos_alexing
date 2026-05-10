@@ -1087,7 +1087,7 @@
                                 <div class="col-sm-4">
                                     <div class="form-group">
                                         <label>Fecha de Pago:</label>
-                                        <input class="form-control" type="date" name="fechaPago" id="fechaPago">
+                                        <input class="form-control" type="datetime-local" name="fechaPago" id="fechaPago" value="<?php echo date('Y-m-d H:i:s')?>">
                                     </div>
                                 </div>
 

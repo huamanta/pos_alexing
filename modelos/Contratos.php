@@ -110,19 +110,49 @@ class Contratos
         foreach ($contratos as $key => $value) {
             $verifiarRetencion = $this->buscarRetencion($value['idventa']);
             $statusRetencion = $verifiarRetencion['estado'];
-            if ($statusRetencion == true) {
-                $btnRetencion = '<button class="btn btn-danger btn-sm" onclick="quitarRetencion(' . $value['idventa'] . ', ' . $verifiarRetencion['data']['idretencion'] . ')" title="Quitar retención">
+
+            if ($value['estado'] == 0) {
+                $btnAnular = '';
+                $btnRetencion = '';
+                $btnAmortizar = '';
+                $status = '<span class="badge badge-danger">Anulado</span>';
+            } else if ($value['estado'] == 2) {
+                $btnAnular = '';
+                $btnRetencion = '';
+                $btnAmortizar = '';
+                $status = '<span class="badge badge-info">Finalizado</span>';
+            } else {
+                $btnAnular = '<button class="btn btn-danger btn-sm"
+                            onclick="eliminarContrato(' . (int) $value['idventa'] . ')"
+                            title="Eliminar contrato">
+                            <i class="fa fa-trash"></i>
+                        </button>';
+                if ($statusRetencion == true) {
+                    $btnRetencion = '<button class="btn btn-danger btn-sm" onclick="quitarRetencion(' . $value['idventa'] . ', ' . $verifiarRetencion['data']['idretencion'] . ')" title="Quitar retención">
                                 <i class="fa fa-unlock"></i>
                             </button>';
-            } else {
-                $btnRetencion = '<button class="btn btn-primary btn-sm" onclick="retenerContrato(' . $value['idventa'] . ')" title="Retener">
+                    $btnAmortizar = '';
+                    $status = '<span class="badge badge-warning">Retenido</span>';
+                } else {
+                    $cuenta_cobrar = $this->cuentasCobrar($value['idpersona'], $value['idventa']);
+                    $doc = $cuenta_cobrar['tipo_comprobante'] . '-' . $cuenta_cobrar['serie_comprobante'] . '-' . $cuenta_cobrar['num_comprobante'];
+                    $saldo = round(floatval($cuenta_cobrar['saldo_pendiente']), 2);
+                    $btnRetencion = '<button class="btn btn-primary btn-sm" onclick="retenerContrato(' . $value['idventa'] . ')" title="Retener">
                                 <i class="fa fa-lock"></i>
                             </button>';
-            }
+                    $btnAmortizar = '<button class="btn btn-warning btn-sm"
+                            onclick=\'verCuotasCredito(' . $cuenta_cobrar['idventa'] . ',
+                            ' . json_encode($saldo) . ',
+                            ' . json_encode($doc) . ',
+                            ' . json_encode($cuenta_cobrar['nota']) . '
+                            )\'
+                            title="Amortizar contrato">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </button>';
 
-            $cuenta_cobrar = $this->cuentasCobrar($value['idpersona'], $value['idventa']);
-            $doc = $cuenta_cobrar['tipo_comprobante'] . '-' . $cuenta_cobrar['serie_comprobante'] . '-' . $cuenta_cobrar['num_comprobante'];
-            $saldo = round(floatval($cuenta_cobrar['saldo_pendiente']), 2);
+                    $status = '<span class="badge badge-success">Vigente</span>';
+                }
+            }
 
             $data[] = [
                 "0" => $value['fecha_contrato'],
@@ -132,7 +162,7 @@ class Contratos
                 "4" => $this->verVehiculoVendido($value['idventa']),
                 "5" => $this->tiposDocumentacion($value['tipo']) . ($value['tipo'] == 1 ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT) : ''),
                 '6' => $value['serie_comprobante'] . '-' . $value['num_comprobante'],
-                "7" => $statusRetencion ? '<span class="badge badge-danger">Retenido</span>' : '<span class="badge badge-success">Vigente</span>',
+                "7" => $status,
                 "8" => $value['formapago'],
                 '9' => $this->getDataFrecuencia($value['frecuencia'])->texto,
                 "10" => number_format($value['total_venta'], 2, '.', ','),
@@ -159,22 +189,7 @@ class Contratos
                             <i class="fas fa-search-location"></i>
                         </button>
 
-                        <button class="btn btn-warning btn-sm"
-                            onclick=\'verCuotasCredito(' . $cuenta_cobrar['idventa'] . ',
-                            ' . json_encode($saldo) . ',
-                            ' . json_encode($doc) . ',
-                            ' . json_encode($cuenta_cobrar['nota']) . '
-                            )\'
-                            title="Amortizar contrato">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                        </button>
-
-                        <button class="btn btn-danger btn-sm"
-                            onclick="eliminarContrato(' . (int) $value['idventa'] . ')"
-                            title="Eliminar contrato">
-                            <i class="fa fa-trash"></i>
-                        </button>
-                        ',
+                        ' . $btnAmortizar . ' ' . $btnAnular,
             ];
         }
 
@@ -396,5 +411,39 @@ class Contratos
         } else {
             return ["status" => false, "data" => null];
         }
+    }
+
+    public function anularContrato($idventa)
+    {
+        if (empty($idventa)) {
+            return [
+                'status' => false,
+                'message' => 'ID de venta vacío'
+            ];
+        }
+
+        $sql1 = "UPDATE documentacion 
+            SET estado = 0
+            WHERE idventa = '$idventa'";
+
+        $ok1 = ejecutarConsulta($sql1);
+
+        $sql2 = "UPDATE venta 
+            SET estado_venta = 0 
+            WHERE idventa = '$idventa'";
+
+        $ok2 = ejecutarConsulta($sql2);
+
+        if ($ok1 && $ok2) {
+            return [
+                'status' => true,
+                'message' => 'Contrato anulado correctamente'
+            ];
+        }
+
+        return [
+            'status' => false,
+            'message' => 'No se pudo anular el contrato'
+        ];
     }
 }

@@ -46,4 +46,10 @@ switch ($op) {
 			echo null;
 		}
         break;
+
+    case 'anularContrato':
+        $idventa = $_POST['idventa'] ?? '';
+        $res = $contratos->anularContrato($idventa);
+        echo json_encode($res);
+        break;
 }

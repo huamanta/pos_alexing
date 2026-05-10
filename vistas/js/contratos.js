@@ -169,7 +169,7 @@ async function amortizar(idventa) {
         Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
         return;
     }
-    
+
     $("#panel-pagar-cuotas").hide();
 
     $.ajax({
@@ -203,7 +203,7 @@ async function amortizar(idventa) {
                 calcularTotal(cantidad);
             });
 
-            
+
             $("#montoPagarAmortizar").val('');
             function calcularTotal(cantidad) {
 
@@ -234,7 +234,7 @@ async function amortizar(idventa) {
     $('#modalAmortizar').modal('show');
 };
 
-$("#btn-seleccionar-cuotas").click(function(e){
+$("#btn-seleccionar-cuotas").click(function (e) {
     e.preventDefault();
     $("#panel-pagar-cuotas").show();
     $("#montoPagarAmortizar").val(inicialCuota);
@@ -289,6 +289,49 @@ function limpiarFiltros() {
     $("#condicion").val('Todos');
     $("#input_frecuencia").val('');
     recargarTabla();
+}
+
+
+function eliminarContrato(idventa) {
+
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Se anulará el contrato y no podrás revertirlo.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sí, anular',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+
+        if (result.isConfirmed) {
+            $.ajax({
+                url: 'controladores/contratos.php?op=anularContrato',
+                type: "POST",
+                data: { idventa: idventa },
+                success: function (data) {
+                    var data = JSON.parse(data);
+
+                    if (data.success || data.status) {
+                        Swal.fire('Éxito', data.message, 'success');
+                        tabla.ajax.reload();
+
+                        if (typeof tablaCuotasCredito !== 'undefined') {
+                            tablaCuotasCredito.ajax.reload();
+                        }
+                    } else {
+                        Swal.fire('Error', data.message, 'error');
+                    }
+                },
+
+                error: function (e) {
+                    console.log(e.responseText);
+                    Swal.fire('Error', 'Error en el servidor', 'error');
+                }
+            });
+        }
+    });
 }
 
 
@@ -868,7 +911,6 @@ async function guardaryeditar(e) {
                 Swal.fire('Éxito', res.message, 'success');
                 $('#getCodeModal').modal('hide');
                 $("#formulario-pagar")[0].reset();
-                limpiar();
                 tabla.ajax.reload();
                 if (tablaCuotasCredito) {
                     tablaCuotasCredito.ajax.reload();
