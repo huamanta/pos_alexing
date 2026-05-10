@@ -118,15 +118,15 @@ final class Pos
             v.impuesto,
             v.dov_Nombre,
             v.estado,
-            GROUP_CONCAT(CONCAT(vp.metodo_pago, ': S/. ', FORMAT(vp.monto,2)) SEPARATOR ' | ') as pagos
+            GROUP_CONCAT(CONCAT(COALESCE(vp.metodo_pago,'SIN PAGO'), ': S/. ', FORMAT(COALESCE(vp.monto,0),2)) SEPARATOR ' | ') as pagos
         FROM venta v
-        INNER JOIN venta_pago vp ON v.idventa = vp.idventa 
+        LEFT JOIN venta_pago vp ON v.idventa = vp.idventa 
         INNER JOIN persona p ON v.idcliente = p.idpersona 
         INNER JOIN personal u ON v.idpersonal = u.idpersonal 
         INNER JOIN sucursal s ON s.idsucursal = v.idsucursal
         WHERE v.tipo_comprobante IN ('Boleta', 'Factura', 'Nota de Venta') 
             AND v.idcaja = '$idcaja' 
-            AND v.fecha_hora BETWEEN '$fecha_apertura' AND '$fecha_cierre'
+            AND DATE(v.fecha_hora) BETWEEN DATE('$fecha_apertura') AND DATE('$fecha_cierre')
         GROUP BY v.idventa
         ORDER BY v.idventa DESC";
 
@@ -208,8 +208,10 @@ final class Pos
               WHERE ca.estado = 1
                 AND c.idsucursal = '$idsucursal'
                 AND ca.idusuario = '$idusuario'
+                AND ca.idcaja = '$idcaja'
                 AND ca.fecha_cierre IS NULL
               LIMIT 1";
+
     $apertura = ejecutarConsulta($sqlap)->fetch_object();
 
     if (!$apertura) {
@@ -225,48 +227,60 @@ final class Pos
     $fecha_fin = date("Y-m-d H:i:s");
 
     // =========================================
-    // 3. VENTAS
+    // 3. VENTAS (NO CRÉDITO)
     // =========================================
-    $sql_ventas = "SELECT vp.metodo_pago, v.ventacredito, 
-                          SUM(vp.monto) AS total_ventas, 
-                          COUNT(*) as cantidad
+    $sql_ventas = "SELECT 
+                        vp.metodo_pago,
+                        SUM(vp.monto) AS total_ventas,
+                        COUNT(v.idventa) as cantidad
                    FROM venta v
                    INNER JOIN venta_pago vp ON v.idventa = vp.idventa
-                   WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') 
-                     AND v.idcaja = '$idcaja' 
-                     AND v.idsucursal = '$idsucursal' 
+                   WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta')
+                     AND v.idcaja = '$idcaja'
+                     AND v.idsucursal = '$idsucursal'
                      AND v.fecha_hora BETWEEN '$fecha_inicio' AND '$fecha_fin'
                      AND v.estado NOT IN ('Nota Credito','Anulado')
-                   GROUP BY vp.metodo_pago, v.ventacredito";
+                     AND (v.ventacredito IS NULL OR v.ventacredito != 'si')
+                   GROUP BY vp.metodo_pago";
 
     $ventas_query = ejecutarConsulta($sql_ventas);
 
     $ventas_efectivo = 0;
     $ventas_no_efectivo = 0;
-    $ventas_credito = 0;
-
     $cantidad_ventas_efectivo = 0;
     $cantidad_ventas_no_efectivo = 0;
-    $cantidad_ventas_credito = 0;
 
     $detalle_ventas = [];
 
     while ($v = $ventas_query->fetch_object()) {
         $detalle_ventas[] = $v;
 
-        if (strtolower($v->ventacredito) == 'si') {
-            $ventas_credito += $v->total_ventas;
-            $cantidad_ventas_credito += $v->cantidad;
+        if (strtolower($v->metodo_pago) == 'efectivo') {
+            $ventas_efectivo += $v->total_ventas;
+            $cantidad_ventas_efectivo += $v->cantidad;
         } else {
-            if (strtolower($v->metodo_pago) == 'efectivo') {
-                $ventas_efectivo += $v->total_ventas;
-                $cantidad_ventas_efectivo += $v->cantidad;
-            } else {
-                $ventas_no_efectivo += $v->total_ventas;
-                $cantidad_ventas_no_efectivo += $v->cantidad;
-            }
+            $ventas_no_efectivo += $v->total_ventas;
+            $cantidad_ventas_no_efectivo += $v->cantidad;
         }
     }
+
+    // =========================================
+    // 3.1 VENTAS CRÉDITO (CORREGIDO)
+    // =========================================
+    $sql_credito = "SELECT 
+                        COUNT(*) as cantidad,
+                        SUM(total_venta) as total
+                    FROM venta
+                    WHERE ventacredito = 'si'
+                      AND idcaja = '$idcaja'
+                      AND idsucursal = '$idsucursal'
+                      AND fecha_hora BETWEEN '$fecha_inicio' AND '$fecha_fin'
+                      AND estado NOT IN ('Nota Credito','Anulado')";
+
+    $c = ejecutarConsulta($sql_credito)->fetch_object();
+
+    $ventas_credito = (float)($c->total ?? 0);
+    $cantidad_ventas_credito = (int)($c->cantidad ?? 0);
 
     // =========================================
     // 4. MOVIMIENTOS
@@ -288,18 +302,18 @@ final class Pos
         $fp = strtolower($m->formapago);
 
         if ($m->tipo == 'Ingresos') {
-            ($fp == 'efectivo') 
-                ? $ingresos_efectivo += $m->monto 
+            ($fp == 'efectivo')
+                ? $ingresos_efectivo += $m->monto
                 : $ingresos_no_efectivo += $m->monto;
         } elseif ($m->tipo == 'Egresos') {
-            ($fp == 'efectivo') 
-                ? $egresos_efectivo += $m->monto 
+            ($fp == 'efectivo')
+                ? $egresos_efectivo += $m->monto
                 : $egresos_no_efectivo += $m->monto;
         }
     }
 
     // =========================================
-    // 5. ABONOS (🔥 CORREGIDO)
+    // 5. ABONOS
     // =========================================
     $sql_abonos = "SELECT 
                       SUM(montopagado) AS total_efectivo, 
@@ -317,10 +331,10 @@ final class Pos
     // =========================================
     // 6. TOTAL EFECTIVO
     // =========================================
-    $total_efectivo = $efectivo_apertura 
-                    + $ventas_efectivo 
-                    + $ingresos_efectivo 
-                    + $abonos_efectivo 
+    $total_efectivo = $efectivo_apertura
+                    + $ventas_efectivo
+                    + $ingresos_efectivo
+                    + $abonos_efectivo
                     - $egresos_efectivo;
 
     // =========================================

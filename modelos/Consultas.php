@@ -1939,11 +1939,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalcomprahoy($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE estado != 'Anulado' AND tipo_c='Compra' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE estado != 'Anulado' AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE estado != 'Anulado' AND tipo_c='Compra' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE estado != 'Anulado' AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
@@ -1953,11 +1953,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalcomprahoyC($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE formapago != 'Efectivo' AND estado != 'Anulado' AND tipo_c='Compra' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE formapago != 'Efectivo' AND estado != 'Anulado' AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE formapago != 'Efectivo' AND estado != 'Anulado' AND tipo_c='Compra' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE formapago != 'Efectivo' AND estado != 'Anulado' AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
@@ -1967,11 +1967,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalcomprahoyefectivo($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(totalrecibido),0) as total_compra FROM compra WHERE estado != 'Anulado'  AND tipo_c='Compra' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(totalrecibido),0) as total_compra FROM compra WHERE estado != 'Anulado'  AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(totalrecibido),0) as total_compra FROM compra WHERE estado != 'Anulado'  AND tipo_c='Compra' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(totalrecibido),0) as total_compra FROM compra WHERE estado != 'Anulado'  AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
@@ -1981,11 +1981,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalcomprahoyyape($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago = 'yape' AND tipo_c='Compra' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago = 'yape' AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago = 'yape' AND tipo_c='Compra' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago = 'yape' AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
@@ -1995,11 +1995,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalcomprahoyplin($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago = 'plin' AND tipo_c='Compra' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago = 'plin' AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago = 'plin' AND tipo_c='Compra' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago = 'plin' AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
@@ -2009,11 +2009,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalcomprahoyop($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago IN ('Transferencia','Tarjeta','Deposito') AND tipo_c='Compra' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago IN ('Transferencia','Tarjeta','Deposito') AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago IN ('Transferencia','Tarjeta','Deposito') AND tipo_c='Compra' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(totaldeposito),0) as total_compra FROM compra WHERE estado != 'Anulado' AND  formapago IN ('Transferencia','Tarjeta','Deposito') AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
@@ -2024,11 +2024,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalventahoy($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(total_venta-descuento),0) as total_venta FROM venta WHERE ventacredito = 'No' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(total_venta-descuento),0) as total_venta FROM venta WHERE ventacredito = 'No' AND idpersonal = '$idvendedor' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(total_venta-descuento),0) as total_venta FROM venta WHERE ventacredito = 'No' AND idsucursal = '$idsucursal' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(total_venta-descuento),0) as total_venta FROM venta WHERE ventacredito = 'No' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
@@ -2038,11 +2038,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalcuentasporcobrar($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(deudatotal),0) as totaldeuda FROM cuentas_por_cobrar where condicion=1 AND DATE(fecharegistro)>='$fecha_inicio' AND DATE(fecharegistro)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(deudatotal),0) as totaldeuda FROM cuentas_por_cobrar cc INNER JOIN venta v ON cc.idventa=v.idventa where cc.condicion=1 AND v.idpersonal = '$idvendedor' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(cc.deudatotal),0) as totaldeuda FROM cuentas_por_cobrar cc INNER JOIN venta v ON cc.idventa=v.idventa where cc.condicion=1 AND v.idsucursal = '$idsucursal' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(cc.deudatotal),0) as totaldeuda FROM cuentas_por_cobrar cc INNER JOIN venta v ON cc.idventa=v.idventa where condicion=1 AND v.idpersonal = '$idvendedor' AND v.idsucursal = '$idsucursal' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
@@ -2052,11 +2052,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalcuentasporpagar($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(deudatotal),0) as totaldeuda FROM cuentas_por_pagar where condicion=1 AND DATE(fecharegistro)>='$fecha_inicio' AND DATE(fecharegistro)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(deudatotal),0) as totaldeuda FROM cuentas_por_pagar cc INNER JOIN compra v ON cc.idcompra=v.idcompra where cc.condicion=1 AND v.idpersonal = '$idvendedor' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(cc.deudatotal),0) as totaldeuda FROM cuentas_por_pagar cc INNER JOIN compra v ON cc.idcompra=v.idcompra where cc.condicion=1 AND v.idsucursal = '$idsucursal' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(cc.deudatotal),0) as totaldeuda FROM cuentas_por_pagar cc INNER JOIN compra v ON cc.idcompra=v.idcompra where condicion=1 AND v.idpersonal = '$idvendedor' AND v.idsucursal = '$idsucursal' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
@@ -2066,11 +2066,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalabonospagados($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(montopagado),0) as totaldeuda FROM detalle_cuentas_por_pagar  where  DATE(fechapago)>='$fecha_inicio' AND DATE(fechapago)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(dcpp.montopagado),0) as totaldeuda FROM detalle_cuentas_por_pagar dcpp INNER JOIN cuentas_por_pagar cpp ON cpp.idcpp=dcpp.idcpp INNER JOIN compra c ON c.idcompra=cpp.idcompra  where  DATE(dcpp.fechapago)>='$fecha_inicio' AND DATE(dcpp.fechapago)<='$fecha_fin' AND c.idpersonal='$idvendedor'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(dcpp.montopagado),0) as totaldeuda FROM detalle_cuentas_por_pagar dcpp INNER JOIN cuentas_por_pagar cpp ON cpp.idcpp=dcpp.idcpp INNER JOIN compra c ON c.idcompra=cpp.idcompra  where  DATE(dcpp.fechapago)>='$fecha_inicio' AND DATE(dcpp.fechapago)<='$fecha_fin' AND c.idsucursal='$idsucursal'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(dcpp.montopagado),0) as totaldeuda FROM detalle_cuentas_por_pagar dcpp INNER JOIN cuentas_por_pagar cpp ON cpp.idcpp=dcpp.idcpp INNER JOIN compra c ON c.idcompra=cpp.idcompra  where  DATE(dcpp.fechapago)>='$fecha_inicio' AND DATE(dcpp.fechapago)<='$fecha_fin' AND c.idsucursal='$idsucursal' AND c.idpersonal='$idvendedor'";
@@ -2080,11 +2080,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalabonoscobrados($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(montopagado),0) as totaldeuda FROM detalle_cuentas_por_cobrar  where  DATE(fechapago)>='$fecha_inicio' AND DATE(fechapago)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(dcpc.montopagado),0) as totaldeuda FROM detalle_cuentas_por_cobrar dcpc INNER JOIN cuentas_por_cobrar cpc ON cpc.idcpc=dcpc.idcpc INNER JOIN venta v ON v.idventa=cpc.idventa  where  DATE(dcpc.fechapago)>='$fecha_inicio' AND DATE(dcpc.fechapago)<='$fecha_fin' AND v.idpersonal='$idvendedor'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(dcpc.montopagado),0) as totaldeuda FROM detalle_cuentas_por_cobrar dcpc INNER JOIN cuentas_por_cobrar cpc ON cpc.idcpc=dcpc.idcpc INNER JOIN venta v ON v.idventa=cpc.idventa  where  DATE(dcpc.fechapago)>='$fecha_inicio' AND DATE(dcpc.fechapago)<='$fecha_fin' AND v.idsucursal='$idsucursal'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(dcpc.montopagado),0) as totaldeuda FROM detalle_cuentas_por_cobrar dcpc INNER JOIN cuentas_por_cobrar cpc ON cpc.idcpc=dcpc.idcpc INNER JOIN venta v ON v.idventa=cpc.idventa  where  DATE(dcpc.fechapago)>='$fecha_inicio' AND DATE(dcpc.fechapago)<='$fecha_fin' AND v.idsucursal='$idsucursal' AND v.idpersonal='$idvendedor'";
@@ -2094,7 +2094,7 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalutilidadhoy($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT ROUND(IFNULL(SUM(utilidad),0), 2) as total_utilidad
 					FROM (
 					    SELECT 
@@ -2115,7 +2115,7 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 							AND DATE(fecha_hora)>='$fecha_inicio'
 							AND DATE(fecha_hora)<='$fecha_fin'
 					)AS subquery";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT ROUND(IFNULL(SUM(utilidad),0), 2) as total_utilidad
 					FROM (
 					    SELECT 
@@ -2137,7 +2137,7 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 							AND DATE(fecha_hora)<='$fecha_fin'
 							AND v.idPersonal='$idvendedor'
 					)AS subquery";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT ROUND(IFNULL(SUM(utilidad),0), 2) as total_utilidad
 					FROM (
 					    SELECT 
@@ -2190,11 +2190,11 @@ public function ventasfechaproductoproveedor($fecha_inicio, $fecha_fin, $idprodu
 
 	public function totalventachoy($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
 	{
-		if ($idvendedor == "Todos" || $idvendedor == null and $idsucursal == "Todos" || $idsucursal == null) {
+		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
 			$sql = "SELECT IFNULL(SUM(total_venta),0) as total_venta FROM venta WHERE ventacredito = 'Si' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == "Todos" and $idsucursal != "Todos") {
+		} else if ($idvendedor == 0 and $idsucursal != "") {
 			$sql = "SELECT IFNULL(SUM(total_venta),0) as total_venta FROM venta WHERE ventacredito = 'Si' AND idsucursal = '$idsucursal' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != "Todos" and $idsucursal == "Todos") {
+		} else if ($idvendedor != 0 and $idsucursal == "") {
 			$sql = "SELECT IFNULL(SUM(total_venta),0) as total_venta FROM venta WHERE ventacredito = 'Si' AND idpersonal = '$idvendedor' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
 		} else {
 			$sql = "SELECT IFNULL(SUM(total_venta),0) as total_venta FROM venta WHERE ventacredito = 'Si' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";

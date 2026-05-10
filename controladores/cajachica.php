@@ -66,11 +66,10 @@ switch ($_GET["op"]) {
 
 		echo '<option value="" selected>Seleccione...</option>';
 
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idconcepto_movimiento . '>' . $reg->descripcion . '</option>';
+		foreach ($rspta as $reg) {
+			echo '<option value="'.$reg['idconcepto_movimiento'].'">'.$reg['descripcion'].'</option>';
 		}
 		break;
-
 	case 'guardaryeditarConcepto':
 		$idconcepto_movimiento = isset($_POST["idconcepto_movimiento"]) ? limpiarCadena($_POST["idconcepto_movimiento"]) : "";
 		$descripcion = isset($_POST["descripcion"]) ? limpiarCadena($_POST["descripcion"]) : "";

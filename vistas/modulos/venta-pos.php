@@ -673,25 +673,29 @@ date_default_timezone_set('America/Lima');
                                                         </div>
 
                                                         <!-- Botón para desplegar datos -->
-                                                        <div class="card-header bg-light py-2 d-flex justify-content-end gap-2">
-                                                        <div class="ms-auto d-flex gap-2">
-                                                            <button type="button"
-                                                                class="btn btn-sm btn-primary shadow-sm"
-                                                                onclick="toggleCard()"
-                                                                title="Completa los datos de tu pedido">
-                                                                <i class="fas fa-info-circle"></i> Datos cliente 
-                                                                <i class="fas fa-chevron-down" id="chevron-down"></i>
-                                                                <i class="fas fa-chevron-up" id="chevron-up" style="display:none;"></i>
-                                                            </button>
+                                                        <div
+                                                            class="card-header bg-light py-2 d-flex justify-content-end gap-2">
+                                                            <div class="ms-auto d-flex gap-2">
+                                                                <button type="button"
+                                                                    class="btn btn-sm btn-primary shadow-sm"
+                                                                    onclick="toggleCard()"
+                                                                    title="Completa los datos de tu pedido">
+                                                                    <i class="fas fa-info-circle"></i> Datos cliente
+                                                                    <i class="fas fa-chevron-down"
+                                                                        id="chevron-down"></i>
+                                                                    <i class="fas fa-chevron-up" id="chevron-up"
+                                                                        style="display:none;"></i>
+                                                                </button>
 
-                                                            <button type="button" 
-                                                                class="btn btn-outline-info btn-sm"
-                                                                data-toggle="modal" 
-                                                                data-target="#modalAcompananteGarante">
-                                                                <i class="fas fa-user-friends"></i> Datos adicionales
-                                                            </button>
+                                                                <button type="button"
+                                                                    class="btn btn-outline-info btn-sm"
+                                                                    data-toggle="modal"
+                                                                    data-target="#modalAcompananteGarante">
+                                                                    <i class="fas fa-user-friends"></i> Datos
+                                                                    adicionales
+                                                                </button>
+                                                            </div>
                                                         </div>
-                                                    </div>
 
                                                         <!-- Cuerpo del formulario (oculto inicialmente) -->
                                                         <div class="card-body" id="datosgenerales" hidden>
@@ -707,41 +711,60 @@ date_default_timezone_set('America/Lima');
 
                                                             <!-- Almacén y Cliente (estructura mejorada) -->
                                                             <fieldset class="border p-2 rounded mb-3">
-                                                                <legend class="w-auto px-2 small font-weight-bold text-primary">Datos principales</legend>
+                                                                <legend
+                                                                    class="w-auto px-2 small font-weight-bold text-primary">
+                                                                    Datos principales</legend>
                                                                 <div class="row">
                                                                     <div class="col-md-4 col-sm-12 mb-2">
-                                                                        <label for="idsucursal" class="font-weight-bold">
-                                                                            <i class="fas fa-map-marked-alt"></i> Almacén
+                                                                        <label for="idsucursal"
+                                                                            class="font-weight-bold">
+                                                                            <i class="fas fa-map-marked-alt"></i>
+                                                                            Almacén
                                                                         </label>
-                                                                        <select id="idsucursal" name="idsucursal" class="form-control"></select>
+                                                                        <select id="idsucursal" name="idsucursal"
+                                                                            class="form-control"></select>
                                                                     </div>
                                                                     <div class="col-md-8 col-sm-12 mb-2">
                                                                         <label for="idcliente" class="font-weight-bold">
                                                                             <i class="fas fa-users"></i> Cliente
                                                                         </label>
-                                                                        <div class="d-flex align-items-center justify-content-between mb-1">
+                                                                        <div
+                                                                            class="d-flex align-items-center justify-content-between mb-1">
                                                                             <div>
-                                                                                <a class="text-info" style="cursor:pointer;" data-toggle="modal" data-target="#ModalClientes">
+                                                                                <a class="text-info"
+                                                                                    style="cursor:pointer;"
+                                                                                    data-toggle="modal"
+                                                                                    data-target="#ModalClientes">
                                                                                     <i class="fa fa-plus"></i> Nuevo
                                                                                 </a>
-                                                                                <a class="ml-3 text-success" style="cursor:pointer;" onclick="verHistorialCliente()">
-                                                                                    <i class="fas fa-history"></i> Historial
+                                                                                <a class="ml-3 text-success"
+                                                                                    style="cursor:pointer;"
+                                                                                    onclick="verHistorialCliente()">
+                                                                                    <i class="fas fa-history"></i>
+                                                                                    Historial
                                                                                 </a>
                                                                             </div>
                                                                         </div>
-                                                                        <select id="idcliente" name="idcliente" class="form-control" required></select>
+                                                                        <select id="idcliente" name="idcliente"
+                                                                            class="form-control" required></select>
                                                                     </div>
                                                                 </div>
                                                             </fieldset>
 
                                                             <fieldset class="border p-2 rounded mb-3">
-                                                                <legend class="w-auto px-2 small font-weight-bold text-primary">Documento</legend>
+                                                                <legend
+                                                                    class="w-auto px-2 small font-weight-bold text-primary">
+                                                                    Documento</legend>
                                                                 <div class="row">
                                                                     <div class="col-md-4 col-sm-12 mb-2">
-                                                                        <label for="tipo_comprobante" class="font-weight-bold">
-                                                                            <i class="fas fa-file-alt"></i> Tipo Documento
+                                                                        <label for="tipo_comprobante"
+                                                                            class="font-weight-bold">
+                                                                            <i class="fas fa-file-alt"></i> Tipo
+                                                                            Documento
                                                                         </label>
-                                                                        <select class="form-control" name="tipo_comprobante" id="tipo_comprobante">
+                                                                        <select class="form-control"
+                                                                            name="tipo_comprobante"
+                                                                            id="tipo_comprobante">
                                                                             <?php if (Helpers::getUserPermissionAccion('Crear Boleta')): ?>
                                                                                 <option value="Boleta">Boleta</option>
                                                                             <?php endif; ?>
@@ -749,22 +772,35 @@ date_default_timezone_set('America/Lima');
                                                                                 <option value="Factura">Factura</option>
                                                                             <?php endif; ?>
                                                                             <?php if (Helpers::getUserPermissionAccion('Crear Nota de Venta')): ?>
-                                                                                <option value="Nota de Venta">Nota de Venta</option>
+                                                                                <option value="Nota de Venta">Nota de Venta
+                                                                                </option>
                                                                             <?php endif; ?>
                                                                         </select>
-                                                                        <small id="validate_categoria" class="text-danger d-none">Debe seleccionar documento</small>
+                                                                        <small id="validate_categoria"
+                                                                            class="text-danger d-none">Debe seleccionar
+                                                                            documento</small>
                                                                     </div>
                                                                     <div class="col-md-4 col-sm-12 mb-2">
-                                                                        <label for="serie_comprobante" class="font-weight-bold">
+                                                                        <label for="serie_comprobante"
+                                                                            class="font-weight-bold">
                                                                             <i class="fas fa-store-alt"></i> Serie
                                                                         </label>
-                                                                        <input type="text" class="form-control form-control-sm text-center bg-warning" name="serie_comprobante" id="serie_comprobante" maxlength="7" placeholder="Serie" readonly>
+                                                                        <input type="text"
+                                                                            class="form-control form-control-sm text-center bg-warning"
+                                                                            name="serie_comprobante"
+                                                                            id="serie_comprobante" maxlength="7"
+                                                                            placeholder="Serie" readonly>
                                                                     </div>
                                                                     <div class="col-md-4 col-sm-12 mb-2">
-                                                                        <label for="num_comprobante" class="font-weight-bold">
+                                                                        <label for="num_comprobante"
+                                                                            class="font-weight-bold">
                                                                             <i class="fas fa-file-alt"></i> Nº Orden
                                                                         </label>
-                                                                        <input type="text" class="form-control form-control-sm text-center bg-warning" name="num_comprobante" id="num_comprobante" maxlength="10" placeholder="Número" readonly>
+                                                                        <input type="text"
+                                                                            class="form-control form-control-sm text-center bg-warning"
+                                                                            name="num_comprobante" id="num_comprobante"
+                                                                            maxlength="10" placeholder="Número"
+                                                                            readonly>
                                                                     </div>
                                                                 </div>
                                                             </fieldset>
@@ -810,69 +846,72 @@ date_default_timezone_set('America/Lima');
                                                             </div>
                                                         </div>
                                                     </div>
-                                                        <div class="col-md-12">
-                                                                        <label for="">Detalle de la venta</label>
-                                                            <input type="hidden" name="idcaja" id="idcaja"
-                                                                style="right: -15px;">
-                                                            <div id="detalles-wrapper">
-                                                                <table id="detalles"
-                                                                    class="table table-striped table-hover">
-                                                                    <thead class="bg-info">
-                                                                        <th>Producto</th>
-                                                                        <th>UM</th>
-                                                                        <th>Precio</th>
-                                                                        <th>Blz</th>
-                                                                        <th>Cantidad</th>
-                                                                        <th>Descuento</th>
-                                                                        <th>Subtotal</th>
-                                                                    </thead>
-                                                                    <tfoot>
-                                                                    </tfoot>
-                                                                    <tbody>
+                                                    <div class="col-md-12">
+                                                        <label for="">Detalle de la venta</label>
+                                                        <input type="hidden" name="idcaja" id="idcaja"
+                                                            style="right: -15px;">
+                                                        <div id="detalles-wrapper">
+                                                            <table id="detalles"
+                                                                class="table table-striped table-hover">
+                                                                <thead class="bg-info">
+                                                                    <th>Producto</th>
+                                                                    <th>UM</th>
+                                                                    <th>Precio</th>
+                                                                    <th>Blz</th>
+                                                                    <th>Cantidad</th>
+                                                                    <th>Descuento</th>
+                                                                    <th>Subtotal</th>
+                                                                </thead>
+                                                                <tfoot>
+                                                                </tfoot>
+                                                                <tbody>
 
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
+                                                                </tbody>
+                                                            </table>
                                                         </div>
-                                                        <!-- IMPUESTOS Y TOTAL -->
-                                                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-                                                            <div class="border rounded shadow-sm overflow-hidden">
+                                                    </div>
+                                                    <!-- IMPUESTOS Y TOTAL -->
+                                                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                                                        <div class="border rounded shadow-sm overflow-hidden">
 
-                                                                <!-- Fila Impuesto -->
-                                                                <div class="d-flex">
-                                                                    <div class="col-9 py-2 fw-bold text-right">
-                                                                        Impuesto
-                                                                    </div>
-                                                                    <div class="col-3 text-right py-2">
-                                                                        <span class="fw-bold fs-4">S/. </span>
-                                                                        <span id="sp-impuesto" class="fw-bold fs-4">0.00</span>
-                                                                        <input type="hidden" name="impuesto" id="impuesto">
-                                                                    </div>
+                                                            <!-- Fila Impuesto -->
+                                                            <div class="d-flex">
+                                                                <div class="col-9 py-2 fw-bold text-right">
+                                                                    Impuesto
                                                                 </div>
-                                                                <div class="d-flex">
-                                                                    <div class="col-9 py-2 fw-bold text-right">
-                                                                       Subtotal
-                                                                    </div>
-                                                                    <div class="col-3 text-right py-2">
-                                                                        <span class="fw-bold fs-4">S/. </span>
-                                                                        <span id="sp-subtotal" class="fw-bold fs-4">0.00</span>
-                                                                        <input type="hidden" name="subtotal" id="subtotal">
-                                                                    </div>
-                                                                </div>
-
-                                                                <!-- Fila Total -->
-                                                                <div class="d-flex">
-                                                                    <div class="col-9 py-2 fw-bold text-right">
-                                                                        Total
-                                                                    </div>
-                                                                    <div class="col-3 text-right py-2">
-                                                                        <span class="fw-bold fs-4">S/. </span>
-                                                                        <span id="total" class="fw-bold fs-4">0.00</span>
-                                                                        <input type="hidden" name="total_venta" id="total_venta">
-                                                                    </div>
+                                                                <div class="col-3 text-right py-2">
+                                                                    <span class="fw-bold fs-4">S/. </span>
+                                                                    <span id="sp-impuesto"
+                                                                        class="fw-bold fs-4">0.00</span>
+                                                                    <input type="hidden" name="impuesto" id="impuesto">
                                                                 </div>
                                                             </div>
+                                                            <div class="d-flex">
+                                                                <div class="col-9 py-2 fw-bold text-right">
+                                                                    Subtotal
+                                                                </div>
+                                                                <div class="col-3 text-right py-2">
+                                                                    <span class="fw-bold fs-4">S/. </span>
+                                                                    <span id="sp-subtotal"
+                                                                        class="fw-bold fs-4">0.00</span>
+                                                                    <input type="hidden" name="subtotal" id="subtotal">
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Fila Total -->
+                                                            <div class="d-flex">
+                                                                <div class="col-9 py-2 fw-bold text-right">
+                                                                    Total
+                                                                </div>
+                                                                <div class="col-3 text-right py-2">
+                                                                    <span class="fw-bold fs-4">S/. </span>
+                                                                    <span id="total" class="fw-bold fs-4">0.00</span>
+                                                                    <input type="hidden" name="total_venta"
+                                                                        id="total_venta">
+                                                                </div>
+                                                            </div>
                                                         </div>
+                                                    </div>
 
                                                     <hr>
 
@@ -1004,7 +1043,7 @@ date_default_timezone_set('America/Lima');
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <hr style="border: 1 px solid #007bff;"/>
+                                                        <hr style="border: 1 px solid #007bff;" />
                                                         <div class="row col-md-12 mt-4">
                                                             <div class="form-group col-lg-3" id="n0">
                                                                 <label>Frecuencia:</label>
@@ -1040,15 +1079,16 @@ date_default_timezone_set('America/Lima');
                                                                 </select>
                                                             </div>
 
-                                                            <div class="form-group col-lg-3">
+                                                            <div class="form-group col-lg-3" id="n2">
                                                                 <label style="font-size: 11px;">N° meses:</label>
                                                                 <div class="input-group">
                                                                     <input style="text-align:center" type="text"
-                                                                        class="form-control" id="numeroMeses" name="numeroMeses">
+                                                                        class="form-control" id="numeroMeses"
+                                                                        name="numeroMeses">
                                                                 </div>
                                                             </div>
 
-                                                            <div class="form-group col-lg-3" id="n2">
+                                                            <div class="form-group col-lg-3" id="n3">
                                                                 <label style="font-size: 11px;">Fecha Inicio:</label>
                                                                 <div class="input-group">
                                                                     <input style="text-align:center" type="date"
@@ -1077,7 +1117,7 @@ date_default_timezone_set('America/Lima');
                                                                 </div-->
 
                                                             <div class="form-group col-lg-2" style="display: none;"
-                                                                id="n3">
+                                                                id="n4">
 
                                                                 <label style="font-size: 11px;">Monto Deuda:</label>
                                                                 <div class="input-group">
@@ -1089,7 +1129,7 @@ date_default_timezone_set('America/Lima');
                                                             </div>
 
                                                             <div class="form-group col-lg-2" style="display: none;"
-                                                                id="n4">
+                                                                id="n5">
 
                                                                 <label style="font-size: 11px;">Interes %:</label>
                                                                 <div class="input-group">
@@ -1109,46 +1149,64 @@ date_default_timezone_set('America/Lima');
                                                             </div>
                                                         </div>
 
-                                                        <div class="modal fade" id="modalAcompananteGarante" tabindex="-1"
-                                                            role="dialog" aria-labelledby="modalAcompananteGaranteLabel"
-                                                            aria-hidden="true" data-backdrop="static" data-keyboard="false">
+                                                        <div class="modal fade" id="modalAcompananteGarante"
+                                                            tabindex="-1" role="dialog"
+                                                            aria-labelledby="modalAcompananteGaranteLabel"
+                                                            aria-hidden="true" data-backdrop="static"
+                                                            data-keyboard="false">
                                                             <div class="modal-dialog modal-lg" role="document">
                                                                 <div class="modal-content">
                                                                     <div class="modal-header">
-                                                                        <h5 class="modal-title" id="modalAcompananteGaranteLabel">Datos de acompañante y garante</h5>
-                                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                                        <h5 class="modal-title"
+                                                                            id="modalAcompananteGaranteLabel">Datos de
+                                                                            acompañante y garante</h5>
+                                                                        <button type="button" class="close"
+                                                                            data-dismiss="modal" aria-label="Close">
                                                                             <span aria-hidden="true">&times;</span>
                                                                         </button>
                                                                     </div>
                                                                     <div class="modal-body">
-                                                                        <p class="text-muted mb-3">Si el cliente tiene un acompañante o garante, por favor ingresa sus datos aquí.</p>
+                                                                        <p class="text-muted mb-3">Si el cliente tiene
+                                                                            un acompañante o garante, por favor ingresa
+                                                                            sus datos aquí.</p>
                                                                         <div class="form-group">
-                                                                            <label for="idtipoacompanante">Tipo de acompañante</label>
-                                                                            <select class="form-control" id="idtipoacompanante" name="idtipoacompanante">
-                                                                                <option value="" selected hidden>Seleccionar...</option>
+                                                                            <label for="idtipoacompanante">Tipo de
+                                                                                acompañante</label>
+                                                                            <select class="form-control"
+                                                                                id="idtipoacompanante"
+                                                                                name="idtipoacompanante">
+                                                                                <option value="" selected hidden>
+                                                                                    Seleccionar...</option>
                                                                                 <option value="1">Cónyuge</option>
                                                                                 <option value="2">Hijo(a)</option>
                                                                                 <option value="3">Padre</option>
                                                                                 <option value="4">Madre</option>
                                                                                 <option value="5">Hermano(a)</option>
                                                                                 <option value="6">Amigo(a)</option>
-                                                                                <option value="7">Compañero(a) de trabajo</option>
+                                                                                <option value="7">Compañero(a) de
+                                                                                    trabajo</option>
                                                                                 <option value="8">Otro</option>
                                                                             </select>
                                                                         </div>
 
                                                                         <div class="form-group">
-                                                                            <label for="idacompanante">Acompañante</label>
-                                                                            <select class="form-control select2" id="idacompanante" name="idacompanante"></select>
+                                                                            <label
+                                                                                for="idacompanante">Acompañante</label>
+                                                                            <select class="form-control select2"
+                                                                                id="idacompanante"
+                                                                                name="idacompanante"></select>
                                                                         </div>
 
                                                                         <div class="form-group">
                                                                             <label for="idgarante">Garante</label>
-                                                                            <select class="form-control select2" id="idgarante" name="idgarante"></select>
+                                                                            <select class="form-control select2"
+                                                                                id="idgarante"
+                                                                                name="idgarante"></select>
                                                                         </div>
                                                                     </div>
                                                                     <div class="modal-footer">
-                                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                                                                        <button type="button" class="btn btn-secondary"
+                                                                            data-dismiss="modal">Cerrar</button>
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -1186,8 +1244,9 @@ date_default_timezone_set('America/Lima');
                                                         </div>
                                                         <div class="row col-md-12 mt-4" id="panel1"
                                                             style="display: none;">
-                                                            <table class="table">
-                                                                <thead>
+                                                            <table class="table" style="width:100%;">
+                                                                <thead
+                                                                    style="display: table; width: 100%; table-layout: fixed;">
                                                                     <tr>
                                                                         <th>Fecha de pagos</th>
                                                                         <th>Monto</th>
@@ -1195,10 +1254,31 @@ date_default_timezone_set('America/Lima');
                                                                         <th>Total</th>
                                                                     </tr>
                                                                 </thead>
+
+                                                                <style>
+                                                                    #datafechas {
+                                                                        display: block;
+                                                                        max-height: 300px;
+                                                                        overflow-y: auto;
+                                                                        width: 100%;
+                                                                    }
+
+                                                                    #datafechas tr {
+                                                                        display: table;
+                                                                        width: 100%;
+                                                                        table-layout: fixed;
+                                                                    }
+
+                                                                    #datafechas td {
+                                                                        width: 25%;
+                                                                    }
+                                                                </style>
+
                                                                 <tbody id="datafechas">
                                                                     <tr>
-                                                                        <td colspan="4" class="text-center">No se han
-                                                                            calculado las fechas de pago</td>
+                                                                        <td colspan="4" class="text-center">
+                                                                            No se han calculado las fechas de pago
+                                                                        </td>
                                                                     </tr>
                                                                 </tbody>
                                                             </table>
@@ -1273,9 +1353,10 @@ date_default_timezone_set('America/Lima');
                                                                         class="fas fa-barcode"></span></button>
                                                                 <input type="search" placeholder="Buscar producto"
                                                                     class="form-control" id="search_product">
-                                                                    <button type="button" class="btn btn-default mb-3 d-xl-none d-lg-none btnAgregarProducto">
-                                                                        Agregar producto
-                                                                    </button>
+                                                                <button type="button"
+                                                                    class="btn btn-default mb-3 d-xl-none d-lg-none btnAgregarProducto">
+                                                                    Agregar producto
+                                                                </button>
                                                             </div>
                                                             <div class="tab-pane fade show active"
                                                                 id="custom-tabs-two-home" role="tabpanel"
@@ -1427,95 +1508,96 @@ date_default_timezone_set('America/Lima');
     </div>
 
     <div class="modal fade" id="myModal2">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">Lista de ventas</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="row">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Lista de ventas</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
 
-          <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                        <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
 
-          </div>
+                        </div>
 
-          <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                        <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
 
-          </div>
+                        </div>
 
-          <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
-            <label>Almacén:</label>
+                        <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                            <label>Almacén:</label>
 
-            <div class="input-group">
-              <div class="input-group-prepend">
-                <span class="input-group-text">
-                  <i class="fas fa-store-alt"></i>
-                </span>
-              </div>
-              <select id="idsucursalVentas" name="idsucursalVentas" class="form-control" readonly>
-              </select>
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-store-alt"></i>
+                                    </span>
+                                </div>
+                                <select id="idsucursalVentas" name="idsucursalVentas" class="form-control" readonly>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                            <label>Estado:</label>
+
+                            <div class="input-group">
+                                <select id="estadoVentas" name="estadoVentas" class="form-control select2" required>
+                                    <option value="Todos">Todos</option>
+                                    <option value="Aceptado">Aceptado</option>
+                                    <option value="Por Enviar">Por Enviar</option>
+                                    <option value="Nota Credito">Nota de Crédito</option>
+                                    <option value="Rechazado">Rechazado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="tale-resposive">
+                        <table id="tbllistadoVentas" class="table table-striped">
+                            <thead>
+                                <th>ID</th>
+                                <th>Cliente / N° Documento</th>
+                                <th>Sucursal</th>
+                                <th>Número</th>
+                                <th>Total Venta</th>
+                                <th>Tipo Pago</th>
+                                <th>Estado</th>
+                                <th width="70px;">Sunat</th>
+                                <th style="text-align: center;"><i class="fa fa-shield" aria-hidden="true"
+                                        title="Comprobar estado"></i></th>
+                                <th width="180px;">Acciones</th>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                            <tfoot>
+                                <th>Fecha</th>
+                                <th>Cliente</th>
+                                <th>Sucursal</th>
+                                <th>Número</th>
+                                <th>Total Venta</th>
+                                <th>Tipo Pago</th>
+                                <th>Estado</th>
+                                <th>Sunat</th>
+                                <th></th>
+                                <th>Acciones</th>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <div></div>
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">CERRAR</button>
+                </div>
             </div>
-          </div>
-
-          <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
-            <label>Estado:</label>
-
-            <div class="input-group">
-              <select id="estadoVentas" name="estadoVentas" class="form-control select2" required>
-                <option value="Todos">Todos</option>
-                <option value="Aceptado">Aceptado</option>
-                <option value="Por Enviar">Por Enviar</option>
-                <option value="Nota Credito">Nota de Crédito</option>
-                <option value="Rechazado">Rechazado</option>
-              </select>
-            </div>
-          </div>
-
+            <!-- /.modal-content -->
         </div>
-        <div class="tale-resposive">
-          <table id="tbllistadoVentas" class="table table-striped">
-            <thead>
-              <th>ID</th>
-              <th>Cliente / N° Documento</th>
-              <th>Sucursal</th>
-              <th>Número</th>
-              <th>Total Venta</th>
-              <th>Tipo Pago</th>
-              <th>Estado</th>
-              <th width="70px;">Sunat</th>
-              <th style="text-align: center;"><i class="fa fa-shield" aria-hidden="true" title="Comprobar estado"></i></th>
-              <th width="180px;">Acciones</th>
-            </thead>
-            <tbody>
-            </tbody>
-            <tfoot>
-              <th>Fecha</th>
-              <th>Cliente</th>
-              <th>Sucursal</th>
-              <th>Número</th>
-              <th>Total Venta</th>
-              <th>Tipo Pago</th>
-              <th>Estado</th>
-              <th>Sunat</th>
-              <th></th>
-              <th>Acciones</th>
-            </tfoot>
-          </table>
-        </div>
-
-      </div>
-      <div class="modal-footer justify-content-between">
-        <div></div>
-        <button type="button" class="btn btn-primary" data-dismiss="modal">CERRAR</button>
-      </div>
+        <!-- /.modal-dialog -->
     </div>
-    <!-- /.modal-content -->
-  </div>
-  <!-- /.modal-dialog -->
-</div>
 
     <div class="modal fade" id="myModal">
         <div class="modal-dialog modal-lg">
@@ -1798,30 +1880,32 @@ date_default_timezone_set('America/Lima');
     </div>
 
     <!-- Modal para registrar número de celular -->
-    <div class="modal fade" id="modalCelular" tabindex="-1" role="dialog" aria-labelledby="modalCelularLabel" aria-hidden="true">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="modalCelularLabel">Registrar Número de Celular</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <label for="numeroCelular">Número de Celular:</label>
-            <input type="text" name="numeroCelular" id="numeroCelular" class="form-control" placeholder="Ingrese número de celular">
-            <!-- Campos ocultos para tipo de comprobante, serie y número -->
+    <div class="modal fade" id="modalCelular" tabindex="-1" role="dialog" aria-labelledby="modalCelularLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalCelularLabel">Registrar Número de Celular</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <label for="numeroCelular">Número de Celular:</label>
+                    <input type="text" name="numeroCelular" id="numeroCelular" class="form-control"
+                        placeholder="Ingrese número de celular">
+                    <!-- Campos ocultos para tipo de comprobante, serie y número -->
                     <input type="hidden" id="idventa">
                     <input type="hidden" id="tipoComprobante">
                     <input type="hidden" id="numComprobante">
                     <input type="hidden" id="serieComprobante">
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" onclick="cancelarmodalCelular()">Cerrar</button>
-            <button type="button" class="btn btn-primary" onclick="abrirWhatsApp()">Abrir WhatsApp</button>
-          </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cancelarmodalCelular()">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="abrirWhatsApp()">Abrir WhatsApp</button>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
 
 

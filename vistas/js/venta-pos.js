@@ -2269,9 +2269,15 @@ function cerrarcaja() {
 
       // Construye el HTML del resumen
       let ventasHtml = `
-                <b>VENTAS EFECTIVO:</b> S/. ${parseFloat(resumen.ventas_efectivo).toFixed(2)} (${resumen.cantidad_ventas_efectivo} ventas)<br>
-                <b>VENTAS NO EFECTIVO:</b> S/. ${parseFloat(resumen.ventas_no_efectivo).toFixed(2)} (${resumen.cantidad_ventas_no_efectivo} ventas)<br>
-                <b>VENTAS CRÉDITO (NO SUMAN):</b> S/. ${parseFloat(resumen.ventas_credito).toFixed(2)} (${resumen.cantidad_ventas_credito} ventas)<br>
+                <b>VENTAS EFECTIVO:</b>
+                S/. <span>${parseFloat(resumen.ventas_efectivo).toFixed(2)}</span>
+                <span class="badge bg-primary">${resumen.cantidad_ventas_efectivo}</span><br>
+                <b>VENTAS NO EFECTIVO:</b>
+                S/. <span>${parseFloat(resumen.ventas_no_efectivo).toFixed(2)}</span>
+                <span class="badge bg-primary">${resumen.cantidad_ventas_no_efectivo}</span><br>
+                <b>VENTAS CRÉDITO (NO SUMAN):</b>
+                S/. <span>${parseFloat(resumen.ventas_credito).toFixed(2)}</span>
+                <span class="badge bg-primary">${resumen.cantidad_ventas_credito}</span><br>
             `;
 
       let movimientosHtml = `

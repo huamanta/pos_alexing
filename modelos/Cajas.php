@@ -152,14 +152,26 @@ class Cajas
 
     public function listarPorApertura($aperturacajaid)
     {
+        $sqlap = "SELECT fecha_apertura, fecha_cierre, idcaja 
+              FROM caja_apertura 
+              WHERE aperturacajaid = '$aperturacajaid'
+              LIMIT 1";
+
+        $ap = ejecutarConsulta($sqlap)->fetch_object();
+
+        if (!$ap)
+            return [];
+
+        $inicio = $ap->fecha_apertura;
+        $fin = !empty($ap->fecha_cierre) ? $ap->fecha_cierre : date('Y-m-d H:i:s');
+        $idcaja = $ap->idcaja;
+
         $sql = "SELECT m.*
-                FROM movimiento m
-                INNER JOIN cajas c ON m.idcaja = c.idcaja
-                INNER JOIN caja_apertura a ON c.idcaja = a.idcaja
-                WHERE a.aperturacajaid = '$aperturacajaid'
-                  AND DATE(m.fecha) BETWEEN DATE(a.fecha_apertura)
-                                       AND IF(a.fecha_cierre IS NULL, CURDATE(), DATE(a.fecha_cierre))
-                ORDER BY m.idmovimiento DESC";
+            FROM movimiento m
+            WHERE m.idcaja = '$idcaja'
+              AND m.fecha BETWEEN '$inicio' AND '$fin'
+            ORDER BY m.idmovimiento DESC";
+
         return ejecutarConsulta($sql);
     }
 

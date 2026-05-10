@@ -380,26 +380,26 @@ class Producto
 	public function mostrar($idproducto)
 	{
 		$sql = "SELECT p.*,
-	                   COALESCE((
-	                       SELECT sf.precio_venta
-	                       FROM stock_fifo sf
-	                       WHERE sf.idproducto = p.idproducto
-	                         AND sf.cantidad_restante > 0
-	                         AND sf.estado = 1
-	                       ORDER BY sf.fecha_ingreso ASC
-	                       LIMIT 1
-	                   ), p.precio) AS precio,
-	                   COALESCE((
-	                       SELECT sf.precio_compra
-	                       FROM stock_fifo sf
-	                       WHERE sf.idproducto = p.idproducto
-	                         AND sf.cantidad_restante > 0
-	                         AND sf.estado = 1
-	                       ORDER BY sf.fecha_ingreso ASC
-	                       LIMIT 1
-	                   ), p.precio_compra) AS precio_compra
-	            FROM producto p
-	            WHERE p.idproducto = '$idproducto'";
+	               COALESCE((
+	                   SELECT NULLIF(sf.precio_venta, 0)
+	                   FROM stock_fifo sf
+	                   WHERE sf.idproducto = p.idproducto
+	                     AND sf.cantidad_restante > 0
+	                     AND sf.estado = 1
+	                   ORDER BY sf.fecha_ingreso ASC
+	                   LIMIT 1
+	               ), p.precio) AS precio,
+	               COALESCE((
+	                   SELECT NULLIF(sf.precio_compra, 0)
+	                   FROM stock_fifo sf
+	                   WHERE sf.idproducto = p.idproducto
+	                     AND sf.cantidad_restante > 0
+	                     AND sf.estado = 1
+	                   ORDER BY sf.fecha_ingreso ASC
+	                   LIMIT 1
+	               ), p.precio_compra) AS precio_compra
+	        FROM producto p
+	        WHERE p.idproducto = '$idproducto'";
 
 		return ejecutarConsultaSimpleFila($sql);
 	}
@@ -439,20 +439,20 @@ class Producto
 	public function listarsucursales($idusuario)
 	{
 		$sql = "SELECT * FROM usuario WHERE idusuario = '$idusuario'";
-        $data = ejecutarConsultaSimpleFila($sql);
+		$data = ejecutarConsultaSimpleFila($sql);
 
-        if ($data['superusuario']) {
-            $sql = "SELECT * FROM sucursal";
-            return ejecutarConsulta($sql);
-        } else {
-            $sql = "SELECT s.* 
+		if ($data['superusuario']) {
+			$sql = "SELECT * FROM sucursal";
+			return ejecutarConsulta($sql);
+		} else {
+			$sql = "SELECT s.* 
                 FROM sucursal s
                 INNER JOIN usuario_sucursal us 
                 ON s.idsucursal = us.idsucursal
                 WHERE us.idusuario = '$idusuario'";
 
-            return ejecutarConsulta($sql);
-        }
+			return ejecutarConsulta($sql);
+		}
 	}
 
 
@@ -837,9 +837,9 @@ class Producto
             m.nombre as marca,
             -- LÓGICA DE PRECIOS --
             -- Si f.precio_venta existe (del FIFO), úsalo. Si no, usa a.precio --
-            COALESCE(f.precio_venta, a.precio) as precio,
-            COALESCE(f.precio_compra, a.precio_compra) as precio_compra
-            
+            COALESCE(NULLIF(f.precio_venta, 0), a.precio) as precio,
+			COALESCE(NULLIF(f.precio_compra, 0), a.precio_compra) as precio_compra
+
             FROM producto a 
             INNER JOIN categoria c ON a.idcategoria = c.idcategoria 
             LEFT JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
@@ -1925,9 +1925,11 @@ class Producto
 				p.controla_stock,
 				pg.precio_venta,
                 CASE 
-                    WHEN UPPER(TRIM(pg.contenedor)) = 'UNIDAD' THEN COALESCE(f.precio_venta, 0)
-                    ELSE COALESCE(NULLIF(pg.precio_venta, 0), 0)
-                END AS precio_venta_fifo
+					WHEN UPPER(TRIM(pg.contenedor)) = 'UNIDAD' 
+						THEN COALESCE(NULLIF(f.precio_venta, 0), p.precio)
+
+					ELSE COALESCE(NULLIF(pg.precio_venta, 0), p.precio)
+				END AS precio_venta_fifo
             FROM producto p
             INNER JOIN producto_configuracion pg ON p.idproducto = pg.idproducto AND pg.deleted_at IS NULL
             INNER JOIN categoria c ON p.idcategoria = c.idcategoria
