@@ -357,10 +357,7 @@ function mostrarCaja() {
   let fecha_inicio = $("#fecha_inicio").val();
   let fecha_fin = $("#fecha_fin").val();
   let idsucursal = $("#idsucursal2").val();
-  idsucursal = idsucursal === "0" || idsucursal === null ? "Todos" : idsucursal;
-
   let idvendedor = $("#idvendedor").val();
-  idvendedor = idvendedor === "0" || idvendedor === null ? "Todos" : idvendedor;
 
   $.post(
     "controladores/consultas.php?op=mostrarTotalSalidaTarjeta",

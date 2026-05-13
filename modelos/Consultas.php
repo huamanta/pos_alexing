@@ -438,7 +438,7 @@ class Consultas
 	public function mostrarTotalSalidaTarjeta($fecha_inicio, $fecha_fin, $idsucursal, $idvendedor)
 	{
 
-		if ($idsucursal == "Todos" && $idvendedor == "Todos") {
+		if ($idsucursal == 0 && $idvendedor == "Todos") {
 
 			$sql1 = "SELECT IFNULL(( SELECT SUM(totaldeposito) as totalEfectivo1 FROM compra WHERE compracredito = 'No' AND formapago != 'Efectivo' AND estado != 'Anulado' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'), 0) as totalEfectivo1";
 			$efectivo1 = ejecutarConsultaSimpleFila($sql1);
@@ -446,14 +446,14 @@ class Consultas
 			$efectivo2 = ejecutarConsultaSimpleFila($sql2);
 			$arrayName = array('total' => $efectivo1['totalEfectivo1'] + $efectivo2['totalEfectivo2']);
 
-		} else if ($idsucursal != "Todos" && $idvendedor == "Todos") {
+		} else if ($idsucursal != 0 && $idvendedor == "Todos") {
 			$sql1 = "SELECT IFNULL(( SELECT SUM(totaldeposito) as totalEfectivo1 FROM compra WHERE compracredito = 'No' AND formapago != 'Efectivo' AND estado != 'Anulado' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin' AND idsucursal='$idsucursal'), 0) as totalEfectivo1";
 			$efectivo1 = ejecutarConsultaSimpleFila($sql1);
 			$sql2 = "SELECT IFNULL(( SELECT sum(montotarjeta) as totalEfectivo2 FROM detalle_cuentas_por_pagar dcc INNER JOIN cuentas_por_pagar cc ON cc.idcpp = dcc.idcpp INNER JOIN compra c ON cc.idcompra = c.idcompra WHERE dcc.formapago != 'Efectivo' AND estado != 'Anulado' AND DATE(dcc.fechapago)>='$fecha_inicio' AND DATE(dcc.fechapago)<='$fecha_fin' AND c.idsucursal = '$idsucursal'), 0) as totalEfectivo2";
 			$efectivo2 = ejecutarConsultaSimpleFila($sql2);
 			$arrayName = array('total' => $efectivo1['totalEfectivo1'] + $efectivo2['totalEfectivo2']);
 
-		} else if ($idsucursal == "Todos" && $idvendedor != "Todos"){
+		} else if ($idsucursal == 0 && $idvendedor != "Todos"){
 			$sql1 = "SELECT IFNULL(( SELECT SUM(totaldeposito) as totalEfectivo1 FROM compra WHERE compracredito = 'No' AND formapago != 'Efectivo' AND estado != 'Anulado' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin' AND idpersonal='$idvendedor'), 0) as totalEfectivo1";
 			$efectivo1 = ejecutarConsultaSimpleFila($sql1);
 			$sql2 = "SELECT IFNULL(( SELECT sum(montotarjeta) as totalEfectivo2 FROM detalle_cuentas_por_pagar dcc INNER JOIN cuentas_por_pagar cc ON cc.idcpp = dcc.idcpp INNER JOIN compra c ON cc.idcompra = c.idcompra WHERE dcc.formapago != 'Efectivo' AND estado != 'Anulado' AND DATE(dcc.fechapago)>='$fecha_inicio' AND DATE(dcc.fechapago)<='$fecha_fin' AND c.idpersonal = '$idvendedor'), 0) as totalEfectivo2";

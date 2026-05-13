@@ -99,36 +99,43 @@ final class Pos
     }
 
     $sql = "
-        SELECT 
-            v.idventa,
-            DATE(v.fecha_hora) as fecha,
-            s.nombre as sucursal,
-            DATE_FORMAT(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex,
-            v.idcliente,
-            p.nombre as cliente,
-            p.num_documento,
-            v.estadoS,
-            u.idpersonal,
-            u.nombre as personal, 
-            v.tipo_comprobante,
-            v.serie_comprobante,
-            v.num_comprobante,
-            (v.total_venta - v.descuento) as total_venta,
-            v.ventacredito,
-            v.impuesto,
-            v.dov_Nombre,
-            v.estado,
-            GROUP_CONCAT(CONCAT(COALESCE(vp.metodo_pago,'SIN PAGO'), ': S/. ', FORMAT(COALESCE(vp.monto,0),2)) SEPARATOR ' | ') as pagos
-        FROM venta v
-        LEFT JOIN venta_pago vp ON v.idventa = vp.idventa 
-        INNER JOIN persona p ON v.idcliente = p.idpersona 
-        INNER JOIN personal u ON v.idpersonal = u.idpersonal 
-        INNER JOIN sucursal s ON s.idsucursal = v.idsucursal
-        WHERE v.tipo_comprobante IN ('Boleta', 'Factura', 'Nota de Venta') 
-            AND v.idcaja = '$idcaja' 
-            AND DATE(v.fecha_hora) BETWEEN DATE('$fecha_apertura') AND DATE('$fecha_cierre')
-        GROUP BY v.idventa
-        ORDER BY v.idventa DESC";
+    SELECT 
+        v.idventa,
+        DATE(v.fecha_hora) as fecha,
+        s.nombre as sucursal,
+        DATE_FORMAT(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex,
+        v.idcliente,
+        p.nombre as cliente,
+        p.num_documento,
+        v.estadoS,
+        u.idpersonal,
+        u.nombre as personal, 
+        v.tipo_comprobante,
+        v.serie_comprobante,
+        v.num_comprobante,
+        (v.total_venta - v.descuento) as total_venta,
+        v.ventacredito,
+        v.impuesto,
+        v.dov_Nombre,
+        v.estado,
+        GROUP_CONCAT(
+            CONCAT(
+                COALESCE(vp.metodo_pago,'SIN PAGO'),
+                ': S/. ',
+                FORMAT(COALESCE(vp.monto,0),2)
+            ) SEPARATOR ' | '
+        ) as pagos
+    FROM venta v
+    LEFT JOIN venta_pago vp ON v.idventa = vp.idventa 
+    INNER JOIN persona p ON v.idcliente = p.idpersona 
+    INNER JOIN personal u ON v.idpersonal = u.idpersonal 
+    INNER JOIN sucursal s ON s.idsucursal = v.idsucursal
+    WHERE v.tipo_comprobante IN ('Boleta', 'Factura', 'Nota de Venta') 
+        AND v.idcaja = '$idcaja' 
+        AND v.fecha_hora BETWEEN '$fecha_apertura' AND '$fecha_cierre'
+    GROUP BY v.idventa
+    ORDER BY v.idventa DESC
+";
 
     return ejecutarConsulta($sql);
 }

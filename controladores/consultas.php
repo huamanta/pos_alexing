@@ -247,22 +247,8 @@ if (!isset($_SESSION["nombre"])) {
 
 			$fecha_inicio = $_REQUEST["fecha_inicio"];
 			$fecha_fin = $_REQUEST["fecha_fin"];
-			$idsucursal = $_REQUEST["idsucursal"];
-			$idvendedor = $_REQUEST["idvendedor"];
-			if($idvendedor == NULL){
-				$idvendedor = "Todos";
-			}
-			if($idsucursal != "Todos"){
-				if($idsucursal == null AND $_SESSION['idsucursal'] == 0){
-					$idsucursal = "Todos";					
-				}else if($idsucursal == null AND $_SESSION['idsucursal'] != 0){	
-					$idsucursal = $_SESSION['idsucursal'];	
-				}else if($idsucursal != null AND $_SESSION['idsucursal'] == 0){	
-					$idsucursal = $idsucursal;	
-				}else{	
-					$idsucursal = $_REQUEST["idsucursal"];	
-				}
-			}
+			$idsucursal = $_REQUEST["idsucursal"] ?? $_POST["idsucursal"];
+			$idvendedor = $_REQUEST["idvendedor"] ?? $_POST["idvendedor"];
 			$rspta = $consulta->mostrarTotalSalidaTarjeta($fecha_inicio, $fecha_fin, $idsucursal,$idvendedor);
 			echo json_encode($rspta);
 
@@ -272,22 +258,8 @@ if (!isset($_SESSION["nombre"])) {
 
 			$fecha_inicio = $_REQUEST["fecha_inicio"];
 			$fecha_fin = $_REQUEST["fecha_fin"];
-			$idsucursal = $_REQUEST["idsucursal"];
-			$idvendedor = $_REQUEST["idvendedor"];
-			if($idvendedor == NULL){
-				$idvendedor = "Todos";
-			}
-			if($idsucursal != "Todos"){
-				if($idsucursal == null AND $_SESSION['idsucursal'] == 0){
-					$idsucursal = "Todos";					
-				}else if($idsucursal == null AND $_SESSION['idsucursal'] != 0){	
-					$idsucursal = $_SESSION['idsucursal'];	
-				}else if($idsucursal != null AND $_SESSION['idsucursal'] == 0){	
-					$idsucursal = $idsucursal;	
-				}else{	
-					$idsucursal = $_REQUEST["idsucursal"];	
-				}
-			}
+			$idsucursal = $_REQUEST["idsucursal"] ?? $_POST["idsucursal"];
+			$idvendedor = $_REQUEST["idvendedor"] ?? $_POST["idvendedor"];
 			$rspta = $consulta->mostrarTotalSalidaEfectivo($fecha_inicio, $fecha_fin, $idsucursal, $idvendedor);
 			echo json_encode($rspta);
 
