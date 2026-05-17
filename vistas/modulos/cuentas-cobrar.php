@@ -378,6 +378,8 @@ date_default_timezone_set('America/Lima');
                     <th>Fecha Venta</th>
                     <th>Documento</th>
                     <th>Total Venta</th>
+                    <th>Inicial</th>
+                    <th>Interes</th>
                     <th>Total Abonado</th>
                     <th>Saldo Pendiente</th>
                     <th>Estado</th>
@@ -388,6 +390,8 @@ date_default_timezone_set('America/Lima');
                     <th>Fecha Venta</th>
                     <th>Documento</th>
                     <th>Total Venta</th>
+                    <th>Inicial</th>
+                    <th>Interes</th>
                     <th>Total Abonado</th>
                     <th>Saldo Pendiente</th>
                     <th>Estado</th>

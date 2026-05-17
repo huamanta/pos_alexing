@@ -1107,14 +1107,14 @@ date_default_timezone_set('America/Lima');
 
                                                                 </div>-->
 
-                                                            <!--div class="form-group col-lg-2" style="display: none;" id="n2">
+                                                            <div class="form-group col-lg-2" style="display: none;" id="n2">
 
                                                                     <label style="font-size: 11px;">Monto Pagado:</label>
                                                                     <div class="input-group">
                                                                         <input style="text-align:center" type="text" class="form-control" id="montoPagado" name="montoPagado" value="0" onkeyup="calcularDeuda();">
                                                                     </div>
 
-                                                                </div-->
+                                                                </div>
 
                                                             <div class="form-group col-lg-2" style="display: none;"
                                                                 id="n4">

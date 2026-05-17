@@ -4,8 +4,8 @@ if (strlen(session_id()) < 1)
 	session_start();
 
 if (!isset($_SESSION['cotizacion_token'])) {
-    // Generar token único para esta cotización temporal
-    $_SESSION['cotizacion_token'] = bin2hex(random_bytes(8)); // 16 caracteres
+	// Generar token único para esta cotización temporal
+	$_SESSION['cotizacion_token'] = bin2hex(random_bytes(8)); // 16 caracteres
 }
 $token = $_SESSION['cotizacion_token'];
 
@@ -48,17 +48,75 @@ $observaciones = isset($_POST["observaciones"]) ? limpiarCadena($_POST["observac
 $formapago = isset($_POST["formapago"]) ? limpiarCadena($_POST["formapago"]) : "";
 $tiempoproduccion = isset($_POST["tiempoproduccion"]) ? limpiarCadena($_POST["tiempoproduccion"]) : "";
 
+$inicial = isset($_POST["inicial"]) ? limpiarCadena($_POST["inicial"]) : "";
+$frecuencia = isset($_POST["input_frecuencia"]) ? limpiarCadena($_POST["input_frecuencia"]) : "";
+$meses = isset($_POST["numeroMeses"]) ? limpiarCadena($_POST["numeroMeses"]) : "";
+$interes = isset($_POST["inputInteres"]) ? limpiarCadena($_POST["inputInteres"]) : "";
+
 switch ($_GET["op"]) {
 
 	case 'guardaryeditar':
 
 		if (empty($idcotizacion)) {
-			$rspta = $venta->insertar($idsucursal, $idcliente, $idpersonal, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha, $total_venta, $titulo, $saludo, $nota, $igv, $formapago,$observaciones, $tiempoproduccion, $_POST["idproducto"], $_POST["cantidad"], $_POST["precio_venta"], $_POST["descuento"], $_POST["contenedor"], 
-			$_POST["cantidad_contenedor"], $_POST["idp"]);
+			$rspta = $venta->insertar(
+				$idsucursal,
+				$idcliente,
+				$idpersonal,
+				$tipo_comprobante,
+				$serie_comprobante,
+				$num_comprobante,
+				$fecha,
+				$total_venta,
+				$titulo,
+				$saludo,
+				$nota,
+				$igv,
+				$formapago,
+				$observaciones,
+				$tiempoproduccion,
+				$_POST["idproducto"],
+				$_POST["cantidad"],
+				$_POST["precio_venta"],
+				$_POST["descuento"],
+				$_POST["contenedor"],
+				$_POST["cantidad_contenedor"],
+				$_POST["idp"],
+				$inicial,
+				$frecuencia,
+				$meses,
+				$interes
+			);
 			echo $rspta ? "Datos registrados correctamente" : "No se pudo registrar los datos";
 		} else {
-			$rspta = $venta->editar($idcotizacion, $idsucursal, $idcliente,  $idpersonal, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha, $total_venta, $titulo, $saludo, $nota, $igv, $formapago,$observaciones, $tiempoproduccion, $_POST["idproducto"], $_POST["cantidad"], $_POST["precio_venta"], $_POST["descuento"], $_POST["contenedor"], 
-			$_POST["cantidad_contenedor"], $_POST["idp"]);
+			$rspta = $venta->editar(
+				$idcotizacion,
+				$idsucursal,
+				$idcliente,
+				$idpersonal,
+				$tipo_comprobante,
+				$serie_comprobante,
+				$num_comprobante,
+				$fecha,
+				$total_venta,
+				$titulo,
+				$saludo,
+				$nota,
+				$igv,
+				$formapago,
+				$observaciones,
+				$tiempoproduccion,
+				$_POST["idproducto"],
+				$_POST["cantidad"],
+				$_POST["precio_venta"],
+				$_POST["descuento"],
+				$_POST["contenedor"],
+				$_POST["cantidad_contenedor"],
+				$_POST["idp"],
+				$inicial,
+				$frecuencia,
+				$meses,
+				$interes
+			);
 			echo $rspta ? "Datos editados correctamente" : "No se pudo editar la Cotización";
 		}
 
@@ -77,13 +135,13 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'mostrar':
-	    $rspta = $venta->mostrar($idcotizacion);
-	    if ($rspta) {
-	        echo json_encode($rspta);
-	    } else {
-	        echo json_encode(["error" => "No se encontró la cotización"]);
-	    }
-	    break;
+		$rspta = $venta->mostrar($idcotizacion);
+		if ($rspta) {
+			echo json_encode($rspta);
+		} else {
+			echo json_encode(["error" => "No se encontró la cotización"]);
+		}
+		break;
 
 	case 'desistir':
 		$rspta = $venta->desistir($idcotizacion);
@@ -120,9 +178,9 @@ switch ($_GET["op"]) {
 
 		break;
 
-		//_______________________________________________________________________________________________________
+	//_______________________________________________________________________________________________________
 
-		//opcion para mostrar la numeracion y la serie_comprobante de la ticket
+	//opcion para mostrar la numeracion y la serie_comprobante de la ticket
 	case 'mostrar_num_ticket':
 		$idsucursal = $_REQUEST["idsucursal"];
 		//mostrando el numero de boleta de la tabla comprobantes
@@ -136,7 +194,7 @@ switch ($_GET["op"]) {
 				$num_comp_tic = $reg->num_comprobante
 			);
 		}
-		$numero_tic_comp = (int)$num_comp_tic;
+		$numero_tic_comp = (int) $num_comp_tic;
 		//fin de mostrar numero de boleta de la tabla comprobantes
 		$rspta = $venta->numero_venta_cotizacion($idsucursal);
 		$data = array();
@@ -147,7 +205,7 @@ switch ($_GET["op"]) {
 				$numerot = $reg->num_comprobante
 			);
 		}
-		$numero_ticket = (int)$numerot;
+		$numero_ticket = (int) $numerot;
 		$new_ticket = '';
 
 		if ($numero_ticket == 9999999 or empty($numerot)) {
@@ -177,8 +235,8 @@ switch ($_GET["op"]) {
 				$num_comp_tic = $reg->num_comprobante
 			);
 		}
-		$serie_tic_comp = (int)$serie_comp_tic;
-		$num_tic_comp = (int)$num_comp_tic;
+		$serie_tic_comp = (int) $serie_comp_tic;
+		$num_tic_comp = (int) $num_comp_tic;
 		//fin de mostrar numero de factura de la tabla comprobantes
 		$rspta = $venta->numero_serie_cotizacion($idsucursal);
 		$data = array();
@@ -191,9 +249,9 @@ switch ($_GET["op"]) {
 				$numero_bolet = $reg->num_comprobante
 			);
 		}
-		$num_s_ticket = (int)$numero_s_tic;
+		$num_s_ticket = (int) $numero_s_tic;
 		$nuew_serie_ticket = 0;
-		$numbo = (int)$numero_bolet;
+		$numbo = (int) $numero_bolet;
 		if ($numbo == 9999999 or empty($numero_s_tic)) {
 			$nuew_serie_ticket = $num_s_ticket + 1;
 			echo json_encode($nuew_serie_ticket);
@@ -202,51 +260,202 @@ switch ($_GET["op"]) {
 		}
 		break; //fin de opcion de mostrar num_comprobante y serie_comprobante del ticket
 
-		//______________________________________________________________________________________________
+	//______________________________________________________________________________________________
 
 
 	case 'listarDetalle':
 
 		require_once "../modelos/Negocio.php";
+
 		$cnegocio = new Negocio();
 		$rsptan = $cnegocio->listar();
 		$regn = $rsptan->fetch_object();
+
 		if (empty($regn)) {
-			$smoneda = 'Simbolo de moneda';
+			$smoneda = 'S/';
 		} else {
 			$smoneda = $regn->simbolo;
 			$nom_imp = $regn->nombre_impuesto;
-		};
+		}
 
-		//recibimos el idcotizacion
+		// Recibir ID
 		$id = $_GET['id'];
 
 		$rspta = $venta->listarDetalle($id);
-		$total = 0;
-		echo ' <thead style="background-color:#A9D0F5">
-        <th style="text-align:center; width: 200px;">Producto</th>
-        <th style="text-align:center; width: 40px;">Cantidad</th>
-        <th style="text-align:center;">Precio Venta</th>
-        <th style="text-align:center;">Descuento</th>
-        <th style="text-align:center;">Subtotal</th>
-       </thead>';
-		while ($reg = $rspta->fetch_object()) {
-			echo '<tr class="filas">
-			<td style="text-align:center; width: 200px;">' . $reg->nombre . '</td>
-			<td style="text-align:center; width: 40px;">' . $reg->cantidad . ' - ' . $reg->contenedor .  '</td>
-			<td style="text-align:center;">' . $reg->precio_venta . '</td>
-			<td style="text-align:center;">' . $reg->descuento . '</td>
-			<td style="text-align:center;">' . $reg->subtotal . '</td></tr>';
-			$total = $reg->total_venta;
-		}
 
-		echo '<tfoot>
-         <th></th>
-         <th></th>
-         <th></th>
-         <th>TOTAL</th>
-         <th><h4 id="total">' . $smoneda . ' ' . $total . '</h4><input type="hidden" name="total_venta" id="total_venta"></th>
-       </tfoot>';
+		$total = 0;
+
+		echo '
+			<style>
+				.table-detalle {
+					width: 100%;
+					border-collapse: collapse;
+					background: #fff;
+					border-radius: 12px;
+					overflow: hidden;
+					box-shadow: 0 2px 10px rgba(0,0,0,.05);
+				}
+
+				.table-detalle thead {
+					background: linear-gradient(90deg, #007bff, #0056b3);
+					color: #fff;
+				}
+
+				.table-detalle thead th {
+					padding: 14px;
+					font-size: 13px;
+					font-weight: 600;
+					text-align: center;
+					border: none;
+				}
+
+				.table-detalle tbody td {
+					padding: 12px;
+					font-size: 13px;
+					border-bottom: 1px solid #f1f1f1;
+					text-align: center;
+					vertical-align: middle;
+				}
+
+				.table-detalle tbody tr:hover {
+					background: #f8fbff;
+					transition: .2s;
+				}
+
+				.producto-name {
+					font-weight: 600;
+					color: #343a40;
+				}
+
+				.badge-cantidad {
+					background: #eef4ff;
+					color: #0056b3;
+					padding: 6px 10px;
+					border-radius: 20px;
+					font-size: 12px;
+					font-weight: 600;
+					display: inline-block;
+				}
+
+				.precio {
+					color: #28a745;
+					font-weight: 600;
+				}
+
+				.descuento {
+					color: #dc3545;
+					font-weight: 600;
+				}
+
+				.subtotal {
+					font-weight: bold;
+					color: #212529;
+				}
+
+				.tfoot-total {
+					background: #f8f9fa;
+				}
+
+				.tfoot-total th {
+					padding: 16px;
+					font-size: 14px;
+					border-top: 2px solid #dee2e6;
+				}
+
+				.total-box {
+					background: linear-gradient(135deg, #28a745, #1e7e34);
+					color: #fff;
+					padding: 10px 15px;
+					border-radius: 10px;
+					display: inline-block;
+					font-size: 18px;
+					font-weight: bold;
+					min-width: 140px;
+					text-align: center;
+					box-shadow: 0 3px 8px rgba(40,167,69,.25);
+				}
+			</style>
+
+			<table class="table-detalle">
+
+				<thead>
+					<tr>
+						<th style="width: 35%;">Producto</th>
+						<th style="width: 15%;">Cantidad</th>
+						<th style="width: 15%;">Precio Venta</th>
+						<th style="width: 15%;">Descuento</th>
+						<th style="width: 20%;">Subtotal</th>
+					</tr>
+				</thead>
+
+				<tbody>
+			';
+
+				while ($reg = $rspta->fetch_object()) {
+
+					echo '
+				<tr class="filas">
+
+					<td>
+						<div class="producto-name">
+							' . $reg->nombre . '
+						</div>
+					</td>
+
+					<td>
+						<span class="badge-cantidad">
+							' . $reg->cantidad . ' - ' . $reg->contenedor . '
+						</span>
+					</td>
+
+					<td>
+						<span class="precio">
+							' . $smoneda . ' ' . number_format($reg->precio_venta, 2) . '
+						</span>
+					</td>
+
+					<td>
+						<span class="descuento">
+							' . $smoneda . ' ' . number_format($reg->descuento, 2) . '
+						</span>
+					</td>
+
+					<td>
+						<span class="subtotal">
+							' . $smoneda . ' ' . number_format($reg->subtotal, 2) . '
+						</span>
+					</td>
+
+				</tr>
+				';
+
+					$total += $reg->total_venta;
+				}
+
+				echo '
+				</tbody>
+
+				<tfoot class="tfoot-total">
+					<tr>
+						<th colspan="4" style="text-align:right;">
+							TOTAL GENERAL
+						</th>
+
+						<th style="text-align:center;">
+							<div class="total-box">
+								' . $smoneda . ' ' . number_format($total, 2) . '
+							</div>
+
+							<input type="hidden" 
+								name="total_venta" 
+								id="total_venta" 
+								value="' . $total . '">
+						</th>
+					</tr>
+				</tfoot>
+
+			</table>
+			';
 
 		break;
 
@@ -261,7 +470,7 @@ switch ($_GET["op"]) {
 			$data[] = array(
 				"0" => $reg->id,
 				"1" => $reg->idproducto,
-				"2" => $reg->producto.' ('.$reg->contenedor.')',
+				"2" => $reg->producto . ' (' . $reg->contenedor . ')',
 				"3" => $reg->cantidad,
 				"4" => $reg->descuento,
 				"5" => $reg->precio_venta,
@@ -295,19 +504,19 @@ switch ($_GET["op"]) {
 			$url1 = 'reportes/exTicketCoti.php?id=';
 			$url2 = 'reportes/factura/generaFacturaCoti.php?id=';
 
-			if($reg->estado == 'EN ESPERA'){
+			if ($reg->estado == 'EN ESPERA') {
 
 				$estado = '<span class="badge bg-yellow">EN ESPERA</span>';
 				$editar = '<button class="btn btn-success btn-xs" onclick="mostrarEditar(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="EDITAR COTIZACIÓN"><i class="fas fa-edit"></i></button> ';
 				$desistir = '<button class="btn btn-danger btn-xs" onclick="desistir(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="DESISTIR"><i class="fa fa-times"></i></button>';
 
-			}else if($reg->estado == 'VENDIDO'){
+			} else if ($reg->estado == 'VENDIDO') {
 
 				$estado = '<span class="badge bg-green">VENDIDO</span>';
 				$editar = '';
 				$desistir = '';
 
-			}else{
+			} else {
 
 				$estado = '<span class="badge bg-red">DESISTIÓ</span>';
 				$editar = '';
@@ -390,19 +599,19 @@ switch ($_GET["op"]) {
 		$data = array();
 		while ($reg = $rspta->fetch_object()) {
 			$data[] = array(
-				"0" => (($reg->stock == 0) ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>' 
-				: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
-				"1"=>"<img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->precioB . "\",\"" . $reg->precioC . "\",\"" . $reg->precioD . "\" )' src='files/productos/".$reg->imagen."' height='35px' width='35px' >". '<span style="font-weight: bold;">'.$reg->nombre.'</span>'.' - '.'<span class="badge bg-green">'.$reg->cantidad_contenedor.' Und.</span>'.' - '.'<span style="font-size:10px">'.$reg->contenedor.'</span>',
+				"0" => (($reg->stock == 0) ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
+					: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
+				"1" => "<img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->precioB . "\",\"" . $reg->precioC . "\",\"" . $reg->precioD . "\" )' src='files/productos/" . $reg->imagen . "' height='35px' width='35px' >" . '<span style="font-weight: bold;">' . $reg->nombre . '</span>' . ' - ' . '<span class="badge bg-green">' . $reg->cantidad_contenedor . ' Und.</span>' . ' - ' . '<span style="font-size:10px">' . $reg->contenedor . '</span>',
 				//"2" => $reg->categoria,
 				"2" => $reg->codigo,
 				"3" => floor($reg->stock / $reg->cantidad_contenedor),
-				"4" => '<span class="badge bg-info">'.'S/ ' . $reg->precio_venta . '</span>',
+				"4" => '<span class="badge bg-info">' . 'S/ ' . $reg->precio_venta . '</span>',
 				//"4" => '<span class="badge bg-orange">'.'S/ '.$reg->precioB.'</span>',
 				//"5" => '<span class="badge bg-purple">'.' S/ '.$reg->precioC.'</span>',
 				//"6" => '<span class="badge bg-primary">'.'S/ '.$reg->precioD.'</span>',
 				//"4"=>'<span class="badge bg-orange">'.'PrecioI '.'S/ '.$reg->precioB.'</span>'.
- 					//' '.'<span class="badge bg-purple">'.'PrecioII '.' S/ '.$reg->precioC.'</span>'.
- 					//' '.'<span class="badge bg-primary">'.'PrecioIII '.'S/ '.$reg->precioD.'</span>',
+				//' '.'<span class="badge bg-purple">'.'PrecioII '.' S/ '.$reg->precioC.'</span>'.
+				//' '.'<span class="badge bg-primary">'.'PrecioIII '.'S/ '.$reg->precioD.'</span>',
 			);
 		}
 		$results = array(
@@ -481,134 +690,134 @@ switch ($_GET["op"]) {
 
 	// ======== CARRITO TEMPORAL ========
 
-case 'agregarTmp':
-    $rspta = $venta->agregarTemporal(
-        $idpersonal,
-        $_POST['idproducto'],
-        $_POST['cantidad'],
-        $_POST['precio_venta'],
-        $_POST['descuento'],
-        $_POST['contenedor'],
-        $_POST['cantidad_contenedor'],
-        $_POST['idp']
-    );
-    echo $rspta ? $rspta : "Error al agregar producto temporal";
-    break;
+	case 'agregarTmp':
+		$rspta = $venta->agregarTemporal(
+			$idpersonal,
+			$_POST['idproducto'],
+			$_POST['cantidad'],
+			$_POST['precio_venta'],
+			$_POST['descuento'],
+			$_POST['contenedor'],
+			$_POST['cantidad_contenedor'],
+			$_POST['idp']
+		);
+		echo $rspta ? $rspta : "Error al agregar producto temporal";
+		break;
 
-case 'actualizarTmp':
-    $idtmp = isset($_POST['idtmp']) ? limpiarCadena($_POST['idtmp']) : '';
-    $cantidad = isset($_POST['cantidad']) ? limpiarCadena($_POST['cantidad']) : '';
-    $precio_venta = isset($_POST['precio_venta']) ? limpiarCadena($_POST['precio_venta']) : '';
+	case 'actualizarTmp':
+		$idtmp = isset($_POST['idtmp']) ? limpiarCadena($_POST['idtmp']) : '';
+		$cantidad = isset($_POST['cantidad']) ? limpiarCadena($_POST['cantidad']) : '';
+		$precio_venta = isset($_POST['precio_venta']) ? limpiarCadena($_POST['precio_venta']) : '';
 
-    if (!empty($idtmp) && !empty($cantidad) && !empty($precio_venta)) {
-        $rspta = $venta->actualizarTemporal($idtmp, $cantidad, $precio_venta);
-        echo $rspta ? "Temporal actualizado" : "No se pudo actualizar";
-    } else {
-        echo "Datos incompletos";
-    }
-    break;
+		if (!empty($idtmp) && !empty($cantidad) && !empty($precio_venta)) {
+			$rspta = $venta->actualizarTemporal($idtmp, $cantidad, $precio_venta);
+			echo $rspta ? "Temporal actualizado" : "No se pudo actualizar";
+		} else {
+			echo "Datos incompletos";
+		}
+		break;
 
-case 'listarTmp':
-    $rspta = $venta->listarTmp($idpersonal);
-    $data = array();
+	case 'listarTmp':
+		$rspta = $venta->listarTmp($idpersonal);
+		$data = array();
 
-    while ($reg = $rspta->fetch_object()) {
-        $data[] = array(
-            "idtmp"               => $reg->idtmp,
-            "idproducto"          => $reg->idproducto,
-            "idp"                 => $reg->idp,
-            "nombre"              => $reg->nombre,
-            "contenedor"          => $reg->contenedor,
-            "cantidad_contenedor" => $reg->cantidad_contenedor,
-            "cantidad"            => $reg->cantidad,
-            "precio_venta"        => $reg->precio_venta,
-        );
-    }
+		while ($reg = $rspta->fetch_object()) {
+			$data[] = array(
+				"idtmp" => $reg->idtmp,
+				"idproducto" => $reg->idproducto,
+				"idp" => $reg->idp,
+				"nombre" => $reg->nombre,
+				"contenedor" => $reg->contenedor,
+				"cantidad_contenedor" => $reg->cantidad_contenedor,
+				"cantidad" => $reg->cantidad,
+				"precio_venta" => $reg->precio_venta,
+			);
+		}
 
-    $results = array(
-        "sEcho" => 1,
-        "iTotalRecords" => count($data),
-        "iTotalDisplayRecords" => count($data),
-        "aaData" => $data
-    );
+		$results = array(
+			"sEcho" => 1,
+			"iTotalRecords" => count($data),
+			"iTotalDisplayRecords" => count($data),
+			"aaData" => $data
+		);
 
-    echo json_encode($results);
-    break;
+		echo json_encode($results);
+		break;
 
-case 'eliminarTmp':
+	case 'eliminarTmp':
 
-    $idtmp = isset($_POST['idtmp']) ? intval($_POST['idtmp']) : 0;
-    $sessionUser = $_SESSION['idusuario'] ?? null;
-    $sessionPersonal = $_SESSION['idpersonal'] ?? null;
+		$idtmp = isset($_POST['idtmp']) ? intval($_POST['idtmp']) : 0;
+		$sessionUser = $_SESSION['idusuario'] ?? null;
+		$sessionPersonal = $_SESSION['idpersonal'] ?? null;
 
-    if (!$idtmp) {
-        echo "ID temporal inválido.";
-        break;
-    }
+		if (!$idtmp) {
+			echo "ID temporal inválido.";
+			break;
+		}
 
-    if (!$sessionUser && !$sessionPersonal) {
-        echo "Usuario no autenticado.";
-        break;
-    }
+		if (!$sessionUser && !$sessionPersonal) {
+			echo "Usuario no autenticado.";
+			break;
+		}
 
-    // Buscar el propietario del registro
-    $sql_owner = "SELECT idusuario FROM cotizacion_tmp WHERE idtmp = '$idtmp' LIMIT 1";
-    $row = ejecutarConsultaSimpleFila($sql_owner);
+		// Buscar el propietario del registro
+		$sql_owner = "SELECT idusuario FROM cotizacion_tmp WHERE idtmp = '$idtmp' LIMIT 1";
+		$row = ejecutarConsultaSimpleFila($sql_owner);
 
-    if (!$row) {
-        echo "Registro temporal no encontrado.";
-        break;
-    }
+		if (!$row) {
+			echo "Registro temporal no encontrado.";
+			break;
+		}
 
-    $owner = $row['idusuario'];
+		$owner = $row['idusuario'];
 
-    // Verificar que el usuario sea el dueño del registro
-    if ($owner != $sessionUser && $owner != $sessionPersonal) {
-        echo "No puedes eliminar este ítem (pertenece a otro usuario).";
-        break;
-    }
+		// Verificar que el usuario sea el dueño del registro
+		if ($owner != $sessionUser && $owner != $sessionPersonal) {
+			echo "No puedes eliminar este ítem (pertenece a otro usuario).";
+			break;
+		}
 
-    // Ejecutar eliminación
-    $rspta = $venta->eliminarTemporal($idtmp, $owner);
+		// Ejecutar eliminación
+		$rspta = $venta->eliminarTemporal($idtmp, $owner);
 
-    echo $rspta ? "Eliminado del carrito temporal" : "No se pudo eliminar o no existe.";
-    break;
+		echo $rspta ? "Eliminado del carrito temporal" : "No se pudo eliminar o no existe.";
+		break;
 
-case 'guardarDatosTmp':
-    $idusuario = $_SESSION['idusuario'];
-    $token     = $_SESSION['cotizacion_token'] ?? '';
+	case 'guardarDatosTmp':
+		$idusuario = $_SESSION['idusuario'];
+		$token = $_SESSION['cotizacion_token'] ?? '';
 
-    if (!$token) {
-        echo json_encode(["status"=>"error","msg"=>"No hay token de cotización"]);
-        exit;
-    }
+		if (!$token) {
+			echo json_encode(["status" => "error", "msg" => "No hay token de cotización"]);
+			exit;
+		}
 
-    // Recibir valores de forma segura
-    $idsucursal        = $_POST['idsucursal'] ?? '';
-    $idcliente         = $_POST['idcliente'] ?? '';
-    $tipo_comprobante  = $_POST['tipo_comprobante'] ?? '';
-    $serie_comprobante = $_POST['serie_comprobante'] ?? '';
-    $num_comprobante   = $_POST['num_comprobante'] ?? '';
-    $titulo            = $_POST['titulo'] ?? '';
-    $saludo            = $_POST['saludo'] ?? '';
-    $nota              = $_POST['nota'] ?? '';
-    $igv               = $_POST['igv'] ?? '0.00';
-    $formapago         = $_POST['formapago'] ?? '';
-    $observacion       = $_POST['observacion'] ?? '';
-    $tiempo_pro        = $_POST['tiempoproduccion'] ?? '';
-    $total_venta       = $_POST['total_venta'] ?? '0.00';
+		// Recibir valores de forma segura
+		$idsucursal = $_POST['idsucursal'] ?? '';
+		$idcliente = $_POST['idcliente'] ?? '';
+		$tipo_comprobante = $_POST['tipo_comprobante'] ?? '';
+		$serie_comprobante = $_POST['serie_comprobante'] ?? '';
+		$num_comprobante = $_POST['num_comprobante'] ?? '';
+		$titulo = $_POST['titulo'] ?? '';
+		$saludo = $_POST['saludo'] ?? '';
+		$nota = $_POST['nota'] ?? '';
+		$igv = $_POST['igv'] ?? '0.00';
+		$formapago = $_POST['formapago'] ?? '';
+		$observacion = $_POST['observacion'] ?? '';
+		$tiempo_pro = $_POST['tiempoproduccion'] ?? '';
+		$total_venta = $_POST['total_venta'] ?? '0.00';
 
-    if (empty($idsucursal) || empty($idcliente) || empty($tipo_comprobante)) {
-        echo json_encode(["status"=>"incompleto","msg"=>"Faltan campos clave"]);
-        exit;
-    }
+		if (empty($idsucursal) || empty($idcliente) || empty($tipo_comprobante)) {
+			echo json_encode(["status" => "incompleto", "msg" => "Faltan campos clave"]);
+			exit;
+		}
 
-    $sql_check = "SELECT idtmp FROM cotizacion_cab_tmp WHERE token='$token'";
-    $rspta = ejecutarConsultaSimpleFila($sql_check);
+		$sql_check = "SELECT idtmp FROM cotizacion_cab_tmp WHERE token='$token'";
+		$rspta = ejecutarConsultaSimpleFila($sql_check);
 
-    if ($rspta) {
-        // Actualizar temporal existente
-        $sql_update = "UPDATE cotizacion_cab_tmp SET
+		if ($rspta) {
+			// Actualizar temporal existente
+			$sql_update = "UPDATE cotizacion_cab_tmp SET
             idsucursal='$idsucursal',
             idcliente='$idcliente',
             tipo_comprobante='$tipo_comprobante',
@@ -623,31 +832,31 @@ case 'guardarDatosTmp':
             tiempoproduccion='$tiempo_pro',
             total_venta='$total_venta'
         WHERE token='$token'";
-        ejecutarConsulta($sql_update);
-    } else {
-        // Insertar nuevo temporal
-        $sql_insert = "INSERT INTO cotizacion_cab_tmp 
+			ejecutarConsulta($sql_update);
+		} else {
+			// Insertar nuevo temporal
+			$sql_insert = "INSERT INTO cotizacion_cab_tmp 
             (idusuario, token, idsucursal, idcliente, tipo_comprobante, serie_comprobante, num_comprobante, titulo, saludo, nota, igv, formapago, observacion, tiempoproduccion, total_venta)
         VALUES
             ('$idusuario','$token','$idsucursal','$idcliente','$tipo_comprobante','$serie_comprobante','$num_comprobante','$titulo','$saludo','$nota','$igv','$formapago','$observacion','$tiempo_pro','$total_venta')";
-        ejecutarConsulta($sql_insert);
-    }
+			ejecutarConsulta($sql_insert);
+		}
 
-    echo json_encode(["status"=>"ok"]);
-break;
+		echo json_encode(["status" => "ok"]);
+		break;
 
 
-case 'obtenerDatosTmp':
-    $token = $_SESSION['cotizacion_token'] ?? '';
-    if (!$token) {
-        echo json_encode([]);
-        exit;
-    }
+	case 'obtenerDatosTmp':
+		$token = $_SESSION['cotizacion_token'] ?? '';
+		if (!$token) {
+			echo json_encode([]);
+			exit;
+		}
 
-    $sql = "SELECT * FROM cotizacion_cab_tmp WHERE token='$token' LIMIT 1";
-    $rspta = ejecutarConsultaSimpleFila($sql);
-    echo json_encode($rspta);
-break;
+		$sql = "SELECT * FROM cotizacion_cab_tmp WHERE token='$token' LIMIT 1";
+		$rspta = ejecutarConsultaSimpleFila($sql);
+		echo json_encode($rspta);
+		break;
 
 
 

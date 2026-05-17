@@ -28,10 +28,51 @@
 		}
 
 
-		$query = mysqli_query($conexion,"SELECT v.idcotizacion, v.idcliente, s.nombre as almacen, p.nombre AS cliente, v.titulo, v.nota, v.igv, v.saludo, date_format(v.fecha_h,'%d/%m/%y') as fecha_h, p.direccion, p.tipo_documento, p.num_documento, p.email, p.telefono, v.idpersonal, u.nombre AS personal, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, date_format(v.fecha_h, '%d/%m/%Y') as fecha,
-			date_format(v.fecha_h, '%r') as hora, v.total_venta, v.nota, v.formapago,v.observacion, v.tiempo_pro FROM cotizacion v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal INNER JOIN sucursal s ON v.idsucursal = s.idsucursal WHERE v.idcotizacion='$idventa'");
+		$query = mysqli_query($conexion,"SELECT 
+        v.idcotizacion,
+        v.idcliente,
+        s.nombre as almacen,
+        p.nombre AS cliente,
+        v.titulo,
+        v.nota,
+        v.igv,
+        v.saludo,
+        DATE_FORMAT(v.fecha_h,'%d/%m/%y') as fecha_h,
+        p.direccion,
+        p.tipo_documento,
+        p.num_documento,
+        p.email,
+        p.telefono,
+        v.idpersonal,
+        u.nombre AS personal,
+        v.tipo_comprobante,
+        v.serie_comprobante,
+        v.num_comprobante,
+		v.fecha_h as fecha_original,
+        DATE_FORMAT(v.fecha_h, '%d/%m/%Y') as fecha,
+        DATE_FORMAT(v.fecha_h, '%r') as hora,
+        v.total_venta,
+        v.nota,
+        v.formapago,
+        v.observacion,
+        v.tiempo_pro,
+		v.frecuencia,
+		v.meses,
+        v.inicial,
+        v.interes
 
-		$result = mysqli_num_rows($query);
+    FROM cotizacion v
+    INNER JOIN persona p ON v.idcliente=p.idpersona
+    INNER JOIN personal u ON v.idpersonal=u.idpersonal
+    INNER JOIN sucursal s ON v.idsucursal=s.idsucursal
+    WHERE v.idcotizacion='$idventa'
+");
+
+if(!$query){
+    die("Error en SQL: " . mysqli_error($conexion));
+}
+
+$result = mysqli_num_rows($query);
 		if($result > 0){
 
 			$factura = mysqli_fetch_assoc($query);

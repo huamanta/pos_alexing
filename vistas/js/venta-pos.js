@@ -498,6 +498,10 @@ function BuscarCliente() {
 }
 
 $("#formapago").change(function () {
+  verificarTipoPago();
+});
+
+function verificarTipoPago() {
   if (
     $("#formapago").val() == "Reposicion" ||
     $("#formapago").val() == "Costo0"
@@ -544,7 +548,7 @@ $("#formapago").change(function () {
     $("#n3").show();
     $("#n4").show();
     $("#f1").hide();
-    $("#n5").hide();
+    $("#n5").show();
     $("#n6").hide();
     $("#fechadeposito").hide();
     $("#banco").hide();
@@ -601,7 +605,7 @@ $("#formapago").change(function () {
     $("#fechadeposito").show();
     $("#banco").show();
   }
-});
+};
 
 function obtenerMontoTotalPagar() {
   var totalInput = parseFloat($("#total_venta").val());
@@ -1005,23 +1009,31 @@ function resetearPagos() {
 // Recalcular al cambiar monto o método
 // --- Funciones para calcular ---
 function calcularTotalRecibido() {
+
   let totalRecibido = 0;
+
   $(".pagoItem").each(function () {
     let metodo = $(this).find(".metodoPago").val();
-    let monto =
-      parseFloat($(this).find(".montoPago").val().replace(",", ".")) || 0;
-    if (metodo === "Efectivo") totalRecibido += monto;
+    let monto = Number(
+      ($(this).find(".montoPago").val() || "0").replace(",", ".")
+    );
+
+    if (isNaN(monto)) monto = 0;
+    if (metodo === "Efectivo") {
+      totalRecibido += monto;
+    }
   });
+
   $("#totalrecibido").val(totalRecibido.toFixed(2));
 
-  // Aquí ajustamos el monto de la deuda/restante
-  let montoDeuda = parseFloat($("#montoDeuda").val()) || 0;
+  let montoDeudaOriginal =
+    parseFloat($("#total_venta").val()) || 0;
 
-  // Solo si estás en modo crédito, restar lo pagado
   if ($("#tipopago").val() === "Si") {
-    // si está en modo crédito
-    let montoRestante = montoDeuda - totalRecibido;
-    if (montoRestante < 0) montoRestante = 0;
+    let montoRestante = montoDeudaOriginal - totalRecibido;
+    if (montoRestante < 0) {
+      montoRestante = 0;
+    }
     $("#montoDeuda").val(montoRestante.toFixed(2));
   }
 
@@ -1175,17 +1187,32 @@ function obtenerTotalVentaReal() {
 
 // Actualizar el primer pago automáticamente
 function actualizarMontoPrimerPago() {
+
   let totalVenta = obtenerTotalVentaReal();
+
+  // MONTO INICIAL
+  let inicial = parseFloat($("#montoPagado").val()) || 0;
+
   let primeraFila = $(".pagoItem").first();
+
   let montoInput = primeraFila.find(".montoPago");
 
-  // Solo actualizar si el usuario no ha modificado manualmente
+  // FORZAR PRIMER PAGO COMO EFECTIVO
+  primeraFila.find(".metodoPago").val("Efectivo");
+
+  // Solo actualizar si el usuario no editó manualmente
   if (!montoInput.data("editado")) {
-    montoInput.val(totalVenta.toFixed(2));
-    primeraFila.find(".montoRealPago").val(totalVenta.toFixed(2));
+
+    // SI HAY INICIAL USARLA
+    let montoMostrar = inicial > 0 ? inicial : totalVenta;
+
+    montoInput.val(montoMostrar.toFixed(2));
+
+    primeraFila
+      .find(".montoRealPago")
+      .val(montoMostrar.toFixed(2));
   }
 
-  // Marcar campo como editado si el usuario cambia manualmente
   montoInput.off("keyup").on("keyup", function () {
     $(this).data("editado", true);
   });
@@ -1214,10 +1241,10 @@ function recalcularPagos() {
   $("#totalrecibido").val(totalRecibido.toFixed(2));
   $("#totaldeposito").val(totalDeposito.toFixed(2));
 
-  // Si en modo crédito, actualiza el monto restante automáticamente
+  // Si en modo crédito, actualiza el monto restante automáticamente usando todos los pagos mixtos
   if ($("#tipopago").val() === "Si") {
     let montoOriginalDeuda = parseFloat($("#total_venta").val()) || 0;
-    let montoPagado = totalRecibido;
+    let montoPagado = totalPagadoCliente;
     let montoRestante = montoOriginalDeuda - montoPagado;
     if (montoRestante < 0) montoRestante = 0;
     $("#montoDeuda").val(montoRestante.toFixed(2));
@@ -3379,11 +3406,21 @@ function obtenerFechaHoyISO() {
   return yyyy + "-" + mm + "-" + dd;
 }
 
+
 $("#calcular_cuotas").click(function (e) {
   e.preventDefault();
+  calcularCuotas();
+});
+
+
+function calcularCuotas() {
 
   // Si no se eligio cuotas manualmente, intentar autocalcular desde N° meses + frecuencia.
   if (!$("#input_cuotas").val()) {
+    calcularCuotasDesdeNumeroMeses();
+  }
+
+  if ($('#tipopago').val() === 'Si') {
     calcularCuotasDesdeNumeroMeses();
   }
 
@@ -3414,7 +3451,7 @@ $("#calcular_cuotas").click(function (e) {
   );
 
   $("#datafechas").html(html);
-});
+};
 
 function calcularDeuda() {
   $("#totalrecibido").val(0);
@@ -3482,7 +3519,6 @@ function calcularVuelto() {
       let val = parseFloat($(this).val()) || 0;
       totalRecibido += val;
     });
-    totalRecibido += parseFloat($("#totaldeposito").val()) || 0;
     $("#formapago").val("Mixto");
   }
 
@@ -3647,10 +3683,10 @@ function generarComprobante(idventa) {
         $("#fecha").val(data.fecha);
 
         if (data.ventacredito === "Si") {
-          $("#n0, #n1, #n2, #n3, #n4, #b1, #panel1").show();
+          $("#n0, #n1, #n2, #n3, #n4, #n5, #b1, #panel1").show();
           $("#input_cuotas").val(data.meses);
         } else {
-          $("#n0, #n1, #n2, #n3, #n4, #b1, #panel1").hide();
+          $("#n0, #n1, #n2, #n3, #n4, #n5, #b1, #panel1").hide();
         }
 
         setTimeout(function () {
@@ -3748,13 +3784,23 @@ function mostrarE() {
     "controladores/cotizaciones.php?op=mostrar",
     { idcotizacion: idcotizacion },
     function (data) {
-      data = JSON.parse(data);
-      console.log("Respuesta mostrar:", data);
+      const dataCotizacion = JSON.parse(data);
+      console.log("Respuesta mostrar:", dataCotizacion);
 
-      if (data && data.idcliente) {
-        $("#idcliente").val(data.idcliente).trigger("change");
+      if (dataCotizacion && dataCotizacion.idcliente) {
+        $("#idcliente").val(dataCotizacion.idcliente).trigger("change");
       } else {
-        console.error("No se recibió idcliente:", data);
+        console.error("No se recibió idcliente:", dataCotizacion);
+      }
+      $("#tipopago").val(dataCotizacion.formapago);
+      if ($("#tipopago").val() == "Si") {
+        $("#input_frecuencia").val(dataCotizacion.frecuencia);
+        $("#inputInteres").val(dataCotizacion.interes);
+        $("#numeroMeses").val(dataCotizacion.meses);
+        $("#montoPagado").val(dataCotizacion.inicial);
+        const deuda = parseFloat(dataCotizacion.total_venta) - parseFloat(dataCotizacion.inicial);
+        $("#montoDeuda").val(deuda.toFixed(2));
+        verificarTipoPago();
       }
     },
   );
@@ -3769,23 +3815,6 @@ function mostrarE() {
       }
 
       for (var i = 0; i < data.length; i++) {
-        console.log(
-          data[i][0],
-          data[i][1],
-          data[i][2],
-          data[i][3],
-          data[i][4],
-          data[i][5],
-          data[i][6],
-          data[i][7],
-          data[i][8],
-          data[i][9],
-          data[i][10],
-          data[i][12],
-          data[i][13],
-          data[i][14],
-        );
-
         agregarDetalle(
           data[i][0],
           data[i][1],
@@ -3803,6 +3832,10 @@ function mostrarE() {
           data[i][14],
         );
       }
+
+      setTimeout(() => {
+        calcularCuotas();
+      }, 300);
     },
   );
 }

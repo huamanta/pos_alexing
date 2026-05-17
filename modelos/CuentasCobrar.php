@@ -1095,7 +1095,10 @@ class CuentasCobrar
                     v.estado_venta,
                     cc.condicion,
                     SUM(cc.abonototal) AS total_abonado,
-                    SUM(cc.deuda) AS saldo_pendiente
+                    SUM(cc.deuda) AS saldo_pendiente,
+                    v.interes,
+                    v.totalrecibido,
+                    v.totaldeposito
                 FROM venta v
                 INNER JOIN cuentas_por_cobrar cc ON cc.idventa = v.idventa
                 WHERE v.idcliente = '$idcliente'
@@ -1141,14 +1144,19 @@ class CuentasCobrar
                 $buttons = "";
             }
 
+            $recibido = number_format($row->totalrecibido+$row->totaldeposito);
+            $interes = ($row->total_venta - $recibido) * ($row->interes/100);
+
             $data[] = array(
                 "0" => $row->fecha_venta,
                 "1" => $doc,
                 "2" => number_format($row->total_venta, 2),
-                "3" => number_format($row->total_abonado, 2),
-                "4" => number_format($row->saldo_pendiente, 2),
-                "5" => $estado,
-                "6" => $buttons
+                "3" => $recibido,
+                "4" => ($row->interes) ? $interes.' <span class="badge badge-info">'.$row->interes.'%</span>':'0',
+                "5" => number_format($row->total_abonado, 2),
+                "6" => number_format($row->saldo_pendiente, 2),
+                "7" => $estado,
+                "8" => $buttons
             );
         }
 

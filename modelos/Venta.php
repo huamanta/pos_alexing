@@ -334,7 +334,7 @@ class Venta
         // =========================
         $ventaCredito = $_POST['tipopago'] ?? $tipopago ?? 'No';
 
-        if ($ventaCredito !== "Si" && $sw) {
+        if ($sw) {
             if (isset($_POST['metodo_pago']) && is_array($_POST['metodo_pago'])) {
 
                 $metodos = $_POST['metodo_pago'];

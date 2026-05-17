@@ -68,44 +68,44 @@ function esperarSelect(selector, valor) {
     }
 }
 
-$(function () {
-    let timeoutGuardar;
-    $(document).on("change keyup", "#idsucursal, #idcliente, #tipo_comprobante, #formapago, #titulo, #saludo, #nota, #observaciones, #tiempoproduccion, #total_venta",
-        function () {
-            clearTimeout(timeoutGuardar);
-            timeoutGuardar = setTimeout(() => {
-                const idsucursal = $("#idsucursal").val();
-                const idcliente = $("#idcliente").val();
-                const tipo_comprobante = $("#tipo_comprobante").val();
+// $(function () {
+//     let timeoutGuardar;
+//     $(document).on("change keyup", "#idsucursal, #idcliente, #tipo_comprobante, #formapago, #titulo, #saludo, #nota, #observaciones, #tiempoproduccion, #total_venta",
+//         function () {
+//             clearTimeout(timeoutGuardar);
+//             timeoutGuardar = setTimeout(() => {
+//                 const idsucursal = $("#idsucursal").val();
+//                 const idcliente = $("#idcliente").val();
+//                 const tipo_comprobante = $("#tipo_comprobante").val();
 
-                if (!idsucursal || !idcliente || !tipo_comprobante) return;
+//                 if (!idsucursal || !idcliente || !tipo_comprobante) return;
 
-                const datos = {
-                    idsucursal,
-                    idcliente,
-                    tipo_comprobante,
-                    serie_comprobante: $("#serie_comprobante").val() || "",
-                    num_comprobante: $("#num_comprobante").val() || "",
-                    titulo: $("#titulo").val() || "",
-                    saludo: $("#saludo").val() || "",
-                    nota: $("#nota").val() || "",
-                    igv: $("#igv").val() || "0.00",
-                    formapago: $("#formapago").val() || "",
-                    observacion: $("#observaciones").val() || "",
-                    tiempoproduccion: $("#tiempoproduccion").val() || "",
-                    total_venta: $("#total_venta").val() || "0.00",
-                };
+//                 const datos = {
+//                     idsucursal,
+//                     idcliente,
+//                     tipo_comprobante,
+//                     serie_comprobante: $("#serie_comprobante").val() || "",
+//                     num_comprobante: $("#num_comprobante").val() || "",
+//                     titulo: $("#titulo").val() || "",
+//                     saludo: $("#saludo").val() || "",
+//                     nota: $("#nota").val() || "",
+//                     igv: $("#igv").val() || "0.00",
+//                     formapago: $("#formapago").val() || "",
+//                     observacion: $("#observaciones").val() || "",
+//                     tiempoproduccion: $("#tiempoproduccion").val() || "",
+//                     total_venta: $("#total_venta").val() || "0.00",
+//                 };
 
-                $.ajax({
-                    url: "controladores/cotizaciones.php?op=guardarDatosTmp",
-                    type: "POST",
-                    data: datos,
-                    success: function (response) { console.log("✅ Datos temporales guardados:", response); },
-                    error: function (xhr, status, error) { console.error("Error al guardar datos temporales:", error); }
-                });
-            }, 500);
-        });
-});
+//                 $.ajax({
+//                     url: "controladores/cotizaciones.php?op=guardarDatosTmp",
+//                     type: "POST",
+//                     data: datos,
+//                     success: function (response) { console.log("✅ Datos temporales guardados:", response); },
+//                     error: function (xhr, status, error) { console.error("Error al guardar datos temporales:", error); }
+//                 });
+//             }, 500);
+//         });
+// });
 
 function toggleCard() {
     var card = document.getElementById("datosgenerales");
@@ -147,11 +147,287 @@ function limpiar() {
     seleccionarCliente("PUBLICO EN GENERAL", 6);
     $("#titulo").val("");
     $("#saludo").val("");
-    $("#formapago").val('Contado').trigger('change');
+    $("#formapago").val('No').trigger('change');
     $("#tiempoproduccion").val('').trigger('change');
     $("#nota").val('').trigger('change');
     $("#igv").val('').trigger('change');
 }
+
+
+$("#numeroMeses").on("input", calcularCuotasDesdeNumeroMeses);
+$("#input_frecuencia").on("change", calcularCuotasDesdeNumeroMeses);
+
+function calcularCuotasDesdeNumeroMeses() {
+
+    if ($("#formapago").val() !== "Si") {
+        return;
+    }
+
+    const frecuencia = parseInt($("#input_frecuencia").val(), 10);
+
+    if (!frecuencia || isNaN(frecuencia) || frecuencia <= 0) {
+        return;
+    }
+
+    const mesesRaw = ("" + $("#numeroMeses").val() || "")
+        .replace(",", ".")
+        .trim();
+
+    if (!mesesRaw) {
+        $("#input_cuotas").val("");
+        return;
+    }
+
+    const numeroMeses = parseFloat(mesesRaw);
+    if (isNaN(numeroMeses) || numeroMeses <= 0) {
+        $("#input_cuotas").val("");
+        return;
+    }
+
+    const mesesPorCuota = {
+        1: 1 / 30,
+        2: 1 / 4,
+        3: 1 / 2,
+        4: 1,
+        5: 2,
+        6: 3,
+        7: 6,
+        8: 12,
+    }[frecuencia];
+
+    if (!mesesPorCuota) return;
+
+    const cuotasCalculadas = Math.max(1, Math.ceil(numeroMeses / mesesPorCuota));
+    const maxCuotasActuales = $("#input_cuotas option").length - 1;
+
+    if (cuotasCalculadas > maxCuotasActuales) {
+        generarCuotas(cuotasCalculadas);
+    }
+
+    $("#input_cuotas").val(String(cuotasCalculadas));
+}
+
+
+function obtenerFechaHoyISO() {
+    const hoy = new Date();
+    const yyyy = hoy.getFullYear();
+    const mm = ("0" + (hoy.getMonth() + 1)).slice(-2);
+    const dd = ("0" + hoy.getDate()).slice(-2);
+    return yyyy + "-" + mm + "-" + dd;
+}
+
+function parseFecha(fecha) {
+    if (fecha instanceof Date) {
+        return new Date(fecha);
+    }
+
+    if (typeof fecha !== "string") {
+        return new Date(fecha);
+    }
+
+    let texto = fecha.trim();
+    if (!texto) {
+        return new Date();
+    }
+
+    // MySQL datetime: 2024-05-17 14:30:00
+    if (/^\d{4}-\d{2}-\d{2}(\s+\d{2}:\d{2}:\d{2})?$/.test(texto)) {
+        return new Date(texto.replace(" ", "T"));
+    }
+
+    // Fecha con barras: 17/05/2024
+    const partes = texto.split("/");
+    if (partes.length === 3) {
+        const [d, m, y] = partes;
+        return new Date(`${y}-${m}-${d}`);
+    }
+
+    return new Date(texto);
+}
+
+function validarDatos({ cuotas, frecuencia, deuda }) {
+    if (!frecuencia) {
+        Swal.fire("Selecciona frecuencia de pago", "", "warning");
+        return false;
+    }
+
+    if (!cuotas) {
+        Swal.fire("Selecciona número de cuotas", "", "warning");
+        return false;
+    }
+
+    if (!deuda || deuda <= 0) {
+        Swal.fire("El crédito no puede ser menor o igual a 0", "", "warning");
+        return false;
+    }
+
+    return true;
+}
+
+function calcularMontos(deuda, interes, cuotas) {
+    let interesTotal = deuda * (interes / 100);
+    let deudaTotal = deuda + interesTotal;
+    let montoCuota = (deudaTotal / cuotas).toFixed(2);
+
+    return {
+        interesTotal,
+        deudaTotal,
+        montoCuota,
+    };
+}
+
+function calcularCuotas() {
+
+    // Si no se eligio cuotas manualmente, intentar autocalcular desde N° meses + frecuencia.
+    if (!$("#input_cuotas").val()) {
+        calcularCuotasDesdeNumeroMeses();
+    }
+
+    if ($('#formapago').val() === 'Si') {
+
+    }
+
+    let fechaOperacion = ("" + $("#fechaOperacion").val() || "").trim();
+    if (!fechaOperacion) {
+        fechaOperacion = obtenerFechaHoyISO();
+        $("#fechaOperacion").val(fechaOperacion);
+    }
+
+    let data = {
+        cuotas: parseInt($("#input_cuotas").val()),
+        frecuencia: parseInt($("#input_frecuencia").val()),
+        interes: parseFloat($("#inputInteres").val()),
+        deuda: parseFloat($("#montoDeuda").val()),
+        fechaBase: parseFecha(fechaOperacion),
+    };
+
+    if (!validarDatos(data)) return;
+
+    let { montoCuota } = calcularMontos(data.deuda, data.interes, data.cuotas);
+
+    let html = generarTabla(
+        data.cuotas,
+        data.frecuencia,
+        data.fechaBase,
+        data.deuda,
+        data.interes,
+    );
+
+    $("#datafechas").html(html);
+}
+
+$("#calcular_cuotas").click(function (e) {
+    e.preventDefault();
+    calcularCuotas();
+});
+
+function sumarFrecuencia(fecha, frecuencia) {
+    let nuevaFecha = new Date(fecha);
+    frecuencia = parseInt(frecuencia, 10);
+
+    switch (frecuencia) {
+        case 1:
+            nuevaFecha.setDate(nuevaFecha.getDate() + 1);
+            break;
+        case 2:
+            nuevaFecha.setDate(nuevaFecha.getDate() + 7);
+            break;
+        case 3:
+            nuevaFecha.setDate(nuevaFecha.getDate() + 15);
+            break;
+        case 4:
+            nuevaFecha.setMonth(nuevaFecha.getMonth() + 1);
+            break;
+        case 5:
+            nuevaFecha.setMonth(nuevaFecha.getMonth() + 2);
+            break;
+        case 6:
+            nuevaFecha.setMonth(nuevaFecha.getMonth() + 3);
+            break;
+        case 7:
+            nuevaFecha.setMonth(nuevaFecha.getMonth() + 6);
+            break;
+        case 8:
+            nuevaFecha.setFullYear(nuevaFecha.getFullYear() + 1);
+            break;
+    }
+
+    return nuevaFecha;
+}
+
+function generarCuotas(max = 100) {
+    let select = $("#input_cuotas");
+    let html = '<option value="" selected hidden>Seleccionar...</option>';
+
+    for (let i = 1; i <= max; i++) {
+        html += `<option value="${i}">${i}</option>`;
+    }
+
+    select.html(html);
+}
+
+function formatearFecha(fecha) {
+    return (
+        fecha.getFullYear() +
+        "-" +
+        ("0" + (fecha.getMonth() + 1)).slice(-2) +
+        "-" +
+        ("0" + fecha.getDate()).slice(-2)
+    );
+}
+
+
+function generarTabla(cuotas, frecuencia, fechaBase, deuda, interes, input=true) {
+    let html = "";
+    frecuencia = parseInt(frecuencia, 10);
+    let fechaTemp = parseFecha(fechaBase);
+    const interesTotal = deuda * (interes / 100);
+    const montoBase = deuda / cuotas;
+    const interesPorCuota = interesTotal / cuotas;
+    const totalCuota = montoBase + interesPorCuota;
+
+    for (let i = 1; i <= cuotas; i++) {
+        fechaTemp = sumarFrecuencia(fechaTemp, frecuencia);
+        let fecha = formatearFecha(fechaTemp);
+
+        html += `
+      <tr>
+        <td>${input ? `<input type="date" class="form-control" name="fecha_pago[]" value="${fecha}">` : fecha}</td>
+        <td>S/. ${montoBase.toFixed(2)}</td>
+        <td>S/. ${interesPorCuota.toFixed(2)}</td>
+        <td>S/. ${totalCuota.toFixed(2)}</td>
+      </tr>`;
+    }
+
+    return html;
+}
+
+
+$("#inicial").keyup(function () {
+    var texto = parseFloat($(this).val() || 0);
+    var total = parseFloat($("#total_venta").val()) || 0;
+    if (texto > total) {
+        $(this).val(total.toFixed(2));
+        texto = total;
+    };
+
+    var restante = total - texto;
+    $("#montoDeuda").val(restante.toFixed(2));
+});
+
+
+$("#formapago").change(function () {
+    if ($(this).val() === "Si") {
+        if (detalles === 0) {
+            Swal.fire("Alerta", "Agrega al menos un producto para habilitar los datos de crédito.", "warning");
+            $(this).val("No").trigger("change");
+            return;
+        }
+        $("#datosCredito").removeAttr("hidden");
+    } else {
+        $("#datosCredito").attr("hidden", true);
+    }
+});
 
 function buscarProductoCod(e, codigo) {
     if (e.keyCode === 13) {
@@ -179,44 +455,174 @@ function mostrar(idcotizacion) {
         $("#num_comprobantem").val(data.num_comprobante);
         $("#fecha_horam").val(data.fecha);
         $("#impuestom").val(data.impuesto);
-        $("#formapagom").val(data.formapago);
+        $("#formapagom").val(data.formapago).trigger('change');
         $("#nrooperacionm").val(data.numoperacion);
         $("#fechadeposito").val(data.fechadeposito);
         $("#titulo").val(data.titulo);
         $("#nota").val(data.nota);
         $("#idventam").val(data.idventa);
+        $("#inicial").val(data.inicial);
+        $("#input_frecuencia").val(data.frecuencia);
+        $("#numeroMeses").val(data.meses);
+        $("#inputInteres").val(data.interes);
+
+        if (data.formapago === "Si") {
+
+            $("#panelCredito").removeAttr("hidden");
+            $("#panel2").removeAttr("hidden");
+
+            let total = parseFloat(data.total_venta) || 0;
+            let inicial = parseFloat(data.inicial) || 0;
+            let interes = parseFloat(data.interes) || 0;
+
+            let deuda = total - inicial;
+
+            if (deuda < 0) {
+                deuda = 0;
+            }
+
+            const cuotas = generarNumCuotas(data.frecuencia, data.meses);
+            const fechaInicio = parseFecha(data.fecha_h);
+            const fechaInicioISO = `${fechaInicio.getFullYear()}-${("0" + (fechaInicio.getMonth() + 1)).slice(-2)}-${("0" + fechaInicio.getDate()).slice(-2)}`;
+
+            $("#fechaOperacion").val(fechaInicioISO);
+            $("#input_cuotas").val(cuotas);
+
+            const tabla = generarTabla(cuotas, data.frecuencia, fechaInicio, deuda, interes, false);
+            $("#textCredito").text(`S/ ${deuda.toFixed(2)}`);
+            $("#textInicial").text(`S/ ${inicial.toFixed(2)}`);
+            $("#textInteres").text(`${interes}%`);
+            $("#textCuotas").text(`${cuotas}`);
+            $("#dataCuotasCredito").html(tabla);
+        } else {
+            $("#dataCuotasCredito").html('');
+            $("#panelCredito").attr("hidden", true);
+            $("#panel2").attr("hidden", true);
+        }
     });
     $.post("controladores/cotizaciones.php?op=listarDetalle&id=" + idcotizacion, function (r) {
         $("#detallesm").html(r);
     });
 }
 
+
+function generarNumCuotas(frecuencia, meses) {
+    meses = parseInt(meses) || 0;
+
+    let cuotas = 0;
+
+    switch (parseInt(frecuencia)) {
+
+        // DIARIO
+        case 1:
+            cuotas = meses * 30;
+            break;
+
+        // SEMANAL
+        case 2:
+            cuotas = meses * 4;
+            break;
+
+        // QUINCENAL
+        case 3:
+            cuotas = meses * 2;
+            break;
+
+        // MENSUAL
+        case 4:
+            cuotas = meses;
+            break;
+
+        // BIMESTRAL
+        case 5:
+            cuotas = Math.ceil(meses / 2);
+            break;
+
+        // TRIMESTRAL
+        case 6:
+            cuotas = Math.ceil(meses / 3);
+            break;
+
+        // SEMESTRAL
+        case 7:
+            cuotas = Math.ceil(meses / 6);
+            break;
+
+        // ANUAL
+        case 8:
+            cuotas = Math.ceil(meses / 12);
+            break;
+
+        default:
+            cuotas = 1;
+            break;
+    }
+
+    return cuotas;
+}
+
 function mostrarEditar(idcotizacion) {
     mostrarform(true);
     $.post("controladores/cotizaciones.php?op=mostrar", { idcotizacion: idcotizacion }, function (data, status) {
         data = JSON.parse(data);
-        $("#listadoregistros").hide();
-        $("#formularioregistros").show();
-        listarArticulos();
-        listarArticulos2();
-        $('#idcotizacion').val(data.idcotizacion);
-        $('#nuevoVendedor').val(data.personal);
-        $('#idcliente').val(data.idcliente).trigger('change');
-        $('#fecha_hora').val(data.fecha);
-        $('#serie_comprobante').val(data.serie_comprobante);
-        $('#num_comprobante').val(data.num_comprobante);
-        $('#tipo_comprobante').val(data.tipo_comprobante).trigger('change');
-        $("#titulo").val(data.titulo);
-        $("#nota").val(data.nota).trigger('change');
-        $("#formapago").val(data.formapago).trigger('change');
-        $("#tiempoproduccion").val(data.tiempo_pro).trigger('change');
-        $("#igv").val(data.igv).trigger('change');
-    });
-    $.post("controladores/cotizaciones.php?op=listarDetalleCotizacion", { idcotizacion: idcotizacion }, function (data, status) {
-        data = JSON.parse(data);
-        for (var i = 0; i < data.length; i++) {
-            agregarDetalle(data[i][0], data[i][1], data[i][2], data[i][3], data[i][4], data[i][5], data[i][6], data[i][7], data[i][8], data[i][9], data[i][10], data[i][12], data[i][13], data[i][14]);
-        }
+
+        $.post("controladores/cotizaciones.php?op=listarDetalleCotizacion",
+            { idcotizacion: idcotizacion },
+            function (detalleData, status) {
+                detalleData = JSON.parse(detalleData);
+                detalleData.forEach(element => {
+
+                    agregarDetalle(
+                        element[0],   // idpc
+                        element[1],   // idproducto
+                        element[2],   // producto
+                        element[3],   // cantidad
+                        element[4],   // descuento
+                        element[5],   // precio_venta
+                        element[9],   // preciocigv
+                        element[6],   // precioB
+                        element[7],   // precioC
+                        element[8],   // precioD
+                        element[10],  // stock
+                        element[11],  // proigv
+                        element[13],  // cantidad_contenedor
+                        element[14],  // contenedor
+                        1             // idcategoria
+                    );
+
+                });
+                detalles = detalleData.length;
+
+                $("#listadoregistros").hide();
+                $("#formularioregistros").show();
+                listarArticulos();
+                listarArticulos2();
+                $('#idcotizacion').val(data.idcotizacion);
+                $('#nuevoVendedor').val(data.personal);
+                $('#idcliente').val(data.idcliente).trigger('change');
+                $('#fecha_hora').val(data.fecha);
+                $('#serie_comprobante').val(data.serie_comprobante);
+                $('#num_comprobante').val(data.num_comprobante);
+                $('#tipo_comprobante').val(data.tipo_comprobante).trigger('change');
+                $("#titulo").val(data.titulo);
+                $("#nota").val(data.nota).trigger('change');
+                $("#tiempoproduccion").val(data.tiempo_pro).trigger('change');
+                $("#igv").val(data.igv).trigger('change');
+                $("#inputInteres").val(data.interes).trigger('change');
+                $("#inicial").val(data.inicial).trigger('change');
+                $("#input_frecuencia").val(data.frecuencia).trigger('change');
+                $("#numeroMeses").val(data.meses).trigger('change');
+                $("#formapago").val(data.formapago);
+                const fechaInicioEdicion = parseFecha(data.fecha_h || data.fecha);
+                const fechaInicioEdicionISO = `${fechaInicioEdicion.getFullYear()}-${("0" + (fechaInicioEdicion.getMonth() + 1)).slice(-2)}-${("0" + fechaInicioEdicion.getDate()).slice(-2)}`;
+                $("#fechaOperacion").val(fechaInicioEdicionISO);
+                const deuda = parseFloat(data.total_venta) - parseFloat(data.inicial);
+                $("#montoDeuda").val(deuda);
+                if (data.formapago === "Si") {
+                    $("#datosCredito").removeAttr("hidden");
+                    calcularCuotas();
+                }
+            });
     });
 }
 
@@ -268,25 +674,23 @@ function listar() {
 }
 
 function handleRowInput(element) {
-    modificarSubtotales(); 
+    // const row = $(element).closest('tr');
+    // const idtmp = row.find('input[name="idtmp[]"]').val();
+    // const cantidad = row.find('input[name="cantidad[]"]').val();
+    // const precio_venta = row.find('input[name="precio_venta[]"]').val();
+    // alert(idtmp);
+    // if (idtmp && idtmp > 0) {
+    //     // $.post("controladores/cotizaciones.php?op=actualizarTmp", {
+    //     //     idtmp: idtmp,
+    //     //     cantidad: cantidad,
+    //     //     precio_venta: precio_venta
+    //     // }, function (response) {
+    //     //     console.log("Sync:", response);
+    //     // });
+    // }
 
-    clearTimeout(updateTimeout);
-    updateTimeout = setTimeout(() => {
-        const row = $(element).closest('tr');
-        const idtmp = row.find('input[name="idtmp[]"]').val();
-        const cantidad = row.find('input[name="cantidad[]"]').val();
-        const precio_venta = row.find('input[name="precio_venta[]"]').val();
 
-        if (idtmp && idtmp > 0) { 
-            $.post("controladores/cotizaciones.php?op=actualizarTmp", {
-                idtmp: idtmp,
-                cantidad: cantidad,
-                precio_venta: precio_venta
-            }, function (response) {
-                console.log("Sync:", response);
-            });
-        }
-    }, 800);
+    modificarSubtotales();
 }
 
 function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, preciocigv, precioB, precioC, precioD, stock, proigv, cantidad_contenedor, contenedor, idcategoria) {
@@ -332,7 +736,7 @@ function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, pr
       <td hidden><input type="number" step="0.01" name="descuento[]" value="${desc}" hidden></td>
       <td style="text-align:center; vertical-align:middle;">S/. <span name="subtotal" style="font-weight:bold;"></span></td>
       <td style="text-align:center; vertical-align:middle;">
-        <button type="button" class="btn btn-danger btn-sm" onclick="eliminarTmp(0)">
+        <button type="button" class="btn btn-danger btn-sm" onclick="eliminarTmp(0, ${filaId})">
           <i class="fa fa-trash"></i>
         </button>
       </td>
@@ -347,17 +751,17 @@ function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, pr
     detalles++;
     evaluar();
 
-    $.post("controladores/cotizaciones.php?op=agregarTmp", {
-        idproducto: idproducto, cantidad: cantidad, precio_venta: precio_venta, descuento: desc, contenedor: contenedor, cantidad_contenedor: cantidad_contenedor, idp: idpc
-    }, function (idtmp) {
-        if (idtmp && !isNaN(idtmp)) {
-            $("#" + filaId).find('input[name="idtmp[]"]').val(idtmp);
-            $("#" + filaId).find('button').attr('onclick', `eliminarTmp(${idtmp})`);
-        } else {
-            toastr.error("Error al agregar item.");
-            $("#" + filaId).remove();
-        }
-    });
+    // $.post("controladores/cotizaciones.php?op=agregarTmp", {
+    //     idproducto: idproducto, cantidad: cantidad, precio_venta: precio_venta, descuento: desc, contenedor: contenedor, cantidad_contenedor: cantidad_contenedor, idp: idpc
+    // }, function (idtmp) {
+    //     if (idtmp && !isNaN(idtmp)) {
+    //         $("#" + filaId).find('input[name="idtmp[]"]').val(idtmp);
+    //         $("#" + filaId).find('button').attr('onclick', `eliminarTmp(${idtmp})`);
+    //     } else {
+    //         toastr.error("Error al agregar item.");
+    //         $("#" + filaId).remove();
+    //     }
+    // });
 }
 
 function desistir(idcotizacion) {
@@ -489,35 +893,35 @@ function evaluar() {
     }
 }
 
-function eliminarTmp(idtmp) {
+function eliminarTmp(idtmp, filaId) {
     if (idtmp === 0) {
         // This case is for an item not yet saved, we can just remove from DOM
         // However, the button is disabled until the ajax call returns, so this is a fallback.
-         $(this).closest('tr').remove();
-         modificarSubtotales();
+        $(filaId).closest('tr').remove();
+        modificarSubtotales();
         return;
     }
-    Swal.fire({
-        title: "¿Eliminar producto?",
-        text: "Se quitará del carrito temporal.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar"
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.post("controladores/cotizaciones.php?op=eliminarTmp", { idtmp: idtmp }, function (respuesta) {
-                if (respuesta.includes("Eliminado")) {
-                    toastr.warning(respuesta);
-                } else {
-                    toastr.error(respuesta);
-                }
-                listarTmp();
-            }).fail(function (xhr) {
-                toastr.error("Error de conexión: " + xhr.statusText);
-            });
-        }
-    });
+    // Swal.fire({
+    //     title: "¿Eliminar producto?",
+    //     text: "Se quitará del carrito temporal.",
+    //     icon: "warning",
+    //     showCancelButton: true,
+    //     confirmButtonText: "Sí, eliminar",
+    //     cancelButtonText: "Cancelar"
+    // }).then((result) => {
+    //     if (result.isConfirmed) {
+    //         $.post("controladores/cotizaciones.php?op=eliminarTmp", { idtmp: idtmp }, function (respuesta) {
+    //             if (respuesta.includes("Eliminado")) {
+    //                 toastr.warning(respuesta);
+    //             } else {
+    //                 toastr.error(respuesta);
+    //             }
+    //             listarTmp();
+    //         }).fail(function (xhr) {
+    //             toastr.error("Error de conexión: " + xhr.statusText);
+    //         });
+    //     }
+    // });
 }
 
 function mostrarform(flag) {
@@ -533,8 +937,7 @@ function mostrarform(flag) {
         $("#btnNuevo, #header").hide();
         listarArticulos();
         listarArticulos2();
-        cargarDatosTemporales();
-        listarTmp();
+        // cargarDatosTemporales();
         esperarSelect("#idsucursal", $("#idsucursal").val());
         setTimeout(() => {
             let idsucursal = $("#idsucursal").val();
@@ -550,47 +953,47 @@ function mostrarform(flag) {
     }
 }
 
-function listarTmp() {
-    $.getJSON("controladores/cotizaciones.php?op=listarTmp", function (data) {
-        $("#detalles").html("");
-        detalles = 0;
-        articuloAdd = "";
-        cont = 0;
-        $.each(data.aaData, function (i, item) {
-            let filaId = "fila" + cont;
-            let fila = `
-                <tr class="filas custom-row" id="${filaId}">
-                  <td>
-                    <input type="hidden" name="idtmp[]" value="${item.idtmp}">
-                    <input type="hidden" name="idproducto[]" value="${item.idproducto}">
-                    <input type="hidden" name="idp[]" value="${item.idp}">
-                    <input type="hidden" name="contenedor[]" value="${item.contenedor ?? ''}">
-                    <input type="hidden" name="cantidad_contenedor[]" value="${item.cantidad_contenedor ?? 0}">
-                    <input class="form-control" type="text" name="nombreProducto[]" value="${item.nombre}" style="font-weight: bold; width: 300px;"/>
-                  </td>
-                  <td style="text-align: center; vertical-align: middle;"><span class="badge bg-green">${item.contenedor ?? ""}</span></td>
-                  <td class="text-center align-middle">
-                    <input class="form-control text-center" style="width:80px" type="number" step="0.01" name="precio_venta[]" value="${item.precio_venta}" oninput="handleRowInput(this)">
-                    <input type="hidden" name="descuento[]" value="${item.descuento ?? 0}">
-                  </td>
-                  <td style="text-align: center; vertical-align: middle;">
-                    <input class="form-control" style="text-align:center; width: 80px; background-color:transparent; color: blue; font-weight: bold;" type="number" min="1" name="cantidad[]" value="${item.cantidad}" oninput="handleRowInput(this)">
-                  </td>
-                  <td style="text-align: center; vertical-align: middle; width:100px">
-                    S/. <span name="subtotal" style="text-align:center;font-size:14px;font-weight:bold"></span>
-                  </td>
-                  <td style="text-align: center; vertical-align: middle;">
-                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarTmp(${item.idtmp})"><i class="fa fa-trash"></i></button>
-                  </td>
-                </tr>
-            `;
-            $("#detalles").append(fila);
-            detalles++;
-            cont++;
-            articuloAdd += item.idp + "-";
-        });
-        modificarSubtotales();
-    });
-}
+// function listarTmp() {
+//     $.getJSON("controladores/cotizaciones.php?op=listarTmp", function (data) {
+//         $("#detalles").html("");
+//         detalles = 0;
+//         articuloAdd = "";
+//         cont = 0;
+//         $.each(data.aaData, function (i, item) {
+//             let filaId = "fila" + cont;
+//             let fila = `
+//                 <tr class="filas custom-row" id="${filaId}">
+//                   <td>
+//                     <input type="hidden" name="idtmp[]" value="${item.idtmp}">
+//                     <input type="hidden" name="idproducto[]" value="${item.idproducto}">
+//                     <input type="hidden" name="idp[]" value="${item.idp}">
+//                     <input type="hidden" name="contenedor[]" value="${item.contenedor ?? ''}">
+//                     <input type="hidden" name="cantidad_contenedor[]" value="${item.cantidad_contenedor ?? 0}">
+//                     <input class="form-control" type="text" name="nombreProducto[]" value="${item.nombre}" style="font-weight: bold; width: 300px;"/>
+//                   </td>
+//                   <td style="text-align: center; vertical-align: middle;"><span class="badge bg-green">${item.contenedor ?? ""}</span></td>
+//                   <td class="text-center align-middle">
+//                     <input class="form-control text-center" style="width:80px" type="number" step="0.01" name="precio_venta[]" value="${item.precio_venta}" oninput="handleRowInput(this)">
+//                     <input type="hidden" name="descuento[]" value="${item.descuento ?? 0}">
+//                   </td>
+//                   <td style="text-align: center; vertical-align: middle;">
+//                     <input class="form-control" style="text-align:center; width: 80px; background-color:transparent; color: blue; font-weight: bold;" type="number" min="1" name="cantidad[]" value="${item.cantidad}" oninput="handleRowInput(this)">
+//                   </td>
+//                   <td style="text-align: center; vertical-align: middle; width:100px">
+//                     S/. <span name="subtotal" style="text-align:center;font-size:14px;font-weight:bold"></span>
+//                   </td>
+//                   <td style="text-align: center; vertical-align: middle;">
+//                     <button type="button" class="btn btn-danger btn-sm" onclick="eliminarTmp(${item.idtmp})"><i class="fa fa-trash"></i></button>
+//                   </td>
+//                 </tr>
+//             `;
+//             $("#detalles").append(fila);
+//             detalles++;
+//             cont++;
+//             articuloAdd += item.idp + "-";
+//         });
+//         modificarSubtotales();
+//     });
+// }
 
 init();
