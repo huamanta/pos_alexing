@@ -253,8 +253,8 @@ $("#imagen").change(function () {
 function verEventos(idpersonal) {
 	$("#myModalEventos").modal('show');
 	var calendarEl = document.getElementById('calendar');
-	
-	let condicion = null;
+
+	let condicion = '';
 	if(idpersonal && idpersonal != undefined){
 		condicion = '&idpersonal=' + idpersonal
 	}
