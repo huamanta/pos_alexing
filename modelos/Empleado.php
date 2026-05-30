@@ -68,11 +68,19 @@ class Empleado
 
 	public function eventosCalendario($idpersonal)
 	{
+		$condition = "";
 
-		$sql = "SELECT s.*, c.nombre
+		if (!empty($idpersonal)) {
+			$condition = " WHERE s.idpersonal = '$idpersonal' ";
+		}
+
+		$sql = "SELECT
+                s.*,
+                p.nombre
             FROM seguimiento_clientes s
-            INNER JOIN persona c ON c.idpersona = s.idcliente
-			WHERE s.idpersonal = $idpersonal";
+            INNER JOIN personal p
+                ON p.idpersonal = s.idpersonal
+            $condition";
 
 		$res = ejecutarConsulta($sql);
 

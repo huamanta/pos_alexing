@@ -253,6 +253,11 @@ $("#imagen").change(function () {
 function verEventos(idpersonal) {
 	$("#myModalEventos").modal('show');
 	var calendarEl = document.getElementById('calendar');
+	
+	let condicion = null;
+	if(idpersonal && idpersonal != undefined){
+		condicion = '&idpersonal=' + idpersonal
+	}
 	var calendar = new FullCalendar.Calendar(calendarEl, {
 		locale: 'es',
 		initialView: 'dayGridMonth',
@@ -261,7 +266,7 @@ function verEventos(idpersonal) {
 			center: 'title',
 			right: 'dayGridMonth,timeGridWeek,timeGridDay'
 		},
-		events: 'controladores/empleado.php?op=eventosCalendario&idpersonal=' + idpersonal,
+		events: 'controladores/empleado.php?op=eventosCalendario'+condicion,
 		eventClick: function (info) {
 			let e = info.event;
 			Swal.fire({

@@ -31,6 +31,10 @@
                   <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal"
                     data-target="#myModal"><i class="fa fa-plus"></i> Nuevo</button>
                 </div>
+                <div class="col-md-1">
+                  <button type="button" class="btn btn-outline-info btn-block btn-xs" onclick="verEventos()"
+                    data-target="#myModal"><i class="fa fa-calendar"></i> EVENTOS</button>
+                </div>
               </div>
 
             </div>
