@@ -39,6 +39,7 @@ if (isset($_GET["ruta"])) {
   <link rel="stylesheet" href="./files/dist/css/neon.css?v=<?= time() ?>">
   <link rel="stylesheet" href="./files/dist/css/tailpanel.css">
   <link rel="stylesheet" href="./files/css/pos.css">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet">
   <!-- jQuery -->
   <script src="./files/plugins/jquery/jquery.min.js"></script>
   <!-- Bootstrap 4 -->
@@ -93,6 +94,8 @@ if (isset($_GET["ruta"])) {
   <script src="./files/dist/js/JsBarcode.all.min.js"></script>
   <script src="./files/dist/js/jquery.PrintArea.js"></script>
   <script src="./files/plugins/toastr/toastr.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
   <script>
     $(document).ready(function () {
       $('[data-toggle="tooltip"]').tooltip();

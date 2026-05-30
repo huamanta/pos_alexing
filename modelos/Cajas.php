@@ -175,4 +175,116 @@ class Cajas
         return ejecutarConsulta($sql);
     }
 
+    public function listarCobrrosPorApertura($aperturacajaid)
+    {
+        $sqlap = "SELECT fecha_apertura, fecha_cierre, idcaja 
+              FROM caja_apertura 
+              WHERE aperturacajaid = '$aperturacajaid'
+              LIMIT 1";
+
+        $ap = ejecutarConsulta($sqlap)->fetch_object();
+
+        if (!$ap)
+            return [];
+
+        $inicio = $ap->fecha_apertura;
+        $fin = !empty($ap->fecha_cierre) ? $ap->fecha_cierre : date('Y-m-d H:i:s');
+        $idcaja = $ap->idcaja;
+
+        $sql = "SELECT dcc.*
+            FROM detalle_cuentas_por_cobrar dcc
+            WHERE dcc.idcaja = '$idcaja'
+              AND dcc.fechapago BETWEEN '$inicio' AND '$fin'
+            ORDER BY dcc.iddcpc DESC";
+
+        $rspta = ejecutarConsulta($sql);
+
+        $data = array();
+        while ($reg = $rspta->fetch_object()) {
+            $data[] = array(
+                "0" => $reg->fechapago,
+                "1" => $this->getClienteVenta($reg->idcpc),
+                "2" => $reg->formapago,
+                "3" => $reg->observacion,
+                "4" => $reg->montopagado,
+                "5" => $reg->montotarjeta,
+            );
+        }
+
+        return array(
+            "sEcho" => 1,
+            "iTotalRecords" => count($data),
+            "iTotalDisplayRecords" => count($data),
+            "aaData" => $data
+        );
+    }
+
+
+    public function getClienteVenta($idcpc) {
+        $sql = "SELECT * FROM cuentas_por_cobrar cc
+        INNER JOIN venta v ON v.idventa = cc.idventa
+        INNER JOIN persona p ON v.idcliente = p.idpersona
+        WHERE cc.idcpc = $idcpc";
+
+        $data = ejecutarConsultaSimpleFila($sql);
+
+        return $data['nombre'];
+    }
+
+    public function listarPagosPorApertura($aperturacajaid)
+    {
+        $sqlap = "SELECT fecha_apertura, fecha_cierre, idcaja 
+              FROM caja_apertura 
+              WHERE aperturacajaid = '$aperturacajaid'
+              LIMIT 1";
+
+        $ap = ejecutarConsulta($sqlap)->fetch_object();
+
+        if (!$ap)
+            return [];
+
+        $inicio = $ap->fecha_apertura;
+        $fin = !empty($ap->fecha_cierre) ? $ap->fecha_cierre : date('Y-m-d H:i:s');
+        $idcaja = $ap->idcaja;
+
+        $sql = "SELECT dcp.*
+            FROM detalle_cuentas_por_pagar dcp
+            WHERE dcp.idcaja = '$idcaja'
+              AND dcp.fechapago BETWEEN '$inicio' AND '$fin'
+            ORDER BY dcp.iddcpp DESC";
+
+        $rspta = ejecutarConsulta($sql);
+
+        $data = array();
+        while ($reg = $rspta->fetch_object()) {
+            $data[] = array(
+                "0" => $reg->fechapago,
+                "1" => $this->getProveedorCompra($reg->idcpp),
+                "2" => $reg->formapago,
+                "3" => $reg->observacion,
+                "4" => $reg->montopagado,
+                "5" => $reg->montotarjeta,
+            );
+        }
+
+        return array(
+            "sEcho" => 1,
+            "iTotalRecords" => count($data),
+            "iTotalDisplayRecords" => count($data),
+            "aaData" => $data
+        );
+    }
+
+
+    public function getProveedorCompra($idcpp) {
+        $sql = "SELECT * FROM cuentas_por_paga cp
+        INNER JOIN compra c ON c.idventa = cp.icompra
+        INNER JOIN persona p ON c.idcliente = p.idpersona
+        WHERE cp.idcpp = $idcpp";
+
+        $data = ejecutarConsultaSimpleFila($sql);
+
+        return $data['nombre'];
+    }
+
 }

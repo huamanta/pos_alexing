@@ -327,7 +327,6 @@ final class Pos
                       SUM(montotarjeta) AS total_no_efectivo
                    FROM detalle_cuentas_por_cobrar
                    WHERE idcaja = '$idcaja'
-                     AND idpersonal = '$idpersonal'
                      AND fechapago BETWEEN '$fecha_inicio' AND '$fecha_fin'";
 
     $a = ejecutarConsulta($sql_abonos)->fetch_object();

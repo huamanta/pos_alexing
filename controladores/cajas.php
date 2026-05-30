@@ -48,9 +48,9 @@ switch ($_GET["op"]) {
                 "4" => $estado,
                 "5" => ($reg->estado)
                     ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idcaja . ')"><i class="fas fa-edit"></i></button>' .
-                      ' <button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idcaja . ')"><i class="fas fa-times-circle"></i></button>'
+                    ' <button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idcaja . ')"><i class="fas fa-times-circle"></i></button>'
                     : '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idcaja . ')"><i class="fas fa-edit"></i></button>' .
-                      ' <button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idcaja . ')"><i class="fa fa-check"></i></button>'
+                    ' <button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idcaja . ')"><i class="fa fa-check"></i></button>'
             );
         }
 
@@ -96,8 +96,8 @@ switch ($_GET["op"]) {
                 "0" => $reg->fecha,
                 "1" => $reg->descripcion,
                 "2" => ($reg->tipo == 'Egresos')
-                        ? '<span class="badge bg-red">EGRESO</span>'
-                        : '<span class="badge bg-green">INGRESO</span>',
+                    ? '<span class="badge bg-red">EGRESO</span>'
+                    : '<span class="badge bg-green">INGRESO</span>',
                 "3" => $reg->formapago,
                 "4" => $reg->monto,
                 "5" => '<div class="dropdown">
@@ -105,8 +105,8 @@ switch ($_GET["op"]) {
                               <i class="fa fa-list-ul"></i>
                             </button>
                             <div class="dropdown-menu">
-                              <a class="dropdown-item" onclick="mostrarMovimiento('.$reg->idmovimiento.')">Editar</a>
-                              <a class="dropdown-item" onclick="eliminarMovimiento('.$reg->idmovimiento.')">Eliminar</a>
+                              <a class="dropdown-item" onclick="mostrarMovimiento(' . $reg->idmovimiento . ')">Editar</a>
+                              <a class="dropdown-item" onclick="eliminarMovimiento(' . $reg->idmovimiento . ')">Eliminar</a>
                             </div>
                          </div>',
             );
@@ -118,6 +118,19 @@ switch ($_GET["op"]) {
             "iTotalDisplayRecords" => count($data),
             "aaData" => $data
         ]);
+        break;
+
+
+    case 'listarCobrosPorApertura':
+        $aperturacajaid = $_REQUEST["aperturacajaid"];
+        $rspta = $caja->listarCobrrosPorApertura($aperturacajaid);
+        echo json_encode($rspta);
+        break;
+
+    case 'listarPagosPorApertura':
+        $aperturacajaid = $_REQUEST["aperturacajaid"];
+        $rspta = $caja->listarPagosPorApertura($aperturacajaid);
+        echo json_encode($rspta);
         break;
 }
 ?>

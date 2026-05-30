@@ -1144,15 +1144,19 @@ class CuentasCobrar
                 $buttons = "";
             }
 
-            $recibido = number_format($row->totalrecibido+$row->totaldeposito);
-            $interes = ($row->total_venta - $recibido) * ($row->interes/100);
+            $recibido = number_format($row->totalrecibido + $row->totaldeposito);
+            $totalVenta = floatval($row->total_venta);
+            $recibido = floatval(str_replace(',', '', $recibido));
+            $interesPorcentaje = floatval($row->interes);
+
+            $interes = ($totalVenta - $recibido) * ($interesPorcentaje / 100);
 
             $data[] = array(
                 "0" => $row->fecha_venta,
                 "1" => $doc,
                 "2" => number_format($row->total_venta, 2),
                 "3" => $recibido,
-                "4" => ($row->interes) ? $interes.' <span class="badge badge-info">'.$row->interes.'%</span>':'0',
+                "4" => ($row->interes) ? $interes . ' <span class="badge badge-info">' . $row->interes . '%</span>' : '0',
                 "5" => number_format($row->total_abonado, 2),
                 "6" => number_format($row->saldo_pendiente, 2),
                 "7" => $estado,
@@ -1180,8 +1184,10 @@ class CuentasCobrar
                     cc.deuda,
                     cc.estado_pago,
                     cc.mora,
-                    cc.idventa
+                    cc.idventa,
+                    v.idcliente
                 FROM cuentas_por_cobrar cc
+                INNER JOIN venta v ON v.idventa = cc.idventa
                 WHERE cc.idventa = '$idventa'
                   AND cc.condicion = '1'
                 ORDER BY cc.idcpc DESC";
@@ -1224,15 +1230,69 @@ class CuentasCobrar
             }
 
             $acciones = ($saldo <= 0 || $estadoRetension === true)
-                ? "<div class='btn-group'>
-                        <button type='button' class='btn btn-sm btn-info' onclick='mostrarAbonos({$row->idcpc})'>Ver abonos</button>
-                        <button type='button' class='btn btn-sm btn-secondary' onclick='verEstadoCuenta({$row->idcpc})'>Estado cuenta</button>
-                   </div>"
-                : "<div class='btn-group'>
-                        <button type='button' class='btn btn-sm btn-success' onclick='mostrar({$row->idcpc})'>Crear abono</button>
-                        <button type='button' class='btn btn-sm btn-info' onclick='mostrarAbonos({$row->idcpc})'>Ver abonos</button>
-                        <button type='button' class='btn btn-sm btn-secondary' onclick='verEstadoCuenta({$row->idcpc})'>Estado cuenta</button>
-                   </div>";
+                ? "
+        <button 
+            type='button' 
+            class='btn btn-sm btn-info'
+            onclick='mostrarAbonos({$row->idcpc})'
+            data-toggle='tooltip'
+            data-placement='top'
+            title='Ver abonos'>
+            <i class='fas fa-money-check-alt'></i>
+        </button>
+
+        <button 
+            type='button' 
+            class='btn btn-sm btn-secondary'
+            onclick='verEstadoCuenta({$row->idcpc})'
+            data-toggle='tooltip'
+            data-placement='top'
+            title='Estado de cuenta'>
+            <i class='fas fa-file-invoice-dollar'></i>
+        </button>
+      "
+
+                : "
+        <button 
+            type='button' 
+            class='btn btn-sm btn-success'
+            onclick='mostrar({$row->idcpc})'
+            data-toggle='tooltip'
+            data-placement='top'
+            title='Crear abono'>
+            <i class='fas fa-plus-circle'></i>
+        </button>
+
+        <button 
+            type='button' 
+            class='btn btn-sm btn-info'
+            onclick='mostrarAbonos({$row->idcpc})'
+            data-toggle='tooltip'
+            data-placement='top'
+            title='Ver abonos'>
+            <i class='fas fa-money-check-alt'></i>
+        </button>
+
+        <button 
+            type='button' 
+            class='btn btn-sm btn-secondary'
+            onclick='verEstadoCuenta({$row->idcpc})'
+            data-toggle='tooltip'
+            data-placement='top'
+            title='Estado de cuenta'>
+            <i class='fas fa-file-invoice-dollar'></i>
+        </button>
+
+        <button 
+            type='button' 
+            class='btn btn-sm btn-warning'
+            onclick='programarVisita({$row->idcpc}, {$row->idventa}, {$row->idcliente})'
+            data-toggle='tooltip'
+            data-placement='top'
+            title='Programar visita'>
+            <i class='fas fa-calendar-check'></i>
+        </button>
+      ";
 
             $rowClass = '';
             if ($saldo > 0 && !empty($row->fecha_venc_raw)) {
@@ -1413,7 +1473,7 @@ class CuentasCobrar
             $sqlDetalle = "INSERT INTO detalle_cuentas_por_cobrar
                             (idcpc, idcaja, idpersonal, montopagado, montotarjeta, banco, op, fechapago, formapago, observacion)
                         VALUES
-                            ('$reg->idcpc', '$idcaja', '$idpersonal', '$montoPagadoTotal', 0, '', '', CURDATE(), '$formapago', 'AMORTIZACION CREDITO')";
+                            ('$reg->idcpc', '$idcaja', '$idpersonal', '$montoPagadoTotal', 0, '', '', NOW(), '$formapago', 'AMORTIZACION CREDITO')";
             ejecutarConsulta($sqlDetalle);
 
             // Recalcular deuda total correctamente
@@ -1548,6 +1608,200 @@ class CuentasCobrar
         }
 
         return json_encode($data);
+    }
+
+    public function guardarVisita($idcpc, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final)
+    {
+        if (empty($idcpc)) {
+            return json_encode([
+                "status" => false,
+                "msg" => "ID crédito inválido"
+            ]);
+        }
+
+        if (empty($fecha_programada)) {
+            return json_encode([
+                "status" => false,
+                "msg" => "Debe ingresar fecha programada"
+            ]);
+        }
+
+        $documentacion = $this->obtenerDocumento($idventa);
+        $iddocumento = $documentacion['iddocumento'];
+
+        $sql = "INSERT INTO seguimiento_clientes(
+                idventa,
+                iddocumento,
+                idcpc,
+                idcliente,
+                idpersonal,
+                tipo,
+                descripcion,
+                fecha_proxima,
+                idusuario,
+                estado,
+                prioridad,
+                direccion,
+                fecha_final
+            )
+            VALUES(
+                '$idventa',
+                '$iddocumento',
+                '$idcpc',
+                '$idcliente',
+                '$idpersonal',
+                '$tipo_visita',
+                '$descripcion',
+                '$fecha_programada',
+                '$idusuario',
+                '$estado',
+                '$prioridad',
+                '$direccion',
+                '$fecha_final'
+            )";
+
+        $idseguimiento = ejecutarConsulta_retornarID($sql);
+
+        if (!$idseguimiento) {
+            return json_encode([
+                "status" => false,
+                "msg" => "No se pudo programar la visita"
+            ]);
+        }
+
+        // Guardar archivos
+        if (isset($_FILES['adjuntos']) && !empty($_FILES['adjuntos']['name'][0])) {
+
+            $ruta = "../files/seguimientos/";
+
+            if (!file_exists($ruta)) {
+                mkdir($ruta, 0777, true);
+            }
+
+            foreach ($_FILES['adjuntos']['tmp_name'] as $key => $tmp) {
+
+                if ($_FILES['adjuntos']['error'][$key] == 0) {
+
+                    $nombreOriginal = $_FILES['adjuntos']['name'][$key];
+
+                    $extension = strtolower(
+                        pathinfo($nombreOriginal, PATHINFO_EXTENSION)
+                    );
+
+                    $nombreArchivo =
+                        date('YmdHis') .
+                        "_" .
+                        uniqid() .
+                        "." .
+                        $extension;
+
+                    if (
+                        move_uploaded_file(
+                            $tmp,
+                            $ruta . $nombreArchivo
+                        )
+                    ) {
+
+                        $sqlAdjunto = "INSERT INTO seguimiento_adjuntos(
+                                        idseguimiento,
+                                        archivo,
+                                        nombre_original
+                                    )
+                                    VALUES(
+                                        '$idseguimiento',
+                                        '$nombreArchivo',
+                                        '$nombreOriginal'
+                                    )";
+
+                        ejecutarConsulta($sqlAdjunto);
+                    }
+                }
+            }
+        }
+
+        return json_encode([
+            "status" => true,
+            "msg" => "Seguimiento registrado correctamente"
+        ]);
+    }
+
+
+    public function obtenerDocumento($idventa)
+    {
+        $sql = "SELECT * FROM documentacion WHERE idventa = '$idventa'";
+        return ejecutarConsultaSimpleFila($sql);
+    }
+
+
+    public function obtenerCredito($idventa, $idcpc)
+    {
+        $sql = "SELECT 
+                c.*,
+
+                (
+                    SELECT COUNT(*)
+                    FROM cuentas_por_cobrar x
+                    WHERE x.idventa = c.idventa
+                    AND x.fechavencimiento <= c.fechavencimiento
+                ) AS numero_cuota,
+
+                (
+                    SELECT COUNT(*)
+                    FROM cuentas_por_cobrar y
+                    WHERE y.idventa = c.idventa
+                ) AS total_cuotas
+
+            FROM cuentas_por_cobrar c
+            WHERE c.idcpc = '$idcpc'";
+
+        return ejecutarConsultaSimpleFila($sql);
+    }
+
+    public function dataArchivosAdjuntos($idseguimiento)
+    {
+        $sql = "SELECT * FROM seguimiento_adjuntos WHERE idseguimiento = $idseguimiento";
+        $rspta = ejecutarConsulta($sql);
+        $data = array();
+        while ($reg = $rspta->fetch_object()) {
+            $data[] = $reg;
+        }
+
+        return json_encode($data);
+    }
+
+    public function listarHistorialSeguimiento($idventa)
+    {
+        $sql = "SELECT * FROM seguimiento_clientes WHERE idventa = $idventa";
+        $rspta = ejecutarConsulta($sql);
+
+        $data = array();
+
+        $count = 1;
+        while ($reg = $rspta->fetch_object()) {
+            $credito = $this->obtenerCredito($reg->idventa, $reg->idcpc);
+            $archivos_adjuntos = $this->dataArchivosAdjuntos($reg->idseguimiento);
+            $data[] = array(
+                "0" => $count++,
+                "1" => $reg->tipo,
+                "2" => "Corresponde a cuota " . $credito['numero_cuota'] . " de " . $credito['total_cuotas'],
+                "3" => $reg->descripcion,
+                "4" => $reg->fecha_proxima,
+                "5" => $reg->estado,
+                "6" => $reg->prioridad,
+                "7" => '<button class="btn btn-primary" onclick=\'verArchivosAdjuntos(' . $archivos_adjuntos . ')\'>
+                        <i class="fa fa-eye"></i> Adjuntos
+                        </button>'
+                );
+        }
+
+        $results = array(
+            "sEcho" => 1, //Información para el datatables
+            "iTotalRecords" => count($data), //enviamos el total registros al datatable
+            "iTotalDisplayRecords" => count($data), //enviamos el total registros a visualizar
+            "aaData" => $data
+        );
+
+        echo json_encode($results);
     }
 
 }

@@ -3,6 +3,8 @@ var tablaCreditosCliente;
 var tablaCuotasCredito;
 var ventaActualCuotas = null;
 var saldoActualCuotas = 0;
+var tbllistadohistorial;
+let archivosSeleccionados = [];
 
 //Función que se ejecuta al inicio
 function init() {
@@ -581,9 +583,32 @@ function volverListaClientes() {
     listar();
 }
 
-function agregarComentario(comentario) {
+
+function listarHistorialSeguimiento(idventa) {
     $('#modalComentario').modal('show');
-    $('#comentarioCredito').val(comentario);
+    tbllistadohistorial = $("#tbllistadohistorial").dataTable({
+        "aProcessing": true,
+        "aServerSide": false,
+        "responsive": true,
+        "lengthChange": false,
+        "autoWidth": false,
+        "ajax": {
+            url: "controladores/cuentascobrar.php?op=listarHistorialSeguimiento",
+            data: {
+                idventa: idventa
+            },
+            type: "get",
+            dataType: "json",
+            dataSrc: function (json) {
+                return json && json.aaData ? json.aaData : [];
+            },
+            error: function (e) {
+                console.log(e.responseText);
+            }
+        },
+        "bDestroy": true,
+        "iDisplayLength": 10
+    }).DataTable();
 }
 
 function guardarComentarioCredito() {
@@ -619,16 +644,13 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
     $('#tituloCreditoCuotas').text(documento ? documento : '');
 
     $("#modalCuotasCredito").modal("show");
-    let text_btn_coment = 'Agregar nota';
-    if (comentario) {
-        text_btn_coment = 'Actualizar nota';
-    }
+
     let botones = [
         {
-            text: '<i class="fas fa-comment-dots"></i> ' + text_btn_coment,
+            text: '<i class="fas fa-comment-dots"></i> Fechas programadas',
             className: 'btn btn-info btn-sm btn-comment',
             action: function () {
-                agregarComentario(comentario);
+                listarHistorialSeguimiento(idventa);
             }
         }
     ];
@@ -676,19 +698,6 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
 
         bDestroy: true,
         iDisplayLength: 10,
-
-        initComplete: function () {
-            if (comentario) {
-                $('.msgComentario').html(`<div class="alert alert-primary d-flex align-items-center" role="alert">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-exclamation-triangle-fill flex-shrink-0 me-2" viewBox="0 0 16 16" role="img" aria-label="Warning:">
-                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                    </svg>
-                    <div style="margin-left: 10px">
-                        `+ comentario + `
-                    </div>
-                </div>`);
-            }
-        }
     });
 }
 let inicialCuota = 0;
@@ -699,7 +708,7 @@ async function amortizar(idventa) {
         Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
         return;
     }
-    
+
     $("#panel-pagar-cuotas").hide();
 
     $.ajax({
@@ -733,7 +742,7 @@ async function amortizar(idventa) {
                 calcularTotal(cantidad);
             });
 
-            
+
             $("#montoPagarAmortizar").val('');
             function calcularTotal(cantidad) {
 
@@ -764,7 +773,7 @@ async function amortizar(idventa) {
     $('#modalAmortizar').modal('show');
 };
 
-$("#btn-seleccionar-cuotas").click(function(e){
+$("#btn-seleccionar-cuotas").click(function (e) {
     e.preventDefault();
     $("#panel-pagar-cuotas").show();
     $("#montoPagarAmortizar").val(inicialCuota);
@@ -835,6 +844,211 @@ function verUbicacionCliente(latitude, longitude, direccion) {
     const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
 
     window.open(url, '_blank');
+}
+
+function programarVisita(idcpc, idventa, idcliente) {
+    $("#idcpc_visita").val(idcpc);
+    $("#idventa_visita").val(idventa);
+    $("#idcliente_visita").val(idcliente);
+
+    $("#modalProgramarVisita").modal("show");
+    $.post("controladores/usuario.php?op=selectEmpleado", function (r) {
+        $("#idpersonal").html(r);
+        $('#idpersonal').select2();
+    });
+}
+
+
+$("#formProgramarVisita").submit(function (e) {
+
+    e.preventDefault();
+
+    var formData = new FormData(this);
+
+    archivosSeleccionados.forEach(function (file) {
+        formData.append('adjuntos[]', file);
+    });
+
+    $.ajax({
+        url: "controladores/cuentascobrar.php?op=guardarVisita",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+
+        success: function (r) {
+            var data = JSON.parse(r);
+
+            if (data.status != true) {
+                Swal.fire('Error', data.msg, 'error');
+            }
+            $("#formProgramarVisita")[0].reset();
+            Swal.fire('Hecho', data.msg, 'success');
+            $("#modalProgramarVisita").modal("hide");
+            tabla.ajax.reload();
+        }
+    });
+
+});
+
+$("#adjuntos").on("change", function (e) {
+
+    let nuevosArchivos = Array.from(e.target.files);
+
+    nuevosArchivos.forEach(file => {
+
+        archivosSeleccionados.push(file);
+
+    });
+
+    renderArchivos();
+
+    $("#adjuntos").val("");
+});
+
+function renderArchivos() {
+
+    $("#previewArchivos").html("");
+
+    archivosSeleccionados.forEach((archivo, index) => {
+
+        let nombre = archivo.name;
+        let size = (archivo.size / 1024 / 1024).toFixed(2);
+
+        let icono = "fa-file";
+
+        if (nombre.match(/\.(jpg|jpeg|png|webp)$/i)) {
+            icono = "fa-file-image text-primary";
+        }
+        else if (nombre.match(/\.(pdf)$/i)) {
+            icono = "fa-file-pdf text-danger";
+        }
+        else if (nombre.match(/\.(doc|docx)$/i)) {
+            icono = "fa-file-word text-info";
+        }
+        else if (nombre.match(/\.(xls|xlsx)$/i)) {
+            icono = "fa-file-excel text-success";
+        }
+        else if (nombre.match(/\.(mp4)$/i)) {
+            icono = "fa-file-video text-warning";
+        }
+        else if (nombre.match(/\.(mp3)$/i)) {
+            icono = "fa-file-audio text-secondary";
+        }
+
+        $("#previewArchivos").append(`
+            <div class="col-md-12 archivo-item-${index}">
+                
+                <div class="preview-item">
+
+                    <div class="preview-left">
+
+                        <i class="fas ${icono}"></i>
+
+                        <div>
+
+                            <div style="font-size:13px;font-weight:600;">
+                                ${nombre}
+                            </div>
+
+                            <small class="text-muted">
+                                ${size} MB
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <button 
+                        type="button"
+                        class="btn-delete-file"
+                        onclick="eliminarArchivo(${index})">
+
+                        <i class="fas fa-times"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+        `);
+
+    });
+
+}
+
+function eliminarArchivo(index) {
+
+    archivosSeleccionados.splice(index, 1);
+
+    renderArchivos();
+}
+
+function verArchivosAdjuntos(data){
+
+    if(typeof data === 'string'){
+        data = JSON.parse(data);
+    }
+
+    let html = '';
+
+    if(data.length === 0){
+
+        html = `
+            <div class="alert alert-warning mb-0">
+                No existen archivos adjuntos.
+            </div>
+        `;
+
+    }else{
+
+        data.forEach(function(item){
+
+            let extension = item.archivo.split('.').pop().toLowerCase();
+
+            let icono = 'fa-file';
+
+            if(['pdf'].includes(extension)){
+                icono = 'fa-file-pdf text-danger';
+            }
+            else if(['doc','docx'].includes(extension)){
+                icono = 'fa-file-word text-primary';
+            }
+            else if(['xls','xlsx'].includes(extension)){
+                icono = 'fa-file-excel text-success';
+            }
+            else if(['jpg','jpeg','png','webp'].includes(extension)){
+                icono = 'fa-file-image text-info';
+            }
+            else if(['mp4'].includes(extension)){
+                icono = 'fa-file-video text-warning';
+            }
+
+            html += `
+                <div class="card mb-2">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+
+                        <div>
+                            <i class="fas ${icono} fa-lg mr-2"></i>
+                            ${item.nombre_original}
+                        </div>
+
+                        <a href="files/seguimientos/${item.archivo}"
+                           target="_blank"
+                           class="btn btn-sm btn-primary">
+
+                            <i class="fa fa-eye"></i> Ver
+                        </a>
+
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    $("#contenidoAdjuntos").html(html);
+
+    $("#modalAdjuntos").modal("show");
 }
 
 init();

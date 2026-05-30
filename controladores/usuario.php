@@ -161,20 +161,12 @@ switch ($_GET["op"]){
 		require_once "../modelos/Empleado.php";
 		$empleado = new Empleado();
 		$rspta = $empleado->select();
-		while ($reg = $rspta->fetch_object())
-				{
-
-					if($_SESSION['idpersonal'] == $reg->idpersonal){
-
-						echo '<option value=' . $reg->idpersonal . ' selected>' . $reg->nombre . '</option>';
-
-					}else{
-
-						echo '<option value=' . $reg->idpersonal . '>' . $reg->nombre . '</option>';
-						
-					}
-
-				}
+		echo '<option value="">Seleccione...</option>';
+		while ($reg = $rspta->fetch_object()){
+			if ($reg->idpersonal != 1){
+				echo '<option value=' . $reg->idpersonal . '>' . $reg->nombre . '</option>';
+			}
+		}
 	break;
 
 	case "selectEmpleadoServicio":

@@ -453,27 +453,29 @@ date_default_timezone_set('America/Lima');
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
-        <table id="tbllistadoCuotasCredito" class="table table-striped table-bordered" width="100%">
-          <thead>
-            <th>Fecha Registro</th>
-            <th>Fecha Vencimiento</th>
-            <th>Abonado</th>
-            <th>Deuda</th>
-            <th>Saldo</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </thead>
-          <tbody></tbody>
-          <tfoot>
-            <th>Fecha Registro</th>
-            <th>Fecha Vencimiento</th>
-            <th>Abonado</th>
-            <th>Deuda</th>
-            <th>Saldo</th>
-            <th>Estado</th>
-            <th>Acciones</th>
-          </tfoot>
-        </table>
+        <div class="row table-responsive">
+          <table id="tbllistadoCuotasCredito" class="table table-striped table-bordered" width="100%">
+            <thead>
+              <th>Fecha Registro</th>
+              <th>Fecha Vencimiento</th>
+              <th>Abonado</th>
+              <th>Deuda</th>
+              <th>Saldo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <th>Fecha Registro</th>
+              <th>Fecha Vencimiento</th>
+              <th>Abonado</th>
+              <th>Deuda</th>
+              <th>Saldo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tfoot>
+          </table>
+        </div>
       </div>
     </div>
   </div>
@@ -483,28 +485,65 @@ date_default_timezone_set('America/Lima');
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">Cuentas por Cobrar del Crédito: <strong id="tituloCreditoCuotas"></strong></h4>
+        <h4 class="modal-title">Lista de seguimiento de credito</h4>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
-        <div class="row">
-          <input type="hidden" id="idventacuentacobrar">
-          <div class="col-md-12 mb-3">
-            <label>Comentario</label>
-            <textarea id="comentarioCredito" class="form-control" rows="3"
-              placeholder="Escribe un comentario..."></textarea>
-          </div>
-
-          <div class="col-md-12 text-right">
-            <button class="btn btn-primary" onclick="guardarComentarioCredito()">
-              <i class="fas fa-save"></i> Guardar comentario
-            </button>
-          </div>
-
+        <div class="row table-responsive">
+          <table id="tbllistadohistorial" class="table table-striped table-bordered" width="100%">
+            <thead>
+              <th>#</th>
+              <th>Tipo</th>
+              <th>Descripcion</th>
+              <th>Detalle</th>
+              <th>Fecha programada</th>
+              <th>Estado</th>
+              <th>Prioridad</th>
+              <th>Acciones</th>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <th>#</th>
+              <th>Tipo</th>
+              <th>Descripcion</th>
+              <th>Detalle</th>
+              <th>Fecha programada</th>
+              <th>Estado</th>
+              <th>Prioridad</th>
+              <th>Acciones</th>
+            </tfoot>
+          </table>
         </div>
       </div>
     </div>
   </div>
+</div>
+
+<div class="modal fade" id="modalAdjuntos">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Archivos Adjuntos
+                </h5>
+
+                <button type="button"
+                        class="close"
+                        data-dismiss="modal">
+
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div id="contenidoAdjuntos"></div>
+
+            </div>
+
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="getCodeModal">
@@ -721,7 +760,8 @@ date_default_timezone_set('America/Lima');
             <div class="col-sm-4">
               <div class="form-group">
                 <label>Fecha de Pago:</label>
-                <input class="form-control" type="datetime-local" name="fechaPago" id="fechaPago" value="<?php echo date('Y-m-d H:i:s')?>">
+                <input class="form-control" type="datetime-local" name="fechaPago" id="fechaPago"
+                  value="<?php echo date('Y-m-d H:i:s') ?>">
               </div>
             </div>
 
@@ -833,7 +873,8 @@ date_default_timezone_set('America/Lima');
             </div>
             <div class="col-sm-4">
               <div class="form-group">
-                <label for="name" class="control-label">Monto a Pagar: <a style="float: right; color: blue" id="btn-seleccionar-cuotas"> Seleccionar cuotas</a></label>
+                <label for="name" class="control-label">Monto a Pagar: <a style="float: right; color: blue"
+                    id="btn-seleccionar-cuotas"> Seleccionar cuotas</a></label>
                 <input type="text" class="form-control" id="montoPagarAmortizar" name="montoPagarAmortizar" required="">
               </div>
             </div>
@@ -982,6 +1023,280 @@ date_default_timezone_set('America/Lima');
         <button class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
         <button class="btn btn-primary" onclick="imprimirEstadoCuenta()">Imprimir</button>
       </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL PROGRAMAR VISITA -->
+<div class="modal fade" id="modalProgramarVisita" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header bg-warning">
+        <h5 class="modal-title">
+          <i class="fas fa-calendar-check"></i>
+          Programar visita
+        </h5>
+
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form id="formProgramarVisita" enctype="multipart/form-data">
+
+        <div class="modal-body">
+
+          <input type="hidden" name="idcpc" id="idcpc_visita">
+          <input type="hidden" name="idventa" id="idventa_visita">
+          <input type="hidden" name="idcliente" id="idcliente_visita">
+
+          <div class="row">
+            <div class="col-md-7">
+              <div class="row">
+
+                <!-- RESPONSABLE -->
+                <div class="form-group col-md-6">
+                  <label>
+                    Responsable
+                  </label>
+
+                  <select class="form-control" name="idpersonal" id="idpersonal">
+
+                    <option value="">Seleccione</option>
+
+                    <!-- CARGAR USUARIOS -->
+                  </select>
+                </div>
+
+                <!-- TIPO -->
+                <div class="form-group col-md-6">
+                  <label>Tipo visita</label>
+
+                  <select class="form-control" name="tipo_visita" id="tipo_visita">
+
+                    <option value="LLAMADA">
+                      LLAMADA
+                    </option>
+                    <option value="VISITA">
+                      VISITA
+                    </option>
+                    <option value="COBRANZA">
+                      COBRANZA
+                    </option>
+                    <option value="WHATSAPP">
+                      WHATSAPP
+                    </option>
+                    <option value="CORREO">
+                      CORREO
+                    </option>
+                    <option value="VERIFICACION">
+                      VERIFICACION
+                    </option>
+                    <option value="SEGUIMIENTO">
+                      SEGUIMIENTO
+                    </option>
+
+                    <option value="NEGOCIACION">
+                      NEGOCIACION
+                    </option>
+                    <option value="COBRANZA">
+                      OTRO
+                    </option>
+
+                  </select>
+                </div>
+
+                <!-- PRIORIDAD -->
+                <div class="form-group col-md-6">
+                  <label>Prioridad</label>
+
+                  <select class="form-control" name="prioridad" id="prioridad">
+
+                    <option value="BAJA">Baja</option>
+                    <option value="MEDIA">Media</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="URGENTE">Urgente</option>
+
+                  </select>
+                </div>
+
+                <!-- PRIORIDAD -->
+                <div class="form-group col-md-6">
+                  <label>Estado</label>
+
+                  <select class="form-control" name="estado" id="estado">
+
+                    <option value="PENDIENTE">PENDIENTE</option>
+                    <option value="REALIZADO">REALIZADO</option>
+                    <option value="NO_RESPONDE">NO RESPONDE</option>
+                    <option value="REPROGRAMADO">REPROGRAMADO</option>
+
+                  </select>
+                </div>
+
+
+                <!-- FECHA -->
+                <div class="form-group col-md-6">
+                  <label>
+                    Fecha visita <span class="text-danger">*</span>
+                  </label>
+
+                  <input type="datetime-local" class="form-control" name="fecha_programada" id="fecha_programada"
+                    required>
+                </div>
+
+
+                <!-- FECHA -->
+                <div class="form-group col-md-6">
+                  <label>
+                    Fecha final
+                  </label>
+                  <input type="datetime-local" class="form-control" name="fecha_final" id="fecha_final">
+                </div>
+
+                <!-- DIRECCION -->
+                <div class="form-group col-md-12">
+                  <label>Dirección</label>
+
+                  <input type="text" class="form-control" name="direccion" id="direccion"
+                    placeholder="Ingrese dirección de visita">
+                </div>
+
+                <!-- OBSERVACION -->
+                <div class="form-group col-md-12">
+                  <label>Observación</label>
+
+                  <textarea class="form-control" name="descripcion" id="descripcion" rows="4"
+                    placeholder="Detalle de la visita..."></textarea>
+                </div>
+              </div>
+            </div>
+
+            <style>
+              .upload-box {
+                border: 2px dashed #f0ad4e;
+                border-radius: 15px;
+                background: #fffaf2;
+                cursor: pointer;
+                transition: .3s;
+              }
+
+              .upload-box:hover {
+                background: #fff3df;
+                border-color: #ec971f;
+              }
+
+              .preview-item {
+                border: 1px solid #eee;
+                border-radius: 12px;
+                padding: 10px;
+                background: white;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 10px;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, .05);
+              }
+
+              .preview-left {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+              }
+
+              .preview-left i {
+                font-size: 30px;
+              }
+
+              .btn-delete-file {
+                border: none;
+                background: #dc3545;
+                color: white;
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+              }
+            </style>
+            <div class="col-md-5">
+              <div class="row">
+                <!-- ADJUNTOS -->
+                <div class="form-group col-md-12">
+
+                  <label>
+                    Adjuntar archivos
+                  </label>
+
+                  <div class="custom-file-upload">
+
+                    <input type="file" id="adjuntos" class="d-none" multiple accept="
+                .pdf,
+                .doc,
+                .docx,
+                .xls,
+                .xlsx,
+                .jpg,
+                .jpeg,
+                .png,
+                .webp,
+                .mp4,
+                .mp3
+            ">
+
+                    <label for="adjuntos" class="upload-box w-100">
+
+                      <div class="text-center p-4">
+
+                        <i class="fas fa-cloud-upload-alt fa-3x text-warning mb-3"></i>
+
+                        <h5 class="mb-2">
+                          Subir documentos
+                        </h5>
+
+                        <p class="text-muted mb-2">
+                          Agrega múltiples archivos
+                        </p>
+
+                        <span class="badge badge-warning p-2">
+                          PDF · Word · Excel · Imágenes · Audio · Video
+                        </span>
+
+                      </div>
+
+                    </label>
+
+                  </div>
+
+                  <!-- LISTA -->
+                  <div id="previewArchivos" class="row mt-3"></div>
+
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+
+            <i class="fas fa-times"></i>
+            Cerrar
+          </button>
+
+          <button type="submit" class="btn btn-warning">
+
+            <i class="fas fa-save"></i>
+            Guardar programación
+          </button>
+
+        </div>
+
+      </form>
+      <!-- ADJUNTOS -->
+
     </div>
   </div>
 </div>

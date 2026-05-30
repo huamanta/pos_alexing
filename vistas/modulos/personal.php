@@ -28,7 +28,8 @@
 
               <div class="row">
                 <div class="col-md-1">
-                  <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Nuevo</button>
+                  <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal"
+                    data-target="#myModal"><i class="fa fa-plus"></i> Nuevo</button>
                 </div>
               </div>
 
@@ -94,7 +95,8 @@
             <label for="name" class="col-sm-2 control-label">Nombre:</label>
             <div class="col-sm-12">
               <input type="hidden" name="idpersonal" id="idpersonal">
-              <input type="text" class="form-control" name="nombre" id="nombre" maxlength="250" placeholder="Nombres" required>
+              <input type="text" class="form-control" name="nombre" id="nombre" maxlength="250" placeholder="Nombres"
+                required>
             </div>
           </div>
 
@@ -112,7 +114,8 @@
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Número:</label>
-                <input type="text" class="form-control" name="num_documento" id="num_documento" maxlength="20" placeholder="Documento" required>
+                <input type="text" class="form-control" name="num_documento" id="num_documento" maxlength="20"
+                  placeholder="Documento" required>
               </div>
             </div>
           </div>
@@ -126,7 +129,8 @@
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Teléfono:</label>
-                <input type="text" class="form-control" name="telefono" id="telefono" maxlength="20" placeholder="Teléfono">
+                <input type="text" class="form-control" name="telefono" id="telefono" maxlength="20"
+                  placeholder="Teléfono">
               </div>
             </div>
           </div>
@@ -134,7 +138,8 @@
             <div class="col-sm-4">
               <div class="form-group">
                 <label for="name" class="control-label">Salario:</label>
-                <input type="number" class="form-control" name="salario" id="salario" maxlength="50" placeholder="salario">
+                <input type="number" class="form-control" name="salario" id="salario" maxlength="50"
+                  placeholder="salario">
               </div>
             </div>
             <div class="col-sm-4">
@@ -175,6 +180,69 @@
     <!-- /.modal-content -->
   </div>
   <!-- /.modal-dialog -->
+</div>
+
+<div class="modal fade" id="myModalEventos">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content shadow-lg border-0">
+
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-calendar-alt mr-2"></i>
+          Agenda de Seguimiento
+        </h5>
+
+        <button type="button" class="close text-white" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <style>
+        #calendar {
+          min-height: 300px;
+        }
+
+        .fc {
+          font-size: 14px;
+        }
+
+        .fc-toolbar-title {
+          font-size: 1.3rem !important;
+          font-weight: 600;
+        }
+
+        .fc-daygrid-event {
+          border-radius: 8px;
+          padding: 2px 6px;
+        }
+
+        .fc-theme-standard td,
+        .fc-theme-standard th {
+          border-color: #e9ecef;
+        }
+      </style>
+
+      <div class="modal-body p-2 bg-light">
+
+        <div class="card border-0 shadow-sm mb-0">
+          <div class="card-body">
+
+            <div id="calendar"></div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+
+          <i class="fas fa-times"></i>
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <script src="vistas/js/personal.js"></script>
