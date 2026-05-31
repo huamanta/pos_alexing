@@ -2,10 +2,11 @@
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
 require "Contratos.php";
+require_once "Helpers.php";
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-class CuentasCobrar
+class CuentasCobrar extends Helpers
 {
     //Implementamos nuestro constructor
     public function __construct()
@@ -1610,14 +1611,20 @@ class CuentasCobrar
         return json_encode($data);
     }
 
-    public function guardarVisita($idcpc, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final)
-    {
-        if (empty($idcpc)) {
-            return json_encode([
-                "status" => false,
-                "msg" => "ID crédito inválido"
-            ]);
-        }
+    public function guardarVisita(
+        $idcpc,
+        $idventa,
+        $idcliente,
+        $fecha_programada,
+        $idpersonal,
+        $tipo_visita,
+        $prioridad,
+        $estado,
+        $direccion,
+        $descripcion,
+        $idusuario,
+        $fecha_final
+    ) {
 
         if (empty($fecha_programada)) {
             return json_encode([
@@ -1626,8 +1633,24 @@ class CuentasCobrar
             ]);
         }
 
-        $documentacion = $this->obtenerDocumento($idventa);
-        $iddocumento = $documentacion['iddocumento'];
+        // Obtener documento si existe venta
+        $iddocumento = null;
+
+        if (!empty($idventa)) {
+
+            $documentacion = $this->obtenerDocumento($idventa);
+
+            if (!empty($documentacion)) {
+                $iddocumento = $documentacion['iddocumento'];
+            }
+        }
+
+        // Preparar NULL para SQL
+        $idventa_sql = !empty($idventa) ? "'$idventa'" : "NULL";
+        $iddocumento_sql = !empty($iddocumento) ? "'$iddocumento'" : "NULL";
+        $idcpc_sql = !empty($idcpc) ? "'$idcpc'" : "NULL";
+        $idcliente_sql = !empty($idcliente) ? "'$idcliente'" : "NULL";
+        $fecha_final_sql = !empty($fecha_final) ? "'$fecha_final'" : "NULL";
 
         $sql = "INSERT INTO seguimiento_clientes(
                 idventa,
@@ -1645,10 +1668,10 @@ class CuentasCobrar
                 fecha_final
             )
             VALUES(
-                '$idventa',
-                '$iddocumento',
-                '$idcpc',
-                '$idcliente',
+                $idventa_sql,
+                $iddocumento_sql,
+                $idcpc_sql,
+                $idcliente_sql,
                 '$idpersonal',
                 '$tipo_visita',
                 '$descripcion',
@@ -1657,72 +1680,281 @@ class CuentasCobrar
                 '$estado',
                 '$prioridad',
                 '$direccion',
-                '$fecha_final'
+                $fecha_final_sql
             )";
 
-        $idseguimiento = ejecutarConsulta_retornarID($sql);
+        try {
 
-        if (!$idseguimiento) {
-            return json_encode([
-                "status" => false,
-                "msg" => "No se pudo programar la visita"
-            ]);
-        }
+            $idseguimiento = ejecutarConsulta_retornarID($sql);
 
-        // Guardar archivos
-        if (isset($_FILES['adjuntos']) && !empty($_FILES['adjuntos']['name'][0])) {
-
-            $ruta = "../files/seguimientos/";
-
-            if (!file_exists($ruta)) {
-                mkdir($ruta, 0777, true);
+            if (!$idseguimiento) {
+                return json_encode([
+                    "status" => false,
+                    "msg" => "No se pudo registrar el seguimiento"
+                ]);
             }
 
-            foreach ($_FILES['adjuntos']['tmp_name'] as $key => $tmp) {
+            // Guardar adjuntos
+            if (
+                isset($_FILES['adjuntos']) &&
+                !empty($_FILES['adjuntos']['name'][0])
+            ) {
 
-                if ($_FILES['adjuntos']['error'][$key] == 0) {
+                $ruta = "../files/seguimientos/";
 
-                    $nombreOriginal = $_FILES['adjuntos']['name'][$key];
+                if (!file_exists($ruta)) {
+                    mkdir($ruta, 0777, true);
+                }
 
-                    $extension = strtolower(
-                        pathinfo($nombreOriginal, PATHINFO_EXTENSION)
-                    );
+                foreach ($_FILES['adjuntos']['tmp_name'] as $key => $tmp) {
 
-                    $nombreArchivo =
-                        date('YmdHis') .
-                        "_" .
-                        uniqid() .
-                        "." .
-                        $extension;
+                    if ($_FILES['adjuntos']['error'][$key] == 0) {
 
-                    if (
-                        move_uploaded_file(
-                            $tmp,
-                            $ruta . $nombreArchivo
-                        )
-                    ) {
+                        $nombreOriginal = $_FILES['adjuntos']['name'][$key];
 
-                        $sqlAdjunto = "INSERT INTO seguimiento_adjuntos(
-                                        idseguimiento,
-                                        archivo,
-                                        nombre_original
-                                    )
-                                    VALUES(
-                                        '$idseguimiento',
-                                        '$nombreArchivo',
-                                        '$nombreOriginal'
-                                    )";
+                        $extension = strtolower(
+                            pathinfo($nombreOriginal, PATHINFO_EXTENSION)
+                        );
 
-                        ejecutarConsulta($sqlAdjunto);
+                        $nombreArchivo =
+                            date('YmdHis') .
+                            "_" .
+                            uniqid() .
+                            "." .
+                            $extension;
+
+                        if (
+                            move_uploaded_file(
+                                $tmp,
+                                $ruta . $nombreArchivo
+                            )
+                        ) {
+
+                            $sqlAdjunto = "INSERT INTO seguimiento_adjuntos(
+                                            idseguimiento,
+                                            archivo,
+                                            nombre_original
+                                        )
+                                        VALUES(
+                                            '$idseguimiento',
+                                            '$nombreArchivo',
+                                            '$nombreOriginal'
+                                        )";
+
+                            ejecutarConsulta($sqlAdjunto);
+                        }
                     }
                 }
             }
-        }
 
-        return json_encode([
-            "status" => true,
-            "msg" => "Seguimiento registrado correctamente"
-        ]);
+            return json_encode([
+                "status" => true,
+                "msg" => "Seguimiento registrado correctamente"
+            ]);
+
+        } catch (Exception $e) {
+
+            return json_encode([
+                "status" => false,
+                "msg" => $e->getMessage()
+            ]);
+        }
+    }
+
+
+    public function editarVisita(
+        $id,
+        $idcpc,
+        $idventa,
+        $idcliente,
+        $fecha_programada,
+        $idpersonal,
+        $tipo_visita,
+        $prioridad,
+        $estado,
+        $direccion,
+        $descripcion,
+        $idusuario,
+        $fecha_final
+    ) {
+
+        global $conexion;
+
+        try {
+
+            $conexion->begin_transaction();
+
+            if (empty($id)) {
+                throw new Exception("ID de seguimiento inválido");
+            }
+
+            if (empty($fecha_programada)) {
+                throw new Exception("Debe ingresar fecha programada");
+            }
+
+            // Obtener documento asociado
+            $iddocumento = null;
+
+            if (!empty($idventa)) {
+
+                $documentacion = $this->obtenerDocumento($idventa);
+
+                if (!empty($documentacion)) {
+                    $iddocumento = $documentacion['iddocumento'];
+                }
+            }
+
+            $idventa_sql = !empty($idventa) ? "'$idventa'" : "NULL";
+            $iddocumento_sql = !empty($iddocumento) ? "'$iddocumento'" : "NULL";
+            $idcpc_sql = !empty($idcpc) ? "'$idcpc'" : "NULL";
+            $idcliente_sql = !empty($idcliente) ? "'$idcliente'" : "NULL";
+            $fecha_final_sql = !empty($fecha_final) ? "'$fecha_final'" : "NULL";
+
+            $sql = "UPDATE seguimiento_clientes SET
+
+                    idventa = $idventa_sql,
+                    iddocumento = $iddocumento_sql,
+                    idcpc = $idcpc_sql,
+                    idcliente = $idcliente_sql,
+                    idpersonal = '$idpersonal',
+                    tipo = '$tipo_visita',
+                    descripcion = '$descripcion',
+                    fecha_proxima = '$fecha_programada',
+                    estado = '$estado',
+                    prioridad = '$prioridad',
+                    direccion = '$direccion',
+                    fecha_final = $fecha_final_sql
+
+                WHERE idseguimiento = '$id'";
+
+            if (!ejecutarConsulta($sql)) {
+                throw new Exception("No se pudo actualizar el seguimiento");
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Eliminar adjuntos
+            |--------------------------------------------------------------------------
+            */
+
+            if (!empty($_POST['archivos_eliminados'])) {
+
+                $archivosEliminar = json_decode(
+                    $_POST['archivos_eliminados'],
+                    true
+                );
+
+                if (is_array($archivosEliminar)) {
+
+                    foreach ($archivosEliminar as $idadjunto) {
+
+                        $adjunto = ejecutarConsultaSimpleFila(
+                            "SELECT *
+                         FROM seguimiento_adjuntos
+                         WHERE idadjunto = '$idadjunto'"
+                        );
+
+                        if ($adjunto) {
+
+                            $rutaArchivo =
+                                "../files/seguimientos/" .
+                                $adjunto['archivo'];
+
+                            if (file_exists($rutaArchivo)) {
+                                unlink($rutaArchivo);
+                            }
+
+                            ejecutarConsulta(
+                                "DELETE FROM seguimiento_adjuntos
+                             WHERE idadjunto = '$idadjunto'"
+                            );
+                        }
+                    }
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Nuevos adjuntos
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                isset($_FILES['adjuntos']) &&
+                !empty($_FILES['adjuntos']['name'][0])
+            ) {
+
+                $ruta = "../files/seguimientos/";
+
+                if (!file_exists($ruta)) {
+                    mkdir($ruta, 0777, true);
+                }
+
+                foreach ($_FILES['adjuntos']['tmp_name'] as $key => $tmp) {
+
+                    if ($_FILES['adjuntos']['error'][$key] == 0) {
+
+                        $nombreOriginal =
+                            $_FILES['adjuntos']['name'][$key];
+
+                        $extension = strtolower(
+                            pathinfo(
+                                $nombreOriginal,
+                                PATHINFO_EXTENSION
+                            )
+                        );
+
+                        $nombreArchivo =
+                            date('YmdHis') .
+                            "_" .
+                            uniqid() .
+                            "." .
+                            $extension;
+
+                        if (
+                            move_uploaded_file(
+                                $tmp,
+                                $ruta . $nombreArchivo
+                            )
+                        ) {
+
+                            $sqlAdjunto = "INSERT INTO seguimiento_adjuntos(
+                                            idseguimiento,
+                                            archivo,
+                                            nombre_original
+                                        )
+                                        VALUES(
+                                            '$id',
+                                            '$nombreArchivo',
+                                            '$nombreOriginal'
+                                        )";
+
+                            if (!ejecutarConsulta($sqlAdjunto)) {
+                                throw new Exception(
+                                    "Error al guardar adjunto"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+
+            $conexion->commit();
+
+            return json_encode([
+                "status" => true,
+                "msg" => "Seguimiento actualizado correctamente"
+            ]);
+
+        } catch (Exception $e) {
+
+            $conexion->rollback();
+
+            return json_encode([
+                "status" => false,
+                "msg" => $e->getMessage()
+            ]);
+        }
     }
 
 
@@ -1749,29 +1981,19 @@ class CuentasCobrar
                     SELECT COUNT(*)
                     FROM cuentas_por_cobrar y
                     WHERE y.idventa = c.idventa
-                ) AS total_cuotas
+                ) AS total_cuotas,
+                v.*
 
             FROM cuentas_por_cobrar c
+            INNER JOIN venta v ON v.idventa = c.idventa
             WHERE c.idcpc = '$idcpc'";
 
         return ejecutarConsultaSimpleFila($sql);
     }
 
-    public function dataArchivosAdjuntos($idseguimiento)
-    {
-        $sql = "SELECT * FROM seguimiento_adjuntos WHERE idseguimiento = $idseguimiento";
-        $rspta = ejecutarConsulta($sql);
-        $data = array();
-        while ($reg = $rspta->fetch_object()) {
-            $data[] = $reg;
-        }
-
-        return json_encode($data);
-    }
-
     public function listarHistorialSeguimiento($idventa)
     {
-        $sql = "SELECT * FROM seguimiento_clientes WHERE idventa = $idventa";
+        $sql = "SELECT * FROM seguimiento_clientes WHERE idventa = $idventa AND deleted_at IS NULL";
         $rspta = ejecutarConsulta($sql);
 
         $data = array();
@@ -1791,7 +2013,7 @@ class CuentasCobrar
                 "7" => '<button class="btn btn-primary" onclick=\'verArchivosAdjuntos(' . $archivos_adjuntos . ')\'>
                         <i class="fa fa-eye"></i> Adjuntos
                         </button>'
-                );
+            );
         }
 
         $results = array(
@@ -1801,7 +2023,70 @@ class CuentasCobrar
             "aaData" => $data
         );
 
-        echo json_encode($results);
+        return json_encode($results);
+    }
+
+    public function mostrarSeguimiento($idseguimiento)
+    {
+        $sql = "SELECT
+                s.*,
+                p.nombre as personal,
+                c.nombre as cliente
+            FROM seguimiento_clientes s
+            INNER JOIN personal p ON p.idpersonal = s.idpersonal
+            LEFT JOIN persona c ON c.idpersona = s.idcliente
+            WHERE s.idseguimiento = $idseguimiento";
+        $rspta = ejecutarConsultaSimpleFila($sql);
+        $credito = '';
+        $total_cuotas = '';
+        $numero_comprobante = '';
+        $serie_comprobante = '';
+        if ($rspta['idventa'] && $rspta['idcpc']) {
+            $data_credito = $this->obtenerCredito($rspta['idventa'], $rspta['idcpc']);
+            $credito = $data_credito['numero_cuota'];
+            $total_cuotas = $data_credito['total_cuotas'];
+            $numero_comprobante = $data_credito['num_comprobante'];
+            $serie_comprobante = $data_credito['serie_comprobante'];
+        }
+        $rspta['adjuntos'] = $this->dataArchivosAdjuntos($idseguimiento);
+        $rspta['numero_cuota'] = $credito;
+        $rspta['total_cuotas'] = $total_cuotas;
+        $rspta['numero_comprobante'] = $numero_comprobante;
+        $rspta['serie_comprobante'] = $serie_comprobante;
+        return json_encode($rspta);
+    }
+
+
+    public function eliminarSeguimiento($idseguimiento)
+    {
+        if (empty($idseguimiento)){
+            return json_encode([
+                "status" => false,
+                "msg" => "Debe enviar el segimiento a eliminar"
+            ]);
+        }
+        $date = date('Y-m-d H:i:s');
+
+        $sql = "UPDATE seguimiento_clientes
+            SET deleted_at = '$date'
+            WHERE idseguimiento = '$idseguimiento'";
+
+        $rspta = ejecutarConsulta($sql);
+
+        if ($rspta) {
+
+            return json_encode([
+                "status" => true,
+                "msg" => "Seguimiento eliminado correctamente"
+            ]);
+
+        } else {
+
+            return json_encode([
+                "status" => false,
+                "msg" => "No se pudo eliminar el seguimiento"
+            ]);
+        }
     }
 
 }

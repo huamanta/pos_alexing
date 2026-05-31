@@ -167,4 +167,16 @@ class Helpers
         return false;
         
     }
+
+    public function dataArchivosAdjuntos($idseguimiento)
+    {
+        $sql = "SELECT * FROM seguimiento_adjuntos WHERE idseguimiento = $idseguimiento";
+        $rspta = ejecutarConsulta($sql);
+        $data = array();
+        while ($reg = $rspta->fetch_object()) {
+            $data[] = $reg;
+        }
+
+        return json_encode($data);
+    }
 }

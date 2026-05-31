@@ -363,26 +363,45 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'guardarVisita':
-		$idcpc             = isset($_POST["idcpc"]) ? limpiarCadena($_POST["idcpc"]) : "";
-		$idventa           = isset($_POST["idventa"]) ? limpiarCadena($_POST["idventa"]) : "";
-		$idcliente         = isset($_POST["idcliente"]) ? limpiarCadena($_POST["idcliente"]) : "";
-		$fecha_programada  = isset($_POST["fecha_programada"]) ? limpiarCadena($_POST["fecha_programada"]) : "";
-		$idpersonal        = isset($_POST["idpersonal"]) ? limpiarCadena($_POST["idpersonal"]) : "";
-		$tipo_visita       = isset($_POST["tipo_visita"]) ? limpiarCadena($_POST["tipo_visita"]) : "";
-		$prioridad         = isset($_POST["prioridad"]) ? limpiarCadena($_POST["prioridad"]) : "";
-		$estado            = isset($_POST["estado"]) ? limpiarCadena($_POST["estado"]) : "";
-		$direccion         = isset($_POST["direccion"]) ? limpiarCadena($_POST["direccion"]) : "";
-		$descripcion       = isset($_POST["descripcion"]) ? limpiarCadena($_POST["descripcion"]) : "";
-		$fecha_final       = isset($_POST["fecha_final"]) ? limpiarCadena($_POST["fecha_final"]) : "";
-		$idusuario         = $_SESSION['idusuario'];
-		$rspta = $cuentascobrar->guardarVisita($idcpc, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final);
-		echo $rspta;
+		$id = isset($_POST["id"]) ? limpiarCadena($_POST["id"]) : "";
+		$idcpc = isset($_POST["idcpc"]) ? limpiarCadena($_POST["idcpc"]) : "";
+		$idventa = isset($_POST["idventa"]) ? limpiarCadena($_POST["idventa"]) : "";
+		$idcliente = isset($_POST["idcliente"]) ? limpiarCadena($_POST["idcliente"]) : "";
+		$fecha_programada = isset($_POST["fecha_programada"]) ? limpiarCadena($_POST["fecha_programada"]) : "";
+		$idpersonal = isset($_POST["idpersonal"]) ? limpiarCadena($_POST["idpersonal"]) : "";
+		$tipo_visita = isset($_POST["tipo_visita"]) ? limpiarCadena($_POST["tipo_visita"]) : "";
+		$prioridad = isset($_POST["prioridad"]) ? limpiarCadena($_POST["prioridad"]) : "";
+		$estado = isset($_POST["estado"]) ? limpiarCadena($_POST["estado"]) : "";
+		$direccion = isset($_POST["direccion"]) ? limpiarCadena($_POST["direccion"]) : "";
+		$descripcion = isset($_POST["descripcion"]) ? limpiarCadena($_POST["descripcion"]) : "";
+		$fecha_final = isset($_POST["fecha_final"]) ? limpiarCadena($_POST["fecha_final"]) : "";
+		$idusuario = $_SESSION['idusuario'];
+		if ($id) {
+			$rspta = $cuentascobrar->editarVisita($id, $idcpc, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final);
+			echo $rspta;
+		} else {
+			$rspta = $cuentascobrar->guardarVisita($idcpc, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final);
+			echo $rspta;
+		}
+		
 		break;
 
 	case 'listarHistorialSeguimiento':
-		$idventa           = isset($_GET["idventa"]) ? limpiarCadena($_GET["idventa"]) : "";
+		$idventa = isset($_GET["idventa"]) ? limpiarCadena($_GET["idventa"]) : "";
 		$rspta = $cuentascobrar->listarHistorialSeguimiento($idventa);
 		echo $rspta;
+		break;
+
+	case 'mostrarSeguimiento':
+		$idseguimiento = isset($_POST["idseguimiento"]) ? limpiarCadena($_POST["idseguimiento"]) : "";
+		$response = $cuentascobrar->mostrarSeguimiento($idseguimiento);
+		echo $response;
+		break;
+
+	case 'eliminarSeguimiento':
+		$idseguimiento = isset($_GET["idseguimiento"]) ? limpiarCadena($_GET["idseguimiento"]) : "";
+		$response = $cuentascobrar->eliminarSeguimiento($idseguimiento);
+		echo $response;
 		break;
 }
 

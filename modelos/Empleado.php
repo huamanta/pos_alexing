@@ -1,8 +1,9 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
+require_once "Helpers.php";
 
-class Empleado
+class Empleado extends Helpers
 {
 	//Implementamos nuestro constructor
 	public function __construct()
@@ -68,10 +69,9 @@ class Empleado
 
 	public function eventosCalendario($idpersonal)
 	{
-		$condition = "";
-
+		$condition = "WHERE s.deleted_at IS NULL";
 		if (!empty($idpersonal)) {
-			$condition = " WHERE s.idpersonal = '$idpersonal' ";
+			$condition .= " AND s.idpersonal = '$idpersonal' ";
 		}
 
 		$sql = "SELECT
@@ -125,19 +125,24 @@ class Empleado
 				"backgroundColor" => $color,
 				"borderColor" => $color,
 				"extendedProps" => array(
+					"idseguimiento" => $reg->idseguimiento,
 					"descripcion" => $reg->descripcion,
 					"tipo" => $reg->tipo,
 					"estado" => $reg->estado,
 					"prioridad" => $reg->prioridad,
 					"direccion" => $reg->direccion,
+					"fecha_proxima" => $reg->fecha_proxima,
+					"fecha_final" => $reg->fecha_final,
 					"idventa" => $reg->idventa,
 					"idcpc" => $reg->idcpc,
-					"idcliente" => $reg->idcliente
+					"idcliente" => $reg->idcliente,
+					"idpersonal" => $reg->idpersonal,
+					"archivos" => $this->dataArchivosAdjuntos($reg->idseguimiento)
 				)
 			);
 		}
 
-		echo json_encode($data);
+		return json_encode($data);
 	}
 
 }

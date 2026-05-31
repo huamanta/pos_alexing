@@ -1,26 +1,26 @@
-<?php 
+<?php
 require_once "local.php";
 
 $conexion = null;
-$conexion = new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
+$conexion = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
 
 if (!$conexion) {
-    die("Failed to connect to database");
+	die("Failed to connect to database");
 }
 
-mysqli_query($conexion, 'SET NAMES "'.DB_ENCODE.'"');
+mysqli_query($conexion, 'SET NAMES "' . DB_ENCODE . '"');
 
 //muestra posible error en la conexion
 if (mysqli_connect_errno()) {
-	printf("Falló en la conexion con la base de datos: %s\n",mysqli_connect_error());
+	printf("Falló en la conexion con la base de datos: %s\n", mysqli_connect_error());
 	exit();
 }
 
 //metodo para ejecutar consulta
-if (!function_exists('ejecutarConsulta')) 
-{
+if (!function_exists('ejecutarConsulta')) {
 
-	function ejecutarConsulta($sql) {
+	function ejecutarConsulta($sql)
+	{
 		global $conexion;
 
 		$result = $conexion->query($sql);
@@ -35,15 +35,23 @@ if (!function_exists('ejecutarConsulta'))
 	function ejecutarConsultaSimpleFila($sql)
 	{
 		global $conexion;
-		$query=$conexion->query($sql);
-		$row=$query->fetch_assoc();
+		$query = $conexion->query($sql);
+		$row = $query->fetch_assoc();
 		return $row;
 	}
 
 	function ejecutarConsulta_retornarID($sql)
 	{
 		global $conexion;
-		$query=$conexion->query($sql);
+
+		$query = $conexion->query($sql);
+
+		if (!$query) {
+			throw new Exception(
+				"Error SQL: " . $conexion->error . "<br>Consulta: " . $sql
+			);
+		}
+
 		return $conexion->insert_id;
 	}
 
@@ -63,7 +71,7 @@ if (!function_exists('ejecutarConsulta'))
 			$a_params[] = &$params[$i];
 		}
 		call_user_func_array(array($stmt, 'bind_param'), $a_params);
-		
+
 		if (!$stmt->execute()) {
 			error_log("Error al ejecutar la consulta preparada: " . $stmt->error);
 			return false;
@@ -123,7 +131,7 @@ if (!function_exists('ejecutarConsulta'))
 	function limpiarCadena($str)
 	{
 		global $conexion;
-		$str=mysqli_real_escape_string($conexion,trim($str));
+		$str = mysqli_real_escape_string($conexion, trim($str));
 		return htmlspecialchars($str);
 	}
 }

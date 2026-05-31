@@ -1,4 +1,8 @@
 var tabla;
+let archivosSeleccionados = [];
+let archivosEliminados = [];
+var calendar;
+let idpersonalGlobal = null;
 
 function init() {
 	$("#body").addClass("sidebar-collapse sidebar-mini");
@@ -249,37 +253,88 @@ $("#imagen").change(function () {
 	}
 })
 
-
-function verEventos(idpersonal) {
-	$("#myModalEventos").modal('show');
+function listarEventos(idpersonal) {
 	var calendarEl = document.getElementById('calendar');
 
 	let condicion = '';
-	if(idpersonal && idpersonal != undefined){
+	if (idpersonal && idpersonal != undefined) {
 		condicion = '&idpersonal=' + idpersonal
 	}
-	var calendar = new FullCalendar.Calendar(calendarEl, {
+	calendar = new FullCalendar.Calendar(calendarEl, {
+
 		locale: 'es',
+
 		initialView: 'dayGridMonth',
+
+		navLinks: true,
+
 		headerToolbar: {
 			left: 'prev,next today',
 			center: 'title',
 			right: 'dayGridMonth,timeGridWeek,timeGridDay'
 		},
-		events: 'controladores/empleado.php?op=eventosCalendario'+condicion,
+
+		events: 'controladores/empleado.php?op=eventosCalendario' + condicion,
+
+		// Clic en un día vacío
+		dateClick: function (info) {
+			$("#modalProgramarVisita").modal("show");
+			$("#formProgramarVisita")[0].reset();
+			archivosSeleccionados = [];
+			$("#fecha_programada").val(info.dateStr + "T08:00");
+			listarDatosExtra(null);
+		},
+
+		// Clic en un evento
 		eventClick: function (info) {
+
 			let e = info.event;
+
 			Swal.fire({
 				title: e.title,
-				html: `
-                <b>Tipo:</b> ${e.extendedProps.tipo}<br>
-                <b>Estado:</b> ${e.extendedProps.estado}<br>
-                <b>Prioridad:</b> ${e.extendedProps.prioridad}<br>
-                <b>Dirección:</b> ${e.extendedProps.direccion}<br>
-                <b>Detalle:</b><br>
-                ${e.extendedProps.descripcion}
-            `
+				icon: 'info',
+				showCancelButton: true,
+				showDenyButton: true,
+				confirmButtonText: '<i class="fa fa-eye"></i> Ver',
+				denyButtonText: '<i class="fa fa-edit"></i> Editar',
+				cancelButtonText: '<i class="fa fa-trash"></i> Eliminar',
+				confirmButtonColor: '#17a2b8',
+				denyButtonColor: '#ffc107',
+				cancelButtonColor: '#dc3545'
+
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$.post(
+						"controladores/cuentascobrar.php?op=mostrarSeguimiento",
+						{ idseguimiento: e.extendedProps.idseguimiento },
+						function (r) {
+							let data = JSON.parse(r);
+							verSeguimiento(data);
+						}
+					);
+				}
+				else if (result.isDenied) {
+					editarSeguimiento(
+						e.extendedProps
+					);
+				}
+				else if (result.dismiss === Swal.DismissReason.cancel) {
+					eliminarSeguimiento(
+						e.extendedProps.idseguimiento
+					);
+				}
+
 			});
+
+		},
+
+		// Clic en el número del día
+		navLinkDayClick: function (date) {
+
+			calendar.changeView(
+				'timeGridDay',
+				date
+			);
 
 		}
 
@@ -291,5 +346,296 @@ function verEventos(idpersonal) {
 
 	}, 300);
 }
+
+
+function verEventos(idpersonal) {
+	$("#myModalEventos").modal('show');
+	idpersonalGlobal = idpersonal;
+	listarEventos(idpersonal);
+}
+
+
+function listarDatosExtra(id) {
+	$.post("controladores/usuario.php?op=selectEmpleado", function (r) {
+		$("#idpersonal_edit").html(r);
+		$("#idpersonal_edit").select2();
+		if (id) {
+			$("#idpersonal_edit")
+				.val(id)
+				.trigger("change");
+		}
+	});
+}
+
+function editarSeguimiento(data) {
+	listarDatosExtra(data.idpersonal);
+	$("#id_visita").val(data.idseguimiento);
+	$("#idcpc_visita").val(data.idcpc);
+	$("#idventa_visita").val(data.idventa);
+	$("#idcliente_visita").val(data.idcliente);
+	$("#tipo_visita").val(data.tipo);
+	$("#prioridad").val(data.prioridad);
+	$("#estado").val(data.estado);
+	$("#fecha_programada").val(data.fecha_proxima);
+	$("#fecha_final").val(data.fecha_final);
+	$("#direccion_edit").val(data.direccion);
+	$("#descripcion").val(data.descripcion);
+	$("#modalProgramarVisita").modal("show");
+	if (data.archivos) {
+		if (typeof data.archivos === 'string') {
+			archivosSeleccionados = JSON.parse(data.archivos);
+		} else {
+			archivosSeleccionados = data.archivos;
+		}
+
+	}
+	setTimeout(function () {
+		renderArchivos();
+	}, 300);
+
+}
+
+function eliminarSeguimiento(idseguimiento) {
+
+	Swal.fire({
+		title: '¿Eliminar seguimiento?',
+		text: 'Esta acción no se puede deshacer',
+		icon: 'warning',
+		showCancelButton: true,
+		confirmButtonText: 'Sí, eliminar'
+	}).then((r) => {
+		if (r.isConfirmed) {
+			$.ajax({
+				url: `controladores/cuentascobrar.php?op=eliminarSeguimiento&idseguimiento=${idseguimiento}`,
+				method: 'GET',
+				success: function (res) {
+					var data = JSON.parse(res);
+					if (!data.status) {
+						Swal.fire('Error', data.msg, 'error');
+						return;
+					}
+					Swal.fire('Hecho', data.msg, 'success');
+					listarEventos(idpersonalGlobal);
+				}
+			})
+		}
+
+	});
+
+}
+
+
+$("#formProgramarVisita").submit(function (e) {
+
+	e.preventDefault();
+
+	var formData = new FormData(this);
+
+	archivosSeleccionados.forEach(function (file) {
+		formData.append('adjuntos[]', file);
+	});
+
+	archivosEliminados.forEach(function (file) {
+		formData.append('archivos_eliminados[]', file);
+	});
+
+	$.ajax({
+		url: "controladores/cuentascobrar.php?op=guardarVisita",
+		type: "POST",
+		data: formData,
+		contentType: false,
+		processData: false,
+		success: function (r) {
+
+			var data = JSON.parse(r);
+
+			if (!data.status) {
+
+				Swal.fire('Error', data.msg, 'error');
+				return;
+			}
+
+			$("#formProgramarVisita")[0].reset();
+
+			Swal.fire('Hecho', data.msg, 'success');
+
+			$("#modalProgramarVisita").modal("hide");
+
+			listarEventos(idpersonalGlobal);
+		}
+	});
+
+});
+
+
+$("#adjuntos").on("change", function (e) {
+
+	let nuevosArchivos = Array.from(e.target.files);
+
+	nuevosArchivos.forEach(file => {
+
+		archivosSeleccionados.push(file);
+
+	});
+
+	renderArchivos();
+
+	$("#adjuntos").val("");
+});
+
+function renderArchivos() {
+
+	$("#previewArchivos").html("");
+
+	archivosSeleccionados.forEach((archivo, index) => {
+
+		let nombre = '';
+		let size = '';
+		let icono = "fa-file";
+
+		// Archivo nuevo (File)
+		if (archivo instanceof File) {
+
+			nombre = archivo.name;
+			size = (archivo.size / 1024 / 1024).toFixed(2) + ' MB';
+
+		} else {
+
+			nombre = archivo.nombre_original || archivo.archivo;
+			size = 'Archivo guardado';
+
+		}
+
+		if (nombre.match(/\.(jpg|jpeg|png|webp)$/i)) {
+			icono = "fa-file-image text-primary";
+		}
+		else if (nombre.match(/\.(pdf)$/i)) {
+			icono = "fa-file-pdf text-danger";
+		}
+		else if (nombre.match(/\.(doc|docx)$/i)) {
+			icono = "fa-file-word text-info";
+		}
+		else if (nombre.match(/\.(xls|xlsx)$/i)) {
+			icono = "fa-file-excel text-success";
+		}
+		else if (nombre.match(/\.(mp4)$/i)) {
+			icono = "fa-file-video text-warning";
+		}
+
+		$("#previewArchivos").append(`
+            <div class="col-md-12 archivo-item-${index}">
+                <div class="preview-item">
+
+                    <div class="preview-left">
+
+                        <i class="fas ${icono}"></i>
+
+                        <div>
+
+                            <div style="font-size:13px;font-weight:600;">
+                                ${nombre}
+                            </div>
+
+                            <small class="text-muted">
+                                ${size}
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                    <div>
+
+                        ${archivo.archivo ? `
+                            <a
+                                href="files/seguimientos/${archivo.archivo}"
+                                target="_blank"
+                                class="btn btn-sm btn-info mr-1">
+                                <i class="fa fa-eye"></i>
+                            </a>
+                        ` : ''}
+
+                        <button
+                            type="button"
+                            class="btn-delete-file"
+                            onclick="eliminarArchivo(${index})">
+
+                            <i class="fas fa-times"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+        `);
+
+	});
+
+}
+
+function eliminarArchivo(index) {
+
+	let archivo = archivosSeleccionados[index];
+
+	if (archivo.idadjunto) {
+		archivosEliminados.push(archivo.idadjunto);
+	}
+
+	archivosSeleccionados.splice(index, 1);
+
+	renderArchivos();
+}
+
+function verSeguimiento(data) {
+
+	$("#ver_cliente").html(data.cliente || '-');
+	$("#ver_tipo").html(data.tipo || '-');
+	$("#ver_estado").html(data.estado || '-');
+	$("#ver_responsable").html(data.personal || '-');
+	$("#ver_prioridad").html(data.prioridad || '-');
+
+	$("#ver_cuota").html(
+		data.numero_cuota
+			? 'Cuota ' + data.numero_cuota + ' del comp.: ' + data.serie_comprobante + '-' + data.numero_comprobante
+			: '-'
+	);
+
+	$("#ver_fecha_programada").html(data.fecha_proxima || '-');
+	$("#ver_fecha_final").html(data.fecha_final || '-');
+	$("#ver_direccion").html(data.direccion || '-');
+	$("#ver_descripcion").html(data.descripcion || '-');
+
+	let htmlAdjuntos = '';
+	var adjuntos = JSON.parse(data.adjuntos);
+	if (adjuntos && adjuntos.length > 0) {
+
+		adjuntos.forEach(function (item) {
+
+			htmlAdjuntos += `
+                <a href="files/seguimientos/${item.archivo}"
+                   target="_blank"
+                   class="btn btn-outline-primary btn-sm m-1">
+
+                    <i class="fa fa-paperclip"></i>
+                    ${item.nombre_original}
+
+                </a>
+            `;
+		});
+	} else {
+		htmlAdjuntos = `
+            <div class="text-muted">
+                No existen adjuntos
+            </div>
+        `;
+	}
+
+	$("#ver_adjuntos").html(htmlAdjuntos);
+
+	$("#modalVerSeguimiento").modal("show");
+}
+
 init();
 
