@@ -36,6 +36,10 @@ if (!function_exists('ejecutarConsulta')) {
 	{
 		global $conexion;
 		$query = $conexion->query($sql);
+		if (!$query) {
+			error_log("Error en consulta: " . $conexion->error . " | SQL: " . $sql);
+			return null;
+		}
 		$row = $query->fetch_assoc();
 		return $row;
 	}

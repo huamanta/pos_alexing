@@ -1370,8 +1370,8 @@ class Venta
             v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.formapago,v.ventacredito,v.impuesto,
             v.dov_Nombre,v.estado 
             FROM venta v 
-            INNER JOIN persona p ON v.idcliente=p.idpersona 
-            INNER JOIN personal u ON v.idpersonal=u.idpersonal
+            INNER JOIN persona p ON v.idcliente = p.idpersona 
+            INNER JOIN personal u ON v.idpersonal = u.idpersonal
             INNER JOIN sucursal s ON s.idsucursal = v.idsucursal 
             WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') 
             AND v.serie_comprobante != '-' 

@@ -98,10 +98,7 @@ function init() {
   $("#myModal").on("submit", function (e) {
     guardaryeditar(e);
   });
-
-  $("#navVentasActive").addClass("treeview active");
-  $("#navVentas").addClass("treeview menu-open");
-  $("#navCliente").addClass("active");
+  $("#navClienteActive").addClass("active");
 }
 
 //Función limpiar
@@ -133,14 +130,14 @@ function mostrar(idpersona) {
       $("#telefono").val(data.telefono);
       $("#email").val(data.email);
       $("#idpersona").val(data.idpersona);
-      $("#latitude").val(data.latitude ? data.latitude:'-6.487595468705555');
-      $("#longitude").val(data.longitude ? data.longitude: '-76.3601303100586');
+      $("#latitude").val(data.latitude ? data.latitude : '-6.487595468705555');
+      $("#longitude").val(data.longitude ? data.longitude : '-76.3601303100586');
       if (data.isproveedor == 1) {
         $("#proveedor").prop("checked", true);
       } else {
         $("#proveedor").prop("checked", false);
       }
-	  initMap();
+      initMap();
     },
   );
 }
@@ -220,10 +217,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                      " " +
-                      dat.apellidoPaterno +
-                      " " +
-                      dat.apellidoMaterno,
+                    " " +
+                    dat.apellidoPaterno +
+                    " " +
+                    dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -233,7 +230,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         } else {
@@ -278,7 +275,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         }
@@ -921,6 +918,141 @@ function ListarReportesClientes(idcliente) {
       $("#data_proveedor_pagar").html(htmlform);
     },
   });
+}
+
+
+function ScoreCrediticioCliente(idcliente) {
+
+  $("#scoreCliente").modal("show");
+
+  $("#scoreNumero").html(
+    '<i class="fa fa-spinner fa-spin"></i>'
+  );
+
+  $.ajax({
+
+    url:
+      "controladores/persona.php?op=scorecrediticiocliente&idcliente="
+      + idcliente,
+
+    type: "GET",
+
+    success: function (r) {
+
+      let data = JSON.parse(r);
+
+      let score = parseInt(data.score);
+
+      $("#scoreNumero").text(score);
+
+      $("#scoreBar")
+        .css("width", score + "%")
+        .text(score + " / 100");
+
+      $("#totalCreditos").text(
+        data.total_creditos
+      );
+
+      $("#cuotasVencidas").text(
+        data.cuotas_vencidas
+      );
+
+      $("#diasAtraso").text(
+        data.dias_atraso
+      );
+
+      $("#moraTotal").text(
+        "S/ " + parseFloat(data.mora_total)
+          .toFixed(2)
+      );
+
+      $("#porcentajePagado").text(
+        data.porcentaje_pagado + "%"
+      );
+
+      let badge = "";
+      let recomendacion = "";
+      let colorBar = "";
+
+      switch (data.riesgo) {
+
+        case "BAJO":
+
+          badge =
+            '<span class="badge badge-success p-2">RIESGO BAJO</span>';
+
+          colorBar = "bg-success";
+
+          recomendacion =
+            "Cliente con excelente comportamiento de pago.";
+
+          break;
+
+        case "MEDIO":
+
+          badge =
+            '<span class="badge badge-warning p-2">RIESGO MEDIO</span>';
+
+          colorBar = "bg-warning";
+
+          recomendacion =
+            "Se recomienda seguimiento preventivo.";
+
+          break;
+
+        case "ALTO":
+
+          badge =
+            '<span class="badge badge-danger p-2">RIESGO ALTO</span>';
+
+          colorBar = "bg-danger";
+
+          recomendacion =
+            "Cliente requiere gestión de cobranza.";
+
+          break;
+
+        case "CRITICO":
+
+          badge =
+            '<span class="badge badge-dark p-2">RIESGO CRÍTICO</span>';
+
+          colorBar = "bg-dark";
+
+          recomendacion =
+            "No se recomienda otorgar nuevos créditos.";
+
+          break;
+
+        default:
+
+          badge =
+            '<span class="badge badge-dark p-2">SIN HISTORIAL</span>';
+
+          colorBar = "bg-dark";
+
+          recomendacion =
+            "El cliente no tiene historial de créditos.";
+
+          break;
+      }
+
+      $("#scoreBar")
+        .removeClass(
+          "bg-success bg-warning bg-danger bg-dark"
+        )
+        .addClass(colorBar);
+
+      $("#riesgoBadge").html(badge);
+
+      $("#recomendacionScore").html(
+        recomendacion
+      );
+
+    }
+
+  });
+
 }
 
 init();

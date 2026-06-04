@@ -82,7 +82,7 @@ switch ($_GET["op"]){
 	break;
 
 	case 'listarc':
-		$rspta=$persona->listarc();
+		$rspta=$persona->listarc($tipo_documento = "", $excluirId = true);
  		//Vamos a declarar un array
  		$data= Array();
 
@@ -93,10 +93,12 @@ switch ($_GET["op"]){
  				"2"=>$reg->num_documento,
  				"3"=>$reg->telefono,
  				"4"=>$reg->email,
- 				"5"=>'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idpersona.')"><i class="fas fa-edit"></i></button>'.
+ 				"5"=>($reg->idpersona !== 1) ?
+ 					'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idpersona.')"><i class="fas fa-edit"></i></button>'.
  					' <button class="btn btn-info btn-xs" onclick="ListarReportesClientes('.$reg->idpersona.')"><i class="fa fa-list"></i></button>'.
- 					' <button class="btn btn-danger btn-xs" onclick="eliminar('.$reg->idpersona.')"><i class="fa fa-trash"></i></button>'
- 				);
+ 					' <button class="btn btn-info btn-xs" onclick="ScoreCrediticioCliente('.$reg->idpersona.')"><i class="fa fa-star"></i></button>'.
+ 					' <button class="btn btn-danger btn-xs" onclick="eliminar('.$reg->idpersona.')"><i class="fa fa-trash"></i></button>':''
+ 			);
  		}
  		$results = array(
  			"sEcho"=>1, //Información para el datatables
@@ -107,6 +109,12 @@ switch ($_GET["op"]){
 
 	break;
 
+
+	case 'scorecrediticiocliente':
+		$idcliente = $_GET["idcliente"];
+		$rspta = $persona->scorecrediticiocliente($idcliente);
+ 		echo $rspta;
+		break;
 
 }
 ?>

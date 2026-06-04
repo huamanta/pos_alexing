@@ -138,9 +138,11 @@ switch ($_GET["op"]) {
 			// Si no hay fecha en el POST, usamos fecha y hora actual
 			$fecha = date("Y-m-d H:i:s");
 		}
+
+		$idcaja = $_POST['idcaja'];
+		$idpersonal = $_SESSION["idpersonal"];
+		$fecha_pago = isset($_POST["fecha_pago"]) && is_array($_POST["fecha_pago"]) ? $_POST["fecha_pago"] : [];
 		if (empty($idventa)) {
-			$idcaja = $_POST['idcaja'];
-			$fecha_pago = isset($_POST["fecha_pago"]) && is_array($_POST["fecha_pago"]) ? $_POST["fecha_pago"] : [];
 			$rspta = $venta->insertar(
 				$idsucursal,
 				$idcliente,
@@ -189,8 +191,6 @@ switch ($_GET["op"]) {
 			);
 			echo $rspta;
 		} else {
-			$idcaja = $_POST['idcaja'];
-			$fecha_pago = isset($_POST["fecha_pago"]) && is_array($_POST["fecha_pago"]) ? $_POST["fecha_pago"] : [];
 			$rspta = $venta->editar(
 				$idventa,
 				$idsucursal,
@@ -1131,7 +1131,7 @@ switch ($_GET["op"]) {
 				)
 					. $mostrar
 					. $notaCreditoBtn
-					. '</div> <a class="btn btn-danger btn-xs" title="descargar cronograma de pagos" onclick="verCronogramPago('.$reg->idventa.')"><i class="fas fa-file-pdf"></i></a>'
+					. '</div> <a class="btn btn-danger btn-xs" title="descargar cronograma de pagos" onclick="verCronogramPago(' . $reg->idventa . ')"><i class="fas fa-file-pdf"></i></a>'
 			);
 		}
 
@@ -1197,13 +1197,19 @@ switch ($_GET["op"]) {
 	case 'selectCliente':
 		require_once "../modelos/Persona.php";
 		$persona = new Persona();
+		$only_client = isset($_POST["only_client"]) ? $_POST["only_client"] : false;
 		$tipo_documento = isset($_POST["tipo_documento"]) ? $_POST["tipo_documento"] : "";
 		$es_factura = isset($_POST["es_factura"]) ? $_POST["es_factura"] : "0";
 		$rspta = $persona->listarc($tipo_documento);
-
-
+		echo '<option value="0">Seleccionar Cliente</option>';
 		while ($reg = $rspta->fetch_object()) {
-			echo '<option value="' . $reg->idpersona . '">' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
+			$selected = ($reg->idpersona == 1) ? 'selected' : '';
+			if ($only_client && $reg->idpersona == 1) {
+				continue; // Saltar si solo se quieren clientes y este registro no es cliente
+			}
+			echo '<option value="' . $reg->idpersona . '" ' . $selected . '>' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
+			
+
 		}
 		break;
 

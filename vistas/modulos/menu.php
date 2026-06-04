@@ -8,8 +8,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
       <img src="./files/personal/<?php echo $_SESSION['imagen']; ?>" class="brand-image img-circle elevation-2"
         alt="User Image">
     <?php } else { ?>
-      <div
-        class="brand-image img-circle elevation-2 d-flex align-items-center justify-content-center"
+      <div class="brand-image img-circle elevation-2 d-flex align-items-center justify-content-center"
         style="width: 35px; height: 35px; font-weight: bold; font-size: 16px;">
         SP
       </div>
@@ -103,6 +102,14 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                   </a>
                 </li>
               <?php endif; ?>
+              <?php if (Helpers::getUserPermisoModulo('Solicitudes', 'pos')): ?>
+                <li class="nav-item" style="font-size: 14px">
+                  <a href="solicitudes" class="nav-link" id="navSolicitudes">
+                    <i class="fas fa-file-contract nav-icon text-primary" style="font-size: 14px"></i>
+                    <p>Solicitudes</p>
+                  </a>
+                </li>
+              <?php endif; ?>
 
               <?php if (Helpers::getUserPermisoModulo('Venta Pos', 'pos')): ?>
                 <li class="nav-item" style="font-size: 14px">
@@ -161,6 +168,15 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         }
         ?>
 
+        <?php if (Helpers::getUserPermisoModulo('Clientes')): ?>
+          <li class="nav-item" style="font-size: 14px">
+            <a href="cliente" class="nav-link" id="navClienteActive">
+              <i class="fas fa-users nav-icon text-orange" style="font-size: 14px"></i>
+              <p>Clientes</p>
+            </a>
+          </li>
+        <?php endif; ?>
+
         <?php
         if (Helpers::getUserPermisoModulo('ventas')) {
           ?>
@@ -195,15 +211,6 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                   <a href="cajas" class="nav-link" id="navCajas">
                     <i class="fas fa-cash-register nav-icon text-orange" style="font-size: 14px"></i>
                     <p>Cajas</p>
-                  </a>
-                </li>
-              <?php endif; ?>
-
-              <?php if (Helpers::getUserPermisoModulo('Clientes', 'ventas')): ?>
-                <li class="nav-item" style="font-size: 14px">
-                  <a href="cliente" class="nav-link" id="navCliente">
-                    <i class="fas fa-users nav-icon text-orange" style="font-size: 14px"></i>
-                    <p>Clientes</p>
                   </a>
                 </li>
               <?php endif; ?>

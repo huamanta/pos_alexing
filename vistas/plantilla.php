@@ -241,6 +241,7 @@ if (isset($_GET["ruta"])) {
           $_GET["ruta"] == "modelo" ||
           $_GET["ruta"] == "condicionventa" ||
           $_GET["ruta"] == "salirsucursal" ||
+          $_GET["ruta"] == "solicitudes" ||
           $_GET["ruta"] == "salir"
         ) {
 

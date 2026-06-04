@@ -292,6 +292,142 @@ date_default_timezone_set('America/Lima');
 </div>
 <!-- Fin modal -->
 
+<div class="modal fade" id="scoreCliente">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header bg-dark">
+                <h4 class="modal-title">
+                    <i class="fas fa-chart-line"></i>
+                    Score Crediticio Interno
+                </h4>
+
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="text-center mb-4">
+
+                    <h1 id="scoreNumero"
+                        style="font-size:60px;font-weight:bold;">
+                        0
+                    </h1>
+
+                    <div class="progress" style="height:30px;">
+                        <div id="scoreBar"
+                             class="progress-bar"
+                             role="progressbar"
+                             style="width:0%">
+                        </div>
+                    </div>
+
+                    <br>
+
+                    <span id="riesgoBadge" class="p-2">
+                        SIN CALIFICAR
+                    </span>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-3">
+                        <div class="small-box bg-info">
+                            <div class="inner">
+                                <h3 id="totalCreditos">0</h3>
+                                <p>Créditos</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small-box bg-danger">
+                            <div class="inner">
+                                <h3 id="cuotasVencidas">0</h3>
+                                <p>Cuotas vencidas</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small-box bg-warning">
+                            <div class="inner">
+                                <h3 id="diasAtraso">0</h3>
+                                <p>Días atraso</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <div class="small-box bg-success">
+                            <div class="inner">
+                                <h3 id="porcentajePagado">0%</h3>
+                                <p>Pagado</p>
+                            </div>
+                            <div class="icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="col-md-6">
+
+                        <div class="card card-outline card-danger">
+                            <div class="card-header">
+                                Mora acumulada
+                            </div>
+
+                            <div class="card-body text-center">
+
+                                <h2 id="moraTotal">
+                                    S/ 0.00
+                                </h2>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <div class="card card-outline card-primary">
+                            <div class="card-header">
+                                Recomendación
+                            </div>
+
+                            <div class="card-body">
+
+                                <div id="recomendacionScore"></div>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
 <div class="card" id="card-plantilla">
 
 </div>

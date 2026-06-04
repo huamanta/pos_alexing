@@ -490,4 +490,9 @@ class Cotizacion
         return ejecutarConsulta($sql);
     }
 
+    public function cotizacionesCliente($idcliente) {
+        $sql = "SELECT idcotizacion, serie_comprobante, num_comprobante FROM cotizacion WHERE idcliente = '$idcliente'";
+        return ejecutarConsulta($sql);
+    }
+
 }

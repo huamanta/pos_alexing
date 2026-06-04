@@ -858,6 +858,15 @@ switch ($_GET["op"]) {
 		echo json_encode($rspta);
 		break;
 
+	case 'cotizacionesCliente':
+		$idcliente = $_POST["idcliente"];
+		$rspta = $venta->cotizacionesCliente($idcliente);
+		echo '<option value="">Seleccione una cotización</option>';
+		while ($reg = $rspta->fetch_object()) {
+			echo '<option value=' . $reg->idcotizacion . '>' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</option>';
+		}
+		break;
+
 
 
 }
