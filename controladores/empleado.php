@@ -88,7 +88,7 @@ switch ($_GET["op"]){
 		 				'<span class="badge bg-red">DESACTIVADO</span>',
 		 				"7"=>($reg->condicion)?'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idpersonal.')"><i class="fas fa-edit"></i></button>'.
 		 					' <button class="btn btn-danger btn-xs" onclick="desactivar('.$reg->idpersonal.')"><i class="fas fa-times-circle"></i></button>'.
-		 					' <button class="btn btn-primary btn-xs" onclick="verEventos('.$reg->idpersonal.')"><i class="fas fa-calendar"></i></button>':
+		 					' <button class="btn btn-primary btn-xs" onclick="verEventos('.$reg->idpersonal.', 1)"><i class="fas fa-calendar"></i></button>':
 		 					'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idpersonal.')"><i class="fas fa-edit"></i></button>'.
 		 					' <button class="btn btn-primary btn-xs" onclick="activar('.$reg->idpersonal.')"><i class="fa fa-check"></i></button>'
 		 				);

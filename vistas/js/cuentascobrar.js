@@ -790,6 +790,105 @@ function verEstadoCuenta(idcpc) {
     );
 }
 
+
+// programar compromiso de pago
+const tomorrow = new Date();
+tomorrow.setDate(tomorrow.getDate() + 1);
+
+document.getElementById("fecha_compromiso").min =
+    tomorrow.toISOString().split("T")[0];
+
+function programarCompromiso(idcpc, idventa, idcliente) {
+    $("#idcpc").val(idcpc);
+    $("#idventa").val(idventa);
+    $("#idcliente").val(idcliente);
+
+    $("#fecha_compromiso").val('');
+    $("#monto").val('');
+    $("#observacion").val('');
+
+    $("#modalCompromisoPago").modal("show");
+}
+
+$("#formCompromisoPago").submit(function (e) {
+
+    e.preventDefault();
+    if ($("#fecha_compromiso").val() === "") {
+        return Swal.fire("Error", "Seleccione una fecha", "warning");
+    }
+
+    if ($("#monto").val() <= 0) {
+        return Swal.fire("Error", "Ingrese un monto válido", "warning");
+    }
+    const data = new FormData(this);
+
+    $.ajax({
+        url: "controladores/cuentascobrar.php?op=guardarCompromisoPago",
+        type: "POST",
+        data: data,
+        contentType: false,
+        processData: false,
+
+        beforeSend: function () {
+
+            Swal.fire({
+                title: 'Guardando...',
+                text: 'Espere un momento',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+        },
+
+        success: function (response) {
+
+            Swal.close();
+
+            let r = JSON.parse(response);
+
+            if (r.status) {
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Correcto',
+                    text: r.msg
+                });
+
+                $("#modalCompromisoPago").modal("hide");
+                $("#formCompromisoPago")[0].reset();
+
+                tabla.ajax.reload(null, false);
+
+            } else {
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: r.msg
+                });
+
+            }
+
+        },
+
+        error: function () {
+
+            Swal.close();
+
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ocurrió un error al procesar la solicitud'
+            });
+
+        }
+
+    });
+
+});
+
 function verEstadoCuentaCliente(idcliente, fecha_inicio, fecha_fin) {
 
     $("#estadoCuentaContenido").html(
@@ -984,15 +1083,15 @@ function eliminarArchivo(index) {
     renderArchivos();
 }
 
-function verArchivosAdjuntos(data){
+function verArchivosAdjuntos(data) {
 
-    if(typeof data === 'string'){
+    if (typeof data === 'string') {
         data = JSON.parse(data);
     }
 
     let html = '';
 
-    if(data.length === 0){
+    if (data.length === 0) {
 
         html = `
             <div class="alert alert-warning mb-0">
@@ -1000,27 +1099,27 @@ function verArchivosAdjuntos(data){
             </div>
         `;
 
-    }else{
+    } else {
 
-        data.forEach(function(item){
+        data.forEach(function (item) {
 
             let extension = item.archivo.split('.').pop().toLowerCase();
 
             let icono = 'fa-file';
 
-            if(['pdf'].includes(extension)){
+            if (['pdf'].includes(extension)) {
                 icono = 'fa-file-pdf text-danger';
             }
-            else if(['doc','docx'].includes(extension)){
+            else if (['doc', 'docx'].includes(extension)) {
                 icono = 'fa-file-word text-primary';
             }
-            else if(['xls','xlsx'].includes(extension)){
+            else if (['xls', 'xlsx'].includes(extension)) {
                 icono = 'fa-file-excel text-success';
             }
-            else if(['jpg','jpeg','png','webp'].includes(extension)){
+            else if (['jpg', 'jpeg', 'png', 'webp'].includes(extension)) {
                 icono = 'fa-file-image text-info';
             }
-            else if(['mp4'].includes(extension)){
+            else if (['mp4'].includes(extension)) {
                 icono = 'fa-file-video text-warning';
             }
 
@@ -1050,5 +1149,6 @@ function verArchivosAdjuntos(data){
 
     $("#modalAdjuntos").modal("show");
 }
+
 
 init();

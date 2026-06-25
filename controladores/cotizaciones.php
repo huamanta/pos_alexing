@@ -670,8 +670,8 @@ switch ($_GET["op"]) {
 	case 'selectCotizaciones':
 		require_once "../modelos/Cotizaciones.php";
 		$venta = new Cotizacion();
-
-		$rspta = $venta->listar2();
+		$is_aprobated = $_POST['is_aprobated'] ?? false;
+		$rspta = $venta->listar2($is_aprobated);
 
 		while ($reg = $rspta->fetch_object()) {
 			echo '<option value=' . $reg->idcotizacion . '>' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</option>';
@@ -859,8 +859,9 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'cotizacionesCliente':
-		$idcliente = $_POST["idcliente"];
-		$rspta = $venta->cotizacionesCliente($idcliente);
+		$idcliente = $_GET["idcliente"];
+		$is_aprobated = $_GET["is_aprobated"] ?? false;
+		$rspta = $venta->cotizacionesCliente($idcliente, $is_aprobated);
 		echo '<option value="">Seleccione una cotización</option>';
 		while ($reg = $rspta->fetch_object()) {
 			echo '<option value=' . $reg->idcotizacion . '>' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</option>';

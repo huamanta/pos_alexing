@@ -403,6 +403,18 @@ switch ($_GET["op"]) {
 		$response = $cuentascobrar->eliminarSeguimiento($idseguimiento);
 		echo $response;
 		break;
+
+	case 'guardarCompromisoPago':
+		$idcpc = isset($_POST["idcpc"]) ? limpiarCadena($_POST["idcpc"]) : "";
+		$idventa = isset($_POST["idventa"]) ? limpiarCadena($_POST["idventa"]) : "";
+		$idcliente = isset($_POST["idcliente"]) ? limpiarCadena($_POST["idcliente"]) : "";
+		$fecha_compromiso = isset($_POST["fecha_compromiso"]) ? limpiarCadena($_POST["fecha_compromiso"]) : "";
+		$monto = isset($_POST["monto"]) ? limpiarCadena($_POST["monto"]) : "";
+		$observacion = isset($_POST["observacion"]) ? limpiarCadena($_POST["observacion"]) : "";
+        $idusuario = $_SESSION["idusuario"];
+		$response = $cuentascobrar->guardarCompromisoPago($idcpc, $idventa, $idcliente, $fecha_compromiso, $monto, $observacion, $idusuario);
+		echo $response;
+		break;
 }
 
 ?>

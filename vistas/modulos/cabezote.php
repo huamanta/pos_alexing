@@ -94,6 +94,9 @@
         color: #334155;
     }
 </style>
+<?php
+    require_once __DIR__ . '/../../modelos/Helpers.php';
+?>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -360,6 +363,13 @@
                 <i class="fas fa-expand-arrows-alt"></i>
             </a>
         </li>
+        <?php if (Helpers::getUserPermissionAccion('Puede ver calendario')): ?>
+            <li class="nav-item">
+                <a class="nav-link navbar-icon-link" role="button" title="Ver calendario" onclick="verEventos()">
+                    <i class="fas fa-calendar"></i>
+                </a>
+            </li>
+        <?php endif; ?>
 
         <li class="nav-item dropdown mr-3">
             <a class="nav-link cxcAlertLink position-relative navbar-icon-link" data-toggle="dropdown" href="#"
@@ -425,3 +435,155 @@
 
     </ul>
 </nav>
+<div class="modal fade" id="myModalEventosGeneral">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content shadow-lg border-0">
+
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-calendar-alt mr-2"></i>
+                    Agenda de Seguimiento
+                </h5>
+
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <style>
+                #calendar {
+                    min-height: 300px;
+                }
+
+                .fc {
+                    font-size: 14px;
+                }
+
+                .fc-toolbar-title {
+                    font-size: 1.3rem !important;
+                    font-weight: 600;
+                }
+
+                .fc-daygrid-event {
+                    border-radius: 8px;
+                    padding: 2px 6px;
+                }
+
+                .fc-theme-standard td,
+                .fc-theme-standard th {
+                    border-color: #e9ecef;
+                }
+            </style>
+
+            <div class="modal-body p-2 bg-light">
+
+                <div id="calendarGeneral"></div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+
+                    <i class="fas fa-times"></i>
+                    Cerrar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalVerSeguimientoGeneral" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <div class="modal-header bg-info">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-calendar-check"></i>
+                    Detalle del Seguimiento
+                </h5>
+
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row">
+
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Cliente</strong></label>
+                        <div id="ver_cliente" class="form-control bg-light"></div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label><strong>Tipo</strong></label>
+                        <div id="ver_tipo" class="form-control bg-light"></div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label><strong>Estado</strong></label>
+                        <div id="ver_estado" class="form-control bg-light"></div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label><strong>Responsable</strong></label>
+                        <div id="ver_responsable" class="form-control bg-light"></div>
+                    </div>
+
+                    <div class="col-md-3 mb-3">
+                        <label><strong>Prioridad</strong></label>
+                        <div id="ver_prioridad" class="form-control bg-light"></div>
+                    </div>
+
+                    <div class="col-md-5 mb-3">
+                        <label><strong>Cuota</strong></label>
+                        <div id="ver_cuota" class="form-control bg-light"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Fecha Programada</strong></label>
+                        <div id="ver_fecha_programada" class="form-control bg-light"></div>
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label><strong>Fecha Final</strong></label>
+                        <div id="ver_fecha_final" class="form-control bg-light"></div>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label><strong>Dirección</strong></label>
+                        <div id="ver_direccion" class="form-control bg-light"></div>
+                    </div>
+
+                    <div class="col-md-12 mb-3">
+                        <label><strong>Descripción</strong></label>
+                        <div id="ver_descripcion" class="form-control bg-light" style="min-height:120px;"></div>
+                    </div>
+
+                    <div class="col-md-12">
+                        <label><strong>Archivos Adjuntos</strong></label>
+
+                        <div id="ver_adjuntos" class="border rounded p-2" style="min-height:80px;">
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+
+                    <i class="fas fa-times"></i>
+                    Cerrar
+
+                </button>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+<script src="vistas/js/cabezote.js"></script>

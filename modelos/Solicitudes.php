@@ -279,16 +279,315 @@ class Solicitudes extends Persona
     public function mostrar($idsolicitud)
     {
         $sql = "SELECT
-                    s.*,
-                    p.nombre as cliente
-                FROM solicitud_credito s
-                INNER JOIN persona p
-                    ON p.idpersona=s.idcliente
-                WHERE s.idsolicitud='$idsolicitud'";
+            s.*,
+            p.nombre as cliente,
+            p.direccion,
+            wp.nombre as paso_actual_nombre,
+            se.*,
+            vd.direccion_registrada,
+            vd.resultado_verificacion,
+            vd.comentarios,
+            vd.fecha_verificacion
+        FROM solicitud_credito s
+        INNER JOIN persona p
+            ON p.idpersona = s.idcliente
+        INNER JOIN solicitud_evaluacion se
+            ON se.idsolicitud = s.idsolicitud
+        LEFT JOIN workflow_paso wp
+            ON wp.idpaso = s.paso_actual
+        LEFT JOIN verificaciones_domiciliarias vd
+            ON vd.idverificacion = (
+                SELECT MAX(vd2.idverificacion)
+                FROM verificaciones_domiciliarias vd2
+                WHERE vd2.idsolicitud = s.idsolicitud
+            )
+        WHERE s.idsolicitud = '$idsolicitud'";
 
-        return json_encode(
-            ejecutarConsultaSimpleFila($sql)
-        );
+        $resultado = ejecutarConsultaSimpleFila($sql);
+        return json_encode($resultado ?: new stdClass());
+    }
+
+    private function insertarWorkflow($idsolicitud, $idpaso, $observacion, $idusuario, $estadoPaso = 'PENDIENTE', $fechaFin = null)
+    {
+        $fechaFin = $fechaFin ? "'$fechaFin'" : 'NULL';
+        $sqlWorkflow = "INSERT INTO solicitud_workflow(
+                            idsolicitud,
+                            idpaso,
+                            fecha_inicio,
+                            fecha_fin,
+                            estado,
+                            observacion,
+                            idusuario
+                        )
+                        VALUES(
+                            '$idsolicitud',
+                            '$idpaso',
+                            NOW(),
+                            $fechaFin,
+                            '$estadoPaso',
+                            '$observacion',
+                            '$idusuario'
+                        )";
+        return ejecutarConsulta($sqlWorkflow);
+    }
+
+    private function marcarPasoCompletado($idsolicitud, $idpaso)
+    {
+        $sql = "UPDATE solicitud_workflow 
+                SET estado='APROBADO', fecha_fin=NOW()
+                WHERE idsolicitud='$idsolicitud' AND idpaso='$idpaso'";
+        return ejecutarConsulta($sql);
+    }
+
+    private function estadoPorPaso($idpaso)
+    {
+        $map = [
+            1 => 'EN_PROCESO',
+            2 => 'PENDIENTE_DOCUMENTOS',
+            3 => 'EN_PROCESO',
+            4 => 'EN_PROCESO',
+            5 => 'APROBADO'
+        ];
+
+        return isset($map[$idpaso]) ? $map[$idpaso] : 'EN_PROCESO';
+    }
+
+    public function avanzarPaso($idsolicitud, $idpaso, $observacion, $idusuario)
+    {
+        try {
+            ejecutarConsulta("START TRANSACTION");
+
+            // Marcar paso anterior como APROBADO
+            $rowAnterior = ejecutarConsultaSimpleFila(
+                "SELECT paso_actual FROM solicitud_credito WHERE idsolicitud='$idsolicitud'"
+            );
+            if ($rowAnterior && $rowAnterior['paso_actual']) {
+                $this->marcarPasoCompletado($idsolicitud, $rowAnterior['paso_actual']);
+            }
+
+            $estado = $this->estadoPorPaso($idpaso);
+
+            $sql = "UPDATE solicitud_credito
+                    SET estado='$estado',
+                        paso_actual='$idpaso',
+                        fecha_actualizacion=NOW()
+                    WHERE idsolicitud='$idsolicitud'";
+
+            if (!ejecutarConsulta($sql)) {
+                throw new Exception("No se pudo actualizar la solicitud al paso $idpaso");
+            }
+
+            if (!$this->insertarWorkflow($idsolicitud, $idpaso, $observacion, $idusuario, 'EN_PROCESO')) {
+                throw new Exception("No se pudo registrar el workflow del paso $idpaso");
+            }
+
+            ejecutarConsulta("COMMIT");
+
+            return json_encode([
+                "status" => true,
+                "msg" => "Solicitud actualizada al paso $idpaso"
+            ]);
+        } catch (Exception $e) {
+            ejecutarConsulta("ROLLBACK");
+            return json_encode([
+                "status" => false,
+                "msg" => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function marcarObservado($idsolicitud, $observacion, $idusuario)
+    {
+        try {
+            ejecutarConsulta("START TRANSACTION");
+
+            $row = ejecutarConsultaSimpleFila("SELECT paso_actual FROM solicitud_credito WHERE idsolicitud='$idsolicitud'");
+            $idpaso = $row['paso_actual'] ?? 1;
+
+            $sql = "UPDATE solicitud_credito
+                    SET estado='OBSERVADO',
+                        fecha_actualizacion=NOW()
+                    WHERE idsolicitud='$idsolicitud'";
+
+            if (!ejecutarConsulta($sql)) {
+                throw new Exception("No se pudo marcar la solicitud como observada");
+            }
+
+            if (!$this->insertarWorkflow($idsolicitud, $idpaso, $observacion, $idusuario, 'OBSERVADO')) {
+                throw new Exception("No se pudo registrar el workflow de observación");
+            }
+
+            ejecutarConsulta("COMMIT");
+            return json_encode([
+                "status" => true,
+                "msg" => "Solicitud observada"
+            ]);
+        } catch (Exception $e) {
+            ejecutarConsulta("ROLLBACK");
+            return json_encode([
+                "status" => false,
+                "msg" => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function cargarDocumentacion($idsolicitud, $observacion, $idusuario, $observacion_evaluacion)
+    {
+        try {
+            ejecutarConsulta("START TRANSACTION");
+
+            // Marcar paso 1 como APROBADO
+            $this->marcarPasoCompletado($idsolicitud, 1);
+
+            $sql = "UPDATE solicitud_credito
+                    SET estado='PENDIENTE_DOCUMENTOS',
+                        paso_actual=2,
+                        fecha_actualizacion=NOW()
+                    WHERE idsolicitud='$idsolicitud'";
+
+            if (!ejecutarConsulta($sql)) {
+                throw new Exception("No se pudo pasar la solicitud a documentación");
+            }
+
+            $sql2 = "UPDATE solicitud_evaluacion SET observacion = '$observacion_evaluacion' WHERE idsolicitud='$idsolicitud'";
+            if (!ejecutarConsulta($sql2)) {
+                throw new Exception("No se pudo pasar la evaluacion a documentación");
+            }
+
+            if (!$this->insertarWorkflow($idsolicitud, 2, $observacion, $idusuario, 'EN_PROCESO')) {
+                throw new Exception("No se pudo registrar el workflow de documentación");
+            }
+
+            ejecutarConsulta("COMMIT");
+            return json_encode([
+                "status" => true,
+                "msg" => "Solicitud en paso 2: documentación pendiente"
+            ]);
+        } catch (Exception $e) {
+            ejecutarConsulta("ROLLBACK");
+            return json_encode([
+                "status" => false,
+                "msg" => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function aprobarDocumentacion($idsolicitud, $observacion, $idusuario)
+    {
+        try {
+            ejecutarConsulta("START TRANSACTION");
+
+            // Marcar paso 2 como APROBADO
+            $this->marcarPasoCompletado($idsolicitud, 2);
+
+            $sql = "UPDATE solicitud_credito
+                    SET estado='EN_PROCESO',
+                        paso_actual=3,
+                        fecha_actualizacion=NOW()
+                    WHERE idsolicitud='$idsolicitud'";
+
+            if (!ejecutarConsulta($sql)) {
+                throw new Exception("No se pudo aprobar la documentación");
+            }
+
+            if (!$this->insertarWorkflow($idsolicitud, 3, $observacion, $idusuario, 'EN_PROCESO')) {
+                throw new Exception("No se pudo registrar el workflow de aprobación de documentación");
+            }
+
+            ejecutarConsulta("COMMIT");
+            return json_encode([
+                "status" => true,
+                "msg" => "Documentación aprobada, paso 3 listo"
+            ]);
+        } catch (Exception $e) {
+            ejecutarConsulta("ROLLBACK");
+            return json_encode([
+                "status" => false,
+                "msg" => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function aprobarSolicitud($idsolicitud, $observacion, $idusuario, $notas_comite)
+    {
+        try {
+            ejecutarConsulta("START TRANSACTION");
+
+            // Obtener cotización asociada
+            $sqlCotizacion = "SELECT idcotizacion 
+                          FROM solicitud_credito 
+                          WHERE idsolicitud='$idsolicitud'";
+
+            $cotizacion = ejecutarConsultaSimpleFila($sqlCotizacion);
+
+            if (!$cotizacion) {
+                throw new Exception("No se encontró la cotización asociada");
+            }
+
+            // Marcar paso 4 como aprobado
+            $this->marcarPasoCompletado($idsolicitud, 4);
+
+            // Aprobar solicitud
+            $sql_solicitud = "UPDATE solicitud_credito
+                          SET estado='APROBADO',
+                              paso_actual=5,
+                              fecha_actualizacion=NOW()
+                          WHERE idsolicitud='$idsolicitud'";
+
+            if (!ejecutarConsulta($sql_solicitud)) {
+                throw new Exception("No se pudo aprobar la solicitud");
+            }
+
+            // Guardar notas del comité
+            $sql2 = "UPDATE solicitud_evaluacion
+                 SET notas_comite='$notas_comite'
+                 WHERE idsolicitud='$idsolicitud'";
+
+            if (!ejecutarConsulta($sql2)) {
+                throw new Exception("No se pudo actualizar las notas del comité");
+            }
+
+            // Registrar workflow
+            if (
+                !$this->insertarWorkflow(
+                    $idsolicitud,
+                    5,
+                    $observacion,
+                    $idusuario,
+                    'APROBADO',
+                    'NOW()'
+                )
+            ) {
+                throw new Exception("No se pudo registrar el workflow de aprobación");
+            }
+
+            // Actualizar cotización
+            $fecha_aprobacion = date('Y-m-d H:i:s');
+
+            $update_cotizacion = "UPDATE cotizacion
+                              SET fecha_aprobacion='$fecha_aprobacion'
+                              WHERE idcotizacion='{$cotizacion['idcotizacion']}'";
+
+            if (!ejecutarConsulta($update_cotizacion)) {
+                throw new Exception("No se pudo actualizar la cotización");
+            }
+
+            ejecutarConsulta("COMMIT");
+
+            return json_encode([
+                "status" => true,
+                "msg" => "Solicitud aprobada correctamente"
+            ]);
+
+        } catch (Exception $e) {
+
+            ejecutarConsulta("ROLLBACK");
+
+            return json_encode([
+                "status" => false,
+                "msg" => $e->getMessage()
+            ]);
+        }
     }
 
     public function workflow($idsolicitud)
@@ -341,22 +640,63 @@ class Solicitudes extends Persona
         return $html;
     }
 
-    public function archivos($idsolicitud)
+    public function guardarVerificacionDomiciliaria($idsolicitud, $resultado, $comentarios, $idusuario, $direccion_registrada)
     {
+        try {
+            $row = ejecutarConsultaSimpleFila(
+                "SELECT idcliente FROM solicitud_credito WHERE idsolicitud='$idsolicitud'"
+            );
+            if (!$row) {
+                throw new Exception("Solicitud no encontrada");
+            }
+            $idcliente = $row['idcliente'];
 
-        $sql = "SELECT *
-                FROM solicitud_documento
-                WHERE idsolicitud='$idsolicitud'";
+            $sql = "INSERT INTO verificaciones_domiciliarias(
+                        idsolicitud,
+                        idcliente,
+                        resultado_verificacion,
+                        direccion_registrada,
+                        comentarios,
+                        idusuario,
+                        estado
+                    ) VALUES(
+                        '$idsolicitud',
+                        '$idcliente',
+                        '$resultado',
+                        '$direccion_registrada',
+                        '$comentarios',
+                        '$idusuario',
+                        1
+                    )";
 
-        $rspta = ejecutarConsulta($sql);
+            if (!ejecutarConsulta($sql)) {
+                throw new Exception("No se pudo guardar la verificación domiciliaria");
+            }
 
-        $data = array();
-
-        while ($reg = $rspta->fetch_object()) {
-            $data[] = $reg;
+            return true;
+        } catch (Exception $e) {
+            error_log("Error en guardarVerificacionDomiciliaria: " . $e->getMessage());
+            return false;
         }
+    }
 
-        return json_encode($data);
+    public function guardarDocumento($idsolicitud, $tipo_documento, $archivo, $nombre_original, $descripcion = '')
+    {
+        $sql = "INSERT INTO solicitud_documento(
+                    idsolicitud,
+                    tipo_documento,
+                    archivo,
+                    nombre_original,
+                    descripcion
+                ) VALUES (
+                    '$idsolicitud',
+                    '$tipo_documento',
+                    '$archivo',
+                    '$nombre_original',
+                    '$descripcion'
+                )";
+
+        return ejecutarConsulta($sql);
     }
 
     public function kpis()
@@ -395,5 +735,24 @@ class Solicitudes extends Persona
         return json_encode(
             ejecutarConsultaSimpleFila($sql)
         );
+    }
+
+    public function archivos($idsolicitud)
+    {
+        $sql = "SELECT
+                *
+            FROM solicitud_documento
+            WHERE idsolicitud = '$idsolicitud'
+            ORDER BY iddocumento DESC";
+
+        $rspta = ejecutarConsulta($sql);
+
+        $data = array();
+
+        while ($reg = $rspta->fetch_object()) {
+            $data[] = $reg;
+        }
+
+        return json_encode($data);
     }
 }

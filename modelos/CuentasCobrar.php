@@ -1200,6 +1200,7 @@ class CuentasCobrar extends Helpers
         $proximaIdcpc = null;
         $minDias = PHP_INT_MAX;
 
+        $acciones = '';
         while ($row = $result->fetch_object()) {
             $saldo = floatval($row->deuda);
             $row->saldo_calculado = $saldo;
@@ -1217,6 +1218,7 @@ class CuentasCobrar extends Helpers
             }
         }
 
+
         foreach ($rows as $row) {
             $saldo = floatval($row->saldo_calculado);
             $contratos = new Contratos();
@@ -1230,70 +1232,52 @@ class CuentasCobrar extends Helpers
                 $estado = '<center><span class="badge bg-orange">Retenido</span></center>';
             }
 
-            $acciones = ($saldo <= 0 || $estadoRetension === true)
-                ? "
-        <button 
-            type='button' 
-            class='btn btn-sm btn-info'
-            onclick='mostrarAbonos({$row->idcpc})'
-            data-toggle='tooltip'
-            data-placement='top'
-            title='Ver abonos'>
-            <i class='fas fa-money-check-alt'></i>
-        </button>
+            if ($saldo > 0 && $estadoRetension !== true) {
 
-        <button 
-            type='button' 
-            class='btn btn-sm btn-secondary'
-            onclick='verEstadoCuenta({$row->idcpc})'
-            data-toggle='tooltip'
-            data-placement='top'
-            title='Estado de cuenta'>
-            <i class='fas fa-file-invoice-dollar'></i>
-        </button>
-      "
+                if (Helpers::getUserPermissionAccion('Crear abono')) {
+                    $acciones .= "
+                        <button
+                            type='button'
+                            class='btn btn-sm btn-success'
+                            onclick='mostrar({$row->idcpc})'
+                            title='Crear abono'>
+                            <i class='fas fa-plus-circle'></i>
+                        </button>";
+                }
 
-                : "
-        <button 
-            type='button' 
-            class='btn btn-sm btn-success'
-            onclick='mostrar({$row->idcpc})'
-            data-toggle='tooltip'
-            data-placement='top'
-            title='Crear abono'>
-            <i class='fas fa-plus-circle'></i>
-        </button>
+                if (Helpers::getUserPermissionAccion('Programar visita')) {
+                    $acciones .= "
+                        <button
+                            type='button'
+                            class='btn btn-sm btn-warning'
+                            onclick='programarVisita({$row->idcpc}, {$row->idventa}, {$row->idcliente})'
+                            title='Programar visita'>
+                            <i class='fas fa-calendar-check'></i>
+                        </button>";
+                }
+            }
 
-        <button 
-            type='button' 
-            class='btn btn-sm btn-info'
-            onclick='mostrarAbonos({$row->idcpc})'
-            data-toggle='tooltip'
-            data-placement='top'
-            title='Ver abonos'>
-            <i class='fas fa-money-check-alt'></i>
-        </button>
+            if (Helpers::getUserPermissionAccion('Ver abonos')) {
+                $acciones .= "
+                    <button
+                        type='button'
+                        class='btn btn-sm btn-info'
+                        onclick='mostrarAbonos({$row->idcpc})'
+                        title='Ver abonos'>
+                        <i class='fas fa-money-check-alt'></i>
+                    </button>";
+            }
 
-        <button 
-            type='button' 
-            class='btn btn-sm btn-secondary'
-            onclick='verEstadoCuenta({$row->idcpc})'
-            data-toggle='tooltip'
-            data-placement='top'
-            title='Estado de cuenta'>
-            <i class='fas fa-file-invoice-dollar'></i>
-        </button>
-
-        <button 
-            type='button' 
-            class='btn btn-sm btn-warning'
-            onclick='programarVisita({$row->idcpc}, {$row->idventa}, {$row->idcliente})'
-            data-toggle='tooltip'
-            data-placement='top'
-            title='Programar visita'>
-            <i class='fas fa-calendar-check'></i>
-        </button>
-      ";
+            if (Helpers::getUserPermissionAccion('Ver estado de cuenta')) {
+                $acciones .= "
+                        <button
+                            type='button'
+                            class='btn btn-sm btn-secondary'
+                            onclick='verEstadoCuenta({$row->idcpc})'
+                            title='Ver estado de cuenta'>
+                            <i class='fas fa-file-invoice-dollar'></i>
+                        </button>";
+            }
 
             $rowClass = '';
             if ($saldo > 0 && !empty($row->fecha_venc_raw)) {
@@ -1309,6 +1293,18 @@ class CuentasCobrar extends Helpers
                 $rowClass = 'fila-retenida';
             }
 
+            if (Helpers::getUserPermissionAccion('Programar compromiso de pago') && strtotime($row->fecha_vencimiento) > strtotime(date('Y-m-d'))) {
+                $acciones .= "<button 
+                    type='button' 
+                    class='btn btn-sm btn-danger'
+                    onclick='programarCompromiso({$row->idcpc}, {$row->idventa}, {$row->idcliente})'
+                    data-toggle='tooltip'
+                    data-placement='top'
+                    title='Programar compromiso de pago'>
+                    <i class='fas fa-file-signature'></i>
+                </button>";
+            }
+
             $data[] = array(
                 "DT_RowClass" => $rowClass,
                 "0" => $row->fecha_registro,
@@ -1319,6 +1315,7 @@ class CuentasCobrar extends Helpers
                 "5" => $estado,
                 "6" => $acciones
             );
+            $acciones = '';
         }
 
         return json_encode(array(
@@ -2059,7 +2056,7 @@ class CuentasCobrar extends Helpers
 
     public function eliminarSeguimiento($idseguimiento)
     {
-        if (empty($idseguimiento)){
+        if (empty($idseguimiento)) {
             return json_encode([
                 "status" => false,
                 "msg" => "Debe enviar el segimiento a eliminar"
@@ -2087,6 +2084,47 @@ class CuentasCobrar extends Helpers
                 "msg" => "No se pudo eliminar el seguimiento"
             ]);
         }
+    }
+
+
+    public function guardarCompromisoPago(
+        $idcpc,
+        $idventa,
+        $idcliente,
+        $fecha_compromiso,
+        $monto,
+        $observacion,
+        $idusuario
+    ) {
+
+        $sql = "INSERT INTO compromiso_pago(
+                idcpc,
+                fecha_compromiso,
+                monto,
+                observacion,
+                idusuario
+            )
+            VALUES(
+                '$idcpc',
+                '$fecha_compromiso',
+                '$monto',
+                '$observacion',
+                '$idusuario'
+            )";
+
+        $rspta = ejecutarConsulta($sql);
+
+        if (!$rspta) {
+            return json_encode([
+                "status" => false,
+                "msg" => "No se guardo compromiso de pago"
+            ]);
+        }
+
+        return json_encode([
+            "status" => true,
+            "msg" => "El compromiso de pago se ha guardado correctamente"
+        ]);
     }
 
 }

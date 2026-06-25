@@ -1,4 +1,3 @@
-<!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
   <section class="content-header">
@@ -31,10 +30,11 @@
                   <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal"
                     data-target="#myModal"><i class="fa fa-plus"></i> Nuevo</button>
                 </div>
-                <div class="col-md-2">
-                  <button type="button" class="btn btn-outline-info btn-block btn-xs" onclick="verEventos()"
-                    data-target="#myModal"><i class="fa fa-calendar"></i> EVENTOS</button>
-                </div>
+                <?php if (Helpers::getUserPermissionAccion('Puede ver calendario')): ?>
+                  <button type="button" class="btn btn-outline-info btn-xs" onclick="verEventos('', 0)">
+                    <i class="fa fa-calendar"></i> Calendario
+                  </button>
+                <?php endif; ?>
               </div>
 
             </div>
@@ -251,7 +251,7 @@
       <div class="modal-header bg-warning">
         <h5 class="modal-title">
           <i class="fas fa-calendar-check"></i>
-          Programar visita
+          Programar evento
         </h5>
 
         <button type="button" class="close" data-dismiss="modal">

@@ -295,17 +295,34 @@ class Cotizacion
         return ejecutarConsulta($sql);
     }
 
-    public function listar2()
+    public function listar2($is_aprobated = false)
     {
+        $sql = "SELECT
+                c.idcotizacion,
+                DATE(c.fecha_hora) AS fecha,
+                c.idcliente,
+                p.nombre AS cliente,
+                u.idpersonal,
+                u.nombre AS personal,
+                c.tipo_comprobante,
+                c.serie_comprobante,
+                c.num_comprobante,
+                c.total_venta
+            FROM cotizacion c
+            INNER JOIN persona p ON c.idcliente = p.idpersona
+            INNER JOIN personal u ON c.idPersonal = u.idpersonal
+            WHERE c.condicion = 1";
 
-        $sql = "SELECT c.idcotizacion,DATE(c.fecha_hora) as fecha,c.idcliente,p.nombre as cliente,u.idpersonal,u.nombre 
-		as personal, c.tipo_comprobante,c.serie_comprobante,c.num_comprobante,c.total_venta FROM cotizacion c 
-		INNER JOIN persona p ON c.idcliente=p.idpersona INNER JOIN personal u ON c.idPersonal=u.idpersonal 
-		WHERE c.condicion = 1 and c.estado = 'EN ESPERA'
-		ORDER BY c.idcotizacion DESC";
+        if ($is_aprobated) {
+            $sql .= " AND c.fecha_aprobacion IS NOT NULL";
+        } else {
+            $sql .= " AND c.estado = 'EN ESPERA'
+                  AND c.fecha_aprobacion IS NULL";
+        }
+
+        $sql .= " ORDER BY c.idcotizacion DESC";
 
         return ejecutarConsulta($sql);
-
     }
 
 
@@ -490,8 +507,21 @@ class Cotizacion
         return ejecutarConsulta($sql);
     }
 
-    public function cotizacionesCliente($idcliente) {
-        $sql = "SELECT idcotizacion, serie_comprobante, num_comprobante FROM cotizacion WHERE idcliente = '$idcliente'";
+    public function cotizacionesCliente($idcliente, $is_aprobated = false)
+    {
+        $sql = "SELECT
+                idcotizacion,
+                serie_comprobante,
+                num_comprobante
+            FROM cotizacion
+            WHERE idcliente = '$idcliente'";
+
+        if ($is_aprobated) {
+            $sql .= " AND fecha_aprobacion IS NOT NULL";
+        } else {
+            $sql .= " AND fecha_aprobacion IS NULL";
+        }
+
         return ejecutarConsulta($sql);
     }
 

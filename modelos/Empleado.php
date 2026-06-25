@@ -55,11 +55,28 @@ class Empleado extends Helpers
 	}
 
 	//Implementar un método para listar los registros y mostrar en el select
-	public function select()
+	public function select($idusuario, $idpersonal, $only_personal = false)
 	{
-		$sql = "SELECT * FROM personal";
+		if ($only_personal) {
+			return ejecutarConsulta("SELECT * FROM personal WHERE idpersonal = $idpersonal");
+		}
+
+		$usuario = ejecutarConsultaSimpleFila("SELECT idpersonal, superusuario FROM usuario WHERE idusuario = $idusuario");
+
+		if (!$usuario) {
+			return ejecutarConsulta("SELECT * FROM personal WHERE 1=0");
+		}
+
+		// Superusuario ve todo
+		if ((int) $usuario['superusuario'] === 1) {
+			$sql = "SELECT * FROM personal";
+		} else {
+			$idpersonal = (int) $usuario['idpersonal'];
+			$sql = "SELECT * FROM personal WHERE idpersonal = $idpersonal";
+		}
 		return ejecutarConsulta($sql);
 	}
+
 
 	public function SelectEmpleadoServicio()
 	{

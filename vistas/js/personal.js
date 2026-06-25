@@ -253,7 +253,7 @@ $("#imagen").change(function () {
 	}
 })
 
-function listarEventos(idpersonal) {
+function listarEventos(idpersonal, only_personal) {
 	var calendarEl = document.getElementById('calendar');
 
 	let condicion = '';
@@ -282,7 +282,7 @@ function listarEventos(idpersonal) {
 			$("#formProgramarVisita")[0].reset();
 			archivosSeleccionados = [];
 			$("#fecha_programada").val(info.dateStr + "T08:00");
-			listarDatosExtra(null);
+			listarDatosExtra(idpersonal, only_personal);
 		},
 
 		// Clic en un evento
@@ -315,12 +315,12 @@ function listarEventos(idpersonal) {
 				}
 				else if (result.isDenied) {
 					editarSeguimiento(
-						e.extendedProps
+						e.extendedProps, only_personal
 					);
 				}
 				else if (result.dismiss === Swal.DismissReason.cancel) {
 					eliminarSeguimiento(
-						e.extendedProps.idseguimiento
+						e.extendedProps.idseguimiento, only_personal
 					);
 				}
 
@@ -348,18 +348,18 @@ function listarEventos(idpersonal) {
 }
 
 
-function verEventos(idpersonal) {
+function verEventos(idpersonal, only_personal) {
 	$("#myModalEventos").modal('show');
 	idpersonalGlobal = idpersonal;
-	listarEventos(idpersonal);
+	listarEventos(idpersonal, only_personal);
 }
 
 
-function listarDatosExtra(id) {
-	$.post("controladores/usuario.php?op=selectEmpleado", function (r) {
+function listarDatosExtra(idpersonal, only_personal) {
+	$.post("controladores/usuario.php?op=selectEmpleado", {only_personal: only_personal, idpersonal: idpersonal}, function (r) {
 		$("#idpersonal_edit").html(r);
 		$("#idpersonal_edit").select2();
-		if (id) {
+		if (idpersonal) {
 			$("#idpersonal_edit")
 				.val(id)
 				.trigger("change");
@@ -367,8 +367,8 @@ function listarDatosExtra(id) {
 	});
 }
 
-function editarSeguimiento(data) {
-	listarDatosExtra(data.idpersonal);
+function editarSeguimiento(data, only_personal) {
+	listarDatosExtra(data.idpersonal, only_personal);
 	$("#id_visita").val(data.idseguimiento);
 	$("#idcpc_visita").val(data.idcpc);
 	$("#idventa_visita").val(data.idventa);
@@ -395,7 +395,7 @@ function editarSeguimiento(data) {
 
 }
 
-function eliminarSeguimiento(idseguimiento) {
+function eliminarSeguimiento(idseguimiento, only_personal) {
 
 	Swal.fire({
 		title: '¿Eliminar seguimiento?',
@@ -415,7 +415,7 @@ function eliminarSeguimiento(idseguimiento) {
 						return;
 					}
 					Swal.fire('Hecho', data.msg, 'success');
-					listarEventos(idpersonalGlobal);
+					listarEventos(idpersonalGlobal, only_personal);
 				}
 			})
 		}
@@ -461,7 +461,7 @@ $("#formProgramarVisita").submit(function (e) {
 
 			$("#modalProgramarVisita").modal("hide");
 
-			listarEventos(idpersonalGlobal);
+			listarEventos(idpersonalGlobal, 0);
 		}
 	});
 

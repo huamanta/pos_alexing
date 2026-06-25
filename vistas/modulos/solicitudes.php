@@ -413,7 +413,7 @@
             <div class="modal-body">
 
                 <div id="timelineWorkflow"></div>
-
+                
             </div>
 
         </div>
@@ -479,11 +479,9 @@
                 </button>
 
             </div>
-
             <div class="modal-body">
-
                 <div id="detalleSolicitud"></div>
-
+            
             </div>
 
         </div>
@@ -491,5 +489,105 @@
     </div>
 
 </div>
+
+<style>
+    .solicitud-progressbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .5rem;
+        margin-bottom: 1rem;
+    }
+
+    .step-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        transition: transform .2s ease;
+    }
+
+    .step-item.step-clickable {
+        cursor: pointer;
+    }
+
+    .step-item.step-clickable .step-marker {
+        transition: box-shadow .2s ease, transform .2s ease;
+    }
+
+    .step-item.step-clickable:hover .step-marker {
+        box-shadow: 0 0 0 8px rgba(40, 167, 69, .18);
+        transform: scale(1.05);
+    }
+
+    .step-item.step-clickable:hover .step-label {
+        color: #155724;
+    }
+
+    .step-marker {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #fff;
+        background: #d1d1d1;
+        position: relative;
+        z-index: 2;
+    }
+
+    .step-marker.completed {
+        background: #28a745;
+    }
+
+    .step-marker.current {
+        background: #ffffff;
+        color: #28a745;
+        border: 3px solid #28a745;
+    }
+
+    .step-connector {
+        flex: 1;
+        height: 4px;
+        background: #d1d1d1;
+        border-radius: 2px;
+        margin: 0 6px;
+    }
+
+    .step-connector.completed {
+        background: #28a745;
+    }
+
+    .step-label {
+        margin-top: .5rem;
+        font-size: .82rem;
+        color: #6c757d;
+        line-height: 1.2;
+    }
+
+    .step-label.completed {
+        color: #212529;
+        font-weight: 600;
+    }
+
+    .step-label.current {
+        color: #155724;
+        font-weight: 700;
+    }
+
+    .step-item.selected .step-marker {
+        box-shadow: 0 0 0 8px rgba(0, 123, 255, .18);
+        transform: scale(1.05);
+    }
+
+    .step-item.selected .step-label {
+        color: #004085;
+        font-weight: 700;
+    }
+</style>
 
 <script src="vistas/js/solicitudes.js"></script>

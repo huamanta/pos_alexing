@@ -1036,7 +1036,7 @@ date_default_timezone_set('America/Lima');
       <div class="modal-header bg-warning">
         <h5 class="modal-title">
           <i class="fas fa-calendar-check"></i>
-          Programar visita
+          Programar evento
         </h5>
 
         <button type="button" class="close" data-dismiss="modal">
@@ -1299,6 +1299,91 @@ date_default_timezone_set('America/Lima');
 
     </div>
   </div>
+</div>
+
+
+<div class="modal fade" id="modalCompromisoPago" tabindex="-1" role="dialog" aria-labelledby="modalCompromisoPagoLabel">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header bg-warning">
+                <h4 class="modal-title">
+                    <i class="fas fa-file-signature"></i>
+                    Registrar Compromiso de Pago
+                </h4>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+
+            <form id="formCompromisoPago">
+
+                <div class="modal-body">
+
+                    <input type="hidden" id="idcpc" name="idcpc">
+                    <input type="hidden" id="idventa" name="idventa">
+                    <input type="hidden" id="idcliente" name="idcliente">
+
+                    <div class="form-group">
+                        <label>
+                            Fecha de Compromiso <span class="text-danger">*</span>
+                        </label>
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="fecha_compromiso"
+                            name="fecha_compromiso"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Monto Comprometido <span class="text-danger">*</span>
+                        </label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            class="form-control"
+                            id="monto"
+                            name="monto"
+                            placeholder="0.00"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Observación</label>
+                        <textarea
+                            class="form-control"
+                            id="observacion"
+                            name="observacion"
+                            rows="4"
+                            placeholder="Detalle del compromiso realizado con el cliente"></textarea>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+                        <i class="fas fa-save"></i> Guardar Compromiso
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
 </div>
 
 <script type="text/javascript" src="vistas/js/cuentascobrar.js"></script>
