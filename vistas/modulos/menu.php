@@ -70,14 +70,14 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         <?php
         if (Helpers::getUserPermisoModulo('procesar')) {
           ?>
-          <li class="nav-item">
+          <!--li class="nav-item">
             <a href="procesar" class="nav-link" id="navProcesar">
               <i class="nav-icon fas fa-tachometer-alt"></i>
               <p>
                 Procesar comprobante
               </p>
             </a>
-          </li>
+          </li-->
           <?php
         }
         ?>
@@ -115,7 +115,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 <li class="nav-item" style="font-size: 14px">
                   <a href="venta-pos" class="nav-link" id="navCrearVenta">
                     <i class="fas fa-shopping-cart nav-icon text-primary" style="font-size: 14px"></i>
-                    <p>Venta Pos</p>
+                    <p>Punto de venta</p>
                   </a>
                 </li>
               <?php endif; ?>
@@ -452,7 +452,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
 
                 <li class="nav-item">
                   <a href="cuentas-cobrar" class="nav-link" id="navCuentasPorCobrar">
-                    <i class="nav-icon fa fa-list-ul"></i>
+                    <i class="nav-icon fa fa-list-ul  text-primary"></i>
                     <p>
                       Cuentas por Cobrar
                     </p>
@@ -463,7 +463,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
               <?php if (Helpers::getUserPermisoModulo('Refinanciar deuda', 'Cobros')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="refinanciamientos" class="nav-link" id="navRefinanciarDeuda">
-                    <i class="fas fa-sliders-h nav-icon" style="font-size: 14px"></i>
+                    <i class="fas fa-sliders-h nav-icon text-primary" style="font-size: 14px"></i>
                     <p>Refinanciar deuda</p>
                   </a>
                 </li>

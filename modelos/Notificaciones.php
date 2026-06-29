@@ -11,7 +11,7 @@ class Notificaciones extends Helpers
 
         //$this->notificarCuotasPorVencer();
         //$this->notificarCuotasVencidas();
-        $this->enviarWhatsapp('51948236955', 'Mensaje enviado de preuba desde evolution api');
+        $this->enviarWhatsapp('51993598356', 'Mensaje enviado de preuba desde evolution api');
 
         echo "[" . date("Y-m-d H:i:s") . "] Finalizado.\n";
     }
@@ -87,7 +87,9 @@ class Notificaciones extends Helpers
                 continue;
             }
 
-            $mensaje = "Estimado {$row->cliente}, le recordamos que su cuota vence el {$row->fechavencimiento}. Saldo pendiente: S/ {$row->deuda}.";
+            $deuda = Helpers::get_currency_symbol($row->deuda);
+
+            $mensaje = "Estimado {$row->cliente}, le recordamos que su cuota vence el {$row->fechavencimiento}. Saldo pendiente: {$deuda}.";
 
             $respuesta = $this->enviarWhatsapp($row->telefono, $mensaje);
 
@@ -126,7 +128,10 @@ class Notificaciones extends Helpers
             if ($this->yaFueNotificado($row->idcpc)) {
                 continue;
             }
-            $mensaje = "Estimado {$row->cliente}, su cuota con vencimiento {$row->fechavencimiento} se encuentra pendiente. Saldo: S/ {$row->deuda}.";
+
+            $deuda = Helpers::get_currency_symbol($row->deuda);
+
+            $mensaje = "Estimado {$row->cliente}, su cuota con vencimiento {$row->fechavencimiento} se encuentra pendiente. Saldo: {$deuda}.";
 
             echo "Enviando a {$row->telefono}: {$mensaje}\n";
 
