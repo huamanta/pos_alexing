@@ -83,7 +83,7 @@ function init() {
     guardaryeditarmovimiento(e);
   });
   //cargamos los items al select comprobantes
-  $.post("controladores/cotizaciones.php?op=selectCotizaciones", {is_aprobated: 1}, function (c) {
+  $.post("controladores/cotizaciones.php?op=selectCotizaciones", { is_aprobated: 1 }, function (c) {
     $("#comprobanteReferencia").html(c);
     $("#comprobanteReferencia").select2("");
   });

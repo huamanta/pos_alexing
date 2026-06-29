@@ -88,9 +88,8 @@ Class Categoria
 	//Implementar un método para mostrar los datos de un registro a modificar
 	public function mostrarSucursal($idsucursal)
 	{
-	    $sql = "SELECT s.*, c.id_comp_pago, c.nombre AS comp_nombre, c.serie_comprobante, c.num_comprobante 
+	    $sql = "SELECT *
 	            FROM sucursal s
-	            LEFT JOIN comp_pago c ON (s.idempresa = c.idempresa OR (c.idempresa IS NULL AND s.idsucursal = c.idsucursal))
 	            WHERE s.idsucursal = '$idsucursal'";
 	    return ejecutarConsulta($sql);
 	}

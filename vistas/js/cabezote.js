@@ -35,36 +35,36 @@ function listarEventos(idpersonal) {
         // Clic en un evento
         eventClick: function (info) {
 
-    let e = info.event;
+            let e = info.event;
 
-    Swal.fire({
-        title: e.title,
-        icon: 'info',
-        showConfirmButton: true,
-        showDenyButton: false,
-        confirmButtonText: '<i class="fa fa-eye"></i> Ver',
-        confirmButtonColor: '#17a2b8'
-    }).then((result) => {
+            Swal.fire({
+                title: e.title,
+                icon: 'info',
+                showConfirmButton: true,
+                showDenyButton: false,
+                confirmButtonText: '<i class="fa fa-eye"></i> Ver',
+                confirmButtonColor: '#17a2b8'
+            }).then((result) => {
 
-        if (result.isConfirmed) {
+                if (result.isConfirmed) {
 
-            $.post(
-                "controladores/cuentascobrar.php?op=mostrarSeguimiento",
-                { idseguimiento: e.extendedProps.idseguimiento },
-                function (r) {
+                    $.post(
+                        "controladores/cuentascobrar.php?op=mostrarSeguimiento",
+                        { idseguimiento: e.extendedProps.idseguimiento },
+                        function (r) {
 
-                    let data = JSON.parse(r);
+                            let data = JSON.parse(r);
 
-                    verSeguimiento(data);
+                            verSeguimiento(data);
+
+                        }
+                    );
 
                 }
-            );
 
-        }
+            });
 
-    });
-
-},
+        },
 
         // Clic en el número del día
         navLinkDayClick: function (date) {

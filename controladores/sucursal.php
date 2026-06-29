@@ -56,12 +56,6 @@ switch ($_GET["op"]){
 				"idempresa" => $reg->idempresa,
 				"moneda" => $reg->moneda,
 				"simbolo" => $reg->simbolo,
-	            "comprobantes" => array(
-	                "id_comp_pago" => $reg->id_comp_pago,
-	                "nombre" => $reg->comp_nombre,
-	                "serie" => $reg->serie_comprobante,
-	                "numero" => $reg->num_comprobante
-	            )
 	        );
 	    }
 

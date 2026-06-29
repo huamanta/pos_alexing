@@ -69,17 +69,18 @@ class Helpers
     }
 
 
-    public static function getUserPermissionAccion($nombre_permiso){
+    public static function getUserPermissionAccion($nombre_permiso)
+    {
         $idusuario = $_SESSION['idusuario'] ?? NULL;
-        
-        if ($idusuario === NULL){
+
+        if ($idusuario === NULL) {
             return false;
         }
 
-        if ($nombre_permiso === NULL){
+        if ($nombre_permiso === NULL) {
             return false;
         }
-    
+
         // 1. Verificar si es superusuario
         $usuario_sql = "SELECT * FROM usuario WHERE idusuario = $idusuario";
         $data_usuario = self::ejecutarConsultaSimpleFila($usuario_sql);
@@ -98,7 +99,7 @@ class Helpers
 
         $permiso_usuario = self::ejecutarConsultaSimpleFila($usuario_permiso_sql);
 
-        if($permiso_usuario){
+        if ($permiso_usuario) {
             return true;
         }
 
@@ -111,7 +112,7 @@ class Helpers
             INNER JOIN accion_permiso ap ON rp.idaccion_permiso = ap.idaccion_permiso
             WHERE ur.idusuario = $idusuario 
             AND ap.nombre_permiso = '$permiso'";
-        
+
         $permiso_rol = ejecutarConsultaSimpleFila($rol_sql);
 
         if($permiso_rol){
@@ -125,14 +126,15 @@ class Helpers
 
 
 
-    public static function getUserPermisoModulo($modulo, $modulo_parent = null){
+    public static function getUserPermisoModulo($modulo, $modulo_parent = null)
+    {
         $idusuario = $_SESSION['idusuario'] ?? NULL;
-        
-        if ($idusuario === NULL){
+
+        if ($idusuario === NULL) {
             return false;
         }
 
-        if ($modulo === NULL){
+        if ($modulo === NULL) {
             return false;
         }
 
@@ -145,7 +147,7 @@ class Helpers
         }
 
         // es mosulo padre o no
-        if($modulo_parent === null){
+        if ($modulo_parent === null) {
             $modulo_sql = "SELECT *
                 FROM usuario_permiso up
                 INNER JOIN permiso p ON up.idpermiso = p.idpermiso
@@ -160,12 +162,12 @@ class Helpers
         }
 
         $permiso_usuario = self::ejecutarConsultaSimpleFila($modulo_sql);
-        if($permiso_usuario){
+        if ($permiso_usuario) {
             return true;
         }
-    
+
         return false;
-        
+
     }
 
     public function dataArchivosAdjuntos($idseguimiento)
@@ -178,5 +180,31 @@ class Helpers
         }
 
         return json_encode($data);
+    }
+
+
+
+    public function verificarMoraCredito($idsucursal)
+    {
+        $sql = "SELECT
+                is_mora_credito,
+                valor
+            FROM sucursal_configuracion
+            WHERE idsucursal = '$idsucursal'
+            LIMIT 1";
+
+        $config = ejecutarConsultaSimpleFila($sql);
+
+        if (!$config) {
+            return [
+                "activo" => false,
+                "valor" => 0
+            ];
+        }
+
+        return [
+            "activo" => (int) $config["is_mora_credito"] === 1,
+            "valor" => (float) $config["valor"]
+        ];
     }
 }

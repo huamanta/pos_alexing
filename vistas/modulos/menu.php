@@ -436,15 +436,40 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('cuentascobrar')) {
+        if (Helpers::getUserPermisoModulo('Cobros')) {
           ?>
-          <li class="nav-item">
-            <a href="cuentas-cobrar" class="nav-link" id="navCuentasPorCobrar">
-              <i class="nav-icon fa fa-list-ul"></i>
+          <li class="nav-item" id="navCobros">
+            <a href="#" class="nav-link" id="navCobrosActive">
+              <i class="nav-icon fas fa-box"></i>
               <p>
-                Cuentas por Cobrar
+                Cobros
+                <i class="right fas fa-angle-left"></i>
               </p>
             </a>
+            <ul class="nav nav-treeview">
+
+              <?php if (Helpers::getUserPermisoModulo('Cuentas por cobrar', 'Cobros')): ?>
+
+                <li class="nav-item">
+                  <a href="cuentas-cobrar" class="nav-link" id="navCuentasPorCobrar">
+                    <i class="nav-icon fa fa-list-ul"></i>
+                    <p>
+                      Cuentas por Cobrar
+                    </p>
+                  </a>
+                </li>
+              <?php endif; ?>
+
+              <?php if (Helpers::getUserPermisoModulo('Refinanciar deuda', 'Cobros')): ?>
+                <li class="nav-item" style="font-size: 14px">
+                  <a href="refinanciamientos" class="nav-link" id="navRefinanciarDeuda">
+                    <i class="fas fa-sliders-h nav-icon" style="font-size: 14px"></i>
+                    <p>Refinanciar deuda</p>
+                  </a>
+                </li>
+              <?php endif; ?>
+
+            </ul>
           </li>
           <?php
         }

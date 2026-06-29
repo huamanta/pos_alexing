@@ -63,6 +63,14 @@ date_default_timezone_set('America/Lima');
     box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
   }
 
+  .warning-box-custom {
+    background: #fffef0;
+    border-left: 5px solid #ffb700;
+    padding: 14px 18px;
+    border-radius: 6px;
+    box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
+  }
+
   /* --- Secciones del formulario --- */
   .section-title {
     background: #fafafa;
@@ -180,6 +188,11 @@ date_default_timezone_set('America/Lima');
 
   .btn-comment {
     background-color: blue !important;
+    color: white !important;
+  }
+
+  .btn-descargar {
+    background-color: red !important;
     color: white !important;
   }
 
@@ -382,6 +395,7 @@ date_default_timezone_set('America/Lima');
                     <th>Interes</th>
                     <th>Total Abonado</th>
                     <th>Saldo Pendiente</th>
+                    <th>Refinanciado</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                   </thead>
@@ -394,6 +408,7 @@ date_default_timezone_set('America/Lima');
                     <th>Interes</th>
                     <th>Total Abonado</th>
                     <th>Saldo Pendiente</th>
+                    <th>Refinanciado</th>
                     <th>Estado</th>
                     <th>Acciones</th>
                   </tfoot>
@@ -520,30 +535,28 @@ date_default_timezone_set('America/Lima');
 </div>
 
 <div class="modal fade" id="modalAdjuntos">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
 
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    Archivos Adjuntos
-                </h5>
+      <div class="modal-header">
+        <h5 class="modal-title">
+          Archivos Adjuntos
+        </h5>
 
-                <button type="button"
-                        class="close"
-                        data-dismiss="modal">
+        <button type="button" class="close" data-dismiss="modal">
 
-                    <span>&times;</span>
-                </button>
-            </div>
+          <span>&times;</span>
+        </button>
+      </div>
 
-            <div class="modal-body">
+      <div class="modal-body">
 
-                <div id="contenidoAdjuntos"></div>
+        <div id="contenidoAdjuntos"></div>
 
-            </div>
+      </div>
 
-        </div>
     </div>
+  </div>
 </div>
 
 <div class="modal fade" id="getCodeModal">
@@ -687,6 +700,12 @@ date_default_timezone_set('America/Lima');
             Debe pagarse como máximo el día <b><span id="fechavencimiento"></span></b>.
           </div>
 
+          <div class="warning-box-custom" id="panelMora">
+            <strong><i class="fa fa-exclamation-triangle"></i> Tiene mora </strong><br>
+            La cuota ha generado <b>S/<span id="montoMora"></span></b> de mora por <b><span id="diasRetraso"></span></b> 
+            dias de retraso en el pago programado de los cuales falta pagar <b>S/<span id="montoMoraPagar"></span></b>.
+          </div>
+
           <div class="section-title"><i class="fa fa-credit-card"></i> Datos del Pago</div>
 
           <div class="row">
@@ -720,7 +739,7 @@ date_default_timezone_set('America/Lima');
 
             <div class="col-sm-3">
               <div class="form-group">
-                <label>Monto Adeudado:</label>
+                <label>Total a pagar:</label>
                 <input class="form-control" type="text" name="montoAdeudado" id="montoAdeudado" readonly>
               </div>
             </div>
@@ -1303,87 +1322,267 @@ date_default_timezone_set('America/Lima');
 
 
 <div class="modal fade" id="modalCompromisoPago" tabindex="-1" role="dialog" aria-labelledby="modalCompromisoPagoLabel">
-    <div class="modal-dialog modal-md" role="document">
-        <div class="modal-content">
+  <div class="modal-dialog modal-md" role="document">
+    <div class="modal-content">
 
-            <div class="modal-header bg-warning">
-                <h4 class="modal-title">
-                    <i class="fas fa-file-signature"></i>
-                    Registrar Compromiso de Pago
-                </h4>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
+      <div class="modal-header bg-warning">
+        <h4 class="modal-title">
+          <i class="fas fa-file-signature"></i>
+          Registrar Compromiso de Pago
+        </h4>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
 
-            <form id="formCompromisoPago">
+      <form id="formCompromisoPago">
 
-                <div class="modal-body">
+        <div class="modal-body">
 
-                    <input type="hidden" id="idcpc" name="idcpc">
-                    <input type="hidden" id="idventa" name="idventa">
-                    <input type="hidden" id="idcliente" name="idcliente">
+          <input type="hidden" id="idcpc" name="idcpc">
+          <input type="hidden" id="idventa" name="idventa">
+          <input type="hidden" id="idcliente" name="idcliente">
 
-                    <div class="form-group">
-                        <label>
-                            Fecha de Compromiso <span class="text-danger">*</span>
-                        </label>
-                        <input
-                            type="date"
-                            class="form-control"
-                            id="fecha_compromiso"
-                            name="fecha_compromiso"
-                            required>
-                    </div>
+          <div class="form-group">
+            <label>
+              Fecha de Compromiso <span class="text-danger">*</span>
+            </label>
+            <input type="date" class="form-control" id="fecha_compromiso" name="fecha_compromiso" required>
+          </div>
 
-                    <div class="form-group">
-                        <label>
-                            Monto Comprometido <span class="text-danger">*</span>
-                        </label>
-                        <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            class="form-control"
-                            id="monto"
-                            name="monto"
-                            placeholder="0.00"
-                            required>
-                    </div>
+          <div class="form-group">
+            <label>
+              Monto Comprometido <span class="text-danger">*</span>
+            </label>
+            <input type="number" step="0.01" min="0" class="form-control" id="monto" name="monto" placeholder="0.00"
+              required>
+          </div>
 
-                    <div class="form-group">
-                        <label>Observación</label>
-                        <textarea
-                            class="form-control"
-                            id="observacion"
-                            name="observacion"
-                            rows="4"
-                            placeholder="Detalle del compromiso realizado con el cliente"></textarea>
-                    </div>
-
-                </div>
-
-                <div class="modal-footer">
-
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        data-dismiss="modal">
-                        <i class="fas fa-times"></i> Cancelar
-                    </button>
-
-                    <button
-                        type="submit"
-                        class="btn btn-success">
-                        <i class="fas fa-save"></i> Guardar Compromiso
-                    </button>
-
-                </div>
-
-            </form>
+          <div class="form-group">
+            <label>Observación</label>
+            <textarea class="form-control" id="observacion" name="observacion" rows="4"
+              placeholder="Detalle del compromiso realizado con el cliente"></textarea>
+          </div>
 
         </div>
+
+        <div class="modal-footer">
+
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Guardar Compromiso
+          </button>
+
+        </div>
+
+      </form>
+
     </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="modalCalendario" tabindex="-1" role="dialog" aria-labelledby="modalCompromisoPagoLabel">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header bg-warning">
+        <h4 class="modal-title">
+          <i class="fas fa-file-signature"></i>
+          Calendario de pagos
+        </h4>
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <form id="formCompromisoPago">
+
+        <div class="modal-body">
+
+          <div id="calendario"></div>
+
+        </div>
+
+        <div class="modal-footer">
+
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <i class="fas fa-times"></i> Cancelar
+          </button>
+
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Guardar Compromiso
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="modalHistorialCredito">
+
+  <div class="modal-dialog modal-xl">
+
+    <div class="modal-content">
+
+      <div class="modal-header bg-primary">
+
+        <h4 class="modal-title">
+          <i class="fa fa-history"></i>
+          Historial del Crédito y Refinanciamientos
+        </h4>
+
+        <button type="button" class="close" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+
+      </div>
+
+      <div class="modal-body" style="background:#f4f6f9;">
+
+        <!-- Resumen -->
+
+        <div class="row">
+
+          <div class="col-md-3">
+
+            <div class="info-box bg-aqua">
+
+              <span class="info-box-icon">
+                <i class="fa fa-user"></i>
+              </span>
+
+              <div class="info-box-content">
+
+                <span class="info-box-text">
+                  Cliente
+                </span>
+
+                <span class="info-box-number" id="hisCliente"></span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="col-md-3">
+
+            <div class="info-box bg-green">
+
+              <span class="info-box-icon">
+                <i class="fa fa-id-card"></i>
+              </span>
+
+              <div class="info-box-content">
+
+                <span class="info-box-text">
+                  Documento
+                </span>
+
+                <span class="info-box-number" id="hisDocumento"></span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="col-md-3">
+
+            <div class="info-box bg-yellow">
+
+              <span class="info-box-icon">
+                <i class="fa fa-calendar"></i>
+              </span>
+
+              <div class="info-box-content">
+
+                <span class="info-box-text">
+                  Fecha Crédito
+                </span>
+
+                <span class="info-box-number" id="hisFecha"></span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="col-md-3">
+
+            <div class="info-box bg-red">
+
+              <span class="info-box-icon">
+                <i class="fa fa-money"></i>
+              </span>
+
+              <div class="info-box-content">
+
+                <span class="info-box-text">
+                  Total Crédito
+                </span>
+
+                <span class="info-box-number" id="hisTotal"></span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Timeline -->
+
+        <div class="box box-solid">
+
+          <div class="box-header with-border">
+
+            <h3 class="box-title">
+
+              <i class="fa fa-stream"></i>
+
+              Línea de Tiempo del Crédito
+
+            </h3>
+
+          </div>
+
+          <div class="box-body">
+
+            <div id="timelineCredito"></div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button class="btn btn-default" data-dismiss="modal">
+
+          <i class="fa fa-times"></i>
+
+          Cerrar
+
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 
 <script type="text/javascript" src="vistas/js/cuentascobrar.js"></script>

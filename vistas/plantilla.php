@@ -71,6 +71,7 @@ if (isset($_GET["ruta"])) {
   <link rel="stylesheet" href="./files/plugins/select2/css/select2.min.css">
   <link rel="stylesheet" href="./files/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">
   <link rel="stylesheet" href="./files/plugins/toastr/toastr.min.css">
+  <link rel="stylesheet" href="./files/plugins/fullcalendar/main.min.css">
 
   <!-- DataTables  & Plugins -->
   <script src="./files/plugins/datatables/jquery.dataTables.min.js"></script>
@@ -95,7 +96,7 @@ if (isset($_GET["ruta"])) {
   <script src="./files/dist/js/jquery.PrintArea.js"></script>
   <script src="./files/plugins/toastr/toastr.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.js"></script>
+<script src="./files/plugins/fullcalendar/main.min.js"></script>
   <script>
     $(document).ready(function () {
       $('[data-toggle="tooltip"]').tooltip();
@@ -242,6 +243,8 @@ if (isset($_GET["ruta"])) {
           $_GET["ruta"] == "condicionventa" ||
           $_GET["ruta"] == "salirsucursal" ||
           $_GET["ruta"] == "solicitudes" ||
+          $_GET["ruta"] == "refinanciamientos" ||
+          $_GET["ruta"] == "configuracion" ||
           $_GET["ruta"] == "salir"
         ) {
 

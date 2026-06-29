@@ -1,7 +1,6 @@
 <?php
 require_once "../modelos/Cotizaciones.php";
-if (strlen(session_id()) < 1)
-	session_start();
+session_start();
 
 if (!isset($_SESSION['cotizacion_token'])) {
 	// Generar token único para esta cotización temporal
@@ -13,7 +12,7 @@ $token = $_SESSION['cotizacion_token'];
 $venta = new Cotizacion();
 
 $idcotizacion = isset($_POST["idcotizacion"]) ? limpiarCadena($_POST["idcotizacion"]) : "";
-$idsucursal = isset($_POST["idsucursal"]) ? limpiarCadena($_POST["idsucursal"]) : "";
+$idsucursal = $_SESSION['idsucursal'] ?? (isset($_POST["idsucursal"]) ? limpiarCadena($_POST["idsucursal"]) : "");
 $idcliente = isset($_POST["idcliente"]) ? limpiarCadena($_POST["idcliente"]) : "";
 $idpersonal = $_SESSION["idpersonal"];
 $tipo_comprobante = isset($_POST["tipo_comprobante"]) ? limpiarCadena($_POST["tipo_comprobante"]) : "";
@@ -495,9 +494,8 @@ switch ($_GET["op"]) {
 
 		$fecha_inicio = $_REQUEST["fecha_inicio"];
 		$fecha_fin = $_REQUEST["fecha_fin"];
-		$idsucursal2 = $_REQUEST["idsucursal2"];
-
-		$rspta = $venta->listar($fecha_inicio, $fecha_fin, $idsucursal2);
+		$idsucursal = !empty($_REQUEST["idsucursal2"])? $_REQUEST["idsucursal2"] : ($_SESSION['idsucursal'] ?? "");
+		$rspta = $venta->listar($fecha_inicio, $fecha_fin, $idsucursal);
 		$data = array();
 
 		while ($reg = $rspta->fetch_object()) {
@@ -668,13 +666,12 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'selectCotizaciones':
-		require_once "../modelos/Cotizaciones.php";
-		$venta = new Cotizacion();
+		$idsucursal = $_SESSION['idsucursal'];
 		$is_aprobated = $_POST['is_aprobated'] ?? false;
-		$rspta = $venta->listar2($is_aprobated);
+		$rspta = $venta->listar2($idsucursal, $is_aprobated);
 
 		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idcotizacion . '>' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</option>';
+			echo '<option value=' . $reg->idcotizacion . '>' . $reg->serie_comprobante . '-' . $reg->num_comprobante.': '. $reg->cliente . '</option>';
 		}
 		break;
 
@@ -859,9 +856,10 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'cotizacionesCliente':
+		$idsucursal = $_SESSION['idsucursal'];
 		$idcliente = $_GET["idcliente"];
 		$is_aprobated = $_GET["is_aprobated"] ?? false;
-		$rspta = $venta->cotizacionesCliente($idcliente, $is_aprobated);
+		$rspta = $venta->cotizacionesCliente($idsucursal, $idcliente, $is_aprobated);
 		echo '<option value="">Seleccione una cotización</option>';
 		while ($reg = $rspta->fetch_object()) {
 			echo '<option value=' . $reg->idcotizacion . '>' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</option>';

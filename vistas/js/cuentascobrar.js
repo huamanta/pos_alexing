@@ -5,6 +5,7 @@ var ventaActualCuotas = null;
 var saldoActualCuotas = 0;
 var tbllistadohistorial;
 let archivosSeleccionados = [];
+let calendar = null;
 
 //Función que se ejecuta al inicio
 function init() {
@@ -40,8 +41,10 @@ function init() {
         listarSaldos();
     });
 
-    $('#navCuentasPorCobrar').addClass("treeview active");
+    $('#navCobros').addClass("treeview menu-open");
+    $('#navCobrosActive').addClass("treeview active");
     $('#navCuentasPorCobrar').addClass("active");
+
 
     //cargamos los items al select almacen
     $.post("controladores/venta.php?op=selectSucursal3", function (r) {
@@ -329,6 +332,353 @@ function amortizarCuotasCredito(idventa, saldoPendiente, documento, nota) {
     amortizar(idventa);
 }
 
+function calendarioCuotasCredito(idventa, saldoPendiente, documento, nota) {
+    $("#modalCalendario").modal('show');
+    var calendarEl = document.getElementById("calendario");
+
+    if (calendar) {
+        calendar.destroy();
+    }
+
+    calendar = new FullCalendar.Calendar(calendarEl, {
+        locale: "es",
+        initialView: "dayGridMonth",
+        height: "auto",
+
+        events: function (info, successCallback, failureCallback) {
+            $.ajax({
+                url: "controladores/cuentascobrar.php",
+                data: {
+                    op: "calendarioCuotasCredito",
+                    idventa: idventa
+                },
+                dataType: "json",
+                success: successCallback,
+                error: failureCallback
+            });
+        },
+
+        eventClick: function (info) {
+            console.log(info.event);
+            console.log(info.event.title);
+            console.log(info.event.start);
+            console.log(info.event.extendedProps);
+        }
+    });
+
+    setTimeout(function () {
+        calendar.render();
+    }, 300);
+}
+
+
+function historialCreditoRefinanciamiento(idventa, saldoPendiente, documento, nota) {
+
+    $.getJSON(
+        "controladores/refinanciamiento.php",
+        {
+            op: "historialCreditoRefinanciamiento",
+            idventa: idventa
+        },
+        function (r) {
+
+            if (!r.estado) {
+                alert(r.mensaje);
+                return;
+            }
+
+            $("#hisCliente").val(r.venta.cliente);
+            $("#hisDocumento").val(r.venta.documento);
+            $("#hisFecha").val(r.venta.fecha_hora);
+            $("#hisTotal").val("S/ " + parseFloat(r.venta.total_venta).toFixed(2));
+
+            let html = "";
+
+            $.each(r.historial, function (i, h) {
+
+                if (h.tipo == "ORIGINAL") {
+
+                    html += `
+                    <div class="box box-primary">
+
+                        <div class="box-header with-border bg-light-blue">
+
+                            <h3 class="box-title">
+                                <i class="fa fa-file-text"></i>
+                                Crédito Original
+                            </h3>
+
+                            <span class="pull-right label label-primary">
+                                Inicio del crédito
+                            </span>
+
+                        </div>
+
+                        <div class="box-body">
+
+                            <div class="row text-center" style="margin-bottom:20px">
+
+                                <div class="col-md-3">
+                                    <h5>Total Crédito</h5>
+                                    <h3 class="text-primary">
+                                        S/ ${parseFloat(r.venta.total_venta).toFixed(2)}
+                                    </h3>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <h5>Cliente</h5>
+                                    <b>${r.venta.cliente}</b>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <h5>Documento</h5>
+                                    <b>${r.venta.documento}</b>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <h5>Fecha</h5>
+                                    <b>${r.venta.fecha_hora}</b>
+                                </div>
+
+                            </div>
+
+                            ${tablaCuotas(h.cuotas)}
+
+                        </div>
+
+                    </div>
+                    `;
+
+                } else {
+
+                    html += `
+
+                    <div class="text-center" style="margin:15px 0">
+                        <i class="fa fa-arrow-down fa-2x text-warning"></i>
+                    </div>
+
+                    <div class="box box-warning">
+
+                        <div class="box-header with-border bg-yellow">
+
+                            <h3 class="box-title">
+
+                                <i class="fa fa-sync"></i>
+
+                                Refinanciamiento #${h.idrefinanciamiento}
+
+                            </h3>
+
+                            <span class="pull-right label label-warning">
+                                Nuevo Cronograma
+                            </span>
+
+                        </div>
+
+                        <div class="box-body">
+
+                            <div class="row text-center">
+
+                                <div class="col-md-2">
+
+                                    <div class="small-box bg-aqua">
+
+                                        <div class="inner">
+                                            <h3>S/ ${parseFloat(h.saldo_original).toFixed(2)}</h3>
+                                            <p>Saldo</p>
+                                        </div>
+
+                                        <div class="icon">
+                                            <i class="fa fa-wallet"></i>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-2">
+
+                                    <div class="small-box bg-green">
+
+                                        <div class="inner">
+                                            <h3>S/ ${parseFloat(h.interes).toFixed(2)}</h3>
+                                            <p>Interés</p>
+                                        </div>
+
+                                        <div class="icon">
+                                            <i class="fa fa-percent"></i>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-2">
+
+                                    <div class="small-box bg-purple">
+
+                                        <div class="inner">
+                                            <h3>S/ ${parseFloat(h.inicial).toFixed(2)}</h3>
+                                            <p>Inicial</p>
+                                        </div>
+
+                                        <div class="icon">
+                                            <i class="fa fa-money-bill"></i>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <div class="small-box bg-orange">
+
+                                        <div class="inner">
+                                            <h3>S/ ${parseFloat(h.total_refinanciado).toFixed(2)}</h3>
+                                            <p>Total Refinanciado</p>
+                                        </div>
+
+                                        <div class="icon">
+                                            <i class="fa fa-handshake"></i>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-3">
+
+                                    <div class="small-box bg-red">
+
+                                        <div class="inner">
+                                            <h3>${h.fecha}</h3>
+                                            <p>Fecha Refinanciamiento</p>
+                                        </div>
+
+                                        <div class="icon">
+                                            <i class="fa fa-calendar"></i>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                            ${tablaCuotas(h.cuotas)}
+
+                        </div>
+
+                    </div>
+
+                    `;
+
+                }
+
+            });
+
+            $("#timelineCredito").html(html);
+
+            $("#modalHistorialCredito").modal("show");
+
+        }
+    );
+
+}
+
+
+
+function tablaCuotas(cuotas) {
+
+    let html = `
+
+    <table class="table table-bordered table-striped table-hover">
+
+        <thead style="background:#3c8dbc;color:#fff">
+
+            <tr>
+
+                <th width="60">#</th>
+                <th>Vence</th>
+                <th>Monto</th>
+                <th>Abonado</th>
+                <th>Saldo</th>
+                <th width="130">Estado</th>
+
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+    `;
+
+    $.each(cuotas, function (i, c) {
+
+        let badge = "";
+        let clase = "";
+
+        switch (c.estado) {
+
+            case "PAGADA":
+                badge = '<span class="label label-success">Pagada</span>';
+                clase = "success";
+                break;
+
+            case "PENDIENTE":
+                badge = '<span class="label label-warning">Pendiente</span>';
+                clase = "warning";
+                break;
+
+            case "REFINANCIADA":
+                badge = '<span class="label label-info">Refinanciada</span>';
+                clase = "info";
+                break;
+
+        }
+
+        html += `
+
+            <tr class="${clase}">
+
+                <td><b>${i + 1}</b></td>
+
+                <td>${c.fechavencimiento}</td>
+
+                <td class="text-right">
+                    S/ ${parseFloat(c.deudatotal).toFixed(2)}
+                </td>
+
+                <td class="text-right">
+                    S/ ${parseFloat(c.abonototal).toFixed(2)}
+                </td>
+
+                <td class="text-right">
+                    <b>S/ ${parseFloat(c.deuda).toFixed(2)}</b>
+                </td>
+
+                <td class="text-center">
+                    ${badge}
+                </td>
+
+            </tr>
+
+        `;
+
+    });
+
+    html += `
+
+        </tbody>
+
+    </table>
+
+    `;
+
+    return html;
+
+}
 
 $('#formulario-amortizar').submit(async function (e) {
     e.preventDefault();
@@ -454,36 +804,64 @@ async function mostrar(idcpc) {
     $("#idcaja").val(idcaja);
     $("#getCodeModal").modal('show');
 
-    // 🔹 1. Actualizar la mora en BD antes de mostrar el formulario
-    $.post("controladores/cuentascobrar.php?op=actualizar_mora_diaria",
+    // 🔹 2. Obtener datos actualizados
+    $.post("controladores/cuentascobrar.php?op=mostrar",
         {
             idcpc: idcpc
         },
-        function () {
+        function (data) {
+            data = JSON.parse(data);
+            var total_venta = parseFloat(data.total_venta);
+            var interes = total_venta * (data.interes / 100);
+            $('#documento').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
+            $("#deutaTotal").text(parseFloat(data.deuda).toFixed(2));
+            $("#valorVenta").text(total_venta.toFixed(2));
+            $("#valorInteres").text(interes.toFixed(2));
+            $("#montoAdeudado").val(parseFloat(data.total_pagar).toFixed(2));
+            $("#idcpc").val(data.idcpc);
+            $('#panelMora').hide();
+            if (data.dias_mora) {
+                $('#panelMora').show();
+            }
+            $("#montoMora").text(data.mora_total);
+            $("#montoMoraPagar").text(data.mora);
+            $("#diasRetraso").text(data.dias_mora);
 
-            // 🔹 2. Obtener datos actualizados
-            $.post("controladores/cuentascobrar.php?op=mostrar",
-                {
-                    idcpc: idcpc
-                },
-                function (data) {
+            $("#idventa").val(data.idventa);
+            $("#fechavencimiento").text(data.fechavencimiento);
 
-                    data = JSON.parse(data);
-                    var total_venta = parseFloat(data.total_venta);
-                    var interes = total_venta * (data.interes / 100);
-                    var deuda = parseFloat(data.deuda);
-                    $('#documento').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
-                    $("#deutaTotal").text(deuda.toFixed(2));
-                    $("#valorVenta").text(total_venta.toFixed(2));
-                    $("#valorInteres").text(interes.toFixed(2));
-                    $("#montoAdeudado").val(deuda.toFixed(2));
-                    $("#idcpc").val(data.idcpc);
-
-                    $("#idventa").val(data.idventa);
-                    $("#fechavencimiento").text(data.fechavencimiento);
-
-                });
         });
+
+    // // 🔹 1. Actualizar la mora en BD antes de mostrar el formulario
+    // $.post("controladores/cuentascobrar.php?op=actualizar_mora_diaria",
+    //     {
+    //         idcpc: idcpc
+    //     },
+    //     function () {
+
+    //         // 🔹 2. Obtener datos actualizados
+    //         $.post("controladores/cuentascobrar.php?op=mostrar",
+    //             {
+    //                 idcpc: idcpc
+    //             },
+    //             function (data) {
+
+    //                 data = JSON.parse(data);
+    //                 var total_venta = parseFloat(data.total_venta);
+    //                 var interes = total_venta * (data.interes / 100);
+    //                 var deuda = parseFloat(data.deuda);
+    //                 $('#documento').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
+    //                 $("#deutaTotal").text(deuda.toFixed(2));
+    //                 $("#valorVenta").text(total_venta.toFixed(2));
+    //                 $("#valorInteres").text(interes.toFixed(2));
+    //                 $("#montoAdeudado").val(deuda.toFixed(2));
+    //                 $("#idcpc").val(data.idcpc);
+
+    //                 $("#idventa").val(data.idventa);
+    //                 $("#fechavencimiento").text(data.fechavencimiento);
+
+    //             });
+    //     });
 }
 
 
@@ -652,6 +1030,13 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
             action: function () {
                 listarHistorialSeguimiento(idventa);
             }
+        },
+        {
+            text: '<i class="fas fa-download"></i> Descargar informe',
+            className: 'btn btn-warning btn-sm btn-descargar',
+            action: function () {
+                dscargarHistorial(idventa);
+            }
         }
     ];
 
@@ -673,22 +1058,19 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
         autoWidth: true,
 
         dom:
-            '<"row mb-2"' +
+            '<"row mb-1"' +
             '<"col-md-12 msgComentario">' +
             '>' +
             '<"row"' +
-            '<"col-md-4"l>' +
-            '<"col-md-4"B>' +
-            '<"col-md-4"f>' +
+            '<"col-md-7"B>' +
+            '<"col-md-5 text-right"f>' +
             '>' +
             't' +
             '<"row"' +
             '<"col-md-6"i>' +
             '<"col-md-6"p>' +
             '>',
-
         buttons: botones,
-
         ajax: {
             url: "controladores/cuentascobrar.php?op=listar_cuotas_credito",
             data: { idventa: idventa },
@@ -701,6 +1083,25 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
     });
 }
 let inicialCuota = 0;
+
+function encrypt_decrypt(action, string) {
+    if (action === 'encrypt') {
+        // Encriptación simple pero efectiva para este caso
+        const encoded = btoa(string);
+        return encoded.replace(/=/g, '').replace(/\//g, '_').replace(/\+/g, '-');
+    }
+    return string;
+}
+
+function dscargarHistorial(idventa) {
+    const encryptedId = encrypt_decrypt('encrypt', idventa);
+    const url = 'public/docs_service/cronograma_pagos?idventa=' + encryptedId;
+    const win = window.open(url, '_blank');
+    if (!win) {
+        alert('Por favor habilita ventanas emergentes o descarga manualmente: ' + url);
+        return;
+    }
+}
 
 async function amortizar(idventa) {
     const idcaja = await verificarCaja();

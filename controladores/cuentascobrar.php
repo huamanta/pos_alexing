@@ -229,7 +229,7 @@ switch ($_GET["op"]) {
 
 	case 'mostrar':
 		$rspta = $cuentascobrar->mostrar($idcpc);
-		echo json_encode($rspta);
+		echo $rspta;
 		break;
 
 	case 'amortizar_deuda':
@@ -318,15 +318,7 @@ switch ($_GET["op"]) {
 		$idcliente = $_REQUEST['idcliente'];
 		$fecha_inicio = $_REQUEST['fecha_inicio'];
 		$fecha_fin = $_REQUEST['fecha_fin'];
-		$idsucursal = $_REQUEST['idsucursal'] ?? null;
-
-		if (empty($idsucursal) || $idsucursal == "null" || $idsucursal == "Todos") {
-			if (isset($_SESSION['idsucursal']) && $_SESSION['idsucursal'] != 0) {
-				$idsucursal = $_SESSION['idsucursal'];
-			} else {
-				$idsucursal = "Todos";
-			}
-		}
+		$idsucursal = !empty($_REQUEST['idsucursal']) ? $_REQUEST['idsucursal'] : $_SESSION['idsucursal'];
 
 		echo $cuentascobrar->listaVentasPorCliente($idcliente, $idsucursal, $fecha_inicio, $fecha_fin);
 		break;
@@ -383,7 +375,7 @@ switch ($_GET["op"]) {
 			$rspta = $cuentascobrar->guardarVisita($idcpc, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final);
 			echo $rspta;
 		}
-		
+
 		break;
 
 	case 'listarHistorialSeguimiento':
@@ -411,8 +403,14 @@ switch ($_GET["op"]) {
 		$fecha_compromiso = isset($_POST["fecha_compromiso"]) ? limpiarCadena($_POST["fecha_compromiso"]) : "";
 		$monto = isset($_POST["monto"]) ? limpiarCadena($_POST["monto"]) : "";
 		$observacion = isset($_POST["observacion"]) ? limpiarCadena($_POST["observacion"]) : "";
-        $idusuario = $_SESSION["idusuario"];
+		$idusuario = $_SESSION["idusuario"];
 		$response = $cuentascobrar->guardarCompromisoPago($idcpc, $idventa, $idcliente, $fecha_compromiso, $monto, $observacion, $idusuario);
+		echo $response;
+		break;
+
+	case 'calendarioCuotasCredito':
+		$idventa = isset($_GET["idventa"]) ? limpiarCadena($_GET["idventa"]) : "";
+		$response = $cuentascobrar->calendarioCuotasCredito($idventa);
 		echo $response;
 		break;
 }

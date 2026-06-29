@@ -295,7 +295,7 @@ class Cotizacion
         return ejecutarConsulta($sql);
     }
 
-    public function listar2($is_aprobated = false)
+    public function listar2($idsucursal, $is_aprobated = false)
     {
         $sql = "SELECT
                 c.idcotizacion,
@@ -311,7 +311,7 @@ class Cotizacion
             FROM cotizacion c
             INNER JOIN persona p ON c.idcliente = p.idpersona
             INNER JOIN personal u ON c.idPersonal = u.idpersonal
-            WHERE c.condicion = 1";
+            WHERE c.idsucursal = '$idsucursal' AND c.condicion = 1";
 
         if ($is_aprobated) {
             $sql .= " AND c.fecha_aprobacion IS NOT NULL";
@@ -507,14 +507,14 @@ class Cotizacion
         return ejecutarConsulta($sql);
     }
 
-    public function cotizacionesCliente($idcliente, $is_aprobated = false)
+    public function cotizacionesCliente($idsucursal, $idcliente, $is_aprobated = false)
     {
         $sql = "SELECT
                 idcotizacion,
                 serie_comprobante,
                 num_comprobante
             FROM cotizacion
-            WHERE idcliente = '$idcliente'";
+            WHERE idsucursal = '$idsucursal' AND idcliente = '$idcliente'";
 
         if ($is_aprobated) {
             $sql .= " AND fecha_aprobacion IS NOT NULL";

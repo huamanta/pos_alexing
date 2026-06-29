@@ -27,161 +27,229 @@ class CuentasCobrar extends Helpers
         $idpersonal
     ) {
 
-        if (empty($fechaPago)) {
-            $fechaPago = date('Y-m-d H:i:s');
-        }
+        ejecutarConsulta("START TRANSACTION");
 
-        // VALIDAR CAJA ABIERTA
-        $sqlCaja = "SELECT estado 
-            FROM cajas 
-            WHERE idcaja='$idcaja'";
+        try {
 
-        $caja = ejecutarConsultaSimpleFila($sqlCaja);
+            if (empty($fechaPago)) {
+                $fechaPago = date('Y-m-d H:i:s');
+            }
 
-        if (!$caja || intval($caja['estado']) != 2) {
-            return [
-                'success' => false,
-                'message' => 'La caja está cerrada, no se puede registrar el pago.'
-            ];
-        }
+            // =========================
+            // VALIDAR CAJA
+            // =========================
+            $sqlCaja = "SELECT estado FROM cajas WHERE idcaja='$idcaja' FOR UPDATE";
+            $caja = ejecutarConsultaSimpleFila($sqlCaja);
 
-        // REGISTRAR DETALLE DE PAGO
-        $sqlDetalle = "INSERT INTO detalle_cuentas_por_cobrar
-    (
-        idcpc,
-        idcaja,
-        idpersonal,
-        montopagado,
-        montotarjeta,
-        banco,
-        op,
-        fechapago,
-        formapago,
-        observacion
-    )
-    VALUES
-    (
-        '$idcpc',
-        '$idcaja',
-        '$idpersonal',
-        '$montopagado',
-        '$montoPagarTarjeta',
-        '$banco',
-        '$op',
-        '$fechaPago',
-        '$formapago',
-        '$observacion'
-    )";
+            if (!$caja || intval($caja['estado']) != 2) {
+                throw new Exception("La caja está cerrada.");
+            }
 
-        $det = ejecutarConsulta($sqlDetalle);
+            // =========================
+            // OBTENER CUOTA (BLOQUEADA)
+            // =========================
+            $sql = "SELECT cc.*, v.idsucursal
+                FROM cuentas_por_cobrar cc
+                INNER JOIN venta v ON v.idventa = cc.idventa
+                WHERE cc.idcpc='$idcpc'
+                FOR UPDATE";
 
-        if (!$det) {
-            return [
-                'success' => false,
-                'message' => 'No se pudo registrar el detalle del pago.'
-            ];
-        }
+            $fila = ejecutarConsultaSimpleFila($sql);
 
-        // OBTENER DATOS ACTUALES
-        $sql = "SELECT 
-            idventa,
-            deudatotal,
-            deuda,
-            abonototal
-        FROM cuentas_por_cobrar
-        WHERE idcpc = '$idcpc'";
+            if (!$fila) {
+                throw new Exception("No se encontró la cuota.");
+            }
 
-        $fila = ejecutarConsultaSimpleFila($sql);
+            // =========================
+            // CALCULAR MORA (CORRECTO)
+            // =========================
+            $config = Helpers::verificarMoraCredito($fila["idsucursal"]);
 
-        if (!$fila) {
-            return [
-                'success' => false,
-                'message' => 'Cuenta no encontrada'
-            ];
-        }
+            if (
+                $config["activo"] &&
+                floatval($fila["deuda"]) > 0
+            ) {
 
-        // TOTAL PAGADO
-        $montopagado = round(floatval($montopagado ?? 0), 2);
-        $montoPagarTarjeta = round(floatval($montoPagarTarjeta ?? 0), 2);
+                $hoy = new DateTime();
 
-        $montoPagoTotal = round($montopagado + $montoPagarTarjeta, 2);
+                $ultimaFecha = !empty($fila["fecha_update_mora"])
+                    ? $fila["fecha_update_mora"]
+                    : $fila["fechavencimiento"];
 
-        // VALORES ACTUALES
-        $deudatotal = round(floatval($fila['deudatotal']), 2);
-        $deuda = round(floatval($fila['deuda']), 2);
-        $abonototal = round(floatval($fila['abonototal']), 2);
+                $fechaInicio = new DateTime($ultimaFecha);
 
-        // NUEVOS VALORES
-        $nuevaDeudaTotal = round($deudatotal - $montoPagoTotal, 2);
-        $nuevaDeuda = round($deuda - $montoPagoTotal, 2);
+                if ($hoy > $fechaInicio) {
 
-        if ($nuevaDeudaTotal < 0)
-            $nuevaDeudaTotal = 0;
-        if ($nuevaDeuda < 0)
-            $nuevaDeuda = 0;
+                    $dias = $fechaInicio->diff($hoy)->days;
 
-        $nuevoAbonoTotal = round($abonototal + $montoPagoTotal, 2);
+                    if ($dias > 0) {
 
-        // ACTUALIZAR CUENTA
-        $sqlUpdate = "UPDATE cuentas_por_cobrar
-            SET deuda = '$nuevaDeuda',
-                deudatotal = '$nuevaDeudaTotal',
-                abonototal = '$nuevoAbonoTotal'
-            WHERE idcpc = '$idcpc'";
+                        $tasaDiaria = ($config["valor"] / 100);
 
-        $save = ejecutarConsulta($sqlUpdate);
+                        $moraNueva = round(
+                            floatval($fila["deuda"]) * $tasaDiaria * $dias,
+                            2
+                        );
 
-        if (!$save) {
-            return [
-                'success' => false,
-                'message' => 'No se pudo actualizar la cuenta'
-            ];
-        }
+                        $fila["mora"] = floatval($fila["mora"]) + $moraNueva;
+                        $fila["deuda"] = floatval($fila["deuda"]) + $moraNueva;
+                        $fila["deudatotal"] = floatval($fila["deudatotal"]) + $moraNueva;
 
-        // SI YA NO HAY DEUDA EN ESA CUOTA
-        if ($nuevaDeudaTotal <= 0) {
+                        ejecutarConsulta("
+                        UPDATE cuentas_por_cobrar
+                        SET
+                            mora='{$fila["mora"]}',
+                            deuda='{$fila["deuda"]}',
+                            deudatotal='{$fila["deudatotal"]}',
+                            fecha_update_mora=NOW()
+                        WHERE idcpc='$idcpc'
+                    ");
+                    }
+                }
+            }
 
-            // marcar cuota pagada
-            ejecutarConsulta("
-            UPDATE cuentas_por_cobrar
-            SET estado_pago = 0
-            WHERE idcpc = '$idcpc'
-        ");
+            // =========================
+            // REGISTRAR PAGO
+            // =========================
+            $sqlDetalle = "INSERT INTO detalle_cuentas_por_cobrar(
+            idcpc,
+            idcaja,
+            idpersonal,
+            montopagado,
+            montotarjeta,
+            banco,
+            op,
+            fechapago,
+            formapago,
+            observacion
+        ) VALUES (
+            '$idcpc',
+            '$idcaja',
+            '$idpersonal',
+            '$montopagado',
+            '$montoPagarTarjeta',
+            '$banco',
+            '$op',
+            '$fechaPago',
+            '$formapago',
+            '$observacion'
+        )";
 
-            $idventa = $fila['idventa'];
+            if (!ejecutarConsulta($sqlDetalle)) {
+                throw new Exception("No se pudo registrar el pago.");
+            }
 
-            // 🔥 VERIFICAR SOLO POR ESTADO (NO POR MONTO)
-            $pendientes = ejecutarConsultaSimpleFila("
-            SELECT COUNT(*) AS total
-            FROM cuentas_por_cobrar
-            WHERE idventa = '$idventa'
-            AND estado_pago = 1
-        ");
+            // =========================
+            // NORMALIZAR MONTOS
+            // =========================
+            $montoPago = round(floatval($montopagado) + floatval($montoPagarTarjeta), 2);
 
-            // SI YA NO QUEDAN CUOTAS → FINALIZAR CONTRATO
-            if (intval($pendientes['total']) === 0) {
+            $moraPendiente = round(floatval($fila["mora"]), 2);
+            $moraPagada = round(floatval($fila["mora_pagada"]), 2);
+
+            $abonado = round(floatval($fila["abonototal"]), 2);
+
+            $deuda = round(floatval($fila["deuda"]), 2);
+            $deudatotal = round(floatval($fila["deudatotal"]), 2);
+
+            // =========================
+            // PAGAR MORA PRIMERO
+            // =========================
+            if ($montoPago > 0 && $moraPendiente > 0) {
+
+                if ($montoPago >= $moraPendiente) {
+
+                    $montoPago -= $moraPendiente;
+                    $moraPagada += $moraPendiente;
+                    $moraPendiente = 0;
+
+                } else {
+
+                    $moraPagada += $montoPago;
+                    $moraPendiente -= $montoPago;
+                    $montoPago = 0;
+                }
 
                 ejecutarConsulta("
-                UPDATE documentacion
-                SET estado = 2
-                WHERE idventa = '$idventa'
-                AND tipo = '1'
+                UPDATE cuentas_por_cobrar
+                SET
+                    mora='$moraPendiente',
+                    mora_pagada='$moraPagada'
+                WHERE idcpc='$idcpc'
             ");
             }
 
-        } else {
+            // =========================
+            // PAGAR CAPITAL
+            // =========================
+            $montoPago = min($montoPago, $deuda);
+
+            $nuevaDeuda = round($deuda - $montoPago, 2);
+            $nuevaDeudaTotal = round($deudatotal - $montoPago, 2);
+            $nuevoAbono = round($abonado + $montoPago, 2);
 
             ejecutarConsulta("
             UPDATE cuentas_por_cobrar
-            SET estado_pago = 1
-            WHERE idcpc = '$idcpc'
+            SET
+                deuda='$nuevaDeuda',
+                deudatotal='$nuevaDeudaTotal',
+                abonototal='$nuevoAbono'
+            WHERE idcpc='$idcpc'
         ");
-        }
 
-        return [
-            'success' => true,
-            'message' => 'Pago registrado correctamente'
-        ];
+            // =========================
+            // ESTADO FINAL
+            // =========================
+            if ($nuevaDeudaTotal <= 0) {
+
+                ejecutarConsulta("
+                UPDATE cuentas_por_cobrar
+                SET estado_pago=0
+                WHERE idcpc='$idcpc'
+            ");
+
+                $pendientes = ejecutarConsultaSimpleFila("
+                SELECT COUNT(*) total
+                FROM cuentas_por_cobrar
+                WHERE idventa='{$fila["idventa"]}'
+                AND estado_pago=1
+            ");
+
+                if (intval($pendientes["total"]) == 0) {
+
+                    ejecutarConsulta("
+                    UPDATE documentacion
+                    SET estado=2
+                    WHERE idventa='{$fila["idventa"]}'
+                    AND tipo='1'
+                ");
+                }
+
+            } else {
+
+                ejecutarConsulta("
+                UPDATE cuentas_por_cobrar
+                SET estado_pago=1
+                WHERE idcpc='$idcpc'
+            ");
+            }
+
+            ejecutarConsulta("COMMIT");
+
+            return [
+                "success" => true,
+                "message" => "Pago registrado correctamente."
+            ];
+
+        } catch (Exception $e) {
+
+            ejecutarConsulta("ROLLBACK");
+
+            return [
+                "success" => false,
+                "message" => $e->getMessage()
+            ];
+        }
     }
 
 
@@ -298,17 +366,71 @@ class CuentasCobrar extends Helpers
 
     public function mostrar($idcpc)
     {
-        $sql = "SELECT v.idventa, v.total_venta, v.interes, v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,
-        cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal,2) as deudatotal, cc.deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento,
-        TRUNCATE(cc.interes, 2) as interes_cuota
-				FROM venta v 
-				INNER JOIN cuentas_por_cobrar cc
-		        ON v.idventa = cc.idventa
-		        INNER JOIN persona c
-		        ON c.idpersona = v.idcliente
-		        WHERE cc.idcpc = '$idcpc'";
-        return ejecutarConsultaSimpleFila($sql);
+        $sql = "SELECT
+            v.idventa,
+            v.idsucursal,
+            v.total_venta,
+            v.interes,
+            v.tipo_comprobante,
+            v.serie_comprobante,
+            v.num_comprobante,
+            cc.idcpc,
+            cc.deuda,
+            cc.deudatotal,
+            cc.abonototal,
+            cc.mora,
+            cc.mora_pagada,
+            cc.interes AS interes_cuota,
+            cc.fechavencimiento AS fecha_vencimiento_bd,
+            DATE_FORMAT(cc.fecharegistro,'%d/%m/%y') AS fecharegistro,
+            DATE_FORMAT(cc.fechavencimiento,'%d/%m/%y') AS fechavencimiento,
+            c.nombre
+        FROM venta v
+        INNER JOIN cuentas_por_cobrar cc
+            ON v.idventa = cc.idventa
+        INNER JOIN persona c
+            ON c.idpersona = v.idcliente
+        WHERE cc.idcpc = '$idcpc'";
 
+        $credito = ejecutarConsultaSimpleFila($sql);
+
+        $config = Helpers::verificarMoraCredito($credito['idsucursal']);
+
+        $diasMora = 0;
+        $moraTotal = 0;
+        $moraPendiente = 0;
+
+        if ($config["activo"]) {
+
+            $hoy = new DateTime();
+            $vence = new DateTime($credito["fecha_vencimiento_bd"]);
+
+            if ($vence < $hoy) {
+
+                $diasMora = $vence->diff($hoy)->days;
+
+                // mora total generada
+                $moraTotal = ($credito["deuda"] * ($config["valor"] / 100)) * $diasMora;
+
+                // mora pendiente real (lo que falta pagar)
+                $moraPendiente = max(0, $moraTotal - floatval($credito["mora_pagada"]));
+            }
+        }
+
+        // =========================
+        // RESPUESTA CORRECTA
+        // =========================
+        $credito["dias_mora"] = $diasMora;
+        $credito["mora"] = round($moraPendiente, 2);
+        $credito["mora_total"] = round($moraTotal, 2);
+
+        // total correcto a pagar
+        $credito["total_pagar"] = round(
+            floatval($credito["deuda"]) + $moraPendiente,
+            2
+        );
+
+        return json_encode($credito);
     }
 
     public function calcularMora($idcpc)
@@ -1086,37 +1208,72 @@ class CuentasCobrar extends Helpers
         }
 
         $sql = "SELECT
-                    v.idventa,
-                    DATE_FORMAT(v.fecha_hora, '%d/%m/%y | %H:%i:%s %p') AS fecha_venta,
-                    v.tipo_comprobante,
-                    v.serie_comprobante,
-                    v.num_comprobante,
-                    v.total_venta,
-                    v.nota,
-                    v.estado_venta,
-                    cc.condicion,
-                    SUM(cc.abonototal) AS total_abonado,
-                    SUM(cc.deuda) AS saldo_pendiente,
-                    v.interes,
-                    v.totalrecibido,
-                    v.totaldeposito
-                FROM venta v
-                INNER JOIN cuentas_por_cobrar cc ON cc.idventa = v.idventa
-                WHERE v.idcliente = '$idcliente'
-                  AND DATE(cc.fecharegistro) BETWEEN '$fecha_inicio' AND '$fecha_fin'
-                  $filtroSucursal
-                GROUP BY v.idventa, v.fecha_hora, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta
-                ORDER BY v.idventa DESC";
+                v.idventa,
+                DATE_FORMAT(v.fecha_hora, '%d/%m/%y | %H:%i:%s %p') AS fecha_venta,
+                v.tipo_comprobante,
+                v.serie_comprobante,
+                v.num_comprobante,
+                v.total_venta,
+                v.nota,
+                v.estado_venta,
+                v.interes,
+                v.totalrecibido,
+                v.totaldeposito
+            FROM venta v
+            WHERE v.idcliente='$idcliente'
+              AND DATE(v.fecha_hora) BETWEEN '$fecha_inicio' AND '$fecha_fin'
+              $filtroSucursal
+            ORDER BY v.idventa DESC";
 
         $result = ejecutarConsulta($sql);
+
         $data = array();
 
         while ($row = $result->fetch_object()) {
+
+            // ¿Tiene refinanciamiento?
+            $sqlRef = "SELECT MAX(idrefinanciamiento) idref
+                   FROM cuentas_por_cobrar
+                   WHERE idventa='$row->idventa'
+                     AND idrefinanciamiento IS NOT NULL";
+
+            $ref = ejecutarConsultaSimpleFila($sqlRef);
+
+            if (!empty($ref["idref"])) {
+
+                $refinanciado = true;
+
+                $sqlSaldo = "SELECT
+                            SUM(abonototal) abonado,
+                            SUM(deuda) deuda,
+                            MAX(condicion) condicion
+                         FROM cuentas_por_cobrar
+                         WHERE idrefinanciamiento='{$ref["idref"]}'";
+
+            } else {
+
+                $refinanciado = false;
+
+                $sqlSaldo = "SELECT
+                            SUM(abonototal) abonado,
+                            SUM(deuda) deuda,
+                            MAX(condicion) condicion
+                         FROM cuentas_por_cobrar
+                         WHERE idventa='$row->idventa'
+                           AND idrefinanciamiento IS NULL
+                           AND idrefinanciamiento_origen IS NULL";
+            }
+
+            $credito = ejecutarConsultaSimpleFila($sqlSaldo);
+
+            $totalAbonado = floatval($credito["abonado"]);
+            $saldoPendiente = floatval($credito["deuda"]);
+
             $contratos = new Contratos();
             $retension = $contratos->buscarRetencion($row->idventa);
             $estadoRetension = $retension['estado'];
-            $buttonAmortizar = '';
-            $estado = (floatval($row->saldo_pendiente) <= 0)
+
+            $estado = ($saldoPendiente <= 0)
                 ? '<center><span class="badge bg-green">Cancelado</span></center>'
                 : '<center><span class="badge bg-red">Por Cancelar</span></center>';
 
@@ -1129,39 +1286,59 @@ class CuentasCobrar extends Helpers
             }
 
             $doc = $row->tipo_comprobante . '-' . $row->serie_comprobante . '-' . $row->num_comprobante;
-            $saldo = round(floatval($row->saldo_pendiente), 2);
 
-            if (floatval($row->saldo_pendiente) > 0) {
-                $buttonAmortizar = "<button class='btn btn-sm btn-primary' onclick='amortizarCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\", \"{$row->nota}\")'>
-                            <i class='fas fa-hand-holding-usd'></i> Amortizar deuda
-                        </button>";
+            $buttons = "";
+
+            $buttons .= "<button class='btn btn-sm btn-success'
+                        title='Ver cuotas'
+                        onclick='verCuotasCredito({$row->idventa}, {$saldoPendiente}, \"{$doc}\", \"{$row->nota}\")'>
+                        <i class='fas fa-list'></i>
+                    </button> ";
+
+            if ($saldoPendiente > 0 && Helpers::getUserPermissionAccion('Amortizar deuda')) {
+
+                $buttons .= "<button class='btn btn-sm btn-primary'
+                            title='Amortizar deuda'
+                            onclick='amortizarCuotasCredito({$row->idventa}, {$saldoPendiente}, \"{$doc}\", \"{$row->nota}\")'>
+                            <i class='fas fa-hand-holding-usd'></i>
+                        </button> ";
             }
 
-            $buttons = "<button class='btn btn-sm btn-success' onclick='verCuotasCredito({$row->idventa}, {$saldo}, \"{$doc}\", \"{$row->nota}\")'>
-                            <i class='fas fa-list'></i> Ver cuotas
-                        </button> " . $buttonAmortizar;
+            $buttons .= "<button class='btn btn-sm btn-warning'
+                        title='Ver calendario'
+                        onclick='calendarioCuotasCredito({$row->idventa}, {$saldoPendiente}, \"{$doc}\", \"{$row->nota}\")'>
+                        <i class='fas fa-calendar'></i>
+                    </button> ";
 
-            if ($estadoRetension === true || !$row->estado_venta) {
-                $buttons = "";
+            if ($refinanciado) {
+                $buttons .= "<button class='btn btn-sm btn-info'
+                        title='Ver historial refinaciamientos'
+                        onclick='historialCreditoRefinanciamiento({$row->idventa}, {$saldoPendiente}, \"{$doc}\", \"{$row->nota}\")'>
+                        <i class='fas fa-history'></i>
+                    </button>";
             }
 
-            $recibido = number_format($row->totalrecibido + $row->totaldeposito);
-            $totalVenta = floatval($row->total_venta);
-            $recibido = floatval(str_replace(',', '', $recibido));
-            $interesPorcentaje = floatval($row->interes);
+            $recibido = floatval($row->totalrecibido) + floatval($row->totaldeposito);
 
-            $interes = ($totalVenta - $recibido) * ($interesPorcentaje / 100);
+            $interes = ($row->total_venta - $recibido) * (floatval($row->interes) / 100);
+
+            $badgeRef = $refinanciado
+                ? "<span class='badge bg-blue'>Sí</span>"
+                : "<span class='badge bg-default'>No</span>";
 
             $data[] = array(
                 "0" => $row->fecha_venta,
                 "1" => $doc,
                 "2" => number_format($row->total_venta, 2),
-                "3" => $recibido,
-                "4" => ($row->interes) ? $interes . ' <span class="badge badge-info">' . $row->interes . '%</span>' : '0',
-                "5" => number_format($row->total_abonado, 2),
-                "6" => number_format($row->saldo_pendiente, 2),
-                "7" => $estado,
-                "8" => $buttons
+                "3" => number_format($recibido, 2),
+                "4" => ($row->interes)
+                    ? number_format($interes, 2) . " <span class='badge badge-info'>{$row->interes}%</span>"
+                    : "0.00",
+                "5" => number_format($totalAbonado, 2),
+                "6" => number_format($saldoPendiente, 2),
+                "7" => $badgeRef,
+                "8" => $estado,
+                "9" => $buttons
             );
         }
 
@@ -1175,7 +1352,18 @@ class CuentasCobrar extends Helpers
 
     public function listaCuotasPorCredito($idventa)
     {
-        $sql = "SELECT
+        // Buscar si el crédito tiene refinanciamiento
+        $sql = "SELECT MAX(idrefinanciamiento) AS idref
+            FROM cuentas_por_cobrar
+            WHERE idventa = '$idventa'
+              AND idrefinanciamiento IS NOT NULL";
+
+        $ref = ejecutarConsultaSimpleFila($sql);
+
+        if (!empty($ref["idref"])) {
+
+            // Mostrar únicamente las cuotas del último refinanciamiento
+            $sql = "SELECT
                     cc.idcpc,
                     DATE_FORMAT(cc.fecharegistro, '%d/%m/%y | %H:%i:%s %p') AS fecha_registro,
                     DATE_FORMAT(cc.fechavencimiento, '%d/%m/%y') AS fecha_vencimiento,
@@ -1190,26 +1378,58 @@ class CuentasCobrar extends Helpers
                 FROM cuentas_por_cobrar cc
                 INNER JOIN venta v ON v.idventa = cc.idventa
                 WHERE cc.idventa = '$idventa'
+                  AND cc.idrefinanciamiento = '{$ref["idref"]}'
                   AND cc.condicion = '1'
-                ORDER BY cc.idcpc DESC";
+                ORDER BY cc.fechavencimiento";
+
+        } else {
+
+            // Mostrar cuotas originales
+            $sql = "SELECT
+                    cc.idcpc,
+                    DATE_FORMAT(cc.fecharegistro, '%d/%m/%y | %H:%i:%s %p') AS fecha_registro,
+                    DATE_FORMAT(cc.fechavencimiento, '%d/%m/%y') AS fecha_vencimiento,
+                    DATE(cc.fechavencimiento) AS fecha_venc_raw,
+                    cc.abonototal,
+                    cc.deudatotal,
+                    cc.deuda,
+                    cc.estado_pago,
+                    cc.mora,
+                    cc.idventa,
+                    v.idcliente
+                FROM cuentas_por_cobrar cc
+                INNER JOIN venta v ON v.idventa = cc.idventa
+                WHERE cc.idventa = '$idventa'
+                  AND cc.idrefinanciamiento IS NULL
+                  AND cc.idrefinanciamiento_origen IS NULL
+                  AND cc.condicion = '1'
+                ORDER BY cc.fechavencimiento";
+
+        }
 
         $result = ejecutarConsulta($sql);
+
         $data = array();
         $rows = array();
         $hoy = new DateTime(date('Y-m-d'));
         $proximaIdcpc = null;
         $minDias = PHP_INT_MAX;
-
         $acciones = '';
+
         while ($row = $result->fetch_object()) {
-            $saldo = floatval($row->deuda);
+
+            $saldo = floatval($row->deudatotal);
             $row->saldo_calculado = $saldo;
             $rows[] = $row;
 
             if ($saldo > 0 && !empty($row->fecha_venc_raw)) {
+
                 $fechaVenc = new DateTime($row->fecha_venc_raw);
+
                 if ($fechaVenc >= $hoy) {
+
                     $dias = (int) $hoy->diff($fechaVenc)->days;
+
                     if ($dias < $minDias) {
                         $minDias = $dias;
                         $proximaIdcpc = $row->idcpc;
@@ -1218,12 +1438,14 @@ class CuentasCobrar extends Helpers
             }
         }
 
-
         foreach ($rows as $row) {
+
             $saldo = floatval($row->saldo_calculado);
+
             $contratos = new Contratos();
             $retension = $contratos->buscarRetencion($row->idventa);
             $estadoRetension = $retension['estado'];
+
             $estado = ($saldo <= 0)
                 ? '<center><span class="badge bg-green">Cancelado</span></center>'
                 : '<center><span class="badge bg-red">Por Cancelar</span></center>';
@@ -1235,56 +1457,78 @@ class CuentasCobrar extends Helpers
             if ($saldo > 0 && $estadoRetension !== true) {
 
                 if (Helpers::getUserPermissionAccion('Crear abono')) {
+
                     $acciones .= "
-                        <button
-                            type='button'
-                            class='btn btn-sm btn-success'
-                            onclick='mostrar({$row->idcpc})'
-                            title='Crear abono'>
-                            <i class='fas fa-plus-circle'></i>
-                        </button>";
+                    <button
+                        type='button'
+                        class='btn btn-sm btn-success'
+                        onclick='mostrar({$row->idcpc})'
+                        title='Crear abono'>
+                        <i class='fas fa-plus-circle'></i>
+                    </button>";
                 }
 
                 if (Helpers::getUserPermissionAccion('Programar visita')) {
+
                     $acciones .= "
-                        <button
-                            type='button'
-                            class='btn btn-sm btn-warning'
-                            onclick='programarVisita({$row->idcpc}, {$row->idventa}, {$row->idcliente})'
-                            title='Programar visita'>
-                            <i class='fas fa-calendar-check'></i>
-                        </button>";
+                    <button
+                        type='button'
+                        class='btn btn-sm btn-warning'
+                        onclick='programarVisita({$row->idcpc}, {$row->idventa}, {$row->idcliente})'
+                        title='Programar visita'>
+                        <i class='fas fa-calendar-check'></i>
+                    </button>";
+                }
+
+                if (
+                    Helpers::getUserPermissionAccion('Programar compromiso de pago') &&
+                    $row->fecha_venc_raw < date('Y-m-d')
+                ) {
+
+                    $acciones .= "
+                <button
+                    type='button'
+                    class='btn btn-sm btn-danger'
+                    onclick='programarCompromiso({$row->idcpc}, {$row->idventa}, {$row->idcliente})'
+                    title='Programar compromiso de pago'>
+                    <i class='fas fa-file-signature'></i>
+                </button>";
                 }
             }
 
             if (Helpers::getUserPermissionAccion('Ver abonos')) {
+
                 $acciones .= "
-                    <button
-                        type='button'
-                        class='btn btn-sm btn-info'
-                        onclick='mostrarAbonos({$row->idcpc})'
-                        title='Ver abonos'>
-                        <i class='fas fa-money-check-alt'></i>
-                    </button>";
+                <button
+                    type='button'
+                    class='btn btn-sm btn-info'
+                    onclick='mostrarAbonos({$row->idcpc})'
+                    title='Ver abonos'>
+                    <i class='fas fa-money-check-alt'></i>
+                </button>";
             }
 
             if (Helpers::getUserPermissionAccion('Ver estado de cuenta')) {
+
                 $acciones .= "
-                        <button
-                            type='button'
-                            class='btn btn-sm btn-secondary'
-                            onclick='verEstadoCuenta({$row->idcpc})'
-                            title='Ver estado de cuenta'>
-                            <i class='fas fa-file-invoice-dollar'></i>
-                        </button>";
+                <button
+                    type='button'
+                    class='btn btn-sm btn-secondary'
+                    onclick='verEstadoCuenta({$row->idcpc})'
+                    title='Ver estado de cuenta'>
+                    <i class='fas fa-file-invoice-dollar'></i>
+                </button>";
             }
 
             $rowClass = '';
+
             if ($saldo > 0 && !empty($row->fecha_venc_raw)) {
+
                 $fechaVenc = new DateTime($row->fecha_venc_raw);
+
                 if ($fechaVenc < $hoy) {
                     $rowClass = 'fila-cuota-vencida';
-                } elseif ($proximaIdcpc !== null && intval($row->idcpc) === intval($proximaIdcpc)) {
+                } elseif ($proximaIdcpc == $row->idcpc) {
                     $rowClass = 'fila-cuota-proxima';
                 }
             }
@@ -1293,17 +1537,6 @@ class CuentasCobrar extends Helpers
                 $rowClass = 'fila-retenida';
             }
 
-            if (Helpers::getUserPermissionAccion('Programar compromiso de pago') && strtotime($row->fecha_vencimiento) > strtotime(date('Y-m-d'))) {
-                $acciones .= "<button 
-                    type='button' 
-                    class='btn btn-sm btn-danger'
-                    onclick='programarCompromiso({$row->idcpc}, {$row->idventa}, {$row->idcliente})'
-                    data-toggle='tooltip'
-                    data-placement='top'
-                    title='Programar compromiso de pago'>
-                    <i class='fas fa-file-signature'></i>
-                </button>";
-            }
 
             $data[] = array(
                 "DT_RowClass" => $rowClass,
@@ -1315,6 +1548,7 @@ class CuentasCobrar extends Helpers
                 "5" => $estado,
                 "6" => $acciones
             );
+
             $acciones = '';
         }
 
@@ -2125,6 +2359,57 @@ class CuentasCobrar extends Helpers
             "status" => true,
             "msg" => "El compromiso de pago se ha guardado correctamente"
         ]);
+    }
+
+
+    public function calendarioCuotasCredito($idventa)
+    {
+        $sql = "SELECT
+                idcpc,
+                fechavencimiento,
+                deudatotal,
+                estado_pago
+            FROM cuentas_por_cobrar
+            WHERE idventa = '$idventa'
+            ORDER BY fechavencimiento";
+
+        $rspta = ejecutarConsulta($sql);
+
+        $eventos = [];
+        $hoy = new DateTime();
+        $cuota = 1;
+
+        while ($row = $rspta->fetch_object()) {
+
+            $fechaVencimiento = new DateTime($row->fechavencimiento);
+
+            if ($row->estado_pago == 1) {
+                $color = '#28a745';
+            } elseif ($fechaVencimiento < $hoy) {
+                $color = '#dc3545';
+            } else {
+                $color = '#ffc107';
+            }
+            $deudatotal = Helpers::get_currency_symbol($row->deudatotal);
+            $eventos[] = [
+                "id" => $row->idcpc,
+                "title" => "Cuota {$cuota} - {$deudatotal}",
+                "start" => $row->fechavencimiento,
+                "allDay" => true,
+                "backgroundColor" => $color,
+                "borderColor" => $color,
+                "textColor" => "#fff",
+                "extendedProps" => [
+                    "cuota" => $cuota,
+                    "estado" => $row->estado_pago,
+                    "monto" => $deudatotal
+                ]
+            ];
+
+            $cuota++;
+        }
+
+        return json_encode($eventos);
     }
 
 }
