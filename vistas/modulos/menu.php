@@ -46,12 +46,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
     <!-- Sidebar Menu -->
     <nav class="mt-2">
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-        <!-- Add icons to the links using the .nav-icon class
-               with font-awesome or any other icon font library -->
-
-
-
-
+        
         <?php
         if (Helpers::getUserPermisoModulo('inicio')) {
           ?>
@@ -171,7 +166,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         <?php if (Helpers::getUserPermisoModulo('Clientes')): ?>
           <li class="nav-item" style="font-size: 14px">
             <a href="cliente" class="nav-link" id="navClienteActive">
-              <i class="fas fa-users nav-icon text-orange" style="font-size: 14px"></i>
+              <i class="fas fa-users nav-icon" style="font-size: 14px"></i>
               <p>Clientes</p>
             </a>
           </li>

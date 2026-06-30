@@ -155,6 +155,15 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
 
     // ==================== Comprobantes Pendientes ====================
     function checkComprobantesPendientes() {
+        
+        let ultima = localStorage.getItem("notif_comprobantes_time");
+        let ahora = Date.now();
+
+        // Si aún no pasa 1 hora, no consultar
+        if (ultima && (ahora - Number(ultima)) < 3600000) {
+            return;
+        }
+
         $.ajax({
             url: 'controladores/venta.php?op=comprobantesPendientes',
             type: 'GET',
@@ -163,29 +172,24 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
 
                 if (response && response.total > 0) {
 
-                    let ultima = localStorage.getItem("notif_comprobantes_time");
-                    let ahora = new Date().getTime();
-
-                    // 1 hora = 3600000 ms
-                    if (!ultima || (ahora - ultima) > 3600000) {
-
-                        toastr.warning(
-                            "Tienes " + response.total + " comprobante(s) sin enviar a SUNAT",
-                            "Pendientes de Envío",
-                            {
-                                positionClass: "toast-top-center"
-                            }
-                        );
-
-                        localStorage.setItem("notif_comprobantes_time", ahora);
-                    }
+                    toastr.warning(
+                        "Tienes " + response.total + " comprobante(s) sin enviar a SUNAT",
+                        "Pendientes de Envío",
+                        {
+                            positionClass: "toast-top-center"
+                        }
+                    );
                 }
+
+                // Guardar la hora de la última consulta,
+                // independientemente de si hubo pendientes o no.
+                localStorage.setItem("notif_comprobantes_time", ahora);
             }
         });
     }
 
     // Ejecuta una vez
-    checkComprobantesPendientes();
+    setInterval(checkComprobantesPendientes, 5000);
 
 
 
@@ -193,18 +197,50 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
     let notificacionesMostradas = new Set();
 
     function verificarNuevasNotificaciones() {
+
         if (currentSucursal <= 0) return;
-        $.getJSON("controladores/traslado.php?op=listarnoti&idsucursal=" + currentSucursal, function (data) {
-            if (!data || data.length === 0) return;
-            data.forEach(n => {
-                if (!n.tipo || n.tipo.trim() === "") return;
-                if (!notificacionesMostradas.has(n.idnotificacion) && n.leido == 0) {
-                    let tipo = (n.tipo && n.tipo.toLowerCase() === "traslado") ? "traslado" : "solicitud";
-                    mostrarToast(n.mensaje, n.fecha, n.idnotificacion, n.idtraslado, tipo, n.iddestino);
-                    notificacionesMostradas.add(n.idnotificacion);
-                }
-            });
-        });
+
+        const ahora = Date.now();
+        const ultima = localStorage.getItem("notif_traslados_time");
+
+        // 1 hora = 3600000 ms
+        if (ultima && (ahora - Number(ultima)) < 3600000) {
+            return;
+        }
+
+        $.getJSON(
+            "controladores/traslado.php?op=listarnoti&idsucursal=" + currentSucursal,
+            function (data) {
+
+                // Guarda la hora de la consulta
+                localStorage.setItem("notif_traslados_time", ahora);
+
+                if (!data || data.length === 0) return;
+
+                data.forEach(n => {
+
+                    if (!n.tipo || n.tipo.trim() === "") return;
+
+                    if (!notificacionesMostradas.has(n.idnotificacion) && n.leido == 0) {
+
+                        let tipo = n.tipo.toLowerCase() === "traslado"
+                            ? "traslado"
+                            : "solicitud";
+
+                        mostrarToast(
+                            n.mensaje,
+                            n.fecha,
+                            n.idnotificacion,
+                            n.idtraslado,
+                            tipo,
+                            n.iddestino
+                        );
+
+                        notificacionesMostradas.add(n.idnotificacion);
+                    }
+                });
+            }
+        );
     }
 
     function mostrarToast(mensaje, fecha, idnotificacion = null, idtraslado = null, tipo = "solicitud", iddestino = null) {
@@ -279,11 +315,10 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
     }
 
     setInterval(verificarNuevasNotificaciones, 5000);
-    verificarNuevasNotificaciones();
 
     // Notificaciones Cuentas por Cobrar
     function cargarNotificacionesCXCNavbar() {
-        let sucursal = $("#idsucursal2").val();
+        let sucursal = currentSucursal;
         if (!sucursal || sucursal === "") return;
 
         $.getJSON("controladores/cuentascobrar.php?op=obtener_notificaciones&idsucursal=" + sucursal, function (data) {
@@ -308,6 +343,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
     }
 
     $(document).on("change", "#idsucursal2", function () { cargarNotificacionesCXCNavbar(); });
+
     $(document).on("click", ".cxcAlertLink", function () {
         let ids = $(this).data("ids");
         if (!ids) return;
@@ -316,13 +352,13 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
 
     $(document).ready(function () {
         let esperaSucursal = setInterval(function () {
-            let sucursal = $("#idsucursal2").val();
+            let sucursal = currentSucursal;
             if (sucursal && sucursal !== "") {
                 cargarNotificacionesCXCNavbar();
                 clearInterval(esperaSucursal);
             }
         }, 300);
-        setInterval(cargarNotificacionesCXCNavbar, 5000);
+        setInterval(cargarNotificacionesCXCNavbar, 3600000);
     });
 
     function notificacionToast(tipo, mensaje) {
