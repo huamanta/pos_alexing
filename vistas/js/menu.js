@@ -12,7 +12,7 @@ function listar(){
 		data=JSON.parse(data);
 
         let label=document.querySelector('#nombreNegocio');
-		label.textContent=data.nombre;
+		label.textContent=data?.nombre || 'Empresa';
 			
 
 	});

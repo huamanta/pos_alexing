@@ -175,7 +175,7 @@
                             <li class="active" id="itemMenuMora">
                                 <a href="#mora" data-toggle="tab" onclick="activarMenu('itemMenuMora')">
                                     <i class="fa fa-exclamation-triangle"></i>
-                                    Configuración Mora
+                                    Mora
                                 </a>
                             </li>
 
@@ -188,7 +188,7 @@
 
                             <li id="itemMenuRef">
                                 <a href="#ref" data-toggle="tab" onclick="activarMenu('itemMenuRef')">
-                                    <i class="fa fa-refresh"></i>
+                                    <i class="fa fa-user"></i>
                                     Refinanciamiento
                                 </a>
                             </li>
@@ -290,8 +290,8 @@
 
                                                     <div class="input-group">
                                                         <div class="input-group-prepend">
-                                                            <input id="valor_mora" name="valor_mora" type="number"
-                                                                step="0.01" class="form-control input-lg">
+                                                            <input id="valor_mora_credito" name="valor_mora_credito"
+                                                                type="number" step="0.01" class="form-control input-lg">
                                                             <span class="input-group-text">
                                                                 %
                                                             </span>
@@ -331,114 +331,45 @@
                             <div class="setting-card">
 
                                 <div class="setting-header">
-
                                     <h3>
-
-                                        <i class="fa fa-credit-card text-primary"></i>
-
                                         Configuración de Crédito
-
                                     </h3>
-
                                 </div>
 
-                                <div class="setting-body">
+                                <form id="formConfiguracionCreditos">
+                                    <div class="setting-body">
 
-                                    <div class="setting-row">
+                                        <div class="setting-row">
 
-                                        <div class="row">
+                                            <div class="row">
 
-                                            <div class="col-md-8">
+                                                <div class="col-md-8">
 
-                                                <div class="setting-title">
+                                                    <div class="setting-title">
 
-                                                    Notificacions automaticas
+                                                        Notificacions automaticas
 
-                                                </div>
+                                                    </div>
 
-                                                <div class="setting-desc">
-                                                    El sistema enviara automáticamente notificaciones de una cuota se
-                                                    encuentre por vencer.
+                                                    <div class="setting-desc">
+                                                        El sistema enviara automáticamente notificaciones de una cuota
+                                                        se
+                                                        encuentre por vencer.
 
-                                                </div>
-
-                                            </div>
-
-                                            <div class="col-md-4 setting-value">
-
-                                                <label class="switch">
-
-                                                    <input type="checkbox" id="is_notificacion" name="is_notificacion">
-
-                                                    <span class="slider"></span>
-
-                                                </label>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                    <div class="setting-row">
-
-                                        <div class="row">
-
-                                            <div class="col-md-8">
-
-                                                <div class="setting-title">
-
-                                                    Días de gracia
+                                                    </div>
 
                                                 </div>
 
-                                                <div class="setting-desc">
+                                                <div class="col-md-4 setting-value">
 
-                                                    Días antes de empezar el cálculo de mora.
+                                                    <label class="switch">
 
-                                                </div>
+                                                        <input type="checkbox" id="is_notificacion"
+                                                            name="is_notificacion">
 
-                                            </div>
+                                                        <span class="slider"></span>
 
-                                            <div class="col-md-4">
-
-                                                <input class="form-control input-lg" type="number" id="dias_gracia" name="dias_gracia">
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-
-
-                                    <div class="setting-row">
-
-                                        <div class="row">
-
-                                            <div class="col-md-8">
-
-                                                <div class="setting-title">
-
-                                                    Interés por defecto
-
-                                                </div>
-
-                                                <div class="setting-desc">
-
-                                                    Interés sugerido al crear un crédito.
-
-                                                </div>
-
-                                            </div>
-
-                                            <div class="col-md-4">
-
-                                                <div class="input-group">
-
-                                                    <input class="form-control input-lg" type="number" id="interes_defecto" name="interes_defecto">
-
-                                                    <span class="input-group-addon">%</span>
+                                                    </label>
 
                                                 </div>
 
@@ -446,22 +377,202 @@
 
                                         </div>
 
+                                        <div class="setting-row">
+
+                                            <div class="row">
+
+                                                <div class="col-md-8">
+
+                                                    <div class="setting-title">
+
+                                                        Días de gracia
+
+                                                    </div>
+
+                                                    <div class="setting-desc">
+
+                                                        Días antes de empezar el cálculo de mora.
+
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <div class="input-group">
+                                                        <input id="dias_gracia" name="dias_gracia" type="number"
+                                                            step="0.01" class="form-control input-lg">
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+
+
+                                        <div class="setting-row">
+
+                                            <div class="row">
+
+                                                <div class="col-md-8">
+
+                                                    <div class="setting-title">
+
+                                                        Interés por defecto
+
+                                                    </div>
+
+                                                    <div class="setting-desc">
+
+                                                        Interés sugerido al crear un crédito.
+
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="col-md-4">
+
+                                                    <div class="input-group-prepend">
+                                                        <input id="interes_defecto" name="interes_defecto" type="number"
+                                                            step="0.01" class="form-control input-lg">
+                                                        <span class="input-group-text">
+                                                            %
+                                                        </span>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
                                     </div>
 
-                                </div>
+                                    <div class="setting-header">
+                                        <h3>
+                                            Amortizaciones
+                                        </h3>
+                                    </div>
 
-                                <div class="setting-footer">
+                                    <div class="setting-body">
 
-                                    <button class="btn btn-primary btn-lg">
+                                        <div class="setting-row">
 
-                                        <i class="fa fa-save"></i>
+                                            <div class="row">
 
-                                        Guardar Configuración
+                                                <div class="col-md-8">
 
-                                    </button>
+                                                    <div class="setting-title">
 
-                                </div>
+                                                        Descuento por pago anticipado
 
+                                                    </div>
+
+                                                    <div class="setting-desc">
+                                                        Descuento aplicable cuando se realiza un pago anticipado.
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="col-md-4 setting-value">
+
+                                                    <label class="switch">
+
+                                                        <input type="checkbox" id="is_descuento_anticipado"
+                                                            name="is_descuento_anticipado">
+
+                                                        <span class="slider"></span>
+
+                                                    </label>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="setting-row">
+
+                                            <div class="row">
+
+                                                <div class="col-md-8">
+
+                                                    <div class="setting-title">
+
+                                                        Dias minimos de anticipo
+
+                                                    </div>
+
+                                                    <div class="setting-desc">
+
+                                                        Numero de dias minimos a los cuales se ralizara descuento de credito.
+
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <div class="input-group-prepend">
+                                                        <input id="dias_anticipacion"
+                                                            name="dias_anticipacion" type="number" step="0.01"
+                                                            class="form-control input-lg">
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="setting-row">
+
+                                            <div class="row">
+
+                                                <div class="col-md-8">
+
+                                                    <div class="setting-title">
+
+                                                        Porcentaje de descuento
+
+                                                    </div>
+
+                                                    <div class="setting-desc">
+
+                                                        Porcentaje de descuento aplicable al realizar un pago
+                                                        anticipado.
+
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="col-md-4">
+                                                    <div class="input-group-prepend">
+                                                        <input id="valor_descuento_anticipado"
+                                                            name="valor_descuento_anticipado" type="number" step="0.01"
+                                                            class="form-control input-lg">
+                                                        <span class="input-group-text">
+                                                            %
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                    <div class="setting-footer">
+
+                                        <button class="btn btn-primary btn-lg" id="btnGuardarCreditos">
+
+                                            <i class="fa fa-save"></i>
+
+                                            Guardar Configuración
+
+                                        </button>
+
+                                    </div>
+                                </form>
                             </div>
 
                         </div>
@@ -508,7 +619,8 @@
 
                                             <div class="col-md-4">
 
-                                                <input class="form-control input-lg" type="number" id="maximo_refinanciamientos" name="maximo_refinanciamientos">
+                                                <input class="form-control input-lg" type="number"
+                                                    id="maximo_refinanciamientos" name="maximo_refinanciamientos">
 
                                             </div>
 
@@ -546,77 +658,4 @@
 
 </div>
 
-<script>
-
-    function activarMenu(id) {
-        $(".nav-stacked li").removeClass("active");
-        $("#" + id).addClass("active");
-
-    }
-
-    listarConfiguracion();
-
-    function listarConfiguracion() {
-        $.ajax({
-            url: "controladores/configuracion.php?op=listarConfiguracion",
-            type: "GET",
-            success: function (res) {
-                const response = JSON.parse(res);
-                const configuracion = response.data.configuracion;
-                $("#is_mora_credito").prop("checked", configuracion.is_mora_credito == 1);
-                $("#valor_mora").val(configuracion.valor);
-                $("#is_notificacion").prop("checked", configuracion.is_notificacion == 1);
-                $("#dias_gracia").val(configuracion.dias_gracia);
-                $("#interes_defecto").val(configuracion.interes_defecto);
-                $("#maximo_refinanciamientos").val(configuracion.maximo_refinanciamientos);
-            }
-        });
-    }
-
-
-    $("#formConfiguracionMora").submit(function (e) {
-
-        e.preventDefault();
-
-        var data = new FormData(this);
-
-        $.ajax({
-            url: "controladores/configuracion.php?op=actualizarConfiguracionMora",
-            type: "POST",
-            data: data,
-            processData: false,
-            contentType: false,
-            beforeSend: function () {
-                $("#btnGuardarMora")
-                    .prop("disabled", true)
-                    .html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
-            },
-            success: function (res) {
-
-                const data = JSON.parse(res);
-
-                if (data.status) {
-                    Swal.fire("Correcto", data.message, "success");
-                    listarConfiguracion();
-                } else {
-                    Swal.fire("Alerta", data.message, "error");
-                }
-
-                $("#btnGuardarMora")
-                    .prop("disabled", false)
-                    .html('<i class="fa fa-save"></i> Guardar');
-
-            },
-            error: function () {
-
-                $("#btnGuardarMora")
-                    .prop("disabled", false)
-                    .html('<i class="fa fa-save"></i> Guardar');
-                Swal.fire("Alerta", "Ocurrió un error.", "error");
-
-            }
-
-        });
-
-    });
-</script>
+<script src="vistas/js/configuracion.js"></script>

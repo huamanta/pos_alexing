@@ -188,7 +188,7 @@ class Helpers
     {
         $sql = "SELECT
                 is_mora_credito,
-                valor
+                valor_mora_credito
             FROM sucursal_configuracion
             WHERE idsucursal = '$idsucursal'
             LIMIT 1";
@@ -204,7 +204,41 @@ class Helpers
 
         return [
             "activo" => (int) $config["is_mora_credito"] === 1,
-            "valor" => (float) $config["valor"]
+            "valor" => (float) $config["valor_mora_credito"]
         ];
+    }
+
+
+    public function verificarDecuentoPagoAnticipado($idsucursal)
+    {
+        $sql = "SELECT
+                is_descuento_anticipado,
+                valor_descuento_anticipado,
+                dias_anticipacion
+            FROM sucursal_configuracion
+            WHERE idsucursal = '$idsucursal'
+            LIMIT 1";
+
+        $config = ejecutarConsultaSimpleFila($sql);
+
+        if (!$config) {
+            return [
+                "activo" => false,
+                "valor" => 0,
+                "dias_anticipacion" => 0
+            ];
+        }
+
+        return [
+            "activo" => (int) $config["is_descuento_anticipado"] === 1,
+            "valor" => (float) $config["valor_descuento_anticipado"],
+            "dias_anticipacion" => $config["dias_anticipacion"]
+        ];
+    }
+
+
+    public function toFloat($valor)
+    {
+        return is_numeric($valor) ? (float) $valor : 0.0;
     }
 }

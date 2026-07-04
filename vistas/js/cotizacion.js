@@ -37,6 +37,10 @@ function init() {
     }, false);
 }
 
+function nostock() {
+    Swal.fire("Alerta", "Sin Stock", "info");
+}
+
 function cargarDatosTemporales() {
     $.getJSON("controladores/cotizaciones.php?op=obtenerDatosTmp", function (data) {
         if (!data || !data.idcliente) {
@@ -67,45 +71,6 @@ function esperarSelect(selector, valor) {
         setTimeout(() => esperarSelect(selector, valor), 100);
     }
 }
-
-// $(function () {
-//     let timeoutGuardar;
-//     $(document).on("change keyup", "#idsucursal, #idcliente, #tipo_comprobante, #formapago, #titulo, #saludo, #nota, #observaciones, #tiempoproduccion, #total_venta",
-//         function () {
-//             clearTimeout(timeoutGuardar);
-//             timeoutGuardar = setTimeout(() => {
-//                 const idsucursal = $("#idsucursal").val();
-//                 const idcliente = $("#idcliente").val();
-//                 const tipo_comprobante = $("#tipo_comprobante").val();
-
-//                 if (!idsucursal || !idcliente || !tipo_comprobante) return;
-
-//                 const datos = {
-//                     idsucursal,
-//                     idcliente,
-//                     tipo_comprobante,
-//                     serie_comprobante: $("#serie_comprobante").val() || "",
-//                     num_comprobante: $("#num_comprobante").val() || "",
-//                     titulo: $("#titulo").val() || "",
-//                     saludo: $("#saludo").val() || "",
-//                     nota: $("#nota").val() || "",
-//                     igv: $("#igv").val() || "0.00",
-//                     formapago: $("#formapago").val() || "",
-//                     observacion: $("#observaciones").val() || "",
-//                     tiempoproduccion: $("#tiempoproduccion").val() || "",
-//                     total_venta: $("#total_venta").val() || "0.00",
-//                 };
-
-//                 $.ajax({
-//                     url: "controladores/cotizaciones.php?op=guardarDatosTmp",
-//                     type: "POST",
-//                     data: datos,
-//                     success: function (response) { console.log("✅ Datos temporales guardados:", response); },
-//                     error: function (xhr, status, error) { console.error("Error al guardar datos temporales:", error); }
-//                 });
-//             }, 500);
-//         });
-// });
 
 function toggleCard() {
     var card = document.getElementById("datosgenerales");
@@ -377,7 +342,7 @@ function formatearFecha(fecha) {
 }
 
 
-function generarTabla(cuotas, frecuencia, fechaBase, deuda, interes, input=true) {
+function generarTabla(cuotas, frecuencia, fechaBase, deuda, interes, input = true) {
     let html = "";
     frecuencia = parseInt(frecuencia, 10);
     let fechaTemp = parseFecha(fechaBase);
@@ -500,6 +465,7 @@ function mostrar(idcotizacion) {
             $("#panel2").attr("hidden", true);
         }
     });
+
     $.post("controladores/cotizaciones.php?op=listarDetalle&id=" + idcotizacion, function (r) {
         $("#detallesm").html(r);
     });
@@ -674,22 +640,6 @@ function listar() {
 }
 
 function handleRowInput(element) {
-    // const row = $(element).closest('tr');
-    // const idtmp = row.find('input[name="idtmp[]"]').val();
-    // const cantidad = row.find('input[name="cantidad[]"]').val();
-    // const precio_venta = row.find('input[name="precio_venta[]"]').val();
-    // alert(idtmp);
-    // if (idtmp && idtmp > 0) {
-    //     // $.post("controladores/cotizaciones.php?op=actualizarTmp", {
-    //     //     idtmp: idtmp,
-    //     //     cantidad: cantidad,
-    //     //     precio_venta: precio_venta
-    //     // }, function (response) {
-    //     //     console.log("Sync:", response);
-    //     // });
-    // }
-
-
     modificarSubtotales();
 }
 
@@ -750,18 +700,6 @@ function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, pr
     cont++;
     detalles++;
     evaluar();
-
-    // $.post("controladores/cotizaciones.php?op=agregarTmp", {
-    //     idproducto: idproducto, cantidad: cantidad, precio_venta: precio_venta, descuento: desc, contenedor: contenedor, cantidad_contenedor: cantidad_contenedor, idp: idpc
-    // }, function (idtmp) {
-    //     if (idtmp && !isNaN(idtmp)) {
-    //         $("#" + filaId).find('input[name="idtmp[]"]').val(idtmp);
-    //         $("#" + filaId).find('button').attr('onclick', `eliminarTmp(${idtmp})`);
-    //     } else {
-    //         toastr.error("Error al agregar item.");
-    //         $("#" + filaId).remove();
-    //     }
-    // });
 }
 
 function desistir(idcotizacion) {
@@ -887,41 +825,23 @@ function modificarSubtotales() {
 function evaluar() {
     if (detalles > 0) {
         $("#btnGuardar").show();
+        $("#detalles_empty").hide();
     } else {
         $("#btnGuardar").hide();
+        $("#detalles_empty").show();
         cont = 0;
     }
 }
 
 function eliminarTmp(idtmp, filaId) {
     if (idtmp === 0) {
-        // This case is for an item not yet saved, we can just remove from DOM
-        // However, the button is disabled until the ajax call returns, so this is a fallback.
+        cont = cont - 1;
+        detalles = detalles - 1;
         $(filaId).closest('tr').remove();
+        evaluar();
         modificarSubtotales();
         return;
     }
-    // Swal.fire({
-    //     title: "¿Eliminar producto?",
-    //     text: "Se quitará del carrito temporal.",
-    //     icon: "warning",
-    //     showCancelButton: true,
-    //     confirmButtonText: "Sí, eliminar",
-    //     cancelButtonText: "Cancelar"
-    // }).then((result) => {
-    //     if (result.isConfirmed) {
-    //         $.post("controladores/cotizaciones.php?op=eliminarTmp", { idtmp: idtmp }, function (respuesta) {
-    //             if (respuesta.includes("Eliminado")) {
-    //                 toastr.warning(respuesta);
-    //             } else {
-    //                 toastr.error(respuesta);
-    //             }
-    //             listarTmp();
-    //         }).fail(function (xhr) {
-    //             toastr.error("Error de conexión: " + xhr.statusText);
-    //         });
-    //     }
-    // });
 }
 
 function mostrarform(flag) {
@@ -952,48 +872,4 @@ function mostrarform(flag) {
         $("#btnagregar, #btnNuevo, #header, #btnGuardar").show();
     }
 }
-
-// function listarTmp() {
-//     $.getJSON("controladores/cotizaciones.php?op=listarTmp", function (data) {
-//         $("#detalles").html("");
-//         detalles = 0;
-//         articuloAdd = "";
-//         cont = 0;
-//         $.each(data.aaData, function (i, item) {
-//             let filaId = "fila" + cont;
-//             let fila = `
-//                 <tr class="filas custom-row" id="${filaId}">
-//                   <td>
-//                     <input type="hidden" name="idtmp[]" value="${item.idtmp}">
-//                     <input type="hidden" name="idproducto[]" value="${item.idproducto}">
-//                     <input type="hidden" name="idp[]" value="${item.idp}">
-//                     <input type="hidden" name="contenedor[]" value="${item.contenedor ?? ''}">
-//                     <input type="hidden" name="cantidad_contenedor[]" value="${item.cantidad_contenedor ?? 0}">
-//                     <input class="form-control" type="text" name="nombreProducto[]" value="${item.nombre}" style="font-weight: bold; width: 300px;"/>
-//                   </td>
-//                   <td style="text-align: center; vertical-align: middle;"><span class="badge bg-green">${item.contenedor ?? ""}</span></td>
-//                   <td class="text-center align-middle">
-//                     <input class="form-control text-center" style="width:80px" type="number" step="0.01" name="precio_venta[]" value="${item.precio_venta}" oninput="handleRowInput(this)">
-//                     <input type="hidden" name="descuento[]" value="${item.descuento ?? 0}">
-//                   </td>
-//                   <td style="text-align: center; vertical-align: middle;">
-//                     <input class="form-control" style="text-align:center; width: 80px; background-color:transparent; color: blue; font-weight: bold;" type="number" min="1" name="cantidad[]" value="${item.cantidad}" oninput="handleRowInput(this)">
-//                   </td>
-//                   <td style="text-align: center; vertical-align: middle; width:100px">
-//                     S/. <span name="subtotal" style="text-align:center;font-size:14px;font-weight:bold"></span>
-//                   </td>
-//                   <td style="text-align: center; vertical-align: middle;">
-//                     <button type="button" class="btn btn-danger btn-sm" onclick="eliminarTmp(${item.idtmp})"><i class="fa fa-trash"></i></button>
-//                   </td>
-//                 </tr>
-//             `;
-//             $("#detalles").append(fila);
-//             detalles++;
-//             cont++;
-//             articuloAdd += item.idp + "-";
-//         });
-//         modificarSubtotales();
-//     });
-// }
-
 init();

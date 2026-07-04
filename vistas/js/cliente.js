@@ -94,7 +94,6 @@ function getAddressFromCoords(lat, lng) {
 function init() {
   limpiar();
   listar();
-  $("#body").addClass("sidebar-collapse sidebar-mini");
   $("#myModal").on("submit", function (e) {
     guardaryeditar(e);
   });

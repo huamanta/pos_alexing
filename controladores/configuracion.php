@@ -12,11 +12,23 @@ switch ($_GET['op']) {
     case 'actualizarConfiguracionMora':
         $idsucursal = $_SESSION['idsucursal'];
         $is_mora_credito = !empty($_POST['is_mora_credito']) ? 1 : 0;
-        $valor_mora = $_POST['valor_mora'];
-        $res = $configuracion->actualizarConfiguracionMora($idsucursal, $is_mora_credito, $valor_mora);
+        $valor_mora_credito = $_POST['valor_mora_credito'];
+        $res = $configuracion->actualizarConfiguracionMora($idsucursal, $is_mora_credito, $valor_mora_credito);
         echo $res;
         break;
     
+    case 'actualizarConfiguracionCreditos':
+        $idsucursal = $_SESSION['idsucursal'];
+        $is_notificacion = !empty($_POST['is_notificacion']) ? 1 : 0;
+        $dias_gracia = $_POST['dias_gracia'];
+        $interes_defecto = $_POST['interes_defecto'];
+        $is_descuento_anticipado = !empty($_POST['is_descuento_anticipado']) ? 1 : 0;
+        $valor_descuento_anticipado = $_POST['valor_descuento_anticipado'];
+        $dias_anticipacion = $_POST['dias_anticipacion'];
+        $res = $configuracion->actualizarConfiguracionCreditos($idsucursal, $is_notificacion, $dias_gracia, $interes_defecto, $is_descuento_anticipado, $valor_descuento_anticipado, $dias_anticipacion);
+        echo $res;
+        break;
+
     default:
         # code...
         break;

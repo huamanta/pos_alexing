@@ -839,7 +839,8 @@ function verEstadoCuenta(idcpc) {
 
 
 async function mostrar(idcpc) {
-
+    $('#panelMora').hide();
+    $('#panelDescuento').hide();
     const idcaja = await verificarCaja(); // Verifica la caja abierta
 
     if (!idcaja) {
@@ -850,37 +851,50 @@ async function mostrar(idcpc) {
     $("#idcaja2").val(idcaja);
     $("#getCodeModal").modal('show');
 
-    // 🔹 1. Actualizar la mora en BD antes de mostrar el formulario
-    $.post("controladores/cuentascobrar.php?op=actualizar_mora_diaria",
+    // 🔹 2. Obtener datos actualizados
+    $.post("controladores/cuentascobrar.php?op=mostrar",
         {
             idcpc: idcpc
         },
-        function () {
+        function (data) {
+            data = JSON.parse(data);
+            var total_venta = parseFloat(data.total_venta);
+            var interes = total_venta * (data.interes / 100);
+            $('#documento').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
+            $("#deutaTotal").text(parseFloat(data.deuda).toFixed(2));
+            $("#valorVenta").text(total_venta.toFixed(2));
+            $("#valorInteres").text(interes.toFixed(2));
+            $("#montoAdeudado").val(parseFloat(data.total_pagar).toFixed(2));
+            $("#idcpc2").val(data.idcpc);
+            if (data.dias_mora) {
+                $('#panelMora').show();
+            }
+            $("#montoMora").text(data.mora_total);
+            $("#montoMoraPagar").text(data.mora);
+            $("#diasRetraso").text(data.dias_mora);
+            if (data.descuento_total > 0) {
+                $('#panelDescuento').show();
+            }
+            $("#porcentajeDescuento").text(data.porcentaje_descuento);
+            $("#montoDescuento").text(data.descuento_total);
+            $("#diasAnticipacion").text(data.dias_descuento);
 
-            // 🔹 2. Obtener datos actualizados
-            $.post("controladores/cuentascobrar.php?op=mostrar",
-                {
-                    idcpc: idcpc
-                },
-                function (data) {
+            $("#idventa2").val(data.idventa);
+            $("#fechavencimiento").text(data.fechavencimiento);
 
-                    var data = JSON.parse(data);
-                    var total_venta = parseFloat(data.total_venta);
-                    var interes = total_venta * (data.interes / 100);
-                    var deuda = parseFloat(data.deuda);
-                    $('#documento2').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
-                    $("#deutaTotal").text(deuda.toFixed(2));
-                    $("#valorVenta").text(total_venta.toFixed(2));
-                    $("#valorInteres").text(interes.toFixed(2));
-                    $("#montoAdeudado").val(deuda.toFixed(2));
-                    $("#idcpc2").val(data.idcpc);
-
-                    $("#idventa2").val(data.idventa);
-                    $("#fechavencimiento").text(data.fechavencimiento);
-
-                });
         });
 }
+
+
+document.getElementById('formapago').addEventListener('change', function () {
+    const montoInput = document.getElementById('montoPagarTarjeta');
+    if (this.value !== 'Efectivo') {
+        montoInput.removeAttribute('readonly');
+    } else {
+        montoInput.setAttribute('readonly', true);
+        montoInput.value = ''; // Opcional: limpiar el campo al volver a "Efectivo"
+    }
+});
 
 $('#formulario-pagar').submit(function (e) {
     e.preventDefault();

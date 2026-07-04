@@ -31,208 +31,41 @@ class CuentasCobrar extends Helpers
 
         try {
 
-            if (empty($fechaPago)) {
-                $fechaPago = date('Y-m-d H:i:s');
-            }
+            $fechaPago = $this->obtenerFechaPago($fechaPago);
 
-            // =========================
-            // VALIDAR CAJA
-            // =========================
-            $sqlCaja = "SELECT estado FROM cajas WHERE idcaja='$idcaja' FOR UPDATE";
-            $caja = ejecutarConsultaSimpleFila($sqlCaja);
+            $this->validarCaja($idcaja);
 
-            if (!$caja || intval($caja['estado']) != 2) {
-                throw new Exception("La caja está cerrada.");
-            }
+            $cuenta = $this->obtenerCuentaPorCobrar($idcpc);
 
-            // =========================
-            // OBTENER CUOTA (BLOQUEADA)
-            // =========================
-            $sql = "SELECT cc.*, v.idsucursal
-                FROM cuentas_por_cobrar cc
-                INNER JOIN venta v ON v.idventa = cc.idventa
-                WHERE cc.idcpc='$idcpc'
-                FOR UPDATE";
+            $cuenta = $this->actualizarMora($cuenta, $idcpc);
 
-            $fila = ejecutarConsultaSimpleFila($sql);
+            $this->registrarDetallePago(
+                $idcpc,
+                $idcaja,
+                $idpersonal,
+                $montopagado,
+                $montoPagarTarjeta,
+                $banco,
+                $op,
+                $fechaPago,
+                $formapago,
+                $observacion
+            );
 
-            if (!$fila) {
-                throw new Exception("No se encontró la cuota.");
-            }
+            $resultado = $this->procesarPago(
+                $cuenta,
+                $montopagado,
+                $montoPagarTarjeta,
+                $fechaPago
+            );
 
-            // =========================
-            // CALCULAR MORA (CORRECTO)
-            // =========================
-            $config = Helpers::verificarMoraCredito($fila["idsucursal"]);
+            $this->guardarCuenta($idcpc, $resultado);
 
-            if (
-                $config["activo"] &&
-                floatval($fila["deuda"]) > 0
-            ) {
-
-                $hoy = new DateTime();
-
-                $ultimaFecha = !empty($fila["fecha_update_mora"])
-                    ? $fila["fecha_update_mora"]
-                    : $fila["fechavencimiento"];
-
-                $fechaInicio = new DateTime($ultimaFecha);
-
-                if ($hoy > $fechaInicio) {
-
-                    $dias = $fechaInicio->diff($hoy)->days;
-
-                    if ($dias > 0) {
-
-                        $tasaDiaria = ($config["valor"] / 100);
-
-                        $moraNueva = round(
-                            floatval($fila["deuda"]) * $tasaDiaria * $dias,
-                            2
-                        );
-
-                        $fila["mora"] = floatval($fila["mora"]) + $moraNueva;
-                        $fila["deuda"] = floatval($fila["deuda"]) + $moraNueva;
-                        $fila["deudatotal"] = floatval($fila["deudatotal"]) + $moraNueva;
-
-                        ejecutarConsulta("
-                        UPDATE cuentas_por_cobrar
-                        SET
-                            mora='{$fila["mora"]}',
-                            deuda='{$fila["deuda"]}',
-                            deudatotal='{$fila["deudatotal"]}',
-                            fecha_update_mora=NOW()
-                        WHERE idcpc='$idcpc'
-                    ");
-                    }
-                }
-            }
-
-            // =========================
-            // REGISTRAR PAGO
-            // =========================
-            $sqlDetalle = "INSERT INTO detalle_cuentas_por_cobrar(
-            idcpc,
-            idcaja,
-            idpersonal,
-            montopagado,
-            montotarjeta,
-            banco,
-            op,
-            fechapago,
-            formapago,
-            observacion
-        ) VALUES (
-            '$idcpc',
-            '$idcaja',
-            '$idpersonal',
-            '$montopagado',
-            '$montoPagarTarjeta',
-            '$banco',
-            '$op',
-            '$fechaPago',
-            '$formapago',
-            '$observacion'
-        )";
-
-            if (!ejecutarConsulta($sqlDetalle)) {
-                throw new Exception("No se pudo registrar el pago.");
-            }
-
-            // =========================
-            // NORMALIZAR MONTOS
-            // =========================
-            $montoPago = round(floatval($montopagado) + floatval($montoPagarTarjeta), 2);
-
-            $moraPendiente = round(floatval($fila["mora"]), 2);
-            $moraPagada = round(floatval($fila["mora_pagada"]), 2);
-
-            $abonado = round(floatval($fila["abonototal"]), 2);
-
-            $deuda = round(floatval($fila["deuda"]), 2);
-            $deudatotal = round(floatval($fila["deudatotal"]), 2);
-
-            // =========================
-            // PAGAR MORA PRIMERO
-            // =========================
-            if ($montoPago > 0 && $moraPendiente > 0) {
-
-                if ($montoPago >= $moraPendiente) {
-
-                    $montoPago -= $moraPendiente;
-                    $moraPagada += $moraPendiente;
-                    $moraPendiente = 0;
-
-                } else {
-
-                    $moraPagada += $montoPago;
-                    $moraPendiente -= $montoPago;
-                    $montoPago = 0;
-                }
-
-                ejecutarConsulta("
-                UPDATE cuentas_por_cobrar
-                SET
-                    mora='$moraPendiente',
-                    mora_pagada='$moraPagada'
-                WHERE idcpc='$idcpc'
-            ");
-            }
-
-            // =========================
-            // PAGAR CAPITAL
-            // =========================
-            $montoPago = min($montoPago, $deuda);
-
-            $nuevaDeuda = round($deuda - $montoPago, 2);
-            $nuevaDeudaTotal = round($deudatotal - $montoPago, 2);
-            $nuevoAbono = round($abonado + $montoPago, 2);
-
-            ejecutarConsulta("
-            UPDATE cuentas_por_cobrar
-            SET
-                deuda='$nuevaDeuda',
-                deudatotal='$nuevaDeudaTotal',
-                abonototal='$nuevoAbono'
-            WHERE idcpc='$idcpc'
-        ");
-
-            // =========================
-            // ESTADO FINAL
-            // =========================
-            if ($nuevaDeudaTotal <= 0) {
-
-                ejecutarConsulta("
-                UPDATE cuentas_por_cobrar
-                SET estado_pago=0
-                WHERE idcpc='$idcpc'
-            ");
-
-                $pendientes = ejecutarConsultaSimpleFila("
-                SELECT COUNT(*) total
-                FROM cuentas_por_cobrar
-                WHERE idventa='{$fila["idventa"]}'
-                AND estado_pago=1
-            ");
-
-                if (intval($pendientes["total"]) == 0) {
-
-                    ejecutarConsulta("
-                    UPDATE documentacion
-                    SET estado=2
-                    WHERE idventa='{$fila["idventa"]}'
-                    AND tipo='1'
-                ");
-                }
-
-            } else {
-
-                ejecutarConsulta("
-                UPDATE cuentas_por_cobrar
-                SET estado_pago=1
-                WHERE idcpc='$idcpc'
-            ");
-            }
+            $this->actualizarEstadoVenta(
+                $cuenta["idventa"],
+                $idcpc,
+                $resultado["deuda"]
+            );
 
             ejecutarConsulta("COMMIT");
 
@@ -252,6 +85,315 @@ class CuentasCobrar extends Helpers
         }
     }
 
+    private function obtenerFechaPago($fechaPago)
+    {
+        return empty($fechaPago)
+            ? date('Y-m-d H:i:s')
+            : $fechaPago;
+    }
+
+    private function validarCaja($idcaja)
+    {
+        $sql = "
+                SELECT estado
+                FROM cajas
+                WHERE idcaja='$idcaja'
+                FOR UPDATE
+            ";
+
+        $caja = ejecutarConsultaSimpleFila($sql);
+
+        if (!$caja || intval($caja["estado"]) != 2) {
+            throw new Exception("La caja está cerrada.");
+        }
+    }
+
+    private function obtenerCuentaPorCobrar($idcpc)
+    {
+        $sql = "
+        SELECT
+            cc.*,
+            v.idsucursal
+        FROM cuentas_por_cobrar cc
+        INNER JOIN venta v
+            ON v.idventa=cc.idventa
+        WHERE cc.idcpc='$idcpc'
+        FOR UPDATE
+    ";
+
+        $fila = ejecutarConsultaSimpleFila($sql);
+
+        if (!$fila) {
+            throw new Exception("No se encontró la cuota.");
+        }
+
+        return $fila;
+    }
+
+    private function registrarDetallePago(
+        $idcpc,
+        $idcaja,
+        $idpersonal,
+        $montopagado,
+        $montoTarjeta,
+        $banco,
+        $op,
+        $fechaPago,
+        $formapago,
+        $observacion
+    ) {
+
+        $sql = "
+    INSERT INTO detalle_cuentas_por_cobrar(
+        idcpc,
+        idcaja,
+        idpersonal,
+        montopagado,
+        montotarjeta,
+        banco,
+        op,
+        fechapago,
+        formapago,
+        observacion
+    ) VALUES(
+        '$idcpc',
+        '$idcaja',
+        '$idpersonal',
+        '$montopagado',
+        '$montoTarjeta',
+        '$banco',
+        '$op',
+        '$fechaPago',
+        '$formapago',
+        '$observacion'
+    )";
+
+        if (!ejecutarConsulta($sql)) {
+            throw new Exception("No se pudo registrar el pago.");
+        }
+    }
+
+    private function actualizarMora($fila, $idcpc)
+    {
+        $config = Helpers::verificarMoraCredito($fila["idsucursal"]);
+
+        if (
+            !$config["activo"] ||
+            floatval($fila["deuda"]) <= 0
+        ) {
+            return $fila;
+        }
+
+        $hoy = new DateTime();
+
+        $ultimaFecha = !empty($fila["fecha_update_mora"])
+            ? $fila["fecha_update_mora"]
+            : $fila["fechavencimiento"];
+
+        $fechaInicio = new DateTime($ultimaFecha);
+
+        if ($hoy <= $fechaInicio) {
+            return $fila;
+        }
+
+        $dias = $fechaInicio->diff($hoy)->days;
+
+        if ($dias <= 0) {
+            return $fila;
+        }
+
+        $moraNueva = round(
+            floatval($fila["deuda"]) *
+            ($config["valor"] / 100) *
+            $dias,
+            2
+        );
+
+        $fila["mora"] += $moraNueva;
+
+        ejecutarConsulta("
+        UPDATE cuentas_por_cobrar
+        SET
+            mora='{$fila["mora"]}',
+            deudatotal='{$fila["deudatotal"]}',
+            fecha_update_mora=NOW()
+        WHERE idcpc='$idcpc'
+    ");
+
+        return $fila;
+    }
+
+    private function procesarPago($fila, $montoEfectivo, $montoTarjeta, $fechaPago)
+    {
+        $resultado = [
+
+            "deuda" => round(floatval($fila["deuda"]), 2),
+
+            "mora" => round(floatval($fila["mora"]), 2),
+
+            "interes" => round(floatval($fila["interes"]), 2),
+
+            "deudatotal" => round(floatval($fila["deudatotal"]), 2),
+
+            "abonototal" => round(floatval($fila["abonototal"]), 2),
+
+            "mora_pagada" => round(floatval($fila["mora_pagada"]), 2),
+
+            "descuento" => 0
+        ];
+
+        $monto = round(
+            Helpers::toFloat($montoEfectivo) +
+            Helpers::toFloat($montoTarjeta),
+            2
+        );
+
+        $monto = $this->pagarMora($resultado, $monto);
+
+        $monto = $this->aplicarDescuento(
+            $fila,
+            $resultado,
+            $monto,
+            $fechaPago
+        );
+
+        $this->pagarCapital($resultado, $monto);
+
+
+        return $resultado;
+    }
+
+    private function pagarMora(&$r, $monto)
+    {
+
+        if ($monto <= 0)
+            return 0;
+
+        if ($r["mora"] <= 0)
+            return $monto;
+
+        $pagado = min($monto, $r["mora"]);
+
+        $r["mora"] -= $pagado;
+
+        $r["mora_pagada"] += $pagado;
+
+        return $monto - $pagado;
+    }
+
+
+    private function aplicarDescuento($fila, &$r, $montoPago, $fechaPago)
+    {
+        $config = Helpers::verificarDecuentoPagoAnticipado(
+            $fila["idsucursal"]
+        );
+
+        if (
+            !$config["activo"] ||
+            $r["mora"] > 0 ||
+            $r["deuda"] <= 0
+        ) {
+            return $montoPago;
+        }
+
+        $fechaPagoObj = new DateTime($fechaPago);
+        $fechaVencimiento = new DateTime($fila["fechavencimiento"]);
+
+        if ($fechaPagoObj > $fechaVencimiento) {
+            return $montoPago;
+        }
+
+        $dias = $fechaPagoObj->diff($fechaVencimiento)->days;
+
+        if ($dias < $config["dias_anticipacion"]) {
+            return $montoPago;
+        }
+
+        $descuento = round(
+            $r["deuda"] * ($config["valor"] / 100),
+            2
+        );
+
+        // Sólo aplica si con el pago + descuento cancela el capital.
+        if (($montoPago + $descuento) < $r["deuda"]) {
+            return $montoPago;
+        }
+
+        $r["descuento"] = $descuento;
+        $r["deuda"] -= $descuento;
+
+        return $montoPago;
+    }
+
+
+    private function pagarCapital(&$r, $montoPago)
+    {
+        if ($montoPago <= 0 || $r["deuda"] <= 0) {
+            return;
+        }
+
+        $pagado = min($montoPago, $r["deuda"]);
+
+        $r["deuda"] -= $pagado;
+
+        $r["abonototal"] += $pagado;
+    }
+
+    private function guardarCuenta($idcpc, $r)
+    {
+
+        ejecutarConsulta("
+        UPDATE cuentas_por_cobrar
+        SET
+            deuda='{$r["deuda"]}',
+            mora='{$r["mora"]}',
+            mora_pagada='{$r["mora_pagada"]}',
+            abonototal='{$r["abonototal"]}',
+            descuento='{$r["descuento"]}',
+            deudatotal='{$r["deudatotal"]}'
+        WHERE idcpc='$idcpc'
+    ");
+    }
+
+    private function actualizarEstadoVenta(
+        $idventa,
+        $idcpc,
+        $deudaTotal
+    ) {
+        if ($deudaTotal <= 0) {
+
+            ejecutarConsulta("
+            UPDATE cuentas_por_cobrar
+            SET estado_pago=0
+            WHERE idcpc='$idcpc'
+        ");
+
+            $pendientes = ejecutarConsultaSimpleFila("
+            SELECT COUNT(*) total
+            FROM cuentas_por_cobrar
+            WHERE idventa='$idventa'
+            AND estado_pago=1
+        ");
+
+            if (intval($pendientes["total"]) == 0) {
+
+                ejecutarConsulta("
+                UPDATE documentacion
+                SET estado=2
+                WHERE idventa='$idventa'
+                AND tipo='1'
+            ");
+            }
+
+        } else {
+
+            ejecutarConsulta("
+            UPDATE cuentas_por_cobrar
+            SET estado_pago=1
+            WHERE idcpc='$idcpc'
+        ");
+        }
+    }
 
     public function deudacliente($idventa)
     {
@@ -394,26 +536,32 @@ class CuentasCobrar extends Helpers
 
         $credito = ejecutarConsultaSimpleFila($sql);
 
-        $config = Helpers::verificarMoraCredito($credito['idsucursal']);
+        $moraCredito = Helpers::verificarMoraCredito($credito['idsucursal']);
 
         $diasMora = 0;
         $moraTotal = 0;
         $moraPendiente = 0;
+        $hoy = new DateTime();
+        $vence = new DateTime($credito["fecha_vencimiento_bd"]);
+        if ($moraCredito["activo"] && $vence < $hoy) {
+            $diasMora = $vence->diff($hoy)->days;
 
-        if ($config["activo"]) {
+            // mora total generada
+            $moraTotal = ($credito["deuda"] * ($moraCredito["valor"] / 100)) * $diasMora;
 
-            $hoy = new DateTime();
-            $vence = new DateTime($credito["fecha_vencimiento_bd"]);
+            // mora pendiente real (lo que falta pagar)
+            $moraPendiente = max(0, $moraTotal - floatval($credito["mora_pagada"]));
+        }
 
-            if ($vence < $hoy) {
-
-                $diasMora = $vence->diff($hoy)->days;
-
-                // mora total generada
-                $moraTotal = ($credito["deuda"] * ($config["valor"] / 100)) * $diasMora;
-
-                // mora pendiente real (lo que falta pagar)
-                $moraPendiente = max(0, $moraTotal - floatval($credito["mora_pagada"]));
+        $descuentoPago = Helpers::verificarDecuentoPagoAnticipado($credito['idsucursal']);
+        $porcentajeDescuento = 0;
+        $diasDescuento = 0;
+        $descuentoTotal = 0;
+        if ($descuentoPago["activo"] && $vence > $hoy) {
+            $diasDescuento = $hoy->diff($vence)->days;
+            if ($diasDescuento >= $descuentoPago["dias_anticipacion"]) {
+                $porcentajeDescuento = $descuentoPago["valor"];
+                $descuentoTotal = $credito["deuda"] * ($porcentajeDescuento / 100);
             }
         }
 
@@ -423,10 +571,13 @@ class CuentasCobrar extends Helpers
         $credito["dias_mora"] = $diasMora;
         $credito["mora"] = round($moraPendiente, 2);
         $credito["mora_total"] = round($moraTotal, 2);
+        $credito["porcentaje_descuento"] = $porcentajeDescuento;
+        $credito["dias_descuento"] = $diasDescuento;
+        $credito["descuento_total"] = round($descuentoTotal, 2);
 
         // total correcto a pagar
         $credito["total_pagar"] = round(
-            floatval($credito["deuda"]) + $moraPendiente,
+            floatval($credito["deuda"]) + $moraPendiente - $descuentoTotal,
             2
         );
 
@@ -938,88 +1089,128 @@ class CuentasCobrar extends Helpers
 
 
     public function estadoCuentaDocumento($idcpc)
-    {
-        $sql = "
-        SELECT 
+{
+    $sql = "
+        SELECT
             cc.fecharegistro AS fecha,
             CONCAT(v.tipo_comprobante,'-',v.serie_comprobante,'-',v.num_comprobante) AS documento,
 
-            (cc.deuda + cc.abonototal) AS debe,
+            cc.deuda_base,
+            IFNULL(cc.interes,0) AS interes,
+            0 AS mora,
+            IFNULL(cc.descuento,0) AS descuento,
+            0 AS pago,
 
-            0 AS haber,
-            'VENTA' AS tipo
+            'VENTA' AS tipo,
+            1 AS orden
 
         FROM cuentas_por_cobrar cc
-        INNER JOIN venta v ON cc.idventa = v.idventa
-        WHERE cc.idcpc = '$idcpc'
+        INNER JOIN venta v
+            ON v.idventa = cc.idventa
+        WHERE cc.idcpc='$idcpc'
+
+        UNION ALL
+
+        SELECT
+            cc.fecha_update_mora AS fecha,
+            'MORA' AS documento,
+
+            0 AS deuda_base,
+            0 AS interes,
+            IFNULL(cc.mora_pagada,0) AS mora,
+            0 AS descuento,
+            0 AS pago,
+
+            'MORA' AS tipo,
+            2 AS orden
+
+        FROM cuentas_por_cobrar cc
+        WHERE cc.idcpc='$idcpc'
+        AND cc.mora_pagada>0
 
         UNION ALL
 
         SELECT
             dcc.fechapago AS fecha,
             'ABONO' AS documento,
-            0 AS debe,
-            (dcc.montopagado + dcc.montotarjeta) AS haber,
-            'PAGO' AS tipo
+
+            0 AS deuda_base,
+            0 AS interes,
+            0 AS mora,
+            0 AS descuento,
+            (dcc.montopagado+dcc.montotarjeta) AS pago,
+
+            'PAGO' AS tipo,
+            3 AS orden
 
         FROM detalle_cuentas_por_cobrar dcc
-        WHERE dcc.idcpc = '$idcpc'
+        WHERE dcc.idcpc='$idcpc'
 
-        ORDER BY fecha ASC
+        ORDER BY fecha, orden
     ";
 
-        $rspta = ejecutarConsulta($sql);
+    $rspta = ejecutarConsulta($sql);
 
-        $saldo = 0;
-        $html = '';
+    $saldo = 0;
 
-        $html .= '
+    $html = '
     <div class="table-responsive">
-    <table class="table table-bordered table-sm">
-        <thead class="thead-light">
-            <tr>
-                <th>Fecha</th>
-                <th>Documento</th>
-                <th>Debe</th>
-                <th>Haber</th>
-                <th>Saldo</th>
-            </tr>
-        </thead>
-        <tbody>
+        <table class="table table-bordered table-sm">
+            <thead class="thead-light">
+                <tr>
+                    <th>Fecha</th>
+                    <th>Documento</th>
+                    <th>Deuda</th>
+                    <th>Interés</th>
+                    <th>Mora</th>
+                    <th>Descuento</th>
+                    <th>Pago</th>
+                    <th>Saldo</th>
+                </tr>
+            </thead>
+            <tbody>
     ';
 
-        while ($r = $rspta->fetch_object()) {
+    while ($r = $rspta->fetch_object()) {
 
-            $saldo += ($r->debe - $r->haber);
+        $movimiento =
+            $r->deuda_base +
+            $r->interes +
+            $r->mora -
+            $r->descuento -
+            $r->pago;
 
-            $html .= '
+        $saldo += $movimiento;
+
+        $html .= '
             <tr>
-                <td>' . $r->fecha . '</td>
-                <td>' . $r->documento . '</td>
+                <td>'.$r->fecha.'</td>
+                <td>'.$r->documento.'</td>
+
+                <td class="text-right">'.($r->deuda_base > 0 ? 'S/ '.number_format($r->deuda_base,2) : '-').'</td>
+
+                <td class="text-right">'.($r->interes > 0 ? 'S/ '.number_format($r->interes,2) : '-').'</td>
+
+                <td class="text-right">'.($r->mora > 0 ? 'S/ '.number_format($r->mora,2) : '-').'</td>
+
+                <td class="text-right">'.($r->descuento > 0 ? 'S/ '.number_format($r->descuento,2) : '-').'</td>
+
+                <td class="text-right">'.($r->pago > 0 ? 'S/ '.number_format($r->pago,2) : '-').'</td>
 
                 <td class="text-right">
-                    S/ ' . number_format($r->debe, 2) . '
-                </td>
-
-                <td class="text-right">
-                    S/ ' . number_format($r->haber, 2) . '
-                </td>
-
-                <td class="text-right">
-                    <strong>S/ ' . number_format($saldo * -1, 2) . '</strong>
+                    <strong>S/ '.number_format($saldo,2).'</strong>
                 </td>
             </tr>
         ';
-        }
-
-        $html .= '
-        </tbody>
-    </table>
-    </div>
-    ';
-
-        return $html;
     }
+
+    $html .= '
+            </tbody>
+        </table>
+    </div>';
+
+    return $html;
+}
 
     public function estadoCuentaCliente($idcliente, $fecha_inicio, $fecha_fin)
     {
@@ -1395,6 +1586,8 @@ class CuentasCobrar extends Helpers
                     cc.deuda,
                     cc.estado_pago,
                     cc.mora,
+                    cc.mora_pagada,
+                    cc.descuento,
                     cc.idventa,
                     v.idcliente
                 FROM cuentas_por_cobrar cc
@@ -1418,7 +1611,7 @@ class CuentasCobrar extends Helpers
 
         while ($row = $result->fetch_object()) {
 
-            $saldo = floatval($row->deudatotal);
+            $saldo = floatval($row->deuda);
             $row->saldo_calculado = $saldo;
             $rows[] = $row;
 
@@ -1542,7 +1735,7 @@ class CuentasCobrar extends Helpers
                 "DT_RowClass" => $rowClass,
                 "0" => $row->fecha_registro,
                 "1" => $row->fecha_vencimiento,
-                "2" => number_format($row->abonototal, 2),
+                "2" => number_format($row->abonototal + $row->mora_pagada + $row->descuento, 2),
                 "3" => number_format($row->deuda, 2),
                 "4" => number_format($saldo, 2),
                 "5" => $estado,

@@ -55,6 +55,14 @@ date_default_timezone_set('America/Lima');
   }
 
   /* --- Caja de información --- */
+  .success-box-custom {
+    background: #d3ffdd;
+    border-left: 5px solid #28a745;
+    padding: 14px 18px;
+    border-radius: 6px;
+    box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
+  }
+
   .info-box-custom {
     background: #f0f8ff;
     border-left: 5px solid #007bff;
@@ -702,8 +710,22 @@ date_default_timezone_set('America/Lima');
 
           <div class="warning-box-custom" id="panelMora">
             <strong><i class="fa fa-exclamation-triangle"></i> Tiene mora </strong><br>
-            La cuota ha generado <b>S/<span id="montoMora"></span></b> de mora por <b><span id="diasRetraso"></span></b> 
+            La cuota ha generado <b>S/<span id="montoMora"></span></b> de mora por <b><span id="diasRetraso"></span></b>
             dias de retraso en el pago programado de los cuales falta pagar <b>S/<span id="montoMoraPagar"></span></b>.
+          </div>
+
+          <div class="success-box-custom" id="panelDescuento">
+            <strong>
+              <i class="fas fa-hand-holding-usd"></i>
+              ¡Descuento por pago anticipado!
+            </strong>
+            <br>
+
+            Has obtenido un descuento del <strong> <span id="porcentajeDescuento"></span>%</strong>
+            con valor de <strong>S/ <span id="montoDescuento"></span></strong>
+            por realizar el pago
+            <strong><span id="diasAnticipacion"></span> días antes</strong>
+            de la fecha de vencimiento.
           </div>
 
           <div class="section-title"><i class="fa fa-credit-card"></i> Datos del Pago</div>
@@ -762,6 +784,7 @@ date_default_timezone_set('America/Lima');
               <div class="form-group">
                 <label>Banco:</label>
                 <select id="banco" name="banco" class="form-control selectpicker" data-live-search="true">
+                  <option value="">Seleccione...</option>
                   <option value="BCP">BCP</option>
                   <option value="INTERBANK">INTERBANK</option>
                   <option value="BBVA">BBVA</option>

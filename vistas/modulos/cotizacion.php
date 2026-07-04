@@ -65,15 +65,28 @@ date_default_timezone_set('America/Lima');
         }
     }
 
-    /* Secciones colapsables con transición suave */
     .collapse-section {
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
+        position: absolute;
+        top: 90%;
+        left: 0;
+        width: 100%;
+        z-index: 1050;
+        border: rgba(0, 0, 0, .15) solid 1px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+
+        transition: all .25s ease;
     }
 
     .collapse-section.show {
-        max-height: 1200px;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
     }
 
     /* Responsive */
@@ -214,7 +227,6 @@ date_default_timezone_set('America/Lima');
 
     /* Caja total destacada */
     .total-box {
-        background-color: #28a745;
         padding: 10px 20px;
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
@@ -224,13 +236,27 @@ date_default_timezone_set('America/Lima');
     }
 
     .total-box span {
-        color: #fff;
         font-size: 28px;
         font-weight: bold;
     }
 </style>
 
 <div class="content-wrapper">
+    <section class="content-header">
+        <div class="container-fluid">
+            <div class="row mb-2">
+                <div class="col-sm-6">
+                    <h1>Cotizaciones</h1>
+                </div>
+                <div class="col-sm-6">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="#">Home</a></li>
+                        <li class="breadcrumb-item active">Cuentas por Cobrar</li>
+                    </ol>
+                </div>
+            </div>
+        </div><!-- /.container-fluid -->
+    </section>
     <!-- Main content -->
     <section class="content">
         <div class="container-fluid">
@@ -240,15 +266,9 @@ date_default_timezone_set('America/Lima');
                         <div class="card-header" id="header">
                             <h3 class="card-title">Gestión de Cotizaciones</h3>
                             <div class="row">
-                                <div class="col-md-1">
-                                    <button type="button" class="btn btn-outline-primary btn-block btn-xs" id="btnNuevo"
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-outline-primary btn-xs" id="btnNuevo"
                                         onclick="mostrarform(true)"><i class="fa fa-plus"></i> Nuevo</button>
-                                </div>
-                                <div class="col-md-3 ml-auto">
-                                    <!-- 🔎 Buscador dinámico para la tabla principal -->
-                                    <input type="text" class="form-control form-control-sm" id="busqueda"
-                                        onkeyup="filtrarTabla('busqueda','tbllistado')"
-                                        placeholder="🔍 Buscar cotización...">
                                 </div>
                             </div>
                         </div>
@@ -314,448 +334,507 @@ date_default_timezone_set('America/Lima');
                             </table>
                         </div>
                         <!-- /.card-body listado -->
+                    </div>
+                    <!-- /.card -->
+                    <!-- ============== FORMULARIO ============== -->
+                    <div id="formularioregistros">
+                        <form name="formulario" id="formulario" method="POST">
+                            <br>
+                            <div class="row mb-3">
+                                <div class="col-lg-6">
+                                    <div class="panel-heading" style="border-bottom: 1px dashed hsla(0,0%,80%,.329)">
+                                        <div class="card card-outline card-danger">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
 
-                        <!-- ============== FORMULARIO ============== -->
-                        <div class="card-body" id="formularioregistros">
-                            <form name="formulario" id="formulario" method="POST">
-                                <br>
-                                <div class="row mb-3">
-                                    <div class="col-lg-6" style="margin-top: -20px;">
-                                        <div class="panel-heading"
-                                            style="border-bottom: 1px dashed hsla(0,0%,80%,.329)">
-                                            <div class="card card-outline card-danger" style="margin-top: -20px;">
-                                                <div class="card shadow">
-                                                    <div class="card-header">
-                                                        <span style="font-weight: bold;">Nueva Cotización</span>
-                                                        <span id="fechaActual"
-                                                            style="font-size: 10.5px; text-align: right; margin-left: 10px;"></span>
-                                                    </div>
-                                                    <div class="card-header">
-                                                        <button type="button"
-                                                            class="btn btn-block bg-gradient-primary btn-sm shadow"
-                                                            onclick="toggleCollapse('datosgenerales')"
-                                                            title="Completa los datos de tu pedido">Datos</button>
-                                                    </div>
-                                                    <!-- Sección colapsable con animación (ANTES estaba hidden) -->
-                                                    <div class="card-body p-2 collapse-section" id="datosgenerales">
+                                                <div>
+                                                    <h5 class="mb-0">
+                                                        <i class="fas fa-file-invoice"></i>
+                                                        Nueva Cotización
+                                                    </h5>
 
-                                                        <div class="form-group mb-2" hidden>
-                                                            <label class="col-form-label" for="selCategoriaReg">
-                                                                <i class="fas fa-users fs-6"></i>
-                                                                <span class="small">Personal</span>
-                                                            </label>
-                                                            <select id="idpersonal" name="idpersonal"
-                                                                class="form-control select2" required></select>
-                                                        </div>
+                                                    <small>
+                                                        Complete la información del cliente y los productos
+                                                    </small>
+                                                </div>
 
-                                                        <div class="form-group mb-2">
-                                                            <div class="row">
-                                                                <div class="col-md-4">
-                                                                    <label class="col-form-label" for="selCategoriaReg">
-                                                                        <i class="fas fa-map-marked-alt"></i>
-                                                                        <span class="small">Almacén</span>
-                                                                    </label>
-                                                                    <select id="idsucursal" name="idsucursal"
-                                                                        class="form-control"></select>
+                                                <div class="text-end">
+                                                    <span id="fechaActual"></span>
+                                                </div>
+
+                                            </div>
+                                            <br>
+                                            <div class="row align-items-center mb-3">
+
+                                                <div class="col-md-4">
+                                                    <button type="button"
+                                                        class="btn btn-primary btn-lg w-100 shadow-sm d-flex justify-content-between align-items-center"
+                                                        onclick="toggleCollapse('datosgenerales', this)">
+
+                                                        <span>
+                                                            <i class="fas fa-user-edit mr-2"></i>
+                                                            Datos Generales
+                                                        </span>
+
+                                                        <i class="fas fa-chevron-down" id="iconDatos"></i>
+                                                    </button>
+                                                </div>
+
+                                                <div class="col-md-8">
+                                                    <div class="card border-0 shadow-sm">
+                                                        <div class="card-body py-2">
+
+                                                            <div
+                                                                class="d-flex justify-content-between align-items-center">
+
+                                                                <div>
+                                                                    <small class="text-muted d-block">
+                                                                        TOTAL DE LA COTIZACIÓN
+                                                                    </small>
+
+                                                                    <h2 class="text-success font-weight-bold mb-0">
+                                                                        S/. <span id="total">0.00</span>
+                                                                    </h2>
+
+                                                                    <input type="hidden" name="total_venta"
+                                                                        id="total_venta">
+
                                                                 </div>
-                                                                <div class="col-md-8">
-                                                                    <label class="col-form-label" for="selCategoriaReg">
-                                                                        <i class="fas fa-users fs-6"></i>
-                                                                        <span class="small mr-2">Cliente</span><a
-                                                                            class="input-group-addon"
-                                                                            style="cursor: pointer;" data-toggle="modal"
-                                                                            data-target="#ModalClientes"><i
-                                                                                class="fa fa-plus fa-xs"></i> Nuevo
-                                                                            Cliente</a>
-                                                                    </label>
-                                                                    <select id="idcliente" name="idcliente"
-                                                                        class="form-control" required></select>
+
+                                                                <div class="text-success">
+                                                                    <i class="fas fa-coins fa-3x"></i>
                                                                 </div>
+
                                                             </div>
-                                                        </div>
 
-                                                        <!-- Forma de pago y validez -->
-                                                        <div>
-                                                            <div class="row">
-                                                                <div class="col-md-6">
-                                                                    <div class="form-group mb-2">
-                                                                        <label class="col-form-label"
-                                                                            for="selCategoriaReg">
-                                                                            <i class="fas fa-money-bill-alt fs-6"></i>
-                                                                            <span class="small">¿Cotizacion a
-                                                                                credito?</span>
-                                                                        </label>
-                                                                        <select name="formapago" id="formapago"
-                                                                            class="form-control" data-live-search="true"
-                                                                            title="Seleccione Forma de Pago" required>
-                                                                            <option value="No">No</option>
-                                                                            <option value="Si">Sí</option>
-                                                                        </select>
-                                                                        <span id="validate_categoria"
-                                                                            class="text-danger small fst-italic"
-                                                                            style="display:none">Debe Ingresar tipo de
-                                                                            pago</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-6">
-                                                                    <div class="form-group mb-2">
-                                                                        <label class="col-form-label">
-                                                                            <i class="fas fa-money-bill-alt fs-6"></i>
-                                                                            <span class="small">Validez de la
-                                                                                Cotización</span>
-                                                                        </label>
-                                                                        <select name="nota" id="nota"
-                                                                            class="form-control" data-live-search="true"
-                                                                            title="Seleccione Tiempo de Producción"
-                                                                            required>
-                                                                            <option value="3 Días calendario">3 Días
-                                                                                calendario</option>
-                                                                            <option value="7 Días calendario">7 Días
-                                                                                calendario</option>
-                                                                            <option value="15 Días calendario">15 Días
-                                                                                calendario</option>
-                                                                            <option value="30 Días calendario">30 Días
-                                                                                calendario</option>
-                                                                        </select>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="form-group mt-2">
-                                                            <div class="row">
-                                                                <div class="col-md-4">
-                                                                    <div class="form-group mb-2">
-                                                                        <label class="col-form-label"
-                                                                            for="selCategoriaReg">
-                                                                            <i class="fas fa-file-alt fs-6"></i>
-                                                                            <span class="small">Tipo Documento </span>
-                                                                        </label>
-                                                                        <select name="tipo_comprobante"
-                                                                            id="tipo_comprobante" class="form-control"
-                                                                            required>
-                                                                            <option value="Boleta">Boleta</option>
-                                                                            <option value="Factura">Factura</option>
-                                                                            <option value="Ticket">Ticket</option>
-                                                                        </select>
-                                                                        <select name="tipo_c" id="tipo_c"
-                                                                            class="form-control" hidden>
-                                                                            <option value="Compra">Compra</option>
-                                                                        </select>
-                                                                        <span id="validate_categoria"
-                                                                            class="text-danger small fst-italic"
-                                                                            style="display:none">Debe Seleccione
-                                                                            documento</span>
-                                                                    </div>
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <label for="iptNroSerie">Serie</label>
-                                                                    <input
-                                                                        style="border-color: #FFC7BB; text-align:center"
-                                                                        type="text" class="form-control form-control-sm"
-                                                                        name="serie_comprobante" id="serie_comprobante"
-                                                                        maxlength="7" placeholder="Serie" readonly>
-                                                                </div>
-                                                                <div class="col-md-4">
-                                                                    <label for="iptNroVenta">N° Orden</label>
-                                                                    <input
-                                                                        style="border-color: #99C0E7; text-align:center"
-                                                                        type="text" class="form-control form-control-sm"
-                                                                        name="num_comprobante" id="num_comprobante"
-                                                                        maxlength="10" placeholder="Número" readonly>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="form-group mb-2">
-                                                            <div class="row">
-                                                                <div class="col-md-12">
-                                                                    <label class="col-form-label" for="selCategoriaReg">
-                                                                        <i class="fas fa-file-alt fs-6"></i>
-                                                                        <span class="small">Observaciones </span>
-                                                                    </label>
-                                                                    <textarea class="form-control" name="observaciones"
-                                                                        id="observaciones"></textarea>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="form-group">
-                                                            <span class="small">Fecha</span>
-                                                            <input style="text-align:center"
-                                                                class="form-control pull-right" type="date" name="fecha"
-                                                                id="fecha" required>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <hr>
+                                            </div>
+                                            <!-- Sección colapsable con animación (ANTES estaba hidden) -->
+                                            <div class="position-relative">
+                                                <div class="p-2 collapse-section" id="datosgenerales">
 
-                                                <div class="col-md-12" style="margin-top: -17px;">
-                                                    <input type="hidden" name="idcotizacion" id="idcotizacion">
-                                                    <table id="detalles"
-                                                        class="table table-striped table-responsive-sm">
-                                                        <thead class="bg-info">
+                                                    <div class="form-group mb-2" hidden>
+                                                        <label class="col-form-label" for="selCategoriaReg">
+                                                            <i class="fas fa-users fs-6"></i>
+                                                            <span class="small">Personal</span>
+                                                        </label>
+                                                        <select id="idpersonal" name="idpersonal"
+                                                            class="form-control select2" required></select>
+                                                    </div>
+
+                                                    <div class="form-group mb-2">
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <label class="col-form-label" for="selCategoriaReg">
+                                                                    <i class="fas fa-map-marked-alt"></i>
+                                                                    <span class="small">Almacén</span>
+                                                                </label>
+                                                                <select id="idsucursal" name="idsucursal"
+                                                                    class="form-control"></select>
+                                                            </div>
+                                                            <div class="col-md-8">
+                                                                <label class="col-form-label" for="selCategoriaReg">
+                                                                    <i class="fas fa-users fs-6"></i>
+                                                                    <span class="small mr-2">Cliente</span><a
+                                                                        class="input-group-addon"
+                                                                        style="cursor: pointer;" data-toggle="modal"
+                                                                        data-target="#ModalClientes"><i
+                                                                            class="fa fa-plus fa-xs"></i> Nuevo
+                                                                        Cliente</a>
+                                                                </label>
+                                                                <select id="idcliente" name="idcliente"
+                                                                    class="form-control" required></select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <!-- Forma de pago y validez -->
+                                                    <div>
+                                                        <div class="row">
+                                                            <div class="col-md-6">
+                                                                <div class="form-group mb-2">
+                                                                    <label class="col-form-label" for="selCategoriaReg">
+                                                                        <i class="fas fa-money-bill-alt fs-6"></i>
+                                                                        <span class="small">¿Cotizacion a
+                                                                            credito?</span>
+                                                                    </label>
+                                                                    <select name="formapago" id="formapago"
+                                                                        class="form-control" data-live-search="true"
+                                                                        title="Seleccione Forma de Pago" required>
+                                                                        <option value="No">No</option>
+                                                                        <option value="Si">Sí</option>
+                                                                    </select>
+                                                                    <span id="validate_categoria"
+                                                                        class="text-danger small fst-italic"
+                                                                        style="display:none">Debe Ingresar tipo de
+                                                                        pago</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <div class="form-group mb-2">
+                                                                    <label class="col-form-label">
+                                                                        <i class="fas fa-money-bill-alt fs-6"></i>
+                                                                        <span class="small">Validez de la
+                                                                            Cotización</span>
+                                                                    </label>
+                                                                    <select name="nota" id="nota" class="form-control"
+                                                                        data-live-search="true"
+                                                                        title="Seleccione Tiempo de Producción"
+                                                                        required>
+                                                                        <option value="3 Días calendario">3 Días
+                                                                            calendario</option>
+                                                                        <option value="7 Días calendario">7 Días
+                                                                            calendario</option>
+                                                                        <option value="15 Días calendario">15 Días
+                                                                            calendario</option>
+                                                                        <option value="30 Días calendario">30 Días
+                                                                            calendario</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group mt-2">
+                                                        <div class="row">
+                                                            <div class="col-md-4">
+                                                                <div class="form-group mb-2">
+                                                                    <label class="col-form-label" for="selCategoriaReg">
+                                                                        <i class="fas fa-file-alt fs-6"></i>
+                                                                        <span class="small">Tipo Documento </span>
+                                                                    </label>
+                                                                    <select name="tipo_comprobante"
+                                                                        id="tipo_comprobante" class="form-control"
+                                                                        required>
+                                                                        <option value="Boleta">Boleta</option>
+                                                                        <option value="Factura">Factura</option>
+                                                                        <option value="Ticket">Ticket</option>
+                                                                    </select>
+                                                                    <select name="tipo_c" id="tipo_c"
+                                                                        class="form-control" hidden>
+                                                                        <option value="Compra">Compra</option>
+                                                                    </select>
+                                                                    <span id="validate_categoria"
+                                                                        class="text-danger small fst-italic"
+                                                                        style="display:none">Debe Seleccione
+                                                                        documento</span>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label for="iptNroSerie">Serie</label>
+                                                                <input style="border-color: #FFC7BB; text-align:center"
+                                                                    type="text" class="form-control form-control-sm"
+                                                                    name="serie_comprobante" id="serie_comprobante"
+                                                                    maxlength="7" placeholder="Serie" readonly>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <label for="iptNroVenta">N° Orden</label>
+                                                                <input style="border-color: #99C0E7; text-align:center"
+                                                                    type="text" class="form-control form-control-sm"
+                                                                    name="num_comprobante" id="num_comprobante"
+                                                                    maxlength="10" placeholder="Número" readonly>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group mb-2">
+                                                        <div class="row">
+                                                            <div class="col-md-12">
+                                                                <label class="col-form-label" for="selCategoriaReg">
+                                                                    <i class="fas fa-file-alt fs-6"></i>
+                                                                    <span class="small">Observaciones </span>
+                                                                </label>
+                                                                <textarea class="form-control" name="observaciones"
+                                                                    id="observaciones"></textarea>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        <span class="small">Fecha</span>
+                                                        <input style="text-align:center" class="form-control pull-right"
+                                                            type="date" name="fecha" id="fecha" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-12" style="margin-top: -17px;">
+                                                <input type="hidden" name="idcotizacion" id="idcotizacion">
+                                                <table id="detalles" class="table table-striped table-responsive-sm">
+                                                    <thead class="bg-info">
+                                                        <tr>
+                                                            <th style="width: 500px;">Producto</th>
+                                                            <th>UM</th>
+                                                            <th>Precio</th>
+                                                            <th>Cantidad</th>
+                                                            <th style="width: 30px;">Subtotal</th>
+                                                            <th style="width: 50px;">Eliminar</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="detalles_empty">
+                                                        <tr>
+                                                            <td colspan="6">
+
+                                                                <div class="text-center bg-light">
+
+                                                                    <i
+                                                                        class="fas fa-box-open fa-4x text-primary mb-3 mt-2"></i>
+
+                                                                    <h5 class="font-weight-bold">
+                                                                        No hay productos agregados
+                                                                    </h5>
+
+                                                                    <p class="text-muted mb-0">
+                                                                        Agrega productos o servicios para generar la
+                                                                        cotización.
+                                                                    </p>
+
+                                                                </div>
+
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                    <tbody>
+                                                        <!-- Filas dinámicas -->
+                                                    </tbody>
+                                                </table>
+                                            </div>
+
+
+
+                                            <hr>
+
+                                            <div class="card-body p-2" hidden id="datosCredito"
+                                                style="border: 1px dashed hsla(0,0%,80%,.329); border-top: none;">
+                                                <!-- Sección colapsable con animación (ANTES estaba hidden) -->
+                                                <hr style="border: 1 px solid #007bff;" />
+                                                <div class="row col-md-12 mt-4">
+                                                    <div class="form-group col-lg-3">
+                                                        <label for="">Pago inicial:</label>
+                                                        <input type="text" class="form-control" name="inicial"
+                                                            id="inicial">
+                                                    </div>
+                                                    <div class="form-group col-lg-3" id="n1">
+                                                        <label style="font-size: 11px;">Monto Deuda:</label>
+                                                        <div class="input-group">
+                                                            <input style="text-align:center" type="text"
+                                                                class="form-control" id="montoDeuda" name="montoDeuda"
+                                                                readonly="">
+                                                        </div>
+
+                                                    </div>
+                                                    <div class="form-group col-lg-3" id="n0">
+                                                        <label>Frecuencia:</label>
+                                                        <select name="input_frecuencia" id="input_frecuencia"
+                                                            class="form-control" placeholder="Frecuencia">
+                                                            <option value="" selected hidden>Seleccionar...
+                                                            </option>
+                                                            <option value="1">Diario</option>
+                                                            <option value="2">Semanal</option>
+                                                            <option value="3">Quincenal</option>
+                                                            <option value="4">Mensual</option>
+                                                            <option value="5">Bimestral</option>
+                                                            <option value="6">Trimestral</option>
+                                                            <option value="7">Semestral</option>
+                                                            <option value="8">Anual</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="form-group col-lg-3" id="n1">
+                                                        <label>N° de cuotas:</label>
+                                                        <select name="input_cuotas" id="input_cuotas"
+                                                            class="form-control" placeholder="Cuotas">
+                                                            <option value="" selected hidden>Seleccionar...
+                                                            </option>
+                                                            <option value="1">1</option>
+                                                            <option value="2">2</option>
+                                                            <option value="3">3</option>
+                                                            <option value="4">4</option>
+                                                            <option value="5">5</option>
+                                                            <option value="6">6</option>
+                                                            <option value="7">7</option>
+                                                            <option value="8">8</option>
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="form-group col-lg-3" id="n2">
+                                                        <label style="font-size: 11px;">N° meses:</label>
+                                                        <div class="input-group">
+                                                            <input style="text-align:center" type="text"
+                                                                class="form-control" id="numeroMeses"
+                                                                name="numeroMeses">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group col-lg-3" id="n3">
+                                                        <label style="font-size: 11px;">Fecha Inicio:</label>
+                                                        <div class="input-group">
+                                                            <input style="text-align:center" type="date"
+                                                                class="form-control" id="fechaOperacion"
+                                                                name="fechaOperacion"
+                                                                value="<?php echo date("Y-m-d"); ?>">
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group col-lg-3" id="n5">
+                                                        <label style="font-size: 11px;">Interes %:</label>
+                                                        <div class="input-group">
+                                                            <input style="border-color: #FFC7BB; text-align:center"
+                                                                type="text" class="form-control" id="inputInteres"
+                                                                name="inputInteres" value="0">
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="form-group col-lg-3" id="b1">
+                                                        <br>
+                                                        <button type="button" class="btn btn-success"
+                                                            id="calcular_cuotas">Calcular</button>
+                                                    </div>
+                                                </div>
+                                                <div class="row col-md-12 mt-4" id="panel1">
+                                                    <table class="table" style="width:100%;">
+                                                        <thead
+                                                            style="display: table; width: 100%; table-layout: fixed;">
                                                             <tr>
-                                                                <th style="width: 500px;">Producto</th>
-                                                                <th>UM</th>
-                                                                <th>Precio</th>
-                                                                <th>Cantidad</th>
-                                                                <th style="width: 30px;">Subtotal</th>
-                                                                <th style="width: 50px;">Eliminar</th>
+                                                                <th>Fecha de pagos</th>
+                                                                <th>Monto</th>
+                                                                <th>Interés</th>
+                                                                <th>Total</th>
                                                             </tr>
                                                         </thead>
-                                                        <tbody>
-                                                            <!-- Filas dinámicas -->
+
+                                                        <style>
+                                                            #datafechas {
+                                                                display: block;
+                                                                max-height: 300px;
+                                                                overflow-y: auto;
+                                                                width: 100%;
+                                                            }
+
+                                                            #datafechas tr {
+                                                                display: table;
+                                                                width: 100%;
+                                                                table-layout: fixed;
+                                                            }
+
+                                                            #datafechas td {
+                                                                width: 25%;
+                                                            }
+                                                        </style>
+
+                                                        <tbody id="datafechas">
+                                                            <tr>
+                                                                <td colspan="4" class="text-center">
+                                                                    No se han calculado las fechas de pago
+                                                                </td>
+                                                            </tr>
                                                         </tbody>
                                                     </table>
                                                 </div>
+                                                <div id="fechasHiddenContainer" style="display:none;"></div>
+                                            </div>
+                                            <!--//***************************************************************************//-->
+                                        </div>
 
-                                                <div class="row">
-                                                    <div class="col-lg-11 mx-auto">
-                                                        <div class="total-box">
-                                                            <span id="total">0.00</span>
-                                                            <input type="hidden" name="total_venta" id="total_venta">
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                        <div class="col-md-6">
+                                            <button class="btn-flotante" id="btnGuardar" onclick="guardaryeditar()">
+                                                <i class="fas fa-shopping-cart"></i> Realizar Cotizacion
+                                            </button>
+                                            <button id="btnCancelar" class="btn-flotante2" onclick="cancelarform()"
+                                                type="button">
+                                                <i class="fas fa-window-close"></i> Cancelar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                                <hr>
-
-                                                <div class="card-body p-2" hidden id="datosCredito"
-                                                    style="border: 1px dashed hsla(0,0%,80%,.329); border-top: none;">
-                                                    <!-- Sección colapsable con animación (ANTES estaba hidden) -->
-                                                    <hr style="border: 1 px solid #007bff;" />
-                                                    <div class="row col-md-12 mt-4">
-                                                        <div class="form-group col-lg-3">
-                                                            <label for="">Pago inicial:</label>
-                                                            <input type="text" class="form-control" name="inicial"
-                                                                id="inicial">
-                                                        </div>
-                                                        <div class="form-group col-lg-3" id="n1">
-                                                            <label style="font-size: 11px;">Monto Deuda:</label>
-                                                            <div class="input-group">
-                                                                <input style="text-align:center" type="text"
-                                                                    class="form-control" id="montoDeuda"
-                                                                    name="montoDeuda" readonly="">
-                                                            </div>
-
-                                                        </div>
-                                                        <div class="form-group col-lg-3" id="n0">
-                                                            <label>Frecuencia:</label>
-                                                            <select name="input_frecuencia" id="input_frecuencia"
-                                                                class="form-control" placeholder="Frecuencia">
-                                                                <option value="" selected hidden>Seleccionar...
-                                                                </option>
-                                                                <option value="1">Diario</option>
-                                                                <option value="2">Semanal</option>
-                                                                <option value="3">Quincenal</option>
-                                                                <option value="4">Mensual</option>
-                                                                <option value="5">Bimestral</option>
-                                                                <option value="6">Trimestral</option>
-                                                                <option value="7">Semestral</option>
-                                                                <option value="8">Anual</option>
-                                                            </select>
-                                                        </div>
-
-                                                        <div class="form-group col-lg-3" id="n1">
-                                                            <label>N° de cuotas:</label>
-                                                            <select name="input_cuotas" id="input_cuotas"
-                                                                class="form-control" placeholder="Cuotas">
-                                                                <option value="" selected hidden>Seleccionar...
-                                                                </option>
-                                                                <option value="1">1</option>
-                                                                <option value="2">2</option>
-                                                                <option value="3">3</option>
-                                                                <option value="4">4</option>
-                                                                <option value="5">5</option>
-                                                                <option value="6">6</option>
-                                                                <option value="7">7</option>
-                                                                <option value="8">8</option>
-                                                            </select>
-                                                        </div>
-
-                                                        <div class="form-group col-lg-3" id="n2">
-                                                            <label style="font-size: 11px;">N° meses:</label>
-                                                            <div class="input-group">
-                                                                <input style="text-align:center" type="text"
-                                                                    class="form-control" id="numeroMeses"
-                                                                    name="numeroMeses">
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="form-group col-lg-3" id="n3">
-                                                            <label style="font-size: 11px;">Fecha Inicio:</label>
-                                                            <div class="input-group">
-                                                                <input style="text-align:center" type="date"
-                                                                    class="form-control" id="fechaOperacion"
-                                                                    name="fechaOperacion"
-                                                                    value="<?php echo date("Y-m-d"); ?>">
-                                                            </div>
-                                                        </div>
-
-                                                        <div class="form-group col-lg-3" id="n5">
-                                                            <label style="font-size: 11px;">Interes %:</label>
-                                                            <div class="input-group">
-                                                                <input style="border-color: #FFC7BB; text-align:center"
-                                                                    type="text" class="form-control" id="inputInteres"
-                                                                    name="inputInteres" value="0">
-                                                            </div>
-
-                                                        </div>
-
-                                                        <div class="form-group col-lg-3" id="b1">
-                                                            <br>
-                                                            <button type="button" class="btn btn-success"
-                                                                id="calcular_cuotas">Calcular</button>
-                                                        </div>
-                                                    </div>
-                                                    <div class="row col-md-12 mt-4" id="panel1">
-                                                        <table class="table" style="width:100%;">
-                                                            <thead
-                                                                style="display: table; width: 100%; table-layout: fixed;">
+                                <!-- INICIO DE TABLE PRODUCTO Y SERVICIOS-->
+                                <div class="col-lg-6 hidden-md hidden-sm hidden-xs">
+                                    <div class="card  card-tabs">
+                                        <div class="card-header p-0 pt-1">
+                                            <div class="card-header p-0 pt-1">
+                                                <ul class="nav nav-tabs" id="custom-tabs-one-tab" role="tablist">
+                                                    <li class="nav-item">
+                                                        <a class="nav-link active" id="custom-tabs-two-home-tab"
+                                                            data-toggle="pill" href="#custom-tabs-two-home" role="tab"
+                                                            aria-controls="custom-tabs-two-home"
+                                                            aria-selected="true">Producto</a>
+                                                    </li>
+                                                    <li class="nav-item">
+                                                        <a class="nav-link" id="custom-tabs-two-profile-tab"
+                                                            data-toggle="pill" href="#custom-tabs-two-profile"
+                                                            role="tab" aria-controls="custom-tabs-two-profile"
+                                                            aria-selected="false">Servicio</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="card-body" style="margin-top: -35px; overflow-x: auto;">
+                                                <div class="tab-content" id="custom-tabs-one-tabContent">
+                                                    <div class="tab-pane fade show active" id="custom-tabs-two-home"
+                                                        role="tabpanel" aria-labelledby="custom-tabs-two-home-tab">
+                                                        <table id="tblarticulos"
+                                                            class="table table-striped table-responsive-lg"
+                                                            width="100%">
+                                                            <thead class="bg-info">
                                                                 <tr>
-                                                                    <th>Fecha de pagos</th>
-                                                                    <th>Monto</th>
-                                                                    <th>Interés</th>
-                                                                    <th>Total</th>
+                                                                    <th>Op</th>
+                                                                    <th>Nombre</th>
+                                                                    <th>Código</th>
+                                                                    <th>Stock</th>
+                                                                    <th>P Venta</th>
                                                                 </tr>
                                                             </thead>
-
-                                                            <style>
-                                                                #datafechas {
-                                                                    display: block;
-                                                                    max-height: 300px;
-                                                                    overflow-y: auto;
-                                                                    width: 100%;
-                                                                }
-
-                                                                #datafechas tr {
-                                                                    display: table;
-                                                                    width: 100%;
-                                                                    table-layout: fixed;
-                                                                }
-
-                                                                #datafechas td {
-                                                                    width: 25%;
-                                                                }
-                                                            </style>
-
-                                                            <tbody id="datafechas">
+                                                            <tbody></tbody>
+                                                            <tfoot>
                                                                 <tr>
-                                                                    <td colspan="4" class="text-center">
-                                                                        No se han calculado las fechas de pago
-                                                                    </td>
+                                                                    <th>Op</th>
+                                                                    <th>Nombre</th>
+                                                                    <th>Código</th>
+                                                                    <th>Stock</th>
+                                                                    <th>P Venta</th>
                                                                 </tr>
-                                                            </tbody>
+                                                            </tfoot>
                                                         </table>
                                                     </div>
-                                                    <div id="fechasHiddenContainer" style="display:none;"></div>
-                                                </div>
-                                                <!--//***************************************************************************//-->
-                                            </div>
-
-                                            <div class="card-footer">
-                                                <div class="col-md-6">
-                                                    <button class="btn-flotante" id="btnGuardar"
-                                                        onclick="guardaryeditar()">
-                                                        <i class="fas fa-shopping-cart"></i> Realizar Cotizacion
-                                                    </button>
-                                                    <button id="btnCancelar" class="btn-flotante2"
-                                                        onclick="cancelarform()" type="button">
-                                                        <i class="fas fa-window-close"></i> Cancelar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- INICIO DE TABLE PRODUCTO Y SERVICIOS-->
-                                    <div class="col-lg-6 hidden-md hidden-sm hidden-xs" style="margin-top: -20px;">
-                                        <div class="card  card-tabs" style="margin-top: -20px;">
-                                            <div class="card-header p-0 pt-1">
-                                                <div class="card-header p-0 pt-1">
-                                                    <ul class="nav nav-tabs" id="custom-tabs-one-tab" role="tablist">
-                                                        <li class="nav-item">
-                                                            <a class="nav-link active" id="custom-tabs-two-home-tab"
-                                                                data-toggle="pill" href="#custom-tabs-two-home"
-                                                                role="tab" aria-controls="custom-tabs-two-home"
-                                                                aria-selected="true">Producto</a>
-                                                        </li>
-                                                        <li class="nav-item">
-                                                            <a class="nav-link" id="custom-tabs-two-profile-tab"
-                                                                data-toggle="pill" href="#custom-tabs-two-profile"
-                                                                role="tab" aria-controls="custom-tabs-two-profile"
-                                                                aria-selected="false">Servicio</a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                                <div class="card-body" style="margin-top: -35px; overflow-x: auto;">
-                                                    <div class="tab-content" id="custom-tabs-one-tabContent">
-                                                        <div class="tab-pane fade show active" id="custom-tabs-two-home"
-                                                            role="tabpanel" aria-labelledby="custom-tabs-two-home-tab">
-                                                            <table id="tblarticulos"
-                                                                class="table table-striped table-responsive-lg"
-                                                                width="100%">
-                                                                <thead class="bg-info">
-                                                                    <tr>
-                                                                        <th>Op</th>
-                                                                        <th>Nombre</th>
-                                                                        <th>Código</th>
-                                                                        <th>Stock</th>
-                                                                        <th>P Venta</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody></tbody>
-                                                                <tfoot>
-                                                                    <tr>
-                                                                        <th>Op</th>
-                                                                        <th>Nombre</th>
-                                                                        <th>Código</th>
-                                                                        <th>Stock</th>
-                                                                        <th>P Venta</th>
-                                                                    </tr>
-                                                                </tfoot>
-                                                            </table>
-                                                        </div>
-                                                        <div class="tab-pane fade" id="custom-tabs-two-profile"
-                                                            role="tabpanel"
-                                                            aria-labelledby="custom-tabs-two-profile-tab">
-                                                            <table id="tblarticulos2"
-                                                                class="table table-striped table-responsive-lg"
-                                                                width="100%">
-                                                                <thead class="bg-info">
-                                                                    <tr>
-                                                                        <th>Op</th>
-                                                                        <th width="200px">Nombre</th>
-                                                                        <th style="text-align: center;">Stock</th>
-                                                                        <th>P Venta</th>
-                                                                    </tr>
-                                                                </thead>
-                                                                <tbody></tbody>
-                                                                <tfoot>
-                                                                    <tr>
-                                                                        <th>Op</th>
-                                                                        <th>Nombre</th>
-                                                                        <th>Stock</th>
-                                                                        <th>P Venta</th>
-                                                                    </tr>
-                                                                </tfoot>
-                                                            </table>
-                                                        </div>
+                                                    <div class="tab-pane fade" id="custom-tabs-two-profile"
+                                                        role="tabpanel" aria-labelledby="custom-tabs-two-profile-tab">
+                                                        <table id="tblarticulos2"
+                                                            class="table table-striped table-responsive-lg"
+                                                            width="100%">
+                                                            <thead class="bg-info">
+                                                                <tr>
+                                                                    <th>Op</th>
+                                                                    <th width="200px">Nombre</th>
+                                                                    <th style="text-align: center;">Stock</th>
+                                                                    <th>P Venta</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody></tbody>
+                                                            <tfoot>
+                                                                <tr>
+                                                                    <th>Op</th>
+                                                                    <th>Nombre</th>
+                                                                    <th>Stock</th>
+                                                                    <th>P Venta</th>
+                                                                </tr>
+                                                            </tfoot>
+                                                        </table>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <!-- FIN DE TABLE PRODUCTO Y SERVICIOS-->
                                 </div>
-                            </form>
-                        </div>
-                        <!-- /.card-body formulario -->
-
+                                <!-- FIN DE TABLE PRODUCTO Y SERVICIOS-->
+                            </div>
+                        </form>
                     </div>
-                    <!-- /.card -->
+                    <!-- /.card-body formulario -->
+
+
                 </div>
                 <!-- /.col -->
             </div>
@@ -1168,10 +1247,19 @@ date_default_timezone_set('America/Lima');
     }
 
     // 📌 Colapsar sección con animación
-    function toggleCollapse(id) {
-        var section = document.getElementById(id);
-        if (!section) return;
-        section.classList.toggle('show');
+    function toggleCollapse(id, btn) {
+        var panel = document.getElementById(id);
+        if (!panel) return;
+        panel.classList.toggle('show');
+        const icon = btn.querySelector(".fa-chevron-down, .fa-chevron-up");
+
+        if (!panel.classList.contains("show")) {
+            icon.classList.remove("fa-chevron-up");
+            icon.classList.add("fa-chevron-down");
+        } else {
+            icon.classList.remove("fa-chevron-down");
+            icon.classList.add("fa-chevron-up");
+        }
     }
 
     // 🗓️ Fecha/hora visible en cabecera de formulario

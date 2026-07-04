@@ -1,31 +1,4 @@
 <style>
-    .modal-header-custom {
-        background: #007bff;
-        color: white;
-        padding: 12px 20px;
-        border-top-left-radius: 4px;
-        border-top-right-radius: 4px;
-    }
-
-    .info-box-custom {
-        background: #eaf7ff;
-        border-left: 5px solid #007bff;
-        padding: 12px 15px;
-        border-radius: 5px;
-        margin-bottom: 15px;
-        font-size: 14px;
-    }
-
-    .section-title {
-        font-size: 15px;
-        font-weight: bold;
-        margin-bottom: 8px;
-        margin-top: 10px;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 4px;
-        color: #444;
-    }
-
     /* =======================================
    MODAL DE COBROS – ESTILO PROFESIONAL
    ======================================= */
@@ -50,9 +23,25 @@
     }
 
     /* --- Caja de información --- */
+    .success-box-custom {
+        background: #d3ffdd;
+        border-left: 5px solid #28a745;
+        padding: 14px 18px;
+        border-radius: 6px;
+        box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
+    }
+
     .info-box-custom {
         background: #f0f8ff;
         border-left: 5px solid #007bff;
+        padding: 14px 18px;
+        border-radius: 6px;
+        box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
+    }
+
+    .warning-box-custom {
+        background: #fffef0;
+        border-left: 5px solid #ffb700;
         padding: 14px 18px;
         border-radius: 6px;
         box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
@@ -985,7 +974,7 @@
                             }
                         </style>
 
-                        <div class="doc-body mb-2">
+                        <div class="mb-2">
                             <div class="doc-totals">
                                 <div class="total-box">
                                     <div class="total-label">Total venta</div>
@@ -998,14 +987,36 @@
                                 </div>
                             </div>
                         </div>
-
-
+                        <br />
                         <!-- Caja de información -->
                         <div class="info-box-custom">
                             <strong><i class="fa fa-info-circle"></i> Información del Documento</strong><br>
-                            El documento <b><span id="documento2"></span></b> tiene un pago pendiente de
+                            El documento <b><span id="documento"></span></b> tiene un pago pendiente de
                             <b>S/ <span id="deutaTotal"></span></b>.
                             Debe pagarse como máximo el día <b><span id="fechavencimiento"></span></b>.
+                        </div>
+                        <br />
+
+                        <div class="warning-box-custom" id="panelMora">
+                            <strong><i class="fa fa-exclamation-triangle"></i> Tiene mora </strong><br>
+                            La cuota ha generado <b>S/<span id="montoMora"></span></b> de mora por <b><span
+                                    id="diasRetraso"></span></b>
+                            dias de retraso en el pago programado de los cuales falta pagar <b>S/<span
+                                    id="montoMoraPagar"></span></b>.
+                        </div>
+
+                        <div class="success-box-custom" id="panelDescuento">
+                            <strong>
+                                <i class="fas fa-hand-holding-usd"></i>
+                                ¡Descuento por pago anticipado!
+                            </strong>
+                            <br>
+
+                            Has obtenido un descuento del <strong> <span id="porcentajeDescuento"></span>%</strong>
+                            con valor de <strong>S/ <span id="montoDescuento"></span></strong>
+                            por realizar el pago
+                            <strong><span id="diasAnticipacion"></span> días antes</strong>
+                            de la fecha de vencimiento.
                         </div>
 
                         <div class="section-title"><i class="fa fa-credit-card"></i> Datos del Pago</div>
@@ -1067,6 +1078,7 @@
                                     <label>Banco:</label>
                                     <select id="banco" name="banco" class="form-control selectpicker"
                                         data-live-search="true">
+                                        <option value="">Seleccione...</option>
                                         <option value="BCP">BCP</option>
                                         <option value="INTERBANK">INTERBANK</option>
                                         <option value="BBVA">BBVA</option>

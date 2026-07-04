@@ -596,8 +596,9 @@ switch ($_GET["op"]) {
 
 		$data = array();
 		while ($reg = $rspta->fetch_object()) {
+			$is_stock = $reg->controla_stock === 'Si' && $reg->stock == 0;
 			$data[] = array(
-				"0" => (($reg->stock == 0) ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
+				"0" => ($is_stock ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
 					: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
 				"1" => "<img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->precioB . "\",\"" . $reg->precioC . "\",\"" . $reg->precioD . "\" )' src='files/productos/" . $reg->imagen . "' height='35px' width='35px' >" . '<span style="font-weight: bold;">' . $reg->nombre . '</span>' . ' - ' . '<span class="badge bg-green">' . $reg->cantidad_contenedor . ' Und.</span>' . ' - ' . '<span style="font-size:10px">' . $reg->contenedor . '</span>',
 				//"2" => $reg->categoria,
