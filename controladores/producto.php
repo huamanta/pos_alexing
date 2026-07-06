@@ -387,12 +387,12 @@ switch ($_GET["op"]) {
 					'<span class="badge badge-neon neon-green">ACTIVADO</span>' :
 					'<span class="badge badge-neon neon-red">DESACTIVADO</span>',
 				"8" => ($reg->condicion) ?
-					(Helpers::getUserPermissionAccion('Editar Productos') ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idproducto . ')"><i class="fas fa-edit"></i></button> ' : '') .
-					(Helpers::getUserPermissionAccion('Movimientos Productos') ? '<button class="btn btn-primary btn-xs" onclick="entradaSalida(' . $reg->idproducto . ',' . $reg->idsucursal . ')"><i class="fas fa-archive"></i></button> ' : '') .
-					(Helpers::getUserPermissionAccion('Configurar Productos') ? '<button class="btn btn-success btn-xs" onclick=\'config(' . json_encode($reg) . ')\'><i class="fas fa-cog"></i></button> ' : '') .
-					(Helpers::getUserPermissionAccion('Listar Vencimientos') ? '<button class="btn btn-info btn-xs" onclick="fechaVencimiento(' . $reg->idproducto . ')"><i class="fa fa-list"></i></button> ' : '') .
-					(Helpers::getUserPermissionAccion('Desactivar Productos') ? '<button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idproducto . ')"><i class="fas fa-times-circle"></i></button> ' : '') .
-					(Helpers::getUserPermissionAccion('Eliminar Productos') ? '<button class="btn btn-danger btn-xs" onclick="eliminarProducto(' . $reg->idproducto . ')"><i class="fas fa-trash"></i></button>' : '') :
+					(Helpers::getUserPermissionAccion('Editar productos') ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idproducto . ')"><i class="fas fa-edit"></i></button> ' : '') .
+					(Helpers::getUserPermissionAccion('Movimientos productos') ? '<button class="btn btn-primary btn-xs" onclick="entradaSalida(' . $reg->idproducto . ',' . $reg->idsucursal . ')"><i class="fas fa-archive"></i></button> ' : '') .
+					(Helpers::getUserPermissionAccion('Configurar productos') ? '<button class="btn btn-success btn-xs" onclick=\'config(' . json_encode($reg) . ')\'><i class="fas fa-cog"></i></button> ' : '') .
+					(Helpers::getUserPermissionAccion('Listar vencimientos') ? '<button class="btn btn-info btn-xs" onclick="fechaVencimiento(' . $reg->idproducto . ')"><i class="fa fa-list"></i></button> ' : '') .
+					(Helpers::getUserPermissionAccion('Desactivar productos') ? '<button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idproducto . ')"><i class="fas fa-times-circle"></i></button> ' : '') .
+					(Helpers::getUserPermissionAccion('Eliminar productos') ? '<button class="btn btn-danger btn-xs" onclick="eliminarProducto(' . $reg->idproducto . ')"><i class="fas fa-trash"></i></button>' : '') :
 					'<button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idproducto . ')"><i class="fa fa-check"></i></button>'
 			);
 		}

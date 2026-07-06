@@ -461,11 +461,13 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                         <i class="fas fa-box"></i>
                         Cambiar sucursal
                     </a>
-                    <a href="configuracion"
-                        class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
-                        <i class="fas fa-cog"></i>
-                        Configuracion
-                    </a>
+                    <?php if (Helpers::getUserPermisoModulo('Configuracion general')): ?>
+                        <a href="configuracion"
+                            class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
+                            <i class="fas fa-cog"></i>
+                            Configuracion
+                        </a>
+                    <?php endif; ?>
                     <a href="salir"
                         class="btn btn-outline-danger btn-block font-weight-bold border-0 text-left px-3 py-2">
                         <i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión

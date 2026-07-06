@@ -1,11 +1,26 @@
 <?php
 require "../configuraciones/Conexion.php";
-class Refinanciamiento
+require_once "Helpers.php";
+
+class Refinanciamiento extends Helpers
 {
 
     public function buscarCreditos($idsucursal, $buscar)
     {
-        $sql = "SELECT
+        try {
+            $refinanciamiento = Helpers::verificarRefinanciamientos($idsucursal);
+
+            if (!$refinanciamiento['activo']) {
+                throw new Exception("Los refinanciamientos no están habilitados.");
+            }
+
+            if (empty($refinanciamiento['valor']) || $refinanciamiento['valor'] === 0) {
+                throw new Exception("Los refinanciamientos no están habilitados correctamente o el maximo es 0.");
+            }
+
+            $maximo_refinanciamientos = (int) $refinanciamiento['valor'];
+
+            $sql = "SELECT
                 p.idpersona,
                 p.nombre,
                 p.num_documento
@@ -13,97 +28,115 @@ class Refinanciamiento
             WHERE p.num_documento LIKE '%$buscar%'
                OR p.nombre LIKE '%$buscar%'";
 
-        $clientes = ejecutarConsulta($sql);
+            $clientes = ejecutarConsulta($sql);
 
-        $creditos = [];
+            $creditos = [];
 
-        while ($cliente = $clientes->fetch_assoc()) {
+            while ($cliente = $clientes->fetch_assoc()) {
 
-            $sqlVentas = "SELECT
-                        v.idventa,
-                        v.fecha_hora,
-                        v.total_venta,
-                        v.serie_comprobante,
-                        v.num_comprobante
-                    FROM venta v
-                    WHERE v.idsucursal = '$idsucursal'
-                      AND v.idcliente = '{$cliente["idpersona"]}'
-                    ORDER BY v.fecha_hora ASC";
+                $sqlVentas = "SELECT
+                            v.idventa,
+                            v.fecha_hora,
+                            v.total_venta,
+                            v.serie_comprobante,
+                            v.num_comprobante
+                        FROM venta v
+                        WHERE v.idsucursal = '$idsucursal'
+                          AND v.idcliente = '{$cliente["idpersona"]}'
+                        ORDER BY v.fecha_hora ASC";
 
-            $ventas = ejecutarConsulta($sqlVentas);
+                $ventas = ejecutarConsulta($sqlVentas);
 
-            while ($venta = $ventas->fetch_assoc()) {
+                while ($venta = $ventas->fetch_assoc()) {
 
-                // 🔥 Obtener último refinanciamiento (si existe)
-                $sqlRef = "SELECT MAX(idrefinanciamiento) AS idref
-                       FROM cuentas_por_cobrar
-                       WHERE idventa = '{$venta["idventa"]}'
-                         AND idrefinanciamiento IS NOT NULL";
+                    // Cantidad de refinanciamientos realizados
+                    $sqlCantidadRef = "SELECT
+                                        COUNT(DISTINCT idrefinanciamiento) AS total,
+                                        MAX(idrefinanciamiento) AS idref
+                                    FROM cuentas_por_cobrar
+                                    WHERE idventa = '{$venta["idventa"]}'
+                                    AND idrefinanciamiento IS NOT NULL";
 
-                $ref = ejecutarConsultaSimpleFila($sqlRef);
+                    $cantidadRef = ejecutarConsultaSimpleFila($sqlCantidadRef);
 
-                $idref = $ref["idref"];
+                    $totalRefinanciamientos = (int) $cantidadRef["total"];
 
-                // 🔥 Cuotas según estado
-                if (!empty($idref)) {
+                    // Ya alcanzó el máximo permitido
+                    if ($totalRefinanciamientos >= $maximo_refinanciamientos) {
+                        continue;
+                    }
 
-                    $sqlCuotas = "SELECT estado_pago, deudatotal
-                              FROM cuentas_por_cobrar
-                              WHERE idrefinanciamiento = '$idref'";
+                    $idref = $cantidadRef["idref"];
 
-                } else {
+                    // Obtener cuotas vigentes
+                    if (!empty($idref)) {
 
-                    $sqlCuotas = "SELECT estado_pago, deudatotal
-                              FROM cuentas_por_cobrar
-                              WHERE idventa = '{$venta["idventa"]}'
+                        $sqlCuotas = "SELECT estado_pago, deudatotal
+                                FROM cuentas_por_cobrar
+                                WHERE idrefinanciamiento = '$idref'";
+
+                    } else {
+
+                        $sqlCuotas = "SELECT estado_pago, deudatotal
+                                FROM cuentas_por_cobrar
+                                WHERE idventa = '{$venta["idventa"]}'
                                 AND idrefinanciamiento IS NULL
                                 AND idrefinanciamiento_origen IS NULL";
-                }
+                    }
 
-                $cuotas = ejecutarConsulta($sqlCuotas);
+                    $cuotas = ejecutarConsulta($sqlCuotas);
 
-                $pagado = 0;
-                $saldo = 0;
+                    $pagado = 0;
+                    $saldo = 0;
 
-                while ($c = $cuotas->fetch_assoc()) {
+                    while ($c = $cuotas->fetch_assoc()) {
 
-                    if ($c["estado_pago"] == 0) {
-                        $pagado += $c["deudatotal"];
-                    } else {
-                        $saldo += $c["deudatotal"];
+                        if ($c["estado_pago"] == 0) {
+                            $pagado += $c["deudatotal"];
+                        } else {
+                            $saldo += $c["deudatotal"];
+                        }
+                    }
+
+                    // Solo mostrar créditos con saldo pendiente
+                    if ($saldo > 0) {
+
+                        $creditos[] = [
+                            "idventa" => $venta["idventa"],
+                            "cliente" => $cliente["nombre"],
+                            "documento_cliente" => $cliente["num_documento"],
+                            "documento_venta" => $venta["serie_comprobante"] . '-' . $venta["num_comprobante"],
+                            "fecha" => $venta["fecha_hora"],
+                            "total" => $venta["total_venta"],
+                            "pagado" => $pagado,
+                            "saldo" => $saldo,
+                            "refinanciado" => ($idref ? true : false),
+                            "idrefinanciamiento" => $idref,
+                            "cantidad_refinanciamientos" => $totalRefinanciamientos,
+                            "maximo_refinanciamientos" => $maximo_refinanciamientos
+                        ];
                     }
                 }
-
-                // 🔥 Solo créditos con saldo
-                if ($saldo > 0) {
-
-                    $creditos[] = [
-                        "idventa" => $venta["idventa"],
-                        "cliente" => $cliente["nombre"],
-                        "documento_cliente" => $cliente["num_documento"],
-                        "documento_venta" => $venta["serie_comprobante"] . '-' . $venta["num_comprobante"],
-                        "fecha" => $venta["fecha_hora"],
-                        "total" => $venta["total_venta"],
-                        "pagado" => $pagado,
-                        "saldo" => $saldo,
-                        "refinanciado" => ($idref ? true : false),
-                        "idrefinanciamiento" => $idref
-                    ];
-                }
             }
-        }
 
-        if (empty($creditos)) {
-            return json_encode([
-                "estado" => false,
-                "mensaje" => "No se encontraron créditos pendientes para refinanciar."
-            ]);
-        }
+            if (empty($creditos)) {
+                throw new Exception("No se encontraron créditos pendientes para refinanciar.");
+            }
 
-        return json_encode([
-            "estado" => true,
-            "creditos" => $creditos
-        ]);
+            return [
+                "success" => true,
+                "message" => "",
+                "creditos" => $creditos
+            ];
+
+        } catch (Exception $e) {
+
+            return [
+                "success" => false,
+                "creditos" => [],
+                "message" => $e->getMessage()
+            ];
+        }
     }
 
 

@@ -46,7 +46,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
     <!-- Sidebar Menu -->
     <nav class="mt-2">
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-        
+
         <?php
         if (Helpers::getUserPermisoModulo('inicio')) {
           ?>
@@ -78,7 +78,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('pos')) {
+        if (Helpers::getUserPermisoModulo('Ventas')) {
           ?>
           <li class="nav-item" id="navPos">
             <a href="#" class="nav-link" id="navPosActive">
@@ -89,7 +89,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <?php if (Helpers::getUserPermisoModulo('Contratos', 'pos')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Contratos', 'Ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="contrato" class="nav-link" id="navContratos">
                     <i class="fas fa-file-contract nav-icon text-primary" style="font-size: 14px"></i>
@@ -97,7 +97,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                   </a>
                 </li>
               <?php endif; ?>
-              <?php if (Helpers::getUserPermisoModulo('Solicitudes', 'pos')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Solicitudes', 'Ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="solicitudes" class="nav-link" id="navSolicitudes">
                     <i class="fas fa-file-contract nav-icon text-primary" style="font-size: 14px"></i>
@@ -106,7 +106,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Venta Pos', 'pos')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Venta Pos', 'Ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="venta-pos" class="nav-link" id="navCrearVenta">
                     <i class="fas fa-shopping-cart nav-icon text-primary" style="font-size: 14px"></i>
@@ -115,7 +115,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Guia de Remision', 'pos')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Guia de Remision', 'Ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="guia" class="nav-link" id="navGuia">
                     <i class="fas fa-truck nav-icon text-primary" style="font-size: 14px"></i>
@@ -124,7 +124,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Cotizaciones', 'pos')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Cotizaciones', 'Ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="cotizacion" class="nav-link" id="navCotizaciones">
                     <i class="fas fa-file-invoice-dollar nav-icon text-primary" style="font-size: 14px"></i>
@@ -133,7 +133,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('NotasCredito', 'pos')): ?>
+              <?php if (Helpers::getUserPermisoModulo('NotasCredito', 'Ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="nota-credito" class="nav-link" id="navNotasCredito">
                     <i class="fas fa-receipt nav-icon text-primary" style="font-size: 14px"></i>
@@ -151,14 +151,14 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         <?php
         if (Helpers::getUserPermisoModulo('crearservicio')) {
           ?>
-          <li class="nav-item">
+          <!--li class="nav-item">
             <a href="service" class="nav-link" id="navCrearVenta">
               <i class="nav-icon fa fa-wrench"></i>
               <p>
                 Aperturar Servicio
               </p>
             </a>
-          </li>
+          </li-->
           <?php
         }
         ?>
@@ -173,7 +173,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         <?php endif; ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('ventas')) {
+        if (Helpers::getUserPermisoModulo('Facturacion y cajas')) {
           ?>
           <li class="nav-item" id="navVentas">
             <a href="#" class="nav-link" id="navVentasActive">
@@ -184,7 +184,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <?php if (Helpers::getUserPermisoModulo('Comprobantes', 'ventas')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Comprobantes', 'Facturacion y cajas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="venta" class="nav-link" id="navVenta">
                     <i class="fas fa-file-invoice nav-icon te xt-orange" style="font-size: 14px"></i>
@@ -192,7 +192,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                   </a>
                 </li>
               <?php endif; ?>
-              <?php if (Helpers::getUserPermisoModulo('Resumen diario', 'ventas')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Resumen diario', 'Facturacion y cajas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="resumen" class="nav-link" id="navResumen">
                     <i class="fas fa-file-alt nav-icon text-orange" style="font-size: 14px"></i>
@@ -201,7 +201,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Cajas', 'ventas')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Cajas', 'Facturacion y cajas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="cajas" class="nav-link" id="navCajas">
                     <i class="fas fa-cash-register nav-icon text-orange" style="font-size: 14px"></i>
@@ -218,18 +218,18 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
 
 
         <?php
-        if (Helpers::getUserPermisoModulo('almacen')) {
+        if (Helpers::getUserPermisoModulo('Almacen')) {
           ?>
           <li class="nav-item" id="navAlmacen">
             <a href="#" class="nav-link" id="navAlmacenActive">
               <i class="nav-icon fas fa-home"></i>
               <p>
-                Ingreso a almacen
+                Almacén
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <?php if (Helpers::getUserPermisoModulo('Productos', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Productos', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="producto" class="nav-link" id="navProducto">
                     <i class="fas fa-boxes nav-icon text-purple" style="font-size: 14px"></i>
@@ -238,7 +238,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Servicios', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Servicios', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="servicio" class="nav-link" id="navServicio">
                     <i class="fas fa-concierge-bell nav-icon text-purple" style="font-size: 14px"></i>
@@ -247,7 +247,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Nombres Precios', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Nombres Precios', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="nombres-precios" class="nav-link" id="navNombrep">
                     <i class="fas fa-tags nav-icon text-purple" style="font-size: 14px"></i>
@@ -256,7 +256,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Categorias', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Categorias', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="categoria" class="nav-link" id="navCategoria">
                     <i class="fas fa-layer-group nav-icon text-purple" style="font-size: 14px"></i>
@@ -264,7 +264,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                   </a>
                 </li>
               <?php endif; ?>
-              <?php if (Helpers::getUserPermisoModulo('Marcas', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Marcas', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="marca" class="nav-link" id="navMarca">
                     <i class="fas fa-newspaper nav-icon text-purple" style="font-size: 14px"></i>
@@ -273,7 +273,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Modelos', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Modelos', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="modelo" class="nav-link" id="navModelo">
                     <i class="fas fa-tags nav-icon text-purple" style="font-size: 14px"></i>
@@ -282,7 +282,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Lineas', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Lineas', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="rubro" class="nav-link" id="navLinea">
                     <i class="fas fa-server nav-icon text-purple" style="font-size: 14px"></i>
@@ -291,7 +291,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Condicion de venta', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Condicion de venta', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="condicionventa" class="nav-link" id="navCondicionVenta">
                     <i class="fas fa-server nav-icon text-purple" style="font-size: 14px"></i>
@@ -300,7 +300,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Unidad de medida', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Unidad de medida', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="unidad-medida" class="nav-link" id="navUnidadMedida">
                     <i class="fas fa-ruler-combined nav-icon text-purple" style="font-size: 14px"></i>
@@ -309,7 +309,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Traslados', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Traslados', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="traslado" class="nav-link" id="navTraslado">
                     <i class="fas fa-concierge-bell nav-icon text-purple" style="font-size: 14px"></i>
@@ -318,7 +318,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Reportes', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Reportes', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="reportes-digemid" class="nav-link" id="navReportes">
                     <i class="fas fa-chart-bar nav-icon text-purple" style="font-size: 14px"></i>
@@ -327,7 +327,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Vencimiento', 'almacen')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Vencimientos', 'Almacen')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="reportes-vencimiento" class="nav-link" id="navVencimiento">
                     <i class="fas fa-hourglass-end nav-icon text-purple" style="font-size: 14px"></i>
@@ -342,7 +342,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('inventario')) {
+        if (Helpers::getUserPermisoModulo('Inventario')) {
           ?>
           <li class="nav-item" id="navInventario">
             <a href="#" class="nav-link" id="navInventarioActive">
@@ -354,7 +354,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
             </a>
             <ul class="nav nav-treeview">
 
-              <?php if (Helpers::getUserPermisoModulo('Ajuste Inventario', 'inventario')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Toma de nventario', 'Inventario')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="toma-inventario" class="nav-link" id="navtoma-inventario">
                     <i class="fas fa-clipboard-list nav-icon text-orange" style="font-size: 14px"></i>
@@ -363,7 +363,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Toma Inventario', 'inventario')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Ajuste de inventario', 'Inventario')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="ajuste-inventario" class="nav-link" id="navajuste-inventario">
                     <i class="fas fa-sliders-h nav-icon text-orange" style="font-size: 14px"></i>
@@ -379,7 +379,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('compras')) {
+        if (Helpers::getUserPermisoModulo('Compras')) {
           ?>
           <li class="nav-item" id="navCompras">
             <a href="#" class="nav-link" id="navComprasActive">
@@ -391,7 +391,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
             </a>
             <ul class="nav nav-treeview">
 
-              <?php if (Helpers::getUserPermisoModulo('CrearCompras', 'compras')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Crear compras', 'Compras')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="compra" class="nav-link" id="navCompra">
                     <i class="fas fa-cart-arrow-down nav-icon text-orange" style="font-size: 14px"></i>
@@ -400,7 +400,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Proveedores', 'compras')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Proveedores', 'Compras')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="proveedor" class="nav-link" id="navProveedor">
                     <i class="fas fa-truck nav-icon text-orange" style="font-size: 14px"></i>
@@ -416,7 +416,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('cajachica')) {
+        if (Helpers::getUserPermisoModulo('Caja chica')) {
           ?>
           <li class="nav-item">
             <a href="caja-chica" class="nav-link" id="navCajaChica">
@@ -455,11 +455,11 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Refinanciar deuda', 'Cobros')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Refinanciar creditos', 'Cobros')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="refinanciamientos" class="nav-link" id="navRefinanciarDeuda">
                     <i class="fas fa-sliders-h nav-icon text-primary" style="font-size: 14px"></i>
-                    <p>Refinanciar deuda</p>
+                    <p>Refinanciar créditos</p>
                   </a>
                 </li>
               <?php endif; ?>
@@ -471,7 +471,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('cuentasxpagar')) {
+        if (Helpers::getUserPermisoModulo('Cuentas por pagar')) {
           ?>
           <li class="nav-item">
             <a href="cuentasxpagar" class="nav-link" id="navCuentasPorPagar">
@@ -486,7 +486,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('kardex')) {
+        if (Helpers::getUserPermisoModulo('Kardex')) {
           ?>
           <li class="nav-item">
             <a href="kardex" class="nav-link" id="navKardex">
@@ -505,7 +505,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
 
 
         <?php
-        if (Helpers::getUserPermisoModulo('personal')) {
+        if (Helpers::getUserPermisoModulo('Personal')) {
           ?>
           <li class="nav-item" id="navPersonal">
             <a href="#" class="nav-link" id="navPersonalActive">
@@ -517,7 +517,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
             </a>
             <ul class="nav nav-treeview">
 
-              <?php if (Helpers::getUserPermisoModulo('Asistencia', 'personal')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Asistencia', 'Personal')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="asistencia" class="nav-link" id="navAsistencia">
                     <i class="fas fa-calendar-check nav-icon text-orange" style="font-size: 14px"></i>
@@ -526,7 +526,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Personal', 'personal')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Personal', 'Personal')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="personal" class="nav-link" id="navPersonalI">
                     <i class="fas fa-user-tie nav-icon text-orange" style="font-size: 14px"></i>
@@ -535,7 +535,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Usuarios', 'personal')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Usuarios', 'Personal')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="usuario" class="nav-link" id="navUsuario">
                     <i class="fas fa-users-cog nav-icon text-orange" style="font-size: 14px"></i>
@@ -544,7 +544,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Permisos', 'personal')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Permisos', 'Personal')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="permiso" class="nav-link">
                     <i class="fas fa-key nav-icon text-orange" style="font-size: 14px"></i>
@@ -561,7 +561,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('configuracion')) {
+        if (Helpers::getUserPermisoModulo('Configuracion')) {
           ?>
           <li class="nav-item" id="navConfiguracion">
             <a href="#" class="nav-link" id="navConfiguracionActive">
@@ -572,7 +572,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <?php if (Helpers::getUserPermisoModulo('Datos Generales', 'configuracion')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Datos generales', 'Configuracion')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="negocio" class="nav-link" id="navDatosGeneralesI">
                     <i class="fas fa-building nav-icon text-orange" style="font-size: 14px"></i>
@@ -581,7 +581,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Facturadores', 'configuracion')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Facturadores', 'Configuracion')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="empresas" class="nav-link" id="navFacturadores">
                     <i class="fas fa-file-alt nav-icon text-orange" style="font-size: 14px"></i>
@@ -590,7 +590,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Sucursales', 'configuracion')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Sucursales', 'Configuracion')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="sucursal" class="nav-link" id="navSucursal">
                     <i class="fas fa-map-marker-alt nav-icon text-orange" style="font-size: 14px"></i>
@@ -606,7 +606,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('consultac')) {
+        if (Helpers::getUserPermisoModulo('Consultar compras')) {
           ?>
           <li class="nav-item" id="navConsultaCompras">
             <a href="#" class="nav-link" id="navConsultaComprasActive">
@@ -618,16 +618,16 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
             </a>
             <ul class="nav nav-treeview">
 
-              <?php if (Helpers::getUserPermisoModulo('Consulta Compras', 'consultac')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Compras', 'Consulta compras')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="compras-fecha" class="nav-link" id="navConsultaComprasI">
                     <i class="fas fa-calendar-alt nav-icon text-info" style="font-size: 14px"></i>
-                    <p>Consulta Compras</p>
+                    <p>Compras</p>
                   </a>
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Consulta Compras XP', 'consultac')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Compras por proveedor', 'Consulta compras')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="compras-proveedor" class="nav-link" id="navConsultaComprasII">
                     <i class="fas fa-truck-loading nav-icon text-purple" style="font-size: 14px"></i>
@@ -643,7 +643,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
         ?>
 
         <?php
-        if (Helpers::getUserPermisoModulo('consultav')) {
+        if (Helpers::getUserPermisoModulo('Consultar ventas')) {
           ?>
           <li class="nav-item" id="navConsultaVentas">
             <a href="#" class="nav-link" id="navConsultaVentasActive">
@@ -655,16 +655,16 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
             </a>
             <ul class="nav nav-treeview">
 
-              <?php if (Helpers::getUserPermisoModulo('Ventas Cliente', 'consultav')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Ventas por cliente', 'Consultar ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="ventas-cliente" class="nav-link" id="navVentasCliente">
                     <i class="fas fa-user-tag nav-icon text-primary" style="font-size: 14px"></i>
-                    <p>Ventas x Cliente</p>
+                    <p>Ventas por Cliente</p>
                   </a>
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Ventas Vendedor', 'consultav')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Ventas por vendedor', 'Consultar ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="ventas-vendedor" class="nav-link" id="navVentasVendedor">
                     <i class="fas fa-user-tie nav-icon text-primary" style="font-size: 14px"></i>
@@ -673,47 +673,47 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Ventas Utilidades', 'consultav')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Ventas - utilidades', 'Consultar ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="ventas-producto" class="nav-link" id="navVentasProducto">
                     <i class="fas fa-chart-line nav-icon text-primary" style="font-size: 14px"></i>
-                    <p>Ventas - Utilidades</p>
+                    <p>Ventas - utilidades</p>
                   </a>
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Creditos Utilidades', 'consultav')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Creditos - utilidades', 'Consultar ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="ventas-credito" class="nav-link" id="navVentasCredito">
                     <i class="fas fa-credit-card nav-icon text-primary" style="font-size: 14px"></i>
-                    <p>Créditos - Utilidades</p>
+                    <p>Créditos - utilidades</p>
                   </a>
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Consolidado', 'consultav')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Reporte consolidado', 'Consultar ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="reporte" class="nav-link" id="navVentasCredito">
                     <i class="fas fa-credit-card nav-icon text-primary" style="font-size: 14px"></i>
-                    <p>Reporte Consolidado</p>
+                    <p>Reporte consolidado</p>
                   </a>
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Ventas Servicios', 'consultav')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Ventas por servicio', 'Consultar ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="ventas-servicio" class="nav-link" id="navVentasServicio">
                     <i class="fas fa-concierge-bell nav-icon text-primary" style="font-size: 14px"></i>
-                    <p>Ventas x Servicio</p>
+                    <p>Ventas por servicio</p>
                   </a>
                 </li>
               <?php endif; ?>
 
-              <?php if (Helpers::getUserPermisoModulo('Ventas Detalle', 'consultav')): ?>
+              <?php if (Helpers::getUserPermisoModulo('Ventas detalle', 'Consultar ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="detalle-venta-comprobante" class="nav-link" id="navVentasDetalle">
                     <i class="fas fa-receipt nav-icon text-primary" style="font-size: 14px"></i>
-                    <p>Ventas Detalle</p>
+                    <p>Ventas detalle</p>
                   </a>
                 </li>
               <?php endif; ?>

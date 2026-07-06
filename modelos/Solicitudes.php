@@ -1,7 +1,8 @@
 <?php
 
 require "../configuraciones/Conexion.php";
-require_once './Persona.php';
+require_once 'Persona.php';
+require_once 'Helpers.php';
 
 class Solicitudes extends Persona
 {
@@ -162,6 +163,21 @@ class Solicitudes extends Persona
 
             ejecutarConsulta("START TRANSACTION");
 
+            // Verificar si la cotización ya tiene una solicitud
+            $sqlValidar = "SELECT idsolicitud
+                   FROM solicitud_credito
+                   WHERE idcotizacion = '$idcotizacion'
+                   LIMIT 1";
+
+            $solicitudExiste = ejecutarConsultaSimpleFila($sqlValidar);
+
+            if ($solicitudExiste) {
+                throw new Exception(
+                    "La cotización ya tiene una solicitud de crédito registrada."
+                );
+            }
+
+
             $codigo = "SOL-" . date('YmdHis');
 
             $scoreCrediticio = json_decode(
@@ -304,7 +320,30 @@ class Solicitudes extends Persona
         WHERE s.idsolicitud = '$idsolicitud'";
 
         $resultado = ejecutarConsultaSimpleFila($sql);
-        return json_encode($resultado ?: new stdClass());
+
+        $sqlpasos = "SELECT * FROM workflow_paso";
+        $datapasos = ejecutarConsulta($sqlpasos);
+        $resultPasos = [];
+
+        foreach ($datapasos as $paso) {
+            $permisoNombre = "Puede realizar " . mb_strtolower($paso['nombre'], 'UTF-8');
+            $tienePermiso = Helpers::getUserPermissionAccion($permisoNombre);
+            if (!$tienePermiso) {
+                continue;
+            }
+            $resultPasos[] = [
+                'id' => (int) $paso['idpaso'],
+                'label' => $paso['nombre'],
+                'description' => $paso['descripcion']
+            ];
+        }
+
+        $response = [
+            'pasos' => $resultPasos,
+            'data' => $resultado
+        ];
+
+        return json_encode($response);
     }
 
     private function insertarWorkflow($idsolicitud, $idpaso, $observacion, $idusuario, $estadoPaso = 'PENDIENTE', $fechaFin = null)

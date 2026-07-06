@@ -170,6 +170,19 @@ class Helpers
 
     }
 
+    public static function esSuperusuario()
+    {
+        $idusuario = $_SESSION['idusuario'];
+
+        $usuario = self::ejecutarConsultaSimpleFila("
+                        SELECT superusuario
+                        FROM usuario
+                        WHERE idusuario = '$idusuario'
+                    ");
+
+        return $usuario && $usuario['superusuario'] == 1;
+    }
+
     public function dataArchivosAdjuntos($idseguimiento)
     {
         $sql = "SELECT * FROM seguimiento_adjuntos WHERE idseguimiento = $idseguimiento";
@@ -193,7 +206,7 @@ class Helpers
             WHERE idsucursal = '$idsucursal'
             LIMIT 1";
 
-        $config = ejecutarConsultaSimpleFila($sql);
+        $config = self::ejecutarConsultaSimpleFila($sql);
 
         if (!$config) {
             return [
@@ -219,7 +232,7 @@ class Helpers
             WHERE idsucursal = '$idsucursal'
             LIMIT 1";
 
-        $config = ejecutarConsultaSimpleFila($sql);
+        $config = self::ejecutarConsultaSimpleFila($sql);
 
         if (!$config) {
             return [
@@ -235,6 +248,32 @@ class Helpers
             "dias_anticipacion" => $config["dias_anticipacion"]
         ];
     }
+
+
+    public function verificarRefinanciamientos($idsucursal)
+    {
+        $sql = "SELECT
+                is_refinanciamiento,
+                maximo_refinanciamientos
+            FROM sucursal_configuracion
+            WHERE idsucursal = '$idsucursal'
+            LIMIT 1";
+
+        $config = self::ejecutarConsultaSimpleFila($sql);
+
+        if (!$config) {
+            return [
+                "activo" => false,
+                "valor" => 0
+            ];
+        }
+
+        return [
+            "activo" => (int) $config["is_refinanciamiento"] === 1,
+            "valor" => (float) $config["maximo_refinanciamientos"]
+        ];
+    }
+
 
 
     public function toFloat($valor)

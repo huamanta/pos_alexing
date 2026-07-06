@@ -233,6 +233,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'amortizar_deuda':
+		$idsucursal = $_SESSION['idsucursal'];
 		$deuda = $_POST['montoPagarAmortizar'];
 		$idcliente = $_POST['idcliente_amortizar'];
 		$idventa_amortizar = isset($_POST['idventa_amortizar']) ? limpiarCadena($_POST['idventa_amortizar']) : '';
@@ -245,6 +246,7 @@ switch ($_GET["op"]) {
 
 		if (!empty($idventa_amortizar)) {
 			$rspta = $cuentascobrar->amortizarDeudaVenta(
+				$idsucursal,
 				$idventa_amortizar,
 				$formapago,
 				$montopago,

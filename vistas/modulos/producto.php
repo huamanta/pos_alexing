@@ -217,7 +217,7 @@
               <h3 class="card-title"> </h3>
 
               <div class="row">
-                <?php if (Helpers::getUserPermissionAccion('Agregar Productos')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Crear producto')) { ?>
                   <div class="col-md-1">
                     <button type="button" class="btn btn-primary btn-block float-right btn-xs" onclick="nuevo()"><i class="fa fa-plus"></i> Nuevo</button>
                   </div>
@@ -244,7 +244,7 @@
                 </div>
                 <?php } ?>
 
-                <?php if (Helpers::getUserPermissionAccion('InversionPP')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Inversion por producto')) { ?>
                 <div class="col-md-1">
                   <a href="reportes/rptproductoscompra.php" target="_blank"><button type="button" class="btn btn-info btn-block btn-xs"><i class="fas fa-file"></i> Inversión</button></a>
                 </div>
@@ -261,7 +261,7 @@
                 </div>
                 <?php } ?>
 
-                <?php if (Helpers::getUserPermissionAccion('Consultar Producto Sucursal')) { ?>
+                <?php if (Helpers::getUserPermissionAccion('Consultar producto sucursal')) { ?>
                   <div class="col-md-2">
                     <button class="btn btn-info btn-block btn-xs" onclick="abrirModalStockSucursales()">
                       <i class="fas fa-search-location"></i> Ver en otras sucursales

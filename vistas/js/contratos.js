@@ -165,61 +165,82 @@ function verificarCaja() {
 
 async function amortizar(idventa) {
     const idcaja = await verificarCaja();
+    $("#panelDescuentoAmortizar").hide();
     if (!idcaja) {
         Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
         return;
     }
-
-    $("#panel-pagar-cuotas").hide();
 
     $.ajax({
         url: 'controladores/cuentascobrar.php?op=cuotasPorPagar',
         data: { idventa: idventa },
         type: "GET",
         success: function (response) {
+
             let cuotas = JSON.parse(response);
+
+            let tieneMora = cuotas.some(c => parseFloat(c.mora_calculada || 0) > 0);
+
+            if (tieneMora) {
+                Swal.fire('Error', 'No se puede amortizar porque existen cuotas con mora.', 'error');
+                return;
+            }
 
             let totalCuotas = cuotas.length;
 
-            let html = `
-                <input 
-                    type="range"
+            $("#contenedorRange").html(`
+                <input type="range"
                     id="rangeCuotas"
                     min="1"
                     max="${totalCuotas}"
-                    value="1"
-                    step="1"
-                >
-            `;
+                    value="${totalCuotas}"
+                    step="1">
+            `);
 
-            $("#contenedorRange").html(html);
+            function calcularTotal(cantidad) {
 
-            calcularTotal(1);
+                let total = 0;
+                let descuento = 0;
 
-            $("#rangeCuotas").on("input", function () {
+                for (let i = 0; i < cantidad; i++) {
+                    total += parseFloat(cuotas[i].deuda);
+                    descuento += parseFloat(cuotas[i].descuento_calculado || 0);
+                }
 
+                let final = total - descuento;
+                if(descuento > 0){
+                    $("#panelDescuentoAmortizar").show();
+                }
+                $("#montoDescuentoAmortizar").html(descuento.toFixed(2));
+                $("#cantidadSeleccionada").val(cantidad);
+                $("#totalPagar").text(final.toFixed(2));
+                $("#montoPagarAmortizar").val(final.toFixed(2));
+            }
+
+            // INIT
+            calcularTotal(totalCuotas);
+
+            $("#rangeCuotas").off("input").on("input", function () {
                 let cantidad = parseInt($(this).val());
 
                 calcularTotal(cantidad);
             });
 
+            // INPUT manual (si quieres permitirlo)
+            $("#cantidadSeleccionada").off("input").on("input", function () {
+                let cantidad = parseInt($(this).val());
 
-            $("#montoPagarAmortizar").val('');
-            function calcularTotal(cantidad) {
+                if (!cantidad || cantidad < 1) return;
 
-                $("#cantidadSeleccionada").text(cantidad);
-
-                let total = 0;
-
-                for (let i = 0; i < cantidad; i++) {
-                    total += parseFloat(cuotas[i].deudatotal);
+                if (cantidad > totalCuotas) {
+                    cantidad = totalCuotas;
                 }
 
-                inicialCuota = cuotas[0].deudatotal
+                $("#rangeCuotas").val(cantidad); // 🔥 sincroniza slider
+                calcularTotal(cantidad);
+            });
 
-                $("#totalPagar").text(total.toFixed(2));
-                $("#montoPagarAmortizar").val(total.toFixed(2));
-            }
+            $('#modalAmortizar').modal('show');
         }
     })
 
@@ -231,14 +252,9 @@ async function amortizar(idventa) {
     $('#montoPagarAmortizar').val('');
     $('#montoAdeudadoAmortizar').val(saldoActualCuotas.toFixed(2));
     $('#deudaTotalAmortizar').html(saldoActualCuotas.toFixed(2));
-    $('#modalAmortizar').modal('show');
 };
 
-$("#btn-seleccionar-cuotas").click(function (e) {
-    e.preventDefault();
-    $("#panel-pagar-cuotas").show();
-    $("#montoPagarAmortizar").val(inicialCuota);
-});
+
 $('#formulario-amortizar').submit(async function (e) {
     e.preventDefault();
 

@@ -9,7 +9,7 @@ switch ($_GET["op"]) {
         $idsucursal = $_SESSION['idsucursal'];
         $buscar = isset($_GET["buscar"]) ? limpiarCadena($_GET["buscar"]) : "";
         $response = $refinanciamiento->buscarCreditos($idsucursal, $buscar);
-        echo $response;
+        echo json_encode($response);
         break;
 
     case 'detalleCredito':

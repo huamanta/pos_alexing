@@ -7,6 +7,7 @@ var pasoSeleccionado = null;
 var pasoActualSolicitud = null;
 var solicitudActual = null;
 let archivos = [];
+let steps = []
 
 function init() {
 
@@ -145,9 +146,10 @@ function verSolicitud(idsolicitud) {
 
     $.getJSON(
         "controladores/solicitudes.php?op=mostrarSolicitud&idsolicitud=" + idsolicitud,
-        function (data) {
-
-            let currentStep = parseInt(data.paso_actual) || 1;
+        function (response) {
+            const data = response?.data || {};
+            steps = response?.pasos || [];
+            let currentStep = parseInt(data?.paso_actual) || 1;
             let actionButtons = '';
 
             actionButtons += `
@@ -225,14 +227,6 @@ function verSolicitud(idsolicitud) {
                 }
             }
 
-            const steps = [
-                { id: 1, label: 'Evaluación Inicial' },
-                { id: 2, label: 'Validación Documentaria' },
-                { id: 3, label: 'Verificación Domiciliaria' },
-                { id: 4, label: 'Comité de Crédito' },
-                { id: 5, label: 'Aprobación Final' }
-            ];
-
             const selectedStep = currentStep;
 
             const backHint = currentStep > 1
@@ -240,6 +234,7 @@ function verSolicitud(idsolicitud) {
                 : '';
 
             let stepHtml = `<div>${backHint}<div class="solicitud-progressbar mb-4">`;
+
             steps.forEach(function (step, index) {
                 const isCompleted = step.id < currentStep;
                 const isCurrent = step.id === currentStep;
@@ -253,7 +248,9 @@ function verSolicitud(idsolicitud) {
                 const markerClass = isCurrent ? 'step-marker current' : isCompleted ? 'step-marker completed' : 'step-marker pending';
                 const labelClass = isCurrent ? 'step-label current' : isCompleted ? 'step-label completed' : 'step-label pending';
                 const connectorClass = isCompleted ? 'step-connector completed' : 'step-connector pending';
-                const actionAttr = isClickable ? ` onclick="verPaso(${data.idsolicitud}, ${step.id})" title="Ver ${step.label}" role="button" tabindex="0"` : '';
+                const actionAttr = isClickable
+                    ? `onclick="verPaso(${data.idsolicitud}, ${step.id})" title="Ver ${step.label}" role="button" tabindex="0"`
+                    : '';
                 const dataAttr = ` data-paso="${step.id}"`;
 
                 stepHtml += `
@@ -283,7 +280,9 @@ function verSolicitud(idsolicitud) {
             solicitudActual = data;
             pasoActualSolicitud = currentStep;
             pasoSeleccionado = currentStep;
-            mostrarPanelPasoSeleccionado(data.idsolicitud, currentStep);
+            setTimeout(() => {
+                mostrarPanelPasoSeleccionado(data.idsolicitud, currentStep);
+            }, 300)
             $("#modalDetalleSolicitud")
                 .modal("show");
 
@@ -298,15 +297,7 @@ function mostrarPanelPasoSeleccionado(idsolicitud, stepId) {
     pasoSeleccionado = stepId;
     $("#detalleSolicitud .solicitud-progressbar .step-item").removeClass("selected");
     $("#detalleSolicitud .solicitud-progressbar .step-item[data-paso='" + stepId + "']").addClass("selected");
-
-    const steps = [
-        { id: 1, label: 'Evaluación Inicial', description: 'Revisión inicial de score y datos básicos del cliente.' },
-        { id: 2, label: 'Validación Documentaria', description: 'Comprobación y recepción de la documentación requerida.' },
-        { id: 3, label: 'Verificación Domiciliaria', description: 'Comprobación de la dirección y la situación del cliente.' },
-        { id: 4, label: 'Comité de Crédito', description: 'Evaluación de la operación por parte del comité interno.' },
-        { id: 5, label: 'Aprobación Final', description: 'Decisión final y cierre del proceso de crédito.' }
-    ];
-
+    
     const step = steps.find(function (item) {
         return item.id === stepId;
     });
@@ -399,7 +390,7 @@ function mostrarPanelPasoSeleccionado(idsolicitud, stepId) {
             }
             stepDetailHtml = `
                 <form id="formPaso3_${idsolicitud}">
-                    ${is_conform? '<button type="button" class="btn btn-info float-right" onclick="actualizarPaso3(' + idsolicitud + ')">Actualizar</button>':''}
+                    ${is_conform ? '<button type="button" class="btn btn-info float-right" onclick="actualizarPaso3(' + idsolicitud + ')">Actualizar</button>' : ''}
                     <div class="form-group">
                         <label>Dirección registrada</label>
                         <input type="text" id="direccion_registrada_${idsolicitud}" class="form-control" ${!isCurrent || is_conform ? 'disabled' : ''} value="${solicitudActual ? solicitudActual.direccion || '' : ''}">
@@ -438,7 +429,7 @@ function mostrarPanelPasoSeleccionado(idsolicitud, stepId) {
                         <textarea id="comentariosVerificacion_${idsolicitud}" class="form-control" rows="3" ${!isCurrent || is_conform ? 'disabled' : ''}>${solicitudActual ? solicitudActual.comentarios || '' : ''}</textarea>
                     </div>
                     ${(isCurrent && !is_conform) ? '<button type="button" class="btn btn-primary btn-sm float-right" onclick="registrarVerificacionDomiciliaria(' + idsolicitud + ')">Registrar verificación</button>' : ''}
-                    ${is_conform ? '<button type="button" class="btn btn-primary btn-sm float-right" disabled id="btn_actualizar_verificacion_'+idsolicitud+'"  onclick="registrarVerificacionDomiciliaria(' + idsolicitud + ')">Actualizar verificación</button>' : ''}
+                    ${is_conform ? '<button type="button" class="btn btn-primary btn-sm float-right" disabled id="btn_actualizar_verificacion_' + idsolicitud + '"  onclick="registrarVerificacionDomiciliaria(' + idsolicitud + ')">Actualizar verificación</button>' : ''}
                 </form>
             `;
             break;
@@ -1045,7 +1036,7 @@ function seleccionarCliente(idcliente) {
     if (!idcliente) {
         return;
     }
-    $.get("controladores/cotizaciones.php?op=cotizacionesCliente", { idcliente: idcliente}, function (r) {
+    $.get("controladores/cotizaciones.php?op=cotizacionesCliente", { idcliente: idcliente }, function (r) {
         $("#idcotizacion").html(r);
         $('#idcotizacion').select2('');
     });

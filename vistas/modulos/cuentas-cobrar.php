@@ -901,6 +901,16 @@ date_default_timezone_set('America/Lima');
             A continuación Ingresa el total de dinero abonado y luego haz click en Guardar.
           </div>
 
+          <div class="success-box-custom" id="panelDescuentoAmortizar">
+            <strong>
+              <i class="fas fa-hand-holding-usd"></i>
+              ¡Descuento por pago anticipado!
+            </strong>
+            <br>
+            Has obtenido un descuento de <strong>S/ <span id="montoDescuentoAmortizar"></span></strong>
+            por realizar el pagoantes de la fecha de vencimiento tu crédito.
+          </div>
+
           <div class="row">
             <div class="col-sm-4">
               <div class="form-group">
@@ -917,7 +927,7 @@ date_default_timezone_set('America/Lima');
               <div class="form-group">
                 <label for="name" class="control-label">Monto a Pagar: <a style="float: right; color: blue"
                     id="btn-seleccionar-cuotas"> Seleccionar cuotas</a></label>
-                <input type="text" class="form-control" id="montoPagarAmortizar" name="montoPagarAmortizar" required="">
+                <input type="text" class="form-control" id="montoPagarAmortizar" name="montoPagarAmortizar" required="" readonly>
               </div>
             </div>
             <div class="col-sm-4">
@@ -989,7 +999,7 @@ date_default_timezone_set('America/Lima');
               color: white;
             }
           </style>
-          <div class="row" id="panel-pagar-cuotas" style="display: none">
+          <div class="row" id="panel-pagar-cuotas">
             <div class="col-sm-12">
               <div class="card-cuotas">
 
@@ -1003,7 +1013,7 @@ date_default_timezone_set('America/Lima');
 
                   <div class="box-info">
                     <span class="label">Cuotas a pagar</span>
-                    <span class="valor" id="cantidadSeleccionada">1</span>
+                    <input class="valor" id="cantidadSeleccionada"  style="width: 80px; text-align: center;"/>
                   </div>
 
                   <div class="box-info total">
@@ -1020,7 +1030,7 @@ date_default_timezone_set('America/Lima');
         </div>
         <div class="modal-footer justify-content-between">
           <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-          <button class="btn btn-primary" type="submit">Guardar</button>
+          <button class="btn btn-primary" type="submit" id="btnAmortizarDeuda">Guardar</button>
         </div>
       </form>
     </div>

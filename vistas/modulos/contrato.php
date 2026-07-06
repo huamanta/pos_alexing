@@ -245,8 +245,9 @@
                                     <div class="input-group">
                                         <select id="estado" name="estado" class="form-control select2">
                                             <option value="">Todos</option>
-                                            <option value="1">Pagados</option>
-                                            <option value="2">Pendientes</option>
+                                            <option value="2">Pagados</option>
+                                            <option value="1">Pendientes</option>
+                                            <option value="0">Anulados</option>
                                         </select>
                                     </div>
                                 </div>
@@ -267,6 +268,7 @@
                                         placeholder="Frecuencia">
                                         <option value="" selected hidden>Seleccionar...
                                         </option>
+                                        <option value="">Todos</option>
                                         <option value="1">Diario</option>
                                         <option value="2">Semanal</option>
                                         <option value="3">Quincenal</option>
@@ -652,6 +654,16 @@
                             A continuación Ingresa el total de dinero abonado y luego haz click en Guardar.
                         </div>
 
+                        <div class="success-box-custom" id="panelDescuentoAmortizar">
+                            <strong>
+                                <i class="fas fa-hand-holding-usd"></i>
+                                ¡Descuento por pago anticipado!
+                            </strong>
+                            <br>
+                            Has obtenido un descuento de <strong>S/ <span id="montoDescuentoAmortizar"></span></strong>
+                            por realizar el pagoantes de la fecha de vencimiento tu crédito.
+                        </div>
+
                         <div class="row">
                             <div class="col-sm-4">
                                 <div class="form-group">
@@ -666,11 +678,9 @@
                             </div>
                             <div class="col-sm-4">
                                 <div class="form-group">
-                                    <label for="name" class="control-label">Monto a Pagar: <a
-                                            style="float: right; color: blue" id="btn-seleccionar-cuotas">
-                                            Seleccionar cuotas</a></label>
+                                    <label for="name" class="control-label">Monto a Pagar: </label>
                                     <input type="text" class="form-control" id="montoPagarAmortizar"
-                                        name="montoPagarAmortizar" required="">
+                                        name="montoPagarAmortizar" required="" readonly>
                                 </div>
                             </div>
                             <div class="col-sm-4">
@@ -742,7 +752,7 @@
                                 color: white;
                             }
                         </style>
-                        <div class="row" id="panel-pagar-cuotas" style="display: none">
+                        <div class="row" id="panel-pagar-cuotas">
                             <div class="col-sm-12">
                                 <div class="card-cuotas">
 
@@ -756,7 +766,7 @@
 
                                         <div class="box-info">
                                             <span class="label">Cuotas a pagar</span>
-                                            <span class="valor" id="cantidadSeleccionada">1</span>
+                                            <input class="valor" type="text" id="cantidadSeleccionada" style="width: 80px; text-align: center;">
                                         </div>
 
                                         <div class="box-info total">

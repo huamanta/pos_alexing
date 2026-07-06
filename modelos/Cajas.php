@@ -1,7 +1,8 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
-class Cajas
+require_once 'Helpers.php';
+class Cajas extends Helpers
 {
     public function __construct()
     {
@@ -80,6 +81,7 @@ class Cajas
         $sql = "SELECT 
                 ca.aperturacajaid,
                 ca.idcaja,
+                ca.idusuario,
                 ca.fecha_apertura,
                 ca.fecha_cierre,
                 ca.efectivo_apertura,
@@ -88,7 +90,7 @@ class Cajas
                 c.nombre,
                 pe.nombre as personal,
 
-                -- 🔥 TOTAL DE VENTAS POR CAJA
+                -- TOTAL DE VENTAS POR CAJA
                 (
                     SELECT COUNT(*) 
                     FROM venta v 
@@ -114,7 +116,7 @@ class Cajas
 
         while ($reg = $rspta->fetch_object()) {
 
-            // 🔥 SOLO SI NECESITAS EL DETALLE DE VENTAS
+            // SOLO SI NECESITAS EL DETALLE DE VENTAS
             $sql2 = "SELECT 
                     v.idventa,
                     v.fecha_hora,
@@ -132,6 +134,10 @@ class Cajas
                 $ventasdata[] = $reg2;
             }
 
+            $supeUsuario = Helpers::esSuperusuario();
+            $pemisoUsuario = Helpers::getUserPermissionAccion('Cerrar caja');
+            $puedeCerrarCaja = $supeUsuario || ($pemisoUsuario && $reg->idusuario == $_SESSION['idusuario']);
+
             $data[] = array(
                 'aperturacajaid' => $reg->aperturacajaid,
                 'numero' => $reg->numero,
@@ -142,6 +148,7 @@ class Cajas
                 'fecha_cierre' => $reg->fecha_cierre,
                 'efectivo_cierre' => '<span class="badge bg-success">S/ ' . $reg->efectivo_cierre . '</span>',
                 'cantventas' => $reg->cantventas,
+                'puede_cerrar_caja' => $puedeCerrarCaja,
                 'ventas' => $ventasdata
             );
         }
@@ -220,7 +227,8 @@ class Cajas
     }
 
 
-    public function getClienteVenta($idcpc) {
+    public function getClienteVenta($idcpc)
+    {
         $sql = "SELECT * FROM cuentas_por_cobrar cc
         INNER JOIN venta v ON v.idventa = cc.idventa
         INNER JOIN persona p ON v.idcliente = p.idpersona
@@ -276,7 +284,8 @@ class Cajas
     }
 
 
-    public function getProveedorCompra($idcpp) {
+    public function getProveedorCompra($idcpp)
+    {
         $sql = "SELECT * FROM cuentas_por_paga cp
         INNER JOIN compra c ON c.idventa = cp.icompra
         INNER JOIN persona p ON c.idcliente = p.idpersona

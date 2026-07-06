@@ -171,28 +171,30 @@
                     <div class="settings-menu">
 
                         <ul class="nav nav-pills nav-stacked">
-
-                            <li class="active" id="itemMenuMora">
-                                <a href="#mora" data-toggle="tab" onclick="activarMenu('itemMenuMora')">
-                                    <i class="fa fa-exclamation-triangle"></i>
-                                    Mora
-                                </a>
-                            </li>
-
-                            <li id="itemMenuCredito">
-                                <a href="#credito" data-toggle="tab" onclick="activarMenu('itemMenuCredito')">
-                                    <i class="fa fa-credit-card"></i>
-                                    Créditos
-                                </a>
-                            </li>
-
-                            <li id="itemMenuRef">
-                                <a href="#ref" data-toggle="tab" onclick="activarMenu('itemMenuRef')">
-                                    <i class="fa fa-user"></i>
-                                    Refinanciamiento
-                                </a>
-                            </li>
-
+                            <?php if (Helpers::getUserPermisoModulo('Mora', "Configuracion general")): ?>
+                                <li class="active" id="itemMenuMora">
+                                    <a href="#mora" data-toggle="tab" onclick="activarMenu('itemMenuMora')">
+                                        <i class="fa fa-exclamation-triangle"></i>
+                                        Mora
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+                            <?php if (Helpers::getUserPermisoModulo('Credito', "Configuracion general")): ?>
+                                <li id="itemMenuCredito">
+                                    <a href="#credito" data-toggle="tab" onclick="activarMenu('itemMenuCredito')">
+                                        <i class="fa fa-credit-card"></i>
+                                        Créditos
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+                            <?php if (Helpers::getUserPermisoModulo('Refinanciamiento', "Configuracion general")): ?>
+                                <li id="itemMenuRef">
+                                    <a href="#ref" data-toggle="tab" onclick="activarMenu('itemMenuRef')">
+                                        <i class="fa fa-user"></i>
+                                        Refinanciamiento
+                                    </a>
+                                </li>
+                            <?php endif; ?>
                         </ul>
 
                     </div>
@@ -206,57 +208,99 @@
 
                     <div class="tab-content">
 
-                        <!-- MORA -->
+                        <?php if (Helpers::getUserPermisoModulo('Mora', "Configuracion general")): ?>
+                            <!-- MORA -->
+                            <div class="tab-pane active" id="mora">
 
-                        <div class="tab-pane active" id="mora">
+                                <div class="setting-card">
 
-                            <div class="setting-card">
+                                    <div class="setting-header">
 
-                                <div class="setting-header">
+                                        <h3>
 
-                                    <h3>
+                                            Configuración de Mora
 
-                                        Configuración de Mora
+                                        </h3>
 
-                                    </h3>
+                                    </div>
+                                    <form id="formConfiguracionMora">
+                                        <div class="setting-body">
 
-                                </div>
-                                <form id="formConfiguracionMora">
-                                    <div class="setting-body">
+                                            <!-- FILA -->
 
-                                        <!-- FILA -->
+                                            <div class="setting-row">
 
-                                        <div class="setting-row">
+                                                <div class="row">
 
-                                            <div class="row">
+                                                    <div class="col-md-8">
 
-                                                <div class="col-md-8">
+                                                        <div class="setting-title">
 
-                                                    <div class="setting-title">
+                                                            Activar cobro de mora
 
-                                                        Activar cobro de mora
+                                                        </div>
+
+                                                        <div class="setting-desc">
+
+                                                            El sistema calculará automáticamente la mora cuando una cuota se
+                                                            encuentre vencida.
+
+                                                        </div>
 
                                                     </div>
 
-                                                    <div class="setting-desc">
+                                                    <div class="col-md-4 setting-value">
 
-                                                        El sistema calculará automáticamente la mora cuando una cuota se
-                                                        encuentre vencida.
+                                                        <label class="switch">
+
+                                                            <input type="checkbox" id="is_mora_credito"
+                                                                name="is_mora_credito">
+
+                                                            <span class="slider"></span>
+
+                                                        </label>
 
                                                     </div>
 
                                                 </div>
 
-                                                <div class="col-md-4 setting-value">
+                                            </div>
 
-                                                    <label class="switch">
+                                            <!-- FILA -->
 
-                                                        <input type="checkbox" id="is_mora_credito"
-                                                            name="is_mora_credito">
+                                            <div class="setting-row">
 
-                                                        <span class="slider"></span>
+                                                <div class="row">
 
-                                                    </label>
+                                                    <div class="col-md-8">
+
+                                                        <div class="setting-title">
+
+                                                            Porcentaje diario
+
+                                                        </div>
+
+                                                        <div class="setting-desc">
+
+                                                            Porcentaje que se cobrará por cada día de retraso.
+
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="col-md-4">
+
+                                                        <div class="input-group">
+                                                            <div class="input-group-prepend">
+                                                                <input id="valor_mora_credito" name="valor_mora_credito"
+                                                                    type="number" step="0.01" class="form-control input-lg">
+                                                                <span class="input-group-text">
+                                                                    %
+                                                                </span>
+                                                            </div>
+                                                        </div>
+
+                                                    </div>
 
                                                 </div>
 
@@ -264,34 +308,249 @@
 
                                         </div>
 
-                                        <!-- FILA -->
+                                        <div class="setting-footer">
 
-                                        <div class="setting-row">
+                                            <button class="btn btn-primary btn-lg" id="btnGuardarMora">
 
-                                            <div class="row">
+                                                <i class="fa fa-save"></i>
 
-                                                <div class="col-md-8">
+                                                Guardar Configuración
 
-                                                    <div class="setting-title">
+                                            </button>
 
-                                                        Porcentaje diario
+                                        </div>
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        <?php endif; ?>
+                        <?php if (Helpers::getUserPermisoModulo('Configuracion general', "Credito")): ?>
+                            <!-- CREDITO -->
+                            <div class="tab-pane" id="credito">
+
+                                <div class="setting-card">
+
+                                    <div class="setting-header">
+                                        <h3>
+                                            Configuración de Crédito
+                                        </h3>
+                                    </div>
+
+                                    <form id="formConfiguracionCreditos">
+                                        <div class="setting-body">
+
+                                            <div class="setting-row">
+
+                                                <div class="row">
+
+                                                    <div class="col-md-8">
+
+                                                        <div class="setting-title">
+
+                                                            Notificacions automaticas
+
+                                                        </div>
+
+                                                        <div class="setting-desc">
+                                                            El sistema enviara automáticamente notificaciones de una cuota
+                                                            se
+                                                            encuentre por vencer.
+
+                                                        </div>
 
                                                     </div>
 
-                                                    <div class="setting-desc">
+                                                    <div class="col-md-4 setting-value">
 
-                                                        Porcentaje que se cobrará por cada día de retraso.
+                                                        <label class="switch">
+
+                                                            <input type="checkbox" id="is_notificacion"
+                                                                name="is_notificacion">
+
+                                                            <span class="slider"></span>
+
+                                                        </label>
 
                                                     </div>
 
                                                 </div>
 
-                                                <div class="col-md-4">
+                                            </div>
 
-                                                    <div class="input-group">
+                                            <div class="setting-row">
+
+                                                <div class="row">
+
+                                                    <div class="col-md-8">
+
+                                                        <div class="setting-title">
+
+                                                            Días de gracia
+
+                                                        </div>
+
+                                                        <div class="setting-desc">
+
+                                                            Días antes de empezar el cálculo de mora.
+
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="col-md-4">
+                                                        <div class="input-group">
+                                                            <input id="dias_gracia" name="dias_gracia" type="number"
+                                                                step="0.01" class="form-control input-lg">
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+
+
+                                            <div class="setting-row">
+
+                                                <div class="row">
+
+                                                    <div class="col-md-8">
+
+                                                        <div class="setting-title">
+
+                                                            Interés por defecto
+
+                                                        </div>
+
+                                                        <div class="setting-desc">
+
+                                                            Interés sugerido al crear un crédito.
+
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="col-md-4">
+
                                                         <div class="input-group-prepend">
-                                                            <input id="valor_mora_credito" name="valor_mora_credito"
+                                                            <input id="interes_defecto" name="interes_defecto" type="number"
+                                                                step="0.01" class="form-control input-lg">
+                                                            <span class="input-group-text">
+                                                                %
+                                                            </span>
+                                                        </div>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+
+                                        <div class="setting-header">
+                                            <h3>
+                                                Amortizaciones
+                                            </h3>
+                                        </div>
+
+                                        <div class="setting-body">
+
+                                            <div class="setting-row">
+
+                                                <div class="row">
+
+                                                    <div class="col-md-8">
+
+                                                        <div class="setting-title">
+
+                                                            Descuento por pago anticipado
+
+                                                        </div>
+
+                                                        <div class="setting-desc">
+                                                            Descuento aplicable cuando se realiza un pago anticipado.
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="col-md-4 setting-value">
+
+                                                        <label class="switch">
+
+                                                            <input type="checkbox" id="is_descuento_anticipado"
+                                                                name="is_descuento_anticipado">
+
+                                                            <span class="slider"></span>
+
+                                                        </label>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                            <div class="setting-row">
+
+                                                <div class="row">
+
+                                                    <div class="col-md-8">
+
+                                                        <div class="setting-title">
+
+                                                            Dias minimos de anticipo
+
+                                                        </div>
+
+                                                        <div class="setting-desc">
+
+                                                            Numero de dias minimos a los cuales se ralizara descuento de
+                                                            credito.
+
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="col-md-4">
+                                                        <div class="input-group-prepend">
+                                                            <input id="dias_anticipacion" name="dias_anticipacion"
                                                                 type="number" step="0.01" class="form-control input-lg">
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                            <div class="setting-row">
+
+                                                <div class="row">
+
+                                                    <div class="col-md-8">
+
+                                                        <div class="setting-title">
+
+                                                            Porcentaje de descuento
+
+                                                        </div>
+
+                                                        <div class="setting-desc">
+
+                                                            Porcentaje de descuento aplicable al realizar un pago
+                                                            anticipado.
+
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="col-md-4">
+                                                        <div class="input-group-prepend">
+                                                            <input id="valor_descuento_anticipado"
+                                                                name="valor_descuento_anticipado" type="number" step="0.01"
+                                                                class="form-control input-lg">
                                                             <span class="input-group-text">
                                                                 %
                                                             </span>
@@ -304,186 +563,104 @@
 
                                         </div>
 
-                                    </div>
+                                        <div class="setting-footer">
 
-                                    <div class="setting-footer">
+                                            <button class="btn btn-primary btn-lg" id="btnGuardarCreditos">
 
-                                        <button class="btn btn-primary btn-lg" id="btnGuardarMora">
+                                                <i class="fa fa-save"></i>
 
-                                            <i class="fa fa-save"></i>
+                                                Guardar Configuración
 
-                                            Guardar Configuración
+                                            </button>
 
-                                        </button>
-
-                                    </div>
-                                </form>
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- CREDITO -->
-
-                        <div class="tab-pane" id="credito">
-
-                            <div class="setting-card">
-
-                                <div class="setting-header">
-                                    <h3>
-                                        Configuración de Crédito
-                                    </h3>
+                                        </div>
+                                    </form>
                                 </div>
 
-                                <form id="formConfiguracionCreditos">
-                                    <div class="setting-body">
+                            </div>
+                        <?php endif; ?>
+                        <?php if (Helpers::getUserPermisoModulo('Configuracion general', "Refinanciamiento")): ?>
+                            <!-- REFINANCIAMIENTO -->
+                            <div class="tab-pane" id="ref">
 
-                                        <div class="setting-row">
-
-                                            <div class="row">
-
-                                                <div class="col-md-8">
-
-                                                    <div class="setting-title">
-
-                                                        Notificacions automaticas
-
-                                                    </div>
-
-                                                    <div class="setting-desc">
-                                                        El sistema enviara automáticamente notificaciones de una cuota
-                                                        se
-                                                        encuentre por vencer.
-
-                                                    </div>
-
-                                                </div>
-
-                                                <div class="col-md-4 setting-value">
-
-                                                    <label class="switch">
-
-                                                        <input type="checkbox" id="is_notificacion"
-                                                            name="is_notificacion">
-
-                                                        <span class="slider"></span>
-
-                                                    </label>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                        <div class="setting-row">
-
-                                            <div class="row">
-
-                                                <div class="col-md-8">
-
-                                                    <div class="setting-title">
-
-                                                        Días de gracia
-
-                                                    </div>
-
-                                                    <div class="setting-desc">
-
-                                                        Días antes de empezar el cálculo de mora.
-
-                                                    </div>
-
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <div class="input-group">
-                                                        <input id="dias_gracia" name="dias_gracia" type="number"
-                                                            step="0.01" class="form-control input-lg">
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-
-
-                                        <div class="setting-row">
-
-                                            <div class="row">
-
-                                                <div class="col-md-8">
-
-                                                    <div class="setting-title">
-
-                                                        Interés por defecto
-
-                                                    </div>
-
-                                                    <div class="setting-desc">
-
-                                                        Interés sugerido al crear un crédito.
-
-                                                    </div>
-
-                                                </div>
-
-                                                <div class="col-md-4">
-
-                                                    <div class="input-group-prepend">
-                                                        <input id="interes_defecto" name="interes_defecto" type="number"
-                                                            step="0.01" class="form-control input-lg">
-                                                        <span class="input-group-text">
-                                                            %
-                                                        </span>
-                                                    </div>
-
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
+                                <div class="setting-card">
 
                                     <div class="setting-header">
+
                                         <h3>
-                                            Amortizaciones
+
+                                            <i class="fa fa-refresh text-warning"></i>
+
+                                            Configuración de Refinanciamiento
+
                                         </h3>
+
                                     </div>
 
-                                    <div class="setting-body">
+                                    <form id="formConfiguracionRefinanciamiento">
+                                        <div class="setting-body">
+                                            <div class="setting-row">
 
-                                        <div class="setting-row">
+                                                <div class="row">
 
-                                            <div class="row">
+                                                    <div class="col-md-8">
 
-                                                <div class="col-md-8">
+                                                        <div class="setting-title">
 
-                                                    <div class="setting-title">
+                                                            Activar refinanciamientos
 
-                                                        Descuento por pago anticipado
+                                                        </div>
+
+                                                        <div class="setting-desc">
+                                                            El sistema mostrara el modulo de rfinanciamientos para el
+                                                            usuario .
+                                                        </div>
 
                                                     </div>
 
-                                                    <div class="setting-desc">
-                                                        Descuento aplicable cuando se realiza un pago anticipado.
+                                                    <div class="col-md-4 setting-value">
+
+                                                        <label class="switch">
+
+                                                            <input type="checkbox" id="is_refinanciamiento"
+                                                                name="is_refinanciamiento">
+
+                                                            <span class="slider"></span>
+
+                                                        </label>
+
                                                     </div>
 
                                                 </div>
 
-                                                <div class="col-md-4 setting-value">
+                                            </div>
 
-                                                    <label class="switch">
+                                            <div class="setting-row">
 
-                                                        <input type="checkbox" id="is_descuento_anticipado"
-                                                            name="is_descuento_anticipado">
+                                                <div class="row">
 
-                                                        <span class="slider"></span>
+                                                    <div class="col-md-8">
 
-                                                    </label>
+                                                        <div class="setting-title">
+
+                                                            Máximo refinanciamientos
+
+                                                        </div>
+
+                                                        <div class="setting-desc">
+
+                                                            Número máximo de veces que un crédito podrá refinanciarse.
+
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="col-md-4">
+
+                                                        <input class="form-control input-lg" type="number"
+                                                            id="maximo_refinanciamientos" name="maximo_refinanciamientos">
+
+                                                    </div>
 
                                                 </div>
 
@@ -491,161 +668,22 @@
 
                                         </div>
 
-                                        <div class="setting-row">
+                                        <div class="setting-footer">
 
-                                            <div class="row">
+                                            <button class="btn btn-primary btn-lg" id="btnGuardarRefinanciamiento">
 
-                                                <div class="col-md-8">
+                                                <i class="fa fa-save"></i>
 
-                                                    <div class="setting-title">
+                                                Guardar Configuración
 
-                                                        Dias minimos de anticipo
-
-                                                    </div>
-
-                                                    <div class="setting-desc">
-
-                                                        Numero de dias minimos a los cuales se ralizara descuento de credito.
-
-                                                    </div>
-
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <div class="input-group-prepend">
-                                                        <input id="dias_anticipacion"
-                                                            name="dias_anticipacion" type="number" step="0.01"
-                                                            class="form-control input-lg">
-                                                    </div>
-                                                </div>
-
-                                            </div>
+                                            </button>
 
                                         </div>
-
-                                        <div class="setting-row">
-
-                                            <div class="row">
-
-                                                <div class="col-md-8">
-
-                                                    <div class="setting-title">
-
-                                                        Porcentaje de descuento
-
-                                                    </div>
-
-                                                    <div class="setting-desc">
-
-                                                        Porcentaje de descuento aplicable al realizar un pago
-                                                        anticipado.
-
-                                                    </div>
-
-                                                </div>
-
-                                                <div class="col-md-4">
-                                                    <div class="input-group-prepend">
-                                                        <input id="valor_descuento_anticipado"
-                                                            name="valor_descuento_anticipado" type="number" step="0.01"
-                                                            class="form-control input-lg">
-                                                        <span class="input-group-text">
-                                                            %
-                                                        </span>
-                                                    </div>
-                                                </div>
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                    <div class="setting-footer">
-
-                                        <button class="btn btn-primary btn-lg" id="btnGuardarCreditos">
-
-                                            <i class="fa fa-save"></i>
-
-                                            Guardar Configuración
-
-                                        </button>
-
-                                    </div>
-                                </form>
-                            </div>
-
-                        </div>
-
-                        <!-- REFINANCIAMIENTO -->
-
-                        <div class="tab-pane" id="ref">
-
-                            <div class="setting-card">
-
-                                <div class="setting-header">
-
-                                    <h3>
-
-                                        <i class="fa fa-refresh text-warning"></i>
-
-                                        Configuración de Refinanciamiento
-
-                                    </h3>
-
-                                </div>
-
-                                <div class="setting-body">
-
-                                    <div class="setting-row">
-
-                                        <div class="row">
-
-                                            <div class="col-md-8">
-
-                                                <div class="setting-title">
-
-                                                    Máximo refinanciamientos
-
-                                                </div>
-
-                                                <div class="setting-desc">
-
-                                                    Número máximo de veces que un crédito podrá refinanciarse.
-
-                                                </div>
-
-                                            </div>
-
-                                            <div class="col-md-4">
-
-                                                <input class="form-control input-lg" type="number"
-                                                    id="maximo_refinanciamientos" name="maximo_refinanciamientos">
-
-                                            </div>
-
-                                        </div>
-
-                                    </div>
-
-                                </div>
-
-                                <div class="setting-footer">
-
-                                    <button class="btn btn-primary btn-lg">
-
-                                        <i class="fa fa-save"></i>
-
-                                        Guardar Configuración
-
-                                    </button>
-
+                                    </form>
                                 </div>
 
                             </div>
-
-                        </div>
-
+                        <?php endif; ?>
                     </div>
 
                 </div>

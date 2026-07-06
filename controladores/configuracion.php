@@ -4,7 +4,7 @@ $configuracion = new Configuracion();
 session_start();
 switch ($_GET['op']) {
     case 'listarConfiguracion':
-        $idsucursal = $_SESSION['idsucursal'];
+        $idsucursal = $_GET['idsucursal'] ?? $_SESSION['idsucursal'];
         $res = $configuracion->listarConfiguracion($idsucursal);
         echo $res;
         break;
@@ -26,6 +26,14 @@ switch ($_GET['op']) {
         $valor_descuento_anticipado = $_POST['valor_descuento_anticipado'];
         $dias_anticipacion = $_POST['dias_anticipacion'];
         $res = $configuracion->actualizarConfiguracionCreditos($idsucursal, $is_notificacion, $dias_gracia, $interes_defecto, $is_descuento_anticipado, $valor_descuento_anticipado, $dias_anticipacion);
+        echo $res;
+        break;
+
+    case 'actualizarConfiguracionRefinanciamiento':
+        $idsucursal = $_SESSION['idsucursal'];
+        $is_refinanciamiento = !empty($_POST['is_refinanciamiento']) ? 1 : 0;
+        $maximo_refinanciamientos = $_POST['maximo_refinanciamientos'];
+        $res = $configuracion->actualizarConfiguracionRefinanciamiento($idsucursal, $is_refinanciamiento, $maximo_refinanciamientos);
         echo $res;
         break;
 

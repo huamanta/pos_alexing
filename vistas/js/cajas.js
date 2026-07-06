@@ -197,6 +197,10 @@ function historial() {
       var html = "";
       if (data != '') {
         $.each(data, function (i, item) {
+          let btnCierre = '';
+          if(data[i].fecha_cierre === null && data[i].puede_cerrar_caja){
+              btnCierre = `<button class="btn btn-danger btn-xs" title="Cerrar caja" onclick="cerrarCaja(` + data[i].aperturacajaid + `)"><i class="fas fa-sign-out-alt"></i></button>`;
+          }
           html +=
             `<tr>
                 <td>` + data[i].nombre + `</td>
@@ -206,7 +210,10 @@ function historial() {
                 <td>` + (data[i].fecha_cierre != null ? data[i].fecha_cierre : '<span class="badge bg-blue">ABIERTO</span>') + `</td>
                 <td>` + (data[i].efectivo_cierre != null ? data[i].efectivo_cierre : '<span class="badge bg-blue">ABIERTO</span>') + `</td>
                 <td>` + data[i].cantventas + `</td>
-                <td><a href="#" onclick="verReportes(` + data[i].aperturacajaid + `)"><i class="fa fa-eye"></i></a></td>
+                <td>
+                  <button class="btn btn-warning btn-xs" title="Ver registros de caja" onclick="verReportes(` + data[i].aperturacajaid + `)"><i class="fas fa-eye"></i></button>
+                  ${btnCierre}
+                </td>
               </tr>`;
         });
       } else {

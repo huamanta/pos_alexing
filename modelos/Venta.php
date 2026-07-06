@@ -1759,15 +1759,17 @@ class Venta
                         "precio_venta" => Helpers::get_currency_symbol($reg2->precio_venta, $currency),
                     ); # code...
                 }
-
+                $totalrecibido = $reg->totalrecibido + $reg->totaldeposito;
+                $interes = (($reg->total_venta - $totalrecibido) * $reg->interes) / 100;
                 $data[] = array(
                     "idventa" => $reg->idventa,
                     "tipo_comprobante" => $reg->tipo_comprobante,
                     "serie_comprobante" => $reg->serie_comprobante . '-' . $reg->num_comprobante,
                     "fecha_hora" => $reg->fecha_hora,
-                    "interes" => ($reg->total_venta * $reg->interes) / 100,
-                    "totalrecibido" => ($reg->totalrecibido == 0) ? $reg->montoPagado : $reg->totalrecibido,
-                    "total_venta" => $reg->total_venta + ($reg->total_venta * $reg->interes) / 100,
+                    "interes" => $interes,
+                    "totalrecibido" => $reg->totalrecibido + $reg->totaldeposito,
+                    "venta_sin_interes" => $reg->total_venta - $totalrecibido,
+                    "total_venta" => $reg->total_venta - $totalrecibido + $interes,
                     "meses" => $reg->meses,
                     "detalle" => $detalle,
                 );
@@ -1792,13 +1794,33 @@ class Venta
                         $datadetallecuentasxcobrar[] = array(
                             "tipo" => 'AMORTIZACION DE CUENTA',
                             "montopagado" => $reg4->montopagado,
+                            "montotarjeta" => $reg4->montotarjeta,
+                            "total" => $reg4->montopagado + $reg4->montotarjeta,
                         );
                     }
+
+                    $dias_mora = '';
+
+                    if (!empty($reg3->fecha_update_mora)) {
+
+                        $dias = (new DateTime($reg3->fecha_update_mora))
+                            ->diff(new DateTime($reg3->fechavencimiento))
+                            ->days;
+
+                        $dias_mora = "{$dias} días de mora";
+
+                        if ($dias == 1) {
+                            $dias_mora = "{$dias} día de mora";
+                        }
+                    }
                     $list[] = array(
-                        "fecha_hora" => $reg->fecha_hora,
+                        "fecha_hora" => $reg3->fecharegistro,
                         "tipo" => 'CUENTA POR COBRAR -' . $reg->serie_comprobante . '-' . $reg->num_comprobante,
-                        "deudatotal" => $reg3->deudatotal,
+                        "deudatotal" => $reg3->deuda_base,
                         "interes" => $reg3->interes,
+                        "mora_pagada" => $reg3->mora_pagada,
+                        "dias_mora" => $dias_mora,
+                        "descuento" => $reg3->descuento,
                         "abonototal" => $reg3->abonototal,
                         "detalle" => $datadetallecuentasxcobrar,
                     );

@@ -134,14 +134,14 @@
                     <div class="row">
 
                         <div class="col-md-2">
+                            <?php if (Helpers::getUserPermissionAccion('Crear solicitud')): ?>
+                                <button type="button" class="btn btn-primary btn-block" onclick="nuevaSolicitud()">
 
-                            <button type="button" class="btn btn-primary btn-block" onclick="nuevaSolicitud()">
+                                    <i class="fa fa-plus"></i>
+                                    Nuevo
 
-                                <i class="fa fa-plus"></i>
-                                Nuevo
-
-                            </button>
-
+                                </button>
+                            <?php endif; ?>
                         </div>
 
                         <div class="col-md-2">
@@ -317,7 +317,8 @@
 
                         <div class="col-md-6">
                             <label>Cliente</label>
-                            <select class="form-control select2" id="idcliente" name="idcliente" onchange="seleccionarCliente(this.value)">
+                            <select class="form-control select2" id="idcliente" name="idcliente"
+                                onchange="seleccionarCliente(this.value)">
                             </select>
 
                         </div>
@@ -413,7 +414,7 @@
             <div class="modal-body">
 
                 <div id="timelineWorkflow"></div>
-                
+
             </div>
 
         </div>
@@ -481,7 +482,7 @@
             </div>
             <div class="modal-body">
                 <div id="detalleSolicitud"></div>
-            
+
             </div>
 
         </div>

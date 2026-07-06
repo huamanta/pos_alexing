@@ -10,7 +10,7 @@ $("#btnBuscar").click(function () {
     let buscar = $("#buscar").val();
 
     if (buscar == "") {
-        swal.fire("Error", "Ingrese un documento o cliente.", "error");
+        swal.fire("Error", "Ingrese un documento o cliente.", "warning");
         return;
     }
 
@@ -35,11 +35,10 @@ $("#btnBuscar").click(function () {
         success: function (r) {
 
             $("#preload-carga").html('');
-            if (!r.estado || r.creditos.length == 0) {
-
+            if (!r.success || r.creditos.length == 0) {
+                Swal.fire("Error", r.message, 'error');
                 $("#listaCreditos").hide();
                 $("#emptyCreditos").show();
-
                 return;
             }
 
@@ -51,34 +50,34 @@ $("#btnBuscar").click(function () {
             $.each(r.creditos, function (i, c) {
 
                 html += `
-            <tr>
+                        <tr>
 
-                <td>${c.cliente}</td>
+                            <td>${c.cliente}</td>
 
-                <td>${c.documento_venta}</td>
+                            <td>${c.documento_venta}</td>
 
-                <td>${c.fecha}</td>
+                            <td>${c.fecha}</td>
 
-                <td>S/ ${parseFloat(c.total).toFixed(2)}</td>
+                            <td>S/ ${parseFloat(c.total).toFixed(2)}</td>
 
-                <td>S/ ${parseFloat(c.pagado).toFixed(2)}</td>
+                            <td>S/ ${parseFloat(c.pagado).toFixed(2)}</td>
 
-                <td>S/ ${parseFloat(c.saldo).toFixed(2)}</td>
-                <td>${c.refinanciado ? "<span class='badge bg-green'>Sí</span>": "<span class='badge bg-default'>No</span>"}</td>
+                            <td>S/ ${parseFloat(c.saldo).toFixed(2)}</td>
+                            <td>${c.refinanciado ? "<span class='badge bg-green'>Sí</span>" : "<span class='badge bg-default'>No</span>"}</td>
 
-                <td>
+                            <td>
 
-                    <button class="btn btn-primary btn-xs"
-                        onclick="seleccionarCredito(${c.idventa})">
+                                <button class="btn btn-primary btn-xs"
+                                    onclick="seleccionarCredito(${c.idventa})">
 
-                        <i class="fa fa-check"></i> Seleccionar
+                                    <i class="fa fa-check"></i> Seleccionar
 
-                    </button>
+                                </button>
 
-                </td>
+                            </td>
 
-            </tr>
-        `;
+                        </tr>
+                    `;
 
             });
 

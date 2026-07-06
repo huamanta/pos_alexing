@@ -537,11 +537,11 @@ function ListarReportesClientes(idcliente) {
     contentType: false,
     processData: false,
     success: function (datos) {
-      console.log(datos);
       var data = JSON.parse(datos);
       var symbol = data.symbol;
       // Tabla de Compras
       var ventas = data.ventas;
+      var total_sin_interes = 0;
       var total = 0;
       var pagado = 0;
       var interes = 0;
@@ -552,7 +552,8 @@ function ListarReportesClientes(idcliente) {
 			      <th>Fecha</th>
 			      <th>Recibo</th>
 			      <th>Detalle</th>
-			      <th>Importe</th>
+			      <th>Valor venta</th>
+			      <th>Inicial</th>
 			      <th>Interes</th>
 			      <th>Total</th>
 			      <th>Cuotas</th>
@@ -561,6 +562,7 @@ function ListarReportesClientes(idcliente) {
 			  <tbody>`;
 
       $.each(ventas, function (i, item) {
+        total_sin_interes += parseFloat(ventas[i].venta_sin_interes);
         total += parseFloat(ventas[i].total_venta);
         interes += ventas[i].interes;
         pagado += parseFloat(ventas[i].totalrecibido);
@@ -573,6 +575,10 @@ function ListarReportesClientes(idcliente) {
           ventas[i].serie_comprobante +
           `</td>
 					<td></td>
+          <td>` +
+          symbol +
+          ventas[i].venta_sin_interes +
+          `</td>
 					<td>` +
           symbol +
           ventas[i].totalrecibido +
@@ -618,6 +624,10 @@ function ListarReportesClientes(idcliente) {
       html +=
         `<tr>
 				<td style="color: blue; text-align: right;" colspan="3">TOTAL</td>
+        <td style="color: blue">` +
+        symbol +
+        total_sin_interes +
+        `</td>
 				<td style="color: blue">` +
         symbol +
         pagado +
@@ -640,17 +650,21 @@ function ListarReportesClientes(idcliente) {
       var cuentasxcobrar = data.cuentasxcobrar;
       var totalc = 0;
       var interesc = 0;
+      var morac = 0;
+      var descuentoc = 0;
+
       var recibidoc = 0;
       var htmlform = `
-			<table class="table table-bordered table-striped table-hover table-sm">
+			<table class="table table-bordered table-hover table-sm">
 			  <thead>
 			    <tr>
 			      <th>Fecha</th>
 			      <th>Tipo</th>
 			      <th>Deuda Total</th>
 			      <th>Interes</th>
+			      <th>Mora</th>
+			      <th>Descuento</th>
 			      <th>Abono Total</th>
-			      <th>Monto Pagado</th>
 			    </tr>
 			  </thead>
 			  <tbody>`;
@@ -658,8 +672,11 @@ function ListarReportesClientes(idcliente) {
       $.each(cuentasxcobrar, function (i, item) {
         totalc += parseFloat(cuentasxcobrar[i].deudatotal);
         interesc += parseFloat(cuentasxcobrar[i].interes);
+        morac += parseFloat(cuentasxcobrar[i].mora_pagada);
+        descuentoc += parseFloat(cuentasxcobrar[i].descuento);
+        recibidoc += parseFloat(cuentasxcobrar[i].abonototal);
         htmlform +=
-          `<tr>
+          `<tr style="background: #dee2e6">
 					<td>` +
           cuentasxcobrar[i].fecha_hora +
           `</td>
@@ -674,30 +691,56 @@ function ListarReportesClientes(idcliente) {
           symbol +
           Number(cuentasxcobrar[i].interes).toFixed(2) +
           `</td>
+          <td>
+    ${symbol}${Number(cuentasxcobrar[i].mora_pagada).toFixed(2)}
+    ${
+        cuentasxcobrar[i].dias_mora
+            ? `<i class="fa fa-info-circle text-primary ml-1"
+                data-toggle="popover"
+                data-trigger="hover"
+                data-placement="top"
+                data-content="${cuentasxcobrar[i].dias_mora}"
+                style="cursor:pointer;"></i>`
+            : ''
+    }
+</td>
+          <td>` +
+          symbol +
+          Number(cuentasxcobrar[i].descuento).toFixed(2) +
+          `</td>
 					<td>` +
           symbol +
           Number(cuentasxcobrar[i].abonototal).toFixed(2) +
           `</td>
-					<td>` +
-          symbol +
-          0 +
-          `</td>
 				</tr>`;
 
         var detallecuentasxcobrar = cuentasxcobrar[i].detalle;
+        htmlform += `<tr>
+              <th colspan="2"></th>
+              <th colspan="2">Detalle</th>
+              <th>Efectivo</th>
+              <th>Transferencia</th>
+              <th>Total abono</th>
+            </tr>`;
+
         $.each(detallecuentasxcobrar, function (a, item) {
-          recibidoc += parseFloat(detallecuentasxcobrar[a].montopagado);
           htmlform +=
             `<tr>
 						<td colspan="2"></td>
-						<td>` +
+						<td colspan="2">` +
             detallecuentasxcobrar[a].tipo +
             `</td>
-						<td></td>
-						<td></td>
-						<td>` +
+            <td>` +
             symbol +
             detallecuentasxcobrar[a].montopagado +
+            `</td>
+            <td>` +
+            symbol +
+            detallecuentasxcobrar[a].montotarjeta +
+            `</td>
+						<td>` +
+            symbol +
+            detallecuentasxcobrar[a].total +
             `</td>
 					</tr>`;
         });
@@ -716,7 +759,11 @@ function ListarReportesClientes(idcliente) {
         `</td>
 				<td style="color: blue">` +
         symbol +
-        recibidoc.toFixed(2) +
+        morac.toFixed(2) +
+        `</td>
+        <td style="color: blue">` +
+        symbol +
+        descuentoc.toFixed(2) +
         `</td>
 				<td style="color: blue">` +
         symbol +
@@ -915,8 +962,16 @@ function ListarReportesClientes(idcliente) {
 			  </tbody>
 			</table>`;
       $("#data_proveedor_pagar").html(htmlform);
+
+      $('[data-toggle="popover"]').popover({
+    trigger: 'hover',
+    container: 'body'
+});
+
     },
   });
+
+  
 }
 
 

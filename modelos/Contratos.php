@@ -40,25 +40,9 @@ class Contratos
             $query .= " AND DATE(d.fecha_contrato) BETWEEN '$fecha_inicio' AND '$fecha_fin'";
         }
 
-        // Agregar filtro de estado (1 = pagado, 2 = pendiente)
+        // Agregar filtro de estado (0 = Anulado, 1 = pendiente, 2 = finalizado )
         if (!empty($estado)) {
-            if ($estado == 1) {
-                $query .= " AND NOT EXISTS (
-                    SELECT 1 
-                    FROM cuentas_por_cobrar cpc
-                    WHERE cpc.idventa = v.idventa
-                    AND cpc.abonototal < cpc.deudatotal
-                )";
-            }
-
-            if ($estado == 2) {
-                $query .= " AND EXISTS (
-                    SELECT 1 
-                    FROM cuentas_por_cobrar cpc
-                    WHERE cpc.idventa = v.idventa
-                    AND cpc.abonototal < cpc.deudatotal
-                )";
-            }
+            $query .= " AND d.estado = '$estado'";
         }
 
         // Agregar filtro de sucursal

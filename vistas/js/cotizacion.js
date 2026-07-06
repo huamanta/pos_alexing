@@ -761,6 +761,21 @@ function numSerieTicket() {
     });
 }
 
+
+const listarConfiguracionCreditos = () => {
+    var idsucursal = $("#idsucursal").val();
+    $.ajax({
+        url: 'controladores/configuracion.php?op=listarConfiguracion',
+        type: 'get',
+        data: { idsucursal: idsucursal },
+        dataType: 'json',
+        success: function (s) {
+            const configuracion = s.data.configuracion;
+            $("#inputInteres").val(configuracion.interes_defecto);
+        }
+    });
+}
+
 function listarArticulos() {
     var idsucursal = $("#idsucursal").val();
     tabla = $("#tblarticulos").dataTable({
@@ -845,31 +860,34 @@ function eliminarTmp(idtmp, filaId) {
 }
 
 function mostrarform(flag) {
-    limpiar();
-    if (flag) {
-        $("#listadoregistros").hide();
-        $("#formularioregistros").show();
-        $("#btnagregar").hide();
-        $("#btnGuardar").hide();
-        $("#btnCancelar").show();
-        detalles = 0;
-        $("#btnAgregarArt, #btnAgregarArt2").show();
-        $("#btnNuevo, #header").hide();
-        listarArticulos();
-        listarArticulos2();
-        // cargarDatosTemporales();
-        esperarSelect("#idsucursal", $("#idsucursal").val());
-        setTimeout(() => {
-            let idsucursal = $("#idsucursal").val();
-            if (idsucursal) {
-                numSerieTicket();
-                numTicket();
-            }
-        }, 300);
-    } else {
+    if (!flag) {
         $("#listadoregistros").show();
         $("#formularioregistros").hide();
         $("#btnagregar, #btnNuevo, #header, #btnGuardar").show();
+        return;
     }
+    limpiar();
+
+    $("#listadoregistros").hide();
+    $("#formularioregistros").show();
+    $("#btnagregar").hide();
+    $("#btnGuardar").hide();
+    $("#btnCancelar").show();
+    detalles = 0;
+    $("#btnAgregarArt, #btnAgregarArt2").show();
+    $("#btnNuevo, #header").hide();
+    listarArticulos();
+    listarArticulos2();
+    // cargarDatosTemporales();
+    esperarSelect("#idsucursal", $("#idsucursal").val());
+    setTimeout(() => {
+        let idsucursal = $("#idsucursal").val();
+        if (idsucursal) {
+            numSerieTicket();
+            numTicket();
+            listarConfiguracionCreditos();
+        }
+    }, 300);
+
 }
 init();
