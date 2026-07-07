@@ -314,7 +314,7 @@ class Cotizacion
             WHERE c.idsucursal = '$idsucursal' AND c.condicion = 1";
 
         if ($is_aprobated) {
-            $sql .= " AND c.fecha_aprobacion IS NOT NULL";
+            $sql .= "AND c.estado = 'EN ESPERA' AND c.fecha_aprobacion IS NOT NULL";
         } else {
             $sql .= " AND c.estado = 'EN ESPERA'
                   AND c.fecha_aprobacion IS NULL";

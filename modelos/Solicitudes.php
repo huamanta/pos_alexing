@@ -90,9 +90,30 @@ class Solicitudes extends Persona
         $rspta = ejecutarConsulta($sql);
 
         $data = array();
-
         while ($reg = $rspta->fetch_object()) {
+            $botones = '';
+            if (Helpers::getUserPermissionAccion('Aprobar solicitudes')) {
+                $botones .= '<button
+                        class="btn btn-info btn-sm"
+                        onclick="verSolicitud(' . $reg->idsolicitud . ')">
+                        <i class="fa fa-eye"></i>
+                    </button>';
+            }
+            if (Helpers::getUserPermissionAccion('Ver flujo de pasos')) {
+                $botones .= '<button
+                        class="btn btn-warning btn-sm"
+                        onclick="verWorkflow(' . $reg->idsolicitud . ')">
+                        <i class="fa fa-route"></i>
+                    </button>';
+            }
 
+            if (Helpers::getUserPermissionAccion('Ver archivos de solicitud')) {
+                $botones .= '<button
+                        class="btn btn-success btn-sm"
+                        onclick="verArchivos(' . $reg->idsolicitud . ')">
+                        <i class="fa fa-folder"></i>
+                    </button>';
+            }
             $data[] = array(
 
                 "0" => $reg->codigo,
@@ -115,29 +136,9 @@ class Solicitudes extends Persona
                     'd/m/Y H:i',
                     strtotime($reg->fecha_registro)
                 ),
-
                 "8" => '
-
                 <div class="btn-group">
-
-                    <button
-                        class="btn btn-info btn-sm"
-                        onclick="verSolicitud(' . $reg->idsolicitud . ')">
-                        <i class="fa fa-eye"></i>
-                    </button>
-
-                    <button
-                        class="btn btn-warning btn-sm"
-                        onclick="verWorkflow(' . $reg->idsolicitud . ')">
-                        <i class="fa fa-route"></i>
-                    </button>
-
-                    <button
-                        class="btn btn-success btn-sm"
-                        onclick="verArchivos(' . $reg->idsolicitud . ')">
-                        <i class="fa fa-folder"></i>
-                    </button>
-
+                    ' . $botones . '
                 </div>'
             );
         }
