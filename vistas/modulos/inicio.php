@@ -48,10 +48,6 @@ if (session_status() === PHP_SESSION_NONE) {
     padding: 0.8rem 1rem;
   }
 
-  #navbar-global {
-    display: none !important;
-  }
-
   /* =========================================
            TARJETAS KPI (tp-card) REDISEÑADAS
            ========================================= */
@@ -260,109 +256,7 @@ if (session_status() === PHP_SESSION_NONE) {
   }
 </style>
 
-<nav class="main-header navbar navbar-expand navbar-white navbar-light sticky-top" id="navbar-inicio">
-  <ul class="navbar-nav">
-    <li class="nav-item">
-      <a class="nav-link text-secondary" data-widget="pushmenu" href="#" role="button"><i
-          class="fas fa-bars fa-lg"></i></a>
-    </li>
-  </ul>
-
-  <ul class="navbar-nav ml-auto align-items-center">
-
-    <li class="nav-item">
-      <a class="nav-link text-secondary" data-widget="fullscreen" href="#" role="button" title="Pantalla Completa">
-        <i class="fas fa-expand-arrows-alt"></i>
-      </a>
-    </li>
-
-    <li class="nav-item dropdown mr-2" id="stockbajito">
-      <a class="nav-link position-relative text-secondary" data-toggle="dropdown" href="#" id="stockAlertLink">
-        <i class="fas fa-bell fa-lg"></i>
-        <span class="badge badge-danger badge-notify" id="stockAlertCount">0</span>
-      </a>
-      <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-lg mt-2">
-        <div class="dropdown-header font-weight-bold text-danger bg-light rounded-top py-3">
-          <i class="fas fa-exclamation-triangle mr-2"></i> Stock Bajo
-        </div>
-        <div id="stockAlertTable" class="dropdown-item p-0">
-          <table class="table table-sm table-hover mb-0">
-            <thead class="bg-white text-muted">
-              <tr>
-                <th class="pl-3 border-0">Producto</th>
-                <th class="text-center border-0">Stock</th>
-              </tr>
-            </thead>
-            <tbody id="stockAlertTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </li>
-
-    <li class="nav-item dropdown mr-3">
-      <a class="nav-link position-relative text-secondary" data-toggle="dropdown" href="#" id="cxcAlertLink">
-        <i class="fas fa-file-invoice-dollar fa-lg"></i>
-        <span class="badge badge-warning text-white badge-notify" id="cxcAlertCount" style="display:none;">0</span>
-      </a>
-      <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-lg mt-2">
-        <span class="dropdown-header font-weight-bold bg-light rounded-top py-3">Cuentas por Cobrar</span>
-        <div class="dropdown-item p-3">
-          <div id="cxcAlertList" style="max-height:300px; overflow-y:auto;"></div>
-        </div>
-        <div class="dropdown-divider m-0"></div>
-        <a href="cuentas-cobrar" class="dropdown-item dropdown-footer text-primary font-weight-bold py-3">
-          Ver todas las cuentas <i class="fas fa-arrow-right ml-1"></i>
-        </a>
-      </div>
-    </li>
-
-    <div class="navbar-divider d-none d-sm-block"
-      style="border-right: 1px solid #e2e8f0; height: 30px; margin: 0 10px;"></div>
-
-    <li class="nav-item dropdown user-menu">
-      <a href="#" class="nav-link user-profile-link" data-toggle="dropdown">
-        <div class="user-avatar-circle shadow-sm">
-          <?php echo strtoupper(substr($_SESSION['nombre'], 0, 1)); ?>
-        </div>
-        <div class="d-none d-md-block ml-2 text-left" style="line-height: 1.2;">
-          <span class="d-block font-weight-bold text-dark" style="font-size: 0.85rem;">
-            <?php echo explode(" ", $_SESSION['nombre'])[0]; ?>
-          </span>
-          <span class="d-block text-muted" style="font-size: 0.7rem;">
-            <?php echo isset($_SESSION['nombre_negocio']) ? $_SESSION['nombre_negocio'] : 'Admin'; ?>
-          </span>
-        </div>
-        <i class="fas fa-chevron-down text-muted ml-2" style="font-size: 0.7rem;"></i>
-      </a>
-
-      <div
-        class="dropdown-menu dropdown-menu-lg dropdown-menu-right border-0 shadow-xl mt-3 rounded-lg overflow-hidden">
-        <div class="bg-primary p-4 text-center text-white">
-          <div
-            class="bg-white text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-2 shadow-sm"
-            style="width: 60px; height: 60px; font-size:1.5rem; font-weight:bold;">
-            <?php echo strtoupper(substr($_SESSION['nombre'], 0, 1)); ?>
-          </div>
-          <h6 class="mb-0 font-weight-bold"><?php echo $_SESSION['nombre']; ?></h6>
-          <small class="text-white-50"><?php echo $_SESSION['cargo']; ?></small>
-        </div>
-        <div class="p-2 bg-white">
-          <a href="salirsucursal"
-            class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
-            <i class="fas fa-box"></i>
-            Cambiar sucursal
-          </a>
-          <a href="salir" class="btn btn-outline-danger btn-block font-weight-bold border-0 text-left px-3 py-2">
-            <i class="fas fa-sign-out-alt mr-2"></i> Cerrar Sesión
-          </a>
-        </div>
-      </div>
-    </li>
-  </ul>
-</nav>
-
 <div class="content-wrapper">
-
   <div class="content-header pb-1">
     <div class="container-fluid">
       <div class="row mb-3 align-items-center">
@@ -734,65 +628,65 @@ if (session_status() === PHP_SESSION_NONE) {
     }
   });
 
-  const CURRENT_SUCURSAL = <?= $_SESSION['idsucursal'] ?? 0 ?>;
-  function getSucursalNavbar() {
-    let id = $("#idsucursal2").val();
-    return id && id !== "" ? id : null;
-  }
+  // const CURRENT_SUCURSAL = <?= $_SESSION['idsucursal'] ?? 0 ?>;
+  // function getSucursalNavbar() {
+  //   let id = $("#idsucursal2").val();
+  //   return id && id !== "" ? id : null;
+  // }
 
-  function cargarNotificacionesCXCNavbar() {
+  // function cargarNotificacionesCXCNavbar() {
 
-    let currentSucursal = getSucursalNavbar();
-    if (!currentSucursal) return;
+  //   let currentSucursal = getSucursalNavbar();
+  //   if (!currentSucursal) return;
 
-    $.getJSON(
-      "controladores/cuentascobrar.php?op=obtener_notificaciones&idsucursal=" + currentSucursal,
-      function (data) {
+  //   $.getJSON(
+  //     "controladores/cuentascobrar.php?op=obtener_notificaciones&idsucursal=" + currentSucursal,
+  //     function (data) {
 
-        let cuotas = data.filter(n => !n.tipo || n.tipo.trim() === "");
+  //       let cuotas = data.filter(n => !n.tipo || n.tipo.trim() === "");
 
-        let total = cuotas.length;
-        let html = "";
-        let ids = [];
+  //       let total = cuotas.length;
+  //       let html = "";
+  //       let ids = [];
 
-        if (total === 0) {
-          $("#cxcAlertCount").hide();
-          html = `
-                    <span class="dropdown-item text-muted text-center py-3">
-                        <i class="far fa-check-circle mb-1 d-block text-success fa-2x"></i>
-                        No hay cuentas vencidas
-                    </span>`;
-        } else {
-          $("#cxcAlertCount").text(total).show();
+  //       if (total === 0) {
+  //         $("#cxcAlertCount").hide();
+  //         html = `
+  //                   <span class="dropdown-item text-muted text-center py-3">
+  //                       <i class="far fa-check-circle mb-1 d-block text-success fa-2x"></i>
+  //                       No hay cuentas vencidas
+  //                   </span>`;
+  //       } else {
+  //         $("#cxcAlertCount").text(total).show();
 
-          cuotas.forEach(n => {
-            ids.push(n.idnotificacion);
+  //         cuotas.forEach(n => {
+  //           ids.push(n.idnotificacion);
 
-            html += `
-                        <a href="#" class="dropdown-item px-3 py-2">
-                            <div class="media">
-                                <div class="mr-3">
-                                    <span class="btn btn-sm btn-light text-danger rounded-circle"><i class="fas fa-exclamation"></i></span>
-                                </div>
-                                <div class="media-body">
-                                    <p class="mb-0 text-sm font-weight-bold text-dark">${n.mensaje}</p>
-                                    <p class="text-sm text-muted mb-0"><i class="far fa-clock mr-1"></i> ${n.fecha}</p>
-                                </div>
-                            </div>
-                        </a>
-                        <div class="dropdown-divider"></div>`;
-          });
-        }
+  //           html += `
+  //                       <a href="#" class="dropdown-item px-3 py-2">
+  //                           <div class="media">
+  //                               <div class="mr-3">
+  //                                   <span class="btn btn-sm btn-light text-danger rounded-circle"><i class="fas fa-exclamation"></i></span>
+  //                               </div>
+  //                               <div class="media-body">
+  //                                   <p class="mb-0 text-sm font-weight-bold text-dark">${n.mensaje}</p>
+  //                                   <p class="text-sm text-muted mb-0"><i class="far fa-clock mr-1"></i> ${n.fecha}</p>
+  //                               </div>
+  //                           </div>
+  //                       </a>
+  //                       <div class="dropdown-divider"></div>`;
+  //         });
+  //       }
 
-        $("#cxcAlertList").html(html);
-        $("#cxcAlertLink").data("ids", ids.join(","));
-      }
-    );
-  }
+  //       $("#cxcAlertList").html(html);
+  //       $("#cxcAlertLink").data("ids", ids.join(","));
+  //     }
+  //   );
+  // }
 
-  $(document).on("change", "#idsucursal2", function () {
-    cargarNotificacionesCXCNavbar();
-  });
+  // $(document).on("change", "#idsucursal2", function () {
+  //   cargarNotificacionesCXCNavbar();
+  // });
 
   $("#cxcAlertLink").on("click", function () {
 
@@ -808,18 +702,18 @@ if (session_status() === PHP_SESSION_NONE) {
     );
   });
 
-  $(document).ready(function () {
+  // $(document).ready(function () {
 
-    // Esperar a que idsucursal2 tenga valor
-    let esperaSucursal = setInterval(function () {
-      if (getSucursalNavbar()) {
-        cargarNotificacionesCXCNavbar();
-        clearInterval(esperaSucursal);
-      }
-    }, 3000);
+  //   // Esperar a que idsucursal2 tenga valor
+  //   let esperaSucursal = setInterval(function () {
+  //     if (getSucursalNavbar()) {
+  //       cargarNotificacionesCXCNavbar();
+  //       clearInterval(esperaSucursal);
+  //     }
+  //   }, 3000);
 
-    // Refresco normal cada 5 segundos
-    setInterval(cargarNotificacionesCXCNavbar, 5000);
-  });
+  //   // Refresco normal cada 5 segundos
+  //   setInterval(cargarNotificacionesCXCNavbar, 5000);
+  // });
 
 </script>

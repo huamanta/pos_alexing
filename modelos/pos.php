@@ -3,11 +3,14 @@
 require "../configuraciones/Conexion.php";
 
 date_default_timezone_set('America/Lima');
+require_once 'Helpers.php';
 
-final class Pos
+final class Pos extends Helpers
 {
     //Implementamos nuestro constructor
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     public function listarVentas($idcaja, $idsucursal, $idusuario, $estado)
     {
@@ -83,22 +86,23 @@ final class Pos
     }
 
     public function listarVentas2($aperturacajaid)
-{
-    $sqlap = "SELECT * FROM caja_apertura WHERE aperturacajaid = '$aperturacajaid'";
-    $apertura = ejecutarConsulta($sqlap)->fetch_object();
+    {
+        $sqlap = "SELECT * FROM caja_apertura WHERE aperturacajaid = '$aperturacajaid'";
+        $apertura = ejecutarConsulta($sqlap)->fetch_object();
 
-    if (!$apertura) return [];
+        if (!$apertura)
+            return [];
 
-    $fecha_apertura = $apertura->fecha_apertura;
-    $fecha_cierre = $apertura->fecha_cierre;
-    $idcaja = $apertura->idcaja;
+        $fecha_apertura = $apertura->fecha_apertura;
+        $fecha_cierre = $apertura->fecha_cierre;
+        $idcaja = $apertura->idcaja;
 
-    // 🔥 SI NO HAY CIERRE, USA FECHA ACTUAL
-    if (empty($fecha_cierre)) {
-        $fecha_cierre = date('Y-m-d H:i:s');
-    }
+        // 🔥 SI NO HAY CIERRE, USA FECHA ACTUAL
+        if (empty($fecha_cierre)) {
+            $fecha_cierre = date('Y-m-d H:i:s');
+        }
 
-    $sql = "
+        $sql = "
     SELECT 
         v.idventa,
         DATE(v.fecha_hora) as fecha,
@@ -137,8 +141,8 @@ final class Pos
     ORDER BY v.idventa DESC
 ";
 
-    return ejecutarConsulta($sql);
-}
+        return ejecutarConsulta($sql);
+    }
 
 
     public function verificarCaja($idusurio, $idsucursal)
@@ -185,194 +189,155 @@ final class Pos
         return ejecutarConsulta($sql);
     }
 
-    public function cerrarCaja($fecha_hora, $efectivo_cierre, $idcaja, $idusuario, $idsucursal)
+    public function cerrarCaja($aperturacajaid, $efectivo_contado, $idusuario)
     {
-        global $conexion;
+        ejecutarConsulta("START TRANSACTION");
+        try {
+            $fecha_hora = date('Y-m-d H:i:s');
+            $sql = "UPDATE caja_apertura SET fecha_cierre = '$fecha_hora', efectivo_cierre_real='$efectivo_contado', idusuario_cierre = '$idusuario', estado='0'
+                WHERE aperturacajaid = '$aperturacajaid'";
+            if (!ejecutarConsulta($sql)) {
+                throw new Exception("No se pudo cerrar la caja aperturada");
+            }
+            $dataApertura = "SELECT * FROM caja_apertura WHERE aperturacajaid = $aperturacajaid";
+            $cajaapertura = ejecutarConsultaSimpleFila($dataApertura);
+            $idcaja = $cajaapertura['idcaja'];
+            $update = "UPDATE cajas SET estado = 1 WHERE idcaja = '$idcaja'";
+            $updateCaja = ejecutarConsulta($update);
 
-        $sql = "UPDATE caja_apertura SET fecha_cierre = '$fecha_hora', efectivo_cierre='$efectivo_cierre', estado='0'
-        WHERE idcaja = '$idcaja' AND idusuario = '$idusuario' AND idsucursal = '$idsucursal' AND estado = '1' AND fecha_cierre IS NULL";
-        $update = "UPDATE cajas SET estado = 1 WHERE idcaja = '$idcaja'";
-        ejecutarConsulta($sql);
+            if (!$updateCaja) {
+                throw new Exception("No se pudo actualizar la caja");
+            }
 
-        if ($conexion->affected_rows > 0) {
-            return ejecutarConsulta($update);
-        }
+            ejecutarConsulta("COMMIT");
 
-        return false;
-    }
+            return json_encode([
+                "success" => true,
+                "idcaja" => $idcaja,
+                "message" => "La caja se ha cerrado correctamente."
+            ]);
 
-  public function showResumenCaja($idcaja, $idsucursal, $idusuario)
-{
-    // 1. Obtener idpersonal
-    $sql_personal = "SELECT idpersonal FROM usuario WHERE idusuario = '$idusuario' LIMIT 1";
-    $row_personal = ejecutarConsulta($sql_personal)->fetch_object();
-    $idpersonal = $row_personal ? $row_personal->idpersonal : 0;
+        } catch (Exception $e) {
 
-    // 2. Obtener apertura de caja
-    $sqlap = "SELECT ca.*, c.idsucursal
-              FROM caja_apertura ca
-              INNER JOIN cajas c ON ca.idcaja = c.idcaja
-              WHERE ca.estado = 1
-                AND c.idsucursal = '$idsucursal'
-                AND ca.idusuario = '$idusuario'
-                AND ca.idcaja = '$idcaja'
-                AND ca.fecha_cierre IS NULL
-              LIMIT 1";
+            ejecutarConsulta("ROLLBACK");
 
-    $apertura = ejecutarConsulta($sqlap)->fetch_object();
-
-    if (!$apertura) {
-        return json_encode([
-            "error" => "No hay caja abierta",
-            "efectivo_apertura" => 0,
-            "total_efectivo" => 0
-        ]);
-    }
-
-    $efectivo_apertura = (float)$apertura->efectivo_apertura;
-    $fecha_inicio = date("Y-m-d H:i:s", strtotime($apertura->fecha_apertura));
-    $fecha_fin = date("Y-m-d H:i:s");
-
-    // =========================================
-    // 3. VENTAS (NO CRÉDITO)
-    // =========================================
-    $sql_ventas = "SELECT 
-                        vp.metodo_pago,
-                        SUM(vp.monto) AS total_ventas,
-                        COUNT(v.idventa) as cantidad
-                   FROM venta v
-                   INNER JOIN venta_pago vp ON v.idventa = vp.idventa
-                   WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta')
-                     AND v.idcaja = '$idcaja'
-                     AND v.idsucursal = '$idsucursal'
-                     AND v.fecha_hora BETWEEN '$fecha_inicio' AND '$fecha_fin'
-                     AND v.estado NOT IN ('Nota Credito','Anulado')
-                     AND (v.ventacredito IS NULL OR v.ventacredito != 'si')
-                   GROUP BY vp.metodo_pago";
-
-    $ventas_query = ejecutarConsulta($sql_ventas);
-
-    $ventas_efectivo = 0;
-    $ventas_no_efectivo = 0;
-    $cantidad_ventas_efectivo = 0;
-    $cantidad_ventas_no_efectivo = 0;
-
-    $detalle_ventas = [];
-
-    while ($v = $ventas_query->fetch_object()) {
-        $detalle_ventas[] = $v;
-
-        if (strtolower($v->metodo_pago) == 'efectivo') {
-            $ventas_efectivo += $v->total_ventas;
-            $cantidad_ventas_efectivo += $v->cantidad;
-        } else {
-            $ventas_no_efectivo += $v->total_ventas;
-            $cantidad_ventas_no_efectivo += $v->cantidad;
+            return json_encode([
+                "success" => false,
+                "message" => $e->getMessage()
+            ]);
         }
     }
 
-    // =========================================
-    // 3.1 VENTAS CRÉDITO (CORREGIDO)
-    // =========================================
-    $sql_credito = "SELECT 
-                        COUNT(*) as cantidad,
-                        SUM(total_venta) as total
-                    FROM venta
-                    WHERE ventacredito = 'si'
-                      AND idcaja = '$idcaja'
-                      AND idsucursal = '$idsucursal'
-                      AND fecha_hora BETWEEN '$fecha_inicio' AND '$fecha_fin'
-                      AND estado NOT IN ('Nota Credito','Anulado')";
+    public function showResumenCaja($aperturacajaid)
+    {
+        try {
+            $sqlap = "SELECT * FROM caja_apertura WHERE aperturacajaid = '$aperturacajaid' LIMIT 1";
 
-    $c = ejecutarConsulta($sql_credito)->fetch_object();
+            $apertura = ejecutarConsultaSimpleFila($sqlap);
+            if (!$apertura) {
+                throw new Exception('No se puede ha encontrado la apertura de la caja');
+            }
 
-    $ventas_credito = (float)($c->total ?? 0);
-    $cantidad_ventas_credito = (int)($c->cantidad ?? 0);
+            $efectivo_apertura = (float) $apertura['efectivo_apertura'];
+            $efectivo_cierre = (float) $apertura['efectivo_cierre'];
+            $fecha_inicio = date("Y-m-d H:i:s", strtotime($apertura['fecha_apertura']));
+            $fecha_fin = empty($apertura['fecha_cierre']) ? date("Y-m-d H:i:s") : $apertura['fecha_cierre'];
+            $aperturacajaid = $apertura['aperturacajaid'];
+            $idcaja = $apertura['idcaja'];
+            $idsucursal = $apertura['idsucursal'];
 
-    // =========================================
-    // 4. MOVIMIENTOS
-    // =========================================
-    $sql_movs = "SELECT tipo, formapago, monto
+            // =========================================
+            // MOVIMIENTOS
+            // =========================================
+            $sql_movs = "SELECT 
+                        SUM(totalefectivo) AS totalefectivo,
+                        SUM(totaldeposito) AS totaldeposito
                  FROM movimiento
                  WHERE idsucursal = '$idsucursal'
+                    AND tipo = 'Ingresos'
                    AND idcaja = '$idcaja'
                    AND fecha BETWEEN '$fecha_inicio' AND '$fecha_fin'";
 
-    $movimientos_query = ejecutarConsulta($sql_movs);
+            $movimiento = ejecutarConsultaSimpleFila($sql_movs);
+            $total_movimientos_ingreso_efectivo = (float) $movimiento['totalefectivo'] ?? 0;
+            $total_movimientos_ingreso_deposito = (float) $movimiento['totaldeposito'] ?? 0;
 
-    $ingresos_efectivo = 0;
-    $ingresos_no_efectivo = 0;
-    $egresos_efectivo = 0;
-    $egresos_no_efectivo = 0;
+            // =========================================
+            // MOVIMIENTOS
+            // =========================================
+            $sql_movs = "SELECT 
+                        SUM(totalefectivo) AS totalefectivo,
+                        SUM(totaldeposito) AS totaldeposito
+                 FROM movimiento
+                 WHERE idsucursal = '$idsucursal'
+                    AND tipo = 'Egresos'
+                   AND idcaja = '$idcaja'
+                   AND fecha BETWEEN '$fecha_inicio' AND '$fecha_fin'";
 
-    while ($m = $movimientos_query->fetch_object()) {
-        $fp = strtolower($m->formapago);
+            $movimiento = ejecutarConsultaSimpleFila($sql_movs);
+            $total_movimientos_egreso_efectivo = (float) $movimiento['totalefectivo'] ?? 0;
+            $total_movimientos_egreso_deposito = (float) $movimiento['totaldeposito'] ?? 0;
 
-        if ($m->tipo == 'Ingresos') {
-            ($fp == 'efectivo')
-                ? $ingresos_efectivo += $m->monto
-                : $ingresos_no_efectivo += $m->monto;
-        } elseif ($m->tipo == 'Egresos') {
-            ($fp == 'efectivo')
-                ? $egresos_efectivo += $m->monto
-                : $egresos_no_efectivo += $m->monto;
-        }
-    }
+            // =========================================
+            // VENTAS
+            // =========================================
+            $sql_ventas = "SELECT 
+                      SUM(total_venta) AS total_ventas, 
+                      SUM(totalrecibido) AS totalrecibido,
+                      SUM(totaldeposito) AS totaldeposito
+                   FROM venta
+                   WHERE idcaja = '$idcaja'
+                   AND estado_venta = 1
+                     AND fecha_hora BETWEEN '$fecha_inicio' AND '$fecha_fin'";
 
-    // =========================================
-    // 5. ABONOS
-    // =========================================
-    $sql_abonos = "SELECT 
+            $ventas = ejecutarConsultaSimpleFila($sql_ventas);
+            $total_ventas = (float) $ventas['total_ventas'] ?? 0;
+            $total_ventas_efectivo = (float) $ventas['totalrecibido'] ?? 0;
+            $total_ventas_deposito = (float) $ventas['totaldeposito'] ?? 0;
+
+            // =========================================
+            // ABONOS
+            // =========================================
+            $sql_abonos = "SELECT 
                       SUM(montopagado) AS total_efectivo, 
                       SUM(montotarjeta) AS total_no_efectivo
                    FROM detalle_cuentas_por_cobrar
                    WHERE idcaja = '$idcaja'
                      AND fechapago BETWEEN '$fecha_inicio' AND '$fecha_fin'";
 
-    $a = ejecutarConsulta($sql_abonos)->fetch_object();
+            $abonos = ejecutarConsultaSimpleFila($sql_abonos);
 
-    $abonos_efectivo = (float)($a->total_efectivo ?? 0);
-    $abonos_no_efectivo = (float)($a->total_no_efectivo ?? 0);
+            $abonos_efectivo = (float) $abonos['total_efectivo'] ?? 0;
+            $abonos_deposito = (float) $abonos['total_no_efectivo'] ?? 0;
 
-    // =========================================
-    // 6. TOTAL EFECTIVO
-    // =========================================
-    $total_efectivo = $efectivo_apertura
-                    + $ventas_efectivo
-                    + $ingresos_efectivo
-                    + $abonos_efectivo
-                    - $egresos_efectivo;
+            $efectivoEsperado = ($efectivo_apertura
+                + $total_ventas_efectivo
+                + $abonos_efectivo
+                + $total_movimientos_ingreso_efectivo) - $total_movimientos_egreso_efectivo;
 
-    // =========================================
-    // 7. RESPUESTA
-    // =========================================
-    return json_encode([
-        "efectivo_apertura" => $efectivo_apertura,
+            return json_encode([
+                "aperturacajaid" => $aperturacajaid,
+                "efectivo_apertura" => Helpers::get_currency_symbol($efectivo_apertura),
+                "efectivo_cierre" => Helpers::get_currency_symbol($efectivo_cierre),
+                "total_ventas" => Helpers::get_currency_symbol($total_ventas),
+                "total_ventas_efectivo" => Helpers::get_currency_symbol($total_ventas_efectivo),
+                "total_ventas_deposito" => Helpers::get_currency_symbol($total_ventas_deposito),
+                "abonos_efectivo" => Helpers::get_currency_symbol($abonos_efectivo),
+                "abonos_deposito" => Helpers::get_currency_symbol($abonos_deposito),
+                "total_movimientos_ingreso_efectivo" => Helpers::get_currency_symbol($total_movimientos_ingreso_efectivo),
+                "total_movimientos_ingreso_deposito" => Helpers::get_currency_symbol($total_movimientos_ingreso_deposito),
+                "total_movimientos_egreso_efectivo" => Helpers::get_currency_symbol($total_movimientos_egreso_efectivo),
+                "total_movimientos_egreso_deposito" => Helpers::get_currency_symbol($total_movimientos_egreso_deposito),
+                "efectivo_esperado" => $efectivoEsperado
+            ]);
 
-        "ventas_efectivo" => $ventas_efectivo,
-        "cantidad_ventas_efectivo" => $cantidad_ventas_efectivo,
-
-        "ventas_no_efectivo" => $ventas_no_efectivo,
-        "cantidad_ventas_no_efectivo" => $cantidad_ventas_no_efectivo,
-
-        "ventas_credito" => $ventas_credito,
-        "cantidad_ventas_credito" => $cantidad_ventas_credito,
-
-        "ingresos_efectivo" => $ingresos_efectivo,
-        "ingresos_no_efectivo" => $ingresos_no_efectivo,
-
-        "egresos_efectivo" => $egresos_efectivo,
-        "egresos_no_efectivo" => $egresos_no_efectivo,
-
-        "abonos_efectivo" => $abonos_efectivo,
-        "abonos_no_efectivo" => $abonos_no_efectivo,
-
-        "total_efectivo" => $total_efectivo,
-
-        "detalle_ventas" => $detalle_ventas
-    ]);
-}
-
+        } catch (Exception $e) {
+            return json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
 
 
     public function listarProductos($categoria)
@@ -421,21 +386,21 @@ final class Pos
     }
 
     public function verPreciosItem($idproducto_configuracion, $idusuario)
-{
-    $idproducto_configuracion = intval($idproducto_configuracion);
-    $idusuario = intval($idusuario);
+    {
+        $idproducto_configuracion = intval($idproducto_configuracion);
+        $idusuario = intval($idusuario);
 
-    // Obtener el cargo del usuario desde personal
-    $sqlCargo = "SELECT p.cargo 
+        // Obtener el cargo del usuario desde personal
+        $sqlCargo = "SELECT p.cargo 
                  FROM usuario u 
                  INNER JOIN personal p ON u.idpersonal = p.idpersonal 
                  WHERE u.idusuario = $idusuario 
                  LIMIT 1";
-    $resCargo = ejecutarConsultaSimpleFila($sqlCargo);
-    $cargo = $resCargo ? strtolower(trim($resCargo['cargo'])) : '';
+        $resCargo = ejecutarConsultaSimpleFila($sqlCargo);
+        $cargo = $resCargo ? strtolower(trim($resCargo['cargo'])) : '';
 
-    // Armar consulta base
-    $sql = "SELECT 
+        // Armar consulta base
+        $sql = "SELECT 
                 pcp.idnombre_p, 
                 np.descripcion, 
                 pcp.precio 
@@ -445,19 +410,19 @@ final class Pos
             WHERE pcp.producto_configuracion_id = $idproducto_configuracion 
               AND np.estado = 1";
 
-    // Solo restringir si el usuario NO es administrador ni vendedor
-    if ($cargo !== 'administrador' && $cargo !== 'vendedor') {
-        $sql .= " AND np.idnombre_p = 1";
-    }
+        // Solo restringir si el usuario NO es administrador ni vendedor
+        if ($cargo !== 'administrador' && $cargo !== 'vendedor') {
+            $sql .= " AND np.idnombre_p = 1";
+        }
 
-    // Ejecutar y retornar resultados
-    $productos = ejecutarConsulta($sql);
-    $data = array();
-    while ($reg = $productos->fetch_object()) {
-        $data[] = $reg;
-    }    
-    return $data;
-}
+        // Ejecutar y retornar resultados
+        $productos = ejecutarConsulta($sql);
+        $data = array();
+        while ($reg = $productos->fetch_object()) {
+            $data[] = $reg;
+        }
+        return $data;
+    }
 
     public function listarCategorias()
     {
@@ -470,68 +435,68 @@ final class Pos
         return $data;
     }
 
- public function seleccionarProducto($idproducto, $producto, $nombre, $token, $precio, $contenedor, $cantidad_contenedor, $cantidad, $configuration, $stock_disponible, $id_fifo)
-{
-    $verificar = "SELECT * FROM temp_detalle_venta 
+    public function seleccionarProducto($idproducto, $producto, $nombre, $token, $precio, $contenedor, $cantidad_contenedor, $cantidad, $configuration, $stock_disponible, $id_fifo)
+    {
+        $verificar = "SELECT * FROM temp_detalle_venta 
                   WHERE token = '$token' AND idproducto = '$configuration'";
-    $existencia = ejecutarConsulta($verificar)->fetch_object();
-    
-    // 🔹 OBTENER STOCK DEL LOTE FIFO ESPECÍFICO
-    $sqlStockFIFO = "SELECT cantidad_restante FROM stock_fifo WHERE idfifo = '$id_fifo'";
-    $resStockFIFO = ejecutarConsulta($sqlStockFIFO)->fetch_object();
-    $stockRealFIFO = $resStockFIFO ? floatval($resStockFIFO->cantidad_restante) : 0;
-    
-    // Cantidad ya en el carrito para este producto
-    $cantidadEnCarrito = $existencia ? floatval($existencia->cantidad) : 0;
-    
-    // 🔹 VALIDACIÓN SEGÚN TIPO DE CONTENEDOR
-    $cantidad_contenedor = floatval($cantidad_contenedor);
-    $cantidad = floatval($cantidad);
-    $stock_disponible = floatval($stock_disponible);
-    
-    if ($cantidad_contenedor > 1) {
-        // Es CAJA o contenedor múltiple
-        // Calcular cuántas cajas hay disponibles en el lote FIFO
-        $cajasDisponibles = floor($stockRealFIFO / $cantidad_contenedor);
-        
-        // Validar que no se exceda el límite de cajas
-        if (($cantidadEnCarrito + $cantidad) > $cajasDisponibles) {
-            return json_encode([
-                "status" => 0,
-                "message" => "Stock insuficiente. Solo hay {$cajasDisponibles} {$contenedor}(s) disponibles en este lote"
-            ]);
+        $existencia = ejecutarConsulta($verificar)->fetch_object();
+
+        // 🔹 OBTENER STOCK DEL LOTE FIFO ESPECÍFICO
+        $sqlStockFIFO = "SELECT cantidad_restante FROM stock_fifo WHERE idfifo = '$id_fifo'";
+        $resStockFIFO = ejecutarConsulta($sqlStockFIFO)->fetch_object();
+        $stockRealFIFO = $resStockFIFO ? floatval($resStockFIFO->cantidad_restante) : 0;
+
+        // Cantidad ya en el carrito para este producto
+        $cantidadEnCarrito = $existencia ? floatval($existencia->cantidad) : 0;
+
+        // 🔹 VALIDACIÓN SEGÚN TIPO DE CONTENEDOR
+        $cantidad_contenedor = floatval($cantidad_contenedor);
+        $cantidad = floatval($cantidad);
+        $stock_disponible = floatval($stock_disponible);
+
+        if ($cantidad_contenedor > 1) {
+            // Es CAJA o contenedor múltiple
+            // Calcular cuántas cajas hay disponibles en el lote FIFO
+            $cajasDisponibles = floor($stockRealFIFO / $cantidad_contenedor);
+
+            // Validar que no se exceda el límite de cajas
+            if (($cantidadEnCarrito + $cantidad) > $cajasDisponibles) {
+                return json_encode([
+                    "status" => 0,
+                    "message" => "Stock insuficiente. Solo hay {$cajasDisponibles} {$contenedor}(s) disponibles en este lote"
+                ]);
+            }
+        } else {
+            // Es UNIDAD (puede ser fraccionado)
+            // Validar contra stock del lote FIFO
+            if (($cantidadEnCarrito + $cantidad) > $stockRealFIFO) {
+                return json_encode([
+                    "status" => 0,
+                    "message" => "Stock insuficiente. Solo hay {$stockRealFIFO} unidad(es) disponibles en este lote"
+                ]);
+            }
         }
-    } else {
-        // Es UNIDAD (puede ser fraccionado)
-        // Validar contra stock del lote FIFO
-        if (($cantidadEnCarrito + $cantidad) > $stockRealFIFO) {
-            return json_encode([
-                "status" => 0,
-                "message" => "Stock insuficiente. Solo hay {$stockRealFIFO} unidad(es) disponibles en este lote"
-            ]);
+
+        // Recalcular precio si la cantidad es fraccionada
+        $precioFinal = floatval($precio);
+        if ($cantidad > 0 && $cantidad < 1) {
+            $precioFinal = floatval($precio) * $cantidad;
         }
-    }
-    
-    // Recalcular precio si la cantidad es fraccionada
-    $precioFinal = floatval($precio);
-    if ($cantidad > 0 && $cantidad < 1) {
-        $precioFinal = floatval($precio) * $cantidad;
-    }
-    
-    // Limpiar el nombre del producto
-    $nombre_limpio = html_entity_decode(stripslashes($nombre), ENT_QUOTES, 'UTF-8');
-    
-    // Agregar o actualizar en carrito
-    if ($existencia) {
-        $nueva_cantidad = $cantidadEnCarrito + $cantidad;
-        $sql = "UPDATE temp_detalle_venta 
+
+        // Limpiar el nombre del producto
+        $nombre_limpio = html_entity_decode(stripslashes($nombre), ENT_QUOTES, 'UTF-8');
+
+        // Agregar o actualizar en carrito
+        if ($existencia) {
+            $nueva_cantidad = $cantidadEnCarrito + $cantidad;
+            $sql = "UPDATE temp_detalle_venta 
                 SET cantidad = '$nueva_cantidad', 
                     precio = '$precioFinal',
                     id_fifo = '$id_fifo'
                 WHERE token = '$token' AND idproducto = '$configuration'";
-        $res = ejecutarConsulta($sql);
-    } else {
-        $sql = "INSERT INTO temp_detalle_venta 
+            $res = ejecutarConsulta($sql);
+        } else {
+            $sql = "INSERT INTO temp_detalle_venta 
                 (token, idproducto, producto, nombre, contenedor, cantidad_contenedor, cantidad, precio, id_fifo) 
                 VALUES (
                     '$token', 
@@ -544,14 +509,14 @@ final class Pos
                     '$precioFinal', 
                     '$id_fifo'
                 )";
-        $res = ejecutarConsulta($sql);
+            $res = ejecutarConsulta($sql);
+        }
+
+        return json_encode([
+            "status" => $res ? 1 : 0,
+            "message" => $res ? "Producto agregado" : "Error al agregar producto"
+        ]);
     }
-    
-    return json_encode([
-        "status" => $res ? 1 : 0,
-        "message" => $res ? "Producto agregado" : "Error al agregar producto"
-    ]);
-}
 
     public function listarCarrito($token)
     {
@@ -641,45 +606,71 @@ final class Pos
         return ejecutarConsulta($sql);
     }
 
-    public function procesarVenta($tipo_comprobante, $serie_comprobante, $num_comprobante, $idcliente, $idpersonal,
-    $idsucursal, $idcaja, $input_total_venta, $pagado_total, $totalrecibido, $totaldeposito, $tipopago, $total_comision,
-     $token, $pagado, $idmotivo, $observaciones, $fecha_hora, $vuelto, $totalDescuento, $nombre, $metodos, $nroOperacionArr, 
-    $bancoArr, $fechaDepositoArr) {
-    if (empty($idpersonal)) {
-        header('Location: /ingreso');
-        exit();
-    }
-
-    $fechaActual = date('Y-m-d H:i:s');
-    $impuesto = $input_total_venta * 0.18;
-    if ($idcliente == "") $idcliente = 6; // cliente genérico
-
-    $estado = ($tipo_comprobante == "Nota de Venta") ? "Activado" : "Por Enviar";
-    $dovEstado = ($tipo_comprobante == "Nota de Venta") ? "ACEPTADO" : "";
-
-    if ($serie_comprobante == "-" && $num_comprobante == "-") {
-        $tipo_comprobante = "Anular";
-    }
-    ejecutarConsulta("BEGIN");
-
-    try {
-        // Determinar forma de pago real
-        $formapago_real = $tipopago;
-        if (!empty($pagado) && !empty($metodos)) {
-            $pagos_activos = [];
-            foreach ($pagado as $index => $monto) {
-                if (floatval($monto) > 0) {
-                    $pagos_activos[] = $metodos[$index] ?? 'Efectivo';
-                }
-            }
-            if (count($pagos_activos) > 1) $formapago_real = 'Mixto';
-            elseif (count($pagos_activos) == 1) $formapago_real = $metodos[0];
+    public function procesarVenta(
+        $tipo_comprobante,
+        $serie_comprobante,
+        $num_comprobante,
+        $idcliente,
+        $idpersonal,
+        $idsucursal,
+        $idcaja,
+        $input_total_venta,
+        $pagado_total,
+        $totalrecibido,
+        $totaldeposito,
+        $tipopago,
+        $total_comision,
+        $token,
+        $pagado,
+        $idmotivo,
+        $observaciones,
+        $fecha_hora,
+        $vuelto,
+        $totalDescuento,
+        $nombre,
+        $metodos,
+        $nroOperacionArr,
+        $bancoArr,
+        $fechaDepositoArr
+    ) {
+        if (empty($idpersonal)) {
+            header('Location: /ingreso');
+            exit();
         }
 
-        // Insert venta
-$idmotivo_sql = (isset($idmotivo) && trim((string)$idmotivo) !== '') ? (int)$idmotivo : "NULL";
+        $fechaActual = date('Y-m-d H:i:s');
+        $impuesto = $input_total_venta * 0.18;
+        if ($idcliente == "")
+            $idcliente = 6; // cliente genérico
 
-$sqlVenta = "INSERT INTO venta 
+        $estado = ($tipo_comprobante == "Nota de Venta") ? "Activado" : "Por Enviar";
+        $dovEstado = ($tipo_comprobante == "Nota de Venta") ? "ACEPTADO" : "";
+
+        if ($serie_comprobante == "-" && $num_comprobante == "-") {
+            $tipo_comprobante = "Anular";
+        }
+        ejecutarConsulta("BEGIN");
+
+        try {
+            // Determinar forma de pago real
+            $formapago_real = $tipopago;
+            if (!empty($pagado) && !empty($metodos)) {
+                $pagos_activos = [];
+                foreach ($pagado as $index => $monto) {
+                    if (floatval($monto) > 0) {
+                        $pagos_activos[] = $metodos[$index] ?? 'Efectivo';
+                    }
+                }
+                if (count($pagos_activos) > 1)
+                    $formapago_real = 'Mixto';
+                elseif (count($pagos_activos) == 1)
+                    $formapago_real = $metodos[0];
+            }
+
+            // Insert venta
+            $idmotivo_sql = (isset($idmotivo) && trim((string) $idmotivo) !== '') ? (int) $idmotivo : "NULL";
+
+            $sqlVenta = "INSERT INTO venta 
     (idsucursal, idcaja, idcliente, idpersonal, idmotivo_nota, tipo_comprobante, serie_comprobante, num_comprobante,
      fecha_hora, impuesto, total_venta, ventacredito, formapago, descuento, totalrecibido, totaldeposito,
      comisionV, vuelto, montoPagado, estado, dov_Estado, observacion, fecha_kardex)
@@ -688,19 +679,20 @@ $sqlVenta = "INSERT INTO venta
         '$fecha_hora','$impuesto','$input_total_venta','No','$formapago_real','$totalDescuento','$totalrecibido','$totaldeposito',
         '$total_comision','$vuelto','$pagado_total','$estado','$dovEstado','$observaciones','$fechaActual'
     )";
-        $idventanew = ejecutarConsulta_retornarID($sqlVenta);
+            $idventanew = ejecutarConsulta_retornarID($sqlVenta);
 
-        // Insertar pagos
-        if ($idventanew && !empty($pagado)) {
-            foreach ($pagado as $i => $montoRaw) {
-                $monto = floatval($montoRaw);
-                if ($monto <= 0) continue;
-                $metodo = $metodos[$i] ?? 'Efectivo';
-                $nroOp = $nroOperacionArr[$i] ?? null;
-                $fechaDep = $fechaDepositoArr[$i] ?? null;
-                $bancoPago = $bancoArr[$i] ?? null;
+            // Insertar pagos
+            if ($idventanew && !empty($pagado)) {
+                foreach ($pagado as $i => $montoRaw) {
+                    $monto = floatval($montoRaw);
+                    if ($monto <= 0)
+                        continue;
+                    $metodo = $metodos[$i] ?? 'Efectivo';
+                    $nroOp = $nroOperacionArr[$i] ?? null;
+                    $fechaDep = $fechaDepositoArr[$i] ?? null;
+                    $bancoPago = $bancoArr[$i] ?? null;
 
-                $sqlPago = "INSERT INTO venta_pago (idventa, metodo_pago, monto, nroOperacion, fechaDeposito, banco)
+                    $sqlPago = "INSERT INTO venta_pago (idventa, metodo_pago, monto, nroOperacion, fechaDeposito, banco)
                             VALUES (
                                 '$idventanew', 
                                 '$metodo',
@@ -709,110 +701,111 @@ $sqlVenta = "INSERT INTO venta
                                 " . ($fechaDep ? "'$fechaDep'" : "NULL") . ",
                                 " . ($bancoPago ? "'$bancoPago'" : "NULL") . "
                             )";
-                ejecutarConsulta($sqlPago);
+                    ejecutarConsulta($sqlPago);
+                }
             }
-        }
 
-        // Procesar productos con lógica FIFO
-        $detalle = ejecutarConsulta("SELECT * FROM temp_detalle_venta WHERE token = '$token'");
-        while ($reg = $detalle->fetch_object()) {
-            
-            $id_producto_config = $reg->idproducto; // ID de la configuración del producto (ej. caja de 12)
-            $id_producto_real = $reg->producto;   // ID del producto base (ej. botella individual)
-            $cantidad_solicitada = $reg->cantidad; // Cantidad de contenedores (ej. 2 cajas)
-            $factor_contenedor = $reg->cantidad_contenedor; // Unidades por contenedor (ej. 12)
-            
-            $cantidad_total_unidades = $cantidad_solicitada * $factor_contenedor;
-            $cantidad_restante_a_vender = $cantidad_total_unidades;
-            
-            // Buscar lotes FIFO disponibles para el producto real
-            $sql_fifo = "SELECT idfifo, cantidad_restante, precio_venta
+            // Procesar productos con lógica FIFO
+            $detalle = ejecutarConsulta("SELECT * FROM temp_detalle_venta WHERE token = '$token'");
+            while ($reg = $detalle->fetch_object()) {
+
+                $id_producto_config = $reg->idproducto; // ID de la configuración del producto (ej. caja de 12)
+                $id_producto_real = $reg->producto;   // ID del producto base (ej. botella individual)
+                $cantidad_solicitada = $reg->cantidad; // Cantidad de contenedores (ej. 2 cajas)
+                $factor_contenedor = $reg->cantidad_contenedor; // Unidades por contenedor (ej. 12)
+
+                $cantidad_total_unidades = $cantidad_solicitada * $factor_contenedor;
+                $cantidad_restante_a_vender = $cantidad_total_unidades;
+
+                // Buscar lotes FIFO disponibles para el producto real
+                $sql_fifo = "SELECT idfifo, cantidad_restante, precio_venta
                          FROM stock_fifo
                          WHERE idproducto = '$id_producto_real' 
                            AND idsucursal = '$idsucursal'
                            AND cantidad_restante > 0
                            AND estado = 1
                          ORDER BY fecha_ingreso ASC"; // Lógica FIFO
-            
-            $lotes_disponibles = ejecutarConsulta($sql_fifo);
-            
-            if (!$lotes_disponibles) {
-                throw new Exception("Error al consultar lotes para el producto: $reg->nombre");
-            }
-            
-            $stock_global_descontado = 0;
 
-            // Iterar y descontar de cada lote
-            while ($lote = $lotes_disponibles->fetch_object()) {
-                if ($cantidad_restante_a_vender <= 0) break;
+                $lotes_disponibles = ejecutarConsulta($sql_fifo);
 
-                $cantidad_disponible_lote = floatval($lote->cantidad_restante);
-                $id_lote_actual = $lote->idfifo;
-                $precio_venta_lote = $lote->precio_venta;
-
-                $cantidad_a_tomar = min($cantidad_restante_a_vender, $cantidad_disponible_lote);
-
-                // Actualizar la cantidad restante en el lote FIFO
-                $sql_update_fifo = "UPDATE stock_fifo 
-                                    SET cantidad_restante = cantidad_restante - '$cantidad_a_tomar' 
-                                    WHERE idfifo = '$id_lote_actual'";
-                if (!ejecutarConsulta($sql_update_fifo)) {
-                    throw new Exception("Error al actualizar el stock del lote FIFO para el producto: $reg->nombre");
+                if (!$lotes_disponibles) {
+                    throw new Exception("Error al consultar lotes para el producto: $reg->nombre");
                 }
 
-                // Insertar el detalle de la venta por cada lote consumido
-                $sqlDetalle = "INSERT INTO detalle_venta 
+                $stock_global_descontado = 0;
+
+                // Iterar y descontar de cada lote
+                while ($lote = $lotes_disponibles->fetch_object()) {
+                    if ($cantidad_restante_a_vender <= 0)
+                        break;
+
+                    $cantidad_disponible_lote = floatval($lote->cantidad_restante);
+                    $id_lote_actual = $lote->idfifo;
+                    $precio_venta_lote = $lote->precio_venta;
+
+                    $cantidad_a_tomar = min($cantidad_restante_a_vender, $cantidad_disponible_lote);
+
+                    // Actualizar la cantidad restante en el lote FIFO
+                    $sql_update_fifo = "UPDATE stock_fifo 
+                                    SET cantidad_restante = cantidad_restante - '$cantidad_a_tomar' 
+                                    WHERE idfifo = '$id_lote_actual'";
+                    if (!ejecutarConsulta($sql_update_fifo)) {
+                        throw new Exception("Error al actualizar el stock del lote FIFO para el producto: $reg->nombre");
+                    }
+
+                    // Insertar el detalle de la venta por cada lote consumido
+                    $sqlDetalle = "INSERT INTO detalle_venta 
                     (idsucursal, idventa, idproducto, id_fifo, nombre_producto, cantidad, contenedor, cantidad_contenedor, precio_venta, descuento, tipo)
                     VALUES (
                         '$idsucursal', '$idventanew', '$id_producto_config', '$id_lote_actual', '$reg->nombre', 
                         '$cantidad_a_tomar', '$reg->contenedor', '$factor_contenedor', 
                         '$precio_venta_lote', 0, 'venta')";
-                if (!ejecutarConsulta($sqlDetalle)) {
-                    throw new Exception("Error al insertar el detalle de venta para el producto: $reg->nombre");
+                    if (!ejecutarConsulta($sqlDetalle)) {
+                        throw new Exception("Error al insertar el detalle de venta para el producto: $reg->nombre");
+                    }
+
+                    $cantidad_restante_a_vender -= $cantidad_a_tomar;
+                    $stock_global_descontado += $cantidad_a_tomar;
                 }
 
-                $cantidad_restante_a_vender -= $cantidad_a_tomar;
-                $stock_global_descontado += $cantidad_a_tomar;
-            }
+                // Si después de recorrer todos los lotes aún falta cantidad, es un error de stock
+                if ($cantidad_restante_a_vender > 0) {
+                    throw new Exception("Stock insuficiente en lotes para el producto: $reg->nombre. Faltan " . $cantidad_restante_a_vender . " unidades.");
+                }
 
-            // Si después de recorrer todos los lotes aún falta cantidad, es un error de stock
-            if ($cantidad_restante_a_vender > 0) {
-                throw new Exception("Stock insuficiente en lotes para el producto: $reg->nombre. Faltan " . $cantidad_restante_a_vender . " unidades.");
-            }
-
-            // Actualizar el stock general en la tabla 'producto'
-            $sqlUpd = "UPDATE producto 
+                // Actualizar el stock general en la tabla 'producto'
+                $sqlUpd = "UPDATE producto 
                        SET stock = stock - '$stock_global_descontado' 
                        WHERE idproducto = '$id_producto_real' AND idsucursal = '$idsucursal'";
-            if (!ejecutarConsulta($sqlUpd)) {
-                throw new Exception("Error al actualizar el stock global para el producto: $reg->nombre");
-            }
-            
-            // Registrar en kardex (un solo movimiento por el total de unidades vendidas del producto)
-            $sqlKardex = "INSERT INTO kardex 
+                if (!ejecutarConsulta($sqlUpd)) {
+                    throw new Exception("Error al actualizar el stock global para el producto: $reg->nombre");
+                }
+
+                // Registrar en kardex (un solo movimiento por el total de unidades vendidas del producto)
+                $sqlKardex = "INSERT INTO kardex 
                 (idsucursal, idproducto, cantidad, cantidad_contenedor, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion, fecha_kardex)
                 VALUES (
                     '$idsucursal', '$id_producto_real', '$stock_global_descontado', '$factor_contenedor', '$reg->precio', 
                     (SELECT stock FROM producto WHERE idproducto = '$id_producto_real' AND idsucursal = '$idsucursal'), 
                     1, 'Venta', 'Venta POS #" . $num_comprobante . "', '$fechaActual')";
-            if (!ejecutarConsulta($sqlKardex)) {
-                throw new Exception("Error al registrar en el kardex para el producto: $reg->nombre");
+                if (!ejecutarConsulta($sqlKardex)) {
+                    throw new Exception("Error al registrar en el kardex para el producto: $reg->nombre");
+                }
             }
+
+            // Eliminar carrito temporal
+            ejecutarConsulta("DELETE FROM temp_detalle_venta WHERE token = '$token'");
+
+            // Confirmar venta
+            ejecutarConsulta("COMMIT");
+            return ['status' => 1, 'idventa' => $idventanew];
+
+        } catch (Exception $e) {
+            //  Revertir en caso de error
+            ejecutarConsulta("ROLLBACK");
+            return ['status' => 0, 'error' => $e->getMessage()];
         }
-
-        // Eliminar carrito temporal
-        ejecutarConsulta("DELETE FROM temp_detalle_venta WHERE token = '$token'");
-
-        // Confirmar venta
-        ejecutarConsulta("COMMIT");
-        return ['status' => 1, 'idventa' => $idventanew];
-
-    } catch (Exception $e) {
-        //  Revertir en caso de error
-        ejecutarConsulta("ROLLBACK");
-        return ['status' => 0, 'error' => $e->getMessage()];
     }
-}
 
 
     public function actualizarStock($idproducto, $producto)
@@ -831,34 +824,34 @@ $sqlVenta = "INSERT INTO venta
 
 
     public function actualizarDataItem($idproducto, $campo, $value, $token)
-{
-    // Validar que solo se permiten ciertos campos (previene inyección SQL)
-    $campos_permitidos = ['nombre', 'precio', 'cantidad'];
-    if (!in_array($campo, $campos_permitidos)) {
-        return ['error' => 'Campo no permitido'];
+    {
+        // Validar que solo se permiten ciertos campos (previene inyección SQL)
+        $campos_permitidos = ['nombre', 'precio', 'cantidad'];
+        if (!in_array($campo, $campos_permitidos)) {
+            return ['error' => 'Campo no permitido'];
+        }
+
+        // Escapar el valor correctamente si no usas consultas preparadas
+        $value_escaped = addslashes($value);
+
+        // Si el campo es texto, rodearlo con comillas
+        $sql = "UPDATE temp_detalle_venta SET $campo = '$value_escaped' WHERE token = '$token' AND idproducto = '$idproducto'";
+
+
+        return ejecutarConsulta($sql);
     }
 
-    // Escapar el valor correctamente si no usas consultas preparadas
-    $value_escaped = addslashes($value);
-
-    // Si el campo es texto, rodearlo con comillas
-    $sql = "UPDATE temp_detalle_venta SET $campo = '$value_escaped' WHERE token = '$token' AND idproducto = '$idproducto'";
-   
-
-    return ejecutarConsulta($sql);
-}
-
     public function listarProductosActivosFIFO($idsucursal, $idcategoria = null)
-{
-    $idsucursal  = intval($idsucursal);
-    $idcategoria = isset($idcategoria) && $idcategoria !== '' ? intval($idcategoria) : 0;
+    {
+        $idsucursal = intval($idsucursal);
+        $idcategoria = isset($idcategoria) && $idcategoria !== '' ? intval($idcategoria) : 0;
 
-    // Filtro opcional
-    $whereCategoria = ($idcategoria > 0)
-        ? " AND c.idcategoria = $idcategoria "
-        : "";
+        // Filtro opcional
+        $whereCategoria = ($idcategoria > 0)
+            ? " AND c.idcategoria = $idcategoria "
+            : "";
 
-    $sql = "SELECT
+        $sql = "SELECT
                 p.idproducto AS id_producto_real,
                 p.nombre,
                 p.imagen,
@@ -944,40 +937,40 @@ $sqlVenta = "INSERT INTO venta
             ORDER BY p.nombre ASC
             LIMIT 20";
 
-    $productos = ejecutarConsulta($sql);
-    $data = [];
-    while ($reg = $productos->fetch_object()) {
-        $data[] = $reg;
+        $productos = ejecutarConsulta($sql);
+        $data = [];
+        while ($reg = $productos->fetch_object()) {
+            $data[] = $reg;
+        }
+        return $data;
     }
-    return $data;
-}
 
 
-public function searchProductosFIFO($idsucursal, $search = null, $type = null)
-{
-    $searching = "";
-    if ($search) {
-        $search_escaped = mysqli_real_escape_string($GLOBALS['conexion'], trim($search));
-        if ($type == 2) { // Búsqueda por código
-            $searching = "AND (p.codigo LIKE '%$search_escaped%' OR pg.codigo_extra LIKE '%$search_escaped%')";
-        } else { // Búsqueda por nombre
-            $palabras = explode(" ", $search_escaped);
-            $condiciones = [];
-            foreach ($palabras as $palabra) {
-                $palabra = trim($palabra);
-                if (strlen($palabra) > 0) {
-                    $condiciones[] = "REPLACE(
+    public function searchProductosFIFO($idsucursal, $search = null, $type = null)
+    {
+        $searching = "";
+        if ($search) {
+            $search_escaped = mysqli_real_escape_string($GLOBALS['conexion'], trim($search));
+            if ($type == 2) { // Búsqueda por código
+                $searching = "AND (p.codigo LIKE '%$search_escaped%' OR pg.codigo_extra LIKE '%$search_escaped%')";
+            } else { // Búsqueda por nombre
+                $palabras = explode(" ", $search_escaped);
+                $condiciones = [];
+                foreach ($palabras as $palabra) {
+                    $palabra = trim($palabra);
+                    if (strlen($palabra) > 0) {
+                        $condiciones[] = "REPLACE(
                         REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER(p.nombre),'á','a'),'é','e'),'í','i'),'ó','o'),'ú','u'),'ñ','n') 
                         LIKE CONCAT('%', REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(LOWER('$palabra'),'á','a'),'é','e'),'í','i'),'ó','o'),'ú','u'),'ñ','n'), '%')";
+                    }
+                }
+                if ($condiciones) {
+                    $searching = "AND (" . implode(" AND ", $condiciones) . ")";
                 }
             }
-            if ($condiciones) {
-                $searching = "AND (" . implode(" AND ", $condiciones) . ")";
-            }
         }
-    }
 
-    $sql = "SELECT
+        $sql = "SELECT
                 p.idproducto AS id_producto_real,
                 p.nombre,
                 p.imagen,
@@ -1073,11 +1066,11 @@ public function searchProductosFIFO($idsucursal, $search = null, $type = null)
             ORDER BY p.nombre ASC
             LIMIT 20";
 
-    $productos = ejecutarConsulta($sql);
-    $data = array();
-    while ($reg = $productos->fetch_object()) {
-        $data[] = $reg;
+        $productos = ejecutarConsulta($sql);
+        $data = array();
+        while ($reg = $productos->fetch_object()) {
+            $data[] = $reg;
+        }
+        return $data;
     }
-    return $data;
-}
 }

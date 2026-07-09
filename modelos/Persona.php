@@ -1,6 +1,8 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
+require_once "../configuraciones/ConexionPdo.php";
+require_once "../core/Paginanation.php";
 
 class Persona
 {
@@ -103,22 +105,52 @@ class Persona
 	//Implementar un método para listar los registros 
 	public function listarc($tipo_documento = "", $excluirId = false)
 	{
-		$sql = "SELECT *
-            FROM persona
-            WHERE tipo_persona = 'Cliente'";
+		$pdo = Conexion::conectar();
+
+		$page = $_GET['page'] ?? 1;
+		$limit = $_GET['limit'] ?? 10;
+		$search = $_GET['search'] ?? '';
+
+
+		$paginator = (new FluentPaginator($pdo))
+			->query("
+				SELECT *
+				FROM persona
+				WHERE tipo_persona = 'Cliente'
+			");
+
 
 		if (!empty($tipo_documento)) {
-			$sql .= " AND tipo_documento = '$tipo_documento'";
+
+			$paginator->where("tipo_documento", "=", $tipo_documento);
 		}
+
 
 		if ($excluirId !== false) {
-			$sql .= " AND idpersona <> 1";
+			$paginator->where("idpersona", "=>", $excluirId);
 		}
 
-		$sql .= " ORDER BY nombre ASC";
 
-		return ejecutarConsulta($sql);
+		$response = $paginator
+			->withSoftDeletes()
+			->search(
+				$search,
+				[
+					'nombre',
+					'num_documento',
+					'telefono',
+					'email'
+				]
+			)
+			->paginate(
+				(int) $page,
+				(int) $limit
+			);
+
+
+		echo json_encode($response);
 	}
+
 
 	public function obtenerPorId($idcliente)
 	{

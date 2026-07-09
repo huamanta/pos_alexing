@@ -280,4 +280,23 @@ class Helpers
     {
         return is_numeric($valor) ? (float) $valor : 0.0;
     }
+
+
+    public function verificarAperturaCaja($idcaja)
+    {
+        $sql = "SELECT ca.*
+                FROM caja_apertura ca
+                INNER JOIN cajas c ON c.idcaja = ca.idcaja
+                WHERE ca.estado = 1 
+                  AND ca.idcaja = '$idcaja'
+                  AND ca.fecha_cierre IS NULL
+                LIMIT 1";
+
+        $rpta = ejecutarConsultaSimpleFila($sql);
+        if (!$rpta) {
+            return array('success' => false);
+        }
+
+        return array('success' => true);
+    }
 }

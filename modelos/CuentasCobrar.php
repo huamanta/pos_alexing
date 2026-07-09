@@ -24,7 +24,9 @@ class CuentasCobrar extends Helpers
         $formapago,
         $montoPagarTarjeta,
         $idcaja,
-        $idpersonal
+        $idpersonal, 
+        $idsucursal, 
+        $idusuario
     ) {
 
         ejecutarConsulta("START TRANSACTION");
@@ -33,7 +35,7 @@ class CuentasCobrar extends Helpers
 
             $fechaPago = $this->obtenerFechaPago($fechaPago);
 
-            $this->validarCaja($idcaja);
+            $this->validarCaja($idsucursal, $idusuario);
 
             $cuenta = $this->obtenerCuentaPorCobrar($idcpc);
 
@@ -92,18 +94,12 @@ class CuentasCobrar extends Helpers
             : $fechaPago;
     }
 
-    private function validarCaja($idcaja)
+    private function validarCaja($idsucursal, $idusuario)
     {
-        $sql = "
-                SELECT estado
-                FROM cajas
-                WHERE idcaja='$idcaja'
-                FOR UPDATE
-            ";
 
-        $caja = ejecutarConsultaSimpleFila($sql);
-
-        if (!$caja || intval($caja["estado"]) != 2) {
+        $sql = "SELECT * FROM caja_apertura WHERE idusuario = '$idusuario' AND idsucursal = '$idsucursal' AND estado = 1 AND fecha_cierre IS NULL";
+        $apertura = ejecutarConsulta($sql)->fetch_object();
+        if (!$apertura) {
             throw new Exception("La caja está cerrada.");
         }
     }
@@ -1824,7 +1820,7 @@ class CuentasCobrar extends Helpers
         ));
     }
 
-    public function amortizarDeudaVenta($idsucursal, $idventa, $formapago, $montopago, $idcaja, $idpersonal)
+    public function amortizarDeudaVenta($idsucursal, $idventa, $formapago, $montopago, $idcaja, $idpersonal, $idusuario)
     {
         ejecutarConsulta("START TRANSACTION");
 
@@ -1834,7 +1830,7 @@ class CuentasCobrar extends Helpers
                 throw new Exception('La sucursal no se ha encontrado');
             }
 
-            $this->validarCaja($idcaja);
+            $this->validarCaja($$idsucursal, $idusuario);
 
             $configDescuento = Helpers::verificarDecuentoPagoAnticipado($idsucursal);
 

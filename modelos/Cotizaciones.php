@@ -311,13 +311,12 @@ class Cotizacion
             FROM cotizacion c
             INNER JOIN persona p ON c.idcliente = p.idpersona
             INNER JOIN personal u ON c.idPersonal = u.idpersonal
-            WHERE c.idsucursal = '$idsucursal' AND c.condicion = 1";
+            WHERE c.idsucursal = '$idsucursal' AND c.condicion = 1 AND c.estado = 'EN ESPERA'";
 
         if ($is_aprobated) {
-            $sql .= "AND c.estado = 'EN ESPERA' AND c.fecha_aprobacion IS NOT NULL";
+            $sql .= "AND c.fecha_aprobacion IS NOT NULL";
         } else {
-            $sql .= " AND c.estado = 'EN ESPERA'
-                  AND c.fecha_aprobacion IS NULL";
+            $sql .= "AND c.fecha_aprobacion IS NULL";
         }
 
         $sql .= " ORDER BY c.idcotizacion DESC";

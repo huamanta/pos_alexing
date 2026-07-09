@@ -31,6 +31,8 @@ switch ($_GET["op"]) {
 
 		$idcaja = isset($_POST['idcaja']) ? limpiarCadena($_POST['idcaja']) : 0;
 		$idpersonal = $_SESSION["idpersonal"];
+		$idusuario = $_SESSION["idusuario"];
+		$idsucursal = $_SESSION["idsucursal"];
 		// Validar que se pase un idcaja
 		if ($idcaja == 0) {
 			echo json_encode(['success' => false, 'message' => 'Debe seleccionar una caja abierta']);
@@ -38,7 +40,7 @@ switch ($_GET["op"]) {
 		}
 
 		// Registrar abono
-		$rspta = $cuentascobrar->insertar($idcpc, $montopagado, $observacion, $banco, $op, $fechaPago, $formapago, $montoPagarTarjeta, $idcaja, $idpersonal);
+		$rspta = $cuentascobrar->insertar($idcpc, $montopagado, $observacion, $banco, $op, $fechaPago, $formapago, $montoPagarTarjeta, $idcaja, $idpersonal, $idsucursal, $idusuario);
 
 		echo json_encode($rspta);
 
@@ -242,7 +244,8 @@ switch ($_GET["op"]) {
 		$formapago = $_POST['formapagoAmortizar'];
 		$montopago = $_POST['montoPagarAmortizar'];
 		$idcaja = $_POST['idcaja']; // Caja abierta actual
-		$idpersonal = $_SESSION['idusuario'];
+		$idusuario = $_SESSION['idusuario'];
+		$idpersonal = $_SESSION['idpersonal'];
 
 		if (!empty($idventa_amortizar)) {
 			$rspta = $cuentascobrar->amortizarDeudaVenta(
@@ -251,7 +254,8 @@ switch ($_GET["op"]) {
 				$formapago,
 				$montopago,
 				$idcaja,
-				$idpersonal
+				$idpersonal,
+				$idusuario
 			);
 		} else {
 			$rspta = $cuentascobrar->amortizarDeuda(

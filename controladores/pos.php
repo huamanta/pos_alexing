@@ -214,25 +214,16 @@ switch ($_GET['op']) {
 
 
     case 'cerrarCaja':
-        $fecha_hora = date("Y-m-d H:i:s");
-        $efectivo_cierre = isset($_GET["efectivo_cierre"]) ? limpiarCadena($_GET["efectivo_cierre"]) : "";;
-        $idcaja = isset($_GET["idcaja"]) ? limpiarCadena($_GET["idcaja"]) : "";
-        $idsucursal = isset($_GET["idsucursal"]) ? limpiarCadena($_GET["idsucursal"]) : $_SESSION["idsucursal"];
-        $idusuario = $_SESSION["idusuario"];
-        $rpta = $pos->cerrarCaja($fecha_hora, $efectivo_cierre, $idcaja, $idusuario, $idsucursal);
-        if ($rpta) {
-            $info = array('status' => 1);
-        } else {
-            $info = array('status' => 0);
-        }
-        echo json_encode($info);
+        $aperturacajaid = isset($_POST["aperturacajaid"]) ? limpiarCadena($_POST["aperturacajaid"]) : "";
+        $efectivo_contado = isset($_POST["efectivo_contado"]) ? limpiarCadena($_POST["efectivo_contado"]) : NULL;
+        $idusuario = $_SESSION['idusuario'];
+        $rpta = $pos->cerrarCaja($aperturacajaid, $efectivo_contado, $idusuario);
+        echo $rpta;
         break;
 
     case 'showResumenCaja':
-	    $idcaja = isset($_GET["idcaja"]) ? limpiarCadena($_GET["idcaja"]) : "";
-	    $idsucursal = isset($_GET["idsucursal"]) ? limpiarCadena($_GET["idsucursal"]) : $_SESSION["idsucursal"];
-	    $idusuario = $_SESSION["idusuario"];
-	    $rpta = $pos->showResumenCaja($idcaja, $idsucursal, $idusuario);
+	    $aperturacajaid = isset($_GET["aperturacajaid"]) ? limpiarCadena($_GET["aperturacajaid"]) : "";
+	    $rpta = $pos->showResumenCaja($aperturacajaid);
 	    echo $rpta;
 	    break;
 

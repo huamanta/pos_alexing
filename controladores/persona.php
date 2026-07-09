@@ -82,6 +82,7 @@ switch ($_GET["op"]){
 	break;
 
 	case 'listarc':
+		echo phpinfo();
 		$rspta=$persona->listarc($tipo_documento = "", $excluirId = true);
  		//Vamos a declarar un array
  		$data= Array();

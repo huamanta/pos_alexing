@@ -23,14 +23,15 @@ class Cajas extends Helpers
         return ejecutarConsulta($sql);
     }
 
-    public function listar($cargo, $idsucursal)
+    public function listar($idsucursal)
     {
-        $condicion = ($cargo == 'Administrador') ? '' : " AND c.idsucursal = '$idsucursal'";
+
+        $abierto = 2;
 
         $sql = "SELECT 
                 c.*, 
                 CASE 
-                    WHEN c.estado = 2 THEN pe.nombre 
+                    WHEN c.estado = $abierto THEN pe.nombre 
                     ELSE '' 
                 END AS personal,
                 s.nombre AS almacen, 
@@ -48,7 +49,7 @@ class Cajas extends Helpers
             LEFT JOIN usuario u ON ca.idusuario = u.idusuario
             LEFT JOIN personal pe ON u.idpersonal = pe.idpersonal
             LEFT JOIN sucursal s ON c.idsucursal = s.idsucursal
-            WHERE c.deleted_at IS NULL $condicion";
+            WHERE c.idsucursal = '$idsucursal' AND c.deleted_at IS NULL";
 
         return ejecutarConsulta($sql);
     }
@@ -58,15 +59,41 @@ class Cajas extends Helpers
     //Implementamos un método para desactivar 
     public function desactivar($idcaja)
     {
-        $sql = "UPDATE cajas SET estado='0' WHERE idcaja='$idcaja'";
-        return ejecutarConsulta($sql);
+        try {
+
+            $verificarAperturaCaja = Helpers::verificarAperturaCaja($idcaja);
+
+            if ($verificarAperturaCaja) {
+                throw new Exception("La caja esta abierta no se puede descativar.");
+            }
+
+            $sql = "UPDATE cajas
+                SET estado = '0'
+                WHERE idcaja = '$idcaja'";
+
+            if (!ejecutarConsulta($sql)) {
+                throw new Exception("No se pudo desactivar la caja.");
+            }
+
+            return json_encode(['success' => true, 'message' => 'La caja se desactivo con exito']);
+
+        } catch (Exception $e) {
+            return json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     //Implementamos un método para activar 
     public function activar($idcaja)
     {
-        $sql = "UPDATE cajas SET estado='1' WHERE idcaja='$idcaja'";
-        return ejecutarConsulta($sql);
+        try {
+            $sql = "UPDATE cajas SET estado='1' WHERE idcaja='$idcaja'";
+            if (!ejecutarConsulta($sql)) {
+                throw new Exception("No se pudo desactivar la caja.");
+            }
+            return json_encode(['success' => true, 'message' => 'La caja se activo con exito']);
+        } catch (Exception $e) {
+            return json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 
     //Implementar un método para mostrar los datos de un registro a modificar
@@ -76,8 +103,14 @@ class Cajas extends Helpers
         return ejecutarConsultaSimpleFila($sql);
     }
 
-    public function historialCajas($fecha_inicio, $fecha_fin, $idsucursal)
+    public function historialCajas($idcaja, $limit = 10, $offset = 0)
     {
+        $sqlTotal = "SELECT COUNT(*)
+                 FROM caja_apertura
+                 WHERE idcaja = '$idcaja'";
+
+        $total = ejecutarConsultaSimpleFila($sqlTotal);
+
         $sql = "SELECT 
                 ca.aperturacajaid,
                 ca.idcaja,
@@ -88,74 +121,65 @@ class Cajas extends Helpers
                 ca.efectivo_cierre,
                 c.numero,
                 c.nombre,
-                pe.nombre as personal,
+                pe.nombre AS personal,
 
-                -- TOTAL DE VENTAS POR CAJA
                 (
-                    SELECT COUNT(*) 
-                    FROM venta v 
+                    SELECT COUNT(*)
+                    FROM venta v
                     WHERE v.idcaja = ca.idcaja
-                    AND v.idsucursal = '$idsucursal'
-                    AND v.fecha_hora BETWEEN ca.fecha_apertura 
+                    AND v.fecha_hora BETWEEN ca.fecha_apertura
                         AND IFNULL(ca.fecha_cierre, NOW())
-                ) as cantventas
+                ) AS cantventas,
 
-            FROM caja_apertura ca 
-            INNER JOIN cajas c ON c.idcaja = ca.idcaja 
-            INNER JOIN usuario u ON ca.idusuario = u.idusuario
-            INNER JOIN personal pe ON u.idpersonal = pe.idpersonal 
+                (
+                    SELECT IFNULL(SUM(v.total_venta), 0)
+                    FROM venta v
+                    WHERE v.idcaja = ca.idcaja
+                    AND v.fecha_hora BETWEEN ca.fecha_apertura
+                        AND IFNULL(ca.fecha_cierre, NOW())
+                ) AS totalventas
 
-            WHERE ca.fecha_apertura BETWEEN '$fecha_inicio 00:00:00' 
-                                       AND '$fecha_fin 23:59:59'
-              AND c.idsucursal = '$idsucursal'
+            FROM caja_apertura ca
+            INNER JOIN cajas c ON c.idcaja = ca.idcaja
+            INNER JOIN usuario u ON u.idusuario = ca.idusuario
+            INNER JOIN personal pe ON pe.idpersonal = u.idpersonal
 
-            ORDER BY ca.aperturacajaid DESC";
+            WHERE ca.idcaja = '$idcaja'
+
+            ORDER BY ca.aperturacajaid DESC
+            LIMIT $offset, $limit";
 
         $rspta = ejecutarConsulta($sql);
-        $data = array();
+
+        $data = [];
 
         while ($reg = $rspta->fetch_object()) {
-
-            // SOLO SI NECESITAS EL DETALLE DE VENTAS
-            $sql2 = "SELECT 
-                    v.idventa,
-                    v.fecha_hora,
-                    v.total_venta
-                 FROM venta v
-                 WHERE v.idcaja = '$reg->idcaja'
-                 AND v.idsucursal = '$idsucursal'
-                 AND v.fecha_hora BETWEEN '$reg->fecha_apertura' 
-                     AND IFNULL('$reg->fecha_cierre', NOW())";
-
-            $rspta2 = ejecutarConsulta($sql2);
-            $ventasdata = array();
-
-            while ($reg2 = $rspta2->fetch_object()) {
-                $ventasdata[] = $reg2;
-            }
 
             $supeUsuario = Helpers::esSuperusuario();
             $pemisoUsuario = Helpers::getUserPermissionAccion('Cerrar caja');
             $puedeCerrarCaja = $supeUsuario || ($pemisoUsuario && $reg->idusuario == $_SESSION['idusuario']);
 
-            $data[] = array(
+            $data[] = [
+                'idcaja' => $reg->idcaja,
                 'aperturacajaid' => $reg->aperturacajaid,
                 'numero' => $reg->numero,
                 'nombre' => $reg->nombre,
                 'personal' => $reg->personal,
                 'fecha_apertura' => $reg->fecha_apertura,
-                'efectivo_apertura' => '<span class="badge bg-danger">S/ ' . $reg->efectivo_apertura . '</span>',
+                'efectivo_apertura' => '<span class="badge bg-danger">S/ ' . number_format($reg->efectivo_apertura, 2) . '</span>',
                 'fecha_cierre' => $reg->fecha_cierre,
-                'efectivo_cierre' => '<span class="badge bg-success">S/ ' . $reg->efectivo_cierre . '</span>',
+                'efectivo_cierre' => '<span class="badge bg-success">S/ ' . number_format($reg->efectivo_cierre, 2) . '</span>',
                 'cantventas' => $reg->cantventas,
+                'totalventas' => $reg->totalventas,
                 'puede_cerrar_caja' => $puedeCerrarCaja,
-                'ventas' => $ventasdata
-            );
+            ];
         }
 
-        return $data;
+        return [
+            'total' => (int) $total,
+            'rows' => $data
+        ];
     }
-
 
     public function listarPorApertura($aperturacajaid)
     {
@@ -179,7 +203,29 @@ class Cajas extends Helpers
               AND m.fecha BETWEEN '$inicio' AND '$fin'
             ORDER BY m.idmovimiento DESC";
 
-        return ejecutarConsulta($sql);
+        $rspta = ejecutarConsulta($sql);
+        $data = array();
+
+        while ($reg = $rspta->fetch_object()) {
+            $data[] = array(
+                "0" => $reg->fecha,
+                "1" => $reg->descripcion,
+                "2" => ($reg->tipo == 'Egresos')
+                    ? '<span class="badge bg-red">EGRESO</span>'
+                    : '<span class="badge bg-green">INGRESO</span>',
+                "3" => $reg->formapago,
+                "4" => Helpers::get_currency_symbol($reg->totalefectivo),
+                "5" => Helpers::get_currency_symbol($reg->totaldeposito),
+                "6" => Helpers::get_currency_symbol($reg->totalefectivo + $reg->totaldeposito)
+            );
+        }
+
+        return json_encode([
+            "sEcho" => 1,
+            "iTotalRecords" => count($data),
+            "iTotalDisplayRecords" => count($data),
+            "aaData" => $data
+        ]);
     }
 
     public function listarCobrrosPorApertura($aperturacajaid)

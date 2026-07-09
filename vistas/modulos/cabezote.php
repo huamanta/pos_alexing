@@ -155,7 +155,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
 
     // ==================== Comprobantes Pendientes ====================
     function checkComprobantesPendientes() {
-        
+
         let ultima = localStorage.getItem("notif_comprobantes_time");
         let ahora = Date.now();
 
@@ -407,7 +407,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
             </li>
         <?php endif; ?>
 
-        <li class="nav-item dropdown mr-3">
+        <li class="nav-item dropdown">
             <a class="nav-link cxcAlertLink position-relative navbar-icon-link" data-toggle="dropdown" href="#"
                 title="Cuentas por Cobrar">
                 <i class="fas fa-file-invoice-dollar fa-lg"></i>
@@ -421,6 +421,29 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 <div class="dropdown-divider m-0"></div>
                 <a href="cuentas-cobrar" class="dropdown-item dropdown-footer text-primary font-weight-bold py-3">
                     Ver todas las cuentas <i class="fas fa-arrow-right ml-1"></i></a>
+            </div>
+        </li>
+
+        <li class="nav-item dropdown mr-2" id="stockbajito">
+            <a class="nav-link position-relative text-secondary" data-toggle="dropdown" href="#" id="stockAlertLink">
+                <i class="fas fa-bell fa-lg"></i>
+                <span class="badge badge-danger badge-notify" id="stockAlertCount">0</span>
+            </a>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-lg mt-2">
+                <div class="dropdown-header font-weight-bold text-danger bg-light rounded-top py-3">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Stock Bajo
+                </div>
+                <div id="stockAlertTable" class="dropdown-item p-0">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="bg-white text-muted">
+                            <tr>
+                                <th class="pl-3 border-0">Producto</th>
+                                <th class="text-center border-0">Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody id="stockAlertTableBody"></tbody>
+                    </table>
+                </div>
             </div>
         </li>
 
