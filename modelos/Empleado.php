@@ -2,28 +2,124 @@
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
 require_once "Helpers.php";
+require_once "../configuraciones/ConexionPdo.php";
+require_once "../core/FluentSave.php";
 
 class Empleado extends Helpers
 {
+
+	private PDO $pdo;
 	//Implementamos nuestro constructor
 	public function __construct()
 	{
-
+		$this->pdo = Conexion::conectar();
 	}
 
 	//Implementamos un método para insertar registros
 	public function insertar($nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $cargo, $imagen, $porcentaje, $salario)
 	{
-		$sql = "INSERT INTO personal (nombre,tipo_documento,num_documento,direccion,telefono,email,cargo,imagen,porcentaje,condicion,salario)
-		VALUES ('$nombre','$tipo_documento','$num_documento','$direccion','$telefono','$email','$cargo','$imagen','$porcentaje','1','$salario')";
-		return ejecutarConsulta($sql);
+		try {
+			$this->pdo->beginTransaction();
+			$adjunto = (new FluentSaver($this->pdo))
+				->table('personal')
+                ->nullable([
+                    'direccion',
+                    'telefono',
+                    'email',
+                    'cargo',
+                    'imagen',
+                    'porcentaje',
+                    'salario'
+                ])
+				->data([
+					'nombre' => $nombre,
+					'tipo_documento' => $tipo_documento,
+					'num_documento' => $num_documento,
+					'direccion' => $direccion,
+					'telefono' => $telefono,
+					'email' => $email,
+					'cargo' => $cargo,
+					'imagen' => $imagen,
+					'condicion' => 1,
+					'porcentaje' => $porcentaje,
+					'salario' => $salario
+				])
+				->save();
+
+			if (!$adjunto) {
+				throw new Exception("Error al guardar el personal.");
+			}
+			$this->pdo->commit();
+			return json_encode([
+				"success" => true,
+				"message" => "Personal guardo correctamente"
+			]);
+		} catch (Exception $e) {
+
+			if ($this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+
+			return json_encode([
+				"success" => false,
+				"message" => $e->getMessage()
+			]);
+		}
+
 	}
 
 	//Implementamos un método para editar registros
 	public function editar($idpersonal, $nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $cargo, $imagen, $porcentaje, $salario)
 	{
-		$sql = "UPDATE personal SET nombre='$nombre',tipo_documento='$tipo_documento',num_documento='$num_documento',direccion='$direccion',telefono='$telefono',email='$email',cargo='$cargo',imagen='$imagen',porcentaje='$porcentaje', salario='$salario' WHERE idpersonal='$idpersonal'";
-		return ejecutarConsulta($sql);
+		try {
+			$this->pdo->beginTransaction();
+			$adjunto = (new FluentSaver($this->pdo))
+				->table('personal')
+				->primaryKey('idpersonal')
+                ->nullable([
+                    'direccion',
+                    'telefono',
+                    'email',
+                    'cargo',
+                    'imagen',
+                    'porcentaje',
+                    'salario'
+                ])
+				->data([
+					'idpersonal' => $idpersonal,
+					'nombre' => $nombre,
+					'tipo_documento' => $tipo_documento,
+					'num_documento' => $num_documento,
+					'direccion' => $direccion,
+					'telefono' => $telefono,
+					'email' => $email,
+					'cargo' => $cargo,
+					'imagen' => $imagen,
+					'porcentaje' => $porcentaje,
+					'salario' => $salario
+				])
+				->save();
+
+			if (!$adjunto) {
+				throw new Exception("Error al actualizar el personal.");
+			}
+			$this->pdo->commit();
+			return json_encode([
+				"success" => true,
+				"message" => "Personal actualizado correctamente"
+			]);
+		} catch (Exception $e) {
+
+			if ($this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+
+			return json_encode([
+				"success" => false,
+				"message" => $e->getMessage()
+			]);
+
+		}
 	}
 
 	//Implementamos un método para desactivar registros

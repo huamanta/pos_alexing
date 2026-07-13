@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Eliminar solo idsucursal
 unset($_SESSION['idsucursal']);
+unset($_SESSION['nombre_sucursal']);
 
 // Volver a la página anterior
 $redirect = $_SERVER['HTTP_REFERER'] ?? 'index.php';

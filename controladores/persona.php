@@ -1,4 +1,5 @@
 <?php 
+session_start();
 require_once "../modelos/Persona.php";
 
 $persona=new Persona();
@@ -19,23 +20,16 @@ switch ($_GET["op"]){
 	case 'guardaryeditar':
 		if (empty($idpersona)){
 			$rspta=$persona->insertar($tipo_persona,$nombre,$tipo_documento,$num_documento,$direccion,$telefono,$email,$fecha_hora, $latitude, $longitude);
-			echo $rspta ? "Datos registrados correctamente" : "No se pudo completar el registro";
+			echo $rspta;
 		}
 		else {
 			$rspta=$persona->editar($idpersona,$tipo_persona,$nombre,$tipo_documento,$num_documento,$direccion,$telefono,$email,$fecha_hora, $latitude, $longitude);
-			echo $rspta ? "Datos actualizados" : "No se pudo actualizar";
+			echo $rspta;
 		}
-	break;
+		break;
 	case 'eliminar':
 		$rspta=$persona->eliminar($idpersona);
-		if($rspta == 2){
-			$res = 2;
-		}else if($rspta == 1){
-			$res = 1;
-		}else{
-			$res = 3;
-		}
- 		echo $res;
+ 		echo $rspta;
 	break;
 
 	case 'eliminar2':
@@ -82,33 +76,9 @@ switch ($_GET["op"]){
 	break;
 
 	case 'listarc':
-		echo phpinfo();
 		$rspta=$persona->listarc($tipo_documento = "", $excluirId = true);
- 		//Vamos a declarar un array
- 		$data= Array();
-
- 		while ($reg=$rspta->fetch_object()){
- 			$data[]=array(
- 				"0"=>$reg->nombre,
- 				"1"=>$reg->tipo_documento,
- 				"2"=>$reg->num_documento,
- 				"3"=>$reg->telefono,
- 				"4"=>$reg->email,
- 				"5"=>($reg->idpersona !== 1) ?
- 					'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idpersona.')"><i class="fas fa-edit"></i></button>'.
- 					' <button class="btn btn-info btn-xs" onclick="ListarReportesClientes('.$reg->idpersona.')"><i class="fa fa-list"></i></button>'.
- 					' <button class="btn btn-info btn-xs" onclick="ScoreCrediticioCliente('.$reg->idpersona.')"><i class="fa fa-star"></i></button>'.
- 					' <button class="btn btn-danger btn-xs" onclick="eliminar('.$reg->idpersona.')"><i class="fa fa-trash"></i></button>':''
- 			);
- 		}
- 		$results = array(
- 			"sEcho"=>1, //Información para el datatables
- 			"iTotalRecords"=>count($data), //enviamos el total registros al datatable
- 			"iTotalDisplayRecords"=>count($data), //enviamos el total registros a visualizar
- 			"aaData"=>$data);
- 		echo json_encode($results);
-
-	break;
+		echo $rspta;
+		break;
 
 
 	case 'scorecrediticiocliente':

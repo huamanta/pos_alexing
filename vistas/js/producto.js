@@ -1,4 +1,5 @@
 var tabla;
+let listarProductos = null;
 toastr.options = {
   closeButton: true,
   progressBar: true,
@@ -8,7 +9,7 @@ toastr.options = {
 //Función que se ejecuta al inicio
 function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
-  listar();
+  listarProductos.load();
 
   $("#imagenmuestra").show();
   $("#imagenmuestra").attr("src", "files/productos/anonymous.png");
@@ -78,10 +79,10 @@ function init() {
   });
 
   //cargamos los items al select almacen
-  $.post("controladores/venta.php?op=selectSucursal3", function (r) {
-    $("#idsucursal2").html(r);
-    $("#idsucursal2").select2("");
-  });
+  // $.post("controladores/venta.php?op=selectSucursal3", function (r) {
+  //   $("#idsucursal2").html(r);
+  //   $("#idsucursal2").select2("");
+  // });
 
   //cargamos los items al select almacen
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
@@ -107,7 +108,7 @@ function init() {
       .trigger("change");
   });
 
-  $("#idsucursal2").change(listar);
+  // $("#idsucursal2").change(listar);
 
   $("#navAlmacenActive").addClass("treeview active");
   $("#navAlmacen").addClass("treeview menu-open");
@@ -381,8 +382,9 @@ function mostrar(idproducto) {
   $.post(
     "controladores/producto.php?op=mostrar",
     { idproducto: idproducto },
-    function (data, status) {
-      data = JSON.parse(data);
+    function (response, status) {
+      const data = JSON.parse(response);
+      console.log(data);
 
       // Abrir modal y llenar los campos
       $("#myModal").modal("show");
@@ -424,10 +426,12 @@ function mostrar(idproducto) {
         .attr("src", "files/productos/" + data.imagen);
       $("#imagenactual").val(data.imagen);
       $("#idproducto").val(data.idproducto);
-      $("#nserie").val(data.numserie);
+      $("#idinventario").val(data.idinventario);
+      $("#idserie").val(data.idserie);
+      $("#nserie").val(data.numero_serie);
       $("#placa").val(data.placa || "");
       $("#color").val(data.color || "");
-      $("#motor").val(data.motor || "");
+      $("#motor").val(data.numero_motor || "");
       $("#permiso_circulacion").val(data.permiso_circulacion || "");
       $("#anio_fabricacion").val(data.anio_fabricacion || "");
       $("#tipo_vehiculo").val(data.tipo_vehiculo || "");
@@ -460,20 +464,20 @@ function mostrar(idproducto) {
         $("#codigo").data("tieneCodigo", false);
       }
 
-      $("#myModal")
-        .off("shown.bs.modal")
-        .on("shown.bs.modal", function () {
-          var idsucursalSeleccionada = $("#idsucursal2").val();
-          console.log("Sucursal activa:", idsucursalSeleccionada);
+      // $("#myModal")
+      //   .off("shown.bs.modal")
+      //   .on("shown.bs.modal", function () {
+      //     var idsucursalSeleccionada = $("#idsucursal2").val();
+      //     console.log("Sucursal activa:", idsucursalSeleccionada);
 
-          $.post(
-            "controladores/producto.php?op=sucursales",
-            { idsucursal: idsucursalSeleccionada, idproducto: data.idproducto },
-            function (r) {
-              $("#sucursales").html(r);
-            },
-          );
-        });
+      //     $.post(
+      //       "controladores/producto.php?op=sucursales",
+      //       { idsucursal: idsucursalSeleccionada, idproducto: data.idproducto },
+      //       function (r) {
+      //         $("#sucursales").html(r);
+      //       },
+      //     );
+      //   });
     },
   );
 }
@@ -487,85 +491,76 @@ function calcularPrecioIGV() {
 }
 
 //Función Listar
-function listar() {
-  let idsucursal2 = $("#idsucursal2").val();
-  let stock_filtro = $("#stock_filtro").val() || 0;
+function pintarProductos(data, permissions) {
+  
+  let html = "";
 
-  // Destruir la tabla existente si ya existe
-  if ($.fn.DataTable.isDataTable("#tbllistado")) {
-    $("#tbllistado").DataTable().destroy();
+  if (data.length === 0) {
+
+    html = `
+            <tr>
+                <td colspan="10" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+    $("#tbody_productos").html(html);
+    return;
   }
 
-  tabla = $("#tbllistado").DataTable({
-    processing: true,
-    serverSide: true, // Cambia aServerSide por serverSide (sin 'a')
-    language: {
-      processing:
-        "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-    },
-    responsive: true,
-    lengthChange: false,
-    autoWidth: false,
-    dom: '<"row"<"col-sm-12 col-md-4"<"col-sm-12 col-md-6"f>l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-    lengthMenu: [
-      [5, 10, 25, 50, 100, -1],
-      [
-        "5 filas",
-        "10 filas",
-        "25 filas",
-        "50 filas",
-        "100 filas",
-        "Mostrar todo",
-      ],
-    ],
-    buttons: [
-      "pageLength",
-      {
-        extend: "excelHtml5",
-        text: "<i class='fas fa-file-csv'></i>",
-        titleAttr: "Exportar a Excel",
-        title: "Lista de Productos",
-      },
-      {
-        extend: "pdf",
-        text: "<i class='fas fa-file-pdf'></i>",
-        titleAttr: "Exportar a PDF",
-        title: "Lista de Productos",
-      },
-      {
-        extend: "colvis",
-        text: "<i class='fas fa-bars'></i>",
-        titleAttr: "",
-      },
-    ],
-    ajax: {
-      url: "controladores/producto.php?op=listar",
-      type: "GET",
-      dataType: "json",
-      data: function (d) {
-        // Añadir parámetros personalizados
-        d.idsucursal2 = idsucursal2;
-        d.stock_filtro = stock_filtro;
-        return d;
-      },
-      error: function (e) {
-        console.log(e.responseText);
-      },
-    },
-    pageLength: 10, // Cambia iDisplayLength por pageLength
-    columns: [
-      { data: "0" },
-      { data: "1" },
-      { data: "2" },
-      { data: "3" },
-      { data: "4" },
-      { data: "5" },
-      { data: "6" },
-      { data: "7" },
-      { data: "8" },
-    ],
+  data.forEach(item => {
+    let btnActivarDesactivar = (permissions.desactivar) ?
+      (item.condicion === 1) ?
+        `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>` :
+        `<button class="btn btn-info btn-xs" onclick="activar(${item.idproducto})"><i class="fas fa-check"></i></button>`
+      : ''
+
+    html += `
+            <tr>
+                <td>${item.codigo ?? ''}</td>
+                <td>${item.nombre ?? ''}</td>
+                <td>${item.stock}</td>
+                <td>${item.stock_minimo}</td>
+                <td>S/ ${parseFloat(item.precio).toFixed(2)}</td>
+                <td>S/ ${parseFloat(item.precio_compra).toFixed(2)}</td>
+                <td>
+                    ${item.series_disponibles
+        ? `<span class="badge badge-info">
+                        ${item.series_disponibles}
+                        </span>`
+        : '-'
+      }
+                </td>
+                <td>
+                    ${item.condicion === 1
+        ? '<span class="badge badge-success">Activo</span>'
+        : '<span class="badge badge-danger">Inactivo</span>'
+      }
+                </td>
+                <td>
+                    ${permissions.desactivar ? `<button class="btn btn-warning btn-xs" onclick="mostrar(${item.idproducto})"><i class="fas fa-edit"></i></button>` : ''}
+		                <!--button class="btn btn-primary btn-xs" onclick="entradaSalida(${item.idproducto}, ${item.idsucursal})"><i class="fas fa-archive"></i></button-->
+                    ${permissions.configurar ? `<button class="btn btn-success btn-xs" onclick='config(${JSON.stringify(item).replace(/'/g, "\\'")})'><i class="fas fa-cog"></i></button>` : ''}
+                    ${permissions.vencimientos ? `<button class="btn btn-info btn-xs" onclick="fechaVencimiento(${item.idproducto})"><i class="fa fa-list"></i></button>` : ''}  
+		                ${btnActivarDesactivar}
+                    ${permissions.eliminar ? `<button class="btn btn-danger btn-xs" onclick="eliminarProducto(${item.idproducto})"><i class="fas fa-trash"></i></button>` : ''}
+                </td>
+
+            </tr>
+        `;
+
   });
+
+  $("#tbody_productos").html(html);
+
 }
+
+listarProductos = new FluentPaginator({
+  url: "controladores/producto.php?op=listar",
+  renderTabla: pintarProductos
+});
+
 
 toastr.options = {
   closeButton: false,
@@ -575,26 +570,24 @@ toastr.options = {
   extendedTimeOut: "1000",
 };
 
-let timeout = null;
+// let timeout = null;
 
-$(document).on("input", "#stock_filtro", function () {
-  clearTimeout(timeout);
+// $(document).on("input", "#stock_filtro", function () {
+//   clearTimeout(timeout);
 
-  timeout = setTimeout(() => {
-    const valor = parseInt($("#stock_filtro").val());
+//   timeout = setTimeout(() => {
+//     const valor = parseInt($("#stock_filtro").val());
 
-    if (!isNaN(valor) && valor >= 0) {
-      toastr.info(
-        `Listando productos con stock menor o igual a ${valor}`,
-        "Filtro aplicado",
-      );
-    } else {
-      toastr.warning("Listando todos los productos", "Sin filtro");
-    }
-
-    listar(); // Recargar la tabla
-  }, 1200); // Espera 1.2 segundos después de escribir
-});
+//     if (!isNaN(valor) && valor >= 0) {
+//       toastr.info(
+//         `Listando productos con stock menor o igual a ${valor}`,
+//         "Filtro aplicado",
+//       );
+//     } else {
+//       toastr.warning("Listando todos los productos", "Sin filtro");
+//     }
+//   }, 1200); // Espera 1.2 segundos después de escribir
+// });
 
 function generarbarcode(e = null) {
   if (e) e.preventDefault(); // Solo prevenir si viene de un evento
@@ -691,7 +684,7 @@ function validarDatosProducto() {
 
 function guardaryeditar(e) {
   e.preventDefault(); // No se activará la acción predeterminada del evento
-  
+
   if (!validarDatosProducto()) {
     return;
   }
@@ -721,18 +714,16 @@ function guardaryeditar(e) {
     contentType: false,
     processData: false,
     success: function (datos) {
-      var datos = JSON.parse(datos);
-      Swal.fire({
-        title: "Producto",
-        icon: datos.status,
-        text: datos.message,
-      });
-      if (datos.status === "success") {
-        $("#myModal").modal("hide");
-        tabla.ajax.reload();
-        limpiarFormulario();
-        limpiarProducto();
+      const data = JSON.parse(datos);
+      if (!data.success) {
+        Swal.fire({ title: "Producto", icon: "error", text: data.message });
+        return;
       }
+      Swal.fire({ title: "Cliente", icon: "success", text: data.message });
+      $("#myModal").modal("hide");
+      listarProductos.load();
+      limpiarFormulario();
+      limpiarProducto();
     },
     complete: function () {
       // Habilitar el botón nuevamente después de la respuesta del servidor
@@ -789,16 +780,16 @@ function nuevo() {
   limpiarProducto();
   $("#tipo_producto").val("Producto");
 
-  var idsucursalSeleccionada = $("#idsucursal2").val();
-  $("#idsucursal2").val(idsucursalSeleccionada);
+  // var idsucursalSeleccionada = $("#idsucursal2").val();
+  // $("#idsucursal2").val(idsucursalSeleccionada);
 
-  $.post(
-    "controladores/producto.php?op=sucursales",
-    { idsucursal: idsucursalSeleccionada },
-    function (r) {
-      $("#sucursales").html(r);
-    },
-  );
+  // $.post(
+  //   "controladores/producto.php?op=sucursales",
+  //   { idsucursal: idsucursalSeleccionada },
+  //   function (r) {
+  //     $("#sucursales").html(r);
+  //   },
+  // );
 }
 
 /*function guardaryeditar(e) {
@@ -928,18 +919,22 @@ function desactivar(idproducto) {
     confirmButtonColor: "#3085d6",
     cancelButtonColor: "#d33",
     confirmButtonText: "Si",
+    reverseButtons: true
   }).then((result) => {
     if (result.isConfirmed) {
       $.post(
         "controladores/producto.php?op=desactivar",
         { idproducto: idproducto },
-        function (e) {
-          Swal.fire("Desactivado!", e, "success");
-          tabla.ajax.reload();
+        function (response) {
+          const data = JSON.parse(response);
+          if (!data.success) {
+            Swal.fire({ title: "Producto", icon: "error", text: data.message });
+            return;
+          }
+          Swal.fire({ title: "Producto", icon: "success", text: data.message });
+          listarProductos.load();
         },
       );
-    } else {
-      Swal.fire("Aviso!", "Se Cancelo la desactivacion de el Producto", "info");
     }
   });
 }
@@ -954,18 +949,22 @@ function activar(idproducto) {
     confirmButtonColor: "#3085d6",
     cancelButtonColor: "#d33",
     confirmButtonText: "Si",
+    reverseButtons: true
   }).then((result) => {
     if (result.isConfirmed) {
       $.post(
         "controladores/producto.php?op=activar",
         { idproducto: idproducto },
-        function (e) {
-          Swal.fire("Activado!", e, "success");
-          tabla.ajax.reload();
+        function (response) {
+          const data = JSON.parse(response);
+          if (!data.success) {
+            Swal.fire({ title: "Producto", icon: "error", text: data.message });
+            return;
+          }
+          Swal.fire({ title: "Producto", icon: "success", text: data.message });
+          listarProductos.load();
         },
       );
-    } else {
-      Swal.fire("Aviso!", "Se Cancelo la activación de el Producto", "info");
     }
   });
 }
@@ -1094,11 +1093,13 @@ var costoCompraBase = 0; // Para calcular márgenes de utilidad reales
 var configuracionesState = [];
 
 function config(producto) {
+  console.log(producto);
+
   $("#ModalConfigProducto").modal("show");
   $("#p-producto").html(
     '<span class="badge bg-info" style="font-size:20px">' +
-      producto.nombre +
-      "</span>",
+    producto.nombre +
+    "</span>",
   );
   $("#idproductoconfig").val(producto.idproducto);
 
@@ -1108,8 +1109,8 @@ function config(producto) {
 
   $("#p-unitario").html(
     '<span class="badge bg-info" style="font-size:20px">Precio Venta Lote: S/. ' +
-      precioVentaBase.toFixed(2) +
-      "</span>",
+    precioVentaBase.toFixed(2) +
+    "</span>",
   );
 
   configuracionesState = [];
@@ -1131,25 +1132,25 @@ function listarDataCofig(idproducto) {
 
         $("#p-unitario").html(
           '<span class="badge bg-info" style="font-size:20px">Precio Venta Lote: S/. ' +
-            precioVentaBase.toFixed(2) +
-            "</span>",
+          precioVentaBase.toFixed(2) +
+          "</span>",
         );
       }
 
       configuracionesState = response.length
         ? response.map((item) => ({
-            id: item.id || 0,
-            codigo_extra: item.codigo_extra || "",
-            contenedor: item.contenedor || "",
-            cantidad_contenedor: parseFloat(item.cantidad_contenedor) || 1,
-            precio_venta: item.precio_venta
-              ? parseFloat(item.precio_venta)
-              : null,
-            precio_venta_manual: item.precio_venta_manual
-              ? parseFloat(item.precio_venta_manual)
-              : null,
-            precios: item.precios || [],
-          }))
+          id: item.id || 0,
+          codigo_extra: item.codigo_extra || "",
+          contenedor: item.contenedor || "",
+          cantidad_contenedor: parseFloat(item.cantidad_contenedor) || 1,
+          precio_venta: item.precio_venta
+            ? parseFloat(item.precio_venta)
+            : null,
+          precio_venta_manual: item.precio_venta_manual
+            ? parseFloat(item.precio_venta_manual)
+            : null,
+          precios: item.precios || [],
+        }))
         : [];
 
       p = configuracionesState.length;
@@ -2033,7 +2034,6 @@ $(document).on("blur keypress", ".editable-price", function (e) {
       method: "POST",
       data: { idproducto: id, campo: field, valor: newValue },
       success: function (response) {
-        console.log(response);
         $this.attr("contenteditable", false);
         // Actualiza el valor por si viene con formato del servidor
         $this.text(newValue);
@@ -2319,25 +2319,32 @@ $(document).ready(function () {
 });
 
 function eliminarProducto(idproducto) {
-  if (
-    confirm(
-      "¿Está seguro que desea eliminar este producto y toda su configuración?",
-    )
-  ) {
-    $.post(
-      "controladores/producto.php?op=eliminar",
-      { idproducto: idproducto },
-      function (data) {
-        data = JSON.parse(data);
-        if (data.status) {
-          alert("Producto eliminado correctamente");
-          tabla.ajax.reload(); //Recargar DataTable
-        } else {
-          alert("Error al eliminar el producto: " + data.msg);
-        }
-      },
-    );
-  }
+  Swal.fire({
+    title: "Eliminar?",
+    text: "¿Está seguro que desea eliminar el producto?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Si",
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.post(
+        "controladores/producto.php?op=eliminar",
+        { idproducto: idproducto },
+        function (response) {
+          const data = JSON.parse(response);
+          if (!data.success) {
+            Swal.fire({ title: "Producto", icon: "error", text: data.message });
+            return;
+          }
+          Swal.fire({ title: "Producto", icon: "success", text: data.message });
+          listarProductos.load();
+        },
+      );
+    }
+  });
 }
 
 // Abrir modal vacío
@@ -2351,86 +2358,97 @@ function abrirModalStockSucursales() {
 
 // Buscar producto al escribir (con delay)
 let buscarTimeout;
+
 $("#buscarProducto").on("keyup", function () {
+
   clearTimeout(buscarTimeout);
+
   let termino = $(this).val().trim();
   let idsucursalFiltro = $("#sucursalFiltro").val();
 
   if (termino.length < 2) {
-    $("#tablaStockSucursales tbody").html(
-      '<tr><td colspan="6" class="text-center">Ingrese al menos 2 caracteres para buscar.</td></tr>',
-    );
+    $("#tablaStockSucursales tbody").html(`
+            <tr>
+                <td colspan="6" class="text-center">
+                    Ingrese al menos 2 caracteres para buscar.
+                </td>
+            </tr>
+        `);
     return;
   }
-
   buscarTimeout = setTimeout(function () {
     $.post(
       "controladores/producto.php?op=buscarStockPorSucursales",
       {
         search: termino,
-        idsucursalFiltro: idsucursalFiltro,
+        idsucursalFiltro: idsucursalFiltro
       },
-      function (data) {
-        data = JSON.parse(data);
+      function (response) {
+        const data = JSON.parse(response);
+
+        if (!data.success) {
+          Swal.fire({ title: "Producto", icon: "error", text: data.message });
+          return;
+        };
 
         let tbody = "";
-        if (data.length === 0) {
-          tbody =
-            '<tr><td colspan="6" class="text-center">No se encontraron resultados.</td></tr>';
+
+        if (data.data.length === 0) {
+
+          tbody = `
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                No se encontraron resultados.
+                            </td>
+                        </tr>
+                    `;
+
         } else {
-          data.forEach((row) => {
+
+          data.data.forEach((row) => {
+
             tbody += `
-            <tr>
-              <td>
-                <input type="checkbox" class="chkProductoStock" 
-                       data-idproducto="${row.idproducto}" 
-                       data-nombre="${row.nombre}" 
-                       data-codigo="${row.codigo}" 
-                       data-stock="${row.stock}" 
-                       data-idsucursal_origen="${row.idsucursal_origen}" 
-                       data-sucursal="${row.sucursal}">
-              </td>
-              <td>${row.nombre}</td>
-              <td>${row.codigo}</td>
-              <td>${row.sucursal}</td>
-              <td>${row.stock}</td>
-              <td>
-                <input type="number" class="form-control cantidadSolicitud" 
-                       min="1" max="${row.stock}" 
-                       value="1" 
-                       style="width: 80px">
-              </td>
-            </tr>`;
+                            <tr>
+
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        class="chkProductoStock"
+                                        data-idserie="${row.idserie}"
+                                        data-idproducto="${row.idproducto}"
+                                        data-nombre="${row.nombre}"
+                                        data-codigo="${row.codigo}"
+                                        data-serie="${row.numero_serie}"
+                                        data-motor="${row.numero_motor}"
+                                        data-placa="${row.placa}"
+                                        data-color="${row.color}"
+                                        data-idsucursal="${row.idsucursal}"
+                                        data-sucursal="${row.sucursal}">
+                                </td>
+
+                                <td>${row.nombre}</td>
+                                <td>${row.codigo}</td>
+                                <td>${row.numero_serie ?? "-"}</td>
+                                <td>${row.placa ?? "-"}</td>
+                                <td>${row.sucursal}</td>
+
+                            </tr>
+                        `;
           });
+
         }
+
         $("#tablaStockSucursales tbody").html(tbody);
 
-        // 🔹 Agrega validación de cantidad una vez generada la tabla
-        $(".cantidadSolicitud").on("input", function () {
-          let max = parseInt($(this).attr("max"));
-          let val = parseInt($(this).val());
-
-          if (val > max) {
-            Swal.fire({
-              icon: "warning",
-              title: "Cantidad excede el stock disponible",
-              text: `Solo hay ${max} unidades disponibles.`,
-              confirmButtonText: "Entendido",
-              confirmButtonColor: "#3085d6",
-            });
-            $(this).val(max); // Restablece al máximo permitido
-          } else if (val < 1 || isNaN(val)) {
-            $(this).val(1); // Evita valores vacíos o negativos
-          }
-        });
-      },
+      }
     );
+
   }, 400);
+
 });
 
 // 🔹 Cuando el usuario haga clic en "Generar Solicitud"
 $("#btnGenerarSolicitudDesdeStock").on("click", function () {
-  console.log("➡️ Botón Generar Solicitud clicado");
 
   let productosSeleccionados = [];
 
@@ -2441,6 +2459,7 @@ $("#btnGenerarSolicitudDesdeStock").on("click", function () {
     if (chk.is(":checked")) {
       productosSeleccionados.push({
         idproducto: chk.data("idproducto"),
+        idserie: chk.data("idserie"),
         nombre: chk.data("nombre"),
         codigo: chk.data("codigo"),
         stock: chk.data("stock"),
@@ -2451,14 +2470,11 @@ $("#btnGenerarSolicitudDesdeStock").on("click", function () {
     }
   });
 
-  console.log("🟢 Productos seleccionados:", productosSeleccionados);
-
   if (productosSeleccionados.length === 0) {
     Swal.fire("Atención", "Debe seleccionar al menos un producto.", "warning");
     return;
   }
 
-  // 🔹 Obtener sucursal destino seleccionada
   const iddestino_solicitud = $("#sucursalFiltro").val();
   if (!iddestino_solicitud) {
     Swal.fire("Atención", "Debe seleccionar la sucursal destino.", "warning");
@@ -2466,7 +2482,6 @@ $("#btnGenerarSolicitudDesdeStock").on("click", function () {
   }
 
   $("#modalStockSucursales").modal("hide");
-  console.log("🔒 Modal de stock cerrado");
 
   $.ajax({
     url: "controladores/traslado.php?op=guardarSolicitud",
@@ -2476,7 +2491,6 @@ $("#btnGenerarSolicitudDesdeStock").on("click", function () {
       iddestino_solicitud: iddestino_solicitud,
     },
     success: function (resp) {
-      console.log("📨 Respuesta guardarSolicitud:", resp);
 
       // Normalizamos la respuesta
       const r = resp.trim().toLowerCase();
@@ -2494,7 +2508,6 @@ $("#btnGenerarSolicitudDesdeStock").on("click", function () {
       }
     },
     error: function (xhr) {
-      console.error("❌ Error en guardarSolicitud:", xhr.responseText);
       Swal.fire("Error", "Ocurrió un error en el servidor.", "error");
     },
   });

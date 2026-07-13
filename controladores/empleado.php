@@ -19,7 +19,7 @@ $telefono=isset($_POST["telefono"])? limpiarCadena($_POST["telefono"]):"";
 $email=isset($_POST["email"])? limpiarCadena($_POST["email"]):"";
 $cargo=isset($_POST["cargo"])? limpiarCadena($_POST["cargo"]):"";
 $imagen=isset($_POST["imagen"])? limpiarCadena($_POST["imagen"]):"";
-$porcentaje=isset($_POST["porcentaje"])? limpiarCadena($_POST["porcentaje"]):"";
+$porcentaje=isset($_POST["porcentaje"])? limpiarCadena($_POST["porcentaje"]):0;
 $salario=isset($_POST["salario"])? limpiarCadena($_POST["salario"]):"";
 // Verificar si se está solicitando la verificación de administrador
 if (isset($_GET["op"]) && $_GET["op"] == "verificarAdmin") {
@@ -46,11 +46,11 @@ switch ($_GET["op"]){
 		}
 		if (empty($idpersonal)){
 			$rspta=$empleado->insertar($nombre,$tipo_documento,$num_documento,$direccion,$telefono,$email,$cargo,$imagen,$porcentaje,$salario);
-			echo $rspta ? "Empleado registrado" : "Empleado no se pudo registrar";
+			echo $rspta;
 		}
 		else {
 			$rspta=$empleado->editar($idpersonal,$nombre,$tipo_documento,$num_documento,$direccion,$telefono,$email,$cargo,$imagen,$porcentaje,$salario);
-			echo $rspta ? "Empleado actualizado" : "Empleado no se pudo actualizar";
+			echo $rspta;
 		}
 	break;
 

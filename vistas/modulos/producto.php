@@ -1,10 +1,5 @@
 <!-- Content Wrapper. Contains page content -->
 <style>
-  #tbllistado {
-    width: 100%;
-    font-size: 12px;
-  }
-
   #myModal {
     width: 100%;
     font-size: 12px;
@@ -77,16 +72,20 @@
     margin-right: 8px;
     /* Ajusta el valor según lo necesites */
   }
+
   #contenedor-imagenes img {
-  width: 100%;
-  max-width: 150px;
-}
-/* Filas más delgadas y compactas */
+    width: 100%;
+    max-width: 150px;
+  }
+
+  /* Filas más delgadas y compactas */
   #tbllistado th,
   #tbllistado td {
-    padding: 0.45rem 0.5rem; /* Reduce altura de fila */
+    padding: 0.45rem 0.5rem;
+    /* Reduce altura de fila */
     vertical-align: middle;
-    font-size: 0.875rem; /* Tamaño de letra más pequeño */
+    font-size: 0.875rem;
+    /* Tamaño de letra más pequeño */
   }
 
   /* Encabezado más destacado */
@@ -114,79 +113,129 @@
   }
 
   /* Mejor alineación de números */
-  #tbllistado td:nth-child(5), /* Stock */
-  #tbllistado td:nth-child(6), /* P. Venta */
-  #tbllistado td:nth-child(7)  /* P. Compra */ {
+  #tbllistado td:nth-child(5),
+  /* Stock */
+  #tbllistado td:nth-child(6),
+  /* P. Venta */
+  #tbllistado td:nth-child(7)
+
+  /* P. Compra */
+    {
     text-align: right;
   }
+
   /* ====== Mejora visual sin romper nada ====== */
-  .content-header h1 { font-weight: 700; }
-  .card { border-radius: .6rem; }
-  .table thead.sticky-head th {
-    position: sticky; top: 0; z-index: 1;
-    box-shadow: inset 0 -1px 0 rgba(0,0,0,.05);
+  .content-header h1 {
+    font-weight: 700;
   }
-  .table td, .table th { vertical-align: middle; }
-  .dataTables_wrapper .dt-buttons .btn { margin-right: .35rem; border-radius: .5rem; }
-  .btn-excel { background-color: #28a745 !important; color: #fff !important; border: none; }
-  .btn-pdf   { background-color: #dc3545 !important; color: #fff !important; border: none; }
-  .btn-colvis{ background-color: #007bff !important; color: #fff !important; border: none; }
-  .select2-container .select2-selection--single { height: 38px; }
-  .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 38px; }
-  .select2-container--default .select2-selection--single .select2-selection__arrow { height: 38px; }
+
+  .card {
+    border-radius: .6rem;
+  }
+
+  .table thead.sticky-head th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .05);
+  }
+
+  .table td,
+  .table th {
+    vertical-align: middle;
+  }
+
+  .dataTables_wrapper .dt-buttons .btn {
+    margin-right: .35rem;
+    border-radius: .5rem;
+  }
+
+  .btn-excel {
+    background-color: #28a745 !important;
+    color: #fff !important;
+    border: none;
+  }
+
+  .btn-pdf {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+    border: none;
+  }
+
+  .btn-colvis {
+    background-color: #007bff !important;
+    color: #fff !important;
+    border: none;
+  }
+
+  .select2-container .select2-selection--single {
+    height: 38px;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 38px;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 38px;
+  }
+
   /* Pequeño gap para los botones de acción */
-  .gap-8 > * + * { margin-left: .5rem; }
-  
+  .gap-8>*+* {
+    margin-left: .5rem;
+  }
+
   .precio-chip {
-  display: inline-block;
-  background-color: #f1f1f1;
-  border-radius: 25px;
-  padding: 6px 14px;
-  margin: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-}
+    display: inline-block;
+    background-color: #f1f1f1;
+    border-radius: 25px;
+    padding: 6px 14px;
+    margin: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+  }
 
-.precio-chip input[type="checkbox"] {
-  display: none;
-}
+  .precio-chip input[type="checkbox"] {
+    display: none;
+  }
 
-.precio-chip.active {
-  background-color: #007bff;
-  color: #fff;
-  font-weight: 600;
-  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-}
-/* Agregar al archivo CSS */
-.lote-activo {
+  .precio-chip.active {
+    background-color: #007bff;
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+
+  /* Agregar al archivo CSS */
+  .lote-activo {
     background-color: #d1ecf1 !important;
     border-left: 4px solid #0c5460 !important;
     font-weight: 500;
-}
+  }
 
-.badge-lote-activo {
+  .badge-lote-activo {
     background-color: #007bff;
     color: white;
     padding: 4px 8px;
     border-radius: 3px;
     font-size: 11px;
     margin-left: 5px;
-}
+  }
 </style>
 <script>
-  document.getElementById("barcode").addEventListener("click", function() {
-    var printDiv = document.getElementById("print");
+  // document.getElementById("barcode").addEventListener("click", function() {
+  //   var printDiv = document.getElementById("print");
 
-    // Verifica si el div está actualmente visible
-    if (window.getComputedStyle(printDiv).display === "none") {
-      // Si está oculto, lo muestra
-      printDiv.style.display = "block";
-    } else {
-      // Si está visible, lo oculta
-      printDiv.style.display = "none";
-    }
-  });
+  //   // Verifica si el div está actualmente visible
+  //   if (window.getComputedStyle(printDiv).display === "none") {
+  //     // Si está oculto, lo muestra
+  //     printDiv.style.display = "block";
+  //   } else {
+  //     // Si está visible, lo oculta
+  //     printDiv.style.display = "none";
+  //   }
+  // });
 </script>
 
 <div class="content-wrapper">
@@ -208,117 +257,110 @@
   </section>
 
   <!-- Main content -->
-  <section class="content" style="margin-top: -15px;">
+  <section class="content">
     <div class="container-fluid">
-      <div class="row">
-        <div class="col-12">
-          <div class="card">
-            <div class="card-header">
-              <h3 class="card-title"> </h3>
-
-              <div class="row">
-                <?php if (Helpers::getUserPermissionAccion('Crear producto')) { ?>
-                  <div class="col-md-1">
-                    <button type="button" class="btn btn-primary btn-block float-right btn-xs" onclick="nuevo()"><i class="fa fa-plus"></i> Nuevo</button>
-                  </div>
-                <?php } ?>
-
-                <?php if (Helpers::getUserPermissionAccion('Catalago')) { ?>
-                  <div class="col-md-1">
-                    <button type="button" class="btn btn-success btn-block float-right btn-xs" data-toggle="modal" data-target="#modalCatalogoConfig">
-                      <i class="fas fa-file"></i> Catálogo
-                    </button>
-                  </div>
-                <?php } ?>
-
-
-                <?php if (Helpers::getUserPermissionAccion('Traslados')) { ?>
-                <div class="col-md-1">
-                  <button type="button" class="btn btn-success btn-block btn-xs" data-toggle="modal" data-target="#myModalTraslados"><i class="fas fa-file"></i> Traslados</button>
-                </div>
-                <?php } ?>
-
-                <?php if (Helpers::getUserPermissionAccion('Empaque')) { ?>
-                <div class="col-md-1">
-                  <button type="button" class="btn btn-warning btn-block btn-xs" data-toggle="modal" data-target="#myModalDesempaquetar" onclick="llenarProductos()"><i class="fas fa-file"></i> Empaque</button>
-                </div>
-                <?php } ?>
-
-                <?php if (Helpers::getUserPermissionAccion('Inversion por producto')) { ?>
-                <div class="col-md-1">
-                  <a href="reportes/rptproductoscompra.php" target="_blank"><button type="button" class="btn btn-info btn-block btn-xs"><i class="fas fa-file"></i> Inversión</button></a>
-                </div>
-                <?php } ?>
-
-                <div class="col-md-3">
-                  <!--<label>Almacén:</label>-->
-                  <select id="idsucursal2" name="idsucursal2" class="form-control select2" style="width: 100%; height: 100%;">
-                  </select>
-                </div>
-                <?php if (Helpers::getUserPermissionAccion('Filtrar Stock')) { ?>
-                <div class="form-group">
-                  <input type="number" class="form-control" id="stock_filtro" placeholder="Filtrar stock..." min="0" style="width: 200px;" />
-                </div>
-                <?php } ?>
-
-                <?php if (Helpers::getUserPermissionAccion('Consultar producto sucursal')) { ?>
-                  <div class="col-md-2">
-                    <button class="btn btn-info btn-block btn-xs" onclick="abrirModalStockSucursales()">
-                      <i class="fas fa-search-location"></i> Ver en otras sucursales
-                    </button>
-                  </div>
-                <?php } ?>
-
+      <div class="card">
+        <div class="card-header">
+          <div class="row">
+            <?php if (Helpers::getUserPermissionAccion('Crear producto')) { ?>
+              <div class="col-lg-1 col-md-6 col-sm-12">
+                <button type="button" class="btn btn-primary btn-block float-right btn-xs" onclick="nuevo()"><i
+                    class="fa fa-plus"></i> Nuevo</button>
               </div>
+            <?php } ?>
 
-            </div>
-            <!-- /.card-header -->
-            <div class="card-body" style="margin-top: -15px;">
+            <?php if (Helpers::getUserPermissionAccion('Catalago')) { ?>
+              <div class="col-lg-1 col-md-6 col-sm-12">
+                <button type="button" class="btn btn-success btn-block float-right btn-xs" data-toggle="modal"
+                  data-target="#modalCatalogoConfig">
+                  <i class="fas fa-file"></i> Catálogo
+                </button>
+              </div>
+            <?php } ?>
 
 
+            <?php if (Helpers::getUserPermissionAccion('Traslados')) { ?>
+              <div class="col-md-1">
+                <button type="button" class="btn btn-success btn-block btn-xs" data-toggle="modal"
+                  data-target="#myModalTraslados"><i class="fas fa-file"></i> Traslados</button>
+              </div>
+            <?php } ?>
 
-              <!-- Tabla HTML -->
-              <table id="tbllistado" class="table table-tailpanel dt-responsive" style="width:100%">
-                <thead class="thead-light">
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Categoría</th>
-                    <th>Proveedor</th>
-                    <th>Código</th>
-                    <th>Stock</th>
-                    <th>P. Venta</th>
-                    <th>P. Compra</th>
-                    <!-- <th>Imagen</th> -->
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-                <tfoot>
-                  <tr>
-                    <th>Nombre</th>
-                    <th>Categoría</th>
-                    <th>Proveedor</th>
-                    <th>Código</th>
-                    <th>Stock</th>
-                    <th>P. Venta</th>
-                    <th>P. Compra</th>
-                    <!-- <th>Imagen</th> -->
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tr>
-                </tfoot>
-              </table>
+            <?php if (Helpers::getUserPermissionAccion('Empaque')) { ?>
+              <div class="col-md-1">
+                <button type="button" class="btn btn-warning btn-block btn-xs" data-toggle="modal"
+                  data-target="#myModalDesempaquetar" onclick="llenarProductos()"><i class="fas fa-file"></i>
+                  Empaque</button>
+              </div>
+            <?php } ?>
 
-            </div>
-            <!-- /.card-body -->
+            <?php if (Helpers::getUserPermissionAccion('Inversion por producto')) { ?>
+              <div class="col-md-1">
+                <a href="reportes/rptproductoscompra.php" target="_blank"><button type="button"
+                    class="btn btn-info btn-block btn-xs"><i class="fas fa-file"></i> Inversión</button></a>
+              </div>
+            <?php } ?>
+
+            <?php if (Helpers::getUserPermissionAccion('Consultar producto sucursal')) { ?>
+              <div class="col-md-2">
+                <button class="btn btn-info btn-block btn-xs" onclick="abrirModalStockSucursales()">
+                  <i class="fas fa-search-location"></i> Ver en otras sucursales
+                </button>
+              </div>
+            <?php } ?>
+
           </div>
-          <!-- /.card -->
 
         </div>
-        <!-- /.col -->
+        <!-- /.card-header -->
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 d-flex align-items-center">
+              <span class="mr-2">Mostrar</span>
+              <select id="limit" class="form-control" style="width:100px" onchange="cambiarLimit()">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+
+              <span class="ml-2">Registros</span>
+
+            </div>
+            <div class="col-md-6">
+              <input type="text" id="search" class="form-control" placeholder="Buscar...">
+            </div>
+            <!-- Tabla HTML -->
+            <div class="col-md-12">
+              <div class="responsive">
+                <table id="tbllistado" class="table table-hover" style="width:100%">
+                  <thead class="thead-light">
+                    <tr>
+                      <th>Codigo</th>
+                      <th>Nombre</th>
+                      <th>Stock</th>
+                      <th>stock_minimo</th>
+                      <th>precio</th>
+                      <th>P. Compra</th>
+                      <th>Disponibilidad</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="tbody_productos"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="col-md-6"></div>
+            <div class="col-md-6">
+              <div id="pagination"></div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /.card-body -->
       </div>
-      <!-- /.row -->
+      <!-- /.card -->
     </div>
     <!-- /.container-fluid -->
   </section>
@@ -356,7 +398,7 @@
             </div>
 
           </div>
-          
+
           <div class="mb-3">
             <button type="button" class="btn btn-primary" id="btnAgregarImagen">
               <i class="fas fa-plus"></i> Agregar otra imagen
@@ -405,7 +447,8 @@
             <div class="col-md-8">
               <label>Detalles de cofigurción</label>
             </div>
-            <div class="col-md-4" style="text-align: right;"><button type="button" class="btn btn-success" onclick="agregarCofiguracion()">NUEVO</button>
+            <div class="col-md-4" style="text-align: right;"><button type="button" class="btn btn-success"
+                onclick="agregarCofiguracion()">NUEVO</button>
               <button type="button" class="btn btn-info" onclick="imprimirCodigosBarras()">IMPRIMIR COD. BARRAS</button>
             </div>
             <div class="col-md-12 mb-1">
@@ -509,32 +552,40 @@
           <div class="row">
             <div class="col-sm-8">
               <input type="hidden" name="idproducto" id="idproducto">
+              <input type="hidden" name="idinventario" id="idinventario">
+              <input type="hidden" name="idserie" id="idserie">
 
               <ul class="nav nav-tabs" id="tabsProductoVehiculo" role="tablist" style="margin-bottom: 10px;">
                 <li class="nav-item">
-                  <a class="nav-link active" id="tab-basico-link" data-toggle="tab" href="#tab-basico" role="tab" aria-controls="tab-basico" aria-selected="true">Datos Básicos</a>
+                  <a class="nav-link active" id="tab-basico-link" data-toggle="tab" href="#tab-basico" role="tab"
+                    aria-controls="tab-basico" aria-selected="true">Datos Básicos</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" id="tab-producto-link" data-toggle="tab" href="#tab-producto" role="tab" aria-controls="tab-producto" aria-selected="false">Productos</a>
+                  <a class="nav-link" id="tab-producto-link" data-toggle="tab" href="#tab-producto" role="tab"
+                    aria-controls="tab-producto" aria-selected="false">Productos</a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" id="tab-stock-link" data-toggle="tab" href="#tab-stock" role="tab" aria-controls="tab-stock" aria-selected="false">Stock / Precio</a>
+                  <a class="nav-link" id="tab-stock-link" data-toggle="tab" href="#tab-stock" role="tab"
+                    aria-controls="tab-stock" aria-selected="false">Stock / Precio</a>
                 </li>
               </ul>
 
               <div class="tab-content border rounded p-2 bg-light" id="tabsProductoVehiculoContent">
-                <div class="tab-pane fade show active" id="tab-basico" role="tabpanel" aria-labelledby="tab-basico-link">
+                <div class="tab-pane fade show active" id="tab-basico" role="tabpanel"
+                  aria-labelledby="tab-basico-link">
                   <div class="row">
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Línea de Producto *</label>
-                        <select id="idrubro" name="idrubro" class="form-control select2" style="width: 100%; height: 100%;"></select>
+                        <select id="idrubro" name="idrubro" class="form-control select2"
+                          style="width: 100%; height: 100%;"></select>
                       </div>
                     </div>
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Categoría *</label>
-                        <select id="idcategoria" name="idcategoria" class="form-control select2" style="width: 100%; height: 100%;" >
+                        <select id="idcategoria" name="idcategoria" class="form-control select2"
+                          style="width: 100%; height: 100%;">
                           <option value="" selected></option>
                         </select>
                       </div>
@@ -554,7 +605,8 @@
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Unidad *</label>
-                        <select id="idunidad_medida" name="idunidad_medida" class="form-control select2" style="width: 100%; height: 100%;"></select>
+                        <select id="idunidad_medida" name="idunidad_medida" class="form-control select2"
+                          style="width: 100%; height: 100%;"></select>
                       </div>
                     </div>
                     <div class="col-sm-4">
@@ -566,7 +618,7 @@
                     </div>
                     <div class="col-sm-4">
                       <div class="form-group">
-                          <label class="control-label">Modelo</label>
+                        <label class="control-label">Modelo</label>
                         <select name="idmodelo" id="idmodelo" class="form-control">
 
                         </select>
@@ -578,7 +630,8 @@
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Condición</label>
-                        <select id="idcondicionventa" name="idcondicionventa" class="form-control select2" style="width: 100%; height: 100%;"></select>
+                        <select id="idcondicionventa" name="idcondicionventa" class="form-control select2"
+                          style="width: 100%; height: 100%;"></select>
                       </div>
                     </div>
                     <div class="col-sm-4">
@@ -593,7 +646,8 @@
                     <div class="col-sm-4" hidden>
                       <div class="form-group">
                         <label class="control-label">Almacén:</label>
-                        <select id="idsucursal" name="idsucursal" class="form-control select2" style="width: 100%; height: 100%;"></select>
+                        <select id="idsucursal" name="idsucursal" class="form-control select2"
+                          style="width: 100%; height: 100%;"></select>
                       </div>
                     </div>
                   </div>
@@ -613,7 +667,8 @@
                     <div class="col-sm-12">
                       <div class="form-group">
                         <label class="control-label">Producto / Servicio *</label>
-                        <input type="text" class="form-control" name="nombre" id="nombre" maxlength="250" placeholder="Digite el nombre del Producto o Servicio">
+                        <input type="text" class="form-control" name="nombre" id="nombre" maxlength="250"
+                          placeholder="Digite el nombre del Producto o Servicio">
                       </div>
                     </div>
                   </div>
@@ -622,7 +677,8 @@
                     <div class="col-sm-12">
                       <div class="form-group">
                         <label class="control-label">Descripción Detallada</label>
-                        <input type="text" class="form-control" name="descripcion" id="descripcion" maxlength="250" placeholder="Digite una descripción detallada.">
+                        <input type="text" class="form-control" name="descripcion" id="descripcion" maxlength="250"
+                          placeholder="Digite una descripción detallada.">
                       </div>
                     </div>
                   </div>
@@ -631,13 +687,15 @@
                     <div class="col-sm-6">
                       <div class="form-group">
                         <label class="control-label">Placa</label>
-                        <input type="text" class="form-control" name="placa" id="placa" maxlength="20" placeholder="Digite el N° de placa.">
+                        <input type="text" class="form-control" name="placa" id="placa" maxlength="20"
+                          placeholder="Digite el N° de placa.">
                       </div>
                     </div>
                     <div class="col-sm-6">
                       <div class="form-group">
                         <label class="control-label">Color *</label>
-                        <input type="text" class="form-control" name="color" id="color" maxlength="50" placeholder="Digite el color.">
+                        <input type="text" class="form-control" name="color" id="color" maxlength="50"
+                          placeholder="Digite el color.">
                       </div>
                     </div>
                   </div>
@@ -646,13 +704,15 @@
                     <div class="col-sm-6">
                       <div class="form-group">
                         <label class="control-label">Serie / Chasis *</label>
-                        <input type="text" class="form-control" name="nserie" id="nserie" maxlength="80" placeholder="Digite el N° de serie.">
+                        <input type="text" class="form-control" name="nserie" id="nserie" maxlength="80"
+                          placeholder="Digite el N° de serie.">
                       </div>
                     </div>
                     <div class="col-sm-6">
                       <div class="form-group">
                         <label class="control-label">Motor *</label>
-                        <input type="text" class="form-control" name="motor" id="motor" maxlength="80" placeholder="Digite el N° de motor.">
+                        <input type="text" class="form-control" name="motor" id="motor" maxlength="80"
+                          placeholder="Digite el N° de motor.">
                       </div>
                     </div>
                   </div>
@@ -661,13 +721,15 @@
                     <div class="col-sm-6">
                       <div class="form-group">
                         <label class="control-label">Permiso de Circulación</label>
-                        <input type="text" class="form-control" name="permiso_circulacion" id="permiso_circulacion" maxlength="100" placeholder="Digite Permiso Circulación">
+                        <input type="text" class="form-control" name="permiso_circulacion" id="permiso_circulacion"
+                          maxlength="100" placeholder="Digite Permiso Circulación">
                       </div>
                     </div>
                     <div class="col-sm-6">
                       <div class="form-group">
                         <label class="control-label">Año de Fabricación</label>
-                        <input type="number" class="form-control" name="anio_fabricacion" id="anio_fabricacion" min="1900" max="2100" placeholder="Digite el Año de fabricación.">
+                        <input type="number" class="form-control" name="anio_fabricacion" id="anio_fabricacion"
+                          min="1900" max="2100" placeholder="Digite el Año de fabricación.">
                       </div>
                     </div>
                   </div>
@@ -676,13 +738,15 @@
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Tipo Vehículo</label>
-                        <input type="text" class="form-control" id="tipo_vehiculo" name="tipo_vehiculo" placeholder="Lineal/Trimovil">
+                        <input type="text" class="form-control" id="tipo_vehiculo" name="tipo_vehiculo"
+                          placeholder="Lineal/Trimovil">
                       </div>
                     </div>
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Clase</label>
-                        <input type="text" class="form-control" id="clase_vehiculo" name="clase_vehiculo" placeholder="L3/L5">              
+                        <input type="text" class="form-control" id="clase_vehiculo" name="clase_vehiculo"
+                          placeholder="L3/L5">
                       </div>
                     </div>
                     <div class="col-sm-4">
@@ -734,19 +798,22 @@
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Precio Compra</label>
-                        <input type="number" step="any" class="form-control" name="precioCompra" id="precioCompra" min="0" placeholder="0.00">
+                        <input type="number" step="any" class="form-control" name="precioCompra" id="precioCompra"
+                          min="0" placeholder="0.00">
                       </div>
                     </div>
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">Precio Venta</label>
-                        <input type="number" step="any" class="form-control" name="precio" id="precio" min="0" placeholder="0.00">
+                        <input type="number" step="any" class="form-control" name="precio" id="precio" min="0"
+                          placeholder="0.00">
                       </div>
                     </div>
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">P. Venta Crédito</label>
-                        <input type="number" step="any" class="form-control" name="precioB" id="precioB" placeholder="0.00">
+                        <input type="number" step="any" class="form-control" name="precioB" id="precioB"
+                          placeholder="0.00">
                       </div>
                     </div>
                   </div>
@@ -785,19 +852,32 @@
                         <input type="number" step="any" class="form-control" name="margenpubl" id="margenpubl" readonly>
                       </div>
                     </div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="precioC" id="precioC"></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="precioD" id="precioD"></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="precioE" id="precioE"></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margendes" id="margendes" readonly></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margenp1" id="margenp1" readonly></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margenp2" id="margenp2" readonly></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margendist" id="margendist" readonly></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioB" id="utilprecioB" readonly></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioC" id="utilprecioC" readonly></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioD" id="utilprecioD" readonly></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioE" id="utilprecioE" readonly></div>
-                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="comisionV" id="comisionV"></div>
-                    <div class="col-sm-2"><input type="text" class="form-control" name="registrosan" id="registrosan"></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="precioC"
+                        id="precioC"></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="precioD"
+                        id="precioD"></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="precioE"
+                        id="precioE"></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margendes"
+                        id="margendes" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margenp1"
+                        id="margenp1" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margenp2"
+                        id="margenp2" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="margendist"
+                        id="margendist" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioB"
+                        id="utilprecioB" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioC"
+                        id="utilprecioC" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioD"
+                        id="utilprecioD" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="utilprecioE"
+                        id="utilprecioE" readonly></div>
+                    <div class="col-sm-2"><input type="number" step="any" class="form-control" name="comisionV"
+                        id="comisionV"></div>
+                    <div class="col-sm-2"><input type="text" class="form-control" name="registrosan" id="registrosan">
+                    </div>
                   </div>
                 </div>
               </div>
@@ -809,7 +889,8 @@
                     <label for="name" class="control-label">Imagen:</label>
                     <input type="file" class="form-control d-none" name="imagen" id="imagen">
                     <input type="hidden" name="imagenactual" id="imagenactual">
-                    <img src="" class="img-thumbnail imagen-hover" id="imagenmuestra" width="400px" style="cursor: pointer;" onclick="document.getElementById('imagen').click();">
+                    <img src="" class="img-thumbnail imagen-hover" id="imagenmuestra" width="400px"
+                      style="cursor: pointer;" onclick="document.getElementById('imagen').click();">
                     <button type="button" class="btn btn-danger mt-2" id="restaurarImagen">Eliminar Imagen</button>
                   </div>
                 </div>
@@ -821,9 +902,11 @@
                   <div class="form-group">
                     <label for="codigo" class="control-label">Código de barras - unidad:</label>
                     <div class="input-group">
-                      <input type="text" class="form-control" name="codigo" id="codigo" placeholder="Código Barras" oninput="generarbarcode()">
+                      <input type="text" class="form-control" name="codigo" id="codigo" placeholder="Código Barras"
+                        oninput="generarbarcode()">
                       <div class="input-group-append">
-                        <button class="btn btn-info" type="button" onclick="imprimir()" title="Imprimir código de barras">
+                        <button class="btn btn-info" type="button" onclick="imprimir()"
+                          title="Imprimir código de barras">
                           <i class="fa fa-print"></i>
                         </button>
                       </div>
@@ -945,20 +1028,23 @@
       <form class="form-horizontal" role="form" name="formularioTraslados" id="formularioTraslados" method="POST">
         <div class="modal-body">
           <div class="alert" style="background: #E0F7FA;">
-            <strong><i class="fa fa-info"></i> Info!</strong> TRASLADAR: <label for="documento" id="documento"></label> Para hacer uso de este módulo, debe tener en claro el producto a TRASLADAR a un almacén específico.</i></a>
+            <strong><i class="fa fa-info"></i> Info!</strong> TRASLADAR: <label for="documento" id="documento"></label>
+            Para hacer uso de este módulo, debe tener en claro el producto a TRASLADAR a un almacén específico.</i></a>
           </div>
           <div class="row">
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Almacén Origen:</label>
-                <select id="idsucursal3" name="idsucursal3" class="form-control select2" data-live-search="true" onchange="cargarComboProductos();">
+                <select id="idsucursal3" name="idsucursal3" class="form-control select2" data-live-search="true"
+                  onchange="cargarComboProductos();">
                 </select>
               </div>
             </div>
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Almacén Destino:</label>
-                <select id="idsucursal4" name="idsucursal4" class="form-control select2" data-live-search="true" onchange="cargarComboProductos2();">
+                <select id="idsucursal4" name="idsucursal4" class="form-control select2" data-live-search="true"
+                  onchange="cargarComboProductos2();">
                 </select>
               </div>
             </div>
@@ -1010,9 +1096,8 @@
 
       <div class="modal-body panel-body">
         <div class="form-group col-lg-12 col-md-12 col-xs-12">
-          <table id="tbllistadoKardex" class="table table-tailpanel dt-responsive" 
-                 cellpadding="0" cellspacing="0" aria-describedby="tblIngresos_info" 
-                 width="100%" role="grid" style="width: 100%;">
+          <table id="tbllistadoKardex" class="table table-tailpanel dt-responsive" cellpadding="0" cellspacing="0"
+            aria-describedby="tblIngresos_info" width="100%" role="grid" style="width: 100%;">
             <thead>
               <tr>
                 <th>#</th>
@@ -1070,7 +1155,8 @@
 
 
 <!-- Modal Detalle Producto -->
-<div class="modal fade" id="modalDetalleProducto" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade" id="modalDetalleProducto" tabindex="-1" role="dialog" aria-labelledby="modalLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
@@ -1084,12 +1170,14 @@
         <!-- Tabs -->
         <ul class="nav nav-tabs mb-3" id="detalleProductoTabs" role="tablist">
           <li class="nav-item">
-            <a class="nav-link active" id="tab-imagen-tab" data-toggle="tab" href="#tab-imagen" role="tab" aria-controls="tab-imagen" aria-selected="true">
+            <a class="nav-link active" id="tab-imagen-tab" data-toggle="tab" href="#tab-imagen" role="tab"
+              aria-controls="tab-imagen" aria-selected="true">
               Imagen
             </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" id="tab-detalles-tab" data-toggle="tab" href="#tab-detalles" role="tab" aria-controls="tab-detalles" aria-selected="false">
+            <a class="nav-link" id="tab-detalles-tab" data-toggle="tab" href="#tab-detalles" role="tab"
+              aria-controls="tab-detalles" aria-selected="false">
               Detalles del producto
             </a>
           </li>
@@ -1098,9 +1186,12 @@
         <!-- Contenido de las tabs -->
         <div class="tab-content" id="detalleProductoTabsContent">
           <!-- TAB 1: Imagen -->
-          <div class="tab-pane fade show active text-center" id="tab-imagen" role="tabpanel" aria-labelledby="tab-imagen-tab">
-            <div class="d-flex justify-content-center align-items-center border rounded shadow mb-3" style="height: 600px; background-color: #f8f9fa;">
-              <img id="detalleImagenProducto" src="" alt="Producto" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+          <div class="tab-pane fade show active text-center" id="tab-imagen" role="tabpanel"
+            aria-labelledby="tab-imagen-tab">
+            <div class="d-flex justify-content-center align-items-center border rounded shadow mb-3"
+              style="height: 600px; background-color: #f8f9fa;">
+              <img id="detalleImagenProducto" src="" alt="Producto"
+                style="max-height: 100%; max-width: 100%; object-fit: contain;">
             </div>
           </div>
 
@@ -1136,22 +1227,28 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <form class="form-horizontal" role="form" name="formularioDesempaquetar" id="formularioDesempaquetar" method="POST">
+      <form class="form-horizontal" role="form" name="formularioDesempaquetar" id="formularioDesempaquetar"
+        method="POST">
         <div class="modal-body">
           <div class="alert" style="background: #E0F7FA;">
-            <strong><i class="fa fa-info"></i> Info!</strong> DESEMPAQUETAR: <label for="documento" id="documento"></label> Para hacer uso de este módulo <label for="deudaTotal" id="deutaTotal"></label>, debe tener en claro el producto empaquetado y el producto al cual se le va a asignar lo desempaquetado.</i></a>
+            <strong><i class="fa fa-info"></i> Info!</strong> DESEMPAQUETAR: <label for="documento"
+              id="documento"></label> Para hacer uso de este módulo <label for="deudaTotal" id="deutaTotal"></label>,
+            debe tener en claro el producto empaquetado y el producto al cual se le va a asignar lo
+            desempaquetado.</i></a>
           </div>
           <div class="row">
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Producto a Desempaquetar:</label>
-                <select id="idproductoE" name="idproductoE" class="form-control select2" data-live-search="true" title="Seleccione Producto" onchange="stockProductoE()" required></select>
+                <select id="idproductoE" name="idproductoE" class="form-control select2" data-live-search="true"
+                  title="Seleccione Producto" onchange="stockProductoE()" required></select>
               </div>
             </div>
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Producto Asignado:</label>
-                <select id="idproductoD" name="idproductoD" class="form-control select2" data-live-search="true" title="Seleccione Producto" onchange="stockProductoD()" required></select>
+                <select id="idproductoD" name="idproductoD" class="form-control select2" data-live-search="true"
+                  title="Seleccione Producto" onchange="stockProductoD()" required></select>
               </div>
             </div>
           </div>
@@ -1174,7 +1271,8 @@
           </div>
         </div>
         <div class="modal-footer justify-content-between">
-          <button type="button" onclick="limpiarDesempaquetado()" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+          <button type="button" onclick="limpiarDesempaquetado()" class="btn btn-default"
+            data-dismiss="modal">Cerrar</button>
           <button class="btn btn-primary" type="submit" id="btnGuardar">Guardar</button>
         </div>
       </form>
@@ -1196,9 +1294,11 @@
       <form class="form-horizontal" role="form" name="formularioIngreso" id="formularioIngreso" method="POST">
         <div class="modal-body">
           <div class="row">
-            <input type="hidden" class="form-control" name="idproducto" id="input-idproducto" placeholder="Cantidad" required>
+            <input type="hidden" class="form-control" name="idproducto" id="input-idproducto" placeholder="Cantidad"
+              required>
 
-            <input type="hidden" class="form-control" name="idsucursal" id="input-idsucursal" placeholder="Cantidad" required>
+            <input type="hidden" class="form-control" name="idsucursal" id="input-idsucursal" placeholder="Cantidad"
+              required>
             <div class="col-sm-12">
               <div class="form-group">
                 <label>Lote:</label>
@@ -1218,7 +1318,8 @@
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Cantidad:</label>
-                <input type="number" step="0.001" class="form-control" name="cantidad" id="cantidad" placeholder="Cantidad" required>
+                <input type="number" step="0.001" class="form-control" name="cantidad" id="cantidad"
+                  placeholder="Cantidad" required>
               </div>
             </div>
             <div class="col-sm-6 precio-box" style="display: none;">
@@ -1255,7 +1356,8 @@
 </div>
 
 <!-- Modal para consultar stock en otras sucursales -->
-<div class="modal fade" id="modalStockSucursales" tabindex="-1" role="dialog" aria-labelledby="tituloStockSucursales" aria-hidden="true">
+<div class="modal fade" id="modalStockSucursales" tabindex="-1" role="dialog" aria-labelledby="tituloStockSucursales"
+  aria-hidden="true">
   <div class="modal-dialog modal-xl" role="document">
     <div class="modal-content">
 
@@ -1278,7 +1380,8 @@
 
         <div class="form-group">
           <label for="buscarProducto"><i class="fas fa-search"></i> Buscar producto:</label>
-          <input type="text" class="form-control" id="buscarProducto" placeholder="Ingrese nombre o código del producto">
+          <input type="text" class="form-control" id="buscarProducto"
+            placeholder="Ingrese nombre o código del producto">
         </div>
 
         <hr>
@@ -1286,16 +1389,18 @@
           <table id="tablaStockSucursales" class="table table-bordered table-striped">
             <thead class="bg-light">
               <tr>
-                <th></th> <!-- checkbox -->
+                <th></th>
                 <th>Producto</th>
                 <th>Código</th>
+                <th>Serie</th>
+                <th>Placa</th>
                 <th>Sucursal</th>
-                <th>Stock disponible</th>
-                <th>Cantidad a solicitar</th> 
               </tr>
             </thead>
             <tbody>
-              <tr><td colspan="5" class="text-center">Ingrese un producto para ver el stock.</td></tr>
+              <tr>
+                <td colspan="5" class="text-center">Ingrese un producto para ver el stock.</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -1315,6 +1420,7 @@
 </div>
 
 
+<script src="vistas/js/pagination.js"></script>
 
 <script src="vistas/js/producto.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>

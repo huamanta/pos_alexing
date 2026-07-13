@@ -3,15 +3,21 @@
 require "../configuraciones/Conexion.php";
 require "Contratos.php";
 require_once "Helpers.php";
+require_once "../configuraciones/ConexionPdo.php";
+require_once "../core/FluentSave.php";
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 class CuentasCobrar extends Helpers
 {
+
+    private PDO $pdo;
+
     //Implementamos nuestro constructor
     public function __construct()
     {
-
+        $this->pdo = Conexion::conectar();
     }
 
     public function insertar(
@@ -24,8 +30,8 @@ class CuentasCobrar extends Helpers
         $formapago,
         $montoPagarTarjeta,
         $idcaja,
-        $idpersonal, 
-        $idsucursal, 
+        $idpersonal,
+        $idsucursal,
         $idusuario
     ) {
 
@@ -2210,76 +2216,66 @@ class CuentasCobrar extends Helpers
         $idusuario,
         $fecha_final
     ) {
-
-        if (empty($fecha_programada)) {
-            return json_encode([
-                "status" => false,
-                "msg" => "Debe ingresar fecha programada"
-            ]);
-        }
-
-        // Obtener documento si existe venta
-        $iddocumento = null;
-
-        if (!empty($idventa)) {
-
-            $documentacion = $this->obtenerDocumento($idventa);
-
-            if (!empty($documentacion)) {
-                $iddocumento = $documentacion['iddocumento'];
-            }
-        }
-
-        // Preparar NULL para SQL
-        $idventa_sql = !empty($idventa) ? "'$idventa'" : "NULL";
-        $iddocumento_sql = !empty($iddocumento) ? "'$iddocumento'" : "NULL";
-        $idcpc_sql = !empty($idcpc) ? "'$idcpc'" : "NULL";
-        $idcliente_sql = !empty($idcliente) ? "'$idcliente'" : "NULL";
-        $fecha_final_sql = !empty($fecha_final) ? "'$fecha_final'" : "NULL";
-
-        $sql = "INSERT INTO seguimiento_clientes(
-                idventa,
-                iddocumento,
-                idcpc,
-                idcliente,
-                idpersonal,
-                tipo,
-                descripcion,
-                fecha_proxima,
-                idusuario,
-                estado,
-                prioridad,
-                direccion,
-                fecha_final
-            )
-            VALUES(
-                $idventa_sql,
-                $iddocumento_sql,
-                $idcpc_sql,
-                $idcliente_sql,
-                '$idpersonal',
-                '$tipo_visita',
-                '$descripcion',
-                '$fecha_programada',
-                '$idusuario',
-                '$estado',
-                '$prioridad',
-                '$direccion',
-                $fecha_final_sql
-            )";
-
         try {
+            if (empty($fecha_programada)) {
+                throw new Exception("Debe ingresar fecha programada");
+            }
 
-            $idseguimiento = ejecutarConsulta_retornarID($sql);
+            $this->pdo->beginTransaction();
+
+            $iddocumento = null;
+
+            if (!empty($idventa)) {
+
+                $documentacion = $this->obtenerDocumento($idventa);
+
+                if (!empty($documentacion)) {
+                    $iddocumento = $documentacion['iddocumento'];
+                }
+            }
+
+            $idseguimiento = (new FluentSaver($this->pdo))
+                ->table('seguimiento_clientes')
+                ->nullable([
+                    'idventa',
+                    'iddocumento',
+                    'idcpc',
+                    'idcliente',
+                    'direccion',
+                    'fecha_final'
+                ])
+                ->cast([
+                    'idventa' => 'int',
+                    'iddocumento' => 'int',
+                    'idcpc' => 'int',
+                    'idcliente' => 'int',
+                    'idpersonal' => 'int',
+                    'idusuario' => 'int'
+                ])
+                ->data([
+
+                    'idventa' => $idventa,
+                    'iddocumento' => $iddocumento,
+                    'idcpc' => $idcpc,
+                    'idcliente' => $idcliente,
+                    'idpersonal' => $idpersonal,
+                    'tipo' => $tipo_visita,
+                    'descripcion' => $descripcion,
+                    'fecha_proxima' => $fecha_programada,
+                    'idusuario' => $idusuario,
+                    'estado' => $estado,
+                    'prioridad' => $prioridad,
+                    'direccion' => $direccion,
+                    'fecha_final' => $fecha_final
+
+                ])
+                ->save();
 
             if (!$idseguimiento) {
-                return json_encode([
-                    "status" => false,
-                    "msg" => "No se pudo registrar el seguimiento"
-                ]);
+                throw new Exception("No se pudo guardar el seguimiento");
             }
 
-            // Guardar adjuntos
+            // Adjuntos
             if (
                 isset($_FILES['adjuntos']) &&
                 !empty($_FILES['adjuntos']['name'][0])
@@ -2287,61 +2283,64 @@ class CuentasCobrar extends Helpers
 
                 $ruta = "../files/seguimientos/";
 
-                if (!file_exists($ruta)) {
+                if (!is_dir($ruta)) {
                     mkdir($ruta, 0777, true);
                 }
 
                 foreach ($_FILES['adjuntos']['tmp_name'] as $key => $tmp) {
 
-                    if ($_FILES['adjuntos']['error'][$key] == 0) {
+                    if ($_FILES['adjuntos']['error'][$key] != UPLOAD_ERR_OK) {
+                        continue;
+                    }
 
-                        $nombreOriginal = $_FILES['adjuntos']['name'][$key];
+                    $nombreOriginal = $_FILES['adjuntos']['name'][$key];
 
-                        $extension = strtolower(
-                            pathinfo($nombreOriginal, PATHINFO_EXTENSION)
-                        );
+                    $extension = strtolower(
+                        pathinfo($nombreOriginal, PATHINFO_EXTENSION)
+                    );
 
-                        $nombreArchivo =
-                            date('YmdHis') .
-                            "_" .
-                            uniqid() .
-                            "." .
-                            $extension;
+                    $nombreArchivo =
+                        date('YmdHis') .
+                        "_" .
+                        uniqid() .
+                        "." .
+                        $extension;
 
-                        if (
-                            move_uploaded_file(
-                                $tmp,
-                                $ruta . $nombreArchivo
-                            )
-                        ) {
+                    if (move_uploaded_file($tmp, $ruta . $nombreArchivo)) {
 
-                            $sqlAdjunto = "INSERT INTO seguimiento_adjuntos(
-                                            idseguimiento,
-                                            archivo,
-                                            nombre_original
-                                        )
-                                        VALUES(
-                                            '$idseguimiento',
-                                            '$nombreArchivo',
-                                            '$nombreOriginal'
-                                        )";
+                        (new FluentSaver($this->pdo))
 
-                            ejecutarConsulta($sqlAdjunto);
-                        }
+                            ->table('seguimiento_adjuntos')
+
+                            ->data([
+
+                                'idseguimiento' => $idseguimiento,
+                                'archivo' => $nombreArchivo,
+                                'nombre_original' => $nombreOriginal
+
+                            ])
+
+                            ->save();
                     }
                 }
             }
 
+            $this->pdo->commit();
+
             return json_encode([
-                "status" => true,
-                "msg" => "Seguimiento registrado correctamente"
+                "success" => true,
+                "message" => "Seguimiento registrado correctamente"
             ]);
 
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
+
+            if (isset($this->pdo) && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
 
             return json_encode([
-                "status" => false,
-                "msg" => $e->getMessage()
+                "success" => false,
+                "message" => $e->getMessage()
             ]);
         }
     }
@@ -2363,11 +2362,7 @@ class CuentasCobrar extends Helpers
         $fecha_final
     ) {
 
-        global $conexion;
-
         try {
-
-            $conexion->begin_transaction();
 
             if (empty($id)) {
                 throw new Exception("ID de seguimiento inválido");
@@ -2377,7 +2372,8 @@ class CuentasCobrar extends Helpers
                 throw new Exception("Debe ingresar fecha programada");
             }
 
-            // Obtener documento asociado
+            $this->pdo->beginTransaction();
+
             $iddocumento = null;
 
             if (!empty($idventa)) {
@@ -2389,30 +2385,46 @@ class CuentasCobrar extends Helpers
                 }
             }
 
-            $idventa_sql = !empty($idventa) ? "'$idventa'" : "NULL";
-            $iddocumento_sql = !empty($iddocumento) ? "'$iddocumento'" : "NULL";
-            $idcpc_sql = !empty($idcpc) ? "'$idcpc'" : "NULL";
-            $idcliente_sql = !empty($idcliente) ? "'$idcliente'" : "NULL";
-            $fecha_final_sql = !empty($fecha_final) ? "'$fecha_final'" : "NULL";
+            $update = (new FluentSaver($this->pdo))
+                ->table('seguimiento_clientes')
+                ->primaryKey('idseguimiento')
+                ->timestamps(false)
+                ->nullable([
+                    'idventa',
+                    'iddocumento',
+                    'idcpc',
+                    'idcliente',
+                    'direccion',
+                    'fecha_final'
+                ])
+                ->cast([
+                    'idseguimiento' => 'int',
+                    'idventa' => 'int',
+                    'iddocumento' => 'int',
+                    'idcpc' => 'int',
+                    'idcliente' => 'int',
+                    'idpersonal' => 'int',
+                    'idusuario' => 'int'
+                ])
+                ->data([
+                    'idseguimiento' => $id,
+                    'idventa' => $idventa,
+                    'iddocumento' => $iddocumento,
+                    'idcpc' => $idcpc,
+                    'idcliente' => $idcliente,
+                    'idpersonal' => $idpersonal,
+                    'tipo' => $tipo_visita,
+                    'descripcion' => $descripcion,
+                    'fecha_proxima' => $fecha_programada,
+                    'estado' => $estado,
+                    'prioridad' => $prioridad,
+                    'direccion' => $direccion,
+                    'fecha_final' => $fecha_final,
+                    'idusuario' => $idusuario
+                ])
+                ->save();
 
-            $sql = "UPDATE seguimiento_clientes SET
-
-                    idventa = $idventa_sql,
-                    iddocumento = $iddocumento_sql,
-                    idcpc = $idcpc_sql,
-                    idcliente = $idcliente_sql,
-                    idpersonal = '$idpersonal',
-                    tipo = '$tipo_visita',
-                    descripcion = '$descripcion',
-                    fecha_proxima = '$fecha_programada',
-                    estado = '$estado',
-                    prioridad = '$prioridad',
-                    direccion = '$direccion',
-                    fecha_final = $fecha_final_sql
-
-                WHERE idseguimiento = '$id'";
-
-            if (!ejecutarConsulta($sql)) {
+            if (!$update) {
                 throw new Exception("No se pudo actualizar el seguimiento");
             }
 
@@ -2433,11 +2445,17 @@ class CuentasCobrar extends Helpers
 
                     foreach ($archivosEliminar as $idadjunto) {
 
-                        $adjunto = ejecutarConsultaSimpleFila(
-                            "SELECT *
-                         FROM seguimiento_adjuntos
-                         WHERE idadjunto = '$idadjunto'"
-                        );
+                        $stmt = $this->pdo->prepare("
+                            SELECT *
+                            FROM seguimiento_adjuntos
+                            WHERE idadjunto = :idadjunto
+                        ");
+
+                        $stmt->execute([
+                            'idadjunto' => $idadjunto
+                        ]);
+
+                        $adjunto = $stmt->fetch(PDO::FETCH_ASSOC);
 
                         if ($adjunto) {
 
@@ -2449,10 +2467,15 @@ class CuentasCobrar extends Helpers
                                 unlink($rutaArchivo);
                             }
 
-                            ejecutarConsulta(
-                                "DELETE FROM seguimiento_adjuntos
-                             WHERE idadjunto = '$idadjunto'"
-                            );
+                            $stmt = $this->pdo->prepare("
+                                                        DELETE
+                                                        FROM seguimiento_adjuntos
+                                                        WHERE idadjunto = :idadjunto
+                                                    ");
+
+                            $stmt->execute([
+                                'idadjunto' => $idadjunto
+                            ]);
                         }
                     }
                 }
@@ -2496,35 +2519,36 @@ class CuentasCobrar extends Helpers
                             "." .
                             $extension;
 
-                        if (
-                            move_uploaded_file(
-                                $tmp,
-                                $ruta . $nombreArchivo
-                            )
-                        ) {
+                        if (move_uploaded_file($tmp, $ruta . $nombreArchivo)) {
 
-                            $sqlAdjunto = "INSERT INTO seguimiento_adjuntos(
-                                            idseguimiento,
-                                            archivo,
-                                            nombre_original
-                                        )
-                                        VALUES(
-                                            '$id',
-                                            '$nombreArchivo',
-                                            '$nombreOriginal'
-                                        )";
+                            try {
+                                $adjunto = (new FluentSaver($this->pdo))
+                                    ->table('seguimiento_adjuntos')
+                                    ->timestamps(false)
+                                    ->data([
+                                        'idseguimiento' => $id,
+                                        'archivo' => $nombreArchivo,
+                                        'nombre_original' => $nombreOriginal
+                                    ])
+                                    ->save();
 
-                            if (!ejecutarConsulta($sqlAdjunto)) {
-                                throw new Exception(
-                                    "Error al guardar adjunto"
-                                );
+                                if (!$adjunto) {
+                                    throw new Exception("Error al guardar el adjunto.");
+                                }
+                            } catch (Exception $e) {
+
+                                if (file_exists($ruta . $nombreArchivo)) {
+                                    unlink($ruta . $nombreArchivo);
+                                }
+
+                                throw $e;
                             }
                         }
                     }
                 }
             }
 
-            $conexion->commit();
+            $this->pdo->commit();
 
             return json_encode([
                 "status" => true,
@@ -2533,12 +2557,15 @@ class CuentasCobrar extends Helpers
 
         } catch (Exception $e) {
 
-            $conexion->rollback();
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
 
             return json_encode([
                 "status" => false,
                 "msg" => $e->getMessage()
             ]);
+
         }
     }
 

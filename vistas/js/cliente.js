@@ -3,7 +3,7 @@ const API_KEY = "AIzaSyAEfzrVHyxezdBMPmKlF8Hs-of68DzrRFY";
 
 let map;
 let marker;
-
+let listarPersonas = null;
 function initMap() {
   const latInput = Number($("#latitude").val());
   const lngInput = Number($("#longitude").val());
@@ -93,7 +93,7 @@ function getAddressFromCoords(lat, lng) {
 //Función que se ejecuta al inicio
 function init() {
   limpiar();
-  listar();
+  listarPersonas.load();
   $("#myModal").on("submit", function (e) {
     guardaryeditar(e);
   });
@@ -152,17 +152,30 @@ function guardaryeditar(e) {
     data: formData,
     contentType: false,
     processData: false,
-
+    beforeSend: function () {
+      $("#btnGuardar").prop("disabled", true).text("Guardando...");
+    },
     success: function (datos) {
+      datos = JSON.parse(datos);
+      if (!datos.success) {
+        Swal.fire({
+          title: "Cliente",
+          icon: "error",
+          text: datos.message,
+        });
+        return;
+      }
       Swal.fire({
         title: "Cliente",
         icon: "success",
-        text: datos,
+        text: datos.message,
       });
-
       $("#myModal").modal("hide");
-      tabla.ajax.reload();
+      listarPersonas.load();
     },
+    complete: function () {
+      $("#btnGuardar").prop("disabled", false).text("Guardar");
+    }
   });
   limpiar();
 }
@@ -283,68 +296,52 @@ function BuscarCliente() {
   );
 }
 
-//Función Listar
-function listar() {
-  tabla = $("#tbllistado")
-    .dataTable({
-      //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-      aProcessing: true, //Activamos el procesamiento del datatables
-      aServerSide: true, //Paginación y filtrado realizados por el servidor
-      processing: true,
-      language: {
-        processing:
-          "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-      },
-      responsive: true,
-      lengthChange: false,
-      autoWidth: false,
-      dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-      lengthMenu: [
-        [5, 10, 25, 50, 100, -1],
-        [
-          "5 filas",
-          "10 filas",
-          "25 filas",
-          "50 filas",
-          "100 filas",
-          "Mostrar todo",
-        ],
-      ],
-      buttons: [
-        "pageLength",
-        {
-          extend: "excelHtml5",
-          text: "<i class='fas fa-file-csv'></i>",
-          titleAttr: "Exportar a Excel",
-          // className: 'btn btn-success'
-        },
-        {
-          extend: "pdf",
-          text: "<i class='fas fa-file-pdf'></i>",
-          titleAttr: "Exportar a PDF",
-          // className: 'btn btn-danger'
-        },
-        {
-          extend: "colvis",
-          text: "<i class='fas fa-bars'></i>",
-          titleAttr: "",
-          // className: 'btn btn-danger'
-        },
-      ],
-      ajax: {
-        url: "controladores/persona.php?op=listarc",
-        type: "get",
-        dataType: "json",
-        error: function (e) {
-          console.log(e.responseText);
-        },
-      },
-      bDestroy: true,
-      iDisplayLength: 5, //Paginación
-      order: [[0, "desc"]], //Ordenar (columna,orden)
-    })
-    .DataTable();
+function pintarPersonas(data, permissions) {
+
+  let html = "";
+  
+  if (data.length === 0) {
+    html = `
+      <tr>
+        <td colspan="6" class="text-center">No se encontraron registros</td>
+      </tr>
+    `;
+    $("#tbody_personas").html(html);
+    return;
+  }
+
+  data.forEach(item => {
+
+    html += `
+            <tr>
+                <td>${item.nombre ?? ''}</td>
+                <td>${item.tipo_documento ?? ''}</td>
+                <td>${item.num_documento ?? ''}</td>
+                <td>${item.telefono ?? ''}</td>
+                <td>${item.email ?? ''}</td>
+                <td>
+                  ${permissions.editar ? `<button class="btn btn-warning btn-xs" onclick="mostrar(${item.idpersona})"><i class="fas fa-edit"></i></button>`:''}
+                  ${permissions.historial ? `<button class="btn btn-info btn-xs" onclick="ListarReportesClientes(${item.idpersona})"><i class="fa fa-list"></i></button>`:''}
+                  ${permissions.puntuacion ? `<button class="btn btn-info btn-xs" onclick="ScoreCrediticioCliente(${item.idpersona})"><i class="fa fa-star"></i></button>`:''}
+                  ${permissions.eliminar ? `<button class="btn btn-danger btn-xs" onclick="eliminar(${item.idpersona})"><i class="fa fa-trash"></i></button>`:''}
+                </td>
+            </tr>
+        `;
+
+  });
+
+
+  $("#tbody_personas").html(html);
 }
+
+//Función Listar
+
+
+listarPersonas = new FluentPaginator({
+    url: "controladores/persona.php?op=listarc",
+    renderTabla: pintarPersonas
+});
+
 
 //Función cancelarform
 function cancelarform() {
@@ -361,26 +358,30 @@ function eliminar(idpersona) {
     confirmButtonColor: "#3085d6",
     cancelButtonColor: "#d33",
     confirmButtonText: "Si",
+    reverseButtons: true
   }).then((result) => {
     if (result.isConfirmed) {
       $.post(
         "controladores/persona.php?op=eliminar",
         { idpersona: idpersona },
-        function (e) {
-          if (e == 2) {
-            Swal.fire(
-              "!!! Alerta !!!",
-              "Cliente asociado a una Operación",
-              "error",
-            );
-          } else if (e == 1) {
-            Swal.fire("!!! Eliminado !!!", "Cliente Eliminado", "success");
-          } else {
-            Swal.fire("!!! Eliminado !!!", "Cliente Eliminado", "success");
+        function (response) {
+          const data = JSON.parse(response);
+          if (!data.success) {
+            Swal.fire({
+              title: "Cliente",
+              icon: "error",
+              text: data.message,
+            });
+            return;
           }
-
-          tabla.ajax.reload();
-        },
+          Swal.fire({
+            title: "Cliente",
+            icon: "success",
+            text: data.message,
+          });
+          $("#myModal").modal("hide");
+          listarPersonas.load();
+        }
       );
     } else {
       Swal.fire("Aviso!", "Se Cancelo la eliminación del Cliente", "info");
@@ -693,8 +694,7 @@ function ListarReportesClientes(idcliente) {
           `</td>
           <td>
     ${symbol}${Number(cuentasxcobrar[i].mora_pagada).toFixed(2)}
-    ${
-        cuentasxcobrar[i].dias_mora
+    ${cuentasxcobrar[i].dias_mora
             ? `<i class="fa fa-info-circle text-primary ml-1"
                 data-toggle="popover"
                 data-trigger="hover"
@@ -702,7 +702,7 @@ function ListarReportesClientes(idcliente) {
                 data-content="${cuentasxcobrar[i].dias_mora}"
                 style="cursor:pointer;"></i>`
             : ''
-    }
+          }
 </td>
           <td>` +
           symbol +
@@ -964,14 +964,14 @@ function ListarReportesClientes(idcliente) {
       $("#data_proveedor_pagar").html(htmlform);
 
       $('[data-toggle="popover"]').popover({
-    trigger: 'hover',
-    container: 'body'
-});
+        trigger: 'hover',
+        container: 'body'
+      });
 
     },
   });
 
-  
+
 }
 
 

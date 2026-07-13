@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../configuraciones/local.php';
+require_once __DIR__ . '/../configuraciones/ConexionPdo.php';
 class Helpers
 {
     private static $conexion = null;
@@ -77,16 +78,16 @@ class Helpers
             return false;
         }
 
-        if ($nombre_permiso === NULL) {
-            return false;
-        }
-
         // 1. Verificar si es superusuario
         $usuario_sql = "SELECT * FROM usuario WHERE idusuario = $idusuario";
         $data_usuario = self::ejecutarConsultaSimpleFila($usuario_sql);
 
         if ($data_usuario && isset($data_usuario['superusuario']) && $data_usuario['superusuario'] == 1) {
             return true;
+        }
+
+        if ($nombre_permiso === NULL) {
+            return false;
         }
 
         // 2. Verificar permisos por usuario
@@ -169,6 +170,7 @@ class Helpers
         return false;
 
     }
+
 
     public static function esSuperusuario()
     {
@@ -298,5 +300,43 @@ class Helpers
         }
 
         return array('success' => true);
+    }
+
+
+    public function updateKardexSucursal(
+        PDO $pdo,
+        $idsucursal,
+        $idproducto,
+        $idproducto_configuracion,
+        $cantidad,
+        $cantidad_contenedor,
+        $precio,
+        $nuevo_stock,
+        $tipo_movimiento,
+        $descripcion,
+        $motivo,
+    ) {
+        $fecha_kardex = date('Y-m-d H:i:s');
+        $kardex = (new FluentSaver($pdo))
+            ->table('kardex')
+            ->data([
+                'idsucursal' => $idsucursal,
+                'idproducto' => $idproducto,
+                'idproducto_configuracion' => $idproducto_configuracion,
+                'cantidad' => $cantidad,
+                'cantidad_contenedor' => $cantidad_contenedor,
+                'precio_unitario' => $precio,
+                'stock_actual' => $nuevo_stock,
+                'tipo_movimiento' => $tipo_movimiento,
+                'motivo' => $descripcion,
+                'descripcion' => $motivo,
+                'fecha_kardex' => $fecha_kardex
+            ])
+            ->save();
+        if (!$kardex) {
+            throw new Exception("No se pudo registrar el movimiento en kardex.");
+        }
+
+        return true;
     }
 }

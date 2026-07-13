@@ -30,46 +30,64 @@ date_default_timezone_set('America/Lima');
               <h3 class="card-title"> </h3>
 
               <div class="row">
-                <div class="col-md-1">
-                  <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal"
-                    data-target="#myModal" onclick="initMap()"><i class="fa fa-plus"></i> Nuevo</button>
-                </div>
+                <?php if (Helpers::getUserPermissionAccion('Agregar cliente')): ?>
+                  <div class="col-md-12">
+                    <button type="button" class="btn btn-outline-primary  btn-xs" data-toggle="modal"
+                      data-target="#myModal" onclick="initMap()"><i class="fa fa-plus"></i> Nuevo</button>
+                  </div>
+                <?php endif; ?>
               </div>
 
             </div>
             <!-- /.card-header -->
             <div class="card-body">
-              <table id="tbllistado" class="table table-striped">
-                <thead>
-                  <th>Nombre</th>
-                  <th>Documento</th>
-                  <th>Número</th>
-                  <th>Teléfono</th>
-                  <th>Email</th>
-                  <th>Acciones</th>
-                </thead>
-                <tbody>
-                </tbody>
-                <tfoot>
-                  <th>Nombre</th>
-                  <th>Documento</th>
-                  <th>Número</th>
-                  <th>Teléfono</th>
-                  <th>Email</th>
-                  <th>Acciones</th>
-                </tfoot>
-              </table>
-            </div>
-            <!-- /.card-body -->
-          </div>
-          <!-- /.card -->
+              <div class="row">
+                <div class="col-md-6 d-flex align-items-center">
+                  <span class="mr-2">Mostrar</span>
+                  <select id="limit" class="form-control" style="width:100px" onchange="cambiarLimit()">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
 
+                  <span class="ml-2">Registros</span>
+
+                </div>
+                <div class="col-md-6">
+                  <input type="text" id="search" class="form-control" placeholder="Buscar...">
+                </div>
+                <div class="col-md-12">
+                  <div class="table-responsive">
+                    <table id="tbllistado" class="table table-hover table-striped table-md">
+                      <thead>
+                        <th>Nombre</th>
+                        <th>Documento</th>
+                        <th>Número</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Acciones</th>
+                      </thead>
+                      <tbody id="tbody_personas">
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="col-md-6"></div>
+                <div class="col-md-6">
+                  <div id="pagination"></div>
+                </div>
+              </div>
+              <!-- /.card-body -->
+            </div>
+            <!-- /.card -->
+
+          </div>
+          <!-- /.col -->
         </div>
-        <!-- /.col -->
+        <!-- /.row -->
       </div>
-      <!-- /.row -->
-    </div>
-    <!-- /.container-fluid -->
+      <!-- /.container-fluid -->
   </section>
   <!-- /.content -->
 </div>
@@ -293,139 +311,135 @@ date_default_timezone_set('America/Lima');
 <!-- Fin modal -->
 
 <div class="modal fade" id="scoreCliente">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
 
-            <div class="modal-header bg-dark">
-                <h4 class="modal-title">
-                    <i class="fas fa-chart-line"></i>
-                    Score Crediticio Interno
-                </h4>
+      <div class="modal-header bg-dark">
+        <h4 class="modal-title">
+          <i class="fas fa-chart-line"></i>
+          Score Crediticio Interno
+        </h4>
 
-                <button type="button" class="close text-white" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
+        <button type="button" class="close text-white" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+
+        <div class="text-center mb-4">
+
+          <h1 id="scoreNumero" style="font-size:60px;font-weight:bold;">
+            0
+          </h1>
+
+          <div class="progress" style="height:30px;">
+            <div id="scoreBar" class="progress-bar" role="progressbar" style="width:0%">
             </div>
+          </div>
 
-            <div class="modal-body">
+          <br>
 
-                <div class="text-center mb-4">
-
-                    <h1 id="scoreNumero"
-                        style="font-size:60px;font-weight:bold;">
-                        0
-                    </h1>
-
-                    <div class="progress" style="height:30px;">
-                        <div id="scoreBar"
-                             class="progress-bar"
-                             role="progressbar"
-                             style="width:0%">
-                        </div>
-                    </div>
-
-                    <br>
-
-                    <span id="riesgoBadge" class="p-2">
-                        SIN CALIFICAR
-                    </span>
-
-                </div>
-
-                <div class="row">
-
-                    <div class="col-md-3">
-                        <div class="small-box bg-info">
-                            <div class="inner">
-                                <h3 id="totalCreditos">0</h3>
-                                <p>Créditos</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-file-invoice-dollar"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="small-box bg-danger">
-                            <div class="inner">
-                                <h3 id="cuotasVencidas">0</h3>
-                                <p>Cuotas vencidas</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-exclamation-circle"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="small-box bg-warning">
-                            <div class="inner">
-                                <h3 id="diasAtraso">0</h3>
-                                <p>Días atraso</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            </div>
-                    </div>
-
-                    <div class="col-md-3">
-                        <div class="small-box bg-success">
-                            <div class="inner">
-                                <h3 id="porcentajePagado">0%</h3>
-                                <p>Pagado</p>
-                            </div>
-                            <div class="icon">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="row">
-
-                    <div class="col-md-6">
-
-                        <div class="card card-outline card-danger">
-                            <div class="card-header">
-                                Mora acumulada
-                            </div>
-
-                            <div class="card-body text-center">
-
-                                <h2 id="moraTotal">
-                                    S/ 0.00
-                                </h2>
-
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                        <div class="card card-outline card-primary">
-                            <div class="card-header">
-                                Recomendación
-                            </div>
-
-                            <div class="card-body">
-
-                                <div id="recomendacionScore"></div>
-
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
+          <span id="riesgoBadge" class="p-2">
+            SIN CALIFICAR
+          </span>
 
         </div>
+
+        <div class="row">
+
+          <div class="col-md-3">
+            <div class="small-box bg-info">
+              <div class="inner">
+                <h3 id="totalCreditos">0</h3>
+                <p>Créditos</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-file-invoice-dollar"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="small-box bg-danger">
+              <div class="inner">
+                <h3 id="cuotasVencidas">0</h3>
+                <p>Cuotas vencidas</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-exclamation-circle"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="small-box bg-warning">
+              <div class="inner">
+                <h3 id="diasAtraso">0</h3>
+                <p>Días atraso</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-clock"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="small-box bg-success">
+              <div class="inner">
+                <h3 id="porcentajePagado">0%</h3>
+                <p>Pagado</p>
+              </div>
+              <div class="icon">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="row">
+
+          <div class="col-md-6">
+
+            <div class="card card-outline card-danger">
+              <div class="card-header">
+                Mora acumulada
+              </div>
+
+              <div class="card-body text-center">
+
+                <h2 id="moraTotal">
+                  S/ 0.00
+                </h2>
+
+              </div>
+            </div>
+
+          </div>
+
+          <div class="col-md-6">
+
+            <div class="card card-outline card-primary">
+              <div class="card-header">
+                Recomendación
+              </div>
+
+              <div class="card-body">
+
+                <div id="recomendacionScore"></div>
+
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
     </div>
+  </div>
 </div>
 
 <div class="card" id="card-plantilla">
@@ -437,4 +451,5 @@ date_default_timezone_set('America/Lima');
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEfzrVHyxezdBMPmKlF8Hs-of68DzrRFY&callback=initMap">
   </script>
 
+<script src="vistas/js/pagination.js"></script>
 <script src="vistas/js/cliente.js"></script>

@@ -54,8 +54,8 @@
 
     /* Círculo para el avatar/icono */
     .user-avatar-circle {
-        width: 35px;
-        height: 35px;
+        width: 30px;
+        height: 30px;
         background-color: #4f46e5;
         color: #ffffff;
         border-radius: 50%;
@@ -390,6 +390,14 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
             <a class="nav-link navbar-icon-link" data-widget="pushmenu" role="button"><i
                     class="fas fa-bars fa-lg"></i></a>
         </li>
+        <?php if (!empty($_SESSION['nombre_sucursal'])): ?>
+            <li class="nav-item d-flex align-items-center">
+                <span class="badge user-profile-link px-3 py-2">
+                    <i class="fas fa-store mr-1"></i>
+                    <?php echo $_SESSION['nombre_sucursal']; ?>
+                </span>
+            </li>
+        <?php endif; ?>
     </ul>
 
     <ul class="navbar-nav ml-auto align-items-center">
@@ -579,58 +587,58 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
 
                     <div class="col-md-6 mb-3">
                         <label><strong>Cliente</strong></label>
-                        <div id="ver_cliente" class="form-control bg-light"></div>
+                        <div id="ver_cliente_general" class="form-control bg-light"></div>
                     </div>
 
                     <div class="col-md-3 mb-3">
                         <label><strong>Tipo</strong></label>
-                        <div id="ver_tipo" class="form-control bg-light"></div>
+                        <div id="ver_tipo_general" class="form-control bg-light"></div>
                     </div>
 
                     <div class="col-md-3 mb-3">
                         <label><strong>Estado</strong></label>
-                        <div id="ver_estado" class="form-control bg-light"></div>
+                        <div id="ver_estado_general" class="form-control bg-light"></div>
                     </div>
 
                     <div class="col-md-4 mb-3">
                         <label><strong>Responsable</strong></label>
-                        <div id="ver_responsable" class="form-control bg-light"></div>
+                        <div id="ver_responsable_general" class="form-control bg-light"></div>
                     </div>
 
                     <div class="col-md-3 mb-3">
                         <label><strong>Prioridad</strong></label>
-                        <div id="ver_prioridad" class="form-control bg-light"></div>
+                        <div id="ver_prioridad_general" class="form-control bg-light"></div>
                     </div>
 
                     <div class="col-md-5 mb-3">
                         <label><strong>Cuota</strong></label>
-                        <div id="ver_cuota" class="form-control bg-light"></div>
+                        <div id="ver_cuota_general" class="form-control bg-light"></div>
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label><strong>Fecha Programada</strong></label>
-                        <div id="ver_fecha_programada" class="form-control bg-light"></div>
+                        <div id="ver_fecha_programada_general" class="form-control bg-light"></div>
                     </div>
 
                     <div class="col-md-6 mb-3">
                         <label><strong>Fecha Final</strong></label>
-                        <div id="ver_fecha_final" class="form-control bg-light"></div>
+                        <div id="ver_fecha_final_general" class="form-control bg-light"></div>
                     </div>
 
                     <div class="col-md-12 mb-3">
                         <label><strong>Dirección</strong></label>
-                        <div id="ver_direccion" class="form-control bg-light"></div>
+                        <div id="ver_direccion_general" class="form-control bg-light"></div>
                     </div>
 
                     <div class="col-md-12 mb-3">
                         <label><strong>Descripción</strong></label>
-                        <div id="ver_descripcion" class="form-control bg-light" style="min-height:120px;"></div>
+                        <div id="ver_descripcion_general" class="form-control bg-light" style="min-height:120px;"></div>
                     </div>
 
                     <div class="col-md-12">
                         <label><strong>Archivos Adjuntos</strong></label>
 
-                        <div id="ver_adjuntos" class="border rounded p-2" style="min-height:80px;">
+                        <div id="ver_adjuntos_general" class="border rounded p-2" style="min-height:80px;">
                         </div>
                     </div>
 

@@ -65,8 +65,6 @@ if (isset($_GET["ruta"])) {
   <link rel="stylesheet" href="./files/plugins/datatables-buttons/css/buttons.bootstrap4.min.css">
 
 
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-
   <!-- Select2 -->
   <link rel="stylesheet" href="./files/plugins/select2/css/select2.min.css">
   <link rel="stylesheet" href="./files/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css">

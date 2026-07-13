@@ -1377,14 +1377,22 @@ $("#formProgramarVisita").submit(function (e) {
         contentType: false,
         processData: false,
 
-        success: function (r) {
-            var data = JSON.parse(r);
-
-            if (data.status != true) {
-                Swal.fire('Error', data.msg, 'error');
+        success: function (response) {
+            const data = JSON.parse(response);
+            if (!data.success) {
+                Swal.fire({
+                    title: "Cliente",
+                    icon: "error",
+                    text: data.message,
+                });
+                return;
             }
+            Swal.fire({
+                title: "Cliente",
+                icon: "success",
+                text: data.message,
+            });
             $("#formProgramarVisita")[0].reset();
-            Swal.fire('Hecho', data.msg, 'success');
             $("#modalProgramarVisita").modal("hide");
             tabla.ajax.reload();
         }

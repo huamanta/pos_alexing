@@ -1,189 +1,397 @@
 var tabla;
 var paginaActual = 1;
 var limite = 10;
+let paginatorSolicitudes = null;
+let paginatorMisSolicitudes = null;
+let paginatorTraslados = null;
+let sucursales = null;
+
+
+$('#navAlmacenActive').addClass("treeview active");
+$('#navAlmacen').addClass("treeview menu-open");
+$('#navTraslado').addClass("active");
 
 function init() {
-  listar();
+    paginatorSolicitudes.load();
+    paginatorMisSolicitudes.load();
+    paginatorTraslados.load();
 
-  $("#formTraslado").on("submit", function (e) {
-    guardaryeditar(e);
-  });
-  $.post("controladores/venta.php?op=selectSucursal3", function (r) {
-      $("#idsucursal2").html(r);
-      $("#idsucursal2").select2("");
+    $("#formTraslado").on("submit", function (e) {
+        guardaryeditar(e);
     });
 
-  $("#fecha_inicio").change(listar);
-  $("#fecha_fin").change(listar);
-  $("#estado").change(listar);
+    $.get("controladores/traslado.php?op=listarSucursales", function (response) {
+        sucursales = JSON.parse(response);
+        let html = '<option value="Todos">Todos</option>';
+        sucursales.map((item, i) => {
+            html += `<option value="${item.idsucursal}">${item.nombre}</option>`;
+        });
+        $("#origenSolicitudes").html(html);
+    });
 
-  $('#navAlmacenActive').addClass("treeview active");
-  $('#navAlmacen').addClass("treeview menu-open");
-  $('#navTraslado').addClass("active");
+    cargarAlmacenes();
 
-  cargarAlmacenes();
-
-  configurarBotones();
+    configurarBotones();
 }
+
+$("#estadoSolicitudes").on("change", function () {
+    paginatorSolicitudes.load();
+});
+
+$("#fecha_inicio, #fecha_fin, #estadoMisSolicitudes").on("change", function () {
+    paginatorMisSolicitudes.load();
+});
 
 //==============================
 // GUARDAR O EDITAR
 //==============================
 function guardaryeditar(e) {
-  e.preventDefault();
+    e.preventDefault();
 
-  const idorigen = $("#idorigen").val();
-  const iddestino = $("#iddestino").val();
+    const idorigen = $("#idorigen").val();
+    const iddestino = $("#iddestino").val();
 
-  if (!iddestino || iddestino === "") {
-    Swal.fire("Atención", "Debe seleccionar un almacén destino", "warning");
-    return;
-  }
-
-  if (iddestino == idorigen) {
-    Swal.fire("Atención", "El almacén destino debe ser distinto al de origen", "warning");
-    return;
-  }
-
-  let productos = [];
-  let valida = true;
-  $("#tablaDetalle tbody tr").each(function () {
-    let idproducto = $(this).data("idproducto");
-    let cantidad = parseInt($(this).find(".cantidad").val()) || 0;
-    let stock = parseInt($(this).data("stock")) || 0;
-    let nombre = $(this).find("td").first().text().trim();
-
-    if (!idproducto || cantidad <= 0) {
-      Swal.fire("Atención", "Cantidad inválida en algún producto", "warning");
-      valida = false;
-      return false; // break each
+    if (!iddestino || iddestino === "") {
+        Swal.fire("Atención", "Debe seleccionar un almacén destino", "warning");
+        return;
     }
 
-    if (cantidad > stock) {
-      Swal.fire("Atención", `La cantidad solicitada (${cantidad}) supera el stock disponible (${stock}) para: ${nombre}`, "warning");
-      valida = false;
-      return false;
+    if (iddestino == idorigen) {
+        Swal.fire("Atención", "El almacén destino debe ser distinto al de origen", "warning");
+        return;
     }
 
-    productos.push({ idproducto, cantidad });
-  });
+    let productos = [];
+    let valida = true;
+    $("#tablaDetalle tbody tr").each(function () {
+        let idproducto = $(this).data("idproducto");
+        let cantidad = parseInt($(this).find(".cantidad").val()) || 0;
+        let stock = parseInt($(this).data("stock")) || 0;
+        let idserie = parseInt($(this).data("idserie")) || 0;
+        let nombre = $(this).find("td").first().text().trim();
 
-  if (!valida) return;
+        if (!idproducto || cantidad <= 0) {
+            Swal.fire("Atención", "Cantidad inválida en algún producto", "warning");
+            valida = false;
+            return false; // break each
+        }
 
-  if (productos.length === 0) {
-    Swal.fire("Atención", "Debe agregar al menos un producto", "warning");
-    return;
-  }
+        // if (cantidad > stock) {
+        //     Swal.fire("Atención", `La cantidad solicitada (${cantidad}) supera el stock disponible (${stock}) para: ${nombre}`, "warning");
+        //     valida = false;
+        //     return false;
+        // }
 
-  var formData = new FormData($("#formTraslado")[0]);
-  formData.append("productos", JSON.stringify(productos));
+        productos.push({ idproducto, idserie, cantidad });
+    });
 
-  $.ajax({
-    url: "controladores/traslado.php?op=guardaryeditar",
-    type: "POST",
-    data: formData,
-    contentType: false,
-    processData: false,
-    success: function (datos) {
-      Swal.fire({ title: 'Traslado', icon: 'success', text: datos });
-      $('#modalTraslado').modal('hide');
-      tabla.ajax.reload();
-      limpiar();
-    },
-    error: function (error) {
-      console.log(error.responseText);
-      Swal.fire("Error", "Ocurrió un error en el servidor.", "error");
+    if (!valida) return;
+
+    if (productos.length === 0) {
+        Swal.fire("Atención", "Debe agregar al menos un producto", "warning");
+        return;
     }
-  });
+
+    var formData = new FormData($("#formTraslado")[0]);
+    formData.append("productos", JSON.stringify(productos));
+
+    $.ajax({
+        url: "controladores/traslado.php?op=guardaryeditar",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (response) {
+            const data = JSON.parse(response);
+            if (data.success != true) {
+                Swal.fire({ title: 'Traslado', icon: 'error', text: data.message });
+                return;
+            }
+            Swal.fire({ title: 'Traslado', icon: 'success', text: data.message });
+            $('#modalTraslado').modal('hide');
+            paginatorTraslados.load();
+            limpiar();
+        },
+        error: function (error) {
+            console.log(error.responseText);
+            Swal.fire("Error", "Ocurrió un error en el servidor.", "error");
+        }
+    });
 }
 
 //==============================
 // BOTONES Y EVENTOS
 //==============================
 function configurarBotones() {
-  $("#btnAgregarProductos").click(function () {
-    listarProductos('', 1, 'traslado');
-    $("#modalProductos").modal("show");
-  });
 
-  $("#btnBuscarProducto").click(function () {
-    const texto = $("#buscarProducto").val();
-    listarProductos(texto, 1);
-  });
-
-  $("#buscarProducto").keyup(function (e) {
-    const texto = $(this).val();
-    listarProductos(texto, 1);
-  });
-
-  $("#btnAgregarSeleccionados").click(function () {
-    $("#tablaProductos tbody input.chkProducto:checked").each(function () {
-      let id = $(this).val();
-      let nombre = $(this).data("nombre");
-      let stock = $(this).data("stock") || 0;
-
-      // Evitar duplicados en la tabla detalle
-      if ($("#tablaDetalle tbody tr[data-idproducto='" + id + "']").length > 0) {
-        // ya existe -> ignorar. Si quieres sumar cantidad en vez de ignorar, lo cambiamos.
-        return;
-      }
-
-      let fila = `
-        <tr data-idproducto="${id}" data-stock="${stock}">
-          <td>${nombre} <small class="text-muted"> (Stock: ${stock})</small></td>
-          <td><input type="number" class="form-control form-control-sm cantidad" min="1" value="1"></td>
-          <td><button type="button" class="btn btn-danger btn-xs btnEliminarFila"><i class="fa fa-times"></i></button></td>
-        </tr>`;
-      $("#tablaDetalle tbody").append(fila);
+    $("#btnBuscarProducto").click(function () {
+        const texto = $("#buscarProducto").val();
+        let tipo = $("#tipoModal").val();
+        let idsucursal = $("#iddestino").val();
+        if (tipo === 'traslado') {
+            idsucursal = $("#idorigen").val();
+        }
+        listarProductos(texto, idsucursal);
     });
-    $("#modalProductos").modal("hide");
-  });
 
-  // Delegated event para eliminar fila
-  $(document).on("click", ".btnEliminarFila", function () {
-    $(this).closest("tr").remove();
-  });
+    $("#buscarProducto").keyup(function (e) {
+        const texto = $(this).val();
+        let tipo = $("#tipoModal").val();
+        let idsucursal = $("#iddestino").val();
+        if (tipo === 'traslado') {
+            idsucursal = $("#idorigen").val();
+        }
+        listarProductos(texto, idsucursal);
+    });
+
+    $("#btnAgregarSeleccionados").click(function () {
+        $("#tablaProductos tbody input.chkProducto:checked").each(function () {
+            let idproducto = $(this).data('idproducto');
+            let idserie = $(this).data('idserie');
+            let nombre = $(this).data("nombre");
+            let serie = $(this).data("serie") || '';
+            let motor = $(this).data("motor") || '';
+            let tipo = $("#tipoModal").val();
+
+            // Evitar duplicados en la tabla detalle
+            if ($("#tablaDetalleSolicitud tbody tr[data-idproducto='" + idproducto + "']").length > 0) {
+                // ya existe -> ignorar. Si quieres sumar cantidad en vez de ignorar, lo cambiamos.
+                return;
+            }
+
+            let fila = `
+                <tr data-idproducto="${idproducto}" data-idserie="${idserie}">
+                    <td>
+                        ${nombre} - ${serie}- ${motor}
+                    </td>
+                    <td>
+                        <input type="number" class="form-control form-control-sm cantidad" min="1" value="1">
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger btn-xs btnEliminarFila"><i class="fa fa-times"></i></button>
+                    </td>
+                </tr>`;
+            if (tipo === 'traslado') {
+                $("#tablaDetalle tbody").append(fila);
+            } else {
+                $("#tablaDetalleSolicitud tbody").append(fila);
+            }
+        });
+        $("#modalProductos").modal("hide");
+    });
+
+    // Delegated event para eliminar fila
+    $(document).on("click", ".btnEliminarFila", function () {
+        $(this).closest("tr").remove();
+    });
 } // <-- cierre de configurarBotones()
 
 //==============================
 function limpiar() {
-  $("#iddestino").val("");
-  $("#tablaDetalle tbody").html("");
+    $("#iddestino").val("");
+    $("#tablaDetalle tbody").html("");
 }
 
-function listar() {
-  let fecha_inicio = $("#fecha_inicio").val();
-  let fecha_fin = $("#fecha_fin").val();
-  var estado = $("#estado").val();
-  let idsucursal2 = $("#idsucursal2").val();
-  tabla = $('#tbllistado').DataTable({
-    "aProcessing": true,
-    "aServerSide": true,
-    "language": {
-      "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-    },
-    "responsive": true,
-    "lengthChange": false,
-    "autoWidth": false,
-    dom: 'Bfrtip',
-    buttons: ['pageLength', 'excelHtml5', 'pdf', 'colvis'],
-    "ajax": {
-      url: 'controladores/traslado.php?op=listar',
-      data: {
-          fecha_inicio: fecha_inicio,
-          fecha_fin: fecha_fin,
-          estado: estado,
-          idsucursal2: idsucursal2,
-        },
-      type: "get",
-      dataType: "json",
-      error: function (e) { console.log(e.responseText); }
-    },
-    "bDestroy": true,
-    "iDisplayLength": 10,
-    "order": [[0, "desc"]]
-  });
+function pintarMisSolicitudes(data) {
+
+    let html = "";
+
+    if (data.length === 0) {
+
+        html = `
+            <tr>
+                <td colspan="7" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+        $("#tbody_mis_solicitudes").html(html);
+        return;
+    }
+
+    data.forEach(item => {
+        let anular = '';
+        let imprimir = '';
+        if (item.estado != 'Anulado') {
+            anular = `<button class="btn btn-danger btn-sm" title="Anular solicitud" onclick="desactivar(${item.idtraslado})"><i class="fa fa-times"></i></button> `;
+        }
+        if (item.estado == 'Aceptado') {
+            imprimir = `<button class="btn btn-primary btn-sm" title="Imprimir solicitud" onclick="imprimirSolicitud(${item.idtraslado})"><i class="fa fa-print"></i></button>`;
+        }
+
+        html += `
+            <tr>
+                <td>${item.idtraslado}</td>
+                <td>${item.origen}</td>
+                <td>${item.destino}</td>
+                <td>${item.fecha}</td>
+                <td>${item.estado_str}</td>
+
+                <td>
+                    <button class="btn btn-info btn-sm" title="Ver solicitud" onclick="verProductosSolicitud(${item.idtraslado}, true)"><i class="fa fa-eye"></i></button> 
+                    ${anular}
+                    ${imprimir}
+                </td>
+            </tr>
+        `;
+
+    });
+
+    $("#tbody_mis_solicitudes").html(html);
+
 }
+
+
+paginatorMisSolicitudes = new FluentPaginator({
+    url: "controladores/traslado.php?op=listar",
+    renderTabla: pintarMisSolicitudes,
+    searchSelector: "#searchMisSolicitudes",
+    limitSelector: "#limitMisSolicitudes",
+    paginationId: "#paginationMisSolicitudes",
+    extraParams: () => ({
+        fecha_inicio: '',
+        fecha_fin: '',
+        estado: $("#estadoMisSolicitudes").val() || 'Todos',
+        tipo: 'solicitud',
+        origen: 1
+    })
+});
+
+function pintarSolicitudes(data) {
+
+    let html = "";
+
+    if (data.length === 0) {
+
+        html = `
+            <tr>
+                <td colspan="7" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+        $("#tbody_solicitudes").html(html);
+        return;
+    }
+
+    data.forEach(item => {
+        console.log(item);
+        
+        let anular = '';
+        let imprimir = '';
+        if (parseInt(item.estado) === 0) {
+            anular = `<button class="btn btn-danger btn-sm" title="Anular solicitud" onclick="desactivar(${item.idtraslado})"><i class="fa fa-times"></i></button> `;
+        }
+        if (parseInt(item.estado) == 1) {
+            imprimir = `<button class="btn btn-primary btn-sm" title="Imprimir solicitud" onclick="imprimirSolicitud(${item.idtraslado})"><i class="fa fa-print"></i></button>`;
+        }
+
+        var estado = (parseInt(item.estado) != 0) ? true:false;
+
+        html += `
+            <tr>
+                <td>${item.idtraslado}</td>
+                <td>${item.origen}</td>
+                <td>${item.destino}</td>
+                <td>${item.fecha}</td>
+                <td>${item.estado_str}</td>
+
+                <td>
+                    <button class="btn btn-info btn-sm" title="Ver solicitud" onclick="verProductosSolicitud(${item.idtraslado}, ${estado})"><i class="fa fa-eye"></i></button> 
+                    ${anular}
+                    ${imprimir}
+                </td>
+            </tr>
+        `;
+
+    });
+
+    $("#tbody_solicitudes").html(html);
+
+}
+
+
+paginatorSolicitudes = new FluentPaginator({
+    url: "controladores/traslado.php?op=listar",
+    renderTabla: pintarSolicitudes,
+    searchSelector: "#searchSolicitudes",
+    limitSelector: "#limitSolicitudes",
+    paginationId: "#paginationSolicitudes",
+    extraParams: () => ({
+        fecha_inicio: '',
+        fecha_fin: '',
+        estado: $("#estadoSolicitudes").val() || 'Todos',
+        tipo: 'solicitud'
+    })
+});
+
+function pintarTraslados(data) {
+
+    let html = "";
+
+    if (data.length === 0) {
+
+        html = `
+            <tr>
+                <td colspan="7" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+        $("#tbody_traslados").html(html);
+        return;
+    }
+
+    data.forEach(item => {
+        let anular = '';
+        let imprimir = '';
+        if (item.estado != 'Anulado') {
+            anular = `<button class="btn btn-danger btn-sm" title="Anular solicitud" onclick="desactivar(${item.idtraslado})"><i class="fa fa-times"></i></button> `;
+        }
+        if (item.estado == 'Aceptado') {
+            imprimir = `<button class="btn btn-primary btn-sm" title="Imprimir solicitud" onclick="imprimirSolicitud(${item.idtraslado})"><i class="fa fa-print"></i></button>`;
+        }
+
+        html += `
+            <tr>
+                <td>${item.idtraslado}</td>
+                <td>${item.origen}</td>
+                <td>${item.destino}</td>
+                <td>${item.fecha}</td>
+                <td>${item.estado_str}</td>
+
+                <td>
+                    <button class="btn btn-info btn-sm" title="Ver solicitud" onclick="verProductosSolicitud(${item.idtraslado}, true)"><i class="fa fa-eye"></i></button> 
+                    ${anular}
+                    ${imprimir}
+                </td>
+            </tr>
+        `;
+
+    });
+
+    $("#tbody_traslados").html(html);
+
+}
+
+
+paginatorTraslados = new FluentPaginator({
+    url: "controladores/traslado.php?op=listar",
+    renderTabla: pintarTraslados,
+    searchSelector: "#searchTraslados",
+    limitSelector: "#limitTraslados",
+    paginationId: "#paginationTraslados",
+    extraParams: () => ({
+        fecha_inicio: '',
+        fecha_fin: '',
+        estado: $("#estadoTraslados").val() || 'Todos',
+        tipo: 'traslado',
+        origen: 1
+    })
+});
 
 
 function verProductos(idtraslado) {
@@ -192,7 +400,7 @@ function verProductos(idtraslado) {
         type: 'GET',
         data: { idtraslado: idtraslado },
         dataType: 'json',
-        success: function(data) {
+        success: function (data) {
             let tbody = '';
             data.forEach(item => {
                 tbody += `<tr>
@@ -208,146 +416,220 @@ function verProductos(idtraslado) {
 }
 
 function cargarAlmacenesDestino() {
-  $.post("controladores/traslado.php?op=almacenesDestino", function (r) {
-    $("#iddestino").html(r);
-  });
+    $.post("controladores/traslado.php?op=almacenesDestino", function (r) {
+        $("#iddestino").html(r);
+    });
 }
 
 //==============================
 // LISTAR PRODUCTOS CON PAGINACIÓN Y BUSCADOR
 //==============================
-function listarProductos(busqueda = '', pagina = 1, tipo = 'traslado') {
-  const iddestino = $("#iddestino").val();
-
-  if (!iddestino) {
-    Swal.fire("Atención", "Seleccione un almacén destino antes de agregar productos", "warning");
-    return;
-  }
-
-  $.post("controladores/traslado.php?op=listarProductos", 
-    { busqueda, pagina, limite, iddestino, tipo }, 
-    function (r) {
-      const data = JSON.parse(r);
-      $("#tablaProductos tbody").html(data.html);
-      $("#paginacionProductos").html(data.paginacion);
+function listarProductos(busqueda = '', idsucursal) {
+    if (!idsucursal) {
+        Swal.fire("Atención", "Seleccione un almacén destino antes de agregar productos", "warning");
+        return;
     }
-  );
+
+    $.post("controladores/producto.php?op=buscarStockPorSucursales",
+        { search: busqueda, idsucursalFiltro: idsucursal },
+        function (response) {
+            const data = JSON.parse(response);
+
+            if (!data.success) {
+                Swal.fire({ title: "Producto", icon: "error", text: data.message });
+                return;
+            };
+
+            let tbody = "";
+
+            if (data.data.length === 0) {
+
+                tbody = `
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                No se encontraron resultados.
+                            </td>
+                        </tr>
+                    `;
+
+            } else {
+
+                data.data.forEach((row) => {
+
+                    tbody += `
+                            <tr>
+
+                                <td>
+                                    <input
+                                        type="checkbox"
+                                        class="chkProducto"
+                                        data-idserie="${row.idserie}"
+                                        data-idproducto="${row.idproducto}"
+                                        data-nombre="${row.nombre}"
+                                        data-codigo="${row.codigo}"
+                                        data-serie="${row.numero_serie}"
+                                        data-motor="${row.numero_motor}"
+                                        data-placa="${row.placa}"
+                                        data-color="${row.color}"
+                                        data-idsucursal="${row.idsucursal}"
+                                        data-sucursal="${row.sucursal}">
+                                </td>
+
+                                <td>${row.nombre}</td>
+                                <td>${row.codigo}</td>
+                                <td>${row.numero_serie ?? "-"}</td>
+                                <td>${row.placa ?? "-"}</td>
+                                <td>${row.sucursal}</td>
+
+                            </tr>
+                        `;
+                });
+
+            }
+
+            $("#tablaProductos tbody").html(tbody);
+        }
+    );
 }
 
 //==============================
 // CAMBIAR PÁGINA DE PRODUCTOS
 //==============================
 function cambiarPagina(pag) {
-  const texto = $("#buscarProducto").val();
-  listarProductos(texto, pag);
+    const texto = $("#buscarProducto").val();
+    listarProductos(texto, pag);
 }
 
 function cargarAlmacenes() {
-  // 1️⃣ Mostrar el nombre del almacén de origen (sucursal actual)
-  $.getJSON("controladores/traslado.php?op=sucursal_actual", function (data) {
-    if (data && data.idsucursal) {
-      $("#idorigen").val(data.idsucursal);
-      $("#nombre_origen").val(data.nombre);
-    }
-  });
+    // 1️⃣ Mostrar el nombre del almacén de origen (sucursal actual)
+    $.getJSON("controladores/traslado.php?op=sucursal_actual", function (data) {
+        if (data && data.idsucursal) {
+            $("#idorigen").val(data.idsucursal);
+            $("#nombre_origen").val(data.nombre);
+        }
+    });
 
-  // 2️⃣ Cargar lista de almacenes destino
-  $.post("controladores/traslado.php?op=almacenesDestino", function (r) {
-    $("#iddestino").html(r);
-  });
+    // 2️⃣ Cargar lista de almacenes destino
+    $.post("controladores/traslado.php?op=almacenesDestino", function (r) {
+        $("#iddestino").html(r);
+    });
 }
 
 ////////////////////////////////////////////////////////////////
 
 // Inicialización
-$("#formSolicitud").on("submit", function(e){
+$("#formSolicitud").on("submit", function (e) {
     e.preventDefault();
     enviarSolicitud();
 });
 
 // Cargar almacenes destino
 function cargarAlmacenesSolicitud() {
-    $.post("controladores/traslado.php?op=almacenesDestino", function(r){
+    $.post("controladores/traslado.php?op=almacenesDestino", function (r) {
         $("#iddestino_solicitud").html(r);
     });
 }
 cargarAlmacenesSolicitud();
 
 // Botón seleccionar productos
-$("#btnAgregarProductosSolicitud").click(function(){
-    listarProductos('', 1, 'solicitud'); // reutiliza tu función existente para listar productos
+$("#btnAgregarProductosSolicitud").click(function () {
+    let idsucursal = $("#iddestino").val();
+    listarProductos('', idsucursal);
     $("#modalProductos").modal("show");
+    $("#tipoModal").val("solicitud");
 });
+
+$("#btnAgregarProductos").click(function () {
+    let idsucursal = $("#idorigen").val();
+    listarProductos('', idsucursal);
+    $("#modalProductos").modal("show");
+    $("#tipoModal").val("traslado");
+});
+
 
 // Agregar productos seleccionados a la tabla de solicitud
-$("#btnAgregarSeleccionados").click(function(){
-    $("#tablaProductos tbody input.chkProducto:checked").each(function () {
-        let id = $(this).val();
-        let nombre = $(this).data("nombre");
-        let stock = $(this).data("stock") || 0;
+// $("#btnAgregarSeleccionados").click(function () {
+//     $("#tablaProductos tbody input.chkProducto:checked").each(function () {
+//         let id = $(this).val();
+//         let nombre = $(this).data("nombre");
+//         let stock = $(this).data("stock") || 0;
 
-        if ($("#tablaDetalleSolicitud tbody tr[data-idproducto='" + id + "']").length > 0) return;
+//         if ($("#tablaDetalleSolicitud tbody tr[data-idproducto='" + id + "']").length > 0) return;
 
-        let fila = `
-        <tr data-idproducto="${id}" data-stock="${stock}">
-            <td>${nombre} <small class="text-muted">(Stock: ${stock})</small></td>
-            <td><input type="number" class="form-control form-control-sm cantidad" min="1" value="1"></td>
-            <td><button type="button" class="btn btn-danger btn-xs btnEliminarFila"><i class="fa fa-times"></i></button></td>
-        </tr>`;
-        $("#tablaDetalleSolicitud tbody").append(fila);
-    });
-    $("#modalProductos").modal("hide");
-});
+//         let fila = `
+//         <tr data-idproducto="${id}" data-stock="${stock}">
+//             <td>${nombre} <small class="text-muted">(Stock: ${stock})</small></td>
+//             <td><input type="number" class="form-control form-control-sm cantidad" min="1" value="1"></td>
+//             <td><button type="button" class="btn btn-danger btn-xs btnEliminarFila"><i class="fa fa-times"></i></button></td>
+//         </tr>`;
+//         $("#tablaDetalleSolicitud tbody").append(fila);
+//     });
+//     $("#modalProductos").modal("hide");
+// });
 
 // Eliminar fila
-$(document).on("click", "#tablaDetalleSolicitud .btnEliminarFila", function(){
+$(document).on("click", "#tablaDetalleSolicitud .btnEliminarFila", function () {
     $(this).closest("tr").remove();
 });
 
 // Enviar solicitud
 function enviarSolicitud() {
-    const iddestino = $("#iddestino_solicitud").val();
-    if (!iddestino) {
-        Swal.fire("Atención", "Seleccione un almacén destino", "warning");
-        return;
-    }
 
-    let productos = [];
-    let valida = true;
+    let productosSeleccionados = [];
+
     $("#tablaDetalleSolicitud tbody tr").each(function () {
         let idproducto = $(this).data("idproducto");
+        let idserie = $(this).data("idserie");
         let cantidad = parseInt($(this).find(".cantidad").val()) || 0;
         let nombre = $(this).find("td").first().text().trim();
 
-        if (!idproducto || cantidad <= 0) {
-            Swal.fire("Atención", `Cantidad inválida en ${nombre}`, "warning");
-            valida = false;
-            return false;
-        }
-        productos.push({idproducto, cantidad});
+        productosSeleccionados.push({
+            idproducto: idproducto,
+            idserie: idserie,
+            cantidad: cantidad || 1
+        });
     });
 
-    if (!valida || productos.length === 0) return;
+    if (productosSeleccionados.length === 0) {
+        Swal.fire("Atención", "Debe seleccionar al menos un producto.", "warning");
+        return;
+    }
 
-    let formData = new FormData($("#formSolicitud")[0]);
-    formData.append("productos", JSON.stringify(productos));
+    const iddestino_solicitud = $("#iddestino_solicitud").val();
+
+    if (!iddestino_solicitud) {
+        Swal.fire("Atención", "Debe seleccionar la sucursal destino.", "warning");
+        return;
+    }
+
+    $("#modalStockSucursales").modal("hide");
 
     $.ajax({
         url: "controladores/traslado.php?op=guardarSolicitud",
         type: "POST",
-        data: formData,
-        contentType: false,
-        processData: false,
-        success: function(res) {
-            Swal.fire("Solicitud", res, "success");
-            $("#modalSolicitud").modal("hide");
-            tabla.ajax.reload();
-            limpiarSolicitud();
+        data: {
+            productos: JSON.stringify(productosSeleccionados),
+            iddestino_solicitud: iddestino_solicitud,
         },
-        error: function(err){
-            Swal.fire("Error", "Ocurrió un error en el servidor", "error");
-            console.log(err.responseText);
-        }
+        success: function (resp) {
+            console.log("📨 Respuesta guardarSolicitud:", resp);
+
+            // Normalizamos la respuesta
+            const r = resp.trim().toLowerCase();
+
+            if (r === "ok" || r.includes("solicitud enviada")) {
+                Swal.fire("Solicitud", resp, "success");
+                $("#modalSolicitud").modal("hide");
+                paginatorMisSolicitudes.load();
+                limpiarSolicitud();
+            } else {
+                Swal.fire("Error", "No se pudo registrar la solicitud.", "error");
+            }
+        },
+        error: function (xhr) {
+            console.error("❌ Error en guardarSolicitud:", xhr.responseText);
+            Swal.fire("Error", "Ocurrió un error en el servidor.", "error");
+        },
     });
 }
 
@@ -361,14 +643,14 @@ function cargarSucursalActual() {
         url: "controladores/traslado.php?op=sucursal_actual",
         type: "POST",
         dataType: "json",
-        success: function(data) {
+        success: function (data) {
             if (data && data.nombre) {
                 $("#nombre_sucursal_origen").val(data.nombre);
             } else {
                 $("#nombre_sucursal_origen").val("No definida");
             }
         },
-        error: function(xhr, status, error) {
+        error: function (xhr, status, error) {
             console.error("Error al cargar sucursal actual:", error);
             $("#nombre_sucursal_origen").val("Error");
         }
@@ -513,7 +795,7 @@ function aprobarSolicitud() {
     let idtraslado = $("#idtraslado_solicitud").val();
     let productos = [];
 
-    $("#tablaProductosSolicitud tr").each(function() {
+    $("#tablaProductosSolicitud tr").each(function () {
         let idproducto = $(this).find(".idProductoHidden").val();
         let nombreProducto = $(this).find(".nombreProducto").text().trim();
         let estado = $(this).find(".estadoProducto").val();
@@ -540,12 +822,12 @@ function aprobarSolicitud() {
             throw "Cantidad inválida";
         }
 
-        productos.push({ 
-            idproducto, 
+        productos.push({
+            idproducto,
             nombre: nombreProducto,
-            estado, 
-            cantidad, 
-            observacion 
+            estado,
+            cantidad,
+            observacion
         });
     });
 
@@ -572,18 +854,17 @@ function aprobarSolicitud() {
     }).then((result) => {
         if (result.isConfirmed) {
             $.post(
-                "controladores/traslado.php?op=aprobarSolicitud", 
+                "controladores/traslado.php?op=aprobarSolicitud",
                 { idtraslado: idtraslado, productos: JSON.stringify(productos) },
-                function(resp) {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Solicitud procesada",
-                        text: resp,
-                        confirmButtonColor: "#3085d6"
-                    }).then(() => {
-                        $("#modalAprobarSolicitud").modal("hide");
-                        tabla.ajax.reload();
-                    });
+                function (response) {
+                    const data = JSON.parse(response);
+                    if (data.success != true) {
+                        Swal.fire({ title: 'Traslado', icon: 'error', text: data.message });
+                        return;
+                    }
+                    Swal.fire({ title: 'Traslado', icon: 'success', text: data.message });
+                    $("#modalAprobarSolicitud").modal("hide");
+                    paginatorSolicitudes.load();
                 }
             ).fail(() => {
                 Swal.fire({
@@ -599,7 +880,7 @@ function aprobarSolicitud() {
 
 
 // 🔹 Deshabilitar inputs si se rechaza un producto
-$("#tablaProductosSolicitud").on("change", ".estadoProducto", function() {
+$("#tablaProductosSolicitud").on("change", ".estadoProducto", function () {
     let estado = $(this).val();
     let row = $(this).closest("tr");
     if (estado === "rechazado") {

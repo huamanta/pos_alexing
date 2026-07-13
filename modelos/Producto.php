@@ -1,12 +1,20 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
+require_once "../configuraciones/ConexionPdo.php";
+require_once "../core/Paginanation.php";
+require_once "../core/FluentSave.php";
+require_once "Helpers.php";
 date_default_timezone_set('America/Lima');
-class Producto
+
+class Producto extends Helpers
 {
+	private PDO $pdo;
 	//Implementamos nuestro constructor
 	public function __construct()
 	{
+
+		$this->pdo = Conexion::conectar();
 	}
 
 
@@ -56,87 +64,146 @@ class Producto
 		$controla_stock,
 		$alerta_stock,
 		$tipoigv,
-		$comisionV,
-		$sucursales
+		$comisionV
 	) {
-
-		global $conexion; // asegúrate de tener tu conexión
 
 		if ($codigo == "") {
 			$codigo = "SIN CODIGO";
 		}
 
-		if (empty($sucursales)) {
-			return ['status' => 'error', 'message' => 'La lista de sucursales está vacía.'];
-		}
-
-		$sucursales = array_unique($sucursales);
-
 		try {
-			mysqli_begin_transaction($conexion);
 
-			foreach ($sucursales as $sucursal) {
+			$this->pdo->beginTransaction();
 
-				$sql = "INSERT INTO producto (
-					idsucursal,idcategoria,idunidad_medida,idrubro,idcondicionventa,
-					registrosan,idmarca,codigo,nombre,stock,stock_minimo,stock_maximo,
-					precio,preciocigv,precioB,precioC,precioD,precioE,margenpubl,
-					margendes,margenp1,margenp2,margendist,utilprecio,utilprecioB,
-					utilprecioC,utilprecioD,utilprecioE,precio_compra,fecha,
-					descripcion,imagen,idmodelo,numserie,placa,color,motor,
-					permiso_circulacion,anio_fabricacion,tipo_vehiculo,clase_vehiculo,
-					propietario_vehiculo,controla_stock,alerta_stock,proigv,comisionV,condicion
-				) VALUES (
-					'$sucursal','$idcategoria','$idunidad_medida','$idrubro','$idcondicionventa',
-					'$registrosan','$idmarca','$codigo','$nombre','$stock','$stockMinimo','$stockMaximo',
-					'$precio','$preciocigv','$precioB','$precioC','$precioD','$precioE','$margenpubl',
-					'$margendes','$margenp1','$margenp2','$margendist','$utilprecio','$utilprecioB',
-					'$utilprecioC','$utilprecioD','$utilprecioE','$precioCompra','$fecha',
-					'$descripcion','$imagen','$idmodelo','$nserie','$placa','$color','$motor',
-					'$permiso_circulacion','$anio_fabricacion','$tipo_vehiculo','$clase_vehiculo',
-					'$propietario_vehiculo','$controla_stock','$alerta_stock','$tipoigv','$comisionV','1'
-				)";
+			// Producto
+			$idproducto = (new FluentSaver($this->pdo))
+				->table("producto")
+				->nullable([
+					'fecha',
+					'descripcion',
+					'imagen',
+					'precioigv',
+				])
+				->data([
+					'idcategoria' => $idcategoria,
+					'idunidad_medida' => $idunidad_medida,
+					'idsucursal' => $idsucursal,
+					'idrubro' => $idrubro,
+					'idcondicionventa' => $idcondicionventa,
+					'registrosan' => $registrosan,
+					'idmarca' => $idmarca,
+					'idmodelo' => $idmodelo,
+					'codigo' => $codigo,
+					'nombre' => $nombre,
+					'precio' => $precio,
+					'preciocigv' => $preciocigv || 0,
+					'precioB' => $precioB || 0,
+					'precioC' => $precioC || 0,
+					'precioD' => $precioD || 0,
+					'precioE' => $precioE || 0,
+					'margenpubl' => $margenpubl,
+					'margendes' => $margendes,
+					'margenp1' => $margenp1,
+					'margenp2' => $margenp2,
+					'margendist' => $margendist,
+					'utilprecio' => $utilprecio,
+					'utilprecioB' => $utilprecioB,
+					'utilprecioC' => $utilprecioC,
+					'utilprecioD' => $utilprecioD,
+					'utilprecioE' => $utilprecioE,
+					'fecha' => $fecha,
+					'descripcion' => $descripcion,
+					'imagen' => $imagen,
+					'controla_stock' => $controla_stock,
+					'alerta_stock' => $alerta_stock,
+					'proigv' => $tipoigv,
+					'comisionV' => $comisionV || 0,
+					'condicion' => 1
+				])
+				->save();
 
-				$idproducto = ejecutarConsulta_retornarID($sql);
+			// Sucursales
+			(new FluentSaver($this->pdo))
+				->table("inventario_producto")
+				->timestamps(false)
+				->data([
+					'idproducto' => $idproducto,
+					'idsucursal' => $idsucursal,
+					'stock' => $stock,
+					'stock_minimo' => $stockMinimo,
+					'stock_maximo' => $stockMaximo,
+					'precio_compra' => $precioCompra
+				])
+				->save();
 
-				if (!$idproducto) {
-					throw new Exception("Error al insertar producto: " . mysqli_error($conexion));
-				}
+			// Configuración
+			(new FluentSaver($this->pdo))
+				->table("producto_configuracion")
+				->timestamps(false)
+				->data([
+					'idproducto' => $idproducto,
+					'codigo_extra' => $codigo,
+					'contenedor' => 'UNIDAD',
+					'cantidad_contenedor' => 1,
+					'precio_venta' => $precio,
+					'precio_promocion' => $precioB
+				])
+				->save();
 
-				$sql1 = "INSERT INTO producto_configuracion (
-					codigo_extra, contenedor, cantidad_contenedor, precio_venta, precio_promocion, idproducto
-				) VALUES (
-					'$codigo', 'UNIDAD', '1', '$precio', '$precioB', '$idproducto'
-				)";
+			// Registrar serie
+			(new FluentSaver($this->pdo))
+				->table('producto_serie')
+				->timestamps(false)
+				->nullable([
+					'placa',
+					'color',
+					'numero_serie',
+					'numero_motor',
+					'permiso_circulacion',
+					'anio_fabricacion',
+					'tipo_vehiculo',
+					'clase_vehiculo',
+					'propietario_vehiculo'
+				])
+				->data([
+					'idproducto' => $idproducto,
+					'idsucursal' => $idsucursal, // sucursal donde ingresa inicialmente
+					'numero_serie' => $nserie,
+					'placa' => $placa,
+					'numero_motor' => $motor,
+					'color' => $color,
+					'permiso_circulacion' => $permiso_circulacion,
+					'anio_fabricacion' => $anio_fabricacion,
+					'tipo_vehiculo' => $tipo_vehiculo,
+					'clase_vehiculo' => $clase_vehiculo,
+					'propietario_vehiculo' => $propietario_vehiculo,
+					'estado' => 'DISPONIBLE'
+				])
+				->save();
 
-				$create_config = ejecutarConsulta($sql1);
+			$this->pdo->commit();
 
-				if (!$create_config) {
-					throw new Exception("Error en configuración: " . mysqli_error($conexion));
-				}
-			}
-
-			// 🟢 CONFIRMAR
-			mysqli_commit($conexion);
-
-			return ['status' => 'success', 'message' => 'Guardado correctamente.'];
+			return json_encode([
+				'success' => true,
+				'message' => 'Producto registrado correctamente.'
+			]);
 
 		} catch (Exception $e) {
 
-			mysqli_rollback($conexion);
+			$this->pdo->rollBack();
 
-			return [
-				'status' => 'error',
+			return json_encode([
+				'success' => false,
 				'message' => $e->getMessage()
-			];
+			]);
 		}
 	}
-
 
 	//Implementamos un método para editar registros
 	public function editar(
 		$idproducto,
-		$idsucursal,
+		$idinventario,
+		$idserie,
 		$idcategoria,
 		$idunidad_medida,
 		$idrubro,
@@ -181,145 +248,149 @@ class Producto
 		$controla_stock,
 		$alerta_stock,
 		$tipoigv,
-		$comisionV,
-		$sucursales
+		$comisionV
 	) {
-
-		global $conexion;
 
 		try {
 
-			mysqli_begin_transaction($conexion);
+			$this->pdo->beginTransaction();
 
-			foreach ($sucursales as $idsuc) {
+			/*
+			|--------------------------------------------------------------------------
+			| 1. ACTUALIZAR PRODUCTO MAESTRO
+			|--------------------------------------------------------------------------
+			*/
+			$updateProducto = (new FluentSaver($this->pdo))
+				->table("producto")
+				->primaryKey("idproducto")
+				->nullable([
+					'fecha',
+					'descripcion',
+					'imagen'
+				])
+				->cast([
+					'idmarca' => 'int',
+					'idmodelo' => 'int',
+					'preciocigv' => 'float',
+				])
+				->data([
+					'idproducto' => $idproducto,
+					'idcategoria' => $idcategoria,
+					'idunidad_medida' => $idunidad_medida,
+					'idrubro' => $idrubro,
+					'idcondicionventa' => $idcondicionventa,
+					'registrosan' => $registrosan,
+					'idmarca' => $idmarca,
+					'idmodelo' => $idmodelo,
+					'codigo' => $codigo,
+					'nombre' => $nombre,
+					'precio' => $precio,
+					'preciocigv' => $preciocigv,
+					'precioB' => $precioB || 0,
+					'precioC' => $precioC || 0,
+					'precioD' => $precioD || 0,
+					'precioE' => $precioE || 0,
+					'margenpubl' => $margenpubl,
+					'margendes' => $margendes,
+					'margenp1' => $margenp1,
+					'margenp2' => $margenp2,
+					'margendist' => $margendist,
+					'utilprecio' => $utilprecio,
+					'utilprecioB' => $utilprecioB,
+					'utilprecioC' => $utilprecioC,
+					'utilprecioD' => $utilprecioD,
+					'utilprecioE' => $utilprecioE,
+					'descripcion' => $descripcion,
+					'imagen' => $imagen,
+					'alerta_stock' => $alerta_stock,
+					'controla_stock' => $controla_stock,
+					'proigv' => $tipoigv,
+					'comisionV' => $comisionV || 0
+				])
+				->save();
 
-				if (!empty($codigo)) {
-					$validar = "SELECT idproducto FROM producto 
-                            WHERE codigo='$codigo' AND idsucursal='$idsuc' LIMIT 1";
-				} else {
-					$validar = "SELECT idproducto FROM producto 
-                            WHERE nombre='$nombre' AND idsucursal='$idsuc' LIMIT 1";
-				}
-
-				$res = ejecutarConsulta($validar);
-
-				if ($res && mysqli_num_rows($res) > 0) {
-
-					$row = mysqli_fetch_assoc($res);
-					$idproductoSucursal = $row['idproducto'];
-
-					$sql = "UPDATE producto SET 
-                    idsucursal='$idsuc',
-                    idcategoria='$idcategoria',
-                    idunidad_medida='$idunidad_medida',
-                    idrubro='$idrubro',
-                    idcondicionventa='$idcondicionventa',
-                    registrosan='$registrosan',
-                    idmarca='$idmarca',
-                    codigo='$codigo',
-                    nombre='$nombre',
-                    stock='$stock',
-                    stock_minimo='$stockMinimo',
-                    stock_maximo='$stockMaximo',
-                    precio='$precio',
-                    preciocigv='$preciocigv',
-                    comisionV='$comisionV',
-                    precioB='$precioB',
-                    precioC='$precioC',
-                    precioD='$precioD',
-                    precioE='$precioE',
-                    margenpubl='$margenpubl',
-                    margendes='$margendes',
-                    margenp1='$margenp1',
-                    margenp2='$margenp2',
-                    margendist='$margendist',
-                    utilprecio='$utilprecio',
-                    utilprecioB='$utilprecioB',
-                    utilprecioC='$utilprecioC',
-                    utilprecioD='$utilprecioD',
-                    precio_compra='$precioCompra',
-                    fecha='$fecha',
-                    descripcion='$descripcion',
-                    idmodelo='$idmodelo',
-                    numserie='$nserie',
-                    placa='$placa',
-                    color='$color',
-                    motor='$motor',
-                    permiso_circulacion='$permiso_circulacion',
-                    anio_fabricacion='$anio_fabricacion',
-                    tipo_vehiculo='$tipo_vehiculo',
-                    clase_vehiculo='$clase_vehiculo',
-                    propietario_vehiculo='$propietario_vehiculo',
-                    controla_stock='$controla_stock',
-                    alerta_stock='$alerta_stock',
-                    proigv='$tipoigv',
-                    imagen='$imagen'
-                WHERE idproducto='$idproductoSucursal'";
-
-					if (!ejecutarConsulta($sql)) {
-						throw new Exception("Error al actualizar producto en sucursal $idsuc");
-					}
-
-					$editar = "UPDATE producto_configuracion 
-                    SET precio_venta = '$precio', codigo_extra ='$codigo' 
-                    WHERE idproducto = '$idproductoSucursal' AND cantidad_contenedor = 1";
-
-					if (!ejecutarConsulta($editar)) {
-						throw new Exception("Error config en sucursal $idsuc");
-					}
-
-				} else {
-
-					$insertSucursal = "INSERT INTO producto (
-                    idsucursal, idcategoria, idunidad_medida, idrubro, idcondicionventa,
-                    registrosan, idmarca, codigo, nombre, stock, stock_minimo, stock_maximo,
-                    precio, preciocigv, precioB, precioC, precioD, precioE,
-                    margenpubl, margendes, margenp1, margenp2, margendist,
-                    utilprecio, utilprecioB, utilprecioC, utilprecioD, utilprecioE,
-                    precio_compra, fecha, descripcion, imagen, idmodelo
-                ) VALUES (
-                    '$idsuc', '$idcategoria', '$idunidad_medida', '$idrubro', '$idcondicionventa',
-                    '$registrosan', '$idmarca', '$codigo', '$nombre', '$stock', '$stockMinimo', '$stockMaximo',
-                    '$precio', '$preciocigv', '$precioB', '$precioC', '$precioD', '$precioE',
-                    '$margenpubl', '$margendes', '$margenp1', '$margenp2', '$margendist',
-                    '$utilprecio', '$utilprecioB', '$utilprecioC', '$utilprecioD', '$utilprecioE',
-                    '$precioCompra', '$fecha', '$descripcion', '$imagen', '$idmodelo'
-                )";
-
-					$idproductoaAdd = ejecutarConsulta_retornarID($insertSucursal);
-
-					if (!$idproductoaAdd) {
-						throw new Exception("Error al insertar en sucursal $idsuc");
-					}
-
-					$sql1 = "INSERT INTO producto_configuracion (
-                    codigo_extra, contenedor, cantidad_contenedor, precio_venta, precio_promocion, idproducto
-                ) VALUES (
-                    '$codigo', 'UNIDAD', '1', '$precio', '$precioB', '$idproductoaAdd'
-                )";
-
-					if (!ejecutarConsulta($sql1)) {
-						throw new Exception("Error config insert en sucursal $idsuc");
-					}
-				}
+			if (!$updateProducto) {
+				throw new Exception("No se pudo actualizar producto");
 			}
 
-			mysqli_commit($conexion);
 
-			return [
-				'status' => 'success',
-				'message' => 'Actualizado correctamente en todas las sucursales.'
-			];
+			/*
+			|--------------------------------------------------------------------------
+			| 2. INVENTARIO POR SUCURSAL
+			|--------------------------------------------------------------------------
+			*/
+			(new FluentSaver($this->pdo))
+				->table("inventario_producto")
+				->primaryKey("idinventario")
+				->timestamps(false)
+				->cast([
+					'stock' => 'int',
+					'stock_minimo' => 'int',
+					'stock_maximo' => 'int',
+				])
+				->data([
+					'idinventario' => $idinventario,
+					'stock' => $stock,
+					'stock_minimo' => $stockMinimo,
+					'stock_maximo' => $stockMaximo,
+					'precio_compra' => $precioCompra
+				])
+				->save();
+
+
+			/*
+			|--------------------------------------------------------------------------
+			| 4. ACTUALIZAR PRIMERA SERIE
+			|--------------------------------------------------------------------------
+			*/
+			(new FluentSaver($this->pdo))
+				->table("producto_serie")
+				->primaryKey("idserie")
+				->timestamps(false)
+				->nullable([
+					'numero_serie',
+					'placa',
+					'numero_motor',
+					'color'
+				])
+				->cast([
+					'anio_fabricacion' => 'int'
+				])
+				->data([
+					'idserie' => $idserie,
+					'numero_serie' => $nserie,
+					'placa' => $placa,
+					'numero_motor' => $motor,
+					'color' => $color,
+					'permiso_circulacion' => $permiso_circulacion,
+					'anio_fabricacion' => $anio_fabricacion,
+					'tipo_vehiculo' => $tipo_vehiculo,
+					'clase_vehiculo' => $clase_vehiculo,
+					'propietario_vehiculo' => $propietario_vehiculo
+				])
+				->save();
+
+			$this->pdo->commit();
+
+
+			return json_encode([
+				"success" => true,
+				"message" => "Producto actualizado correctamente"
+			]);
+
 
 		} catch (Exception $e) {
 
-			mysqli_rollback($conexion);
+			$this->pdo->rollBack();
 
-			return [
-				'status' => 'error',
-				'message' => $e->getMessage()
-			];
+
+			return json_encode([
+				"success" => false,
+				"message" => $e->getMessage()
+			]);
+
 		}
+
 	}
 
 	public function mostrarStockProductoE($idproductoE)
@@ -365,41 +436,139 @@ class Producto
 	//Implementamos un método para desactivar registros
 	public function desactivar($idproducto)
 	{
-		$sql = "UPDATE producto SET condicion='0' WHERE idproducto='$idproducto'";
-		return ejecutarConsulta($sql);
+		try {
+			$this->pdo->beginTransaction();
+
+			$update = (new FluentSaver($this->pdo))
+				->table('producto')
+				->primaryKey('idproducto')
+				->data([
+					'idproducto' => $idproducto,
+					'condicion' => 0,
+				])
+				->save();
+
+			if (!$update) {
+				throw new Exception("No se pudo desactivar el registro");
+			}
+
+			$this->pdo->commit();
+
+			return json_encode(array("success" => true, "message" => "Registro desactivado correctamente", "id" => $update));
+
+
+		} catch (Throwable $e) {
+
+			if (isset($this->pdo) && $this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+			return json_encode(array("success" => false, "message" => "Error al desactivar producto: " . $e->getMessage()));
+		}
 	}
 
 	//Implementamos un método para activar registros
 	public function activar($idproducto)
 	{
-		$sql = "UPDATE producto SET condicion='1' WHERE idproducto='$idproducto'";
-		return ejecutarConsulta($sql);
+		try {
+			$this->pdo->beginTransaction();
+
+			$update = (new FluentSaver($this->pdo))
+				->table('producto')
+				->primaryKey('idproducto')
+				->data([
+					'idproducto' => $idproducto,
+					'condicion' => 1,
+				])
+				->save();
+
+			if (!$update) {
+				throw new Exception("No se pudo activar el registro");
+			}
+
+			$this->pdo->commit();
+
+			return json_encode(array("success" => true, "message" => "Registro activado correctamente", "id" => $update));
+
+
+		} catch (Throwable $e) {
+
+			if (isset($this->pdo) && $this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+			return json_encode(array("success" => false, "message" => "Error al activar producto: " . $e->getMessage()));
+		}
 	}
 
 	//Implementar un método para mostrar los datos de un registro a modificar
 	public function mostrar($idproducto)
 	{
-		$sql = "SELECT p.*,
-	               COALESCE((
-	                   SELECT NULLIF(sf.precio_venta, 0)
-	                   FROM stock_fifo sf
-	                   WHERE sf.idproducto = p.idproducto
-	                     AND sf.cantidad_restante > 0
-	                     AND sf.estado = 1
-	                   ORDER BY sf.fecha_ingreso ASC
-	                   LIMIT 1
-	               ), p.precio) AS precio,
-	               COALESCE((
-	                   SELECT NULLIF(sf.precio_compra, 0)
-	                   FROM stock_fifo sf
-	                   WHERE sf.idproducto = p.idproducto
-	                     AND sf.cantidad_restante > 0
-	                     AND sf.estado = 1
-	                   ORDER BY sf.fecha_ingreso ASC
-	                   LIMIT 1
-	               ), p.precio_compra) AS precio_compra
-	        FROM producto p
-	        WHERE p.idproducto = '$idproducto'";
+		$sql = "
+				SELECT 
+					p.*,
+
+					-- Inventario sucursal
+					ip.idinventario,
+					ip.idsucursal,
+					ip.stock,
+					ip.stock_minimo,
+					ip.stock_maximo,
+					ip.precio_compra,
+
+					-- Primera serie
+					ps.idserie,
+					ps.numero_serie,
+					ps.numero_motor,
+					ps.placa,
+					ps.color,
+					ps.permiso_circulacion,
+					ps.anio_fabricacion,
+					ps.tipo_vehiculo,
+					ps.clase_vehiculo,
+					ps.propietario_vehiculo,
+					ps.estado AS estado_serie,
+
+
+					-- Precio FIFO
+					COALESCE((
+						SELECT NULLIF(sf.precio_venta,0)
+						FROM stock_fifo sf
+						WHERE sf.idproducto = p.idproducto
+						AND sf.cantidad_restante > 0
+						AND sf.estado = 1
+						ORDER BY sf.fecha_ingreso ASC
+						LIMIT 1
+					), p.precio) AS precio,
+
+
+					COALESCE((
+						SELECT NULLIF(sf.precio_compra,0)
+						FROM stock_fifo sf
+						WHERE sf.idproducto = p.idproducto
+						AND sf.cantidad_restante > 0
+						AND sf.estado = 1
+						ORDER BY sf.fecha_ingreso ASC
+						LIMIT 1
+					), ip.precio_compra) AS precio_compra
+
+
+				FROM producto p
+
+
+				LEFT JOIN inventario_producto ip
+					ON ip.idproducto = p.idproducto
+
+
+				LEFT JOIN producto_serie ps
+					ON ps.idproducto = p.idproducto
+
+
+				WHERE p.idproducto = '$idproducto'
+
+
+				ORDER BY ps.idserie ASC
+
+				LIMIT 1
+			";
 
 		return ejecutarConsultaSimpleFila($sql);
 	}
@@ -799,176 +968,227 @@ class Producto
 	}
 */
 
-	public function listarPaginado($idsucursal_filtro, $idsucursal_sesion, $stock_filtro, $start, $length, $search, $es_admin)
+	// public function listarPaginado($idsucursal_filtro, $idsucursal_sesion, $stock_filtro, $start, $length, $search, $es_admin)
+	// {
+	// 	// 1. Determinar Sucursal
+	// 	$sucursal_final = (!empty($idsucursal_filtro) && $idsucursal_filtro != 'Todos' && $idsucursal_filtro != '0')
+	// 		? $idsucursal_filtro
+	// 		: $idsucursal_sesion;
+
+	// 	// 2. Construir Buscador Seguro (Evita errores de sintaxis)
+	// 	$searching = "";
+	// 	if (!empty($search)) {
+	// 		// Limpiamos caracteres raros
+	// 		$search_clean = preg_replace('/[^a-zA-Z0-9\s\-\.]/', '', trim($search));
+	// 		$palabras = explode(" ", $search_clean);
+	// 		$cond_search = array();
+	// 		foreach ($palabras as $p) {
+	// 			if (!empty($p)) {
+	// 				$cond_search[] = "(a.nombre LIKE '%$p%' OR a.codigo LIKE '%$p%' OR c.nombre LIKE '%$p%' OR m.nombre LIKE '%$p%' OR mo.nombre LIKE '%$p%')";
+	// 			}
+	// 		}
+	// 		if (!empty($cond_search)) {
+	// 			$searching = " AND " . implode(" AND ", $cond_search);
+	// 		}
+	// 	}
+
+	// 	// 3. Filtro de Stock
+	// 	$filtro_stock = ($stock_filtro > 0) ? " AND a.stock <= $stock_filtro " : "";
+
+	// 	// 4. SQL OPTIMIZADO Y COMPATIBLE
+	// 	// El cambio clave está en el LEFT JOIN stock_fifo
+	// 	$sql = "SELECT a.idproducto, a.idsucursal, a.idcategoria, s.nombre as almacen, a.idunidad_medida, 
+	//         DATE_FORMAT(a.fechac,'%d/%m/%y | %H:%i:%s %p') as fechac,
+	//         um.nombre as unidad, DATE_FORMAT(a.fecha,'%d/%m/%y') as fecha, c.nombre as categoria, 
+	//         r.nombre as rubro, cv.nombre as condicionventa, a.registrosan, a.codigo, 
+	//         a.nombre, a.stock, a.stock_minimo, a.numserie, a.descripcion, a.imagen, a.condicion,
+	//         a.precioB, a.precioC, a.precioD, a.precioE,
+	//         m.nombre as marca,
+	//         -- LÓGICA DE PRECIOS --
+	//         -- Si f.precio_venta existe (del FIFO), úsalo. Si no, usa a.precio --
+	//         COALESCE(NULLIF(f.precio_venta, 0), a.precio) as precio,
+	// 		COALESCE(NULLIF(f.precio_compra, 0), a.precio_compra) as precio_compra
+
+	//         FROM producto a 
+	//         INNER JOIN categoria c ON a.idcategoria = c.idcategoria 
+	//         LEFT JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
+	//         LEFT JOIN rubro r ON a.idrubro = r.idrubro 
+	//         LEFT JOIN condicionventa cv ON a.idcondicionventa = cv.idcondicionventa 
+	//         LEFT JOIN sucursal s ON s.idsucursal = a.idsucursal 
+	// 		LEFT JOIN marca m ON a.idmarca = m.idmarca
+	// 		LEFT JOIN modelo mo ON a.idmodelo = mo.idmodelo
+
+	//         -- JOIN FIFO CORREGIDO (Estándar SQL) --
+	//         -- Busca el registro FIFO más antiguo activo para este producto --
+	//         LEFT JOIN stock_fifo f ON f.idfifo = (
+	//             SELECT MIN(sf.idfifo)
+	//             FROM stock_fifo sf
+	//             WHERE sf.idproducto = a.idproducto
+	//             AND sf.estado = 1
+	//             AND sf.cantidad_restante > 0
+	//         )
+
+	//         WHERE c.nombre != 'SERVICIO' 
+	//         AND a.idsucursal = '$sucursal_final'
+	//         $filtro_stock
+	//         $searching
+
+	//         ORDER BY a.fechac DESC
+	//         LIMIT $start, $length";
+
+	// 	// Ejecutamos la consulta
+	// 	$result = ejecutarConsulta($sql);
+
+	// 	// Si falla la consulta (devuelve false), devolvemos un objeto vacío o manejamos el error
+	// 	// para evitar el 'Fatal error'
+	// 	if (!$result) {
+	// 		// Opción: Loguear error o retornar null. 
+	// 		// Si tienes acceso al objeto conexión ($conexion), podrías hacer: echo $conexion->error;
+	// 		return false;
+	// 	}
+
+	// 	return $result;
+	// }
+
+	// public function contarTotalPaginado($idsucursal_filtro, $idsucursal_sesion, $stock_filtro, $search)
+	// {
+	// 	// 1. Determinar la Sucursal Final
+	// 	$sucursal_final = (!empty($idsucursal_filtro) && $idsucursal_filtro != 'Todos' && $idsucursal_filtro != '0')
+	// 		? $idsucursal_filtro
+	// 		: $idsucursal_sesion;
+
+	// 	// 2. Construcción del Buscador (Optimizado y Seguro)
+	// 	$searching = "";
+	// 	if (!empty($search)) {
+	// 		// Limpiamos caracteres peligrosos para evitar errores SQL
+	// 		$search_clean = preg_replace('/[^a-zA-Z0-9\s\-\.\ñ\Ñ]/', '', trim($search));
+	// 		$palabras = explode(" ", $search_clean);
+
+	// 		$condiciones_busqueda = array();
+	// 		foreach ($palabras as $p) {
+	// 			if (!empty($p)) {
+	// 				// Buscamos en Nombre, Código, Categoría y Fabricante
+	// 				$condiciones_busqueda[] = "(a.nombre LIKE '%$p%' OR a.codigo LIKE '%$p%' OR c.nombre LIKE '%$p%' OR m.nombre LIKE '%$p%' OR mo.nombre LIKE '%$p%')";
+	// 			}
+	// 		}
+
+	// 		// Unimos todas las palabras con AND
+	// 		if (count($condiciones_busqueda) > 0) {
+	// 			$searching = " AND " . implode(" AND ", $condiciones_busqueda);
+	// 		}
+	// 	}
+
+	// 	// 3. Filtro de Stock
+	// 	$filtro_stock = ($stock_filtro > 0) ? " AND a.stock <= $stock_filtro " : "";
+
+	// 	// 4. Consulta SQL Optimizada
+	// 	// Nota: Se eliminó 'INNER JOIN sucursal s' porque no se usa para filtrar por nombre de sucursal en el conteo,
+	// 	// y el ID ya lo tenemos en 'a.idsucursal'. Esto acelera la respuesta.
+	// 	$sql = "SELECT COUNT(DISTINCT a.idproducto) as total
+	//         FROM producto a 
+	//         INNER JOIN categoria c ON a.idcategoria = c.idcategoria 
+	//         INNER JOIN usuario_sucursal us ON us.idsucursal = a.idsucursal
+	//         INNER JOIN usuario u ON u.idusuario = us.idusuario
+	// 		LEFT JOIN marca m ON a.idmarca = m.idmarca
+	// 		LEFT JOIN modelo mo ON a.idmodelo = mo.idmodelo
+	//         WHERE c.nombre != 'SERVICIO' 
+	//         AND u.idpersonal = '" . $_SESSION['idpersonal'] . "'
+	//         AND a.idsucursal = '$sucursal_final'
+	//         $filtro_stock
+	//         $searching";
+
+	// 	$result = ejecutarConsultaSimpleFila($sql);
+	// 	return $result['total'];
+	// }
+
+	public function listarPorSucursal($idsucursal)
 	{
-		// 1. Determinar Sucursal
-		$sucursal_final = (!empty($idsucursal_filtro) && $idsucursal_filtro != 'Todos' && $idsucursal_filtro != '0')
-			? $idsucursal_filtro
-			: $idsucursal_sesion;
 
-		// 2. Construir Buscador Seguro (Evita errores de sintaxis)
-		$searching = "";
-		if (!empty($search)) {
-			// Limpiamos caracteres raros
-			$search_clean = preg_replace('/[^a-zA-Z0-9\s\-\.]/', '', trim($search));
-			$palabras = explode(" ", $search_clean);
-			$cond_search = array();
-			foreach ($palabras as $p) {
-				if (!empty($p)) {
-					$cond_search[] = "(a.nombre LIKE '%$p%' OR a.codigo LIKE '%$p%' OR c.nombre LIKE '%$p%' OR m.nombre LIKE '%$p%' OR mo.nombre LIKE '%$p%')";
-				}
-			}
-			if (!empty($cond_search)) {
-				$searching = " AND " . implode(" AND ", $cond_search);
-			}
-		}
+		$page = $_GET['page'] ?? 1;
+		$limit = $_GET['limit'] ?? 10;
+		$search = $_GET['search'] ?? '';
 
-		// 3. Filtro de Stock
-		$filtro_stock = ($stock_filtro > 0) ? " AND a.stock <= $stock_filtro " : "";
+		$response = (new FluentPaginator($this->pdo))
 
-		// 4. SQL OPTIMIZADO Y COMPATIBLE
-		// El cambio clave está en el LEFT JOIN stock_fifo
-		$sql = "SELECT a.idproducto, a.idsucursal, a.idcategoria, s.nombre as almacen, a.idunidad_medida, 
-            DATE_FORMAT(a.fechac,'%d/%m/%y | %H:%i:%s %p') as fechac,
-            um.nombre as unidad, DATE_FORMAT(a.fecha,'%d/%m/%y') as fecha, c.nombre as categoria, 
-            r.nombre as rubro, cv.nombre as condicionventa, a.registrosan, a.codigo, 
-            a.nombre, a.stock, a.stock_minimo, a.numserie, a.descripcion, a.imagen, a.condicion,
-            a.precioB, a.precioC, a.precioD, a.precioE,
-            m.nombre as marca,
-            -- LÓGICA DE PRECIOS --
-            -- Si f.precio_venta existe (del FIFO), úsalo. Si no, usa a.precio --
-            COALESCE(NULLIF(f.precio_venta, 0), a.precio) as precio,
-			COALESCE(NULLIF(f.precio_compra, 0), a.precio_compra) as precio_compra
+			->query("
+            SELECT
+                p.*,
+                i.idinventario,
+                i.stock,
+                i.stock_minimo,
+                i.stock_maximo,
+                i.precio_compra,
 
-            FROM producto a 
-            INNER JOIN categoria c ON a.idcategoria = c.idcategoria 
-            LEFT JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
-            LEFT JOIN rubro r ON a.idrubro = r.idrubro 
-            LEFT JOIN condicionventa cv ON a.idcondicionventa = cv.idcondicionventa 
-            LEFT JOIN sucursal s ON s.idsucursal = a.idsucursal 
-			LEFT JOIN marca m ON a.idmarca = m.idmarca
-			LEFT JOIN modelo mo ON a.idmodelo = mo.idmodelo
-            
-            -- JOIN FIFO CORREGIDO (Estándar SQL) --
-            -- Busca el registro FIFO más antiguo activo para este producto --
-            LEFT JOIN stock_fifo f ON f.idfifo = (
-                SELECT MIN(sf.idfifo)
-                FROM stock_fifo sf
-                WHERE sf.idproducto = a.idproducto
-                AND sf.estado = 1
-                AND sf.cantidad_restante > 0
-            )
+                (
+                    SELECT COUNT(*)
+                    FROM producto_serie ps
+                    WHERE
+                        ps.idproducto = p.idproducto
+                        AND ps.idsucursal = i.idsucursal
+                        AND ps.estado = 'DISPONIBLE'
+                        AND ps.deleted_at IS NULL
+                ) AS series_disponibles
 
-            WHERE c.nombre != 'SERVICIO' 
-            AND a.idsucursal = '$sucursal_final'
-            $filtro_stock
-            $searching
-            
-            ORDER BY a.fechac DESC
-            LIMIT $start, $length";
+            FROM inventario_producto i
 
-		// Ejecutamos la consulta
-		$result = ejecutarConsulta($sql);
+            INNER JOIN producto p
+                ON p.idproducto = i.idproducto")
+			->where('p.idsucursal', '=', $idsucursal)
+			->withSoftDeletes('p.deleted_at')
+			->search($search, [
+				'p.codigo',
+				'p.nombre',
+				'p.descripcion'
+			])
 
-		// Si falla la consulta (devuelve false), devolvemos un objeto vacío o manejamos el error
-		// para evitar el 'Fatal error'
-		if (!$result) {
-			// Opción: Loguear error o retornar null. 
-			// Si tienes acceso al objeto conexión ($conexion), podrías hacer: echo $conexion->error;
-			return false;
-		}
+			->orderBy('p.nombre', 'ASC')
 
-		return $result;
-	}
+			->paginate(
+				(int) $page,
+				(int) $limit
+			);
 
-	public function contarTotalPaginado($idsucursal_filtro, $idsucursal_sesion, $stock_filtro, $search)
-	{
-		// 1. Determinar la Sucursal Final
-		$sucursal_final = (!empty($idsucursal_filtro) && $idsucursal_filtro != 'Todos' && $idsucursal_filtro != '0')
-			? $idsucursal_filtro
-			: $idsucursal_sesion;
+		$response['permissions'] = [
+			'editar' => Helpers::getUserPermissionAccion('Editar productos'),
+			'movimientos' => Helpers::getUserPermissionAccion('Movimientos productos'),
+			'configurar' => Helpers::getUserPermissionAccion('Configurar productos'),
+			'vencimientos' => Helpers::getUserPermissionAccion('Listar vencimientos'),
+			'desactivar' => Helpers::getUserPermissionAccion('Desactivar productos'),
+			'eliminar' => Helpers::getUserPermissionAccion('Eliminar productos')
+		];
 
-		// 2. Construcción del Buscador (Optimizado y Seguro)
-		$searching = "";
-		if (!empty($search)) {
-			// Limpiamos caracteres peligrosos para evitar errores SQL
-			$search_clean = preg_replace('/[^a-zA-Z0-9\s\-\.\ñ\Ñ]/', '', trim($search));
-			$palabras = explode(" ", $search_clean);
-
-			$condiciones_busqueda = array();
-			foreach ($palabras as $p) {
-				if (!empty($p)) {
-					// Buscamos en Nombre, Código, Categoría y Fabricante
-					$condiciones_busqueda[] = "(a.nombre LIKE '%$p%' OR a.codigo LIKE '%$p%' OR c.nombre LIKE '%$p%' OR m.nombre LIKE '%$p%' OR mo.nombre LIKE '%$p%')";
-				}
-			}
-
-			// Unimos todas las palabras con AND
-			if (count($condiciones_busqueda) > 0) {
-				$searching = " AND " . implode(" AND ", $condiciones_busqueda);
-			}
-		}
-
-		// 3. Filtro de Stock
-		$filtro_stock = ($stock_filtro > 0) ? " AND a.stock <= $stock_filtro " : "";
-
-		// 4. Consulta SQL Optimizada
-		// Nota: Se eliminó 'INNER JOIN sucursal s' porque no se usa para filtrar por nombre de sucursal en el conteo,
-		// y el ID ya lo tenemos en 'a.idsucursal'. Esto acelera la respuesta.
-		$sql = "SELECT COUNT(DISTINCT a.idproducto) as total
-            FROM producto a 
-            INNER JOIN categoria c ON a.idcategoria = c.idcategoria 
-            INNER JOIN usuario_sucursal us ON us.idsucursal = a.idsucursal
-            INNER JOIN usuario u ON u.idusuario = us.idusuario
-			LEFT JOIN marca m ON a.idmarca = m.idmarca
-			LEFT JOIN modelo mo ON a.idmodelo = mo.idmodelo
-            WHERE c.nombre != 'SERVICIO' 
-            AND u.idpersonal = '" . $_SESSION['idpersonal'] . "'
-            AND a.idsucursal = '$sucursal_final'
-            $filtro_stock
-            $searching";
-
-		$result = ejecutarConsultaSimpleFila($sql);
-		return $result['total'];
+		return json_encode($response);
 	}
 
 	public function eliminar($idproducto)
 	{
-		// Iniciar transacción
-		ejecutarConsulta("START TRANSACTION");
-
 		try {
-			// 1️⃣ Obtener IDs de configuraciones del producto
-			$sqlConf = "SELECT id FROM producto_configuracion WHERE idproducto = $idproducto";
-			$resConf = ejecutarConsulta($sqlConf);
+			$this->pdo->beginTransaction();
 
-			$idsConf = [];
-			while ($row = $resConf->fetch_object()) {
-				$idsConf[] = $row->id;
+			$update = (new FluentSaver($this->pdo))
+				->table('producto')
+				->primaryKey('idproducto')
+				->data([
+					'idproducto' => $idproducto,
+					'deleted_at' => date('Y-m-d H:i:s'),
+				])
+				->save();
+
+			if (!$update) {
+				throw new Exception("No se pudo eliminar el registro");
 			}
 
-			// 2️⃣ Borrar precios de configuraciones
-			if (count($idsConf) > 0) {
-				$idsStr = implode(',', $idsConf);
-				$sqlPrecios = "DELETE FROM producto_configuracion_precios WHERE producto_configuracion_id IN ($idsStr)";
-				ejecutarConsulta($sqlPrecios);
+			$this->pdo->commit();
+
+			return json_encode(array("success" => true, "message" => "Registro eliminado correctamente", "id" => $update));
+
+
+		} catch (Throwable $e) {
+
+			if (isset($this->pdo) && $this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
 			}
-
-			// 3️⃣ Borrar configuraciones
-			$sqlConfDel = "DELETE FROM producto_configuracion WHERE idproducto = $idproducto";
-			ejecutarConsulta($sqlConfDel);
-
-			// 4️⃣ Borrar producto
-			$sqlProducto = "DELETE FROM producto WHERE idproducto = $idproducto";
-			ejecutarConsulta($sqlProducto);
-
-			// ✅ No tocamos detalle_venta para conservar historial
-			ejecutarConsulta("COMMIT");
-			return true;
-
-		} catch (Exception $e) {
-			ejecutarConsulta("ROLLBACK");
-			return false;
+			return json_encode(array("success" => false, "message" => "Error al eliminar producto: " . $e->getMessage()));
 		}
 	}
 
@@ -1818,31 +2038,70 @@ class Producto
 		return ejecutarConsulta($sql);
 	}
 
-	public function buscarStockPorSucursales($search, $idsucursalActual, $idsucursalFiltro = '')
-	{
-		$termino = "%$search%";
+	public function buscarStockPorSucursales(
+		$search,
+		$idsucursalFiltro
+	) {
+		try {
+			if (!$idsucursalFiltro) {
+				throw new Exception("No se ha seleccionado la sucursal");
+			}
+			$sql = "
+					SELECT
+						ps.idserie,
+						p.idproducto,
+						p.nombre,
+						p.codigo,
+						ps.numero_serie,
+						ps.numero_motor,
+						ps.placa,
+						ps.color,
+						ps.idsucursal,
+						s.nombre AS sucursal
+					FROM producto_serie ps
+					INNER JOIN producto p
+						ON p.idproducto = ps.idproducto
+					INNER JOIN sucursal s
+						ON s.idsucursal = ps.idsucursal
+					WHERE
+						ps.estado = 'DISPONIBLE'
+						AND (
+							p.nombre LIKE :search1
+							OR p.codigo LIKE :search2
+						)
+					";
 
-		$sql = "
-    SELECT 
-        p.idproducto,
-        p.nombre,
-        p.codigo,
-        s.idsucursal,
-        s.nombre AS sucursal,
-        p.stock
-    FROM producto p
-    INNER JOIN sucursal s ON p.idsucursal = s.idsucursal
-    WHERE (p.nombre LIKE '$termino' OR p.codigo LIKE '$termino')
-      AND p.idsucursal = $idsucursalFiltro
-      AND (
-            (p.controla_stock = 'Si' AND p.stock > 0)
-            OR (p.controla_stock = 'No')
-          )
-    ORDER BY p.nombre ASC, s.nombre ASC
-    LIMIT 100
-    ";
+			if (!empty($idsucursalFiltro)) {
+				$sql .= " AND ps.idsucursal = :idsucursal ";
+			}
 
-		return ejecutarConsulta($sql);
+			$sql .= "
+					ORDER BY p.nombre, ps.numero_serie
+					LIMIT 20
+				";
+
+			$stmt = $this->pdo->prepare($sql);
+
+			$stmt->bindValue(':search1', "%{$search}%");
+			$stmt->bindValue(':search2', "%{$search}%");
+
+			if (!empty($idsucursalFiltro)) {
+				$stmt->bindValue(':idsucursal', $idsucursalFiltro, PDO::PARAM_INT);
+			}
+
+			$stmt->execute();
+
+			return json_encode([
+				'success' => true,
+				'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)
+			]);
+		} catch (Exception $e) {
+			return json_encode([
+				'success' => false,
+				'message' => $e->getMessage()
+			]);
+		}
+
 	}
 
 	public function generarCodigo()

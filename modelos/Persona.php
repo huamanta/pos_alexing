@@ -3,28 +3,128 @@
 require "../configuraciones/Conexion.php";
 require_once "../configuraciones/ConexionPdo.php";
 require_once "../core/Paginanation.php";
+require_once "../core/FluentSave.php";
 
-class Persona
+class Persona extends Helpers
 {
+
+	private PDO $pdo;
 	//Implementamos nuestro constructor
 	public function __construct()
 	{
 
+		$this->pdo = Conexion::conectar();
 	}
 
 	//Implementamos un método para insertar registros
-	public function insertar($tipo_persona, $nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $fecha_hora, $latitude, $longitude)
-	{
-		$sql = "INSERT INTO persona (tipo_persona,nombre,tipo_documento,num_documento,direccion,telefono,email,fecha, latitude, longitude)
-		VALUES ('$tipo_persona','$nombre','$tipo_documento','$num_documento','$direccion','$telefono','$email','$fecha_hora', '$latitude', '$longitude')";
-		return ejecutarConsulta($sql);
+	public function insertar(
+		$tipo_persona,
+		$nombre,
+		$tipo_documento,
+		$num_documento,
+		$direccion,
+		$telefono,
+		$email,
+		$fecha_hora,
+		$latitude,
+		$longitude
+	) {
+
+		try {
+
+			$this->pdo->beginTransaction();
+
+			$id = (new FluentSaver($this->pdo))
+
+				->table('persona')
+
+				->nullable([
+					'direccion',
+					'telefono',
+					'email',
+					'latitude',
+					'longitude',
+					'fecha'
+				])
+
+				->data([
+
+					'tipo_persona' => $tipo_persona,
+					'nombre' => $nombre,
+					'tipo_documento' => $tipo_documento,
+					'num_documento' => $num_documento,
+					'direccion' => $direccion,
+					'telefono' => $telefono,
+					'email' => $email,
+					'fecha' => $fecha_hora,
+					'latitude' => $latitude,
+					'longitude' => $longitude
+
+				])
+
+				->save();
+
+			$this->pdo->commit();
+
+			return json_encode(array("success" => true, "message" => "Datos registrados correctamente", "id" => $id));
+
+		} catch (Throwable $e) {
+
+			if (isset($this->pdo) && $this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+			return json_encode(array("success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()));
+		}
 	}
 
 	//Implementamos un método para editar registros
 	public function editar($idpersona, $tipo_persona, $nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $fecha_hora, $latitude, $longitude)
 	{
-		$sql = "UPDATE persona SET tipo_persona='$tipo_persona',nombre='$nombre',tipo_documento='$tipo_documento',num_documento='$num_documento',direccion='$direccion',telefono='$telefono',email='$email', fecha='$fecha_hora', latitude='$latitude', longitude='$longitude' WHERE idpersona='$idpersona'";
-		return ejecutarConsulta($sql);
+		try {
+
+			$this->pdo->beginTransaction();
+
+			$update = (new FluentSaver($this->pdo))
+				->table('persona')
+				->primaryKey('idpersona')
+				->nullable([
+					'direccion',
+					'telefono',
+					'email',
+					'latitude',
+					'longitude',
+					'fecha'
+				])
+				->data([
+					'idpersona' => $idpersona,
+					'tipo_persona' => $tipo_persona,
+					'nombre' => $nombre,
+					'tipo_documento' => $tipo_documento,
+					'num_documento' => $num_documento,
+					'direccion' => $direccion,
+					'telefono' => $telefono,
+					'email' => $email,
+					'fecha' => $fecha_hora,
+					'latitude' => $latitude,
+					'longitude' => $longitude
+				])
+				->save();
+
+			if (!$update) {
+				throw new Exception("No se pudo actualizar el registro");
+			}
+
+			$this->pdo->commit();
+
+			return json_encode(array("success" => true, "message" => "Datos actualizados correctamente", "id" => $update));
+
+		} catch (Throwable $e) {
+
+			if (isset($this->pdo) && $this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+			return json_encode(array("success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()));
+		}
 	}
 
 
@@ -32,30 +132,35 @@ class Persona
 	public function eliminar($idpersona)
 	{
 
-		$clienteExiste = "SELECT * FROM venta v WHERE v.idcliente = '$idpersona'";
+		try {
 
-		$existeCliente = ejecutarConsulta($clienteExiste);
+			$this->pdo->beginTransaction();
 
-		$var = 0;
+			$update = (new FluentSaver($this->pdo))
+				->table('persona')
+				->primaryKey('idpersona')
+				->data([
+					'idpersona' => $idpersona,
+					'deleted_at' => date('Y-m-d H:i:s'),
+				])
+				->save();
 
-		while ($reg = $existeCliente->fetch_object()) {
+			if (!$update) {
+				throw new Exception("No se pudo eliminar el registro");
+			}
 
-			$var = $reg->idventa;
+			$this->pdo->commit();
+
+			return json_encode(array("success" => true, "message" => "Registro eliminado correctamente", "id" => $update));
+
+
+		} catch (Throwable $e) {
+
+			if (isset($this->pdo) && $this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+			return json_encode(array("success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()));
 		}
-
-		if ($var > 0) {
-
-			$sql = 2;
-
-		} else {
-
-			$sql = "DELETE FROM persona WHERE idpersona='$idpersona'";
-			ejecutarConsulta($sql);
-			$sql = 1;
-
-		}
-
-		return $sql;
 	}
 
 	//Implementamos un método para eliminar categorías
@@ -119,36 +224,30 @@ class Persona
 				WHERE tipo_persona = 'Cliente'
 			");
 
-
 		if (!empty($tipo_documento)) {
-
 			$paginator->where("tipo_documento", "=", $tipo_documento);
 		}
 
-
 		if ($excluirId !== false) {
-			$paginator->where("idpersona", "=>", $excluirId);
+			$paginator->where("idpersona", "<>", $excluirId);
 		}
-
 
 		$response = $paginator
 			->withSoftDeletes()
-			->search(
-				$search,
-				[
-					'nombre',
-					'num_documento',
-					'telefono',
-					'email'
-				]
-			)
+			->search($search, ['nombre', 'num_documento', 'telefono', 'email'])
+			->orderBy('idpersona', 'DESC')
 			->paginate(
 				(int) $page,
 				(int) $limit
 			);
 
-
-		echo json_encode($response);
+		$response['permissions'] = [
+			'editar' => Helpers::getUserPermissionAccion('Editar cliente'),
+			'historial' => Helpers::getUserPermissionAccion('Historial cliente'),
+			'puntuacion' => Helpers::getUserPermissionAccion('Puntuacion cliente'),
+			'eliminar' => Helpers::getUserPermissionAccion('Eliminar cliente')
+		];
+		return json_encode($response);
 	}
 
 

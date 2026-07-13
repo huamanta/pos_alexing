@@ -12,40 +12,40 @@ require_once __DIR__.'/../../configuraciones/local.php'
                         </div>
                         <div class="card-body">
                             <?php
-                            $idusuario = $_SESSION['idusuario'];
-                            
-                            $conexion = new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
-                            if ($conexion->connect_error) {
-                                die("Connection failed: " . $conexion->connect_error);
-                            }
-                            mysqli_query($conexion, 'SET NAMES "utf8"');
-                            
-                            $sql_super = "SELECT superusuario FROM usuario WHERE idusuario='$idusuario' LIMIT 1";
-                            $res_super = $conexion->query($sql_super);
-                            $isSuper = false;
-                            if ($res_super) {
-                                $row_super = $res_super->fetch_object();
-                                if ($row_super && isset($row_super->superusuario) && $row_super->superusuario == 1) {
-                                    $isSuper = true;
+                                $idusuario = $_SESSION['idusuario'];
+                                
+                                $conexion = new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
+                                if ($conexion->connect_error) {
+                                    die("Connection failed: " . $conexion->connect_error);
                                 }
-                            }
+                                mysqli_query($conexion, 'SET NAMES "utf8"');
+                                
+                                $sql_super = "SELECT superusuario FROM usuario WHERE idusuario='$idusuario' LIMIT 1";
+                                $res_super = $conexion->query($sql_super);
+                                $isSuper = false;
+                                if ($res_super) {
+                                    $row_super = $res_super->fetch_object();
+                                    if ($row_super && isset($row_super->superusuario) && $row_super->superusuario == 1) {
+                                        $isSuper = true;
+                                    }
+                                }
 
-                            if ($isSuper) {
-                                $sql = "SELECT idsucursal, nombre FROM sucursal";
-                            } else {
-                                $sql = "SELECT us.idsucursal, s.nombre FROM usuario_sucursal us INNER JOIN sucursal s ON us.idsucursal = s.idsucursal WHERE us.idusuario='$idusuario'";
-                            }
-                            $result = $conexion->query($sql);
-                            if (!$result) {
-                                die("Query failed: " . $conexion->error);
-                            }
-                            $sucursales = [];
-                            while ($reg = $result->fetch_object()) {
-                                $sucursales[] = $reg;
-                            }
-                            $conexion->close();
-                            $baseUrl = dirname($_SERVER['SCRIPT_NAME']);
-                            $count = count($sucursales);
+                                if ($isSuper) {
+                                    $sql = "SELECT idsucursal, nombre FROM sucursal";
+                                } else {
+                                    $sql = "SELECT us.idsucursal, s.nombre FROM usuario_sucursal us INNER JOIN sucursal s ON us.idsucursal = s.idsucursal WHERE us.idusuario='$idusuario'";
+                                }
+                                $result = $conexion->query($sql);
+                                if (!$result) {
+                                    die("Query failed: " . $conexion->error);
+                                }
+                                $sucursales = [];
+                                while ($reg = $result->fetch_object()) {
+                                    $sucursales[] = $reg;
+                                }
+                                $conexion->close();
+                                $baseUrl = dirname($_SERVER['SCRIPT_NAME']);
+                                $count = count($sucursales);
                             ?>
 
                             <?php if ($count == 0): ?>

@@ -12,6 +12,8 @@ if (!isset($_SESSION['idusuario']) || empty($_SESSION['idusuario'])) {
 $producto = new Producto();
 
 $idproducto = isset($_POST["idproducto"]) ? limpiarCadena($_POST["idproducto"]) : "";
+$idinventario = isset($_POST["idinventario"]) ? limpiarCadena($_POST["idinventario"]) : "";
+$idserie = isset($_POST["idserie"]) ? limpiarCadena($_POST["idserie"]) : "";
 $idsucursal = isset($_POST["idsucursal"]) ? limpiarCadena($_POST["idsucursal"]) : "";
 $idsucursal2 = isset($_POST["idsucursal2"]) ? limpiarCadena($_POST["idsucursal2"]) : "";
 $idcategoria = isset($_POST["idcategoria"]) ? limpiarCadena($_POST["idcategoria"]) : "";
@@ -91,7 +93,9 @@ function obtenerIdCategoriaVehiculo()
 }
 
 switch ($_GET["op"]) {
+
 	case 'guardaryeditar':
+		$idsucursal = $_SESSION['idsucursal'];
 		if (strtolower($tipo_producto) === 'vehiculo') {
 			$idcategoriaVehiculo = obtenerIdCategoriaVehiculo();
 			if (!empty($idcategoriaVehiculo)) {
@@ -109,11 +113,60 @@ switch ($_GET["op"]) {
 			}
 		}
 		if (empty($idproducto)) {
-			$rspta = $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV, $_POST['sucursales']);
-			echo json_encode($rspta);
+			$rspta = $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV);
+			echo $rspta;
 		} else {
-			$rspta = $producto->editar($idproducto, $idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $codigo, $nombre, $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV, isset($_POST['sucursales']) ? $_POST['sucursales'] : []);
-			echo json_encode($rspta);
+			$rspta = $producto->editar(
+				$idproducto,
+				$idinventario,
+				$idserie,
+				$idcategoria,
+				$idunidad_medida,
+				$idrubro,
+				$idcondicionventa,
+				$registrosan,
+				$idmarca,
+				$codigo,
+				$nombre,
+				$stock,
+				$stockMinimo,
+				$stockMaximo,
+				$precio,
+				$preciocigv,
+				$precioB,
+				$precioC,
+				$precioD,
+				$precioE,
+				$margenpubl,
+				$margendes,
+				$margenp1,
+				$margenp2,
+				$margendist,
+				$utilprecio,
+				$utilprecioB,
+				$utilprecioC,
+				$utilprecioD,
+				$utilprecioE,
+				$precioCompra,
+				$fecha,
+				$descripcion,
+				$imagen,
+				$idmodelo,
+				$nserie,
+				$placa,
+				$color,
+				$motor,
+				$permiso_circulacion,
+				$anio_fabricacion,
+				$tipo_vehiculo,
+				$clase_vehiculo,
+				$propietario_vehiculo,
+				$controla_stock,
+				$alerta_stock,
+				$tipoigv,
+				$comisionV
+			);
+			echo $rspta;
 		}
 		break;
 
@@ -240,12 +293,12 @@ switch ($_GET["op"]) {
 
 	case 'desactivar':
 		$rspta = $producto->desactivar($idproducto);
-		echo $rspta ? "Producto Desactivado" : "Producto no se puede desactivar";
+		echo $rspta;
 		break;
 
 	case 'activar':
 		$rspta = $producto->activar($idproducto);
-		echo $rspta ? "Producto activado" : "Producto no se puede activar";
+		echo $rspta;
 		break;
 
 	case 'mostrar':
@@ -339,85 +392,77 @@ switch ($_GET["op"]) {
 
 
 	case 'listar':
-		$idsucursal2 = $_GET['idsucursal2'];
-		$stock_filtro = isset($_GET["stock_filtro"]) ? floatval($_GET["stock_filtro"]) : 0;
+		$idsucursal = $_SESSION['idsucursal'];
+		// $stock_filtro = isset($_GET["stock_filtro"]) ? floatval($_GET["stock_filtro"]) : 0;
 
-		$start = isset($_GET['start']) ? intval($_GET['start']) : 0;
-		$length = isset($_GET['length']) ? intval($_GET['length']) : 10;
-		$search = isset($_GET['search']['value']) ? $_GET['search']['value'] : '';
-		$draw = isset($_GET['draw']) ? intval($_GET['draw']) : 1;
+		// $start = isset($_GET['start']) ? intval($_GET['start']) : 0;
+		// $length = isset($_GET['length']) ? intval($_GET['length']) : 10;
+		// $search = isset($_GET['search']['value']) ? $_GET['search']['value'] : '';
+		// $draw = isset($_GET['draw']) ? intval($_GET['draw']) : 1;
 
-		$es_admin = ($_SESSION['idsucursal'] == 0);
-		$rspta = $producto->listarPaginado($idsucursal2, $_SESSION['idsucursal'], $stock_filtro, $start, $length, $search, $es_admin);
-		$total = $producto->contarTotalPaginado($idsucursal2, $_SESSION['idsucursal'], $stock_filtro, $search);
+		// $es_admin = ($_SESSION['idsucursal'] == 0);
+		$rspta = $producto->listarPorSucursal($idsucursal);
+		echo $rspta;
 
-		$data = array();
+		// while ($reg = $rspta->fetch_object()) {
+		// 	// Truncar nombre si es muy largo
+		// 	$nombre_corto = strlen($reg->nombre) > 80 ? substr($reg->nombre, 0, 50) . '...' : $reg->nombre;
+		// 	$descripcion_corta = strlen($reg->descripcion) > 40 ? substr($reg->descripcion, 0, 40) . '...' : $reg->descripcion;
 
-		while ($reg = $rspta->fetch_object()) {
-			// Truncar nombre si es muy largo
-			$nombre_corto = strlen($reg->nombre) > 80 ? substr($reg->nombre, 0, 50) . '...' : $reg->nombre;
-			$descripcion_corta = strlen($reg->descripcion) > 40 ? substr($reg->descripcion, 0, 40) . '...' : $reg->descripcion;
+		// 	// Escapar correctamente para evitar problemas con comillas
+		// 	$nombre_tooltip = htmlspecialchars($reg->nombre, ENT_QUOTES, 'UTF-8');
+		// 	$descripcion_tooltip = htmlspecialchars($reg->descripcion, ENT_QUOTES, 'UTF-8');
 
-			// Escapar correctamente para evitar problemas con comillas
-			$nombre_tooltip = htmlspecialchars($reg->nombre, ENT_QUOTES, 'UTF-8');
-			$descripcion_tooltip = htmlspecialchars($reg->descripcion, ENT_QUOTES, 'UTF-8');
+		// 	$data[] = array(
+		// 		"0" => '<div style="display:flex;gap:8px;align-items:flex-start;max-width:350px;">
+		//             <div class="img-container" onclick="verimagen(' . $reg->idproducto . ', \'' . addslashes($reg->imagen) . '\', \'' . addslashes($reg->nombre) . '\',\'' . $reg->stock . '\',\'' . addslashes($reg->categoria) . '\',\'' . addslashes($reg->registrosan) . '\',\'' . addslashes($reg->rubro) . '\',\'' . addslashes($reg->condicionventa) . '\',\'' . $reg->precio . '\',\'' . $reg->precio_compra . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . addslashes($reg->marca) . '\',\'' . addslashes($reg->descripcion) . '\')" style="width:45px;height:45px;flex-shrink:0;cursor:pointer;border-radius:3px;overflow:hidden;border:1px solid #ddd;">
+		//                 <img src="files/productos/' . $reg->imagen . '" alt="' . $nombre_tooltip . '" style="width:100%;height:100%;object-fit:cover;">
+		//             </div>
+		//             <div style="flex:1;min-width:0;">
+		//                 <div style="font-weight:bold;font-size:12px;margin-bottom:3px;cursor:help;" title="' . $nombre_tooltip . '">' . htmlspecialchars($nombre_corto) . '</div>
+		//                 <div style="font-size:10px;">
+		//                     <span class="badge badge-neon neon-green" style="font-size:9px;padding:1px 5px;">' . $reg->unidad . '</span> 
+		//                     <span style="color:#666;cursor:help;" title="' . $descripcion_tooltip . '">' . htmlspecialchars($descripcion_corta) . '</span>
+		//                 </div>
+		//             </div>
+		//         </div>',
+		// 		"1" => $reg->categoria,
+		// 		"2" => $reg->marca,
+		// 		"3" => $reg->codigo,
+		// 		"4" => ($reg->stock <= $reg->stock_minimo) ?
+		// 			'<span class="badge badge-neon neon-red">' . $reg->stock . '</span>' :
+		// 			'<span class="badge badge-neon neon-green">' . $reg->stock . '</span>',
+		// 		"5" => '<span class="editable-price badge badge-neon neon-blue" contenteditable="false" data-id="' . $reg->idproducto . '" data-field="precio">' . $reg->precio . '</span>',
+		// 		"6" => '<span class="editable-price badge badge-neon neon-yellow" contenteditable="false" data-id="' . $reg->idproducto . '" data-field="precio_compra">' . $reg->precio_compra . '</span>',
+		// 		"7" => ($reg->condicion) ?
+		// 			'<span class="badge badge-neon neon-green">ACTIVADO</span>' :
+		// 			'<span class="badge badge-neon neon-red">DESACTIVADO</span>',
+		// 		"8" => ($reg->condicion) ?
+		// 			(Helpers::getUserPermissionAccion('Editar productos') ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idproducto . ')"><i class="fas fa-edit"></i></button> ' : '') .
+		// 			(Helpers::getUserPermissionAccion('Movimientos productos') ? '<button class="btn btn-primary btn-xs" onclick="entradaSalida(' . $reg->idproducto . ',' . $reg->idsucursal . ')"><i class="fas fa-archive"></i></button> ' : '') .
+		// 			(Helpers::getUserPermissionAccion('Configurar productos') ? '<button class="btn btn-success btn-xs" onclick=\'config(' . json_encode($reg) . ')\'><i class="fas fa-cog"></i></button> ' : '') .
+		// 			(Helpers::getUserPermissionAccion('Listar vencimientos') ? '<button class="btn btn-info btn-xs" onclick="fechaVencimiento(' . $reg->idproducto . ')"><i class="fa fa-list"></i></button> ' : '') .
+		// 			(Helpers::getUserPermissionAccion('Desactivar productos') ? '<button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idproducto . ')"><i class="fas fa-times-circle"></i></button> ' : '') .
+		// 			(Helpers::getUserPermissionAccion('Eliminar productos') ? '<button class="btn btn-danger btn-xs" onclick="eliminarProducto(' . $reg->idproducto . ')"><i class="fas fa-trash"></i></button>' : '') :
+		// 			'<button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idproducto . ')"><i class="fa fa-check"></i></button>'
+		// 	);
+		// }
 
-			$data[] = array(
-				"0" => '<div style="display:flex;gap:8px;align-items:flex-start;max-width:350px;">
-                    <div class="img-container" onclick="verimagen(' . $reg->idproducto . ', \'' . addslashes($reg->imagen) . '\', \'' . addslashes($reg->nombre) . '\',\'' . $reg->stock . '\',\'' . addslashes($reg->categoria) . '\',\'' . addslashes($reg->registrosan) . '\',\'' . addslashes($reg->rubro) . '\',\'' . addslashes($reg->condicionventa) . '\',\'' . $reg->precio . '\',\'' . $reg->precio_compra . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . addslashes($reg->marca) . '\',\'' . addslashes($reg->descripcion) . '\')" style="width:45px;height:45px;flex-shrink:0;cursor:pointer;border-radius:3px;overflow:hidden;border:1px solid #ddd;">
-                        <img src="files/productos/' . $reg->imagen . '" alt="' . $nombre_tooltip . '" style="width:100%;height:100%;object-fit:cover;">
-                    </div>
-                    <div style="flex:1;min-width:0;">
-                        <div style="font-weight:bold;font-size:12px;margin-bottom:3px;cursor:help;" title="' . $nombre_tooltip . '">' . htmlspecialchars($nombre_corto) . '</div>
-                        <div style="font-size:10px;">
-                            <span class="badge badge-neon neon-green" style="font-size:9px;padding:1px 5px;">' . $reg->unidad . '</span> 
-                            <span style="color:#666;cursor:help;" title="' . $descripcion_tooltip . '">' . htmlspecialchars($descripcion_corta) . '</span>
-                        </div>
-                    </div>
-                </div>',
-				"1" => $reg->categoria,
-				"2" => $reg->marca,
-				"3" => $reg->codigo,
-				"4" => ($reg->stock <= $reg->stock_minimo) ?
-					'<span class="badge badge-neon neon-red">' . $reg->stock . '</span>' :
-					'<span class="badge badge-neon neon-green">' . $reg->stock . '</span>',
-				"5" => '<span class="editable-price badge badge-neon neon-blue" contenteditable="false" data-id="' . $reg->idproducto . '" data-field="precio">' . $reg->precio . '</span>',
-				"6" => '<span class="editable-price badge badge-neon neon-yellow" contenteditable="false" data-id="' . $reg->idproducto . '" data-field="precio_compra">' . $reg->precio_compra . '</span>',
-				"7" => ($reg->condicion) ?
-					'<span class="badge badge-neon neon-green">ACTIVADO</span>' :
-					'<span class="badge badge-neon neon-red">DESACTIVADO</span>',
-				"8" => ($reg->condicion) ?
-					(Helpers::getUserPermissionAccion('Editar productos') ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idproducto . ')"><i class="fas fa-edit"></i></button> ' : '') .
-					(Helpers::getUserPermissionAccion('Movimientos productos') ? '<button class="btn btn-primary btn-xs" onclick="entradaSalida(' . $reg->idproducto . ',' . $reg->idsucursal . ')"><i class="fas fa-archive"></i></button> ' : '') .
-					(Helpers::getUserPermissionAccion('Configurar productos') ? '<button class="btn btn-success btn-xs" onclick=\'config(' . json_encode($reg) . ')\'><i class="fas fa-cog"></i></button> ' : '') .
-					(Helpers::getUserPermissionAccion('Listar vencimientos') ? '<button class="btn btn-info btn-xs" onclick="fechaVencimiento(' . $reg->idproducto . ')"><i class="fa fa-list"></i></button> ' : '') .
-					(Helpers::getUserPermissionAccion('Desactivar productos') ? '<button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idproducto . ')"><i class="fas fa-times-circle"></i></button> ' : '') .
-					(Helpers::getUserPermissionAccion('Eliminar productos') ? '<button class="btn btn-danger btn-xs" onclick="eliminarProducto(' . $reg->idproducto . ')"><i class="fas fa-trash"></i></button>' : '') :
-					'<button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idproducto . ')"><i class="fa fa-check"></i></button>'
-			);
-		}
-
-		$results = array(
-			"draw" => $draw,
-			"recordsTotal" => $total,
-			"recordsFiltered" => $total,
-			"data" => $data
-		);
-		echo json_encode($results);
+		// $results = array(
+		// 	"draw" => $draw,
+		// 	"recordsTotal" => $total,
+		// 	"recordsFiltered" => $total,
+		// 	"data" => $data
+		// );
+		// echo json_encode($results);
 
 		break;
 
 	case 'eliminar':
 		$idproducto = $_POST['idproducto'];
-
 		// Llamar al modelo para eliminar
 		$rspta = $producto->eliminar($idproducto);
-
-		if ($rspta) {
-			echo json_encode(['status' => true]);
-		} else {
-			echo json_encode(['status' => false, 'msg' => 'No se pudo eliminar el producto']);
-		}
+		echo $rspta;
 		break;
 
 
@@ -1082,23 +1127,19 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'buscarStockPorSucursales':
-		$search = $_POST['search'];
-		$idsucursalActual = $_SESSION['idsucursal'];
-		$idsucursalFiltro = isset($_POST['idsucursalFiltro']) ? $_POST['idsucursalFiltro'] : '';
+
+		$search = $_POST['search'] ?? '';
+		$idsucursalFiltro = $_POST['idsucursalFiltro'] ?? null;
+
 		$producto = new Producto();
-		$rspta = $producto->buscarStockPorSucursales($search, $idsucursalActual, $idsucursalFiltro);
-		$data = [];
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = [
-				"idproducto" => $reg->idproducto,
-				"nombre" => $reg->nombre,
-				"codigo" => $reg->codigo,
-				"idsucursal" => $reg->idsucursal,
-				"sucursal" => $reg->sucursal,
-				"stock" => $reg->stock
-			];
-		}
-		echo json_encode($data);
+
+		$data = $producto->buscarStockPorSucursales(
+			$search,
+			$idsucursalFiltro
+		);
+
+		echo $data;
+
 		break;
 
 	case 'generar_codigo':

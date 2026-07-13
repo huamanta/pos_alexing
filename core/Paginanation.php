@@ -22,7 +22,7 @@ class FluentPaginator
     private string $searchTerm = '';
 
     // Soft delete
-    private bool $applySoftDeletes = false;
+    private array $orders = [];
 
     // Paginación
     private int $page = 1;
@@ -142,6 +142,32 @@ class FluentPaginator
         return $this;
     }
 
+    public function orderBy(
+        string $column,
+        string $direction = 'ASC'
+    ): self {
+
+        $direction = strtoupper($direction);
+
+        if (!in_array($direction, ['ASC', 'DESC'], true)) {
+            $direction = 'ASC';
+        }
+
+        $this->orders[] = "{$column} {$direction}";
+
+        return $this;
+    }
+
+
+    private function buildOrderBy(): string
+    {
+        if (empty($this->orders)) {
+            return '';
+        }
+
+        return ' ORDER BY ' . implode(', ', $this->orders);
+    }
+
 
     /**
      * Soft deletes
@@ -172,12 +198,7 @@ class FluentPaginator
 
             $key = "filter_" . count($this->filters);
 
-            $this->where(
-                "{$column} = :{$key}",
-                [
-                    $key => $value
-                ]
-            );
+            $this->where($key, '=', $value);
         }
 
         return $this;
@@ -224,6 +245,8 @@ class FluentPaginator
             $params
         ] = $this->buildWhereClause();
 
+        $orderSql = $this->buildOrderBy();
+
 
 
         $finalParams = array_merge(
@@ -245,6 +268,7 @@ class FluentPaginator
         $sql = "
             {$this->baseQuery}
             {$whereSql}
+            {$orderSql}
             LIMIT :limit
             OFFSET :offset
         ";
@@ -380,22 +404,17 @@ class FluentPaginator
 
 
 
-    private function calculateTotal(
-        string $whereSql,
-        array $params
-    ): void {
+    private function calculateTotal(string $whereSql, array $params): void
+    {
 
-
-        $sql =
-            "SELECT COUNT(*) 
+        $sql = "SELECT COUNT(*) 
              FROM (
                 {$this->baseQuery}
                 {$whereSql}
              ) AS total";
 
 
-        $stmt =
-            $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
 
 
 
@@ -457,9 +476,9 @@ class FluentPaginator
 
     private function hasWhere(): bool
     {
-        return stripos(
-            $this->baseQuery,
-            ' WHERE '
-        ) !== false;
+        return preg_match(
+            '/\bWHERE\b/i',
+            $this->baseQuery
+        ) === 1;
     }
 }

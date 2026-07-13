@@ -1387,7 +1387,7 @@ break;
  				"1"=>$consulta->verSucursal($reg->idsucursal),
  				"2"=>$consulta->verProducto($reg->idproducto),
  				"3"=>$reg->motivo,
- 				"4"=>$reg->tipo_movimiento == 0?'<span class="badge badge-neon neon-green">Entrada</span>':'<span class="badge badge-neon neon-red">Salida</span>',
+ 				"4"=>$reg->tipo_movimiento == 1?'<span class="badge badge-neon neon-green">Entrada</span>':'<span class="badge badge-neon neon-red">Salida</span>',
  				"5"=>$reg->cantidad.' Und.',
  				"6"=>'S/. '.$reg->precio_unitario,
  				"7"=>'S/. '.number_format(($reg->cantidad/$reg->cantidad_contenedor) * $reg->precio_unitario, 2, ".", ","),

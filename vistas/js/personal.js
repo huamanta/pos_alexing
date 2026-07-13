@@ -54,18 +54,27 @@ function guardaryeditar(e) {
 		contentType: false,
 		processData: false,
 
-		success: function (datos) {
+		success: function (response) {
+			const data = JSON.parse(response);
+			if (!data.success) {
+				Swal.fire({
+					title: "Pesonal",
+					icon: "error",
+					text: data.message,
+				});
+				return;
+			}
 			Swal.fire({
-				title: 'Personal',
-				icon: 'success',
-				text: datos
+				title: "Pesonal",
+				icon: "success",
+				text: data.message,
 			});
 			$('#myModal').modal('hide');
+			limpiar();
 			tabla.ajax.reload();
 		}
 
 	});
-	limpiar();
 }
 
 function mostrar(idpersonal) {
@@ -356,12 +365,12 @@ function verEventos(idpersonal, only_personal) {
 
 
 function listarDatosExtra(idpersonal, only_personal) {
-	$.post("controladores/usuario.php?op=selectEmpleado", {only_personal: only_personal, idpersonal: idpersonal}, function (r) {
+	$.post("controladores/usuario.php?op=selectEmpleado", { only_personal: only_personal, idpersonal: idpersonal }, function (r) {
 		$("#idpersonal_edit").html(r);
 		$("#idpersonal_edit").select2();
 		if (idpersonal) {
 			$("#idpersonal_edit")
-				.val(id)
+				.val(idpersonal)
 				.trigger("change");
 		}
 	});
@@ -589,7 +598,6 @@ function eliminarArchivo(index) {
 }
 
 function verSeguimiento(data) {
-
 	$("#ver_cliente").html(data.cliente || '-');
 	$("#ver_tipo").html(data.tipo || '-');
 	$("#ver_estado").html(data.estado || '-');

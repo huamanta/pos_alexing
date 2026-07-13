@@ -494,6 +494,7 @@ switch ($_GET["op"]) {
 		$res = $usuario->seleccionarSucursal($idsucursal);
 		if ($res) {
 			$_SESSION['idsucursal'] = $res['idsucursal'];
+			$_SESSION['nombre_sucursal'] = $res['nombre'];
 			$_SESSION['nombre_impuesto'] = $res['nombre_impuesto'];
 			$_SESSION['monto_impuesto'] = $res['monto_impuesto'];
 			echo 'ok';
