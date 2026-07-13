@@ -120,30 +120,8 @@ switch ($_GET["op"]) {
 		$iddestino = $_POST['iddestino_solicitud'];
 		$productos = $_POST['productos'];
 		$idusuario = $_SESSION['idusuario'];
-		$fecha = date("Y-m-d H:i:s");
-		// Insertar cabecera de solicitud con estado 0 (pendiente)
-		$idtraslado = ejecutarConsulta_retornarID("INSERT INTO traslado (idorigen, iddestino, fecha, estado, idusuario, tipo) 
-												VALUES ('$idorigen','$iddestino','$fecha','0','$idusuario', 'solicitud')");
-
-		if (!$idtraslado) {
-			echo "Error al crear la solicitud";
-			exit;
-		}
-
-		$productos = json_decode($productos, true);
-		foreach ($productos as $p) {
-			$idproducto = intval($p['idproducto']);
-			$idserie = intval($p['idserie']);
-			$cantidad = floatval($p['cantidad']);
-			ejecutarConsulta("INSERT INTO traslado_detalle (idtraslado, idproducto, idserie, cantidad) 
-							VALUES ('$idtraslado','$idproducto', '$idserie', '$cantidad')");
-		}
-
-		// Crear notificación para almacén destino
-		$mensaje = "Nueva solicitud pendiente desde el almacén {$_SESSION['idsucursal']} con ID $idtraslado";
-		ejecutarConsulta("INSERT INTO notificaciones (idsucursal, idtraslado, mensaje) VALUES ('$iddestino', '$idtraslado', '$mensaje')");
-
-		echo " Solicitud enviada correctamente";
+		$rspta = $traslado->guardarSolicitud($idorigen, $iddestino, $productos, $idusuario);
+		echo $rspta;
 		break;
 
 	case 'aprobarSolicitud':
@@ -179,28 +157,10 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'verProductosSolicitud':
+		$idsucursal = $_SESSION['idsucursal'];
 		$idtraslado = isset($_POST["idtraslado"]) ? intval($_POST["idtraslado"]) : 0;
-		$soloLectura = isset($_POST["soloLectura"]) ? $_POST["soloLectura"] : false;
-
-		if ($idtraslado <= 0) {
-			echo json_encode(["error" => "ID de traslado inválido."]);
-			exit;
-		}
-
-		$rspta = $traslado->verProductosSolicitud($idtraslado);
-
-		$productos = [];
-		while ($reg = $rspta->fetch_object()) {
-			$productos[] = [
-				"idproducto" => $reg->idproducto,
-				"nombre" => $reg->nombre,
-				"cantidad" => $reg->cantidad,
-				"estado_detalle" => $reg->estado_detalle ?? 'pendiente',
-				"observacion" => $reg->observacion ?? ''
-			];
-		}
-
-		echo json_encode(["productos" => $productos, "soloLectura" => $soloLectura]);
+		$rspta = $traslado->verProductosSolicitud($idtraslado, $idsucursal);
+		echo $rspta;
 		break;
 
 	case 'obtenerSucursalOrigen':

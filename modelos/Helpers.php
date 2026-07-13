@@ -339,4 +339,28 @@ class Helpers
 
         return true;
     }
+
+    public function correlativoTraslado(PDO $pdo, $idsucursal, $tipo)
+    {
+        $prefijo = strtoupper($tipo) === 'TRASLADO' ? 'TR' : 'SL';
+
+        $sql = "
+            SELECT COALESCE(MAX(correlativo),0) + 1 AS correlativo
+            FROM traslado
+            WHERE idorigen = :idsucursal
+            AND tipo = :tipo
+        ";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            'idsucursal' => $idsucursal,
+            'tipo'       => $tipo
+        ]);
+
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        $correlativo = (int)$row['correlativo'];
+
+        return sprintf('%s-%07d', $prefijo, $correlativo);
+    }
 }

@@ -120,10 +120,13 @@ date_default_timezone_set('America/Lima');
                           <table id="tbllistado" class="table table-striped table-hover">
                             <thead>
                               <tr>
-                                <th>#</th>
+                                <th>Correlativo</th>
                                 <th>Origen</th>
                                 <th>Destino</th>
-                                <th>Fecha</th>
+                                <th>Solicitante</th>
+                                <th>Fecha Solicitud</th>
+                                <th>Fecha Aceptación</th>
+                                <th>Usuario Acepta</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                               </tr>
@@ -206,12 +209,15 @@ date_default_timezone_set('America/Lima');
                         <table id="tbllistado" class="table table-striped">
                           <thead>
                             <tr>
-                              <th>#</th>
-                              <th>Origen</th>
-                              <th>Destino</th>
-                              <th>Fecha</th>
-                              <th>Estado</th>
-                              <th>Acciones</th>
+                                <th>Correlativo</th>
+                                <th>Origen</th>
+                                <th>Destino</th>
+                                <th>Solicitante</th>
+                                <th>Fecha Solicitud</th>
+                                <th>Fecha Aceptación</th>
+                                <th>Usuario Acepta</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
                             </tr>
                           </thead>
                           <tbody id="tbody_mis_solicitudes"></tbody>
@@ -251,10 +257,13 @@ date_default_timezone_set('America/Lima');
                           <table id="tbllistado" class="table table-striped">
                             <thead>
                               <tr>
-                                <th>#</th>
+                                <th>Correlativo</th>
                                 <th>Origen</th>
                                 <th>Destino</th>
-                                <th>Fecha</th>
+                                <th>Solicitante</th>
+                                <th>Fecha Solicitud</th>
+                                <th>Fecha Aceptación</th>
+                                <th>Usuario Acepta</th>
                                 <th>Estado</th>
                                 <th>Acciones</th>
                               </tr>
@@ -294,24 +303,31 @@ date_default_timezone_set('America/Lima');
 
       <div class="modal-body">
         <input type="hidden" id="idtraslado_solicitud">
-
-        <div class="mb-3">
-          <label class="form-label fw-bold">Sucursal Solicitante:</label>
-          <input type="text" id="sucursal_origen_solicitud" class="form-control" readonly>
-        </div>
-
-        <div class="table-responsive">
-          <table class="table table-sm table-striped align-middle" id="tablaProductosSolicitudTable">
-            <thead class="table-primary">
-              <tr>
-                <th style="width:35%">Producto</th>
-                <th style="width:15%">Cantidad</th>
-                <th style="width:25%">Estado</th>
-                <th style="width:25%">Observación</th>
-              </tr>
-            </thead>
-            <tbody id="tablaProductosSolicitud"></tbody>
-          </table>
+        <div class="row">
+          <div class="col-md-6">
+            <label class="form-label fw-bold" id="labelSucursalOrigen">Sucursal origen:</label>
+            <input type="text" id="sucursal_origen_solicitud" class="form-control" readonly>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label fw-bold" id="labelSucursalDestino">Sucursal Destino:</label>
+            <input type="text" id="sucursal_destino_solicitud" class="form-control" readonly>
+          </div>
+          <div class="col-md-12 mt-3">
+            <div class="table-responsive">
+              <table class="table table-sm table-striped align-middle" id="tablaProductosSolicitudTable">
+                <thead class="table-primary">
+                  <tr>
+                    <th style="width:35%">Producto</th>
+                    <th style="width:15%">Cantidad enviada</th>
+                    <th style="width:15%">Cantidad recibida</th>
+                    <th style="width:15%">Estado</th>
+                    <th style="width:25%">Observación</th>
+                  </tr>
+                </thead>
+                <tbody id="tablaProductosSolicitud"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 

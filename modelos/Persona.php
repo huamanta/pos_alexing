@@ -4,6 +4,7 @@ require "../configuraciones/Conexion.php";
 require_once "../configuraciones/ConexionPdo.php";
 require_once "../core/Paginanation.php";
 require_once "../core/FluentSave.php";
+require_once __DIR__."/Helpers.php";
 
 class Persona extends Helpers
 {

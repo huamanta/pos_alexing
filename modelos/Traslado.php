@@ -59,15 +59,19 @@ class Traslado extends Helpers
             // Insertar cabecera traslado como REALIZADO
             $traslado = (new FluentSaver($this->pdo))
                 ->table('traslado')
+                ->nullable([
+                    'idsolicitud_origen',
+                    'fecha_aceptacion',
+                    'idusuario_acepta'
+                ])
                 ->data([
+                    'correlativo' => Helpers::correlativoTraslado($this->pdo, $idorigen, 'traslado'),
                     'idorigen' => $idorigen,
                     'iddestino' => $iddestino,
                     'fecha' => $fecha,
-                    'estado' => '1',
+                    'estado' => 'en_transito', // estado inicial
                     'idusuario' => $idusuario,
-                    'tipo' => 'traslado',
-                    'fecha_aceptacion' => date('Y-m-d H:i:s'),
-                    'idusuario_acepta' => $idusuario
+                    'tipo' => 'traslado'
                 ])
                 ->save();
             if (!$traslado) {
@@ -84,79 +88,36 @@ class Traslado extends Helpers
                 $traslado_detalle = (new FluentSaver($this->pdo))
                     ->table('traslado_detalle')
                     ->nullable([
-                        'idserie'
+                        'idserie',
+                        'cantidad_recibida',
                     ])
                     ->data([
                         'idtraslado' => $traslado,
                         'idproducto' => $idproducto,
                         'idserie' => $idserie,
-                        'cantidad' => $cantidad,
-                        'estado_detalle' => 'aceptado',
+                        'cantidad_enviada' => $cantidad,
+                        'estado_detalle' => 'pendiente',
                         'observacion' => ''
                     ])
                     ->save();
                 // Insertar detalle con estado pendiente y sin observación
                 if (!$traslado_detalle) {
                     throw new Exception("Error al registrar detalle del producto $idproducto.");
-                }
-
-                $sqlProduct = "SELECT * FROM producto WHERE idproducto=:idproducto AND idsucursal=:idsucursal";
-                $stmtProduct = $this->pdo->prepare($sqlProduct);
-                $stmtProduct->execute([
-                    'idproducto' => $idproducto,
-                    'idsucursal' => $idorigen
-                ]);
-                $rowProduct = $stmtProduct->fetch(PDO::FETCH_ASSOC);
-                if (!$rowProduct) {
-                    throw new Exception("No se encontró información del producto $idproducto en origen.");
-                }
-
-                $precio = floatval($rowProduct['precio'] ?? 0);
-
-                // Salida de almacén origen
-                $motivo = "Traslado a almacén $idorigen (pendiente)";
-                $resSalida = $this->movimientoSalida($rowProduct, $idorigen, $idserie, $cantidad, $motivo);
-                if ($resSalida['success'] != true) {
-                    throw new Exception("Error en kardex de salida: " . $resSalida['message']);
-                }
-
-                // ingreso de almace destino
-                $resSalida = $this->movimientoIngreso($rowProduct, $iddestino, $idserie, $cantidad, $motivo);
-                if ($resSalida['success'] != true) {
-                    throw new Exception("Error en kardex de salida: " . $resSalida['message']);
-                }
-                $this->pdo->commit();
-                return json_encode([
-                    'success' => true,
-                    'message' => 'Se ha creado el traslado correctamente'
-                ]);
+                }     
             }
+
+            $this->pdo->commit();
+            return json_encode([
+                'success' => true,
+                'message' => 'Se ha creado el traslado correctamente'
+            ]);
+           
         } catch (Throwable $e) {
             if (isset($this->pdo) && $this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
             return json_encode(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
         }
-
-
-
-        // // 5️⃣ Crear notificación para almacén destino
-        // $origenFila = ejecutarConsultaSimpleFila("SELECT nombre FROM sucursal WHERE idsucursal='$idorigen'");
-        // $nombreOrigen = $origenFila ? $origenFila['nombre'] : "Almacén $idorigen";
-
-        // // Crear mensaje usando el nombre
-        // $mensaje = "Nuevo traslado pendiente desde el almacén $nombreOrigen con ID $idtraslado.";
-
-        // // Insertar notificación
-        // $sqlNotificacion = "INSERT INTO notificaciones (idsucursal, idtraslado, mensaje) 
-        //                     VALUES ('$iddestino', '$idtraslado', '$mensaje')";
-        // if (!ejecutarConsulta($sqlNotificacion)) {
-        //     ejecutarConsulta("ROLLBACK");
-        //     return "Error al generar notificación para el almacén de destino";
-        // }
-
-        // ejecutarConsulta("COMMIT");
-        // return " Traslado registrado correctamente como pendiente. La entrada de stock en destino se realizará al aceptar.";
     }
 
 
@@ -376,6 +337,86 @@ class Traslado extends Helpers
             "success" => true,
             "message" => ""
         ];
+    }
+
+    public function guardarSolicitud($idorigen, $iddestino, $productos, $idusuario){
+        try {
+            $this->pdo->beginTransaction();
+            $fecha = date("Y-m-d H:i:s");
+            // Insertar cabecera traslado como PENDIENTE
+            $traslado = (new FluentSaver($this->pdo))
+                ->table('traslado')
+                ->nullable([
+                    'idsolicitud_origen',
+                    'fecha_aceptacion',
+                    'idusuario_acepta'
+                ])
+                ->data([
+                    'correlativo' => Helpers::correlativoTraslado($this->pdo, $idorigen, 'solicitud'),
+                    'idorigen' => $idorigen,
+                    'iddestino' => $iddestino,
+                    'fecha' => $fecha,
+                    'estado' => 'pendiente', // estado inicial
+                    'idusuario' => $idusuario,
+                    'tipo' => 'solicitud'
+                ])
+                ->save();
+            if (!$traslado) {
+                throw new Exception("Error al registrar cabecera de traslado.");
+            }
+
+            // Insertar detalle y registrar salida en origen
+            $productos = json_decode($productos, true);
+            foreach ($productos as $p) {
+                $idproducto = intval($p["idproducto"]);
+                $idserie = intval($p["idserie"]);
+                $cantidad = floatval($p["cantidad"]);
+
+                // Insertar detalle
+                $traslado_detalle = (new FluentSaver($this->pdo))
+                    ->table('traslado_detalle')
+                    ->nullable([
+                        'idserie',
+                        'cantidad_recibida',
+                    ])
+                    ->data([
+                        'idtraslado' => $traslado,
+                        'idproducto' => $idproducto,
+                        'idserie' => $idserie,
+                        'cantidad_enviada' => $cantidad,
+                        'estado_detalle' => 'pendiente',
+                        'observacion' => ''
+                    ])
+                    ->save();
+                // Insertar detalle con estado pendiente y sin observación
+                if (!$traslado_detalle) {
+                    throw new Exception("Error al registrar detalle del producto $idproducto.");
+                }
+            }
+            $nombreOrigen = $_SESSION['nombre_sucursal'] ?? "Almacén $idorigen";
+            $mensaje = "Nueva solicitud pendiente desde el almacén {$nombreOrigen} con ID $traslado";
+            (new FluentSaver($this->pdo))
+                ->table('notificaciones')
+                ->data([
+                    'idsucursal' => $iddestino,
+                    'idtraslado' => $traslado,
+                    'mensaje' => $mensaje
+                ])
+                ->save();
+
+            $this->pdo->commit();
+            return json_encode([
+                'success' => true,
+                'message' => 'Se ha creado el traslado correctamente'
+            ]);
+            
+        } catch (Throwable $e) {
+            if (isset($this->pdo) && $this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            return json_encode(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
+        }
+		
     }
 
     // Función para aceptar traslado
@@ -798,34 +839,49 @@ class Traslado extends Helpers
         $paginator = (new FluentPaginator($this->pdo))
             ->query("
                 SELECT
-                    t.idtraslado,
-                    t.idorigen,
-                    t.iddestino,
+                    t.*,
                     s1.nombre AS origen,
                     s2.nombre AS destino,
-                    t.fecha,
-                    t.tipo,
                     CASE
-                        WHEN t.estado = '1' THEN 'Aceptado'
-                        WHEN t.estado = '0' THEN 'Pendiente'
-                        ELSE 'Anulado'
+                        WHEN t.estado = 'recibido' THEN 'Recibido'
+                        WHEN t.estado = 'pendiente' THEN 'Pendiente'
+                        WHEN t.estado = 'en_transito' THEN 'En Tránsito'
+                        WHEN t.estado = 'cancelado' THEN 'Cancelado'
+                        WHEN t.estado = 'rechazado' THEN 'Rechazado'
+                        ELSE 'Pendiente'
                     END AS estado_str,
-                    t.estado
+                    u1.login AS usuario_solicita,
+                    u2.login AS usuario_acepta
                 FROM traslado t
                 INNER JOIN sucursal s1
                     ON s1.idsucursal = t.idorigen
                 INNER JOIN sucursal s2
                     ON s2.idsucursal = t.iddestino
+                INNER JOIN usuario u1
+                    ON u1.idusuario = t.idusuario
+                LEFT JOIN usuario u2
+                    ON u2.idusuario = t.idusuario_acepta
             ")
             ->where("t.tipo", "=", $tipo);
 
-        if ($origen) {
-            $paginator->where("t.idorigen", "=", $idsucursal);
-        } else {
-            $paginator->where("t.iddestino", "=", $idsucursal);
+        if ($tipo === 'solicitud') {
+
+            if ($origen) {
+                $paginator->where("t.idorigen", "=", $idsucursal);
+            } else {
+                $paginator->where("t.iddestino", "=", $idsucursal);
+            }
+
+        } else { // traslado
+            $paginator->whereRaw(
+    "(t.idorigen = :sucursal1 OR t.iddestino = :sucursal2)",
+    [
+        'sucursal1' => $idsucursal,
+        'sucursal2' => $idsucursal
+    ]
+);
         }
-
-
+        
         // Solo filtrar fechas si ambas existen
         if (!empty($fecha_inicio) && !empty($fecha_fin)) {
             $paginator->where("DATE(t.fecha)", "BETWEEN", [
@@ -1476,27 +1532,55 @@ class Traslado extends Helpers
     //     ];
     // }
 
-    public function verProductosSolicitud($idtraslado)
+    public function verProductosSolicitud($idtraslado, $idsucursal)
     {
-        $sql = "SELECT 
-                td.idproducto, 
-                p.nombre, 
-                td.cantidad,
-                td.estado_detalle,
-                td.observacion
-            FROM traslado_detalle td
-            INNER JOIN producto p ON td.idproducto = p.idproducto
-            WHERE td.idtraslado = '$idtraslado'";
-        return ejecutarConsulta($sql);
+        try{
+            if (!$idtraslado) {
+                throw new Exception("ID de traslado inválido.");
+            }
+
+            $sql = "SELECT t.idtraslado, t.idorigen, t.iddestino, t.estado, t.tipo
+                    FROM traslado t
+                    WHERE t.idtraslado = :idtraslado";
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                'idtraslado' => $idtraslado
+            ]);
+            $traslado = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            $sql = "SELECT 
+                    td.*, 
+                    p.nombre
+                FROM traslado_detalle td
+                INNER JOIN producto p ON td.idproducto = p.idproducto
+                WHERE td.idtraslado = :idtraslado";
+            $stmtSolicitud = $this->pdo->prepare($sql);
+            $stmtSolicitud->execute([
+                'idtraslado' => $idtraslado
+            ]);
+            $productos = $stmtSolicitud->fetchAll(PDO::FETCH_ASSOC);
+            
+            if ((int)$idsucursal === (int)$traslado['idorigen']) {
+                // La sucursal que envía siempre consulta en modo lectura.
+                $soloLectura = true;
+            } else {
+                // La sucursal destino solo puede editar mientras esté pendiente o en tránsito.
+                $soloLectura = !in_array($traslado['estado'], ['pendiente', 'en_transito'], true);
+            }
+            return json_encode(['success' => true, 'productos' => $productos, 'soloLectura' => $soloLectura]);
+		} catch (Throwable $e) {
+            return json_encode(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
+        }
     }
 
 
 
     public function obtenerSucursalOrigen($idtraslado)
     {
-        $sql = "SELECT s1.nombre AS origen
+        $sql = "SELECT t.idorigen, t.iddestino, s1.nombre AS origen, s2.nombre AS destino
             FROM traslado t
             INNER JOIN sucursal s1 ON t.idorigen = s1.idsucursal
+            INNER JOIN sucursal s2 ON t.iddestino = s2.idsucursal
             WHERE t.idtraslado = '$idtraslado'";
         return ejecutarConsultaSimpleFila($sql);
     }

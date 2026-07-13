@@ -24,6 +24,8 @@ class FluentPaginator
     // Soft delete
     private array $orders = [];
 
+    private array $rawWhere = [];
+
     // Paginación
     private int $page = 1;
     private int $perPage = 15;
@@ -138,6 +140,16 @@ class FluentPaginator
                 break;
         }
 
+
+        return $this;
+    }
+
+    public function whereRaw(string $sql, array $params = []): self
+    {
+        $this->rawWhere[] = [
+            'sql' => $sql,
+            'params' => $params
+        ];
 
         return $this;
     }
@@ -335,16 +347,22 @@ class FluentPaginator
      */
     private function buildWhereClause(): array
     {
-
         $conditions = $this->whereConditions;
-
         $params = $this->whereParams;
 
+        // Agregar WHERE RAW
+        if (!empty($this->rawWhere)) {
+            foreach ($this->rawWhere as $raw) {
 
+                $conditions[] = '(' . $raw['sql'] . ')';
 
-        /**
-         * Search
-         */
+                foreach ($raw['params'] as $k => $v) {
+                    $params[$k] = $v;
+                }
+            }
+        }
+
+        // Search
         if ($this->searchTerm !== '') {
 
             $search = [];
@@ -353,50 +371,22 @@ class FluentPaginator
 
                 $key = "search_" . $i;
 
+                $search[] = "LOWER({$column}) LIKE LOWER(:{$key})";
 
-                $search[] =
-                    "LOWER({$column})
-                     LIKE LOWER(:{$key})";
-
-
-                $params[$key] =
-                    "%{$this->searchTerm}%";
+                $params[$key] = "%{$this->searchTerm}%";
             }
 
-
-            $conditions[] =
-                "(" . implode(
-                    " OR ",
-                    $search
-                ) . ")";
+            $conditions[] = "(" . implode(" OR ", $search) . ")";
         }
-
-
 
         if (empty($conditions)) {
-            return [
-                '',
-                []
-            ];
+            return ['', []];
         }
 
-
-
-        $connector =
-            $this->hasWhere()
-            ? " AND "
-            : " WHERE ";
-
-
+        $connector = $this->hasWhere() ? " AND " : " WHERE ";
 
         return [
-
-            $connector .
-            implode(
-                " AND ",
-                $conditions
-            ),
-
+            $connector . implode(" AND ", $conditions),
             $params
         ];
     }
