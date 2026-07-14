@@ -1,14 +1,16 @@
 <?php 
 //Incluímos inicialmente la conexión a la base de datos
-require "../configuraciones/Conexion.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
 date_default_timezone_set('America/Lima');
-Class Usuario
+Class Usuario extends Helpers
 {
 
 //Implementamos nuestro constructor
 	public function __construct()
-	{
-	}
+    {
+        parent::__construct();
+    }
 
 	//Implementamos un método para insertar registros
 	public function insertar($idpersonal, $login, $clave, $idsucursal, $permisos, $subpermisos, $acciones)
@@ -167,11 +169,47 @@ public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $pe
     }
 }
 
-public function listarSucursalesUsuario($idusuario)
-{
-    $sql = "SELECT idsucursal FROM usuario_sucursal WHERE idusuario='$idusuario'";
-    return ejecutarConsulta($sql);
-}
+    public function listarSucursalesUsuario($idusuario): array
+    {
+        // Verificar si es superusuario
+        $esSuperusuario = Helpers::esSuperusuario($idusuario);
+
+
+        // Si es admin mostrar todas las sucursales
+        if ($esSuperusuario) {
+
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    idsucursal,
+                    nombre
+                FROM sucursal 
+                WHERE deleted_at IS NULL
+                ORDER BY nombre
+            ");
+
+            $stmt->execute();
+
+        } else {
+
+            // Solo sus sucursales asignadas
+            $stmt = $this->pdo->prepare("
+                SELECT 
+                    us.idsucursal,
+                    s.nombre
+                FROM usuario_sucursal us
+                INNER JOIN sucursal s 
+                    ON us.idsucursal = s.idsucursal
+                WHERE us.idusuario = :idusuario AND s.deleted_at IS NULL AND us.deleted_at IS NULL
+                ORDER BY s.nombre
+            ");
+
+            $stmt->execute([
+                ':idusuario' => $idusuario
+            ]);
+        }
+
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
+    }
 
 	//Implementamos un método para desactivar categorías
 	public function desactivar($idusuario)

@@ -1,147 +1,199 @@
 <?php
-$host = env('DB_HOST');
-$db = env('DB_DATABASE');
-$user = env('DB_USERNAME');
-$pass = env('DB_PASSWORD');
-$db_encode = env('DB_ENCODE');
+    require_once __DIR__."/../../modelos/Usuario.php";
+    require_once __DIR__."/../../modelos/Helpers.php";
+    $usuario = new Usuario();
+    $sucursales = $usuario->listarSucursalesUsuario($_SESSION['idusuario']);
+    $baseUrl = dirname($_SERVER['SCRIPT_NAME']);
+    $count = count($sucursales);
+    $esAdmin = $usuario->esSuperusuario($_SESSION['idusuario']);
 ?>
 <div class="content-wrapper">
     <section class="content">
         <div class="container-fluid">
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h3 class="card-title" id="cardTitle">Seleccionar Sucursal</h3>
-                        </div>
-                        <div class="card-body">
-                            <?php
-                                $idusuario = $_SESSION['idusuario'];
-                                
-                                $conexion = new mysqli($host,$user,$pass,$db);
-                                if ($conexion->connect_error) {
-                                    die("Connection failed: " . $conexion->connect_error);
-                                }
-                                mysqli_query($conexion, 'SET NAMES "utf8"');
-                                
-                                $sql_super = "SELECT superusuario FROM usuario WHERE idusuario='$idusuario' LIMIT 1";
-                                $res_super = $conexion->query($sql_super);
-                                $isSuper = false;
-                                if ($res_super) {
-                                    $row_super = $res_super->fetch_object();
-                                    if ($row_super && isset($row_super->superusuario) && $row_super->superusuario == 1) {
-                                        $isSuper = true;
-                                    }
-                                }
+            <div class="row">
+                <div class="col-md-12">
 
-                                if ($isSuper) {
-                                    $sql = "SELECT idsucursal, nombre FROM sucursal";
-                                } else {
-                                    $sql = "SELECT us.idsucursal, s.nombre FROM usuario_sucursal us INNER JOIN sucursal s ON us.idsucursal = s.idsucursal WHERE us.idusuario='$idusuario'";
-                                }
-                                $result = $conexion->query($sql);
-                                if (!$result) {
-                                    die("Query failed: " . $conexion->error);
-                                }
-                                $sucursales = [];
-                                while ($reg = $result->fetch_object()) {
-                                    $sucursales[] = $reg;
-                                }
-                                $conexion->close();
-                                $baseUrl = dirname($_SERVER['SCRIPT_NAME']);
-                                $count = count($sucursales);
-                            ?>
+                    <!-- ADMIN SIN SUCURSALES -->
+                    <?php if ($count == 0 && $esAdmin): ?>
 
-                            <?php if ($count == 0): ?>
-                                <!-- Formulario para crear empresa y sucursal -->
-                                <form id="formCrearSucursal">
-                                    <h5>Datos de la Empresa</h5>
-                                    <div class="form-group">
-                                        <label for="ruc">RUC:</label>
-                                        <input type="text" class="form-control" id="ruc" name="ruc" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="razon_social">Razón Social:</label>
-                                        <input type="text" class="form-control" id="razon_social" name="razon_social" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="nombre_impuesto">Nombre Impuesto:</label>
-                                        <input type="text" class="form-control" id="nombre_impuesto" name="nombre_impuesto" value="IGV" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="monto_impuesto">Monto Impuesto (%):</label>
-                                        <input type="number" step="0.01" class="form-control" id="monto_impuesto" name="monto_impuesto" value="18.00" required>
-                                    </div>
-                                    <h5>Datos de la Sucursal</h5>
-                                    <div class="form-group">
-                                        <label for="nombre">Nombre de la Sucursal:</label>
-                                        <input type="text" class="form-control" id="nombre" name="nombre" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="direccion">Dirección:</label>
-                                        <input type="text" class="form-control" id="direccion" name="direccion">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="telefono">Teléfono:</label>
-                                        <input type="text" class="form-control" id="telefono" name="telefono">
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">Crear y Continuar</button>
-                                </form>
-                            <?php elseif ($count == 1): ?>
-                                <!-- Automático: seleccionar la única sucursal -->
-                                <p>Seleccionando sucursal automáticamente...</p>
-                                <script>
-                                    $(document).ready(function() {
-                                        $.post('<?php echo $baseUrl; ?>/controladores/usuario.php?op=seleccionarSucursal', { idsucursal: '<?php echo $sucursales[0]->idsucursal; ?>' }, function(response) {
-                                            if (response == 'ok') {
-                                                window.location.href = '<?php echo $baseUrl; ?>/inicio';
-                                            } else {
-                                                alert('Error al seleccionar sucursal');
-                                            }
-                                        });
-                                    });
-                                </script>
-                            <?php else: ?>
-                                <!-- Seleccionar entre múltiples -->
-                                <div class="alert alert-info">
-                                    <i class="fas fa-building"></i> Tienes <strong><?php echo $count; ?></strong> sucursales asignadas. Selecciona una:
+                    <div class="row justify-content-center">
+                        <div class="col-md-4 mt-3">
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h3 class="card-title" id="cardTitle">Crear nueva sucursal</h3>
                                 </div>
-                                <form id="formSeleccionarSucursal" method="POST">
-                                    <div class="form-group">
-                                        <label for="sucursal">Elige una sucursal:</label>
-                                        <select class="form-control" id="sucursal" name="sucursal" required>
-                                            <option value="">-- Seleccionar --</option>
-                                            <?php foreach ($sucursales as $suc): ?>
-                                                <option value="<?php echo $suc->idsucursal; ?>"><?php echo $suc->nombre; ?></option>
-                                            <?php endforeach; ?>
-                                        </select>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary">Seleccionar</button>
-                                </form>
-                            <?php endif; ?>
+                                <div class="card-body">
+                                    <form id="formCrearSucursal">
+                                        <h5>Datos de la Empresa</h5>
+                                        <div class="form-group"> <label for="ruc">RUC:</label> <input type="text"
+                                                class="form-control" id="ruc" name="ruc" required> </div>
+                                        <div class="form-group"> <label for="razon_social">Razón Social:</label> <input
+                                                type="text" class="form-control" id="razon_social" name="razon_social"
+                                                required>
+                                        </div>
+                                        <div class="form-group"> <label for="nombre_impuesto">Nombre Impuesto:</label>
+                                            <input type="text" class="form-control" id="nombre_impuesto"
+                                                name="nombre_impuesto" value="IGV" required>
+                                        </div>
+                                        <div class="form-group"> <label for="monto_impuesto">Monto Impuesto (%):</label>
+                                            <input type="number" step="0.01" class="form-control" id="monto_impuesto"
+                                                name="monto_impuesto" value="18.00" required>
+                                        </div>
+                                        <h5>Datos de la Sucursal</h5>
+                                        <div class="form-group"> <label for="nombre">Nombre de la Sucursal:</label>
+                                            <input type="text" class="form-control" id="nombre" name="nombre" required>
+                                        </div>
+                                        <div class="form-group"> <label for="direccion">Dirección:</label> <input
+                                                type="text" class="form-control" id="direccion" name="direccion"> </div>
+                                        <div class="form-group"> <label for="telefono">Teléfono:</label> <input
+                                                type="text" class="form-control" id="telefono" name="telefono"> </div>
+                                        <button type="submit" class="btn btn-primary">Crear y Continuar</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <?php elseif ($count == 0 && !$esAdmin): ?>
+
+                    <!-- USUARIO SIN SUCURSAL -->
+                    <div class="alert alert-warning text-center mt-3">
+
+                        <i class="fas fa-exclamation-triangle"></i>
+
+                        <h5>No tienes sucursales asignadas</h5>
+
+                        <p>
+                            Comunícate con un administrador para que te asigne una sucursal.
+                        </p>
+
+                    </div>
+
+
+                    <?php elseif ($count == 1): ?>
+
+                    <!-- UNA SOLA SUCURSAL -->
+                    <div class="text-center">
+
+                        <p>
+                            Seleccionando sucursal automáticamente...
+                        </p>
+
+                    </div>
+
+                    <script>
+                    $(document).ready(function() {
+
+                        $.post(
+                            '<?php echo $baseUrl; ?>/controladores/usuario.php?op=seleccionarSucursal', {
+                                idsucursal: '<?php echo $sucursales[0]->idsucursal;?>'
+                            },
+                            function(response) {
+
+                                if (response == "ok") {
+                                    window.location.href = '<?php echo $baseUrl;?>/inicio';
+                                }
+
+                            }
+                        );
+
+                    });
+                    </script>
+
+
+                    <?php else: ?>
+
+                    <!-- VARIAS SUCURSALES EN CARDS -->
+
+                    <style>
+                    .sucursal-card {
+                        transition: all 0.3s ease;
+                        border: 1px solid #dee2e6;
+                    }
+
+                    .sucursal-card:hover {
+                        transform: translateY(-5px);
+                        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+                        border-color: #007bff;
+                        background: #f8fbff;
+                    }
+
+                    .sucursal-card:hover .fa-store {
+                        transform: scale(1.1);
+                        color: #007bff;
+                    }
+
+                    .sucursal-card .fa-store {
+                        transition: transform 0.3s ease;
+                    }
+                    </style>
+
+                    <div class="row mt-3">
+                        <div class="col-md-12 mb-3">
+                            <div class="alert alert-info">
+                                <i class="fas fa-building"></i>
+                                Selecciona una sucursal
+                            </div>
+                        </div>
+                        <?php foreach($sucursales as $suc): ?>
+
+                        <div class="col-md-3 mb-3">
+
+                            <div class="card shadow sucursal-card" style="cursor:pointer">
+
+                                <div class="card-body text-center">
+
+                                    <i class="fas fa-store fa-3x text-primary"></i>
+
+                                    <h5 class="mt-3">
+                                        <?php echo $suc->nombre;?>
+                                    </h5>
+
+                                    <button class="btn btn-primary btn-sm sucursal-btn"
+                                        data-id="<?php echo $suc->idsucursal;?>">
+                                        Ingresar
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <?php endforeach; ?>
+
+                    </div>
+
+
+                    <?php endif; ?>
                 </div>
-            </div>
         </div>
-    </section>
+</div>
+</section>
 </div>
 
 <script>
 var baseUrl = '<?php echo $baseUrl; ?>';
 $(document).ready(function() {
-    $('#formSeleccionarSucursal').on('submit', function(e) {
-        e.preventDefault();
-        var selectedSuc = $('#sucursal').val();
-        if (selectedSuc) {
-            $.post(baseUrl + '/controladores/usuario.php?op=seleccionarSucursal', { idsucursal: selectedSuc }, function(response) {
-                if (response == 'ok') {
-                    window.location.reload();
+    $(document).on('click', '.sucursal-btn', function() {
+
+        let idsucursal = $(this).data('id');
+
+        $.post(
+            baseUrl + '/controladores/usuario.php?op=seleccionarSucursal', {
+                idsucursal: idsucursal
+            },
+            function(response) {
+
+                if (response == "ok") {
+                    window.location.href = baseUrl + '/inicio';
                 } else {
-                    alert('Error al seleccionar sucursal');
+                    alert("Error al seleccionar sucursal");
                 }
-            });
-        }
+
+            }
+        );
+
     });
 
     $('#formCrearSucursal').on('submit', function(e) {

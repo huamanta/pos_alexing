@@ -2,14 +2,24 @@
 
 session_start();
 //redirigir directamente
-if (isset($_GET["ruta"])) {
+$rutaActual = $_GET['ruta'] ?? null;
 
-    if ($_GET["ruta"] == "salir") {
+if (
+    empty($rutaActual) &&
+    isset($_SESSION["iniciarSesion"]) &&
+    $_SESSION["iniciarSesion"] == "ok"
+) {
+    header("Location: " . $_SERVER['PHP_SELF'] . "?ruta=inicio");
+    exit();
+}
+if (isset($rutaActual)) {
+
+    if ($rutaActual == "salir") {
         include "modulos/salir.php";
         exit;
     }
 
-    if ($_GET["ruta"] == "salirsucursal") {
+    if ($rutaActual == "salirsucursal") {
         include "modulos/salirsucursal.php";
         exit;
     }
