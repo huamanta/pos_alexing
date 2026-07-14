@@ -1,7 +1,6 @@
 <?php
 
 require_once "../modelos/Solicitudes.php";
-session_start();
 
 $credito = new Solicitudes();
 
