@@ -13,20 +13,22 @@ if (!isset($_SESSION["nombre"])) {
     $rspta = $traslado->mostrarCabecera($_GET["id"]);
     $reg = $rspta->fetch_object();
 
+    $sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $reg->idorigen;
+    $resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
+
     // Datos de la empresa
     $negocio = new Negocio();
     $rsptan = $negocio->listar();
     $regn = $rsptan->fetch_object();
-
-    $empresa = $regn->nombre;
-    $documento = $regn->documento;
-    $ndocumento = $regn->ndocumento;
-    $telefono = $regn->telefono;
-    $email = $regn->email;
-    $pais = $regn->pais;
-    $ciudad = $regn->ciudad;
-    $imagen = $regn->logo;
-    $direccion = $regn->direccion;
+    $empresa = $resultSucursal['razon_social'] ?? '-';
+    $documento = $resultSucursal['tipo_documento'] ?? 'RUC';
+    $ndocumento = $resultSucursal['ruc'] ?? '-';
+    $telefono = $resultSucursal['telefono'] ?? '-';
+    $email = $resultSucursal['email'] ?? '-';
+    $pais = $regn->pais ?? '-';
+    $ciudad = $regn->ciudad ?? '-';
+    $imagen = $regn->logo ?? '-';
+    $direccion = $resultSucursal['direccion'] ?? '-';
 
     // Información de la sucursal origen
     /*$categoria = new Categoria();
@@ -101,7 +103,7 @@ if (!isset($_SESSION["nombre"])) {
         $itemTotal = 0;
         while ($regd = $rsptad->fetch_object()) {
             echo "<tr>";
-            echo "<td style='font-size:14px'>".number_format($regd->cantidad,2)."</td>";
+            echo "<td style='font-size:14px'>".number_format($regd->cantidad_enviada,2)."</td>";
             echo "<td style='text-align:center;font-size:14px'>".$regd->producto."</td>";
             echo "<td style='text-align:right;font-size:14px'>".$regd->unidad."</td>";
             echo "</tr>";

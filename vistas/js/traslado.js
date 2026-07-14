@@ -37,6 +37,10 @@ $("#estadoSolicitudes").on("change", function () {
   paginatorSolicitudes.load();
 });
 
+$("#estadoTraslados").on("change", function () {
+  paginatorTraslados.load();
+});
+
 $("#fecha_inicio, #fecha_fin, #estadoMisSolicitudes").on("change", function () {
   paginatorMisSolicitudes.load();
 });
@@ -159,8 +163,8 @@ function configurarBotones() {
       if (
         $(
           "#tablaDetalleSolicitud tbody tr[data-idproducto='" +
-            idproducto +
-            "']",
+          idproducto +
+          "']",
         ).length > 0
       ) {
         // ya existe -> ignorar. Si quieres sumar cantidad en vez de ignorar, lo cambiamos.
@@ -200,6 +204,70 @@ function limpiar() {
   $("#tablaDetalle tbody").html("");
 }
 
+
+function rechazarSolicitud(idtraslado) {
+  Swal.fire({
+    title: "Rechazar solicitud?",
+    text: "Se procesará la solicitud con los cambios realizados.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Sí, aprobar",
+    cancelButtonText: "Cancelar",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.ajax({
+        url: 'controladores/traslado.php?op=rechazarAnular',
+        type: 'POST',
+        data: { idtraslado, estado: 'rechazado' },
+        success: function (response) {
+          const data = JSON.parse(response);
+          if (data.success != true) {
+            Swal.fire({ title: "Traslado", icon: "error", text: data.message });
+            return;
+          }
+          Swal.fire({ title: "Traslado", icon: "success", text: data.message });
+          $("#modalSolicitud").modal("hide");
+          paginatorSolicitudes.load();
+        }
+      })
+    }
+  })
+}
+
+
+function cancelatTraslado(idtraslado) {
+  Swal.fire({
+    title: "¿Cancelar solicitud?",
+    text: "Se procesará la solicitud con los cambios realizados.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: "#3085d6",
+    cancelButtonColor: "#d33",
+    confirmButtonText: "Sí, aprobar",
+    cancelButtonText: "Cancelar",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      $.ajax({
+        url: 'controladores/traslado.php?op=rechazarAnular',
+        type: 'POST',
+        data: { idtraslado, estado: 'cancelado' },
+        success: function (response) {
+          const data = JSON.parse(response);
+          if (data.success != true) {
+            Swal.fire({ title: "Traslado", icon: "error", text: data.message });
+            return;
+          }
+          Swal.fire({ title: "Traslado", icon: "success", text: data.message });
+          $("#modalSolicitud").modal("hide");
+          paginatorMisSolicitudes.load();
+        }
+      })
+    }
+  })
+}
+
 function pintarMisSolicitudes(data) {
   let html = "";
 
@@ -220,7 +288,7 @@ function pintarMisSolicitudes(data) {
     let anular = "";
     let imprimir = "";
     if (item.estado === "pendiente") {
-      anular = `<button class="btn btn-danger btn-sm" title="Anular solicitud" onclick="desactivar(${item.idtraslado})"><i class="fa fa-times"></i></button> `;
+      anular = `<button class="btn btn-danger btn-sm" title="Anular solicitud" onclick="cancelatTraslado(${item.idtraslado})"><i class="fa fa-times"></i></button> `;
     }
 
     if (item.estado === "aceptado") {
@@ -285,7 +353,7 @@ function pintarSolicitudes(data) {
     let anular = "";
     let imprimir = "";
     if (item.estado === 'pendiente') {
-      anular = `<button class="btn btn-danger btn-sm" title="Anular solicitud" onclick="rechazarSolicitud(${item.idtraslado})"><i class="fa fa-times"></i></button> `;
+      anular = `<button class="btn btn-danger btn-sm" title="Rechazar solicitud" onclick="rechazarSolicitud(${item.idtraslado})"><i class="fa fa-times"></i></button> `;
     }
     if (item.estado === 'aceptado') {
       imprimir = `<button class="btn btn-primary btn-sm" title="Imprimir solicitud" onclick="imprimirSolicitud(${item.idtraslado})"><i class="fa fa-print"></i></button>`;
@@ -352,8 +420,8 @@ function pintarTraslados(data) {
     if (item.estado === "pendiente") {
       anular = `<button class="btn btn-danger btn-sm" title="Anular traslado" onclick="desactivar(${item.idtraslado})"><i class="fa fa-times"></i></button> `;
     }
-    if (item.estado === "aceptado") {
-      imprimir = `<button class="btn btn-primary btn-sm" title="Imprimir traslado" onclick="imprimirSolicitud(${item.idtraslado})"><i class="fa fa-print"></i></button>`;
+    if (item.estado === "recibido") {
+      imprimir = `<button class="btn btn-primary btn-sm" title="Imprimir traslado" onclick="imprimirTraslado(${item.idtraslado})"><i class="fa fa-print"></i></button>`;
     }
 
     html += `
@@ -594,6 +662,7 @@ function enviarSolicitud() {
   }
 
   const iddestino_solicitud = $("#iddestino_solicitud").val();
+  const tipo_traslado = $("#tipoTraslado").val();
 
   if (!iddestino_solicitud) {
     Swal.fire("Atención", "Debe seleccionar la sucursal destino.", "warning");
@@ -607,18 +676,18 @@ function enviarSolicitud() {
     type: "POST",
     data: {
       productos: JSON.stringify(productosSeleccionados),
-      iddestino_solicitud: iddestino_solicitud,
+      iddestino_solicitud: iddestino_solicitud
     },
     success: function (response) {
-        const data = JSON.parse(response);
-        if (data.success != true) {
-            Swal.fire({ title: "Traslado", icon: "error", text: data.message });
-            return;
-        }
-        Swal.fire({ title: "Traslado", icon: "success", text: data.message });
-        $("#modalSolicitud").modal("hide");
-        paginatorMisSolicitudes.load();
-        limpiarSolicitud();
+      const data = JSON.parse(response);
+      if (data.success != true) {
+        Swal.fire({ title: "Traslado", icon: "error", text: data.message });
+        return;
+      }
+      Swal.fire({ title: "Traslado", icon: "success", text: data.message });
+      $("#modalSolicitud").modal("hide");
+      paginatorMisSolicitudes.load();
+      limpiarSolicitud();
     },
     error: function (xhr) {
       console.error("❌ Error en guardarSolicitud:", xhr.responseText);
@@ -657,13 +726,14 @@ $("#modalSolicitud").on("shown.bs.modal", function () {
   $("#tablaDetalleSolicitud tbody").empty();
 });
 
+
 // 🔹 Cargar productos en el modal
 function verProductosSolicitud(idtraslado, tipo = "solicitud") {
   $.post(
     "controladores/traslado.php?op=verProductosSolicitud",
-    { idtraslado: idtraslado},
+    { idtraslado: idtraslado },
     function (response) {
-        const data = JSON.parse(response);
+      const data = JSON.parse(response);
       if (!data.success) {
         Swal.fire("Error", data.message || "Error al obtener los datos de la solicitud.", "error");
         return;
@@ -678,10 +748,12 @@ function verProductosSolicitud(idtraslado, tipo = "solicitud") {
                         <td class="nombreProducto">${p.nombre}</td>
                         <td>
                             <input type="hidden" class="idProductoHidden" value="${p.idproducto}">
+                            <input type="hidden" class="iddetalle" value="${p.iddetalle}">
+                            <input type="hidden" class="idserie" value="${p.idserie}">
                             <input type="number" class="form-control cantidadProducto" value="${p.cantidad_enviada}" min="1">
                         </td>
                         <td>
-                            <input type="number" class="form-control cantidadProducto" value="${p.cantidad_recibida}" min="1">
+                            <input type="number" class="form-control cantidadProductoRecibida" value="${p.cantidad_recibida}" min="1">
                         </td>
                         <td>
                             <select class="form-control estadoProducto">
@@ -699,6 +771,7 @@ function verProductosSolicitud(idtraslado, tipo = "solicitud") {
 
       $("#tablaProductosSolicitud").html(html);
       $("#idtraslado_solicitud").val(idtraslado);
+      $("#tipoTraslado").val(tipo);
 
       // Obtener sucursal solicitante
       $.post(
@@ -783,9 +856,12 @@ function aprobarSolicitud() {
 
   $("#tablaProductosSolicitud tr").each(function () {
     let idproducto = $(this).find(".idProductoHidden").val();
+    let iddetalle = $(this).find(".iddetalle").val();
+    let idserie = $(this).find(".idserie").val();
     let nombreProducto = $(this).find(".nombreProducto").text().trim();
     let estado = $(this).find(".estadoProducto").val();
     let cantidad = parseFloat($(this).find(".cantidadProducto").val()) || 0;
+    let cantidad_recibida = parseFloat($(this).find(".cantidadProductoRecibida").val()) || 0;
     let observacion = $(this).find(".observacion").val().trim();
 
     if (!idproducto) {
@@ -812,10 +888,13 @@ function aprobarSolicitud() {
     }
 
     productos.push({
+      iddetalle,
+      idserie,
       idproducto,
       nombre: nombreProducto,
       estado,
       cantidad,
+      cantidad_recibida,
       observacion,
     });
   });
@@ -830,9 +909,15 @@ function aprobarSolicitud() {
     return;
   }
 
+  const tipo_traslado = $("#tipoTraslado").val();
+  let url = "controladores/traslado.php?op=aprobarSolicitud";
+  if (tipo_traslado != 'solicitud') {
+    url = "controladores/traslado.php?op=procesarSolicitud";
+  }
+
   // Confirmación antes de enviar
   Swal.fire({
-    title: "¿Aprobar solicitud?",
+    title: `¿Aprobar ${tipo_traslado}?`,
     text: "Se procesará la solicitud con los cambios realizados.",
     icon: "question",
     showCancelButton: true,
@@ -842,19 +927,16 @@ function aprobarSolicitud() {
     cancelButtonText: "Cancelar",
   }).then((result) => {
     if (result.isConfirmed) {
-      $.post(
-        "controladores/traslado.php?op=aprobarSolicitud",
-        { idtraslado: idtraslado, productos: JSON.stringify(productos) },
-        function (response) {
-          const data = JSON.parse(response);
-          if (data.success != true) {
-            Swal.fire({ title: "Traslado", icon: "error", text: data.message });
-            return;
-          }
-          Swal.fire({ title: "Traslado", icon: "success", text: data.message });
-          $("#modalAprobarSolicitud").modal("hide");
-          paginatorSolicitudes.load();
-        },
+      $.post(url, { idtraslado: idtraslado, productos: JSON.stringify(productos) }, function (response) {
+        const data = JSON.parse(response);
+        if (data.success != true) {
+          Swal.fire({ title: "Traslado", icon: "error", text: data.message });
+          return;
+        }
+        Swal.fire({ title: "Traslado", icon: "success", text: data.message });
+        $("#modalAprobarSolicitud").modal("hide");
+        paginatorSolicitudes.load();
+      },
       ).fail(() => {
         Swal.fire({
           icon: "error",
@@ -888,8 +970,8 @@ function verProductosAprobacion(idtraslado) {
         let data = JSON.parse(resp);
 
         if (!data.success) {
-            Swal.fire({ title: "Traslado", icon: "error", text: data.message || "Error al obtener los datos de la solicitud." });
-            return;
+          Swal.fire({ title: "Traslado", icon: "error", text: data.message || "Error al obtener los datos de la solicitud." });
+          return;
         }
 
         $("#modalAprobarSolicitud").modal("show");

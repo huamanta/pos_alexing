@@ -22,7 +22,6 @@ $sqlVenta = "SELECT v.*, ta.nombre AS nombre_tipo_acompanante, a.nombre AS nombr
              WHERE v.idventa = $idVenta";
 $resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
 
-
 $comprador = $resultVenta['nombre_cliente'] ?? '';
 $dniComprador = $resultVenta['num_documento_cliente'] ?? '';
 $direccionComprador = $resultVenta['direccion_cliente'] ?? '';
@@ -48,12 +47,13 @@ $dniGarante = $resultVenta['num_documento_garante'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // seleccionar detalle de la venta
-$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, m.nombre AS marca, mo.nombre AS modelo, p.color,
-                       p.numserie AS serie, p.motor, p.anio_fabricacion AS anio, p.placa,
-                       p.clase_vehiculo AS clase, p.tipo_vehiculo
+$sqlDetalle = "SELECT dv.*, p.idproducto, p.nombre AS producto_nombre, m.nombre AS marca, mo.nombre AS modelo, ps.color,
+                       ps.numero_serie AS serie, ps.numero_motor, ps.anio_fabricacion AS anio, ps.placa,
+                       ps.clase_vehiculo AS clase, ps.tipo_vehiculo
                 FROM detalle_venta dv
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
-                LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
+                LEFT JOIN producto p ON p.idproducto = dv.idproducto
+                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto_configuracion
+                INNER JOIN producto_serie ps ON ps.idproducto = p.idproducto
                 LEFT JOIN marca m ON m.idmarca = p.idmarca
                 LEFT JOIN modelo mo ON mo.idmodelo = p.idmodelo
                 WHERE dv.idventa = $idVenta";
@@ -223,7 +223,7 @@ ob_start();
     <p>
         Conste por el presente documento, el contrato de <b>VENTA AL CONTADO</b> de vehículo <b>NUEVO</b>, que celebran
         de
-        una parte como <b>VENDEDOR</b>, la Empresa "<b><?php echo strtoupper($resultNegocio['nombre']); ?></b>", con RUC
+        una parte como <b>VENDEDOR</b>, la Empresa "<b><?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?></b>", con RUC
         Nº <?php echo $resultSucursal['ruc']; ?>, representado
         por su Gerente General el señor <b>JESUS ROBERTO SURCO KACASACA</b>, identificado con DNI Nº <b>43978509</b>,
         con
@@ -238,7 +238,7 @@ ob_start();
         calidad de <b><?php echo strtoupper($nombreTipoAcompanante); ?></b> en los siguientes términos:
     </p>
 
-    <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre']); ?>, declara ser
+    <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?>, declara ser
         propietario y
         titular registral del vehículo
         <b>MOTOCICLETA</b> con las siguientes características:

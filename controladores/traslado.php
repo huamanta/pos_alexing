@@ -20,10 +20,11 @@ switch ($_GET["op"]) {
 		}
 		break;
 
-	case 'aceptar':
-		$idtraslado = $_POST['idtraslado'];
+	case 'rechazarAnular':
+		$idtraslado = intval($_POST['idtraslado'] ?? 0);
+		$estado = $_POST['estado'];
 		$idusuario = $_SESSION['idusuario'];
-		$rspta = $traslado->aceptarTraslado($idtraslado, $idusuario);
+		$rspta = $traslado->rechazarAnular($idtraslado, $idusuario, $estado);
 		echo $rspta;
 		break;
 
@@ -87,17 +88,6 @@ switch ($_GET["op"]) {
 		}
 		break;
 
-	// case 'listarProductos':
-	// 	$idsucursal = $_SESSION['idsucursal'];
-	// 	$busqueda = isset($_POST["busqueda"]) ? limpiarCadena($_POST["busqueda"]) : '';
-	// 	$pagina = isset($_POST["pagina"]) ? intval($_POST["pagina"]) : 1;
-	// 	$limite = isset($_POST["limite"]) ? intval($_POST["limite"]) : 10;
-	// 	$iddestino = isset($_POST["iddestino"]) ? intval($_POST["iddestino"]) : null;
-	// 	$tipo = isset($_POST["tipo"]) ? limpiarCadena($_POST["tipo"]) : 'traslado';
-	// 	$rspta = $traslado->listarProductos($idsucursal, $busqueda, $pagina, $limite, $iddestino, $tipo);
-	// 	echo json_encode($rspta);
-	// 	break;
-
 
 	case 'sucursal_actual':
 		require_once "../modelos/Categoria.php";
@@ -133,28 +123,16 @@ switch ($_GET["op"]) {
 		echo $rspta;
 		break;
 
-	case 'verproductos2':
-		$idtraslado = isset($_POST['idtraslado']) ? $_POST['idtraslado'] : 0;
 
-		if ($idtraslado == 0) {
-			echo json_encode([]);
-			exit;
-		}
+	case "procesarSolicitud":
+		$idtraslado = $_POST["idtraslado"];
+		$productos = json_decode($_POST["productos"], true); // array con productos aceptados/rechazados
+		$idusuario = $_SESSION['idusuario'];
 
-		// Llamar al modelo para obtener productos
-		$rspta = $traslado->verProductosSolicitud($idtraslado);
-		$data = [];
-
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = [
-				'idproducto' => $reg->idproducto,
-				'nombre' => $reg->nombre,
-				'cantidad' => $reg->cantidad
-			];
-		}
-
-		echo json_encode($data);
+		$rspta = $traslado->procesarSolicitud($idtraslado, $productos, $idusuario);
+		echo $rspta;
 		break;
+
 
 	case 'verProductosSolicitud':
 		$idsucursal = $_SESSION['idsucursal'];

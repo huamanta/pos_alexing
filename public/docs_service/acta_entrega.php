@@ -62,12 +62,13 @@ $dniGarante = $resultVenta['num_documento_garante'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // Detalle del vehículo vendido
-$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, m.nombre AS marca, mo.nombre AS modelo, p.color,
-                       p.numserie AS serie, p.motor, p.anio_fabricacion AS anio, p.placa,
-                       p.clase_vehiculo AS clase, p.tipo_vehiculo
+$sqlDetalle = "SELECT dv.*, p.idproducto, p.nombre AS producto_nombre, m.nombre AS marca, mo.nombre AS modelo, ps.color,
+                       ps.numero_serie AS serie, ps.numero_motor, ps.anio_fabricacion AS anio, ps.placa,
+                       ps.clase_vehiculo AS clase, ps.tipo_vehiculo
                 FROM detalle_venta dv
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
-                LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
+                LEFT JOIN producto p ON p.idproducto = dv.idproducto
+                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto_configuracion
+                INNER JOIN producto_serie ps ON ps.idproducto = p.idproducto
                 LEFT JOIN marca m ON m.idmarca = p.idmarca
                 LEFT JOIN modelo mo ON mo.idmodelo = p.idmodelo
                 WHERE dv.idventa = $idVenta";
@@ -82,8 +83,18 @@ $anioProducto = !empty($resultDetalle['anio']) ? $resultDetalle['anio'] : '_____
 $placaProducto = !empty($resultDetalle['placa']) ? $resultDetalle['placa'] : '__________';
 
 // Cuotas y fechas de inicio/fin
-$sqlCuotas = "SELECT deuda, MIN(fechavencimiento) AS fecha_inicio_cuota, MAX(fechavencimiento) AS fecha_fin_cuota
-              FROM cuentas_por_cobrar WHERE idventa = $idVenta";
+$sqlCuotas = "SELECT
+    (
+        SELECT deuda
+        FROM cuentas_por_cobrar
+        WHERE idventa = $idVenta
+        ORDER BY fechavencimiento
+        LIMIT 1
+    ) AS deuda,
+    MIN(fechavencimiento) AS fecha_inicio_cuota,
+    MAX(fechavencimiento) AS fecha_fin_cuota
+FROM cuentas_por_cobrar
+WHERE idventa = $idVenta";
 $resultCuotas = ejecutarConsultaSimpleFila($sqlCuotas);
 $montoCuota = !empty($resultCuotas['deuda']) ? $resultCuotas['deuda'] : 0;
 $fechaInicio = !empty($resultCuotas['fecha_inicio_cuota']) ? $helpers->fechaLetras($resultCuotas['fecha_inicio_cuota']) : '__________';
@@ -269,7 +280,7 @@ ob_start();
     <p>
         Siendo las <strong><?php echo $hora; ?></strong> horas, del día
         <strong><?php echo $helpers->fechaLetras($resultVenta['fecha_hora']); ?></strong>, en las instalaciones de la
-        empresa <strong>"<?php echo strtoupper($resultNegocio['nombre']); ?>"</strong>,
+        empresa <strong>"<?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?>"</strong>,
         con RUC Nº <strong><?php echo $resultSucursal['ruc']; ?></strong>,
         sito en
         <strong><?php echo strtoupper($resultSucursal['direccion'] ?? $resultNegocio['direccion'] ?? ''); ?></strong>,
@@ -568,7 +579,7 @@ ob_start();
         y/u obtención. Si el bien mueble es robado, asumo la responsabilidad de devolver el vehículo o cancelar la
         totalidad del valor del bien pactado entre las partes, en un lapso de 30 días calendarios.
         En caso de incumplimiento del presente acta, estoy obligado a entregar el vehículo trimovil personalmente en las
-        instalaciones de la empresa <strong><?php echo strtoupper($resultNegocio['nombre']); ?></strong>, en las mismas
+        instalaciones de la empresa <strong><?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?></strong>, en las mismas
         condiciones que fue recibido y todos los
         documentos
         dados a mi custodia, con el simple requerimiento verbal o mediante carta notarial, asimismo, pagar en calidad de
@@ -576,7 +587,7 @@ ob_start();
         (<?php echo $helpers->numeroALetrasMoneda(35, $currency); ?>), por cada día de demora
         en la
         entrega del vehículo trimovil. De igual forma, faculto a la empresa
-        <strong><?php echo strtoupper($resultNegocio['nombre']); ?></strong>, en caso de
+        <strong><?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?></strong>, en caso de
         incumplimiento,
         retener el vehículo donde se le encuentre ubicado o en su defecto tomar acciones legales frente a las instancias
         pertinentes, denunciándome por los delitos contra el patrimonio en cualquiera de sus modalidades en que hubiera

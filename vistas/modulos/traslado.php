@@ -83,7 +83,7 @@ date_default_timezone_set('America/Lima');
                   <div class="tab-pane fade show active" id="tab-solicitudes" role="tabpanel"
                     aria-labelledby="tab-basico-link">
                     <div class="row">
-                      
+
                       <div class="col-lg-3 col-md-3 col-sm-4 col-xs-12 d-flex align-items-center">
                         <span class="mr-2">Mostrar</span>
                         <select id="limitSolicitudes" class="form-control" style="width:100px">
@@ -107,8 +107,12 @@ date_default_timezone_set('America/Lima');
                         <div class="input-group">
                           <select id="estadoSolicitudes" name="estadoSolicitudes" class="form-control select2">
                             <option value="Todos">Todos</option>
-                            <option value="0">Pendiente</option>
-                            <option value="1">Aceptado</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="aceptado">Aceptado</option>
+                            <option value="cancelado">Cancelado</option>
+                            <option value="rechazado">Rechazado</option>
+                            <option value="en_transito">En transito</option>
+                            <option value="recibido">Recibido</option>
                           </select>
                         </div>
                       </div>
@@ -184,15 +188,18 @@ date_default_timezone_set('America/Lima');
                         <div class="input-group">
                           <select id="estadoMisSolicitudes" name="estado" class="form-control select2">
                             <option value="Todos">Todos</option>
-                            <option value="0">Pendiente</option>
-                            <option value="1">Aceptado</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="aceptado">Aceptado</option>
+                            <option value="cancelado">Cancelado</option>
+                            <option value="rechazado">Rechazado</option>
+                            <option value="en_transito">En transito</option>
+                            <option value="recibido">Recibido</option>
                           </select>
                         </div>
                       </div>
                       <div class="col-md-6 d-flex align-items-center">
                         <span class="mr-2">Mostrar</span>
-                        <select id="limitMisSolicitudes" class="form-control" style="width:100px"
-                          onchange="cambiarLimit()">
+                        <select id="limitMisSolicitudes" class="form-control" style="width:100px">
                           <option value="10">10</option>
                           <option value="25">25</option>
                           <option value="50">50</option>
@@ -205,19 +212,19 @@ date_default_timezone_set('America/Lima');
                       <div class="col-md-6">
                         <input type="text" id="searchMisSolicitudes" class="form-control" placeholder="Buscar...">
                       </div>
-                      <div class="col-md-12">
+                      <div class="col-md-12 mt-3">
                         <table id="tbllistado" class="table table-striped">
                           <thead>
                             <tr>
-                                <th>Correlativo</th>
-                                <th>Origen</th>
-                                <th>Destino</th>
-                                <th>Solicitante</th>
-                                <th>Fecha Solicitud</th>
-                                <th>Fecha Aceptación</th>
-                                <th>Usuario Acepta</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
+                              <th>Correlativo</th>
+                              <th>Origen</th>
+                              <th>Destino</th>
+                              <th>Solicitante</th>
+                              <th>Fecha Solicitud</th>
+                              <th>Fecha Aceptación</th>
+                              <th>Usuario Acepta</th>
+                              <th>Estado</th>
+                              <th>Acciones</th>
                             </tr>
                           </thead>
                           <tbody id="tbody_mis_solicitudes"></tbody>
@@ -231,11 +238,27 @@ date_default_timezone_set('America/Lima');
                   </div>
                   <div class="tab-pane fade show" id="tab-traslados" role="tabpanel" aria-labelledby="tab-basico-link">
                     <div class="row">
-                      <div class="form-group col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                      <div class="form-group col-lg-6 col-md-6 col-sm-6 col-xs-12">
                         <button type="button" class="btn btn-outline-primary" data-toggle="modal"
                           data-target="#modalTraslado">
                           <i class="fa fa-plus"></i> Nuevo Traslado
                         </button>
+                      </div>
+                      <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12"></div>
+                      <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                        <label>Estado:</label>
+
+                        <div class="input-group">
+                          <select id="estadoTraslados" name="estado" class="form-control select2">
+                            <option value="Todos">Todos</option>
+                            <option value="pendiente">Pendiente</option>
+                            <option value="aceptado">Aceptado</option>
+                            <option value="cancelado">Cancelado</option>
+                            <option value="rechazado">Rechazado</option>
+                            <option value="en_transito">En transito</option>
+                            <option value="recibido">Recibido</option>
+                          </select>
+                        </div>
                       </div>
                       <div class="col-md-6 d-flex align-items-center">
                         <span class="mr-2">Mostrar</span>
@@ -245,14 +268,13 @@ date_default_timezone_set('America/Lima');
                           <option value="50">50</option>
                           <option value="100">100</option>
                         </select>
-
                         <span class="ml-2">Registros</span>
 
                       </div>
                       <div class="col-md-6">
                         <input type="text" id="searchTraslados" class="form-control" placeholder="Buscar...">
                       </div>
-                      <div class="col-md-12">
+                      <div class="col-md-12 mt-3">
                         <div class="responsive">
                           <table id="tbllistado" class="table table-striped">
                             <thead>
@@ -303,6 +325,7 @@ date_default_timezone_set('America/Lima');
 
       <div class="modal-body">
         <input type="hidden" id="idtraslado_solicitud">
+        <input type="hidden" name="tipoTraslado" id="tipoTraslado">
         <div class="row">
           <div class="col-md-6">
             <label class="form-label fw-bold" id="labelSucursalOrigen">Sucursal origen:</label>
@@ -355,7 +378,6 @@ date_default_timezone_set('America/Lima');
       <div class="modal-body">
         <form id="formSolicitud">
           <input type="hidden" id="idsolicitud" name="idsolicitud">
-
           <div class="row mb-2">
             <div class="col-md-6">
               <label>Almacén Origen</label>
@@ -368,8 +390,6 @@ date_default_timezone_set('America/Lima');
               <select id="iddestino_solicitud" name="iddestino_solicitud" class="form-control" required></select>
             </div>
           </div>
-
-          <hr>
 
           <button type="button" class="btn btn-info btn-sm" id="btnAgregarProductosSolicitud">
             <i class="fa fa-search"></i> Seleccionar Productos

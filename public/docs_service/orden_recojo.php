@@ -57,12 +57,13 @@ $dniGarante = $resultVenta['num_documento_garante'] ?? '';
 $fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // Detalle del vehículo vendido
-$sqlDetalle = "SELECT dv.*, p.nombre AS producto_nombre, m.nombre AS marca, mo.nombre AS modelo, p.color,
-                       p.numserie AS serie, p.motor, p.anio_fabricacion AS anio, p.placa,
-                       p.clase_vehiculo AS clase, p.tipo_vehiculo
+$sqlDetalle = "SELECT dv.*, p.idproducto, p.nombre AS producto_nombre, m.nombre AS marca, mo.nombre AS modelo, ps.color,
+                       ps.numero_serie AS serie, ps.numero_motor, ps.anio_fabricacion AS anio, ps.placa,
+                       ps.clase_vehiculo AS clase, ps.tipo_vehiculo
                 FROM detalle_venta dv
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.id
-                LEFT JOIN producto p ON p.idproducto = COALESCE(pg.idproducto, dv.idproducto)
+                LEFT JOIN producto p ON p.idproducto = dv.idproducto
+                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto_configuracion
+                INNER JOIN producto_serie ps ON ps.idproducto = p.idproducto
                 LEFT JOIN marca m ON m.idmarca = p.idmarca
                 LEFT JOIN modelo mo ON mo.idmodelo = p.idmodelo
                 WHERE dv.idventa = $idVenta";
@@ -74,8 +75,18 @@ $colorProducto = !empty($resultDetalle['color']) ? $resultDetalle['color'] : '__
 $placaProducto = !empty($resultDetalle['placa']) ? $resultDetalle['placa'] : '__________';
 
 // Cuotas y fechas de inicio/fin
-$sqlCuotas = "SELECT deuda, MIN(fechavencimiento) AS fecha_inicio_cuota, MAX(fechavencimiento) AS fecha_fin_cuota
-              FROM cuentas_por_cobrar WHERE idventa = $idVenta";
+$sqlCuotas = "SELECT
+    (
+        SELECT deuda
+        FROM cuentas_por_cobrar
+        WHERE idventa = $idVenta
+        ORDER BY fechavencimiento
+        LIMIT 1
+    ) AS deuda,
+    MIN(fechavencimiento) AS fecha_inicio_cuota,
+    MAX(fechavencimiento) AS fecha_fin_cuota
+FROM cuentas_por_cobrar
+WHERE idventa = $idVenta";
 $resultCuotas = ejecutarConsultaSimpleFila($sqlCuotas);
 $montoCuota = !empty($resultCuotas['deuda']) ? $resultCuotas['deuda'] : 0;
 $fechaInicio = !empty($resultCuotas['fecha_inicio_cuota']) ? $helpers->fechaLetras($resultCuotas['fecha_inicio_cuota']) : '__________';
@@ -295,7 +306,7 @@ ob_start();
 <body>
 
     <div class="header">
-        <div class="empresa"><?php echo strtoupper($resultNegocio['nombre']); ?></div>
+        <div class="empresa"><?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?></div>
         <div class="subempresa">ALQUILER VENTA DE VEHÍCULOS MOTORIZADOS</div>
         <div class="ruc">R.U.C. <?php echo $resultSucursal['ruc']; ?></div>
 
@@ -320,7 +331,7 @@ ob_start();
     <p class="texto">
         CASO CONTRARIO NO TENDRE QUE RECLAMAR DE CONFORMIDAD CON LO ESTIPULADO EN LA CLAUSULA 7
         DE NUESTRO CONTRATO, AUTORIZO DESDE YA A
-        <strong><?php echo strtoupper($resultNegocio['nombre']); ?></strong> A DAR ESTRICTO CUMPLIMIENTO A LO
+        <strong><?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?></strong> A DAR ESTRICTO CUMPLIMIENTO A LO
         SENALADO EN LA CLAUSULA 7 DE LA ACOTADA RELACION CONTRACTUAL, ESTO ES LUEGO DE PRODUCIDO EL
         RECOJO DEL PRODUCTO.
     </p>
