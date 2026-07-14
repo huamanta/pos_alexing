@@ -2,7 +2,7 @@
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
 require_once "../configuraciones/ConexionPdo.php";
-require_once "../core/Paginanation.php";
+require_once "../core/FluentQuery.php";
 require_once "../core/FluentSave.php";
 require_once "Helpers.php";
 date_default_timezone_set('America/Lima');
@@ -1105,45 +1105,37 @@ class Producto extends Helpers
 		$limit = $_GET['limit'] ?? 10;
 		$search = $_GET['search'] ?? '';
 
-		$response = (new FluentPaginator($this->pdo))
+		$response = (new DBQuery($this->pdo))
 
-			->query("
-            SELECT
-                p.*,
-                i.idinventario,
-                i.stock,
-                i.stock_minimo,
-                i.stock_maximo,
-                i.precio_compra,
+    ->select([
+        'p.*',
+        'i.idinventario',
+        'i.stock',
+        'i.stock_minimo',
+        'i.stock_maximo',
+        'i.precio_compra'
+    ])
 
-                (
-                    SELECT COUNT(*)
-                    FROM producto_serie ps
-                    WHERE
-                        ps.idproducto = p.idproducto
-                        AND ps.idsucursal = i.idsucursal
-                        AND ps.estado = 'DISPONIBLE'
-                        AND ps.deleted_at IS NULL
-                ) AS series_disponibles
+    ->from('inventario_producto i')
 
-            FROM inventario_producto i
+    ->join(
+        'producto p',
+        'p.idproducto = i.idproducto'
+    )
 
-            INNER JOIN producto p
-                ON p.idproducto = i.idproducto")
-			->where('p.idsucursal', '=', $idsucursal)
-			->withSoftDeletes('p.deleted_at')
-			->search($search, [
-				'p.codigo',
-				'p.nombre',
-				'p.descripcion'
-			])
+    ->where('i.idsucursal', '=', $idsucursal)
 
-			->orderBy('p.nombre', 'ASC')
+    ->softDeletes('p.deleted_at')
 
-			->paginate(
-				(int) $page,
-				(int) $limit
-			);
+    ->search($search, [
+        'p.codigo',
+        'p.nombre',
+        'p.descripcion'
+    ])
+
+    ->orderBy('p.nombre')
+
+    ->paginate($page, $limit);
 
 		$response['permissions'] = [
 			'editar' => Helpers::getUserPermissionAccion('Editar productos'),

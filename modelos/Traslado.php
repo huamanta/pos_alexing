@@ -2,7 +2,7 @@
 require "../configuraciones/Conexion.php";
 date_default_timezone_set('America/Lima');
 require_once __DIR__ . "/../configuraciones/ConexionPdo.php";
-require_once __DIR__ . "/../core/Paginanation.php";
+require_once __DIR__ . "/../core/FluentQuery.php";
 require_once __DIR__ . "/../core/FluentSave.php";
 require_once __DIR__ . "/Helpers.php";
 
@@ -442,7 +442,7 @@ class Traslado extends Helpers
         $limit = $_GET['limit'] ?? 10;
         $search = $_GET['search'] ?? '';
 
-        $paginator = (new FluentPaginator($this->pdo))
+        $paginator = (new DBQuery($this->pdo))
             ->query("
                 SELECT
                     t.*,

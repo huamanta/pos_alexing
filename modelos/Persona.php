@@ -2,7 +2,7 @@
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
 require_once "../configuraciones/ConexionPdo.php";
-require_once "../core/Paginanation.php";
+require_once "../core/FluentQuery.php";
 require_once "../core/FluentSave.php";
 require_once __DIR__."/Helpers.php";
 
@@ -106,7 +106,7 @@ class Persona extends Helpers
 					'latitude' => $latitude,
 					'longitude' => $longitude
 				])
-				->save();
+				->update();
 
 			if (!$update) {
 				throw new Exception("No se pudo actualizar el registro");
@@ -215,7 +215,7 @@ class Persona extends Helpers
 		$search = $_GET['search'] ?? '';
 
 
-		$paginator = (new FluentPaginator($pdo))
+		$paginator = (new DBQuery($pdo))
 			->query("
 				SELECT *
 				FROM persona
@@ -231,7 +231,7 @@ class Persona extends Helpers
 		}
 
 		$response = $paginator
-			->withSoftDeletes()
+			->softDeletes()
 			->search($search, ['nombre', 'num_documento', 'telefono', 'email'])
 			->orderBy('idpersona', 'DESC')
 			->paginate(

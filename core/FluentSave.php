@@ -62,26 +62,27 @@ class FluentSaver
      * Ejecuta el INSERT o UPDATE
      * Retorna el ID insertado (int) o true si fue una actualización exitosa
      */
-    public function save(): int|bool
-    {
-        $this->sanitizeData();
-        $this->manageTimestamps();
+    public function save(): int
+{
+    $this->sanitizeData();
+    $this->manageTimestamps();
 
-        // ¿Viene un ID? -> Es UPDATE. Si no -> Es INSERT.
-        $isUpdate = isset($this->data[$this->primaryKey]) && !empty($this->data[$this->primaryKey]);
+    return $this->executeInsert();
+}
 
-        try {
-            if ($isUpdate) {
-                return $this->executeUpdate();
-            } else {
-                return $this->executeInsert();
-            }
-        } catch (PDOException $e) {
-            // En producción esto debería ir a un log real, no mostrarse al usuario
-            error_log("Error FluentSaver: " . $e->getMessage());
-            throw new Exception($e->getMessage());
-        }
+    public function update(): bool
+{
+    if (!isset($this->data[$this->primaryKey])) {
+        throw new Exception(
+            "No se encontró la clave primaria '{$this->primaryKey}'."
+        );
     }
+
+    $this->sanitizeData();
+    $this->manageTimestamps();
+
+    return $this->executeUpdate();
+}
 
     private function sanitizeData(): void
     {
@@ -164,10 +165,14 @@ class FluentSaver
 
         $stmt = $this->pdo->prepare($sql);
         $this->bindValues($stmt);
-        $stmt->bindValue(':pk_id', $id, PDO::PARAM_INT); // Asumimos que el PK es entero
+        $type = is_int($id)
+    ? PDO::PARAM_INT
+    : PDO::PARAM_STR;
+
+$stmt->bindValue(':pk_id', $id, $type);
         $stmt->execute();
 
-        return true;
+return $stmt->rowCount() > 0;
     }
 
     private function bindValues(PDOStatement $stmt): void
@@ -185,4 +190,172 @@ class FluentSaver
             }
         }
     }
+
+    public function delete(mixed $id): bool
+{
+    $sql = "
+        DELETE FROM {$this->table}
+        WHERE {$this->primaryKey} = :id
+    ";
+
+    $stmt = $this->pdo->prepare($sql);
+
+    $stmt->bindValue(
+        ':id',
+        $id,
+        is_int($id)
+            ? PDO::PARAM_INT
+            : PDO::PARAM_STR
+    );
+
+    $stmt->execute();
+
+return $stmt->rowCount() > 0;
+}
+
+public function softDelete(
+    mixed $id,
+    string $column='deleted_at'
+): bool
+{
+    $sql = "
+        UPDATE {$this->table}
+        SET {$column} = :deleted_at
+        WHERE {$this->primaryKey} = :id
+    ";
+
+    $stmt = $this->pdo->prepare($sql);
+
+    $stmt->bindValue(
+        ':deleted_at',
+        date('Y-m-d H:i:s')
+    );
+
+    $stmt->bindValue(
+        ':id',
+        $id,
+        is_int($id)
+            ? PDO::PARAM_INT
+            : PDO::PARAM_STR
+    );
+
+    $stmt->execute();
+
+return $stmt->rowCount() > 0;
+}
+
+public function restore(
+    mixed $id,
+    string $column='deleted_at'
+): bool
+{
+    $sql = "
+        UPDATE {$this->table}
+        SET {$column}=NULL
+        WHERE {$this->primaryKey}=:id
+    ";
+
+    $stmt = $this->pdo->prepare($sql);
+
+    $stmt->bindValue(
+        ':id',
+        $id,
+        is_int($id)
+            ? PDO::PARAM_INT
+            : PDO::PARAM_STR
+    );
+
+    $stmt->execute();
+
+return $stmt->rowCount() > 0;
+}
+
+public function reset(): self
+{
+    $this->table = '';
+    $this->data = [];
+    $this->primaryKey = 'id';
+    $this->casts = [];
+    $this->nullable = [];
+    $this->timestamps = true;
+
+    return $this;
+}
+
+public function begin(): self
+{
+    if (!$this->pdo->inTransaction()) {
+        $this->pdo->beginTransaction();
+    }
+
+    return $this;
+}
+
+public function commit(): void
+{
+    if ($this->pdo->inTransaction()) {
+        $this->pdo->commit();
+    }
+}
+
+public function rollback(): void
+{
+    if ($this->pdo->inTransaction()) {
+        $this->pdo->rollBack();
+    }
+}
+
+public function increment(
+    string $column,
+    int|float $value = 1
+): bool
+{
+    $id = $this->data[$this->primaryKey];
+
+    $sql = "
+        UPDATE {$this->table}
+        SET {$column} = {$column} + :value
+        WHERE {$this->primaryKey} = :id
+    ";
+
+    $stmt = $this->pdo->prepare($sql);
+
+    $stmt->bindValue(':value', $value);
+    $stmt->bindValue(
+    ':id',
+    $id,
+    is_int($id)
+        ? PDO::PARAM_INT
+        : PDO::PARAM_STR
+);
+
+    return $stmt->execute();
+}
+
+public function decrement(
+    string $column,
+    int|float $value = 1
+): bool
+{
+    $id = $this->data[$this->primaryKey];
+
+    $sql = "
+        UPDATE {$this->table}
+        SET {$column} = {$column} - :value
+        WHERE {$this->primaryKey} = :id
+    ";
+
+    $stmt = $this->pdo->prepare($sql);
+
+    $stmt->bindValue(':value', $value);
+    $stmt->bindValue(
+    ':id',
+    $id,
+    is_int($id)
+        ? PDO::PARAM_INT
+        : PDO::PARAM_STR
+);
+
+    return $stmt->execute();
+}
 }

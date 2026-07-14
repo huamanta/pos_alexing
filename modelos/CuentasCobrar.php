@@ -2384,43 +2384,43 @@ class CuentasCobrar extends Helpers
             }
 
             $update = (new FluentSaver($this->pdo))
-                ->table('seguimiento_clientes')
-                ->primaryKey('idseguimiento')
-                ->timestamps(false)
-                ->nullable([
-                    'idventa',
-                    'iddocumento',
-                    'idcpc',
-                    'idcliente',
-                    'direccion',
-                    'fecha_final'
-                ])
-                ->cast([
-                    'idseguimiento' => 'int',
-                    'idventa' => 'int',
-                    'iddocumento' => 'int',
-                    'idcpc' => 'int',
-                    'idcliente' => 'int',
-                    'idpersonal' => 'int',
-                    'idusuario' => 'int'
-                ])
-                ->data([
-                    'idseguimiento' => $id,
-                    'idventa' => $idventa,
-                    'iddocumento' => $iddocumento,
-                    'idcpc' => $idcpc,
-                    'idcliente' => $idcliente,
-                    'idpersonal' => $idpersonal,
-                    'tipo' => $tipo_visita,
-                    'descripcion' => $descripcion,
-                    'fecha_proxima' => $fecha_programada,
-                    'estado' => $estado,
-                    'prioridad' => $prioridad,
-                    'direccion' => $direccion,
-                    'fecha_final' => $fecha_final,
-                    'idusuario' => $idusuario
-                ])
-                ->save();
+    ->table('seguimiento_clientes')
+    ->primaryKey('idseguimiento')
+    ->timestamps(false)
+    ->nullable([
+        'idventa',
+        'iddocumento',
+        'idcpc',
+        'idcliente',
+        'direccion',
+        'fecha_final',
+        'fecha_proxima'
+    ])
+    ->cast([
+        'idventa' => 'int',
+        'iddocumento' => 'int',
+        'idcpc' => 'int',
+        'idcliente' => 'int',
+        'idpersonal' => 'int',
+        'idusuario' => 'int'
+    ])
+    ->data([
+        'idseguimiento' => $id,
+        'idventa' => $idventa,
+        'iddocumento' => $iddocumento,
+        'idcpc' => $idcpc,
+        'idcliente' => $idcliente,
+        'idpersonal' => $idpersonal,
+        'tipo' => $tipo_visita,
+        'descripcion' => $descripcion,
+        'fecha_proxima' => $fecha_programada,
+        'estado' => $estado,
+        'prioridad' => $prioridad,
+        'direccion' => $direccion,
+        'fecha_final' => $fecha_final,
+        'idusuario' => $idusuario
+    ])
+    ->update();
 
             if (!$update) {
                 throw new Exception("No se pudo actualizar el seguimiento");
