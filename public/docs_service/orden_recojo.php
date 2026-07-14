@@ -379,7 +379,7 @@ ob_start();
 </body>
 <?php
 $html = ob_get_clean();
-require_once __DIR__ . '/../../reportes/factura/pdf/vendor/autoload.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
 
 $options = new \Dompdf\Options();
 $options->set('isRemoteEnabled', true);

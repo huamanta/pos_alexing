@@ -234,7 +234,7 @@ class Procesar
     {
         $html = $this->convertirXmlTicket($rutaXml);
 
-        require_once __DIR__ . '/../reportes/factura/pdf/vendor/autoload.php';
+        require_once __DIR__ . '/../vendor/autoload.php';
 
         // limpiar buffer
         if (ob_get_length()) {
@@ -262,7 +262,7 @@ class Procesar
 
     public function convertirXmlFacturaPdf($rutaXml)
 {
-    require_once __DIR__ . '/../reportes/factura/pdf/vendor/autoload.php';
+    require_once __DIR__ . '/../vendor/autoload.php';
 
     if (ob_get_length()) ob_end_clean();
 

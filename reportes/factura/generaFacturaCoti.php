@@ -11,7 +11,7 @@
 	}
 
 	include "../../configuraciones/Conexion.php";
-	require_once 'pdf/vendor/autoload.php';
+	require_once __DIR__ . '/../../vendor/autoload.php';
 	use Dompdf\Dompdf;
 
 	if(empty($_GET["id"]))

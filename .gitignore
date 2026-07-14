@@ -4,3 +4,9 @@
 /reportes/documentos
 /phpqrcode/img*
 /phpqrcode/cache
+/vendor
+/temp
+/error_log
+/controladores/error_log
+/reportes/factura/error_log
+/public/FACT_WebService/Facturacion/error_log

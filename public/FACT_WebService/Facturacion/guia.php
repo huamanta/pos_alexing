@@ -1,5 +1,5 @@
 <?php
-require_once 'vendor/autoload.php';
+require_once __DIR__ . '/../../../vendor/autoload.php';
 
 use Greenter\Model\Client\Client;
 use Greenter\Model\Company\Address;
