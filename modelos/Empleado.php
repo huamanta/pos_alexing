@@ -98,7 +98,7 @@ class Empleado extends Helpers
 					'porcentaje' => $porcentaje,
 					'salario' => $salario
 				])
-				->save();
+				->update();
 
 			if (!$adjunto) {
 				throw new Exception("Error al actualizar el personal.");
