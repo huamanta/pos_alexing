@@ -171,7 +171,7 @@
                     <div class="settings-menu">
 
                         <ul class="nav nav-pills nav-stacked">
-                            <?php if (Helpers::getUserPermisoModulo('Mora', "Configuracion general")): ?>
+                            <?php if ($helpers->getUserPermisoModulo('Mora', "Configuracion general")): ?>
                                 <li class="active" id="itemMenuMora">
                                     <a href="#mora" data-toggle="tab" onclick="activarMenu('itemMenuMora')">
                                         <i class="fa fa-exclamation-triangle"></i>
@@ -179,7 +179,7 @@
                                     </a>
                                 </li>
                             <?php endif; ?>
-                            <?php if (Helpers::getUserPermisoModulo('Credito', "Configuracion general")): ?>
+                            <?php if ($helpers->getUserPermisoModulo('Credito', "Configuracion general")): ?>
                                 <li id="itemMenuCredito">
                                     <a href="#credito" data-toggle="tab" onclick="activarMenu('itemMenuCredito')">
                                         <i class="fa fa-credit-card"></i>
@@ -187,7 +187,7 @@
                                     </a>
                                 </li>
                             <?php endif; ?>
-                            <?php if (Helpers::getUserPermisoModulo('Refinanciamiento', "Configuracion general")): ?>
+                            <?php if ($helpers->getUserPermisoModulo('Refinanciamiento', "Configuracion general")): ?>
                                 <li id="itemMenuRef">
                                     <a href="#ref" data-toggle="tab" onclick="activarMenu('itemMenuRef')">
                                         <i class="fa fa-user"></i>
@@ -208,7 +208,7 @@
 
                     <div class="tab-content">
 
-                        <?php if (Helpers::getUserPermisoModulo('Mora', "Configuracion general")): ?>
+                        <?php if ($helpers->getUserPermisoModulo('Mora', "Configuracion general")): ?>
                             <!-- MORA -->
                             <div class="tab-pane active" id="mora">
 
@@ -326,7 +326,7 @@
                             </div>
 
                         <?php endif; ?>
-                        <?php if (Helpers::getUserPermisoModulo('Configuracion general', "Credito")): ?>
+                        <?php if ($helpers->getUserPermisoModulo('Configuracion general', "Credito")): ?>
                             <!-- CREDITO -->
                             <div class="tab-pane" id="credito">
 
@@ -579,7 +579,7 @@
 
                             </div>
                         <?php endif; ?>
-                        <?php if (Helpers::getUserPermisoModulo('Configuracion general', "Refinanciamiento")): ?>
+                        <?php if ($helpers->getUserPermisoModulo('Configuracion general', "Refinanciamiento")): ?>
                             <!-- REFINANCIAMIENTO -->
                             <div class="tab-pane" id="ref">
 

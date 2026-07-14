@@ -6,6 +6,7 @@ if (strlen(session_id()) < 1) {
 if (!isset($_SESSION["nombre"])) {
 	header("Location: ../vistas/login.html"); //Validamos el acceso solo a los usuarios logueados al sistema.
 } else {
+	require_once __DIR__ . '/../configuraciones/bootstrap.php';
 	require_once "../modelos/Consultas.php";
 
 	$consulta = new Consultas();

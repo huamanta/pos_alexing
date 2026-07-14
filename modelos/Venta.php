@@ -2,7 +2,7 @@
 require "../configuraciones/Conexion.php";
 require "Helpers.php";
 date_default_timezone_set('America/Lima');
-class Venta
+class Venta extends Helpers
 {
     //implementamos nuestro constructor
     public function __construct()

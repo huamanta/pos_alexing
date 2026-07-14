@@ -3,6 +3,7 @@ ob_start();
 if (strlen(session_id()) < 1) {
 	session_start(); //Validamos si existe o no la sesión
 }
+		require_once __DIR__ . '/../configuraciones/bootstrap.php';
 
 		require_once "../modelos/Compra.php";
 

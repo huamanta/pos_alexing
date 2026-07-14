@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 date_default_timezone_set('America/Lima');
-
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once __DIR__ . '/../configuraciones/Conexion.php';
 
 function getClientIP() {

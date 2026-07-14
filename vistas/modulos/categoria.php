@@ -28,7 +28,7 @@
               <h3 class="card-title"> </h3>
 
               <div class="row">
-                <?php if (Helpers::getUserPermissionAccion('Crear categoria')) { ?>
+                <?php if ($helpers->getUserPermissionAccion('Crear categoria')) { ?>
                 <div class="col-md-1">
                   <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Nuevo</button>
                 </div>

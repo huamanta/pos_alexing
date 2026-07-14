@@ -1,4 +1,5 @@
 <?php 
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/CondicionVenta.php";
 
 $condicionventa=new CondicionVenta();

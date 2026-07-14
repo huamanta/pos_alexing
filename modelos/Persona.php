@@ -9,13 +9,10 @@ require_once __DIR__."/Helpers.php";
 class Persona extends Helpers
 {
 
-	private PDO $pdo;
-	//Implementamos nuestro constructor
 	public function __construct()
-	{
-
-		$this->pdo = Conexion::conectar();
-	}
+    {
+        parent::__construct();
+    }
 
 	//Implementamos un método para insertar registros
 	public function insertar(

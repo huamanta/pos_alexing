@@ -65,7 +65,7 @@ class Traslado extends Helpers
                     'idusuario_acepta'
                 ])
                 ->data([
-                    'correlativo' => Helpers::correlativoTraslado($this->pdo, $idorigen, 'traslado'),
+                    'correlativo' => Helpers::correlativoTraslado($idorigen, 'traslado'),
                     'idorigen' => $idorigen,
                     'iddestino' => $iddestino,
                     'fecha' => $fecha,
@@ -235,7 +235,6 @@ class Traslado extends Helpers
         $ingreso = 1;
         if ($nuevoProducto['controla_stock'] === 'Si') {
             Helpers::updateKardexSucursal(
-                $this->pdo,
                 $iddestino,
                 $idproductoDestino,
                 $saveConfig,
@@ -319,7 +318,6 @@ class Traslado extends Helpers
         $salida = 0;
         if ($rowProduct['controla_stock'] === 'Si') {
             Helpers::updateKardexSucursal(
-                $this->pdo,
                 $idsucursal,
                 $rowProduct['idproducto'],
                 $rowConfiguracion['idproducto_configuracion'],
@@ -353,7 +351,7 @@ class Traslado extends Helpers
                     'idusuario_acepta'
                 ])
                 ->data([
-                    'correlativo' => Helpers::correlativoTraslado($this->pdo, $idorigen, 'solicitud'),
+                    'correlativo' => Helpers::correlativoTraslado($idorigen, 'solicitud'),
                     'idorigen' => $idorigen,
                     'iddestino' => $iddestino,
                     'fecha' => $fecha,
@@ -636,7 +634,7 @@ class Traslado extends Helpers
                     ->table('traslado')
                     ->data([
                         'idorigen' => $idProveedor,
-                        'correlativo' => Helpers::correlativoTraslado($this->pdo, $idProveedor, 'traslado'),
+                        'correlativo' => Helpers::correlativoTraslado($idProveedor, 'traslado'),
                         'iddestino' => $idSolicitante,
                         'fecha' => $fecha,
                         'estado' => 'en_transito',

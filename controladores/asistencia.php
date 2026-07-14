@@ -1,6 +1,7 @@
 <?php 
 date_default_timezone_set('America/Lima');
 // Incluimos inicialmente el modelo de Asistencia
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Asistencia.php";
 // Iniciar la sesión solo si aún no está iniciada
 if (session_status() === PHP_SESSION_NONE) {

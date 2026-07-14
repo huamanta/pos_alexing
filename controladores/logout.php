@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once __DIR__ . "/../configuraciones/Conexion.php";
 
 if (isset($_SESSION['idusuario'])) {

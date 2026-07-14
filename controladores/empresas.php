@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Empresas.php";
 $empresa = new Empresa();
 $op = isset($_GET["op"]) ? $_GET["op"] : '';

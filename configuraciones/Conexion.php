@@ -1,14 +1,18 @@
 <?php
-require_once "local.php";
-
 $conexion = null;
-$conexion = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
+$host = env('DB_HOST');
+$db = env('DB_DATABASE');
+$user = env('DB_USERNAME');
+$pass = env('DB_PASSWORD');
+$db_encode = env('DB_ENCODE');
+
+$conexion = new mysqli($host, $user, $pass, $db);
 
 if (!$conexion) {
 	die("Failed to connect to database");
 }
 
-mysqli_query($conexion, 'SET NAMES "' . DB_ENCODE . '"');
+mysqli_query($conexion, 'SET NAMES "' . $db_encode . '"');
 
 //muestra posible error en la conexion
 if (mysqli_connect_errno()) {

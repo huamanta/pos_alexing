@@ -1,6 +1,6 @@
 <?php
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require "../configuraciones/Conexion.php";
-require __DIR__ . '/../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;

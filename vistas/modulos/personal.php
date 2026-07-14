@@ -30,7 +30,7 @@
                   <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal"
                     data-target="#myModal"><i class="fa fa-plus"></i> Nuevo</button>
                 </div>
-                <?php if (Helpers::getUserPermissionAccion('Puede ver calendario')): ?>
+                <?php if ($helpers->getUserPermissionAccion('Puede ver calendario')): ?>
                   <button type="button" class="btn btn-outline-info btn-xs" onclick="verEventos('', 0)">
                     <i class="fa fa-calendar"></i> Calendario
                   </button>

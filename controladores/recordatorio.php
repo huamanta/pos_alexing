@@ -1,5 +1,6 @@
 <?php
 ob_start(); // evita que cualquier salida accidental rompa el JSON
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/CuentasCobrar.php";
 require_once "../modelos/Negocio.php";
 

@@ -1,26 +1,27 @@
 <?php
-require_once "local.php";
-
 class Conexion
 {
+    private static string $host;
+    private static string $db;
+    private static string $user;
+    private static string $pass;
+
+    private static function cargarConfig()
+    {
+        self::$host = env('DB_HOST');
+        self::$db = env('DB_DATABASE');
+        self::$user = env('DB_USERNAME');
+        self::$pass = env('DB_PASSWORD');
+    }
+
     public static function conectar()
     {
-        try {
-            $pdo = new PDO(
-                "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
-                DB_USERNAME,
-                DB_PASSWORD,
-                [
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                ]
-            );
+        self::cargarConfig();
 
-            return $pdo;
-
-        } catch (PDOException $e) {
-            die("Error de conexión: " . $e->getMessage());
-        }
+        return new PDO(
+            "mysql:host=" . self::$host . ";dbname=" . self::$db . ";charset=utf8mb4",
+            self::$user,
+            self::$pass
+        );
     }
 }

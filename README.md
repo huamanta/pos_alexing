@@ -8,6 +8,24 @@ Sistema Punto de Venta desarrollado en PHP con MVC.
 - MySQL
 - XAMPP o entorno similar
 
+## Copiar .env.example a .env
+```
+copy .env.example .env
+```
+
+## Composer
+```
+> composer install
+```
+
+## Después de eso configura tus datos de conexión en .env
+```
+DB_HOST=127.0.0.1
+DB_DATABASE=db_name
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
 ## Extensiones a habilitar
 
 ### Para generar PDFs

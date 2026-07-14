@@ -1,5 +1,9 @@
 <?php
-require_once __DIR__.'/../../configuraciones/local.php'
+$host = env('DB_HOST');
+$db = env('DB_DATABASE');
+$user = env('DB_USERNAME');
+$pass = env('DB_PASSWORD');
+$db_encode = env('DB_ENCODE');
 ?>
 <div class="content-wrapper">
     <section class="content">
@@ -14,7 +18,7 @@ require_once __DIR__.'/../../configuraciones/local.php'
                             <?php
                                 $idusuario = $_SESSION['idusuario'];
                                 
-                                $conexion = new mysqli(DB_HOST,DB_USERNAME,DB_PASSWORD,DB_NAME);
+                                $conexion = new mysqli($host,$user,$pass,$db);
                                 if ($conexion->connect_error) {
                                     die("Connection failed: " . $conexion->connect_error);
                                 }

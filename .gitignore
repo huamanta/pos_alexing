@@ -1,5 +1,3 @@
-/configuraciones/entorno.php
-/configuraciones/local.php
 /reportes/qr
 /reportes/documentos
 /phpqrcode/img*
@@ -10,3 +8,4 @@
 /controladores/error_log
 /reportes/factura/error_log
 /public/FACT_WebService/Facturacion/error_log
+/.env

@@ -1,58 +1,74 @@
 <?php
 session_start();
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Usuario.php";
 require_once __DIR__ . "/email.php";
-require_once "../configuraciones/app.php";
 
 $usuario = new Usuario();
-function getClientIP()
+function getClientIP(): string
 {
-	// Primero intentamos obtener la IP local o la del proxy
-	$ip = '';
+    $ip = '';
 
-	$host = $_SERVER['HTTP_HOST'] ?? '';
-	$isProduction = !($host === 'localhost' || strpos($host, '127.0.0.1') !== false);
+    $isProduction = env('APP_ENV', 'local') === 'production';
+    $checkExternalIP = env('APP_EXTERNAL_IP_CHECK', false);
 
-	$headers = [
-		'HTTP_CLIENT_IP',
-		'HTTP_X_FORWARDED_FOR',
-		'HTTP_X_FORWARDED',
-		'HTTP_X_CLUSTER_CLIENT_IP',
-		'HTTP_FORWARDED_FOR',
-		'HTTP_FORWARDED',
-		'REMOTE_ADDR'
-	];
+    $headers = [
+        'HTTP_CLIENT_IP',
+        'HTTP_X_FORWARDED_FOR',
+        'HTTP_X_FORWARDED',
+        'HTTP_X_CLUSTER_CLIENT_IP',
+        'HTTP_FORWARDED_FOR',
+        'HTTP_FORWARDED',
+        'REMOTE_ADDR'
+    ];
 
-	foreach ($headers as $header) {
-		if (!empty($_SERVER[$header])) {
-			$ips = explode(',', $_SERVER[$header]);
-			foreach ($ips as $i) {
-				$i = trim($i);
-				if (filter_var($i, FILTER_VALIDATE_IP)) {
-					$ip = $i;
-					break 2; // salimos de ambos foreach
-				}
-			}
-		}
-	}
+    foreach ($headers as $header) {
 
-	// Solo en producción intentamos resolver una IP pública externa
-	if ($isProduction && ($ip === '127.0.0.1' || $ip === '::1' || $ip === '')) {
-		try {
-			$ip = file_get_contents('https://api.ipify.org');
-			if (!filter_var($ip, FILTER_VALIDATE_IP)) {
-				$ip = '0.0.0.0';
-			}
-		} catch (Exception $e) {
-			$ip = '0.0.0.0';
-		}
-	}
+        if (!empty($_SERVER[$header])) {
 
-	if (!$isProduction && ($ip === '' || $ip === '::1')) {
-		$ip = '127.0.0.1';
-	}
+            $ips = explode(',', $_SERVER[$header]);
 
-	return $ip;
+            foreach ($ips as $i) {
+
+                $i = trim($i);
+
+                if (filter_var($i, FILTER_VALIDATE_IP)) {
+                    $ip = $i;
+                    break 2;
+                }
+            }
+        }
+    }
+
+
+    // Resolver IP pública solo si está habilitado
+    if (
+        $isProduction &&
+        $checkExternalIP &&
+        ($ip === '127.0.0.1' || $ip === '::1' || $ip === '')
+    ) {
+
+        try {
+
+            $externalIp = file_get_contents('https://api.ipify.org');
+
+            if (filter_var($externalIp, FILTER_VALIDATE_IP)) {
+                $ip = $externalIp;
+            }
+
+        } catch (Exception $e) {
+            $ip = '0.0.0.0';
+        }
+    }
+
+
+    // Ambiente local
+    if (!$isProduction && ($ip === '' || $ip === '::1')) {
+        $ip = '127.0.0.1';
+    }
+
+
+    return $ip;
 }
 
 

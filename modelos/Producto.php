@@ -9,13 +9,10 @@ date_default_timezone_set('America/Lima');
 
 class Producto extends Helpers
 {
-	private PDO $pdo;
-	//Implementamos nuestro constructor
 	public function __construct()
-	{
-
-		$this->pdo = Conexion::conectar();
-	}
+    {
+        parent::__construct();
+    }
 
 
 	public function insertar(

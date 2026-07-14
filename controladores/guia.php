@@ -2,7 +2,7 @@
 ob_start();
 if (strlen(session_id()) < 1)
   session_start();
-
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Guia.php";
 require_once "../modelos/Persona.php";
 require_once "../modelos/Negocio.php";

@@ -96,6 +96,7 @@
 </style>
 <?php
 require_once __DIR__ . '/../../modelos/Helpers.php';
+$helpers = new Helpers();
 ?>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -407,7 +408,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                 <i class="fas fa-expand-arrows-alt"></i>
             </a>
         </li>
-        <?php if (Helpers::getUserPermissionAccion('Puede ver calendario')): ?>
+        <?php if ($helpers->getUserPermissionAccion('Puede ver calendario')): ?>
             <li class="nav-item">
                 <a class="nav-link navbar-icon-link" role="button" title="Ver calendario" onclick="verEventos()">
                     <i class="fas fa-calendar"></i>
@@ -492,7 +493,7 @@ require_once __DIR__ . '/../../modelos/Helpers.php';
                         <i class="fas fa-box"></i>
                         Cambiar sucursal
                     </a>
-                    <?php if (Helpers::getUserPermisoModulo('Configuracion general')): ?>
+                    <?php if ($helpers->getUserPermisoModulo('Configuracion general')): ?>
                         <a href="configuracion"
                             class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
                             <i class="fas fa-cog"></i>

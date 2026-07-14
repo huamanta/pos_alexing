@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../configuraciones/bootstrap.php';
 require "../../configuraciones/Conexion.php";
 require "./HelpersService.php";
 $helpers = new HelpersService();
@@ -368,7 +369,6 @@ ob_start();
 
 <?php
 $html = ob_get_clean();
-require_once __DIR__ . '/../../vendor/autoload.php';
 
 $options = new \Dompdf\Options();
 $options->set('isRemoteEnabled', true);

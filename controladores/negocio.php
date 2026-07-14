@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Negocio.php";
 
 $negocio = new Negocio();

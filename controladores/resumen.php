@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Resumen.php";
 if (strlen(session_id()) < 1) {
     session_start();

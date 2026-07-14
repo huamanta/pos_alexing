@@ -30,7 +30,7 @@ date_default_timezone_set('America/Lima');
               <h3 class="card-title"> </h3>
 
               <div class="row">
-                <?php if (Helpers::getUserPermissionAccion('Agregar cliente')): ?>
+                <?php if ($helpers->getUserPermissionAccion('Agregar cliente')): ?>
                   <div class="col-md-12">
                     <button type="button" class="btn btn-outline-primary  btn-xs" data-toggle="modal"
                       data-target="#myModal" onclick="initMap()"><i class="fa fa-plus"></i> Nuevo</button>

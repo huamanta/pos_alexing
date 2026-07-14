@@ -1,36 +1,15 @@
 <?php
-require_once __DIR__ . '/../configuraciones/local.php';
 require_once __DIR__ . '/../configuraciones/ConexionPdo.php';
+
 class Helpers
 {
-    private static $conexion = null;
-
-    private static function getConexion()
+    public PDO $pdo;
+    //Implementamos nuestro constructor
+    public function __construct()
     {
-        if (self::$conexion === null) {
-            self::$conexion = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
-            if (self::$conexion->connect_error) {
-                die("Error de conexión en Helpers: " . self::$conexion->connect_error);
-            }
-            if (!self::$conexion->set_charset(DB_ENCODE)) {
-                die("Error al establecer el charset en Helpers: " . self::$conexion->error);
-            }
-        }
-        return self::$conexion;
+        $this->pdo = Conexion::conectar();
     }
-
-    private static function ejecutarConsultaSimpleFila($sql)
-    {
-        $conexion = self::getConexion();
-        $query = $conexion->query($sql);
-        if (!$query) {
-            throw new Exception($conexion->error);
-        }
-        $row = $query->fetch_assoc();
-        return $row;
-    }
-
-
+    
     public static function get_currency_symbol($monto, $currency = 'PEN', $locale = "es_PE")
     {
         // Validar monto
@@ -62,127 +41,153 @@ class Helpers
         return trim(preg_replace('/[0-9\.\,\s]/', '', $formatted));
     }
 
-    public static function get_currency_code($idsucursal)
+    public function get_currency_code($idsucursal)
     {
-        $sql = "SELECT moneda FROM sucursal WHERE idsucursal = '$idsucursal'";
-        $result = self::ejecutarConsultaSimpleFila($sql);
-        return $result['moneda'] ?? 'PEN'; // Devuelve 'PEN' por defecto si no se encuentra la moneda
+        $stmt = $this->pdo->prepare("
+            SELECT moneda
+            FROM sucursal
+            WHERE idsucursal = :idsucursal
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            ':idsucursal' => $idsucursal
+        ]);
+
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $result['moneda'] ?? 'PEN';
     }
 
 
-    public static function getUserPermissionAccion($nombre_permiso)
+    public function getUserPermissionAccion(string $nombre_permiso): bool
     {
-        $idusuario = $_SESSION['idusuario'] ?? NULL;
+        $idusuario = $_SESSION['idusuario'] ?? null;
 
-        if ($idusuario === NULL) {
+        if ($idusuario === null || empty($nombre_permiso)) {
             return false;
         }
 
         // 1. Verificar si es superusuario
-        $usuario_sql = "SELECT * FROM usuario WHERE idusuario = $idusuario";
-        $data_usuario = self::ejecutarConsultaSimpleFila($usuario_sql);
+        $stmt = $this->pdo->prepare("
+            SELECT superusuario
+            FROM usuario
+            WHERE idusuario = :idusuario
+            LIMIT 1
+        ");
 
-        if ($data_usuario && isset($data_usuario['superusuario']) && $data_usuario['superusuario'] == 1) {
+        $stmt->execute([
+            ':idusuario' => $idusuario
+        ]);
+
+        $superusuario = $stmt->fetchColumn();
+
+        if ($superusuario == 1) {
             return true;
-        }
-
-        if ($nombre_permiso === NULL) {
-            return false;
         }
 
         // 2. Verificar permisos por usuario
-        $usuario_permiso_sql = "SELECT ap.nombre
+        $stmt = $this->pdo->prepare("
+            SELECT 1
             FROM usuario_accion ua
-            INNER JOIN accion_permiso ap 
-                ON ua.idaccion_permiso = ap.idaccion_permiso 
-            WHERE ua.idusuario = $idusuario 
-            AND ap.nombre = '$nombre_permiso'";
+            INNER JOIN accion_permiso ap
+                ON ua.idaccion_permiso = ap.idaccion_permiso
+            WHERE ua.idusuario = :idusuario
+            AND ap.nombre = :nombre_permiso
+            LIMIT 1
+        ");
 
-        $permiso_usuario = self::ejecutarConsultaSimpleFila($usuario_permiso_sql);
+        $stmt->execute([
+            ':idusuario' => $idusuario,
+            ':nombre_permiso' => $nombre_permiso
+        ]);
 
-        if ($permiso_usuario) {
-            return true;
-        }
-
-        // 3. (Opcional) Aquí podrías validar roles si usas roles
-        // Ejemplo:
-        /*
-        $rol_sql = "SELECT ap.nombre_permiso 
-            FROM usuario_rol ur
-            INNER JOIN rol_permiso rp ON ur.idrol = rp.idrol
-            INNER JOIN accion_permiso ap ON rp.idaccion_permiso = ap.idaccion_permiso
-            WHERE ur.idusuario = $idusuario 
-            AND ap.nombre_permiso = '$permiso'";
-
-        $permiso_rol = ejecutarConsultaSimpleFila($rol_sql);
-
-        if($permiso_rol){
-            return true;
-        }
-        */
-
-        // 4. Si no tiene nada
-        return false;
+        return (bool) $stmt->fetchColumn();
     }
 
 
 
-    public static function getUserPermisoModulo($modulo, $modulo_parent = null)
+    public function getUserPermisoModulo(string $modulo, ?string $modulo_parent = null): bool
     {
-        $idusuario = $_SESSION['idusuario'] ?? NULL;
+        $idusuario = $_SESSION['idusuario'] ?? null;
 
-        if ($idusuario === NULL) {
+        if ($idusuario === null || empty($modulo)) {
             return false;
         }
 
-        if ($modulo === NULL) {
-            return false;
-        }
+        // Verificar si es superusuario
+        $stmt = $this->pdo->prepare("
+            SELECT superusuario
+            FROM usuario
+            WHERE idusuario = :idusuario
+            LIMIT 1
+        ");
 
-        // 1. Verificar si es superusuario
-        $usuario_sql = "SELECT * FROM usuario WHERE idusuario = $idusuario";
-        $data_usuario = self::ejecutarConsultaSimpleFila($usuario_sql);
+        $stmt->execute([
+            ':idusuario' => $idusuario
+        ]);
 
-        if ($data_usuario && isset($data_usuario['superusuario']) && $data_usuario['superusuario'] == 1) {
+        if ($stmt->fetchColumn() == 1) {
             return true;
         }
 
-        // es mosulo padre o no
         if ($modulo_parent === null) {
-            $modulo_sql = "SELECT *
+
+            $sql = "
+                SELECT 1
                 FROM usuario_permiso up
-                INNER JOIN permiso p ON up.idpermiso = p.idpermiso
-                WHERE up.idusuario = $idusuario 
-                AND p.nombre = '$modulo'";
+                INNER JOIN permiso p
+                    ON up.idpermiso = p.idpermiso
+                WHERE up.idusuario = :idusuario
+                AND p.nombre = :modulo
+                LIMIT 1
+            ";
+
         } else {
-            $modulo_sql = "SELECT *
+
+            $sql = "
+                SELECT 1
                 FROM usuario_permiso up
-                INNER JOIN subpermiso p ON up.idsubpermiso = p.idsubpermiso
-                WHERE up.idusuario = $idusuario 
-                AND p.nombre = '$modulo'";
+                INNER JOIN subpermiso sp
+                    ON up.idsubpermiso = sp.idsubpermiso
+                WHERE up.idusuario = :idusuario
+                AND sp.nombre = :modulo
+                LIMIT 1
+            ";
+
         }
 
-        $permiso_usuario = self::ejecutarConsultaSimpleFila($modulo_sql);
-        if ($permiso_usuario) {
-            return true;
-        }
+        $stmt = $this->pdo->prepare($sql);
 
-        return false;
+        $stmt->execute([
+            ':idusuario' => $idusuario,
+            ':modulo'    => $modulo
+        ]);
 
+        return (bool) $stmt->fetchColumn();
     }
 
 
-    public static function esSuperusuario()
+    public function esSuperusuario(): bool
     {
-        $idusuario = $_SESSION['idusuario'];
+        $idusuario = $_SESSION['idusuario'] ?? null;
 
-        $usuario = self::ejecutarConsultaSimpleFila("
-                        SELECT superusuario
-                        FROM usuario
-                        WHERE idusuario = '$idusuario'
-                    ");
+        if ($idusuario === null) {
+            return false;
+        }
 
-        return $usuario && $usuario['superusuario'] == 1;
+        $stmt = $this->pdo->prepare("
+            SELECT superusuario
+            FROM usuario
+            WHERE idusuario = :idusuario
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            ':idusuario' => $idusuario
+        ]);
+
+        return (bool) $stmt->fetchColumn();
     }
 
     public function dataArchivosAdjuntos($idseguimiento)
@@ -199,80 +204,98 @@ class Helpers
 
 
 
-    public function verificarMoraCredito($idsucursal)
+    public function verificarMoraCredito($idsucursal): array
     {
-        $sql = "SELECT
+        $stmt = $this->pdo->prepare("
+            SELECT
                 is_mora_credito,
                 valor_mora_credito
             FROM sucursal_configuracion
-            WHERE idsucursal = '$idsucursal'
-            LIMIT 1";
+            WHERE idsucursal = :idsucursal
+            LIMIT 1
+        ");
 
-        $config = self::ejecutarConsultaSimpleFila($sql);
+        $stmt->execute([
+            ':idsucursal' => $idsucursal
+        ]);
+
+        $config = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$config) {
             return [
-                "activo" => false,
-                "valor" => 0
+                'activo' => false,
+                'valor' => 0
             ];
         }
 
         return [
-            "activo" => (int) $config["is_mora_credito"] === 1,
-            "valor" => (float) $config["valor_mora_credito"]
+            'activo' => (int) $config['is_mora_credito'] === 1,
+            'valor' => (float) $config['valor_mora_credito']
         ];
     }
 
 
-    public function verificarDecuentoPagoAnticipado($idsucursal)
+    public function verificarDecuentoPagoAnticipado($idsucursal): array
     {
-        $sql = "SELECT
+        $stmt = $this->pdo->prepare("
+            SELECT
                 is_descuento_anticipado,
                 valor_descuento_anticipado,
                 dias_anticipacion
             FROM sucursal_configuracion
-            WHERE idsucursal = '$idsucursal'
-            LIMIT 1";
+            WHERE idsucursal = :idsucursal
+            LIMIT 1
+        ");
 
-        $config = self::ejecutarConsultaSimpleFila($sql);
+        $stmt->execute([
+            ':idsucursal' => $idsucursal
+        ]);
+
+        $config = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$config) {
             return [
-                "activo" => false,
-                "valor" => 0,
-                "dias_anticipacion" => 0
+                'activo' => false,
+                'valor' => 0,
+                'dias_anticipacion' => 0
             ];
         }
 
         return [
-            "activo" => (int) $config["is_descuento_anticipado"] === 1,
-            "valor" => (float) $config["valor_descuento_anticipado"],
-            "dias_anticipacion" => $config["dias_anticipacion"]
+            'activo' => (int) $config['is_descuento_anticipado'] === 1,
+            'valor' => (float) $config['valor_descuento_anticipado'],
+            'dias_anticipacion' => (int) $config['dias_anticipacion']
         ];
     }
 
 
-    public function verificarRefinanciamientos($idsucursal)
+    public function verificarRefinanciamientos($idsucursal): array
     {
-        $sql = "SELECT
+        $stmt = $this->pdo->prepare("
+            SELECT
                 is_refinanciamiento,
                 maximo_refinanciamientos
             FROM sucursal_configuracion
-            WHERE idsucursal = '$idsucursal'
-            LIMIT 1";
+            WHERE idsucursal = :idsucursal
+            LIMIT 1
+        ");
 
-        $config = self::ejecutarConsultaSimpleFila($sql);
+        $stmt->execute([
+            ':idsucursal' => $idsucursal
+        ]);
+
+        $config = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if (!$config) {
             return [
-                "activo" => false,
-                "valor" => 0
+                'activo' => false,
+                'valor'  => 0
             ];
         }
 
         return [
-            "activo" => (int) $config["is_refinanciamiento"] === 1,
-            "valor" => (float) $config["maximo_refinanciamientos"]
+            'activo' => (int) $config['is_refinanciamiento'] === 1,
+            'valor'  => (float) $config['maximo_refinanciamientos']
         ];
     }
 
@@ -284,27 +307,33 @@ class Helpers
     }
 
 
-    public function verificarAperturaCaja($idcaja)
+    public function verificarAperturaCaja($idcaja): array
     {
-        $sql = "SELECT ca.*
-                FROM caja_apertura ca
-                INNER JOIN cajas c ON c.idcaja = ca.idcaja
-                WHERE ca.estado = 1 
-                  AND ca.idcaja = '$idcaja'
-                  AND ca.fecha_cierre IS NULL
-                LIMIT 1";
+        $sql = "
+            SELECT ca.*
+            FROM caja_apertura ca
+            INNER JOIN cajas c ON c.idcaja = ca.idcaja
+            WHERE ca.estado = 1
+            AND ca.idcaja = :idcaja
+            AND ca.fecha_cierre IS NULL
+            LIMIT 1
+        ";
 
-        $rpta = ejecutarConsultaSimpleFila($sql);
-        if (!$rpta) {
-            return array('success' => false);
-        }
+        $stmt = $this->pdo->prepare($sql);
 
-        return array('success' => true);
+        $stmt->execute([
+            ':idcaja' => $idcaja
+        ]);
+
+        $rpta = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return [
+            'success' => $rpta !== false
+        ];
     }
 
 
     public function updateKardexSucursal(
-        PDO $pdo,
         $idsucursal,
         $idproducto,
         $idproducto_configuracion,
@@ -317,7 +346,7 @@ class Helpers
         $motivo,
     ) {
         $fecha_kardex = date('Y-m-d H:i:s');
-        $kardex = (new FluentSaver($pdo))
+        $kardex = (new FluentSaver($this->pdo))
             ->table('kardex')
             ->data([
                 'idsucursal' => $idsucursal,
@@ -340,7 +369,7 @@ class Helpers
         return true;
     }
 
-    public function correlativoTraslado(PDO $pdo, $idsucursal, $tipo)
+    public function correlativoTraslado($idsucursal, $tipo)
     {
         $prefijo = strtoupper($tipo) === 'TRASLADO' ? 'TR' : 'SL';
 
@@ -351,7 +380,7 @@ class Helpers
             AND tipo = :tipo
         ";
 
-        $stmt = $pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             'idsucursal' => $idsucursal,
             'tipo'       => $tipo

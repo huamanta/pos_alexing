@@ -740,14 +740,14 @@ date_default_timezone_set('America/Lima');
                                                                 </label>
                                                                 <select class="form-control" name="tipo_comprobante"
                                                                     id="tipo_comprobante">
-                                                                    <?php if (Helpers::getUserPermissionAccion('Crear nota de venta')): ?>
+                                                                    <?php if ($helpers->getUserPermissionAccion('Crear nota de venta')): ?>
                                                                         <option value="Nota de Venta">Nota de Venta
                                                                         </option>
                                                                     <?php endif; ?>
-                                                                    <?php if (Helpers::getUserPermissionAccion('Crear boleta')): ?>
+                                                                    <?php if ($helpers->getUserPermissionAccion('Crear boleta')): ?>
                                                                         <option value="Boleta">Boleta</option>
                                                                     <?php endif; ?>
-                                                                    <?php if (Helpers::getUserPermissionAccion('Crear factura')): ?>
+                                                                    <?php if ($helpers->getUserPermissionAccion('Crear factura')): ?>
                                                                         <option value="Factura">Factura</option>
                                                                     <?php endif; ?>
                                                                 </select>

@@ -12,12 +12,10 @@ if (session_status() === PHP_SESSION_NONE) {
 class CuentasCobrar extends Helpers
 {
 
-    private PDO $pdo;
-
     //Implementamos nuestro constructor
     public function __construct()
     {
-        $this->pdo = Conexion::conectar();
+        parent::__construct();
     }
 
     public function insertar(

@@ -1,4 +1,5 @@
 <?php 
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/NombresPrecios.php";
 
 $nombresprecios=new NombresPrecios();

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/CuentasCobrar.php";
 require_once "../modelos/Negocio.php";
 require_once "../modelos/Contratos.php";

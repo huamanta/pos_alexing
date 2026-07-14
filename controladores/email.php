@@ -1,18 +1,19 @@
 <?php
+// RUTAS ABSOLUTAS CORRECTAS
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// RUTAS ABSOLUTAS CORRECTAS
-require_once __DIR__ . '/../vendor/phpmailer/src/Exception.php';
-require_once __DIR__ . '/../vendor/phpmailer/src/PHPMailer.php';
-require_once __DIR__ . '/../vendor/phpmailer/src/SMTP.php';
-
-// Incluir la configuración de correo electrónico
-require_once __DIR__ . '/../configuraciones/email.config.php';
 
 function enviarCorreo($para, $nombre, $asunto, $html)
 {
-    global $smtp_host, $smtp_port, $smtp_secure, $smtp_username, $smtp_password, $smtp_from_email, $smtp_from_name;
+    $smtp_host = env('MAIL_HOST');
+    $smtp_port = env('MAIL_PORT');
+    $smtp_secure = env('MAIL_ENCRYPTION');
+    $smtp_username = env('MAIL_USERNAME');
+    $smtp_password = env('MAIL_PASSWORD');
+    $smtp_from_email = env('MAIL_FROM_ADDRESS');
+    $smtp_from_name = env('MAIL_FROM_NAME');
     
     $mail = new PHPMailer(true);
 

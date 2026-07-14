@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Cajachica.php";
 date_default_timezone_set('America/Lima');
 // Iniciar la sesión solo si aún no está iniciada
