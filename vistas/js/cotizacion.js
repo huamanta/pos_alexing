@@ -13,12 +13,17 @@ function init() {
     $.post("controladores/cotizaciones.php?op=selectComprobante", function (c) {
         $("#tipo_comprobante").html(c);
         $("#tipo_comprobante").select2('');
+        $('#tipo_comprobante').prop('disabled', true);
     });
 
     $.post("controladores/venta.php?op=selectSucursal", function (r) {
         $("#idsucursal").html(r);
-        $('#idsucursal').select2('');
+
+        $('#idsucursal').select2();
+
+        $('#idsucursal').prop('disabled', true);
     });
+
     $.post("controladores/venta.php?op=selectSucursal3", function (r) {
         $("#idsucursal2").html(r);
     });
@@ -34,6 +39,7 @@ function init() {
         }
     }, false);
 }
+
 function setNavbarPosVisible(visible) {
     if (visible) {
         $("#navbar-pos").prop("hidden", false).show();
@@ -204,7 +210,7 @@ function calcularCuotasDesdeNumeroMeses() {
         6: 3,
         7: 6,
         8: 12,
-    }[frecuencia];
+    } [frecuencia];
 
     if (!mesesPorCuota) return;
 
@@ -256,7 +262,11 @@ function parseFecha(fecha) {
     return new Date(texto);
 }
 
-function validarDatos({ cuotas, frecuencia, deuda }) {
+function validarDatos({
+    cuotas,
+    frecuencia,
+    deuda
+}) {
     if (!frecuencia) {
         Swal.fire("Selecciona frecuencia de pago", "", "warning");
         return false;
@@ -314,7 +324,9 @@ function calcularCuotas() {
 
     if (!validarDatos(data)) return;
 
-    let { montoCuota } = calcularMontos(data.deuda, data.interes, data.cuotas);
+    let {
+        montoCuota
+    } = calcularMontos(data.deuda, data.interes, data.cuotas);
 
     let html = generarTabla(
         data.cuotas,
@@ -443,7 +455,9 @@ $("#formapago").change(function () {
 function buscarProductoCod(e, codigo) {
     if (e.keyCode === 13) {
         if (codigo.length > 0) {
-            $.post("controladores/venta.php?op=buscarProducto", { codigo: codigo }, function (data, status) {
+            $.post("controladores/venta.php?op=buscarProducto", {
+                codigo: codigo
+            }, function (data, status) {
                 data = JSON.parse(data);
                 if (data == null) {
                     alert("Producto no encontrado");
@@ -458,7 +472,9 @@ function buscarProductoCod(e, codigo) {
 
 function mostrar(idcotizacion) {
     $("#getCodeModal").modal('show');
-    $.post("controladores/cotizaciones.php?op=mostrar", { idcotizacion: idcotizacion }, function (data, status) {
+    $.post("controladores/cotizaciones.php?op=mostrar", {
+        idcotizacion: idcotizacion
+    }, function (data, status) {
         data = JSON.parse(data);
         $("#cliente").val(data.cliente);
         $("#tipo_comprobantem").val(data.tipo_comprobante);
@@ -530,37 +546,37 @@ function generarNumCuotas(frecuencia, meses) {
             cuotas = meses * 30;
             break;
 
-        // SEMANAL
+            // SEMANAL
         case 2:
             cuotas = meses * 4;
             break;
 
-        // QUINCENAL
+            // QUINCENAL
         case 3:
             cuotas = meses * 2;
             break;
 
-        // MENSUAL
+            // MENSUAL
         case 4:
             cuotas = meses;
             break;
 
-        // BIMESTRAL
+            // BIMESTRAL
         case 5:
             cuotas = Math.ceil(meses / 2);
             break;
 
-        // TRIMESTRAL
+            // TRIMESTRAL
         case 6:
             cuotas = Math.ceil(meses / 3);
             break;
 
-        // SEMESTRAL
+            // SEMESTRAL
         case 7:
             cuotas = Math.ceil(meses / 6);
             break;
 
-        // ANUAL
+            // ANUAL
         case 8:
             cuotas = Math.ceil(meses / 12);
             break;
@@ -575,31 +591,34 @@ function generarNumCuotas(frecuencia, meses) {
 
 function mostrarEditar(idcotizacion) {
     mostrarform(true);
-    $.post("controladores/cotizaciones.php?op=mostrar", { idcotizacion: idcotizacion }, function (data, status) {
+    $.post("controladores/cotizaciones.php?op=mostrar", {
+        idcotizacion: idcotizacion
+    }, function (data, status) {
         data = JSON.parse(data);
 
-        $.post("controladores/cotizaciones.php?op=listarDetalleCotizacion",
-            { idcotizacion: idcotizacion },
+        $.post("controladores/cotizaciones.php?op=listarDetalleCotizacion", {
+                idcotizacion: idcotizacion
+            },
             function (detalleData, status) {
                 detalleData = JSON.parse(detalleData);
                 detalleData.forEach(element => {
 
                     agregarDetalle(
-                        element[0],   // idpc
-                        element[1],   // idproducto
-                        element[2],   // producto
-                        element[3],   // cantidad
-                        element[4],   // descuento
-                        element[5],   // precio_venta
-                        element[9],   // preciocigv
-                        element[6],   // precioB
-                        element[7],   // precioC
-                        element[8],   // precioD
-                        element[10],  // stock
-                        element[11],  // proigv
-                        element[13],  // cantidad_contenedor
-                        element[14],  // contenedor
-                        1             // idcategoria
+                        element[0], // idpc
+                        element[1], // idproducto
+                        element[2], // producto
+                        element[3], // cantidad
+                        element[4], // descuento
+                        element[5], // precio_venta
+                        element[9], // preciocigv
+                        element[6], // precioB
+                        element[7], // precioC
+                        element[8], // precioD
+                        element[10], // stock
+                        element[11], // proigv
+                        element[13], // cantidad_contenedor
+                        element[14], // contenedor
+                        1 // idcategoria
                     );
 
                 });
@@ -663,9 +682,9 @@ function guardaryeditar() {
             });
             mostrarform(false);
             listar();
+            limpiar();
         }
     });
-    limpiar();
 }
 
 function listar() {
@@ -676,21 +695,48 @@ function listar() {
         "aProcessing": true,
         "aServerSide": true,
         "processing": true,
-        "language": { "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />" },
-        "responsive": true, "lengthChange": false, "autoWidth": false,
+        "language": {
+            "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />"
+        },
+        "responsive": true,
+        "lengthChange": false,
+        "autoWidth": false,
         dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-        lengthMenu: [[5, 10, 25, 50, 100, -1], ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']],
-        buttons: ['pageLength', { extend: 'excelHtml5', text: "<i class='fas fa-file-csv'></i>", titleAttr: 'Exportar a Excel' }, { extend: 'pdf', text: "<i class='fas fa-file-pdf'></i>", titleAttr: 'Exportar a PDF' }, { extend: 'colvis', text: "<i class='fas fa-bars'></i>", titleAttr: '' }],
+        lengthMenu: [
+            [5, 10, 25, 50, 100, -1],
+            ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
+        ],
+        buttons: ['pageLength', {
+            extend: 'excelHtml5',
+            text: "<i class='fas fa-file-csv'></i>",
+            titleAttr: 'Exportar a Excel'
+        }, {
+            extend: 'pdf',
+            text: "<i class='fas fa-file-pdf'></i>",
+            titleAttr: 'Exportar a PDF'
+        }, {
+            extend: 'colvis',
+            text: "<i class='fas fa-bars'></i>",
+            titleAttr: ''
+        }],
         "ajax": {
             url: 'controladores/cotizaciones.php?op=listar',
-            data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, idsucursal2: idsucursal2 },
+            data: {
+                fecha_inicio: fecha_inicio,
+                fecha_fin: fecha_fin,
+                idsucursal2: idsucursal2
+            },
             type: "get",
             dataType: "json",
-            error: function (e) { console.log(e.responseText); }
+            error: function (e) {
+                console.log(e.responseText);
+            }
         },
         "bDestroy": true,
         "iDisplayLength": 5,
-        "order": [[0, "desc"]]
+        "order": [
+            [0, "desc"]
+        ]
     }).DataTable();
 }
 
@@ -699,6 +745,7 @@ function handleRowInput(element) {
 }
 
 function agregarDetalle(idpc, idproducto, producto, cant, desc, precio_venta, preciocigv, precioB, precioC, precioD, stock, proigv, cantidad_contenedor, contenedor, idcategoria) {
+
     if (articuloAdd.indexOf(idpc) != -1) {
         let cantInputs = document.getElementsByName("cantidad[]");
         let idpInputs = document.getElementsByName("idp[]");
@@ -768,7 +815,9 @@ function desistir(idcotizacion) {
         confirmButtonText: 'Si'
     }).then((result) => {
         if (result.isConfirmed) {
-            $.post("controladores/cotizaciones.php?op=desistir", { idcotizacion: idcotizacion }, function (e) {
+            $.post("controladores/cotizaciones.php?op=desistir", {
+                idcotizacion: idcotizacion
+            }, function (e) {
                 Swal.fire('! Operación Exitosa !', e, 'success');
                 tabla.ajax.reload();
             });
@@ -793,7 +842,9 @@ function numTicket() {
     $.ajax({
         url: 'controladores/cotizaciones.php?op=mostrar_num_ticket',
         type: 'get',
-        data: { idsucursal: idsucursal },
+        data: {
+            idsucursal: idsucursal
+        },
         dataType: 'json',
         success: function (d) {
             $("#num_comprobante").val(('0000000' + d).slice(-7));
@@ -807,7 +858,9 @@ function numSerieTicket() {
     $.ajax({
         url: 'controladores/cotizaciones.php?op=mostrar_s_ticket',
         type: 'get',
-        data: { idsucursal: idsucursal },
+        data: {
+            idsucursal: idsucursal
+        },
         dataType: 'json',
         success: function (s) {
             $("#numeros").html(('000' + s).slice(-3));
@@ -822,7 +875,9 @@ const listarConfiguracionCreditos = () => {
     $.ajax({
         url: 'controladores/configuracion.php?op=listarConfiguracion',
         type: 'get',
-        data: { idsucursal: idsucursal },
+        data: {
+            idsucursal: idsucursal
+        },
         dataType: 'json',
         success: function (s) {
             const configuracion = s.data.configuracion;
@@ -872,14 +927,14 @@ function pintarProductos(data, permissions) {
     data.forEach(item => {
         let btnActivarDesactivar = (permissions.desactivar) ?
             (item.condicion === 1) ?
-                `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>` :
-                `<button class="btn btn-info btn-xs" onclick="activar(${item.idproducto})"><i class="fas fa-check"></i></button>`
-            : ''
+            `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>` :
+            `<button class="btn btn-info btn-xs" onclick="activar(${item.idproducto})"><i class="fas fa-check"></i></button>` :
+            ''
 
         html += `
             <tr>
                 <td>
-                <button
+                <button type="button"
                     class="btn btn-success"
                     onclick="agregarDetalle(
                         ${item.idproducto_configuracion},
@@ -902,7 +957,13 @@ function pintarProductos(data, permissions) {
                     <i class="fas fa-shopping-cart"></i>
                 </button>
                 <td>${item.codigo || ''}</td>
-                <td style="text-align: left">${item.nombre || ''} M:${item.numero_serie || ''} S:${item.numero_motor || ''}</td>
+                <td style="text-align:left;">
+                    <strong>${item.nombre || ''}</strong><br>
+                    <small>
+                        <strong>Motor:</strong> ${item.numero_motor || '-'} &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <strong>Serie:</strong> ${item.numero_serie || '-'}
+                    </small>
+                </td>
                 <td>${item.stock}</td>
                 <td>S/ ${parseFloat(item.precio).toFixed(2)}</td>
                 <td>
@@ -936,14 +997,21 @@ function listarArticulos2() {
         buttons: [],
         ajax: {
             url: "controladores/venta.php?op=listarArticulos2",
-            data: { idsucursal: idsucursal },
+            data: {
+                idsucursal: idsucursal
+            },
             type: "get",
             dataType: "json",
-            error: function (e) { console.log(e.responseText); },
+            error: function (e) {
+                console.log(e.responseText);
+            },
         },
         bDestroy: true,
         iDisplayLength: 5,
-        order: [[1, "asc"], [2, "asc"]]
+        order: [
+            [1, "asc"],
+            [2, "asc"]
+        ]
     }).DataTable();
 }
 
@@ -1011,6 +1079,7 @@ function mostrarform(flag) {
     listarArticulos2();
     setNavbarPosVisible(true);
     // cargarDatosTemporales();
+    $('#nota').val('7');
     esperarSelect("#idsucursal", $("#idsucursal").val());
     setTimeout(() => {
         let idsucursal = $("#idsucursal").val();

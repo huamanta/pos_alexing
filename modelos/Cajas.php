@@ -6,6 +6,7 @@ class Cajas extends Helpers
 {
     public function __construct()
     {
+        parent::__construct();
     }
 
     //Implementamos un mÃ©todo para insertar registros

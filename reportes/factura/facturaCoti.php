@@ -131,7 +131,7 @@ $total = 0;
 
 		.credito-box {
 			margin-top: 10px;
-			border: 1px solid #0d47a1;
+			border: 1px solid #ffffff;
 			border-radius: 8px;
 			overflow: hidden;
 		}
@@ -145,7 +145,7 @@ $total = 0;
 		}
 
 		.credito-body {
-			background: #f8f9fa;
+			background: #ffffff;
 			padding: 10px;
 		}
 
@@ -185,13 +185,13 @@ $total = 0;
 
 	<?php echo $anulada; ?>
 
-	<div id="page_pdf">
+	<div id="page_pdf" >
 
-		<table id="factura_head">
+		<table id="factura_head" width="100%" cellspacing="0" cellpadding="2" border="0">
 
 			<tr>
 
-				<td class="logo_factura">
+				<td width="25%" align="left" valign="top">
 
 					<div>
 						<img src="../<?php echo $configuracion['logo']; ?>" width="150px">
@@ -199,7 +199,7 @@ $total = 0;
 
 				</td>
 
-				<td class="info_empresa">
+				<td width="45%" align="center" valign="top">
 
 					<?php
 
@@ -211,12 +211,16 @@ $total = 0;
 
 						<div>
 
-							<span class="h2">
-								<?php echo $configuracion['nombre']; ?>
-							</span>
+							<h1 class="h1">
+								<?php echo $configuracion['razon_social']; ?>
+							</h1>
 
 							<p>
-								RUC <?php echo $configuracion['documento']; ?>
+								SUCURSAL: <?php echo $configuracion['nombre']; ?>
+							</p>
+
+							<p>
+								RUC: <?php echo $configuracion['ruc']; ?>
 							</p>
 
 							<p>
@@ -237,7 +241,7 @@ $total = 0;
 
 				</td>
 
-				<td class="info_factura">
+				<td class="info_factura" width="30%" align="right" valign="top">
 
 					<div class="round" style="text-align: center; border-radius: 15px;">
 
@@ -246,7 +250,7 @@ $total = 0;
 						<p>
 							<strong>
 								<h3>
-									R. U. C. <?php echo $configuracion['documento']; ?>
+									R. U. C. <?php echo $configuracion['ruc']; ?>
 								</h3>
 							</strong>
 						</p>
@@ -419,7 +423,7 @@ $total = 0;
 					</td>
 
 					<td style="border:1px solid #000;" class="textcenter">
-						<strong>S/ <?php echo number_format($factura['total_venta'], 2); ?></strong>
+						<strong><?php echo Helpers::get_currency_symbol($factura['total_venta']); ?></strong>
 					</td>
 
 				</tr>
@@ -465,17 +469,17 @@ $total = 0;
 						<tr>
 
 							<td><strong>Total Venta</strong></td>
-							<td>S/ <?php echo number_format($totalVenta, 2); ?></td>
+							<td><?php echo Helpers::get_currency_symbol($totalVenta); ?></td>
 
 							<td><strong>Inicial</strong></td>
-							<td>S/ <?php echo number_format($inicial, 2); ?></td>
+							<td><?php echo Helpers::get_currency_symbol($inicial); ?></td>
 
 						</tr>
 
 						<tr>
 
 							<td><strong>Saldo</strong></td>
-							<td>S/ <?php echo number_format($saldoFinanciar, 2); ?></td>
+							<td><?php echo Helpers::get_currency_symbol($saldoFinanciar); ?></td>
 
 							<td><strong>Interés</strong></td>
 							<td><?php echo number_format($interes, 2); ?> %</td>
@@ -518,6 +522,9 @@ $total = 0;
 
 							$capitalCuota = $saldoFinanciar / $numCuotas;
 							$interesCuota = $totalInteres / $numCuotas;
+							$capitalCuotaTotal = 0;
+							$interesCuotaTotal = 0;
+							$montoCuotaTotal = 0;
 
 							for ($i = 1; $i <= $numCuotas; $i++) {
 
@@ -528,6 +535,9 @@ $total = 0;
 										strtotime($factura['fecha_original'])
 									)
 								);
+								$capitalCuotaTotal = $capitalCuotaTotal + $capitalCuota;
+								$interesCuotaTotal = $interesCuotaTotal + $interesCuota;
+								$montoCuotaTotal = $montoCuotaTotal + $montoCuota;
 
 								?>
 
@@ -538,22 +548,34 @@ $total = 0;
 									<td><?php echo $fechaPago; ?></td>
 
 									<td>
-										S/ <?php echo number_format($capitalCuota, 2); ?>
+										<?php echo Helpers::get_currency_symbol($capitalCuota); ?>
 									</td>
 
 									<td>
-										S/ <?php echo number_format($interesCuota, 2); ?>
+										<?php echo Helpers::get_currency_symbol($interesCuota); ?>
 									</td>
 
 									<td>
 										<strong>
-											S/ <?php echo number_format($montoCuota, 2); ?>
+											<?php echo Helpers::get_currency_symbol($montoCuota); ?>
 										</strong>
 									</td>
 
 								</tr>
 
 							<?php } ?>
+							<tr>
+								<td colspan="2">TOTALES</td>
+								<td>
+									<?php echo Helpers::get_currency_symbol($capitalCuotaTotal); ?>
+								</td>
+								<td>
+									<?php echo Helpers::get_currency_symbol($interesCuotaTotal); ?>
+								</td>
+								<td>
+									<?php echo Helpers::get_currency_symbol($montoCuotaTotal); ?>
+								</td>
+							</tr>
 
 						</tbody>
 

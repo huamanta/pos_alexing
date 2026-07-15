@@ -6,8 +6,9 @@ class Venta extends Helpers
 {
     //implementamos nuestro constructor
     public function __construct()
-    {
-    }
+	{
+		parent::__construct();
+	}
 
     public function verificarCaja($idusuario, $idsucursal)
     {

@@ -10,8 +10,10 @@
 		echo 'Debe ingresar al sistema correctamente para visualizar el reporte';
 	}
 
-	include "../../configuraciones/Conexion.php";
-	require_once __DIR__ . '/../../vendor/autoload.php';
+	require_once __DIR__ . '/../../configuraciones/bootstrap.php';
+	require_once __DIR__ . "/../../configuraciones/Conexion.php";
+	require_once __DIR__ . "/../../modelos/Helpers.php";
+
 	use Dompdf\Dompdf;
 
 	if(empty($_GET["id"]))
@@ -21,15 +23,9 @@
 		$idventa = $_GET["id"];
 		$anulada = '';
 
-		$query_config   = mysqli_query($conexion,"SELECT * FROM datos_negocio");
-		$result_config  = mysqli_num_rows($query_config);
-		if($result_config > 0){
-			$configuracion = mysqli_fetch_assoc($query_config);
-		}
-
-
 		$query = mysqli_query($conexion,"SELECT 
         v.idcotizacion,
+		v.idsucursal,
         v.idcliente,
         s.nombre as almacen,
         p.nombre AS cliente,
@@ -71,17 +67,26 @@
 if(!$query){
     die("Error en SQL: " . mysqli_error($conexion));
 }
+$configuracion = null;
 
 $result = mysqli_num_rows($query);
 		if($result > 0){
 
 			$factura = mysqli_fetch_assoc($query);
+			$idsucursal = $factura['idsucursal'];
+			$query_config   = mysqli_query($conexion,"SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = $idsucursal");
+			$result_config  = mysqli_num_rows($query_config);
+			if($result_config > 0){
+				$configuracion = mysqli_fetch_assoc($query_config);
+			}
 
 			$query_productos = mysqli_query($conexion,"SELECT a.idproducto, a.nombre AS producto, pg.contenedor as unidadmedida, a.idunidad_medida, 
-				CASE WHEN a.codigo = 'SIN CODIGO' THEN '-' ELSE a.codigo END as codigo, d.cantidad_contenedor,d.cantidad, d.precio_venta, d.descuento, (d.cantidad*d.precio_venta-d.descuento) AS subtotal, a.stock, a.imagen, a.proigv 
+				CASE WHEN a.codigo = 'SIN CODIGO' THEN '-' ELSE a.codigo END as codigo, d.cantidad_contenedor,d.cantidad, d.precio_venta, d.descuento, (d.cantidad*d.precio_venta-d.descuento) AS subtotal, ip.stock, a.imagen, a.proigv 
 				FROM detalle_cotizacion d 
-				INNER JOIN producto_configuracion pg ON d.idproducto=pg.id 
+				INNER JOIN producto_configuracion pg ON d.idproducto=pg.idproducto 
 				INNER JOIN producto a ON pg.idproducto=a.idproducto 
+				INNER JOIN producto_serie ps ON ps.idproducto=a.idproducto 
+				INNER JOIN inventario_producto ip ON ip.idproducto=a.idproducto 
 				INNER JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
 				WHERE d.idcotizacion='$idventa'");
 			$result_detalle = mysqli_num_rows($query_productos);

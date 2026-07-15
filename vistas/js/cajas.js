@@ -17,10 +17,11 @@ function init() {
   //   $("#idsucursal2").html(r);
   // });
   // $("#idsucursal2").change(historial);
-  // $.post("controladores/venta.php?op=selectSucursal", function (r) {
-  //   $("#idsucursal").html(r);
-  //   $("#idsucursal").select2("");
-  // });
+  $.post("controladores/venta.php?op=selectSucursal", function (r) {
+    $("#idsucursal").html(r);
+    $("#idsucursal").select2("");
+    $('#idsucursal').prop('disabled', true);
+  });
   $("#navVentasActive").addClass("treeview active");
   $("#navVentas").addClass("treeview menu-open");
   $("#navCajas").addClass("active");
@@ -63,8 +64,7 @@ function listar() {
       aServerSide: true, //Paginación y filtrado realizados por el servidor
       processing: true,
       language: {
-        processing:
-          "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+        processing: "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
       },
       responsive: true,
       lengthChange: false,
@@ -112,7 +112,9 @@ function listar() {
       },
       bDestroy: true,
       iDisplayLength: 5, //Paginación
-      order: [[0, "desc"]], //Ordenar (columna,orden)
+      order: [
+        [0, "desc"]
+      ], //Ordenar (columna,orden)
     })
     .DataTable();
 }
@@ -131,8 +133,9 @@ function desactivar(idcaja) {
   }).then((result) => {
     if (result.isConfirmed) {
       $.post(
-        "controladores/cajas.php?op=desactivar",
-        { idcaja: idcaja },
+        "controladores/cajas.php?op=desactivar", {
+          idcaja: idcaja
+        },
         function (response) {
           const data = JSON.parse(response);
           if (!data.success) {
@@ -160,8 +163,9 @@ function activar(idcaja) {
   }).then((result) => {
     if (result.isConfirmed) {
       $.post(
-        "controladores/cajas.php?op=activar",
-        { idcaja: idcaja },
+        "controladores/cajas.php?op=activar", {
+          idcaja: idcaja
+        },
         function (response) {
           const data = JSON.parse(response);
           if (!data.success) {
@@ -178,8 +182,9 @@ function activar(idcaja) {
 
 function mostrar(idcaja) {
   $.post(
-    "controladores/cajas.php?op=mostrar",
-    { idcaja: idcaja },
+    "controladores/cajas.php?op=mostrar", {
+      idcaja: idcaja
+    },
     function (data, status) {
       data = JSON.parse(data);
       $("#myModal").modal("show");
@@ -451,8 +456,7 @@ function listarPagos(aperturacajaid) {
       aServerSide: true, //Paginación y filtrado realizados por el servidor
       processing: true,
       language: {
-        processing:
-          "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+        processing: "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
       },
       responsive: true,
       lengthChange: false,
@@ -491,8 +495,7 @@ function listarPagos(aperturacajaid) {
         },
       ],
       ajax: {
-        url:
-          "controladores/cajas.php?op=listarPagosPorApertura&aperturacajaid=" +
+        url: "controladores/cajas.php?op=listarPagosPorApertura&aperturacajaid=" +
           aperturacajaid,
         type: "get",
         dataType: "json",
@@ -502,7 +505,9 @@ function listarPagos(aperturacajaid) {
       },
       bDestroy: true,
       iDisplayLength: 5, //Paginación
-      order: [[0, "desc"]], //Ordenar (columna,orden)
+      order: [
+        [0, "desc"]
+      ], //Ordenar (columna,orden)
     })
     .DataTable();
 }
@@ -515,8 +520,7 @@ function listarCobros(aperturacajaid) {
       aServerSide: true, //Paginación y filtrado realizados por el servidor
       processing: true,
       language: {
-        processing:
-          "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+        processing: "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
       },
       responsive: true,
       lengthChange: false,
@@ -555,8 +559,7 @@ function listarCobros(aperturacajaid) {
         },
       ],
       ajax: {
-        url:
-          "controladores/cajas.php?op=listarCobrosPorApertura&aperturacajaid=" +
+        url: "controladores/cajas.php?op=listarCobrosPorApertura&aperturacajaid=" +
           aperturacajaid,
         type: "get",
         dataType: "json",
@@ -566,7 +569,9 @@ function listarCobros(aperturacajaid) {
       },
       bDestroy: true,
       iDisplayLength: 5, //Paginación
-      order: [[0, "desc"]], //Ordenar (columna,orden)
+      order: [
+        [0, "desc"]
+      ], //Ordenar (columna,orden)
     })
     .DataTable();
 }
@@ -579,8 +584,7 @@ function listarVentas(aperturacajaid) {
       aServerSide: true, //Paginación y filtrado realizados por el servidor
       processing: true,
       language: {
-        processing:
-          "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+        processing: "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
       },
       responsive: true,
       lengthChange: false,
@@ -619,8 +623,7 @@ function listarVentas(aperturacajaid) {
         },
       ],
       ajax: {
-        url:
-          "controladores/pos.php?op=listarVentas2&aperturacajaid=" +
+        url: "controladores/pos.php?op=listarVentas2&aperturacajaid=" +
           aperturacajaid,
         type: "get",
         dataType: "json",
@@ -630,7 +633,9 @@ function listarVentas(aperturacajaid) {
       },
       bDestroy: true,
       iDisplayLength: 5, //Paginación
-      order: [[0, "desc"]], //Ordenar (columna,orden)
+      order: [
+        [0, "desc"]
+      ], //Ordenar (columna,orden)
     })
     .DataTable();
 }
@@ -643,8 +648,7 @@ function listarMovimientos(aperturacajaid) {
       aServerSide: true, //Paginación y filtrado realizados por el servidor
       processing: true,
       language: {
-        processing:
-          "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+        processing: "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
       },
       responsive: true,
       lengthChange: false,
@@ -683,8 +687,7 @@ function listarMovimientos(aperturacajaid) {
         },
       ],
       ajax: {
-        url:
-          "controladores/cajas.php?op=listarMovimientosPorApertura&aperturacajaid=" +
+        url: "controladores/cajas.php?op=listarMovimientosPorApertura&aperturacajaid=" +
           aperturacajaid,
         type: "get",
         dataType: "json",
@@ -694,7 +697,9 @@ function listarMovimientos(aperturacajaid) {
       },
       bDestroy: true,
       iDisplayLength: 5, //Paginación
-      order: [[0, "desc"]], //Ordenar (columna,orden)
+      order: [
+        [0, "desc"]
+      ], //Ordenar (columna,orden)
     })
     .DataTable();
 }

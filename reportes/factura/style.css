@@ -34,14 +34,14 @@ p, label, span, table{
 	margin-bottom: 10px;
 }
 .logo_factura{
-	width: 25%;
+	width: 30% !important;
 }
 .info_empresa{
-	width: 45%;
+	width: 45% !important;
 	/* text-align: center; */
 }
 .info_factura{
-	width: 35%;
+	width: 35% !important;
 }
 .info_cliente{
 	width: 100%;

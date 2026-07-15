@@ -51,12 +51,6 @@ class Cotizacion extends Helpers
 
             $this->pdo->beginTransaction();
 
-            /*
-            |--------------------------------------------------------------------------
-            | Obtener correlativo
-            |--------------------------------------------------------------------------
-            */
-
             $ultimo = (new DBQuery($this->pdo))
                 ->select('num_comprobante')
                 ->from('cotizacion')
@@ -69,14 +63,7 @@ class Cotizacion extends Helpers
                 ? str_pad(((int) $ultimo['num_comprobante']) + 1, 6, '0', STR_PAD_LEFT)
                 : '000001';
 
-            /*
-            |--------------------------------------------------------------------------
-            | Cabecera
-            |--------------------------------------------------------------------------
-            */
-
             $idcotizacion = (new FluentSaver($this->pdo))
-
                 ->table('cotizacion')
                 ->nullable([
                     'inicial',
@@ -106,34 +93,23 @@ class Cotizacion extends Helpers
                     'meses' => $meses,
                     'interes' => $interes
                 ])
-
                 ->save();
-
-            /*
-            |--------------------------------------------------------------------------
-            | Detalle
-            |--------------------------------------------------------------------------
-            */
 
             foreach ($idp as $i => $producto) {
 
                 (new FluentSaver($this->pdo))
-
                     ->table('detalle_cotizacion')
-
                     ->data([
                         'idcotizacion' => $idcotizacion,
-                        'idproducto' => $producto,
+                        'idproducto' => $idproducto[$i],
                         'cantidad' => $cantidad[$i],
                         'contenedor' => $contenedor[$i],
                         'cantidad_contenedor' => $cantidad_contenedor[$i],
                         'precio_venta' => $precio_venta[$i],
                         'descuento' => $descuento[$i]
                     ])
-
                     ->save();
             }
-
 
             $this->pdo->commit();
 
@@ -143,10 +119,11 @@ class Cotizacion extends Helpers
             ]);
 
         } catch (Throwable $e) {
-
             $this->pdo->rollBack();
-
-            throw $e;
+            return json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
     }
 
@@ -242,8 +219,10 @@ class Cotizacion extends Helpers
     {
         $sql = "SELECT dv.idcotizacion,dv.idproducto,a.nombre,dv.cantidad_contenedor,dv.contenedor,dv.cantidad,dv.precio_venta,dv.descuento,(dv.cantidad*dv.precio_venta-dv.descuento) as subtotal, v.total_venta 
 		FROM detalle_cotizacion dv
-		INNER JOIN producto_configuracion pg ON dv.idproducto=pg.id 
-		INNER JOIN producto a ON pg.idproducto=a.idproducto 
+		INNER JOIN producto a ON dv.idproducto=a.idproducto 
+		INNER JOIN producto_configuracion pg ON a.idproducto=pg.idproducto
+		INNER JOIN producto_serie ps ON ps.idproducto=a.idproducto 
+		INNER JOIN inventario_producto ip ON ip.idproducto=a.idproducto 
 		INNER JOIN cotizacion v ON v.idcotizacion=dv.idcotizacion 
 		WHERE dv.idcotizacion='$idcotizacion'";
         return ejecutarConsulta($sql);
@@ -350,11 +329,11 @@ class Cotizacion extends Helpers
 
     FROM detalle_cotizacion d
 
-    INNER JOIN producto_configuracion pg
-        ON pg.idproducto_configuracion = d.idproducto
-
     INNER JOIN producto p
-        ON p.idproducto = pg.idproducto
+        ON p.idproducto = d.idproducto
+    
+    INNER JOIN producto_configuracion pg
+        ON pg.idproducto = p.idproducto
 
     INNER JOIN unidad_medida um
         ON um.idunidad_medida = p.idunidad_medida

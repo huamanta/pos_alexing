@@ -1,13 +1,14 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Venta.php";
+require_once "../modelos/venta/Venta.php";
 require_once "../modelos/Producto.php";
 require_once "../modelos/Helpers.php";
 if (strlen(session_id()) < 1)
 	session_start();
 
 $venta = new Venta();
-
+$sisVenta = new SisVenta();
 $idventa = isset($_POST["idventa"]) ? limpiarCadena($_POST["idventa"]) : "";
 $idsucursal = isset($_POST["idsucursal"]) ? limpiarCadena($_POST["idsucursal"]) : "";
 $idcliente = isset($_POST["idcliente"]) ? limpiarCadena($_POST["idcliente"]) : "";
@@ -144,7 +145,7 @@ switch ($_GET["op"]) {
 		$idpersonal = $_SESSION["idpersonal"];
 		$fecha_pago = isset($_POST["fecha_pago"]) && is_array($_POST["fecha_pago"]) ? $_POST["fecha_pago"] : [];
 		if (empty($idventa)) {
-			$rspta = $venta->insertar(
+			$rspta = $sisVenta->insertar(
 				$idsucursal,
 				$idcliente,
 				$idpersonal,

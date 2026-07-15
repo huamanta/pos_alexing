@@ -251,6 +251,30 @@
         transform: translateY(-7px);
     }
 
+    .collapse-section {
+    position: absolute;
+    top: 90%;
+    left: 0;
+    width: 100%;
+    z-index: 1050;
+    border: rgba(0, 0, 0, .15) solid 1px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+
+    transition: all .25s ease;
+}
+
+.collapse-section.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
     @media only screen and (max-width: 600px) {
         .btn-flotante {
             font-size: 14px;
@@ -662,7 +686,7 @@ date_default_timezone_set('America/Lima');
                                                 <div class="card-header bg-light py-2 d-flex justify-content-end gap-2">
                                                     <div class="ms-auto d-flex gap-2">
                                                         <button type="button" class="btn btn-sm btn-primary shadow-sm"
-                                                            onclick="toggleCard()"
+                                                            onclick="toggleCollapse(event,this)" data-target="detalle1"
                                                             title="Completa los datos de tu pedido">
                                                             <i class="fas fa-info-circle"></i> Datos cliente
                                                             <i class="fas fa-chevron-down" id="chevron-down"></i>
@@ -679,7 +703,9 @@ date_default_timezone_set('America/Lima');
                                                 </div>
 
                                                 <!-- Cuerpo del formulario (oculto inicialmente) -->
-                                                <div class="card-body" id="datosgenerales" hidden>
+                                                 <div class="position-relative">
+                                                <div class="p-2 collapse collapse-section" id="detalle1">
+                                                <div class="card-body">
 
                                                     <!-- Sección de Personal (oculta) -->
                                                     <div class="form-group mb-3" hidden>
@@ -811,6 +837,8 @@ date_default_timezone_set('America/Lima');
                                                         <textarea class="form-control" name="observaciones"
                                                             id="observaciones" rows="3"></textarea>
                                                     </div>
+                                                </div>
+                                                </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-12">
@@ -1295,7 +1323,7 @@ date_default_timezone_set('America/Lima');
                                                             id="btn_barcode_search" onclick="activeSearch(2)"><span
                                                                 class="fas fa-barcode"></span></button>
                                                         <input type="search" placeholder="Buscar producto"
-                                                            class="form-control" id="search_product">
+                                                            class="form-control" id="searchProductos">
                                                         <button type="button"
                                                             class="btn btn-default mb-3 d-xl-none d-lg-none btnAgregarProducto">
                                                             Agregar producto
@@ -1308,23 +1336,19 @@ date_default_timezone_set('America/Lima');
                                                             width="100%">
                                                             <thead class="bg-info">
                                                                 <th>Op</th>
+                                                                <th>Codigo</th>
                                                                 <th>Nombre</th>
-                                                                <th>Categoria</th>
-                                                                <th>Código</th>
                                                                 <th>Stock</th>
                                                                 <th>P Venta</th>
+                                                                <th>Color</th>
                                                             </thead>
                                                             <tbody id="tbody_articulos">
                                                             </tbody>
-                                                            <tfoot>
-                                                                <th>Op</th>
-                                                                <th>Nombre</th>
-                                                                <th>Categoria</th>
-                                                                <th>Código</th>
-                                                                <th>Stock</th>
-                                                                <th>P Venta</th>
-                                                            </tfoot>
                                                         </table>
+                                                        <div class="col-md-6"></div>
+                                                        <div class="col-md-6">
+                                                            <div id="paginationProductos"></div>
+                                                        </div>
                                                     </div>
                                                     <div class="tab-pane fade" id="custom-tabs-two-profile"
                                                         role="tabpanel" aria-labelledby="custom-tabs-two-profile-tab">
@@ -1957,66 +1981,50 @@ date_default_timezone_set('America/Lima');
     <!-- /.modal-dialog -->
 </div>
 </div>
-
-<script src="vistas/js/venta-pos.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const fechaInput = document.getElementById('fecha');
-        const cargoUsuario = '<?php echo $_SESSION['cargo']; ?>';
+document.addEventListener("click", cerrarCollapse);
 
-        if (cargoUsuario !== 'Administrador') {
-            // Función para obtener fecha en Lima, Perú (UTC-5)
-            function getFechaLima(diasAtras = 0) {
-                const ahora = new Date();
+function toggleCollapse(e, btn) {
+    e.stopPropagation();
 
-                // Obtener la fecha en Lima usando toLocaleString
-                const fechaLima = new Date(ahora.toLocaleString('en-US', {
-                    timeZone: 'America/Lima'
-                }));
+    const panel = document.getElementById(btn.dataset.target);
+    panel.classList.toggle("show");
 
-                // Ajustar días
-                fechaLima.setDate(fechaLima.getDate() + diasAtras);
+    const icon = btn.querySelector("i");
+    icon.classList.toggle("fa-chevron-down");
+    icon.classList.toggle("fa-chevron-up");
+}
 
-                // Formatear a YYYY-MM-DD
-                const year = fechaLima.getFullYear();
-                const month = String(fechaLima.getMonth() + 1).padStart(2, '0');
-                const day = String(fechaLima.getDate()).padStart(2, '0');
+function cerrarCollapse(e) {
 
-                return `${year}-${month}-${day}`;
-            }
-
-            const hoy = getFechaLima(0);    // Hoy en Lima
-            const ayer = getFechaLima(-1);  // Ayer en Lima
-
-            console.log('Hoy en Lima:', hoy);
-            console.log('Ayer en Lima:', ayer);
-
-            // Configurar límites
-            fechaInput.setAttribute('min', ayer);
-            fechaInput.setAttribute('max', hoy);
-
-            // Validación adicional al cambiar
-            fechaInput.addEventListener('change', function () {
-                if (this.value < ayer || this.value > hoy) {
-                    Swal.fire({
-                        title: 'Fecha no permitida',
-                        text: 'Solo puedes seleccionar la fecha de hoy o ayer',
-                        icon: 'warning',
-                        confirmButtonText: 'Entendido'
-                    });
-                    this.value = hoy;
-                }
-            });
-
-            // Establecer valor inicial
-            if (!fechaInput.value) {
-                fechaInput.value = hoy;
-            }
-        }
-    });
-</script>
-<style>
-    .img-producto {
-        cursor: pointer;
+    // Si el click fue dentro de Select2 no cerrar
+    if (
+        e.target.closest(".select2-container") ||
+        e.target.closest(".select2-dropdown")
+    ) {
+        return;
     }
-</style>
+
+
+    document.querySelectorAll(".collapse.show").forEach(panel => {
+
+        const btn = document.querySelector(`[data-target="${panel.id}"]`);
+
+        if (panel.contains(e.target) || (btn && btn.contains(e.target))) {
+            return;
+        }
+
+        panel.classList.remove("show");
+
+        if (btn) {
+            const icon = btn.querySelector("i");
+            icon.classList.remove("fa-chevron-up");
+            icon.classList.add("fa-chevron-down");
+        }
+
+    });
+
+}
+</script>
+<script src="vistas/js/venta-pos.js"></script>
+

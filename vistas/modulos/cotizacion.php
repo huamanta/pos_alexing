@@ -4,241 +4,241 @@ date_default_timezone_set('America/Lima');
 ?>
 <!-- Content Wrapper. Contains page content -->
 <style type="text/css">
-    /* ================== OPTIMIZACIONES Y ESTÉTICA ================== */
+/* ================== OPTIMIZACIONES Y ESTÉTICA ================== */
 
-    /* Encabezados fijos en tablas con scroll interno */
-    #tbllistado thead th,
-    #tblarticulos thead th,
-    #tblarticulos2 thead th,
-    #detalles thead th,
-    #detallesm thead th {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        background: #007bff;
-        color: #fff;
-        text-align: center;
+/* Encabezados fijos en tablas con scroll interno */
+#tbllistado thead th,
+#tblarticulos thead th,
+#tblarticulos2 thead th,
+#detalles thead th,
+#detallesm thead th {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #007bff;
+    color: #fff;
+    text-align: center;
+}
+
+
+/* Hover en filas */
+#tbllistado tbody tr:hover,
+#tblarticulos tbody tr:hover,
+#tblarticulos2 tbody tr:hover,
+#detalles tbody tr:hover,
+#detallesm tbody tr:hover {
+    background-color: #f0f8ff;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+/* Feedback visual de validación */
+input:valid,
+select:valid,
+textarea:valid {
+    border: 1px solid #28a745 !important;
+}
+
+input:invalid,
+select:invalid,
+textarea:invalid {
+    border: 1px solid #dc3545 !important;
+}
+
+/* Botones flotantes con animación pulsante */
+.btn-flotante,
+.btn-flotante2 {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1)
     }
 
-
-    /* Hover en filas */
-    #tbllistado tbody tr:hover,
-    #tblarticulos tbody tr:hover,
-    #tblarticulos2 tbody tr:hover,
-    #detalles tbody tr:hover,
-    #detallesm tbody tr:hover {
-        background-color: #f0f8ff;
-        cursor: pointer;
-        transition: background 0.3s ease;
+    50% {
+        transform: scale(1.05)
     }
 
-    /* Feedback visual de validación */
-    input:valid,
-    select:valid,
-    textarea:valid {
-        border: 1px solid #28a745 !important;
+    100% {
+        transform: scale(1)
+    }
+}
+
+.collapse-section {
+    position: absolute;
+    top: 90%;
+    left: 0;
+    width: 100%;
+    z-index: 1050;
+    border: rgba(0, 0, 0, .15) solid 1px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+
+    transition: all .25s ease;
+}
+
+.collapse-section.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .content-wrapper {
+        padding: 10px;
     }
 
-    input:invalid,
-    select:invalid,
-    textarea:invalid {
-        border: 1px solid #dc3545 !important;
-    }
-
-    /* Botones flotantes con animación pulsante */
     .btn-flotante,
     .btn-flotante2 {
-        animation: pulse 2s infinite;
+        font-size: 12px;
+        padding: 10px 15px;
     }
 
-    @keyframes pulse {
-        0% {
-            transform: scale(1)
-        }
-
-        50% {
-            transform: scale(1.05)
-        }
-
-        100% {
-            transform: scale(1)
-        }
+    table th,
+    table td {
+        font-size: 11px;
     }
+}
 
-    .collapse-section {
-        position: absolute;
-        top: 90%;
-        left: 0;
-        width: 100%;
-        z-index: 1050;
-        border: rgba(0, 0, 0, .15) solid 1px;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+/* ================== TUS ESTILOS (ajustados) ================== */
+/* Establecer una altura máxima para la tabla */
+#detalles {
+    max-height: 300px;
+    overflow-y: auto;
+    display: block;
+    width: 100%;
+}
 
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
+.btn-flotante {
+    font-size: 16px;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #ffffff;
+    border-radius: 5px;
+    letter-spacing: 2px;
+    background-color: #008000;
+    padding: 18px 30px;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    transition: all 300ms ease 0ms;
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+    z-index: 99;
+}
 
-        transition: all .25s ease;
-    }
+.btn-flotante:hover {
+    background-color: #2c2fa5;
+    box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-7px);
+}
 
-    .collapse-section.show {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .content-wrapper {
-            padding: 10px;
-        }
-
-        .btn-flotante,
-        .btn-flotante2 {
-            font-size: 12px;
-            padding: 10px 15px;
-        }
-
-        table th,
-        table td {
-            font-size: 11px;
-        }
-    }
-
-    /* ================== TUS ESTILOS (ajustados) ================== */
-    /* Establecer una altura máxima para la tabla */
-    #detalles {
-        max-height: 300px;
-        overflow-y: auto;
-        display: block;
-        width: 100%;
-    }
-
+@media only screen and (max-width: 600px) {
     .btn-flotante {
-        font-size: 16px;
-        text-transform: uppercase;
-        font-weight: bold;
-        color: #ffffff;
-        border-radius: 5px;
-        letter-spacing: 2px;
-        background-color: #008000;
-        padding: 18px 30px;
-        position: fixed;
+        font-size: 14px;
+        padding: 12px 20px;
         bottom: 20px;
         right: 20px;
-        transition: all 300ms ease 0ms;
-        box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-        z-index: 99;
     }
+}
 
-    .btn-flotante:hover {
-        background-color: #2c2fa5;
-        box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
-        transform: translateY(-7px);
-    }
+.btn-flotante2 {
+    font-size: 16px;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #ffffff;
+    border-radius: 5px;
+    letter-spacing: 2px;
+    background-color: red;
+    padding: 18px 30px;
+    position: fixed;
+    bottom: 20px;
+    right: 325px;
+    transition: all 300ms ease 0ms;
+    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+    z-index: 99;
+}
 
-    @media only screen and (max-width: 600px) {
-        .btn-flotante {
-            font-size: 14px;
-            padding: 12px 20px;
-            bottom: 20px;
-            right: 20px;
-        }
-    }
+.btn-flotante2:hover {
+    background-color: #2c2fa5;
+    box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-7px);
+}
 
+@media only screen and (max-width: 600px) {
     .btn-flotante2 {
-        font-size: 16px;
-        text-transform: uppercase;
-        font-weight: bold;
-        color: #ffffff;
-        border-radius: 5px;
-        letter-spacing: 2px;
-        background-color: red;
-        padding: 18px 30px;
-        position: fixed;
+        font-size: 14px;
+        padding: 12px 20px;
         bottom: 20px;
-        right: 325px;
-        transition: all 300ms ease 0ms;
-        box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-        z-index: 99;
+        right: 290px;
     }
+}
 
-    .btn-flotante2:hover {
-        background-color: #2c2fa5;
-        box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
-        transform: translateY(-7px);
-    }
+.orange-cart {
+    color: orange;
+}
 
-    @media only screen and (max-width: 600px) {
-        .btn-flotante2 {
-            font-size: 14px;
-            padding: 12px 20px;
-            bottom: 20px;
-            right: 290px;
-        }
-    }
+#datosgenerales2 {
+    display: none;
+    transition: display 0.3s ease;
+}
 
-    .orange-cart {
-        color: orange;
-    }
+/* Reducir tamaño de texto en tabla */
+#tblarticulos,
+#tblarticulos2 {
+    font-size: 12px;
+}
 
-    #datosgenerales2 {
-        display: none;
-        transition: display 0.3s ease;
-    }
+#tblarticulos th,
+#tblarticulos td,
+#tblarticulos2 th,
+#tblarticulos2 td {
+    padding: 4px;
+    white-space: nowrap;
+    text-align: center;
+}
 
-    /* Reducir tamaño de texto en tabla */
-    #tblarticulos,
-    #tblarticulos2 {
-        font-size: 12px;
-    }
+#detalles th,
+#detalles td {
+    padding: 4px;
+    white-space: nowrap;
+    text-align: center;
+}
 
-    #tblarticulos th,
-    #tblarticulos td,
-    #tblarticulos2 th,
-    #tblarticulos2 td {
-        padding: 4px;
-        white-space: nowrap;
-        text-align: center;
-    }
+.img-thumbnail {
+    border-radius: 5px;
+}
 
-    #detalles th,
-    #detalles td {
-        padding: 4px;
-        white-space: nowrap;
-        text-align: center;
-    }
+.btn-xs {
+    padding: 2px 5px;
+    font-size: 10px;
+}
 
-    .img-thumbnail {
-        border-radius: 5px;
-    }
+.table-responsive {
+    overflow-x: auto;
+    max-width: 100%;
+}
 
-    .btn-xs {
-        padding: 2px 5px;
-        font-size: 10px;
-    }
+/* Caja total destacada */
+.total-box {
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
-    .table-responsive {
-        overflow-x: auto;
-        max-width: 100%;
-    }
-
-    /* Caja total destacada */
-    .total-box {
-        padding: 10px 20px;
-        border-radius: 8px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .total-box span {
-        font-size: 28px;
-        font-weight: bold;
-    }
+.total-box span {
+    font-size: 28px;
+    font-weight: bold;
+}
 </style>
 
 <div class="content-wrapper">
@@ -366,21 +366,18 @@ date_default_timezone_set('America/Lima');
                                             <div class="row align-items-center mb-3">
 
                                                 <div class="col-md-4">
-                                                    <button type="button"
-                                                        class="btn btn-primary btn-lg w-100 shadow-sm d-flex justify-content-between align-items-center"
-                                                        onclick="toggleCollapse('datosgenerales', this)">
-
+                                                    <button type="button" class="btn btn-primary btn-lg ml-1"
+                                                        onclick="toggleCollapse(event,this)" data-target="detalle1">
                                                         <span>
                                                             <i class="fas fa-user-edit mr-2"></i>
                                                             Datos Generales
                                                         </span>
-
-                                                        <i class="fas fa-chevron-down" id="iconDatos"></i>
+                                                        <i class="fa fa-chevron-down"></i>
                                                     </button>
                                                 </div>
 
                                                 <div class="col-md-8">
-                                                    <div class="card border-0 shadow-sm">
+                                                    <div class="card border-0 shadow-sm mr-1">
                                                         <div class="card-body py-2">
 
                                                             <div
@@ -413,7 +410,7 @@ date_default_timezone_set('America/Lima');
                                             </div>
                                             <!-- Sección colapsable con animación (ANTES estaba hidden) -->
                                             <div class="position-relative">
-                                                <div class="p-2 collapse-section" id="datosgenerales">
+                                                <div class="p-2 collapse collapse-section" id="detalle1">
 
                                                     <div class="form-group mb-2" hidden>
                                                         <label class="col-form-label" for="selCategoriaReg">
@@ -421,7 +418,7 @@ date_default_timezone_set('America/Lima');
                                                             <span class="small">Personal</span>
                                                         </label>
                                                         <select id="idpersonal" name="idpersonal"
-                                                            class="form-control select2" required></select>
+                                                            class="form-control select2"></select>
                                                     </div>
 
                                                     <div class="form-group mb-2">
@@ -432,7 +429,7 @@ date_default_timezone_set('America/Lima');
                                                                     <span class="small">Almacén</span>
                                                                 </label>
                                                                 <select id="idsucursal" name="idsucursal"
-                                                                    class="form-control"></select>
+                                                                    class="form-control" readonly></select>
                                                             </div>
                                                             <div class="col-md-8">
                                                                 <label class="col-form-label" for="selCategoriaReg">
@@ -445,7 +442,7 @@ date_default_timezone_set('America/Lima');
                                                                         Cliente</a>
                                                                 </label>
                                                                 <select id="idcliente" name="idcliente"
-                                                                    class="form-control" required></select>
+                                                                    class="form-control"></select>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -483,13 +480,13 @@ date_default_timezone_set('America/Lima');
                                                                         data-live-search="true"
                                                                         title="Seleccione Tiempo de Producción"
                                                                         required>
-                                                                        <option value="3 Días calendario">3 Días
+                                                                        <option value="3">3 Días
                                                                             calendario</option>
-                                                                        <option value="7 Días calendario">7 Días
+                                                                        <option value="7">7 Días
                                                                             calendario</option>
-                                                                        <option value="15 Días calendario">15 Días
+                                                                        <option value="15">15 Días
                                                                             calendario</option>
-                                                                        <option value="30 Días calendario">30 Días
+                                                                        <option value="30">30 Días
                                                                             calendario</option>
                                                                     </select>
                                                                 </div>
@@ -682,14 +679,14 @@ date_default_timezone_set('America/Lima');
                                                         <label style="font-size: 11px;">Interes %:</label>
                                                         <div class="input-group">
                                                             <?php if ($helpers->getUserPermissionAccion('Editar interes credito')): ?>
-                                                                <input style="border-color: #FFC7BB; text-align:center"
-                                                                    type="text" class="form-control" id="inputInteres"
-                                                                    name="inputInteres" value="0">
+                                                            <input style="border-color: #FFC7BB; text-align:center"
+                                                                type="text" class="form-control" id="inputInteres"
+                                                                name="inputInteres" value="0">
                                                             <?php endif; ?>
                                                             <?php if (!$helpers->getUserPermissionAccion('Editar interes credito')): ?>
-                                                                <input style="border-color: #FFC7BB; text-align:center"
-                                                                    type="text" class="form-control" id="inputInteres"
-                                                                    name="inputInteres" value="0" readonly>
+                                                            <input style="border-color: #FFC7BB; text-align:center"
+                                                                type="text" class="form-control" id="inputInteres"
+                                                                name="inputInteres" value="0" readonly>
                                                             <?php endif; ?>
                                                         </div>
 
@@ -714,22 +711,22 @@ date_default_timezone_set('America/Lima');
                                                         </thead>
 
                                                         <style>
-                                                            #datafechas {
-                                                                display: block;
-                                                                max-height: 300px;
-                                                                overflow-y: auto;
-                                                                width: 100%;
-                                                            }
+                                                        #datafechas {
+                                                            display: block;
+                                                            max-height: 300px;
+                                                            overflow-y: auto;
+                                                            width: 100%;
+                                                        }
 
-                                                            #datafechas tr {
-                                                                display: table;
-                                                                width: 100%;
-                                                                table-layout: fixed;
-                                                            }
+                                                        #datafechas tr {
+                                                            display: table;
+                                                            width: 100%;
+                                                            table-layout: fixed;
+                                                        }
 
-                                                            #datafechas td {
-                                                                width: 25%;
-                                                            }
+                                                        #datafechas td {
+                                                            width: 25%;
+                                                        }
                                                         </style>
 
                                                         <tbody id="datafechas">
@@ -747,7 +744,7 @@ date_default_timezone_set('America/Lima');
                                         </div>
 
                                         <div class="col-md-6">
-                                            <button class="btn-flotante" id="btnGuardar" onclick="guardaryeditar()">
+                                            <button type="button" class="btn-flotante" id="btnGuardar" onclick="guardaryeditar()">
                                                 <i class="fas fa-shopping-cart"></i> Realizar Cotizacion
                                             </button>
                                             <button id="btnCancelar" class="btn-flotante2" onclick="cancelarform()"
@@ -852,130 +849,130 @@ date_default_timezone_set('America/Lima');
                 </button>
             </div>
             <style>
-                .modal-body {
-                    background: #f2f3f3;
-                }
+            .modal-body {
+                background: #f2f3f3;
+            }
 
-                .card-section {
-                    background: #fff;
-                    border-radius: 14px;
-                    padding: 18px;
-                    margin-bottom: 18px;
-                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-                    border: 1px solid #e9ecef;
-                }
+            .card-section {
+                background: #fff;
+                border-radius: 14px;
+                padding: 18px;
+                margin-bottom: 18px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+                border: 1px solid #e9ecef;
+            }
 
-                .section-title {
-                    font-size: 15px;
-                    font-weight: 700;
-                    color: #343a40;
-                    margin-bottom: 15px;
-                    border-left: 4px solid #007bff;
-                    padding-left: 10px;
-                }
+            .section-title {
+                font-size: 15px;
+                font-weight: 700;
+                color: #343a40;
+                margin-bottom: 15px;
+                border-left: 4px solid #007bff;
+                padding-left: 10px;
+            }
 
-                .custom-label {
-                    font-size: 12px;
-                    font-weight: 600;
-                    color: #6c757d;
-                    margin-bottom: 5px;
-                    display: block;
-                }
+            .custom-label {
+                font-size: 12px;
+                font-weight: 600;
+                color: #6c757d;
+                margin-bottom: 5px;
+                display: block;
+            }
 
-                .form-control {
-                    border-radius: 10px;
-                    border: 1px solid #dcdfe3;
-                    height: 42px;
-                    background: #fdfdfd;
-                    font-size: 14px;
-                }
+            .form-control {
+                border-radius: 10px;
+                border: 1px solid #dcdfe3;
+                height: 42px;
+                background: #fdfdfd;
+                font-size: 14px;
+            }
 
-                .form-control:focus {
-                    border-color: #007bff;
-                    box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, .15);
-                }
+            .form-control:focus {
+                border-color: #007bff;
+                box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, .15);
+            }
 
-                .table-modern {
-                    border-radius: 12px;
-                    overflow: hidden;
-                    background: #fff;
-                }
+            .table-modern {
+                border-radius: 12px;
+                overflow: hidden;
+                background: #fff;
+            }
 
-                .table-modern thead {
-                    background: linear-gradient(90deg, #007bff, #0056b3);
-                    color: white;
-                }
+            .table-modern thead {
+                background: linear-gradient(90deg, #007bff, #0056b3);
+                color: white;
+            }
 
-                .table-modern th {
-                    font-size: 13px;
-                    font-weight: 600;
-                    border: none;
-                    padding: 14px;
-                }
+            .table-modern th {
+                font-size: 13px;
+                font-weight: 600;
+                border: none;
+                padding: 14px;
+            }
 
-                .table-modern td {
-                    vertical-align: middle;
-                    padding: 12px;
-                    border-color: #f1f1f1;
-                    font-size: 13px;
-                }
+            .table-modern td {
+                vertical-align: middle;
+                padding: 12px;
+                border-color: #f1f1f1;
+                font-size: 13px;
+            }
 
-                .table-modern tbody tr:hover {
-                    background: #f8fbff;
-                    transition: .2s;
-                }
+            .table-modern tbody tr:hover {
+                background: #f8fbff;
+                transition: .2s;
+            }
 
-                .info-box-credit {
-                    background: linear-gradient(135deg, #ffffff, #f8f9fa);
-                    border-radius: 12px;
-                    padding: 15px;
-                    text-align: center;
-                    border: 1px solid #e9ecef;
-                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-                }
+            .info-box-credit {
+                background: linear-gradient(135deg, #ffffff, #f8f9fa);
+                border-radius: 12px;
+                padding: 15px;
+                text-align: center;
+                border: 1px solid #e9ecef;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            }
 
-                .info-box-credit h6 {
-                    font-size: 12px;
-                    color: #6c757d;
-                    margin-bottom: 6px;
-                    font-weight: 600;
-                    text-transform: uppercase;
-                }
+            .info-box-credit h6 {
+                font-size: 12px;
+                color: #6c757d;
+                margin-bottom: 6px;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
 
-                .info-box-credit p {
-                    margin: 0;
-                    font-size: 18px;
-                    font-weight: bold;
-                    color: #212529;
-                }
+            .info-box-credit p {
+                margin: 0;
+                font-size: 18px;
+                font-weight: bold;
+                color: #212529;
+            }
 
-                #dataCuotasCredito {
-                    display: block;
-                    max-height: 280px;
-                    overflow-y: auto;
-                    width: 100%;
-                }
+            #dataCuotasCredito {
+                display: block;
+                max-height: 280px;
+                overflow-y: auto;
+                width: 100%;
+            }
 
-                #dataCuotasCredito tr {
-                    display: table;
-                    width: 100%;
-                    table-layout: fixed;
-                }
+            #dataCuotasCredito tr {
+                display: table;
+                width: 100%;
+                table-layout: fixed;
+            }
 
-                #dataCuotasCredito td {
-                    width: 25%;
-                }
+            #dataCuotasCredito td {
+                width: 25%;
+            }
 
-                .table-cuotas thead {
-                    background: #343a40;
-                    color: white;
-                }
+            .table-cuotas thead {
+                background: #343a40;
+                color: white;
+            }
 
-                .table-cuotas th,
-                .table-cuotas td {
-                    padding: 12px;
-                    font-size: 13px;
-                }
+            .table-cuotas th,
+            .table-cuotas td {
+                padding: 12px;
+                font-size: 13px;
+            }
             </style>
 
             <div class="modal-body">
@@ -1223,79 +1220,55 @@ date_default_timezone_set('America/Lima');
 </div>
 
 <style>
-    .img-producto {
-        cursor: pointer;
-    }
+.img-producto {
+    cursor: pointer;
+}
 </style>
 
-<!-- ================== SCRIPTS EXTRA ================== -->
 <script>
-    // 🔎 Búsqueda rápida en tablas (por texto completo de cada fila)
-    function filtrarTabla(inputId, tablaId) {
-        var input = document.getElementById(inputId);
-        if (!input) return;
-        var filtro = input.value.toLowerCase();
-        var filas = document.querySelectorAll('#' + tablaId + ' tbody tr');
-        filas.forEach(function (fila) {
-            var visible = fila.textContent.toLowerCase().includes(filtro);
-            fila.style.display = visible ? '' : 'none';
-        });
+document.addEventListener("click", cerrarCollapse);
+
+function toggleCollapse(e, btn) {
+    e.stopPropagation();
+
+    const panel = document.getElementById(btn.dataset.target);
+    panel.classList.toggle("show");
+
+    const icon = btn.querySelector("i");
+    icon.classList.toggle("fa-chevron-down");
+    icon.classList.toggle("fa-chevron-up");
+}
+
+function cerrarCollapse(e) {
+
+    // Si el click fue dentro de Select2 no cerrar
+    if (
+        e.target.closest(".select2-container") ||
+        e.target.closest(".select2-dropdown")
+    ) {
+        return;
     }
 
-    // 📌 Colapsar sección con animación
-    function toggleCollapse(id, btn) {
-        var panel = document.getElementById(id);
-        if (!panel) return;
-        panel.classList.toggle('show');
-        const icon = btn.querySelector(".fa-chevron-down, .fa-chevron-up");
 
-        if (!panel.classList.contains("show")) {
+    document.querySelectorAll(".collapse.show").forEach(panel => {
+
+        const btn = document.querySelector(`[data-target="${panel.id}"]`);
+
+        if (panel.contains(e.target) || (btn && btn.contains(e.target))) {
+            return;
+        }
+
+        panel.classList.remove("show");
+
+        if (btn) {
+            const icon = btn.querySelector("i");
             icon.classList.remove("fa-chevron-up");
             icon.classList.add("fa-chevron-down");
-        } else {
-            icon.classList.remove("fa-chevron-down");
-            icon.classList.add("fa-chevron-up");
         }
-    }
 
-    // 🗓️ Fecha/hora visible en cabecera de formulario
-    (function pintarFechaActual() {
-        var el = document.getElementById('fechaActual');
-        if (!el) return;
-        try {
-            var fecha = new Date();
-            // Mostrar en formato local "dd/mm/yyyy hh:mm"
-            var dd = ('0' + fecha.getDate()).slice(-2);
-            var mm = ('0' + (fecha.getMonth() + 1)).slice(-2);
-            var yyyy = fecha.getFullYear();
-            var hh = ('0' + fecha.getHours()).slice(-2);
-            var min = ('0' + fecha.getMinutes()).slice(-2);
-            el.textContent = dd + '/' + mm + '/' + yyyy + ' ' + hh + ':' + min;
-        } catch (e) { }
-    })();
+    });
 
-    // 💰 Helper para recalcular total si tu JS no lo hace ya
-    function recalcularTotalDesdeDetalles() {
-        var total = 0;
-        document.querySelectorAll('#detalles tbody tr').forEach(function (tr) {
-            var celdaSubtotal = tr.querySelector('[data-subtotal]');
-            if (celdaSubtotal) {
-                var val = parseFloat(celdaSubtotal.textContent.replace(/,/g, '') || '0');
-                if (!isNaN(val)) total += val;
-            }
-        });
-        var totalEl = document.getElementById('total');
-        var totalInput = document.getElementById('total_venta');
-        if (totalEl) totalEl.textContent = total.toFixed(2);
-        if (totalInput) totalInput.value = total.toFixed(2);
-    }
-
-    // Observador opcional para actualizar total cuando cambien cantidades/precios (si marcas celdas con data-atributos)
-    var detallesTabla = document.getElementById('detalles');
-    if (detallesTabla && 'MutationObserver' in window) {
-        var obs = new MutationObserver(function () { recalcularTotalDesdeDetalles(); });
-        obs.observe(detallesTabla.tBodies[0], { childList: true, subtree: true, characterData: true });
-    }
+}
 </script>
 
 <!-- Tu JS principal -->

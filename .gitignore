@@ -9,3 +9,9 @@
 /reportes/factura/error_log
 /public/FACT_WebService/Facturacion/error_log
 /.env
+files/productos/*
+!files/productos/.gitkeep
+files/solicitudes/*
+!files/solicitudes/.gitkeep
+files/personal/*
+!files/personal/.gitkeep
