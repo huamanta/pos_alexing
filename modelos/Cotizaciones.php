@@ -1,17 +1,18 @@
 <?php
 //incluir la conexion de base de datos
 require "../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
 
 date_default_timezone_set('America/Lima');
 
-class Cotizacion
+class Cotizacion extends Helpers
 {
 
 
     //implementamos nuestro constructor
     public function __construct()
     {
-
+        parent::__construct();
     }
 
     //metodo insertar registro
@@ -43,124 +44,109 @@ class Cotizacion
         $meses,
         $interes
     ) {
-        // ⚙️ Conexión global
-        global $conexion;
-        $sw = true;
 
         try {
-            // 🚦 Iniciar transacción (bloquea la tabla para evitar duplicados)
-            $conexion->begin_transaction();
 
-            // 🔍 1️⃣ Obtener el último número actual (usando bloqueo)
-            $sql_ultimo = "
-            SELECT num_comprobante 
-            FROM cotizacion 
-            WHERE serie_comprobante = '$serie_comprobante' 
-            AND tipo_comprobante = '$tipo_comprobante'
-            ORDER BY idcotizacion DESC 
-            LIMIT 1
-            FOR UPDATE
-        ";
-            $rs = $conexion->query($sql_ultimo);
+            $idcliente = Helpers::clienteDefault($idcliente);
 
-            if ($rs && $rs->num_rows > 0) {
-                $row = $rs->fetch_assoc();
-                $num_comprobante = str_pad(((int) $row['num_comprobante'] + 1), 6, "0", STR_PAD_LEFT);
-            } else {
-                $num_comprobante = "000001";
+            $this->pdo->beginTransaction();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Obtener correlativo
+            |--------------------------------------------------------------------------
+            */
+
+            $ultimo = (new DBQuery($this->pdo))
+                ->select('num_comprobante')
+                ->from('cotizacion')
+                ->where('serie_comprobante', '=', $serie_comprobante)
+                ->where('tipo_comprobante', '=', $tipo_comprobante)
+                ->latest('idcotizacion')
+                ->lockForUpdate()
+                ->first();
+            $num_comprobante = $ultimo
+                ? str_pad(((int) $ultimo['num_comprobante']) + 1, 6, '0', STR_PAD_LEFT)
+                : '000001';
+
+            /*
+            |--------------------------------------------------------------------------
+            | Cabecera
+            |--------------------------------------------------------------------------
+            */
+
+            $idcotizacion = (new FluentSaver($this->pdo))
+
+                ->table('cotizacion')
+                ->nullable([
+                    'inicial',
+                    'frecuencia',
+                    'meses',
+                    'interes'
+                ])
+                ->data([
+                    'idsucursal' => $idsucursal,
+                    'idcliente' => $idcliente,
+                    'idpersonal' => $idpersonal,
+                    'tipo_comprobante' => $tipo_comprobante,
+                    'serie_comprobante' => $serie_comprobante,
+                    'num_comprobante' => $num_comprobante,
+                    'fecha_hora' => $fecha_hora,
+                    'total_venta' => $total_venta,
+                    'titulo' => $titulo,
+                    'saludo' => $saludo,
+                    'nota' => $nota,
+                    'igv' => $igv,
+                    'formapago' => $formapago,
+                    'observacion' => $observaciones,
+                    'tiempo_pro' => $tiempoproduccion,
+                    'estado' => 'EN ESPERA',
+                    'inicial' => $inicial,
+                    'frecuencia' => $frecuencia,
+                    'meses' => $meses,
+                    'interes' => $interes
+                ])
+
+                ->save();
+
+            /*
+            |--------------------------------------------------------------------------
+            | Detalle
+            |--------------------------------------------------------------------------
+            */
+
+            foreach ($idp as $i => $producto) {
+
+                (new FluentSaver($this->pdo))
+
+                    ->table('detalle_cotizacion')
+
+                    ->data([
+                        'idcotizacion' => $idcotizacion,
+                        'idproducto' => $producto,
+                        'cantidad' => $cantidad[$i],
+                        'contenedor' => $contenedor[$i],
+                        'cantidad_contenedor' => $cantidad_contenedor[$i],
+                        'precio_venta' => $precio_venta[$i],
+                        'descuento' => $descuento[$i]
+                    ])
+
+                    ->save();
             }
 
-            // 🧾 2️⃣ Insertar cabecera con el número nuevo
-            $sql_cab = "INSERT INTO cotizacion (
-                        idsucursal,
-                        idcliente,
-                        idpersonal,
-                        tipo_comprobante,
-                        serie_comprobante,
-                        num_comprobante,
-                        fecha_hora,
-                        total_venta,
-                        titulo,
-                        saludo,
-                        nota,
-                        igv,
-                        formapago,
-                        observacion,
-                        tiempo_pro,
-                        estado,
-                        inicial,
-                        frecuencia,
-                        meses,
-                        interes
-                    ) VALUES (
-                        '$idsucursal',
-                        '$idcliente',
-                        '$idpersonal',
-                        '$tipo_comprobante',
-                        '$serie_comprobante',
-                        '$num_comprobante',
-                        '$fecha_hora',
-                        '$total_venta',
-                        '$titulo',
-                        '$saludo',
-                        '$nota',
-                        '$igv',
-                        '$formapago',
-                        '$observaciones',
-                        '$tiempoproduccion',
-                        'EN ESPERA',
-                        '$inicial',
-                        '$frecuencia',
-                        '$meses',
-                        '$interes'
-                    )";
 
-            $idcotizacion_new = ejecutarConsulta_retornarID($sql_cab);
+            $this->pdo->commit();
 
-            // 🧩 3️⃣ Insertar detalles
-            $num_elementos = 0;
-            while ($num_elementos < count($idp)) {
-                $sql_det = "INSERT INTO detalle_cotizacion (
-                            idcotizacion,
-                            idproducto,
-                            cantidad,
-                            contenedor,
-                            cantidad_contenedor,
-                            precio_venta,
-                            descuento
-                        ) VALUES (
-                            '$idcotizacion_new',
-                            '{$idp[$num_elementos]}',
-                            '{$cantidad[$num_elementos]}',
-                            '{$contenedor[$num_elementos]}',
-                            '{$cantidad_contenedor[$num_elementos]}',
-                            '{$precio_venta[$num_elementos]}',
-                            '{$descuento[$num_elementos]}'
-                        )";
+            return json_encode([
+                'success' => true,
+                'message' => 'Cotizacion registrado correctamente.'
+            ]);
 
-                if (!ejecutarConsulta($sql_det)) {
-                    $sw = false;
-                    break;
-                }
+        } catch (Throwable $e) {
 
-                $num_elementos++;
-            }
+            $this->pdo->rollBack();
 
-            // 🧹 4️⃣ Limpiar temporales si todo fue bien
-            if ($sw) {
-                $conexion->query("DELETE FROM cotizacion_tmp WHERE idusuario = '$idpersonal'");
-                $conexion->query("DELETE FROM cotizacion_cab_tmp WHERE idusuario = '$idpersonal'");
-            }
-
-            // ✅ 5️⃣ Confirmar transacción
-            $conexion->commit();
-
-            return $sw ? $num_comprobante : false;
-        } catch (Exception $e) {
-            // ❌ Si algo falla, revertir
-            $conexion->rollback();
-            error_log("Error en insertar cotización: " . $e->getMessage());
-            return false;
+            throw $e;
         }
     }
 
@@ -332,16 +318,59 @@ class Cotizacion
     }
 
     public function ventadetalle($idcotizacion)
-    {
-        $sql = "SELECT pg.id,a.idproducto,pg.contenedor,pg.cantidad_contenedor, a.nombre AS producto, um.nombre as unidadmedida, a.idunidad_medida, CASE WHEN a.codigo = 'SIN CODIGO' THEN '-' ELSE a.codigo END as codigo, d.cantidad, d.precio_venta, a.preciocigv, d.descuento, (d.cantidad*d.precio_venta-d.descuento) AS subtotal, a.stock, a.precioB, a.precioC, a.precioD, a.imagen, a.proigv 
-        FROM detalle_cotizacion d 
-        LEFT JOIN producto_configuracion pg 
-        ON pg.id=d.idproducto
-        INNER JOIN producto a ON pg.idproducto=a.idproducto 
-        INNER JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
-        WHERE d.idcotizacion='$idcotizacion'";
-        return ejecutarConsulta($sql);
-    }
+{
+    $sql = "
+    SELECT
+        d.iddetalle_cotizacion,
+
+        p.*,
+
+        pg.idproducto_configuracion,
+        pg.precio_venta,
+        pg.contenedor,
+        pg.cantidad_contenedor,
+
+        i.stock,
+
+        ps.idserie,
+        ps.numero_serie,
+        ps.numero_motor,
+        ps.placa,
+        ps.color,
+        ps.anio_fabricacion,
+        ps.estado AS estado_serie,
+
+        um.nombre AS unidadmedida,
+
+        d.cantidad,
+        d.precio_venta,
+        d.descuento,
+
+        (d.cantidad*d.precio_venta-d.descuento) AS subtotal
+
+    FROM detalle_cotizacion d
+
+    INNER JOIN producto_configuracion pg
+        ON pg.idproducto_configuracion = d.idproducto
+
+    INNER JOIN producto p
+        ON p.idproducto = pg.idproducto
+
+    INNER JOIN unidad_medida um
+        ON um.idunidad_medida = p.idunidad_medida
+
+    LEFT JOIN inventario_producto i
+        ON i.idproducto = p.idproducto
+
+    LEFT JOIN producto_serie ps
+        ON ps.idproducto = p.idproducto
+        AND ps.estado = 'DISPONIBLE'
+
+    WHERE d.idcotizacion = '$idcotizacion'
+    ";
+
+    return ejecutarConsulta($sql);
+}
 
     /*public function ventadetalle($idcotizacion)
         {

@@ -29,13 +29,14 @@ class DBQuery
 
     private ?int $limit = null;
     private ?int $offset = null;
-
-
+    private array $groups = [];
     private array $selects = [];
-private string $from = '';
-private array $joins = [];
+    private string $from = '';
+    private array $joins = [];
 
-     // Paginación
+    private bool $lockForUpdate = false;
+
+    // Paginación
     private int $page = 1;
     private int $perPage = 15;
     private int $total = 0;
@@ -46,104 +47,125 @@ private array $joins = [];
         $this->pdo = $pdo;
     }
 
+    public function lockForUpdate(): self
+    {
+        $this->lockForUpdate = true;
+
+        return $this;
+    }
+
+    public function groupBy(string $column): self
+    {
+        $this->groups[] = $column;
+
+        return $this;
+    }
+
+    private function buildGroupBy(): string
+    {
+        if (empty($this->groups)) {
+            return '';
+        }
+
+        return "\nGROUP BY "
+            . implode(', ', $this->groups);
+    }
+
     public function select(array|string $columns = ['*']): self
-{
-    if (is_string($columns)) {
-        $columns = [$columns];
+    {
+        if (is_string($columns)) {
+            $columns = [$columns];
+        }
+
+        $this->selects = $columns;
+
+        return $this;
     }
 
-    $this->selects = $columns;
+    public function from(string $table): self
+    {
+        $this->from = $table;
 
-    return $this;
-}
-
-public function from(string $table): self
-{
-    $this->from = $table;
-
-    return $this;
-}
-
-public function join(
-    string $table,
-    string $condition,
-    string $type = 'INNER'
-): self {
-
-    $type = strtoupper($type);
-
-    $allowed = [
-        'INNER',
-        'LEFT',
-        'RIGHT',
-        'FULL'
-    ];
-
-    if (!in_array($type, $allowed, true)) {
-        $type = 'INNER';
+        return $this;
     }
 
-    $this->joins[] =
-        "{$type} JOIN {$table} ON {$condition}";
+    public function join(
+        string $table,
+        string $condition,
+        string $type = 'INNER'
+    ): self {
 
-    return $this;
-}
+        $type = strtoupper($type);
+
+        $allowed = [
+            'INNER',
+            'LEFT',
+            'RIGHT',
+            'FULL'
+        ];
+
+        if (!in_array($type, $allowed, true)) {
+            $type = 'INNER';
+        }
+
+        $this->joins[] =
+            "{$type} JOIN {$table} ON {$condition}";
+
+        return $this;
+    }
 
 
-public function leftJoin(
-    string $table,
-    string $condition
-): self
-{
-    return $this->join(
-        $table,
-        $condition,
-        'LEFT'
-    );
-}
+    public function leftJoin(
+        string $table,
+        string $condition
+    ): self {
+        return $this->join(
+            $table,
+            $condition,
+            'LEFT'
+        );
+    }
 
-public function rightJoin(
-    string $table,
-    string $condition
-): self
-{
-    return $this->join(
-        $table,
-        $condition,
-        'RIGHT'
-    );
-}
+    public function rightJoin(
+        string $table,
+        string $condition
+    ): self {
+        return $this->join(
+            $table,
+            $condition,
+            'RIGHT'
+        );
+    }
 
     public function limit(int $limit): self
-{
-    $this->limit = $limit;
+    {
+        $this->limit = $limit;
 
-    return $this;
-}
+        return $this;
+    }
 
-public function offset(int $offset): self
-{
-    $this->offset = $offset;
+    public function offset(int $offset): self
+    {
+        $this->offset = $offset;
 
-    return $this;
-}
+        return $this;
+    }
 
-public function latest(string $column='id'): self
-{
-    return $this->orderBy($column,'DESC');
-}
+    public function latest(string $column = 'id'): self
+    {
+        return $this->orderBy($column, 'DESC');
+    }
 
-public function whereLike(
-    string $column,
-    string $value
-): self
-{
-    return $this->where(
-        $column,
-        'LIKE',
-        "%{$value}%"
-    );
-}
+    public function whereLike(
+        string $column,
+        string $value
+    ): self {
+        return $this->where(
+            $column,
+            'LIKE',
+            "%{$value}%"
+        );
+    }
 
     /**
      * Query principal
@@ -160,12 +182,17 @@ public function whereLike(
     {
         [$whereSql, $params] = $this->buildWhereClause();
 
-        $sql = $this->buildQuery() .
-            $whereSql .
-            $this->buildOrderBy();
+        $sql = $this->buildQuery()
+            . $whereSql
+            . $this->buildGroupBy()
+            . $this->buildOrderBy();
 
         if ($this->limit !== null) {
             $sql .= " LIMIT {$this->limit}";
+        }
+
+        if ($this->lockForUpdate) {
+            $sql .= " FOR UPDATE";
         }
 
         $stmt = $this->pdo->prepare($sql);
@@ -182,10 +209,15 @@ public function whereLike(
     {
         [$whereSql, $params] = $this->buildWhereClause();
 
-        $sql = $this->buildQuery() .
-            $whereSql .
-            $this->buildOrderBy() .
-            " LIMIT 1";
+        $sql = $this->buildQuery()
+            . $whereSql
+            . $this->buildGroupBy()
+            . $this->buildOrderBy()
+            . " LIMIT 1";
+
+        if ($this->lockForUpdate) {
+            $sql .= " FOR UPDATE";
+        }
 
         $stmt = $this->pdo->prepare($sql);
 
@@ -197,10 +229,10 @@ public function whereLike(
     }
 
     public function count(): int
-{
-    [$whereSql, $params] = $this->buildWhereClause();
+    {
+        [$whereSql, $params] = $this->buildWhereClause();
 
-    $sql = "
+        $sql = "
         SELECT COUNT(*)
         FROM (
             {$this->buildQuery()}
@@ -208,48 +240,48 @@ public function whereLike(
         ) t
     ";
 
-    $stmt = $this->pdo->prepare($sql);
+        $stmt = $this->pdo->prepare($sql);
 
-    $this->bindParams(
-        $stmt,
-        array_merge($this->baseParams,$params)
-    );
+        $this->bindParams(
+            $stmt,
+            array_merge($this->baseParams, $params)
+        );
 
-    $stmt->execute();
+        $stmt->execute();
 
-    return (int)$stmt->fetchColumn();
-}
+        return (int) $stmt->fetchColumn();
+    }
 
-public function exists(): bool
-{
-    $clone = clone $this;
-    return $clone->count() > 0;
-}
+    public function exists(): bool
+    {
+        $clone = clone $this;
+        return $clone->count() > 0;
+    }
 
 
-public function value(string $column): mixed
-{
-    $row = $this->first();
+    public function value(string $column): mixed
+    {
+        $row = $this->first();
 
-    return $row[$column] ?? null;
-}
+        return $row[$column] ?? null;
+    }
 
-public function pluck(string $column): array
-{
-    return array_column(
-        $this->get(),
-        $column
-    );
-}
+    public function pluck(string $column): array
+    {
+        return array_column(
+            $this->get(),
+            $column
+        );
+    }
 
-public function find($id, string $pk='id'): ?array
-{
-    $clone = clone $this;
+    public function find($id, string $pk = 'id'): ?array
+    {
+        $clone = clone $this;
 
-    return $clone
-        ->where($pk,'=',$id)
-        ->first();
-}
+        return $clone
+            ->where($pk, '=', $id)
+            ->first();
+    }
 
     public function where(
         string $column,
@@ -329,60 +361,57 @@ public function find($id, string $pk='id'): ?array
     }
 
     public function whereNull(string $column): self
-{
-    return $this->where(
-        $column,
-        'IS NULL',
-        null
-    );
-}
+    {
+        return $this->where(
+            $column,
+            'IS NULL',
+            null
+        );
+    }
 
-public function whereNotNull(string $column): self
-{
-    return $this->where(
-        $column,
-        'IS NOT NULL',
-        null
-    );
-}
+    public function whereNotNull(string $column): self
+    {
+        return $this->where(
+            $column,
+            'IS NOT NULL',
+            null
+        );
+    }
 
-public function whereIn(
-    string $column,
-    array $values
-): self
-{
-    return $this->where(
-        $column,
-        'IN',
-        $values
-    );
-}
+    public function whereIn(
+        string $column,
+        array $values
+    ): self {
+        return $this->where(
+            $column,
+            'IN',
+            $values
+        );
+    }
 
-public function whereBetween(
-    string $column,
-    mixed $from,
-    mixed $to
-): self
-{
-    return $this->where(
-        $column,
-        'BETWEEN',
-        [$from,$to]
-    );
-}
+    public function whereBetween(
+        string $column,
+        mixed $from,
+        mixed $to
+    ): self {
+        return $this->where(
+            $column,
+            'BETWEEN',
+            [$from, $to]
+        );
+    }
 
-public function whereDate(
-    string $column,
-    string $date
-): self
-{
-    return $this->whereRaw(
-        "DATE($column)=:date",
-        [
-            "date"=>$date
-        ]
-    );
-}
+    public function whereDate(
+        string $column,
+        string $date
+    ): self {
+        return $this->whereRaw(
+            "DATE($column)=:date",
+            [
+                "date" => $date
+            ]
+        );
+    }
 
     public function whereRaw(string $sql, array $params = []): self
     {
@@ -421,37 +450,36 @@ public function whereDate(
     }
 
     private function buildQuery(): string
-{
-    if (!empty($this->baseQuery)) {
-        return $this->baseQuery;
+    {
+        if (!empty($this->baseQuery)) {
+            return $this->baseQuery;
+        }
+
+        if (empty($this->from)) {
+            throw new Exception(
+                'No se ha definido la tabla FROM.'
+            );
+        }
+
+        $sql = 'SELECT ';
+
+        $sql .= empty($this->selects)
+            ? '*'
+            : implode(",\n", $this->selects);
+
+        $sql .= "\nFROM {$this->from}";
+
+        if (!empty($this->joins)) {
+            $sql .= "\n" . implode("\n", $this->joins);
+        }
+
+        return $sql;
     }
-
-    if (empty($this->from)) {
-        throw new Exception(
-            'No se ha definido la tabla FROM.'
-        );
-    }
-
-    $sql = 'SELECT ';
-
-    $sql .= empty($this->selects)
-        ? '*'
-        : implode(",\n", $this->selects);
-
-    $sql .= "\nFROM {$this->from}";
-
-    if (!empty($this->joins)) {
-        $sql .= "\n" . implode("\n", $this->joins);
-    }
-
-    return $sql;
-}
-
 
     /**
      * Soft deletes
      */
-    public function softDeletes(string $column='deleted_at'): self
+    public function softDeletes(string $column = 'deleted_at'): self
     {
         $this->applySoftDelete = true;
         $this->softDeleteColumn = $column;
@@ -469,18 +497,18 @@ public function whereDate(
      * ])
      */
     public function filter(array $conditions): self
-{
-    foreach ($conditions as $column => $value) {
+    {
+        foreach ($conditions as $column => $value) {
 
-        if ($value === '' || $value === null) {
-            continue;
+            if ($value === '' || $value === null) {
+                continue;
+            }
+
+            $this->where($column, '=', $value);
         }
 
-        $this->where($column, '=', $value);
+        return $this;
     }
-
-    return $this;
-}
 
 
     /**
@@ -597,6 +625,7 @@ public function whereDate(
         $sql = "
             {$this->buildQuery()}
             {$whereSql}
+            {$this->buildGroupBy()}
             {$orderSql}
             LIMIT :limit
             OFFSET :offset
@@ -664,12 +693,13 @@ public function whereDate(
     {
 
         $sql = "
-SELECT COUNT(*)
-FROM (
-    {$this->buildQuery()}
-    {$whereSql}
-) total
-";
+            SELECT COUNT(*)
+            FROM (
+                {$this->buildQuery()}
+                {$whereSql}
+                {$this->buildGroupBy()}
+            ) total
+            ";
 
 
         $stmt = $this->pdo->prepare($sql);
@@ -763,11 +793,14 @@ FROM (
         $this->lastPage = 0;
 
         $this->selects = [];
-$this->from = '';
-$this->joins = [];
+        $this->from = '';
+        $this->joins = [];
 
-$this->limit = null;
-$this->offset = null;
+        $this->limit = null;
+        $this->offset = null;
+        $this->orders = [];
+        $this->groups = [];
+        $this->rawWhere = [];
 
         return $this;
     }

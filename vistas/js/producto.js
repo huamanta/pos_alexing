@@ -522,15 +522,12 @@ function pintarProductos(data, permissions) {
                 <td>${item.nombre ?? ''}</td>
                 <td>${item.stock}</td>
                 <td>${item.stock_minimo}</td>
+                <td>${item.numero_serie || '-'}</td>
+                <td>${item.numero_motor || '-'}</td>
                 <td>S/ ${parseFloat(item.precio).toFixed(2)}</td>
                 <td>S/ ${parseFloat(item.precio_compra).toFixed(2)}</td>
                 <td>
-                    ${item.series_disponibles
-        ? `<span class="badge badge-info">
-                        ${item.series_disponibles}
-                        </span>`
-        : '-'
-      }
+                    ${item.color}
                 </td>
                 <td>
                     ${item.condicion === 1

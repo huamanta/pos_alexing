@@ -23,16 +23,48 @@ function init() {
   $("#formSolicitud").submit(function (e) {
     guardarSolicitud(e);
   });
-
-  $.post(
-    "controladores/venta.php?op=selectCliente",
-    { only_client: true },
-    function (r) {
-      $("#idcliente").html(r);
-      $("#idcliente").select2("");
-    },
-  );
 }
+
+$("#idcliente").select2({
+    placeholder: "Buscar cliente...",
+    allowClear: true,
+    minimumInputLength: 2,
+
+    ajax: {
+        url: "controladores/venta.php?op=selectCliente",
+        type: "POST",
+        dataType: "json",
+        delay: 250,
+
+        data: function (params) {
+            return {
+                search: params.term,
+                page: params.page || 1,
+                only_client: 1
+            };
+        },
+
+        processResults: function (data, params) {
+
+            params.page = params.page || 1;
+
+            return {
+                results: data.data.map(function (item) {
+                    return {
+                        id: item.idpersona,
+                        text: item.nombre + " - " + item.num_documento
+                    };
+                }),
+
+                pagination: {
+                    more: data.meta.current_page < data.meta.last_page
+                }
+            };
+        },
+
+        cache: true
+    }
+});
 
 function listarSolicitudes() {
   tablaSolicitudes = $("#tblSolicitudes").DataTable({

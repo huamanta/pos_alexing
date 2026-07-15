@@ -10,9 +10,9 @@ date_default_timezone_set('America/Lima');
 class Producto extends Helpers
 {
 	public function __construct()
-    {
-        parent::__construct();
-    }
+	{
+		parent::__construct();
+	}
 
 
 	public function insertar(
@@ -1102,40 +1102,74 @@ class Producto extends Helpers
 	{
 
 		$page = $_GET['page'] ?? 1;
-		$limit = $_GET['limit'] ?? 10;
+		$limit = $_GET['limit'] ?? 20;
 		$search = $_GET['search'] ?? '';
 
 		$response = (new DBQuery($this->pdo))
+			->select([
+				'p.*',
+				'c.nombre AS categoria',
+				'um.nombre AS unidad',
+				'i.idinventario',
+				'i.stock',
+				'i.stock_minimo',
+				'i.stock_maximo',
+				'i.precio_compra',
+				'pg.idproducto_configuracion',
+				'pg.codigo_extra',
+				'pg.contenedor',
+				'pg.cantidad_contenedor',
+				'pg.precio_venta',
+				'pg.idfifo_origen',
+				'pg.precio_promocion',
+				'pg.estado AS estado_config',
 
-    ->select([
-        'p.*',
-        'i.idinventario',
-        'i.stock',
-        'i.stock_minimo',
-        'i.stock_maximo',
-        'i.precio_compra'
-    ])
-
-    ->from('inventario_producto i')
-
-    ->join(
-        'producto p',
-        'p.idproducto = i.idproducto'
-    )
-
-    ->where('i.idsucursal', '=', $idsucursal)
-
-    ->softDeletes('p.deleted_at')
-
-    ->search($search, [
-        'p.codigo',
-        'p.nombre',
-        'p.descripcion'
-    ])
-
-    ->orderBy('p.nombre')
-
-    ->paginate($page, $limit);
+				'ps.idserie',
+				'ps.numero_serie',
+				'ps.numero_motor',
+				'ps.placa',
+				'ps.color',
+				'ps.anio_fabricacion',
+				'ps.estado AS estado_serie'
+			])
+			->from('producto p')
+			->join(
+				'categoria c',
+				'c.idcategoria = p.idcategoria'
+			)
+			->join(
+				'inventario_producto i',
+				'i.idproducto = p.idproducto
+            AND i.idsucursal = p.idsucursal'
+			)
+			->leftJoin(
+				'producto_configuracion pg',
+				'pg.idproducto = p.idproducto'
+			)
+			->join(
+				'unidad_medida um',
+				'um.idunidad_medida = p.idunidad_medida'
+			)
+			->leftJoin(
+				'producto_serie ps',
+				'ps.idproducto = p.idproducto
+            AND ps.idsucursal = p.idsucursal
+            AND ps.estado = "DISPONIBLE"'
+			)
+			->where('p.condicion', '=', 1)
+			->where('p.idsucursal', '=', $idsucursal)
+			->where('c.nombre', '<>', 'SERVICIO')
+			->softDeletes('p.deleted_at')
+			->search($search, [
+				'p.codigo',
+				'pg.codigo_extra',
+				'p.nombre',
+				'ps.numero_serie',
+				'ps.numero_motor',
+				'ps.placa'
+			])
+			->orderBy('p.nombre')
+			->paginate((int) $page, (int) $limit);
 
 		$response['permissions'] = [
 			'editar' => Helpers::getUserPermissionAccion('Editar productos'),
@@ -1353,13 +1387,77 @@ class Producto extends Helpers
 	//Implementar un método para listar los registros activos, su último precio y el stock (vamos a unir con el último registro de la tabla detalle_ingreso)
 	public function listarActivosVenta($idsucursal)
 	{
-		// $sql="SELECT a.idproducto,a.idcategoria,c.nombre as categoria,a.codigo, a.nombre,a.stock,(SELECT precio FROM detalle_compra WHERE idproducto=a.idproducto ORDER BY iddetalle_compra DESC LIMIT 0,1) AS precio,a.descripcion,a.imagen,a.condicion FROM producto a INNER JOIN Categoria c ON a.idcategoria=c.idcategoria WHERE a.condicion='1'";
-		$sql = "SELECT p.* , pg.*, um.nombre as unidad  FROM producto p 
-		INNER JOIN categoria c ON p.idcategoria = c.idcategoria
-		LEFT JOIN producto_configuracion pg ON p.idproducto = pg.idproducto 
-        INNER JOIN unidad_medida um ON p.idunidad_medida = um.idunidad_medida
-		WHERE p.condicion=1 AND p.idsucursal = '$idsucursal' AND c.nombre != 'SERVICIO' GROUP BY p.idproducto";
-		return ejecutarConsulta($sql);
+		$page = $_GET['page'] ?? 1;
+		$limit = $_GET['limit'] ?? 20;
+		$search = $_GET['search'] ?? '';
+
+		$response = (new DBQuery($this->pdo))
+			->select([
+				'p.*',
+				'c.nombre AS categoria',
+				'um.nombre AS unidad',
+				'i.idinventario',
+				'i.stock',
+				'i.stock_minimo',
+				'i.stock_maximo',
+				'i.precio_compra',
+				'pg.idproducto_configuracion',
+				'pg.codigo_extra',
+				'pg.contenedor',
+				'pg.cantidad_contenedor',
+				'pg.precio_venta',
+				'pg.idfifo_origen',
+				'pg.precio_promocion',
+				'pg.estado AS estado_config',
+
+				'ps.idserie',
+				'ps.numero_serie',
+				'ps.numero_motor',
+				'ps.placa',
+				'ps.color',
+				'ps.anio_fabricacion',
+				'ps.estado AS estado_serie'
+			])
+			->from('producto p')
+			->join(
+				'categoria c',
+				'c.idcategoria = p.idcategoria'
+			)
+			->join(
+				'inventario_producto i',
+				'i.idproducto = p.idproducto
+            AND i.idsucursal = p.idsucursal'
+			)
+			->leftJoin(
+				'producto_configuracion pg',
+				'pg.idproducto = p.idproducto'
+			)
+			->join(
+				'unidad_medida um',
+				'um.idunidad_medida = p.idunidad_medida'
+			)
+			->leftJoin(
+				'producto_serie ps',
+				'ps.idproducto = p.idproducto
+            AND ps.idsucursal = p.idsucursal
+            AND ps.estado = "DISPONIBLE"'
+			)
+			->where('p.condicion', '=', 1)
+			->where('p.idsucursal', '=', $idsucursal)
+			->where('c.nombre', '<>', 'SERVICIO')
+			->softDeletes('p.deleted_at')
+			->search($search, [
+				'p.codigo',
+				'pg.codigo_extra',
+				'p.nombre',
+				'ps.numero_serie',
+				'ps.numero_motor',
+				'ps.placa'
+			])
+			->orderBy('p.nombre')
+			->paginate((int) $page, (int) $limit);
+
+		return json_encode($response);
 	}
 
 	public function listarActivosVenta2($idsucursal)

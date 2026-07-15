@@ -86,7 +86,7 @@ switch ($_GET["op"]) {
 				$meses,
 				$interes
 			);
-			echo $rspta ? "Datos registrados correctamente" : "No se pudo registrar los datos";
+			echo $rspta;
 		} else {
 			$rspta = $venta->editar(
 				$idcotizacion,
@@ -468,9 +468,9 @@ switch ($_GET["op"]) {
 		while ($reg = $rspta->fetch_object()) {
 
 			$data[] = array(
-				"0" => $reg->id,
+				"0" => $reg->idproducto_configuracion,
 				"1" => $reg->idproducto,
-				"2" => $reg->producto . ' (' . $reg->contenedor . ')',
+				"2" => $reg->nombre . ' (' . $reg->contenedor . ')',
 				"3" => $reg->cantidad,
 				"4" => $reg->descuento,
 				"5" => $reg->precio_venta,
@@ -585,42 +585,12 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarArticulos':
-
 		$fechaActual = date('Y-m-d');
-
-		$idsucursal = $_REQUEST["idsucursal"];
-
+		$idsucursal = $_SESSION["idsucursal"];
 		require_once "../modelos/Producto.php";
 		$producto = new Producto();
-
 		$rspta = $producto->listarActivosVenta($idsucursal);
-
-		$data = array();
-		while ($reg = $rspta->fetch_object()) {
-			$is_stock = $reg->controla_stock === 'Si' && $reg->stock == 0;
-			$data[] = array(
-				"0" => ($is_stock ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
-					: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
-				"1" => "<img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->precioB . "\",\"" . $reg->precioC . "\",\"" . $reg->precioD . "\" )' src='files/productos/" . $reg->imagen . "' height='35px' width='35px' >" . '<span style="font-weight: bold;">' . $reg->nombre . '</span>' . ' - ' . '<span class="badge bg-green">' . $reg->cantidad_contenedor . ' Und.</span>' . ' - ' . '<span style="font-size:10px">' . $reg->contenedor . '</span>',
-				//"2" => $reg->categoria,
-				"2" => $reg->codigo,
-				"3" => floor($reg->stock / $reg->cantidad_contenedor),
-				"4" => '<span class="badge bg-info">' . 'S/ ' . $reg->precio_venta . '</span>',
-				//"4" => '<span class="badge bg-orange">'.'S/ '.$reg->precioB.'</span>',
-				//"5" => '<span class="badge bg-purple">'.' S/ '.$reg->precioC.'</span>',
-				//"6" => '<span class="badge bg-primary">'.'S/ '.$reg->precioD.'</span>',
-				//"4"=>'<span class="badge bg-orange">'.'PrecioI '.'S/ '.$reg->precioB.'</span>'.
-				//' '.'<span class="badge bg-purple">'.'PrecioII '.' S/ '.$reg->precioC.'</span>'.
-				//' '.'<span class="badge bg-primary">'.'PrecioIII '.'S/ '.$reg->precioD.'</span>',
-			);
-		}
-		$results = array(
-			"sEcho" => 1, //info para datatables
-			"iTotalRecords" => count($data), //enviamos el total de registros al datatable
-			"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-			"aaData" => $data
-		);
-		echo json_encode($results);
+		echo $rspta;
 
 		break;
 

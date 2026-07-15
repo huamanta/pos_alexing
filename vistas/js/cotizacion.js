@@ -4,6 +4,7 @@ var articuloAdd = "";
 var cont = 0;
 var detalles = 0;
 var updateTimeout;
+let listarProductos = null;
 
 function init() {
     $("#body").addClass("sidebar-collapse sidebar-mini");
@@ -13,10 +14,7 @@ function init() {
         $("#tipo_comprobante").html(c);
         $("#tipo_comprobante").select2('');
     });
-    $.post("controladores/venta.php?op=selectCliente", function (r) {
-        $("#idcliente").html(r);
-        $('#idcliente').select2('');
-    });
+
     $.post("controladores/venta.php?op=selectSucursal", function (r) {
         $("#idsucursal").html(r);
         $('#idsucursal').select2('');
@@ -36,6 +34,55 @@ function init() {
         }
     }, false);
 }
+function setNavbarPosVisible(visible) {
+    if (visible) {
+        $("#navbar-pos").prop("hidden", false).show();
+        return;
+    }
+
+    $("#navbar-pos").prop("hidden", true).hide();
+}
+
+$("#idcliente").select2({
+    placeholder: "Buscar cliente...",
+    allowClear: true,
+    minimumInputLength: 2,
+
+    ajax: {
+        url: "controladores/venta.php?op=selectCliente",
+        type: "POST",
+        dataType: "json",
+        delay: 250,
+
+        data: function (params) {
+            return {
+                search: params.term,
+                page: params.page || 1,
+                only_client: 1
+            };
+        },
+
+        processResults: function (data, params) {
+
+            params.page = params.page || 1;
+
+            return {
+                results: data.data.map(function (item) {
+                    return {
+                        id: item.idpersona,
+                        text: item.nombre + " - " + item.num_documento
+                    };
+                }),
+
+                pagination: {
+                    more: data.meta.current_page < data.meta.last_page
+                }
+            };
+        },
+
+        cache: true
+    }
+});
 
 function nostock() {
     Swal.fire("Alerta", "Sin Stock", "info");
@@ -109,7 +156,6 @@ function limpiar() {
     var today = now.getFullYear() + "-" + (month) + "-" + (day);
     $("#fecha").val(today);
     $("#tipo_comprobante").val('Cotización').trigger('change');
-    seleccionarCliente("PUBLICO EN GENERAL", 6);
     $("#titulo").val("");
     $("#saludo").val("");
     $("#formapago").val('No').trigger('change');
@@ -561,7 +607,7 @@ function mostrarEditar(idcotizacion) {
 
                 $("#listadoregistros").hide();
                 $("#formularioregistros").show();
-                listarArticulos();
+                listarProductos.load();
                 listarArticulos2();
                 $('#idcotizacion').val(data.idcotizacion);
                 $('#nuevoVendedor').val(data.personal);
@@ -600,11 +646,20 @@ function guardaryeditar() {
         data: formData,
         contentType: false,
         processData: false,
-        success: function (datos) {
+        success: function (response) {
+            const data = JSON.parse(response);
+            if (!data.success) {
+                Swal.fire({
+                    title: 'Cotización',
+                    icon: 'error',
+                    text: data.message
+                });
+                return;
+            }
             Swal.fire({
                 title: 'Cotización',
                 icon: 'success',
-                text: datos
+                text: data.message
             });
             mostrarform(false);
             listar();
@@ -776,25 +831,101 @@ const listarConfiguracionCreditos = () => {
     });
 }
 
-function listarArticulos() {
-    var idsucursal = $("#idsucursal").val();
-    tabla = $("#tblarticulos").dataTable({
-        aProcessing: true,
-        aServerSide: true,
-        dom: "Bfrtip",
-        buttons: [],
-        ajax: {
-            url: "controladores/cotizaciones.php?op=listarArticulos",
-            data: { idsucursal: idsucursal },
-            type: "get",
-            dataType: "json",
-            error: function (e) { console.log(e.responseText); },
-        },
-        bDestroy: true,
-        iDisplayLength: 5,
-        order: [[1, "asc"], [2, "asc"]]
-    }).DataTable();
+// function listarArticulos() {
+//     var idsucursal = $("#idsucursal").val();
+//     tabla = $("#tblarticulos").dataTable({
+//         aProcessing: true,
+//         aServerSide: true,
+//         dom: "Bfrtip",
+//         buttons: [],
+//         ajax: {
+//             url: "controladores/cotizaciones.php?op=listarArticulos",
+//             data: { idsucursal: idsucursal },
+//             type: "get",
+//             dataType: "json",
+//             error: function (e) { console.log(e.responseText); },
+//         },
+//         bDestroy: true,
+//         iDisplayLength: 5,
+//         order: [[1, "asc"], [2, "asc"]]
+//     }).DataTable();
+// }
+
+function pintarProductos(data, permissions) {
+
+    let html = "";
+
+    if (data.length === 0) {
+
+        html = `
+            <tr>
+                <td colspan="10" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+        $("#tbody_productos").html(html);
+        return;
+    }
+
+    data.forEach(item => {
+        let btnActivarDesactivar = (permissions.desactivar) ?
+            (item.condicion === 1) ?
+                `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>` :
+                `<button class="btn btn-info btn-xs" onclick="activar(${item.idproducto})"><i class="fas fa-check"></i></button>`
+            : ''
+
+        html += `
+            <tr>
+                <td>
+                <button
+                    class="btn btn-success"
+                    onclick="agregarDetalle(
+                        ${item.idproducto_configuracion},
+                        ${item.idproducto},
+                        '${item.nombre}',
+                        1,
+                        0,
+                        ${item.precio},
+                        '${item.preciocigv}',
+                        '${item.precioB}',
+                        '${item.precioC}',
+                        '${item.precioD}',
+                        '${item.stock}',
+                        '${item.proigv}',
+                        '${item.cantidad_contenedor}',
+                        '${item.contenedor}',
+                        ${item.idcategoria}
+                    )"
+                    ${parseFloat(item.stock) <= 0 ? 'disabled' : ''}>
+                    <i class="fas fa-shopping-cart"></i>
+                </button>
+                <td>${item.codigo || ''}</td>
+                <td style="text-align: left">${item.nombre || ''} M:${item.numero_serie || ''} S:${item.numero_motor || ''}</td>
+                <td>${item.stock}</td>
+                <td>S/ ${parseFloat(item.precio).toFixed(2)}</td>
+                <td>
+                    ${item.color || 'S/N'}
+                </td>
+
+            </tr>
+        `;
+
+    });
+
+    $("#tbody_productos").html(html);
+
 }
+
+
+listarProductos = new FluentPaginator({
+    url: "controladores/cotizaciones.php?op=listarArticulos",
+    renderTabla: pintarProductos,
+    searchSelector: "#searchProductos",
+    limitSelector: "#limitProductos",
+    paginationId: "#paginationProductos",
+});
 
 function listarArticulos2() {
     var idsucursal = $("#idsucursal").val();
@@ -876,8 +1007,9 @@ function mostrarform(flag) {
     detalles = 0;
     $("#btnAgregarArt, #btnAgregarArt2").show();
     $("#btnNuevo, #header").hide();
-    listarArticulos();
+    listarProductos.load();
     listarArticulos2();
+    setNavbarPosVisible(true);
     // cargarDatosTemporales();
     esperarSelect("#idsucursal", $("#idsucursal").val());
     setTimeout(() => {

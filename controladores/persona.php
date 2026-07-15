@@ -1,5 +1,4 @@
 <?php 
-session_start();
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Persona.php";
 
@@ -84,7 +83,7 @@ switch ($_GET["op"]){
 
 	case 'scorecrediticiocliente':
 		$idcliente = $_GET["idcliente"];
-		$rspta = $persona->scorecrediticiocliente($idcliente);
+		$rspta = $persona->scoreCrediticioCliente($idcliente);
  		echo $rspta;
 		break;
 

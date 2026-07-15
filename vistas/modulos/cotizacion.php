@@ -778,33 +778,30 @@ date_default_timezone_set('America/Lima');
                                                     </li>
                                                 </ul>
                                             </div>
-                                            <div class="card-body" style="margin-top: -35px; overflow-x: auto;">
+                                            <div class="card-body" style="overflow-x: auto;">
                                                 <div class="tab-content" id="custom-tabs-one-tabContent">
                                                     <div class="tab-pane fade show active" id="custom-tabs-two-home"
                                                         role="tabpanel" aria-labelledby="custom-tabs-two-home-tab">
+                                                        <input type="text" class="form-control" id="searchProductos">
                                                         <table id="tblarticulos"
                                                             class="table table-striped table-responsive-lg"
                                                             width="100%">
                                                             <thead class="bg-info">
                                                                 <tr>
                                                                     <th>Op</th>
+                                                                    <th>Codigo</th>
                                                                     <th>Nombre</th>
                                                                     <th>Código</th>
                                                                     <th>Stock</th>
                                                                     <th>P Venta</th>
                                                                 </tr>
                                                             </thead>
-                                                            <tbody></tbody>
-                                                            <tfoot>
-                                                                <tr>
-                                                                    <th>Op</th>
-                                                                    <th>Nombre</th>
-                                                                    <th>Código</th>
-                                                                    <th>Stock</th>
-                                                                    <th>P Venta</th>
-                                                                </tr>
-                                                            </tfoot>
+                                                            <tbody id="tbody_productos"></tbody>
                                                         </table>
+                                                        <div class="col-md-6"></div>
+                                                        <div class="col-md-6">
+                                                            <div id="paginationProductos"></div>
+                                                        </div>
                                                     </div>
                                                     <div class="tab-pane fade" id="custom-tabs-two-profile"
                                                         role="tabpanel" aria-labelledby="custom-tabs-two-profile-tab">
@@ -820,14 +817,6 @@ date_default_timezone_set('America/Lima');
                                                                 </tr>
                                                             </thead>
                                                             <tbody></tbody>
-                                                            <tfoot>
-                                                                <tr>
-                                                                    <th>Op</th>
-                                                                    <th>Nombre</th>
-                                                                    <th>Stock</th>
-                                                                    <th>P Venta</th>
-                                                                </tr>
-                                                            </tfoot>
                                                         </table>
                                                     </div>
                                                 </div>

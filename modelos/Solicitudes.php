@@ -92,14 +92,14 @@ class Solicitudes extends Persona
         $data = array();
         while ($reg = $rspta->fetch_object()) {
             $botones = '';
-            if ($helpers->getUserPermissionAccion('Aprobar solicitudes')) {
+            if (Helpers::getUserPermissionAccion('Aprobar solicitudes')) {
                 $botones .= '<button
                         class="btn btn-info btn-sm"
                         onclick="verSolicitud(' . $reg->idsolicitud . ')">
                         <i class="fa fa-eye"></i>
                     </button>';
             }
-            if ($helpers->getUserPermissionAccion('Ver flujo de pasos')) {
+            if (Helpers::getUserPermissionAccion('Ver flujo de pasos')) {
                 $botones .= '<button
                         class="btn btn-warning btn-sm"
                         onclick="verWorkflow(' . $reg->idsolicitud . ')">
@@ -107,7 +107,7 @@ class Solicitudes extends Persona
                     </button>';
             }
 
-            if ($helpers->getUserPermissionAccion('Ver archivos de solicitud')) {
+            if (Helpers::getUserPermissionAccion('Ver archivos de solicitud')) {
                 $botones .= '<button
                         class="btn btn-success btn-sm"
                         onclick="verArchivos(' . $reg->idsolicitud . ')">
@@ -328,7 +328,7 @@ class Solicitudes extends Persona
 
         foreach ($datapasos as $paso) {
             $permisoNombre = "Puede realizar " . mb_strtolower($paso['nombre'], 'UTF-8');
-            $tienePermiso = $helpers->getUserPermissionAccion($permisoNombre);
+            $tienePermiso = Helpers::getUserPermissionAccion($permisoNombre);
             if (!$tienePermiso) {
                 continue;
             }

@@ -340,9 +340,11 @@
                       <th>Nombre</th>
                       <th>Stock</th>
                       <th>stock_minimo</th>
+                      <th>N° serie</th>
+                      <th>N° motor</th>
                       <th>precio</th>
                       <th>P. Compra</th>
-                      <th>Disponibilidad</th>
+                      <th>Color</th>
                       <th>Estado</th>
                       <th>Acciones</th>
                     </tr>

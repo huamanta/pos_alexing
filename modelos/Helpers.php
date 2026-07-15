@@ -9,7 +9,14 @@ class Helpers
     {
         $this->pdo = Conexion::conectar();
     }
-    
+
+    public static function clienteDefault($idcliente): int
+    {
+        return !empty($idcliente)
+            ? (int) $idcliente
+            : 1;
+    }
+
     public static function get_currency_symbol($monto, $currency = 'PEN', $locale = "es_PE")
     {
         // Validar monto
@@ -161,7 +168,7 @@ class Helpers
 
         $stmt->execute([
             ':idusuario' => $idusuario,
-            ':modulo'    => $modulo
+            ':modulo' => $modulo
         ]);
 
         return (bool) $stmt->fetchColumn();
@@ -289,13 +296,13 @@ class Helpers
         if (!$config) {
             return [
                 'activo' => false,
-                'valor'  => 0
+                'valor' => 0
             ];
         }
 
         return [
             'activo' => (int) $config['is_refinanciamiento'] === 1,
-            'valor'  => (float) $config['maximo_refinanciamientos']
+            'valor' => (float) $config['maximo_refinanciamientos']
         ];
     }
 
@@ -383,12 +390,12 @@ class Helpers
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             'idsucursal' => $idsucursal,
-            'tipo'       => $tipo
+            'tipo' => $tipo
         ]);
 
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $correlativo = (int)$row['correlativo'];
+        $correlativo = (int) $row['correlativo'];
 
         return sprintf('%s-%07d', $prefijo, $correlativo);
     }

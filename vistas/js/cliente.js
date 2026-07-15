@@ -1008,11 +1008,11 @@ function ScoreCrediticioCliente(idcliente) {
       );
 
       $("#cuotasVencidas").text(
-        data.cuotas_vencidas
+        data.cuotas_pagadas_tarde
       );
 
       $("#diasAtraso").text(
-        data.dias_atraso
+        data.dias_atraso_historico
       );
 
       $("#moraTotal").text(

@@ -394,69 +394,8 @@ switch ($_GET["op"]) {
 
 	case 'listar':
 		$idsucursal = $_SESSION['idsucursal'];
-		// $stock_filtro = isset($_GET["stock_filtro"]) ? floatval($_GET["stock_filtro"]) : 0;
-
-		// $start = isset($_GET['start']) ? intval($_GET['start']) : 0;
-		// $length = isset($_GET['length']) ? intval($_GET['length']) : 10;
-		// $search = isset($_GET['search']['value']) ? $_GET['search']['value'] : '';
-		// $draw = isset($_GET['draw']) ? intval($_GET['draw']) : 1;
-
-		// $es_admin = ($_SESSION['idsucursal'] == 0);
 		$rspta = $producto->listarPorSucursal($idsucursal);
 		echo $rspta;
-
-		// while ($reg = $rspta->fetch_object()) {
-		// 	// Truncar nombre si es muy largo
-		// 	$nombre_corto = strlen($reg->nombre) > 80 ? substr($reg->nombre, 0, 50) . '...' : $reg->nombre;
-		// 	$descripcion_corta = strlen($reg->descripcion) > 40 ? substr($reg->descripcion, 0, 40) . '...' : $reg->descripcion;
-
-		// 	// Escapar correctamente para evitar problemas con comillas
-		// 	$nombre_tooltip = htmlspecialchars($reg->nombre, ENT_QUOTES, 'UTF-8');
-		// 	$descripcion_tooltip = htmlspecialchars($reg->descripcion, ENT_QUOTES, 'UTF-8');
-
-		// 	$data[] = array(
-		// 		"0" => '<div style="display:flex;gap:8px;align-items:flex-start;max-width:350px;">
-		//             <div class="img-container" onclick="verimagen(' . $reg->idproducto . ', \'' . addslashes($reg->imagen) . '\', \'' . addslashes($reg->nombre) . '\',\'' . $reg->stock . '\',\'' . addslashes($reg->categoria) . '\',\'' . addslashes($reg->registrosan) . '\',\'' . addslashes($reg->rubro) . '\',\'' . addslashes($reg->condicionventa) . '\',\'' . $reg->precio . '\',\'' . $reg->precio_compra . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . addslashes($reg->marca) . '\',\'' . addslashes($reg->descripcion) . '\')" style="width:45px;height:45px;flex-shrink:0;cursor:pointer;border-radius:3px;overflow:hidden;border:1px solid #ddd;">
-		//                 <img src="files/productos/' . $reg->imagen . '" alt="' . $nombre_tooltip . '" style="width:100%;height:100%;object-fit:cover;">
-		//             </div>
-		//             <div style="flex:1;min-width:0;">
-		//                 <div style="font-weight:bold;font-size:12px;margin-bottom:3px;cursor:help;" title="' . $nombre_tooltip . '">' . htmlspecialchars($nombre_corto) . '</div>
-		//                 <div style="font-size:10px;">
-		//                     <span class="badge badge-neon neon-green" style="font-size:9px;padding:1px 5px;">' . $reg->unidad . '</span> 
-		//                     <span style="color:#666;cursor:help;" title="' . $descripcion_tooltip . '">' . htmlspecialchars($descripcion_corta) . '</span>
-		//                 </div>
-		//             </div>
-		//         </div>',
-		// 		"1" => $reg->categoria,
-		// 		"2" => $reg->marca,
-		// 		"3" => $reg->codigo,
-		// 		"4" => ($reg->stock <= $reg->stock_minimo) ?
-		// 			'<span class="badge badge-neon neon-red">' . $reg->stock . '</span>' :
-		// 			'<span class="badge badge-neon neon-green">' . $reg->stock . '</span>',
-		// 		"5" => '<span class="editable-price badge badge-neon neon-blue" contenteditable="false" data-id="' . $reg->idproducto . '" data-field="precio">' . $reg->precio . '</span>',
-		// 		"6" => '<span class="editable-price badge badge-neon neon-yellow" contenteditable="false" data-id="' . $reg->idproducto . '" data-field="precio_compra">' . $reg->precio_compra . '</span>',
-		// 		"7" => ($reg->condicion) ?
-		// 			'<span class="badge badge-neon neon-green">ACTIVADO</span>' :
-		// 			'<span class="badge badge-neon neon-red">DESACTIVADO</span>',
-		// 		"8" => ($reg->condicion) ?
-		// 			(Helpers::getUserPermissionAccion('Editar productos') ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idproducto . ')"><i class="fas fa-edit"></i></button> ' : '') .
-		// 			(Helpers::getUserPermissionAccion('Movimientos productos') ? '<button class="btn btn-primary btn-xs" onclick="entradaSalida(' . $reg->idproducto . ',' . $reg->idsucursal . ')"><i class="fas fa-archive"></i></button> ' : '') .
-		// 			(Helpers::getUserPermissionAccion('Configurar productos') ? '<button class="btn btn-success btn-xs" onclick=\'config(' . json_encode($reg) . ')\'><i class="fas fa-cog"></i></button> ' : '') .
-		// 			(Helpers::getUserPermissionAccion('Listar vencimientos') ? '<button class="btn btn-info btn-xs" onclick="fechaVencimiento(' . $reg->idproducto . ')"><i class="fa fa-list"></i></button> ' : '') .
-		// 			(Helpers::getUserPermissionAccion('Desactivar productos') ? '<button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idproducto . ')"><i class="fas fa-times-circle"></i></button> ' : '') .
-		// 			(Helpers::getUserPermissionAccion('Eliminar productos') ? '<button class="btn btn-danger btn-xs" onclick="eliminarProducto(' . $reg->idproducto . ')"><i class="fas fa-trash"></i></button>' : '') :
-		// 			'<button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idproducto . ')"><i class="fa fa-check"></i></button>'
-		// 	);
-		// }
-
-		// $results = array(
-		// 	"draw" => $draw,
-		// 	"recordsTotal" => $total,
-		// 	"recordsFiltered" => $total,
-		// 	"data" => $data
-		// );
-		// echo json_encode($results);
-
 		break;
 
 	case 'eliminar':

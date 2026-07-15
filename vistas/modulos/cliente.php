@@ -450,6 +450,4 @@ date_default_timezone_set('America/Lima');
 <script async
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEfzrVHyxezdBMPmKlF8Hs-of68DzrRFY&callback=initMap">
   </script>
-
-<script src="vistas/js/pagination.js"></script>
 <script src="vistas/js/cliente.js"></script>

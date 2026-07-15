@@ -105,6 +105,7 @@ if (isset($rutaActual)) {
   <script src="./files/plugins/toastr/toastr.min.js"></script>
 
 <script src="./files/plugins/fullcalendar/main.min.js"></script>
+<script src="./vistas/js/pagination.js"></script>
   <script>
     $(document).ready(function () {
       $('[data-toggle="tooltip"]').tooltip();

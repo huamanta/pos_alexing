@@ -50,7 +50,7 @@ class FluentPaginator {
 
         let params = new URLSearchParams({
             page,
-            limit: $(this.limitSelector).val() || 1,
+            limit: $(this.limitSelector).val() || 10,
             search: $(this.searchSelector).val() || ""
         });
 

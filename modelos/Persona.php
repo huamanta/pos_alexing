@@ -4,15 +4,15 @@ require "../configuraciones/Conexion.php";
 require_once "../configuraciones/ConexionPdo.php";
 require_once "../core/FluentQuery.php";
 require_once "../core/FluentSave.php";
-require_once __DIR__."/Helpers.php";
+require_once __DIR__ . "/Helpers.php";
 
 class Persona extends Helpers
 {
 
 	public function __construct()
-    {
-        parent::__construct();
-    }
+	{
+		parent::__construct();
+	}
 
 	//Implementamos un método para insertar registros
 	public function insertar(
@@ -129,35 +129,36 @@ class Persona extends Helpers
 	//Implementamos un método para eliminar categorías
 	public function eliminar($idpersona)
 	{
-
 		try {
 
 			$this->pdo->beginTransaction();
 
-			$update = (new FluentSaver($this->pdo))
+			$deleted = (new FluentSaver($this->pdo))
 				->table('persona')
 				->primaryKey('idpersona')
-				->data([
-					'idpersona' => $idpersona,
-					'deleted_at' => date('Y-m-d H:i:s'),
-				])
-				->save();
+				->softDelete($idpersona);
 
-			if (!$update) {
+			if (!$deleted) {
 				throw new Exception("No se pudo eliminar el registro");
 			}
 
 			$this->pdo->commit();
 
-			return json_encode(array("success" => true, "message" => "Registro eliminado correctamente", "id" => $update));
-
+			return json_encode([
+				"success" => true,
+				"message" => "Registro eliminado correctamente"
+			]);
 
 		} catch (Throwable $e) {
 
-			if (isset($this->pdo) && $this->pdo->inTransaction()) {
+			if ($this->pdo->inTransaction()) {
 				$this->pdo->rollBack();
 			}
-			return json_encode(array("success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()));
+
+			return json_encode([
+				"success" => false,
+				"message" => "Error al eliminar los datos: " . $e->getMessage()
+			]);
 		}
 	}
 
@@ -194,49 +195,74 @@ class Persona extends Helpers
 	//Implementar un método para mostrar los datos de un registro a modificar
 	public function mostrar($idpersona)
 	{
-		$sql = "SELECT * FROM persona WHERE idpersona='$idpersona'";
-		return ejecutarConsultaSimpleFila($sql);
+		return (new DBQuery($this->pdo))
+			->select('*')
+			->from('persona')
+			->softDeletes()
+			->where('idpersona', '=', $idpersona)
+			->first();
 	}
 
 	//Implementar un método para listar los registros
 	public function listarp()
 	{
-		$sql = "SELECT * FROM persona WHERE tipo_persona='Proveedor' OR isproveedor = 1";
-		return ejecutarConsulta($sql);
+		return (new DBQuery($this->pdo))
+			->select('*')
+			->from('persona')
+			->whereRaw(
+				"(tipo_persona = :tipo OR isproveedor = :proveedor)",
+				[
+					'tipo' => 'Proveedor',
+					'proveedor' => 1
+				]
+			)
+			->get();
 	}
-
 	//Implementar un método para listar los registros 
 	public function listarc($tipo_documento = "", $excluirId = false)
 	{
 		$pdo = Conexion::conectar();
 
-		$page = $_GET['page'] ?? 1;
-		$limit = $_GET['limit'] ?? 10;
-		$search = $_GET['search'] ?? '';
-
+		$page = (int) ($_GET['page'] ?? 1);
+		$limit = (int) ($_GET['limit'] ?? 10);
+		$search = trim($_GET['search'] ?? '');
 
 		$paginator = (new DBQuery($pdo))
-			->query("
-				SELECT *
-				FROM persona
-				WHERE tipo_persona = 'Cliente'
-			");
+			->select('*')
+			->from('persona')
+			->where('tipo_persona', '=', 'Cliente');
 
-		if (!empty($tipo_documento)) {
-			$paginator->where("tipo_documento", "=", $tipo_documento);
+		if ($tipo_documento !== '') {
+			$paginator->where(
+				"tipo_documento",
+				"=",
+				$tipo_documento
+			);
 		}
 
 		if ($excluirId !== false) {
-			$paginator->where("idpersona", "<>", $excluirId);
+			$paginator->where(
+				"idpersona",
+				"<>",
+				$excluirId
+			);
 		}
 
 		$response = $paginator
 			->softDeletes()
-			->search($search, ['nombre', 'num_documento', 'telefono', 'email'])
+			->search(
+				$search,
+				[
+					'nombre',
+					'num_documento',
+					'telefono',
+					'email'
+				]
+			)
 			->orderBy('idpersona', 'DESC')
 			->paginate(
-				(int) $page,
-				(int) $limit
+				$page,
+				$limit
 			);
 
 		$response['permissions'] = [
@@ -245,9 +271,9 @@ class Persona extends Helpers
 			'puntuacion' => Helpers::getUserPermissionAccion('Puntuacion cliente'),
 			'eliminar' => Helpers::getUserPermissionAccion('Eliminar cliente')
 		];
+
 		return json_encode($response);
 	}
-
 
 	public function obtenerPorId($idcliente)
 	{
@@ -316,135 +342,223 @@ class Persona extends Helpers
 		return ejecutarConsulta($sql);
 	}
 
-	public function scorecrediticiocliente($idcliente)
+	public function scoreCrediticioCliente($idcliente)
 	{
-		$sql = "SELECT
+		$credito = $this->obtenerDatosCredito($idcliente);
+
+		if (!$credito || $credito['total_creditos'] == 0) {
+			return json_encode(
+				$this->respuestaSinHistorial()
+			);
+		}
+
+
+		$seguimientos = $this->obtenerSeguimientos($idcliente);
+
+
+		$porcentaje_pagado = $this->calcularPorcentajePago(
+			$credito['deuda_total'],
+			$credito['total_pagado']
+		);
+
+		$creditos = $this->obtenerCuotasCreditoCliente($idcliente);
+		
+		$moraCliente = $this->calcularMoraCliente($creditos);
+
+		$score = $this->calcularScoreCredito(
+			$credito,
+			$seguimientos,
+			$porcentaje_pagado,
+			$moraCliente
+		);
+
+
+		$riesgo = $this->clasificarRiesgo($score);
+
+		return json_encode([
+			"score" => $score,
+			"riesgo" => $riesgo['riesgo'],
+			"color" => $riesgo['color'],
+
+			...$credito,
+
+			"mora_total" => round($moraCliente['mora_total'], 2),
+			"porcentaje_pagado" => round($porcentaje_pagado, 2)
+		]);
+	}
+
+	private function obtenerDatosCredito($idcliente)
+	{
+		return (new DBQuery($this->pdo))
+			->query("
+            SELECT
                 COUNT(DISTINCT v.idventa) AS total_creditos,
 
-                SUM(c.deudatotal) AS deuda_total,
+                COALESCE(SUM(c.deudatotal),0) AS deuda_total,
 
-                SUM(c.abonototal) AS total_pagado,
+                COALESCE(SUM(c.abonototal),0) AS total_pagado,
 
-                SUM(c.mora) AS mora_total,
 
-                SUM(
-                    CASE
-                        WHEN c.estado_pago <> 1
-                        AND c.fechavencimiento < CURDATE()
-                        THEN 1
-                        ELSE 0
-                    END
+                -- cuotas pendientes vencidas actualmente
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN c.estado_pago = 1
+                            AND c.fechavencimiento < CURDATE()
+                            THEN 1
+                            ELSE 0
+                        END
+                    ),0
                 ) AS cuotas_vencidas,
 
-                MAX(
-                    CASE
-                        WHEN c.estado_pago <> 1
-                        THEN DATEDIFF(CURDATE(), c.fechavencimiento)
-                        ELSE 0
-                    END
-                ) AS dias_atraso
+
+                -- cuotas pagadas después de vencer
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN c.estado_pago = 0
+                            AND p.ultimo_pago > c.fechavencimiento
+                            THEN 1
+                            ELSE 0
+                        END
+                    ),0
+                ) AS cuotas_pagadas_tarde,
+
+
+                -- días de atraso actual
+                COALESCE(
+                    MAX(
+                        CASE
+                            WHEN c.estado_pago = 1
+                            AND c.fechavencimiento < CURDATE()
+                            THEN DATEDIFF(
+                                CURDATE(),
+                                c.fechavencimiento
+                            )
+                            ELSE 0
+                        END
+                    ),0
+                ) AS dias_atraso_actual,
+
+
+                -- máximo atraso histórico
+                COALESCE(
+                    MAX(
+                        CASE
+                            WHEN c.estado_pago = 0
+                            AND p.ultimo_pago > c.fechavencimiento
+                            THEN DATEDIFF(
+                                p.ultimo_pago,
+                                c.fechavencimiento
+                            )
+                            ELSE 0
+                        END
+                    ),0
+                ) AS dias_atraso_historico
+
 
             FROM venta v
 
             INNER JOIN cuentas_por_cobrar c
                 ON c.idventa = v.idventa
 
-            WHERE v.idcliente = '$idcliente'
-            AND v.ventacredito = 'Si'";
 
-		$data = ejecutarConsultaSimpleFila($sql);
+            LEFT JOIN (
+                SELECT
+                    idcpc,
+                    MAX(fechapago) AS ultimo_pago
+                FROM detalle_cuentas_por_cobrar
+                GROUP BY idcpc
+            ) p
+                ON p.idcpc = c.idcpc
 
-		if (!$data) {
 
-			return json_encode([
-				"score" => 0,
-				"riesgo" => "SIN HISTORIAL"
-			]);
+            WHERE v.idcliente = :idcliente
+            AND v.ventacredito = 'Si'
+			AND c.idrefinanciamiento IS NULL
+        ",
+				[
+					'idcliente' => $idcliente
+				]
+			)
+			->first();
+	}
+
+	private function obtenerSeguimientos($idcliente)
+	{
+		return (new DBQuery($this->pdo))
+			->select([
+				'estado',
+				'COUNT(*) AS cantidad'
+			])
+			->from('seguimiento_clientes')
+			->where(
+				'idcliente',
+				'=',
+				$idcliente
+			)
+			->whereNull('deleted_at')
+			->groupBy('estado')
+			->get();
+	}
+
+	private function calcularPorcentajePago(
+		float $deuda,
+		float $pagado
+	) {
+		if ($deuda <= 0) {
+			return 0;
 		}
+
+		return ($pagado / $deuda) * 100;
+	}
+
+	private function calcularScoreCredito(
+		array $credito,
+		array $seguimientos,
+		float $porcentaje_pagado,
+		array $moraCliente
+	) {
 
 		$score = 0;
 
-		$total_creditos = (int) $data['total_creditos'];
-		$deuda_total = (float) $data['deuda_total'];
-		$total_pagado = (float) $data['total_pagado'];
-		$mora_total = (float) $data['mora_total'];
-		$cuotas_vencidas = (int) $data['cuotas_vencidas'];
-		$dias_atraso = (int) $data['dias_atraso'];
 
+		// cuotas vencidas
+		$cuotas = $credito['cuotas_vencidas'];
 
-		if ($total_creditos === 0) {
-
-			return json_encode([
-				"score" => 0,
-				"riesgo" => "SIN HISTORIAL",
-				"color" => "secondary",
-				"total_creditos" => 0,
-				"cuotas_vencidas" => 0,
-				"dias_atraso" => 0,
-				"mora_total" => 0,
-				"porcentaje_pagado" => 0
-			]);
+		if ($cuotas > 5) {
+			$score += 30;
+		} elseif ($cuotas > 2) {
+			$score += 20;
+		} elseif ($cuotas > 0) {
+			$score += 10;
 		}
 
-		/*
-		|--------------------------------------------------------------------------
-		| Cuotas vencidas (0 - 30)
-		|--------------------------------------------------------------------------
-		*/
 
-		if ($cuotas_vencidas <= 0) {
-			$score += 0;
-		} elseif ($cuotas_vencidas <= 2) {
-			$score += 10;
-		} elseif ($cuotas_vencidas <= 5) {
-			$score += 20;
-		} else {
-			$score += 30;
-		}
 
-		/*
-		|--------------------------------------------------------------------------
-		| Días de atraso (0 - 40)
-		|--------------------------------------------------------------------------
-		*/
+		// atraso
+		$dias = $credito['dias_atraso_historico'];
 
-		if ($dias_atraso <= 0) {
-			$score += 0;
-		} elseif ($dias_atraso <= 15) {
-			$score += 10;
-		} elseif ($dias_atraso <= 30) {
-			$score += 20;
-		} elseif ($dias_atraso <= 60) {
-			$score += 30;
-		} else {
+		if ($dias > 60) {
 			$score += 40;
-		}
-
-		/*
-		|--------------------------------------------------------------------------
-		| Mora acumulada (0 - 20)
-		|--------------------------------------------------------------------------
-		*/
-
-		if ($mora_total > 1000) {
+		} elseif ($dias > 30) {
 			$score += 20;
-		} elseif ($mora_total > 500) {
+		} elseif ($dias > 15) {
 			$score += 10;
 		}
 
-		/*
-		|--------------------------------------------------------------------------
-		| Porcentaje pagado (-20 a +15)
-		|--------------------------------------------------------------------------
-		*/
 
-		$porcentaje_pagado = 0;
 
-		if ($deuda_total > 0) {
-
-			$porcentaje_pagado =
-				($total_pagado / $deuda_total) * 100;
+		// mora
+		if ($moraCliente['mora_total'] > 1000) {
+			$score += 20;
+		} elseif ($moraCliente['mora_total'] > 500) {
+			$score += 10;
 		}
+
+
+
+		// pagos
 
 		if ($porcentaje_pagado >= 90) {
 
@@ -459,111 +573,185 @@ class Persona extends Helpers
 			$score += 15;
 		}
 
-		/*
-		|--------------------------------------------------------------------------
-		| Historial de créditos (-15)
-		|--------------------------------------------------------------------------
-		*/
 
-		if ($total_creditos >= 10) {
+
+		// cantidad créditos
+
+		$creditos = $credito['total_creditos'];
+
+		if ($creditos >= 10) {
 
 			$score -= 15;
 
-		} elseif ($total_creditos >= 5) {
+		} elseif ($creditos >= 5) {
 
 			$score -= 10;
 
-		} elseif ($total_creditos >= 3) {
+		} elseif ($creditos >= 3) {
 
 			$score -= 5;
 		}
 
-		/*
-		|--------------------------------------------------------------------------
-		| Seguimientos de cobranza
-		|--------------------------------------------------------------------------
-		*/
 
-		$sqlSeguimiento = "SELECT
-                            estado,
-                            COUNT(*) cantidad
-                        FROM seguimiento_clientes
-                        WHERE idcliente = '$idcliente'
-                        AND deleted_at IS NULL
-                        GROUP BY estado";
 
-		$seguimientos = ejecutarConsulta($sqlSeguimiento);
+		// seguimientos
 
-		while ($seg = $seguimientos->fetch_object()) {
+		foreach ($seguimientos as $seg) {
 
-			switch ($seg->estado) {
+			switch ($seg['estado']) {
 
 				case 'NO_RESPONDE':
-					$score += ($seg->cantidad * 5);
+					$score += $seg['cantidad'] * 5;
 					break;
+
 
 				case 'REPROGRAMADO':
-					$score += ($seg->cantidad * 2);
+					$score += $seg['cantidad'] * 2;
 					break;
 
+
 				case 'REALIZADO':
-					$score -= ($seg->cantidad * 1);
+					$score -= $seg['cantidad'];
 					break;
 			}
 		}
 
-		/*
-		|--------------------------------------------------------------------------
-		| Limitar score
-		|--------------------------------------------------------------------------
-		*/
 
-		if ($score < 0) {
-			$score = 0;
-		}
+		return max(0, min(100, $score));
+	}
 
-		if ($score > 100) {
-			$score = 100;
-		}
-
-		/*
-		|--------------------------------------------------------------------------
-		| Clasificación
-		|--------------------------------------------------------------------------
-		*/
+	private function clasificarRiesgo($score)
+	{
 
 		if ($score <= 20) {
 
-			$riesgo = "BAJO";
-			$color = "success";
+			return [
+				"riesgo" => "BAJO",
+				"color" => "success"
+			];
 
 		} elseif ($score <= 50) {
 
-			$riesgo = "MEDIO";
-			$color = "warning";
+			return [
+				"riesgo" => "MEDIO",
+				"color" => "warning"
+			];
 
 		} elseif ($score <= 80) {
 
-			$riesgo = "ALTO";
-			$color = "danger";
+			return [
+				"riesgo" => "ALTO",
+				"color" => "danger"
+			];
 
-		} else {
-
-			$riesgo = "CRITICO";
-			$color = "dark";
 		}
 
-		return json_encode([
-			"score" => $score,
-			"riesgo" => $riesgo,
-			"color" => $color,
-			"total_creditos" => $total_creditos,
-			"cuotas_vencidas" => $cuotas_vencidas,
-			"dias_atraso" => $dias_atraso,
-			"mora_total" => round($mora_total, 2),
-			"porcentaje_pagado" => round($porcentaje_pagado, 2)
-		]);
+
+		return [
+			"riesgo" => "CRITICO",
+			"color" => "dark"
+		];
 	}
+
+	private function respuestaSinHistorial()
+	{
+		return [
+			"score" => 0,
+			"riesgo" => "SIN HISTORIAL",
+			"color" => "secondary",
+			"total_creditos" => 0,
+			"cuotas_vencidas" => 0,
+			"deuda_total" => 0,
+			"total_pagado" => 0,
+			"cuotas_pagadas_tarde" => 0,
+			"dias_atraso_actual" => 0,
+			"dias_atraso_historico" => 0,
+			"mora_total" => 0,
+			"porcentaje_pagado" => 0
+		];
+	}
+
+	private function obtenerCuotasCreditoCliente($idcliente)
+{
+    return (new DBQuery($this->pdo))
+        ->query("
+            SELECT
+                c.idcpc,
+                c.estado_pago,
+                c.mora_pagada,
+                c.fecha_update_mora,
+                c.fechavencimiento,
+                v.idsucursal
+
+            FROM cuentas_por_cobrar c
+
+            INNER JOIN venta v
+                ON v.idventa = c.idventa
+
+            WHERE v.idcliente = :idcliente
+            AND c.idrefinanciamiento IS NULL
+        ",
+        [
+            'idcliente' => $idcliente
+        ])
+        ->get();
+}
+
+
+	private function calcularMoraCliente(array $cuotas): array
+	{
+		$moraPagada = 0;
+		$moraPendiente = 0;
+
+		foreach ($cuotas as $cuota) {
+
+			// Mora que ya fue pagada siempre queda como historial
+			$moraPagada += (float) $cuota['mora_pagada'];
+
+
+			// Verificar si la sucursal cobra mora
+			$config = $this->verificarMoraCredito(
+				$cuota['idsucursal']
+			);
+
+
+			if (!$config['activo']) {
+				continue;
+			}
+
+
+			// Solo cuotas abiertas generan mora nueva
+			if ((int) $cuota['estado_pago'] === 1) {
+
+
+				$fechaInicio = !empty($cuota['fecha_update_mora'])
+					? $cuota['fecha_update_mora']
+					: $cuota['fechavencimiento'];
+
+
+				$fechaInicio = new DateTime($fechaInicio);
+				$hoy = new DateTime();
+
+
+				if ($fechaInicio < $hoy) {
+
+					$dias = $fechaInicio->diff($hoy)->days;
+
+
+					$moraPendiente +=
+						$dias * (float) $config['valor'];
+				}
+			}
+		}
+
+
+		return [
+			'mora_pagada' => $moraPagada,
+			'mora_pendiente' => $moraPendiente,
+			'mora_total' => $moraPagada + $moraPendiente
+		];
+	}
+
 
 }
 

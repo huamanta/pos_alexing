@@ -1201,17 +1201,8 @@ switch ($_GET["op"]) {
 		$only_client = isset($_POST["only_client"]) ? $_POST["only_client"] : false;
 		$tipo_documento = isset($_POST["tipo_documento"]) ? $_POST["tipo_documento"] : "";
 		$es_factura = isset($_POST["es_factura"]) ? $_POST["es_factura"] : "0";
-		$rspta = $persona->listarc($tipo_documento);
-		echo '<option value="0">Seleccionar Cliente</option>';
-		while ($reg = $rspta->fetch_object()) {
-			$selected = ($reg->idpersona == 1) ? 'selected' : '';
-			if ($only_client && $reg->idpersona == 1) {
-				continue; // Saltar si solo se quieren clientes y este registro no es cliente
-			}
-			echo '<option value="' . $reg->idpersona . '" ' . $selected . '>' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
-			
-
-		}
+		$rspta = $persona->listarc($tipo_documento, $only_client);
+		echo $rspta;
 		break;
 
 
