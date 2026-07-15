@@ -1,6 +1,5 @@
 <?php
 ob_start();
-session_start();
 date_default_timezone_set('America/Lima');
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/pos.php";

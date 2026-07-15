@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require '../modelos/Configuracion.php';
 $configuracion = new Configuracion();
-session_start();
 switch ($_GET['op']) {
     case 'listarConfiguracion':
         $idsucursal = $_GET['idsucursal'] ?? $_SESSION['idsucursal'];

@@ -4,7 +4,7 @@ require "../configuraciones/Conexion.php";
 require_once "../configuraciones/ConexionPdo.php";
 require_once "../core/FluentQuery.php";
 require_once "../core/FluentSave.php";
-require_once "Helpers.php";
+require_once __DIR__ . "/Helpers.php";
 date_default_timezone_set('America/Lima');
 
 class Producto extends Helpers

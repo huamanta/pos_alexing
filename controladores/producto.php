@@ -2,7 +2,6 @@
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Producto.php";
 require_once "../modelos/Helpers.php";
-session_start();
 if (!isset($_SESSION['idusuario']) || empty($_SESSION['idusuario'])) {
 	echo json_encode([
 		'status' => 0,

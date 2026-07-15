@@ -1,5 +1,4 @@
 <?php
-session_start();
 
 // if (empty($_SESSION['nombre'])) {
 //     echo 'Debe ingresar al sistema correctamente para visualizar el reporte';

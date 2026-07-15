@@ -1,7 +1,6 @@
 <?php 
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Persona.php";
-
 $persona=new Persona();
 
 $idpersona=isset($_POST["idpersona"])? limpiarCadena($_POST["idpersona"]):"";

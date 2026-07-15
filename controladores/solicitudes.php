@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
-session_start();
 require_once "../modelos/Solicitudes.php";
 $credito = new Solicitudes();
 

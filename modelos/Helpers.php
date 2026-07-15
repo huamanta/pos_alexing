@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../configuraciones/ConexionPdo.php';
-
 class Helpers
 {
     public PDO $pdo;
@@ -89,7 +88,7 @@ class Helpers
 
         $superusuario = $stmt->fetchColumn();
 
-        if ($superusuario == 1) {
+        if ((int) $superusuario === 1) {
             return true;
         }
 

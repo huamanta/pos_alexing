@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Traslado.php";
-session_start();
 $traslado = new Traslado();
 $idusuario = $_SESSION['idusuario'] ?? 0;
 $idtraslado = isset($_POST["idtraslado"]) ? limpiarCadena($_POST["idtraslado"]) : "";

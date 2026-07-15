@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Cotizaciones.php";
-session_start();
 
 if (!isset($_SESSION['cotizacion_token'])) {
 	// Generar token único para esta cotización temporal
