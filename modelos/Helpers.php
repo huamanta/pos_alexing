@@ -398,4 +398,28 @@ class Helpers
 
         return sprintf('%s-%07d', $prefijo, $correlativo);
     }
+
+
+    public static function calcularIgv(float $monto, float $porcentajeIgv = 18): float
+    {
+        if ($monto <= 0 || $porcentajeIgv <= 0) {
+            return 0.00;
+        }
+
+        return round($monto * ($porcentajeIgv / (100 + $porcentajeIgv)), 2);
+    }
+
+    public static function calcularBaseImponible(float $monto, float $porcentajeIgv = 18): float
+    {
+        if ($monto <= 0 || $porcentajeIgv <= 0) {
+            return round($monto, 2);
+        }
+
+        return round($monto / (1 + ($porcentajeIgv / 100)), 2);
+    }
+
+    public static function calcularOperacionGravada(float $monto, float $porcentajeIgv = 18): float
+    {
+        return self::calcularBaseImponible($monto, $porcentajeIgv);
+    }
 }

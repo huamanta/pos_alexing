@@ -8,6 +8,9 @@
 /controladores/error_log
 /reportes/factura/error_log
 /public/FACT_WebService/Facturacion/error_log
+/public/FACT_WebService/Facturacion/cache
+/public/FACT_WebService/Facturacion/cdrs
+/public/FACT_WebService/Facturacion/files
 /.env
 files/productos/*
 !files/productos/.gitkeep

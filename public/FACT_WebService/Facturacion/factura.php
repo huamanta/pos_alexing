@@ -52,10 +52,10 @@ if ($conexion)
     
     $resultadoexonerada = mysqli_query($conexion,"SELECT cast(sum((dv.precio_venta*dv.cantidad)-(dv.descuento*dv.cantidad)) as DECIMAL(11,2)) as importe
     from detalle_venta dv
-    INNER JOIN producto_configuracion pg
-    ON dv.idproducto = pg.id
     INNER JOIN producto p
-    ON pg.idproducto = p.idproducto
+    ON dv.idproducto = p.idproducto
+    INNER JOIN producto_configuracion pg
+    ON p.idproducto = pg.idproducto
     WHERE dv.idventa='".$idVenta."' and p.proigv='No Gravada'");
     
    // echo ( $idVenta );
@@ -291,52 +291,49 @@ $manuel = $fg->numletras($total);
         // Envio a SUNAT.
 
    if  ($estadocertificado=="BETA"){
-        $see = $util->getSee(SunatEndpoints::FE_BETA, $estadocertificado);
+        $see = $util->getSee(SunatEndpoints::FE_BETA);
     }elseif($estadocertificado=="PRODUCCION"){
-        $see = $util->getSee(SunatEndpoints::FE_PRODUCCION, $estadocertificado);
+        $see = $util->getSee(SunatEndpoints::FE_PRODUCCION);
     }
+
     $res = $see->send($invoice);
     $util->writeXml($invoice, $see->getFactory()->getLastXml());
 
-    if ($res->isSuccess()) 
-    {
-        $cdr = $res->getCdrResponse();
-        $util->writeCdr($invoice, $res->getCdrZip());
-
-        $util->showResponse($invoice, $cdr,$IdDOV,'DocVenta',$codColab);
-
-        $code = (int)$cdr->getCode();
-
-        if ($code === 0) {
-            echo 'ESTADO: ACEPTADA'.PHP_EOL;
-            if (count($cdr->getNotes()) > 0) {
-                echo 'OBSERVACIONES:'.PHP_EOL;
-                // Corregir estas observaciones en siguientes emisiones.
-                var_dump($cdr->getNotes());
-            }  
-        } else if ($code >= 2000 && $code <= 3999) {
-            echo 'ESTADO: RECHAZADA'.PHP_EOL;
-        } else {
-            /* Esto no debería darse, pero si ocurre, es un CDR inválido que debería tratarse como un error-excepción. */
-            /*code: 0100 a 1999 */
-            echo 'Excepción';
+    if ($res->isSuccess()) {
+        $cdr = null;
+        $cdrZip = null;
+        if (method_exists($res, 'getCdrResponse')) {
+            $cdr = $res->getCdrResponse();
         }
+        if (method_exists($res, 'getCdrZip')) {
+            $cdrZip = $res->getCdrZip();
+        }
+        if ($cdr !== null) {
+            $util->writeCdr($invoice, $cdrZip);
+            $util->showResponse($invoice, $cdr, $IdDOV, 'DocVenta', $codColab);
+            $code = (int)$cdr->getCode();
 
-        echo $cdr->getDescription().PHP_EOL;
+            if ($code === 0) {
+                echo 'ESTADO: ACEPTADA'.PHP_EOL;
+                if (method_exists($cdr, 'getNotes') && count($cdr->getNotes()) > 0) {
+                    echo 'OBSERVACIONES:'.PHP_EOL;
+                    var_dump($cdr->getNotes());
+                }
+            } else if ($code >= 2000 && $code <= 3999) {
+                echo 'ESTADO: RECHAZADA'.PHP_EOL;
+            } else {
+                echo 'Excepción';
+            }
 
-        
-
+            echo $cdr->getDescription().PHP_EOL;
+        } else {
+            echo 'No se recibió respuesta de CDR desde SUNAT.';
+        }
     } else {
-
         echo $util->getErrorResponse($res->getError());
-
     }
 
-
-        //echo "</br>Conexión Finalizada";
-    
-}
-else{
+} else {
     echo 'error al conectar';
 }
 

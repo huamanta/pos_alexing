@@ -42,15 +42,12 @@ class Database {
 
         if (!isset($this->conexion)) {            
 
-            $server = "localhost";
+            $server = env('DB_HOST');
+            $usuario = env('DB_USERNAME');
+            $pass = env('DB_PASSWORD');
+            $database = env('DB_DATABASE');
 
-            $usuario = "root";
-
-            $clave = "";
-
-            $database = "sistema_pos";
-
-            $this->conexion = new mysqli($server, $usuario, $clave, $database);
+            $this->conexion = new mysqli($server, $usuario, $pass, $database);
 
             mysqli_set_charset($this->conexion,"utf8");
 

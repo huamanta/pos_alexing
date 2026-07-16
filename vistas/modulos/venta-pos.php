@@ -545,7 +545,7 @@ date_default_timezone_set('America/Lima');
                                             </span>
                                         </div>
                                         <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio"
-                                            value="<?php echo date("Y-m-01"); ?>">
+                                            value="">
                                     </div>
                                 </div>
 
@@ -559,7 +559,7 @@ date_default_timezone_set('America/Lima');
                                             </span>
                                         </div>
                                         <input type="date" class="form-control" name="fecha_fin" id="fecha_fin"
-                                            value="<?php echo date("Y-m-d"); ?>">
+                                            value="">
                                     </div>
                                 </div>
 
@@ -622,21 +622,8 @@ date_default_timezone_set('America/Lima');
                                             title="Comprobar estado"></i></th>
                                     <th width="180px;">Acciones</th>
                                 </thead>
-                                <tbody>
+                                <tbody id="tbody_ventas">
                                 </tbody>
-                                <tfoot>
-                                    <th>Fecha</th>
-                                    <th>Cliente</th>
-                                    <th>Sucursal</th>
-                                    <th>Número</th>
-                                    <th>Total Venta</th>
-                                    <th>Forma de pago</th>
-                                    <th>Tipo Pago</th>
-                                    <th>Estado</th>
-                                    <th>Sunat</th>
-                                    <th></th>
-                                    <th>Acciones</th>
-                                </tfoot>
                             </table>
 
                         </div>

@@ -6,9 +6,9 @@ class Venta extends Helpers
 {
     //implementamos nuestro constructor
     public function __construct()
-	{
-		parent::__construct();
-	}
+    {
+        parent::__construct();
+    }
 
     public function verificarCaja($idusuario, $idsucursal)
     {
@@ -1360,52 +1360,142 @@ class Venta extends Helpers
 
 
     //listar registros
-    public function listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto)
+    public function listar($idsucursal, $idpersonal, $fecha_inicio, $fecha_fin, $estado, $idproducto)
     {
-        $idpersonal_sesion = $_SESSION["idpersonal"]; // ID del usuario en sesión
-        $cargo_sesion = $_SESSION["cargo"]; // Cargo del usuario en sesión
+        $pdo = Conexion::conectar();
 
-        // Base de la consulta SQL
-        $sql = "SELECT v.idventa,DATE_FORMAT(v.fecha_hora, '%d/%m/%Y %H:%i:%s') as fecha,v.idsucursal, s.nombre as sucursal, date_format(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex,
-            v.idcliente,p.nombre as cliente,p.num_documento,v.estadoS,u.idpersonal,u.nombre as personal, 
-            v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,(v.total_venta-v.descuento) as total_venta,v.formapago,v.ventacredito,v.impuesto,
-            v.dov_Nombre,v.estado 
-            FROM venta v 
-            INNER JOIN persona p ON v.idcliente = p.idpersona 
-            INNER JOIN personal u ON v.idpersonal = u.idpersonal
-            INNER JOIN sucursal s ON s.idsucursal = v.idsucursal 
-            WHERE v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta') 
-            AND v.serie_comprobante != '-' 
-            AND DATE(v.fecha_hora) >= '$fecha_inicio' 
-            AND DATE(v.fecha_hora) <= '$fecha_fin'";
+        $page = (int) ($_GET['page'] ?? 1);
+        $limit = (int) ($_GET['limit'] ?? 10);
+        $search = trim($_GET['search'] ?? '');
 
-        // Si el usuario NO es administrador, filtrar solo sus ventas
-        if ($cargo_sesion != "Administrador") {
-            $sql .= " AND v.idpersonal = '$idpersonal_sesion'";
+
+        $paginator = (new DBQuery($pdo))
+            ->select("
+            v.idventa,
+            DATE_FORMAT(v.fecha_hora, '%d/%m/%Y %H:%i:%s') AS fecha,
+            v.idsucursal,
+            s.nombre AS sucursal,
+            DATE_FORMAT(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') AS fecha_kardex,
+            v.idcliente,
+            p.nombre AS cliente,
+            p.num_documento,
+            v.estadoS,
+            u.idpersonal,
+            u.nombre AS personal,
+            v.tipo_comprobante,
+            v.serie_comprobante,
+            v.num_comprobante,
+            (v.total_venta-v.descuento) AS total_venta,
+            v.formapago,
+            v.ventacredito,
+            v.impuesto,
+            v.dov_Nombre,
+            v.estado
+        ")
+            ->from('venta v')
+            ->join('persona p', 'v.idcliente = p.idpersona')
+            ->join('personal u', 'v.idpersonal = u.idpersonal')
+            ->join('sucursal s', 's.idsucursal = v.idsucursal')
+            ->whereRaw("v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta')")
+            ->whereRaw("v.serie_comprobante <> '-'");
+
+
+        // rango fechas
+        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $paginator->where(
+                "DATE(v.fecha_hora)",
+                ">=",
+                $fecha_inicio
+            );
+
+            $paginator->where(
+                "DATE(v.fecha_hora)",
+                "<=",
+                $fecha_fin
+            );
         }
 
-        // Filtrado por sucursal (si aplica)
-        if ($idsucursal != "Todos") {
-            $sql .= " AND v.idsucursal = '$idsucursal'";
+
+
+        // sucursal
+        if (!empty($idsucursal)) {
+
+            $paginator->where(
+                "v.idsucursal",
+                "=",
+                $idsucursal
+            );
+
         }
 
-        // Filtrado por estado (si aplica)
-        if ($estado != "Todos") {
-            $sql .= " AND v.estado = '$estado'";
+
+        // personal
+        if (!empty($idpersonal)) {
+
+            $paginator->where(
+                "v.idpersonal",
+                "=",
+                $idpersonal
+            );
+
         }
-        // Filtrar por producto solo si NO ES "Todos"
-        if ($idproducto != "" && $idproducto != null && $idproducto != "Todos") {
-            $sql .= " AND v.idventa IN (
-                SELECT dv.idventa
+
+
+        // estado
+        if (!empty($estado)) {
+
+            $paginator->where(
+                "v.estado",
+                "=",
+                $estado
+            );
+
+        }
+
+
+        // producto
+        if (!empty($idproducto)) {
+
+            $paginator->whereRaw("
+            EXISTS(
+                SELECT 1
                 FROM detalle_venta dv
-                INNER JOIN producto_configuracion pc ON pc.id = dv.idproducto
-                WHERE pc.idproducto = '$idproducto'
-                )";
+                INNER JOIN producto_configuracion pc 
+                    ON pc.id = dv.idproducto
+                WHERE dv.idventa = v.idventa
+                AND pc.idproducto = '$idproducto'
+            )
+        ");
+
         }
 
-        $sql .= " ORDER BY v.idventa DESC";
 
-        return ejecutarConsulta($sql);
+        $response = $paginator
+            ->search(
+                $search,
+                [
+                    'p.nombre',
+                    'p.num_documento',
+                    'u.nombre',
+                    'v.num_comprobante'
+                ]
+            )
+            ->orderBy('v.idventa', 'DESC')
+            ->paginate(
+                $page,
+                $limit
+            );
+
+
+        $response['permissions'] = [
+            'anular' => Helpers::getUserPermissionAccion('Anular venta'),
+            'ver' => Helpers::getUserPermissionAccion('Ver venta'),
+            'editar' => Helpers::getUserPermissionAccion('Editar venta'),
+            'imprimir' => Helpers::getUserPermissionAccion('Imprimir venta')
+        ];
+
+
+        return json_encode($response);
     }
 
 

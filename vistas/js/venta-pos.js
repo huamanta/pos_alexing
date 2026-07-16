@@ -71,7 +71,7 @@ function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
   marcarImpuesto();
   mostrarform(false);
-  listar();
+  listar.load();
 
   $("#formulario").on("submit", function (e) {
     guardaryeditar(e);
@@ -203,20 +203,20 @@ function init() {
 
   verificarConceptoMovimiento();
   cargarSucursales();
-  $("#fecha_inicio").change(listar);
-  $("#fecha_fin").change(listar);
-  $("#idsucursal2").change(function () {
-    listar();
-    // Update notifications with new sucursal
-    verificarNuevasNotificaciones();
-    cargarNotificacionesCXCNavbar();
-    // Limpiar y reiniciar completamente el carrito
-    limpiarCarrito();
-  });
-  $("#estado").change(listar);
-  $("#idproducto").change(listar);
+  // $("#fecha_inicio").change(listar);
+  // $("#fecha_fin").change(listar);
+  // $("#idsucursal2").change(function () {
+  //   listar.load();
+  //   // Update notifications with new sucursal
+  //   verificarNuevasNotificaciones();
+  //   cargarNotificacionesCXCNavbar();
+  //   // Limpiar y reiniciar completamente el carrito
+  //   limpiarCarrito();
+  // });
+  // $("#estado").change(listar);
+  // $("#idproducto").change(listar);
 
-  $("#idsucursal").change(documentosSucursal);
+  // $("#idsucursal").change(documentosSucursal);
 
   $("#navPos").addClass("treeview active");
   $("#navPos").addClass("menu-open");
@@ -336,7 +336,7 @@ function calcularCuotasDesdeNumeroMeses() {
     6: 3,
     7: 6,
     8: 12,
-  } [frecuencia];
+  }[frecuencia];
 
   if (!mesesPorCuota) return;
 
@@ -493,7 +493,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         } else {
@@ -537,7 +537,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         }
@@ -812,7 +812,7 @@ function comprobarEstado(idventa, idcol) {
       $(".modal").show();
     },
     success: function (resp) {
-      listar();
+      listar.load();
 
       swal({
         title: "SUNAT",
@@ -842,14 +842,14 @@ function EnviarSunat(tipoc, idventa, idcol) {
       $(".modal").show();
     },
     success: function (resp) {
-      listar();
+      listar.load();
 
       Swal.fire({
         title: "SUNAT",
         icon: "success",
         text: resp,
         timerProgressBar: true,
-        onClose: function () {},
+        onClose: function () { },
       });
     },
     complete: function () {
@@ -912,13 +912,13 @@ function guardaryeditar(e) {
   }
 
   var formData = new FormData($("#formulario")[0]);
-/** 
-  Swal.fire({
-    title: "Procesando venta...",
-    text: "Por favor, espera un momento",
-    allowOutsideClick: false,
-    didOpen: () => Swal.showLoading(),
-  });*/
+  /** 
+    Swal.fire({
+      title: "Procesando venta...",
+      text: "Por favor, espera un momento",
+      allowOutsideClick: false,
+      didOpen: () => Swal.showLoading(),
+    });*/
 
   $.ajax({
     url: "controladores/venta.php?op=guardaryeditar",
@@ -929,13 +929,13 @@ function guardaryeditar(e) {
     success: function (response) {
       const data = JSON.parse(response);
       if (!data.success) {
-          Swal.fire({
-            title: "Ventas",
-            text: data.message,
-            icon: "error"
-          });
-          return;
-        }
+        Swal.fire({
+          title: "Ventas",
+          text: data.message,
+          icon: "error"
+        });
+        return;
+      }
 
       if ($("#tipo_comprobante option:selected").text() !== "Nota de Venta") {
         ventaAGenerarSunat = {
@@ -971,7 +971,7 @@ function guardaryeditar(e) {
         "error",
       );
     },
-    finally: function(){
+    finally: function () {
       Swal.close();
     },
   });
@@ -1448,8 +1448,8 @@ function buscarProductoCod(e, codigo) {
     if (codigo.length > 0) {
       $.post(
         "controladores/venta.php?op=buscarProducto", {
-          codigo: codigo
-        },
+        codigo: codigo
+      },
         function (data, status) {
           data = JSON.parse(data);
 
@@ -1514,9 +1514,9 @@ function verificarProductosDisponibles() {
   // Verificar cada producto si está disponible en la nueva sucursal
   $.post(
     "controladores/venta.php?op=verificarProductos", {
-      idsucursal: idsucursal,
-      productos: productosAgregados
-    },
+    idsucursal: idsucursal,
+    productos: productosAgregados
+  },
     function (response) {
       if (response.no_disponibles.length > 0) {
         // Eliminar los productos no disponibles de la tabla
@@ -1645,8 +1645,8 @@ function pintarProductos(data, permissions) {
   data.forEach(item => {
     let btnActivarDesactivar = (permissions.desactivar) ?
       (item.condicion === 1) ?
-      `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>` :
-      `<button class="btn btn-info btn-xs" onclick="activar(${item.idproducto})"><i class="fas fa-check"></i></button>` :
+        `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>` :
+        `<button class="btn btn-info btn-xs" onclick="activar(${item.idproducto})"><i class="fas fa-check"></i></button>` :
       ''
 
     html += `
@@ -1872,8 +1872,8 @@ function verimagen(idproducto, imagen, nombre, stock, precio) {
   // Obtener precios adicionales
   $.post(
     "controladores/producto.php?op=precios_adicionales", {
-      idproducto: idproducto
-    },
+    idproducto: idproducto
+  },
     function (data) {
       $("#detallePreciosAdicionales").html(data);
     },
@@ -1929,81 +1929,597 @@ function listarArticulos2() {
 }
 
 //Función Listar
-function listar() {
-  let fecha_inicio = $("#fecha_inicio").val();
-  let fecha_fin = $("#fecha_fin").val();
-  var estado = $("#estado").val();
-  let idsucursal2 = $("#idsucursal2").val();
-  let idproducto = $("#idproducto").val();
+// function listar() {
+//   let fecha_inicio = $("#fecha_inicio").val();
+//   let fecha_fin = $("#fecha_fin").val();
+//   var estado = $("#estado").val();
+//   let idsucursal2 = $("#idsucursal2").val();
+//   let idproducto = $("#idproducto").val();
 
-  tabla = $("#tbllistado")
-    .dataTable({
-      //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-      aProcessing: true, //Activamos el procesamiento del datatables
-      aServerSide: true, //Paginación y filtrado realizados por el servidor
-      processing: true,
-      language: {
-        processing: "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-      },
-      responsive: true,
-      lengthChange: false,
-      autoWidth: false,
-      dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-      lengthMenu: [
-        [5, 10, 25, 50, 100, -1],
-        [
-          "5 filas",
-          "10 filas",
-          "25 filas",
-          "50 filas",
-          "100 filas",
-          "Mostrar todo",
-        ],
-      ],
-      buttons: [
-        "pageLength",
-        {
-          extend: "excelHtml5",
-          text: "<i class='fas fa-file-csv'></i>",
-          titleAttr: "Exportar a Excel",
-          // className: 'btn btn-success'
-        },
-        {
-          extend: "pdf",
-          text: "<i class='fas fa-file-pdf'></i>",
-          titleAttr: "Exportar a PDF",
-          // className: 'btn btn-danger'
-        },
-        {
-          extend: "colvis",
-          text: "<i class='fas fa-bars'></i>",
-          titleAttr: "",
-          // className: 'btn btn-danger'
-        },
-      ],
-      ajax: {
-        url: "controladores/venta.php?op=listar",
-        data: {
-          fecha_inicio: fecha_inicio,
-          fecha_fin: fecha_fin,
-          estado: estado,
-          idsucursal2: idsucursal2,
-          idproducto: idproducto,
-        },
-        type: "get",
-        dataType: "json",
-        error: function (e) {
-          console.log(e.responseText);
-        },
-      },
-      bDestroy: true,
-      iDisplayLength: 5, //Paginación
-      order: [
-        [0, "desc"]
-      ], //Ordenar (columna,orden)
-    })
-    .DataTable();
+//   tabla = $("#tbllistado")
+//     .dataTable({
+//       //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
+//       aProcessing: true, //Activamos el procesamiento del datatables
+//       aServerSide: true, //Paginación y filtrado realizados por el servidor
+//       processing: true,
+//       language: {
+//         processing: "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+//       },
+//       responsive: true,
+//       lengthChange: false,
+//       autoWidth: false,
+//       dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+//       lengthMenu: [
+//         [5, 10, 25, 50, 100, -1],
+//         [
+//           "5 filas",
+//           "10 filas",
+//           "25 filas",
+//           "50 filas",
+//           "100 filas",
+//           "Mostrar todo",
+//         ],
+//       ],
+//       buttons: [
+//         "pageLength",
+//         {
+//           extend: "excelHtml5",
+//           text: "<i class='fas fa-file-csv'></i>",
+//           titleAttr: "Exportar a Excel",
+//           // className: 'btn btn-success'
+//         },
+//         {
+//           extend: "pdf",
+//           text: "<i class='fas fa-file-pdf'></i>",
+//           titleAttr: "Exportar a PDF",
+//           // className: 'btn btn-danger'
+//         },
+//         {
+//           extend: "colvis",
+//           text: "<i class='fas fa-bars'></i>",
+//           titleAttr: "",
+//           // className: 'btn btn-danger'
+//         },
+//       ],
+//       ajax: {
+//         url: "controladores/venta.php?op=listar",
+//         data: {
+//           fecha_inicio: fecha_inicio,
+//           fecha_fin: fecha_fin,
+//           estado: estado,
+//           idsucursal2: idsucursal2,
+//           idproducto: idproducto,
+//         },
+//         type: "get",
+//         dataType: "json",
+//         error: function (e) {
+//           console.log(e.responseText);
+//         },
+//       },
+//       bDestroy: true,
+//       iDisplayLength: 5, //Paginación
+//       order: [
+//         [0, "desc"]
+//       ], //Ordenar (columna,orden)
+//     })
+//     .DataTable();
+// }
+
+function pintarVentas(data, permissions) {
+
+  let html = "";
+
+  if (data.length === 0) {
+    $("#tbody_ventas").html(`
+            <tr>
+                <td colspan="11" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `);
+    return;
+  }
+
+  data.forEach(item => {
+
+    const url1 = 'reportes/exTicket.php?id=';
+    const url2 = 'reportes/factura/generaFactura.php?id=';
+
+    const ruta = `public/FACT_WebService/Facturacion/files/${item.dov_Nombre}.xml`;
+    const rutaCdr = `public/FACT_WebService/Facturacion/files/R-${item.dov_Nombre}.zip`;
+
+    let enviarSunat = '';
+    let pdf = '';
+    let ticket = '';
+
+    if (item.tipo_comprobante === 'Boleta') {
+
+      enviarSunat = `
+                <a data-toggle="tooltip" title="Enviar a Sunat"
+                    onclick="EnviarSunat(1,${item.idventa},${item.idpersonal});">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </a>
+
+                <a href="${ruta}" style="pointer-events:none;">
+                    <button class="btn btn-warning btn-xs">
+                        <i class="fas fa-file-code"></i>
+                    </button>
+                </a>
+
+                <a href="${rutaCdr}" style="pointer-events:none;">
+                    <button class="btn btn-danger btn-xs">
+                        <i class="fas fa-file-archive"></i>
+                    </button>
+                </a>
+            `;
+
+      pdf = `
+                <a title="PDF" onclick="imprimirFactura(${item.idventa})">
+                    <button class="btn btn-info btn-xs">
+                        <i class="fas fa-file-pdf"></i>
+                    </button>
+                </a>
+            `;
+
+      ticket = `
+                <a title="Ticket" onclick="imprimirBoleta(${item.idventa})">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-receipt"></i>
+                    </button>
+                </a>
+            `;
+
+    } else {
+
+      enviarSunat = `
+                <a data-toggle="tooltip" title="Enviar a Sunat"
+                    onclick="EnviarSunat(2,${item.idventa},${item.idpersonal});">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </a>
+
+                <a href="${ruta}" style="pointer-events:none;">
+                    <button class="btn btn-warning btn-xs">
+                        <i class="fas fa-file-code"></i>
+                    </button>
+                </a>
+
+                <a href="${rutaCdr}" style="pointer-events:none;">
+                    <button class="btn btn-danger btn-xs">
+                        <i class="fas fa-file-archive"></i>
+                    </button>
+                </a>
+            `;
+
+      pdf = `
+                <a title="PDF" onclick="imprimirFactura(${item.idventa})">
+                    <button class="btn btn-info btn-xs">
+                        <i class="fas fa-file-pdf"></i>
+                    </button>
+                </a>
+            `;
+
+      ticket = `
+                <a title="Ticket" onclick="imprimirBoleta(${item.idventa})">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-receipt"></i>
+                    </button>
+                </a>
+            `;
+    }
+
+    let estado = "";
+
+    if (item.estado === "Aceptado") {
+
+      estado = '<span class="badge badge-neon neon-green">ACEPTADO</span>';
+
+      pdf = `
+                <a target="_blank" href="${url2}${item.idventa}">
+                    <button class="btn btn-info btn-xs">
+                        <i class="fas fa-file-pdf"></i>
+                    </button>
+                </a>`;
+
+      ticket = `
+                <a target="_blank" href="${url1}${item.idventa}">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-receipt"></i>
+                    </button>
+                </a>`;
+
+    } else if (item.estado === "Por Enviar") {
+
+      estado = '<span class="badge badge-neon neon-yellow">POR ENVIAR</span>';
+
+    } else if (item.estado === "En Resumen") {
+
+      estado = '<span class="badge badge-neon neon-blue">EN RESUMEN</span>';
+
+    } else if (item.estado === "Anulado") {
+
+      estado = '<span class="badge badge-neon neon-red">ANULADO</span>';
+
+    } else if (item.estado === "Nota Credito") {
+
+      estado = '<span class="badge badge-neon neon-red">NOTA DE CRÉDITO</span>';
+
+      pdf = `
+                <a target="_blank" href="${url2}${item.idventa}">
+                    <button class="btn btn-info btn-xs">
+                        <i class="fas fa-file-pdf"></i>
+                    </button>
+                </a>`;
+
+      ticket = `
+                <a target="_blank" href="${url1}${item.idventa}">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-receipt"></i>
+                    </button>
+                </a>`;
+
+    } else if (item.estado === "Rechazado") {
+
+      estado = '<span class="badge badge-neon neon-red">RECHAZADO</span>';
+
+      pdf = `
+                <a target="_blank" href="${url2}${item.idventa}">
+                    <button class="btn btn-info btn-xs">
+                        <i class="fas fa-file-pdf"></i>
+                    </button>
+                </a>`;
+
+      ticket = `
+                <a target="_blank" href="${url1}${item.idventa}">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-receipt"></i>
+                    </button>
+                </a>`;
+
+    } else if (item.estado === "Aceptado por resumen") {
+
+      estado = '<span class="badge badge-neon neon-green">ACEPTADO POR RESUMEN</span>';
+
+      pdf = `
+                <a target="_blank" href="${url2}${item.idventa}">
+                    <button class="btn btn-info btn-xs">
+                        <i class="fas fa-file-pdf"></i>
+                    </button>
+                </a>`;
+
+      ticket = `
+                <a target="_blank" href="${url1}${item.idventa}">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-receipt"></i>
+                    </button>
+                </a>`;
+
+    } else {
+
+      estado = '<span class="badge badge-neon neon-blue">ACTIVADO</span>';
+
+      pdf = `
+                <a target="_blank" href="${url2}${item.idventa}">
+                    <button class="btn btn-info btn-xs">
+                        <i class="fas fa-file-pdf"></i>
+                    </button>
+                </a>`;
+
+      ticket = `
+                <a target="_blank" href="${url1}${item.idventa}">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-receipt"></i>
+                    </button>
+                </a>`;
+    }
+
+    let sunat = "";
+
+    if (item.estado === "Por Enviar") {
+
+      sunat = enviarSunat;
+
+    } else if (item.estado === "Activado" || item.estado === "Anulado") {
+
+      sunat = `
+                <a style="pointer-events:none;">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </a>
+
+                <a href="${ruta}" style="pointer-events:none;">
+                    <button class="btn btn-warning btn-xs">
+                        <i class="fas fa-file-code"></i>
+                    </button>
+                </a>
+
+                <a href="${rutaCdr}" style="pointer-events:none;">
+                    <button class="btn btn-danger btn-xs">
+                        <i class="fas fa-file-archive"></i>
+                    </button>
+                </a>
+            `;
+
+    } else if (item.estado === "Aceptado" || item.estado === "Aceptado por resumen") {
+
+      sunat = `
+                <a style="pointer-events:none;">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </a>
+
+                <a href="${ruta}"
+                   download="${item.dov_Nombre}.xml"
+                   class="btn btn-warning btn-xs ml-1">
+                    <i class="fas fa-file-code"></i>
+                </a>
+
+                <a href="${rutaCdr}"
+                   target="_blank"
+                   class="btn btn-danger btn-xs ml-1">
+                    <i class="fas fa-file-archive"></i>
+                </a>
+            `;
+
+    } else {
+
+      sunat = `
+                <a style="pointer-events:none;">
+                    <button class="btn btn-primary btn-xs">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </a>
+
+                <a style="pointer-events:none;">
+                    <button class="btn btn-warning btn-xs ml-1">
+                        <i class="fas fa-file-code"></i>
+                    </button>
+                </a>
+
+                <a style="pointer-events:none;">
+                    <button class="btn btn-danger btn-xs ml-1">
+                        <i class="fas fa-file-archive"></i>
+                    </button>
+                </a>
+            `;
+    }
+
+
+    let comprobarEstado = "";
+
+    if (item.tipo_comprobante === "Nota de Venta") {
+
+      comprobarEstado = `
+                <center>
+                    <a style="pointer-events:none;">
+                        <button class="btn btn-warning btn-xs">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </button>
+                    </a>
+                </center>
+            `;
+
+    } else {
+
+      comprobarEstado = `
+                <center>
+                    <a onclick="comprobarEstado(${item.idventa},${item.idpersonal});">
+                        <button class="btn btn-warning btn-xs">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </button>
+                    </a>
+                </center>
+            `;
+    }
+
+
+    let mostrarResumen = `
+            <button class="btn btn-warning btn-xs"
+                onclick="mostrar(${item.idventa})">
+                <i class="fas fa-eye"></i>
+            </button>
+        `;
+
+    let enviarComprobante = "";
+    let mostrar = "";
+    let sunatE = "";
+
+    if (item.estado === "Anulado") {
+
+      enviarComprobante = "";
+      mostrar = "";
+      sunatE = "-";
+
+    } else {
+
+      enviarComprobante = `
+                <a target="_blank" title="Enviar Comprobantes">
+                    <button class="btn btn-success btn-xs"
+                        onclick="EnviarComprobante(${item.idventa})">
+                        <i class="fab fa-whatsapp"></i>
+                    </button>
+                </a>
+            `;
+
+      mostrar = pdf + ticket;
+      sunatE = sunat;
+    }
+
+
+    let notaCreditoBtn = "";
+
+    if (item.estado === "Aceptado") {
+
+      notaCreditoBtn = `
+                <a title="Pasar a Nota de Crédito"
+                    onclick="notaCredito(${item.idventa},${item.idsucursal})">
+
+                    <button class="btn btn-danger btn-xs">
+                        <i class="fas fa-ban"></i>
+                    </button>
+
+                </a>
+            `;
+    }
+
+
+    let dropdown = "";
+
+    if (item.estado === "Activado") {
+
+      dropdown = `
+                <div class="dropdown">
+
+                    <button class="btn dropdown-toggle"
+                        type="button"
+                        data-toggle="dropdown">
+
+                        <i class="fas fa-list-ul"></i>
+
+                    </button>
+
+                    <div class="dropdown-menu">
+
+                        ${permissions.editar
+          ? `<a class="dropdown-item"
+                                style="cursor:pointer;"
+                                onclick="generarComprobante(${item.idventa})">
+                                Editar
+                            </a>`
+          : ""
+        }
+
+                        ${permissions.eliminar
+          ? `<a class="dropdown-item"
+                                style="cursor:pointer;"
+                                onclick="anularComprobante(${item.idventa})">
+                                Eliminar
+                            </a>`
+          : ""
+        }
+
+                        ${item.tipo_comprobante === "Nota de Venta"
+          ? `<a class="dropdown-item"
+                                style="cursor:pointer;"
+                                onclick="cambiarComprobante(${item.idventa},${item.idsucursal})">
+                                Cambiar a Boleta/Factura
+                            </a>`
+          : ""
+        }
+
+                    </div>
+
+                    ${mostrarResumen}
+
+                    ${enviarComprobante}
+
+                    ${mostrar}
+
+                    ${notaCreditoBtn}
+
+                </div>
+
+                <a class="btn btn-danger btn-xs"
+                    title="Descargar cronograma"
+                    onclick="verCronogramPago(${item.idventa})">
+
+                    <i class="fas fa-file-pdf"></i>
+
+                </a>
+            `;
+
+    } else {
+
+      dropdown = `
+                ${mostrarResumen}
+                ${enviarComprobante}
+                ${mostrar}
+                ${notaCreditoBtn}
+
+                <a class="btn btn-danger btn-xs"
+                    title="Descargar cronograma"
+                    onclick="verCronogramPago(${item.idventa})">
+
+                    <i class="fas fa-file-pdf"></i>
+
+                </a>
+            `;
+    }
+    html += `
+            <tr>
+
+                <td>${item.fecha}</td>
+
+                <td>
+                    ${item.cliente} - ${item.num_documento}
+                </td>
+
+                <td>
+                    ${item.sucursal}
+                </td>
+
+                <td>
+                    ${item.tipo_comprobante} -
+                    ${item.serie_comprobante} -
+                    ${item.num_comprobante}
+                </td>
+
+                <td>
+                    <span class="badge badge-neon neon-purple sm">
+                        S/ ${parseFloat(item.total_venta).toFixed(2)}
+                    </span>
+                </td>
+
+                <td>
+                    ${item.formapago}
+                </td>
+
+                <td align="center">
+                    ${item.ventacredito === "Si"
+        ? '<span class="badge badge-neon neon-red">Crédito</span>'
+        : '<span class="badge badge-neon neon-blue">Contado</span>'
+      }
+                </td>
+
+                <td>
+                    ${estado}
+                </td>
+
+                <td>
+                    ${sunatE}
+                </td>
+
+                <td>
+                    ${comprobarEstado}
+                </td>
+
+                <td>
+                    ${dropdown}
+                </td>
+
+            </tr>
+        `;
+
+  });
+
+  $("#tbody_ventas").html(html);
 }
+
+listar = new FluentPaginator({
+  url: "controladores/venta.php?op=listar",
+  renderTabla: pintarVentas,
+  extraParams: () => ({
+    fecha_inicio: $("#fecha_inicio").val() || '',
+    fecha_fin: $("#fecha_inicio").val() || '',
+    estado: $("#estado").val() || '',
+    estado: $("#idproducto").val() || ''
+  })
+});
 
 //cancelar form
 function cancelarform() {
@@ -3242,10 +3758,10 @@ function actualizarDataItem(idproducto, campo, value) {
   var token = $("#token").val(); // si lo necesitas
   $.post(
     "controladores/pos.php?op=actualizarDataItem", {
-      idproducto: idproducto,
-      campo: campo,
-      value: value,
-    },
+    idproducto: idproducto,
+    campo: campo,
+    value: value,
+  },
     function (res) {
       if (res.status == 1) {
         console.log("Precio actualizado.");
@@ -3749,8 +4265,8 @@ function generarComprobante(idventa) {
   //Cargar los detalles de la venta
   $.post(
     "controladores/venta.php?op=listarDetalleVenta", {
-      idventa: idventa
-    },
+    idventa: idventa
+  },
     function (data, status) {
       try {
         data = JSON.parse(data);
@@ -3790,8 +4306,8 @@ function generarComprobante(idventa) {
   // Cargar datos generales de la venta
   $.post(
     "controladores/venta.php?op=mostraredit", {
-      idventa: idventa
-    },
+    idventa: idventa
+  },
     function (data, status) {
       try {
         data = JSON.parse(data);
@@ -3873,8 +4389,8 @@ function generarComprobante(idventa) {
   //Cargar cuotas de la venta
   $.post(
     "controladores/venta.php?op=listarCuotas", {
-      idventa: idventa
-    },
+    idventa: idventa
+  },
     function (data, status) {
       try {
         var cuotas = JSON.parse(data);
@@ -3907,8 +4423,8 @@ function mostrarE() {
   }
   $.post(
     "controladores/cotizaciones.php?op=mostrar", {
-      idcotizacion: idcotizacion
-    },
+    idcotizacion: idcotizacion
+  },
     function (data) {
 
       const dataCotizacion = JSON.parse(data);
@@ -3938,8 +4454,8 @@ function mostrarE() {
   );
   $.post(
     "controladores/cotizaciones.php?op=listarDetalleCotizacion", {
-      idcotizacion: idcotizacion
-    },
+    idcotizacion: idcotizacion
+  },
     function (response, status) {
       const data = JSON.parse(response);
 
@@ -3987,8 +4503,8 @@ function anularComprobante(idventa) {
     if (result.isConfirmed) {
       $.post(
         "controladores/venta.php?op=anular", {
-          idventa: idventa
-        },
+        idventa: idventa
+      },
         function (e) {
           Swal.fire("!!! Anulado !!!", e, "success");
           tabla.ajax.reload();
@@ -4092,17 +4608,17 @@ function notaCredito(idventa, idsucursal) {
     if (result.isConfirmed) {
       $.post(
         "controladores/venta.php?op=notacredito", {
-          comprobanteReferencia: idventa,
-          idsucursal: idsucursal,
-          idmotivo: 1
-        },
+        comprobanteReferencia: idventa,
+        idsucursal: idsucursal,
+        idmotivo: 1
+      },
         function (resp) {
           Swal.fire({
             title: "Nota de Crédito",
             text: resp,
             icon: "success",
           });
-          listar(); // refrescamos la tabla
+          listar.load(); // refrescamos la tabla
         },
       ).fail(function (xhr) {
         Swal.fire({
@@ -4120,8 +4636,8 @@ function mostrar(idventa) {
 
   $.post(
     "controladores/venta.php?op=mostrar", {
-      idventa: idventa
-    },
+    idventa: idventa
+  },
     function (data, status) {
       data = JSON.parse(data);
       // Mostrar datos
@@ -4130,20 +4646,20 @@ function mostrar(idventa) {
       $("#personalm").text(data.personal);
       $("#tipo_comprobantem").html(
         data.tipo_comprobante == "Boleta" ?
-        '<span class="badge badge-primary">' +
-        data.tipo_comprobante +
-        "</span>" :
-        '<span class="badge badge-info">' +
-        data.tipo_comprobante +
-        "</span>",
+          '<span class="badge badge-primary">' +
+          data.tipo_comprobante +
+          "</span>" :
+          '<span class="badge badge-info">' +
+          data.tipo_comprobante +
+          "</span>",
       );
       $("#correlativo").text(
         data.serie_comprobante + " - " + data.num_comprobante,
       );
       $("#ventacreditom").html(
         data.ventacredito == "Si" ?
-        '<span class="badge badge-success">' + data.ventacredito + "</span>" :
-        '<span class="badge badge-danger">' + data.ventacredito + "</span>",
+          '<span class="badge badge-success">' + data.ventacredito + "</span>" :
+          '<span class="badge badge-danger">' + data.ventacredito + "</span>",
       );
       $("#fecha_hora").text(data.fecha);
       $("#impuestom").text(data.impuesto);
@@ -4252,9 +4768,9 @@ function seleccionarClienteFactura(idventa, idsucursal) {
         let idcliente = $("#clienteFactura").val();
         $.post(
           "controladores/venta.php?op=actualizarClienteVentaFactura", {
-            idventa: idventa,
-            idcliente: idcliente
-          },
+          idventa: idventa,
+          idcliente: idcliente
+        },
           function (resp) {
             ejecutarCambioComprobante(idventa, "Factura", idsucursal);
           },
@@ -4267,10 +4783,10 @@ function seleccionarClienteFactura(idventa, idsucursal) {
 function ejecutarCambioComprobante(idventa, tipo, idsucursal) {
   $.post(
     "controladores/venta.php?op=cambiar_comprobante", {
-      idventa: idventa,
-      tipo: tipo,
-      idsucursal: idsucursal
-    },
+    idventa: idventa,
+    tipo: tipo,
+    idsucursal: idsucursal
+  },
     function (resp) {
       if (resp.trim() === "ok") {
         Swal.fire("Correcto", "Comprobante actualizado", "success");
@@ -4329,8 +4845,8 @@ function verHistorialCliente() {
             "";
           let colorDesc =
             item.descuento !== "-" ?
-            "text-danger font-weight-bold" :
-            "text-muted";
+              "text-danger font-weight-bold" :
+              "text-muted";
           let estiloFila = i >= 8 ? 'style="display:none;"' : "";
 
           html += `<tr class="${claseExtra}" ${estiloFila}>
@@ -4531,8 +5047,8 @@ function abrirWhatsApp() {
 function EnviarComprobante(idventa) {
   $.post(
     "controladores/venta.php?op=mostrar", {
-      idventa: idventa
-    },
+    idventa: idventa
+  },
     function (data, status) {
       if (status === "success") {
         data = JSON.parse(data);
@@ -4540,8 +5056,8 @@ function EnviarComprobante(idventa) {
         // Si el cliente tiene teléfono, agrega el prefijo '51'
         let telefono = data.telefono ?
           data.telefono.startsWith("51") ?
-          data.telefono :
-          "51" + data.telefono :
+            data.telefono :
+            "51" + data.telefono :
           "";
         let urlPdf =
           window.location.origin +

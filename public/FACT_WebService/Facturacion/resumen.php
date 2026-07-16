@@ -89,16 +89,19 @@ try {
     $debug_info['request_params'] = ['idventas' => $idventas, 'fecha_resumen' => $fecha_resumen, 'idsucursal' => $idsucursal];
 
     if  ($datos_empresa["estado_certificado"]=="BETA"){
-        $see = $util->getSee(SunatEndpoints::FE_BETA, $datos_empresa["estado_certificado"]);
+        $see = $util->getSee(SunatEndpoints::FE_BETA);
     }elseif($datos_empresa["estado_certificado"]=="PRODUCCION"){
-        $see = $util->getSee(SunatEndpoints::FE_PRODUCCION, $datos_empresa["estado_certificado"]);
+        $see = $util->getSee(SunatEndpoints::FE_PRODUCCION);
     }
 
     $res = $see->send($sum);
     $util->writeXml($sum, $see->getFactory()->getLastXml());
 
     if ($res->isSuccess()) {
-        $ticket = $res->getTicket();
+        $ticket = null;
+        if (method_exists($res, 'getTicket')) {
+            $ticket = $res->getTicket();
+        }
         $debug_info['generated_ticket'] = $ticket;
 
         // 6. Save to database

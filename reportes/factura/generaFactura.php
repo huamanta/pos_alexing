@@ -4,11 +4,15 @@
 //     echo 'Debe ingresar al sistema correctamente para visualizar el reporte';
 //     exit();
 // }
-
-include "../../configuraciones/Conexion.php";
-require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../../configuraciones/bootstrap.php';
+include __DIR__ . "/../../configuraciones/Conexion.php";
+require_once __DIR__ . "/../../modelos/Helpers.php";
 
 use Dompdf\Dompdf;
+use Dompdf\Options;
+use Luecano\NumeroALetras\NumeroALetras;
+
+$formatter = new NumeroALetras();
 
 if (empty($_GET["id"])) {
     echo "No es posible generar la factura.";
@@ -18,23 +22,12 @@ if (empty($_GET["id"])) {
 $idventa = $_GET["id"];
 $anulada = '';
 
-// ================== CONFIG ==================
-$query_config = mysqli_query($conexion, "SELECT * FROM datos_negocio");
-
-if (!$query_config) {
-    die("Error en datos_negocio: " . mysqli_error($conexion));
-}
-
-$result_config = mysqli_num_rows($query_config);
-
-if ($result_config > 0) {
-    $configuracion = mysqli_fetch_assoc($query_config);
-}
 
 // ================== VENTA ==================
 $query = mysqli_query($conexion, "
     SELECT 
         v.idventa, 
+        v.idsucursal,
         s.nombre as almacen, 
         v.idcliente, 
         p.nombre AS cliente, 
@@ -81,6 +74,12 @@ if ($result <= 0) {
 }
 
 $factura = mysqli_fetch_assoc($query);
+$idsucursal = $factura['idsucursal'];
+$query_config = mysqli_query($conexion, "SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = $idsucursal");
+$result_config = mysqli_num_rows($query_config);
+if ($result_config > 0) {
+    $configuracion = mysqli_fetch_assoc($query_config);
+}
 
 // ================== CUENTAS ==================
 $query2 = mysqli_query($conexion, "
@@ -92,6 +91,7 @@ $query2 = mysqli_query($conexion, "
         abonototal 
     FROM cuentas_por_cobrar 
     WHERE idventa = '$idventa'
+    GROUP BY idventa, fecharegistro, fechavencimiento, abonototal
 ");
 
 if (!$query2) {
@@ -128,7 +128,7 @@ $query_productos = mysqli_query($conexion, "
     a.nombre AS producto, 
     d.nombre_producto AS dproducto, 
     um.nombre AS unidadmedida, 
-    CASE WHEN pg.codigo_extra = 'SIN CODIGO' THEN '-' ELSE pg.codigo_extra END AS codigo, 
+    CASE WHEN pg.codigo_extra = 'SIN CODIGO' THEN '-' ELSE a.codigo END AS codigo, 
     d.cantidad, 
     d.precio_venta,
     d.descuento as descuentodv,
@@ -137,12 +137,13 @@ $query_productos = mysqli_query($conexion, "
         WHEN d.check_precio = 1 THEN d.precio_venta 
         ELSE (d.cantidad * d.precio_venta - d.descuento)
     END AS subtotal,
-    a.stock, 
+    ip.stock, 
     a.proigv,
     d.check_precio
 FROM detalle_venta d 
-LEFT JOIN producto_configuracion pg ON pg.id = d.idproducto
-LEFT JOIN producto a ON pg.idproducto = a.idproducto 
+LEFT JOIN producto a ON d.idproducto = a.idproducto 
+LEFT JOIN producto_configuracion pg ON pg.idproducto = a.idproducto
+LEFT JOIN inventario_producto ip ON ip.idproducto = a.idproducto
 LEFT JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida
 INNER JOIN venta v ON v.idventa = d.idventa
 WHERE d.idventa = '$idventa'
@@ -160,8 +161,12 @@ include(dirname(__FILE__) . '/factura.php');
 $html = ob_get_clean();
 
 // ================== PDF ==================
-$dompdf = new Dompdf(['enable_remote' => true]);
 
+$options = new Options();
+$options->setIsRemoteEnabled(true);
+$options->setChroot(__DIR__); // importante
+
+$dompdf = new Dompdf($options);
 $dompdf->loadHtml($html);
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
