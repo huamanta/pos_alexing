@@ -1421,9 +1421,6 @@
   </div>
 </div>
 
-
-<script src="vistas/js/pagination.js"></script>
-
 <script src="vistas/js/producto.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 

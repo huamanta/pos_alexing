@@ -842,8 +842,6 @@ function EnviarSunat(tipoc, idventa, idcol) {
       $(".modal").show();
     },
     success: function (resp) {
-      listar.load();
-
       Swal.fire({
         title: "SUNAT",
         icon: "success",
@@ -851,9 +849,13 @@ function EnviarSunat(tipoc, idventa, idcol) {
         timerProgressBar: true,
         onClose: function () { },
       });
+      
+      listar.load();
     },
     complete: function () {
       $(".modal").hide();
+      
+      listar.load();
     },
   });
 }

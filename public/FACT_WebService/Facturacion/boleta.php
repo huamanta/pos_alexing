@@ -41,7 +41,7 @@ if ($conexion) {
     from venta v
     inner join persona c on c.idpersona=v.idcliente
     WHERE v.idventa='" . $idVenta . "'");
-    
+
     $column = mysqli_fetch_assoc($resultado);
     // echo ( $idVenta );
     $IdDOV = '';
@@ -58,7 +58,7 @@ if ($conexion) {
     $igv = $column['igv'];
     $ventacredito = $column['ventacredito'];
     $idalmacen = $column['idsucursal'];
-    
+
 
     $resultadoexonerada = mysqli_query($conexion, "SELECT cast(sum((dv.precio_venta*dv.cantidad)-(dv.descuento*dv.cantidad)) as DECIMAL(11,2)) as importe
     from detalle_venta dv
@@ -155,8 +155,8 @@ if ($conexion) {
                 ->setUnidad('NIU')
                 ->setCantidad($column['cantidad'])
                 ->setDescripcion($column['nombreProd'])
-                ->setMtoValorUnitario($column['valorUnitario']) // Sin IGV
-                ->setMtoPrecioUnitario($column['precioUnitario']) // Inclui IGV
+                ->setMtoValorUnitario($column['valorUnitario'])
+                ->setMtoPrecioUnitario($column['precioUnitario'])
                 ->setMtoValorVenta($column['importe'])
                 ->setTipAfeIgv('10')
                 ->setMtoBaseIgv($column['importe'])
@@ -193,14 +193,21 @@ if ($conexion) {
                 ->setUnidad('NIU')
                 ->setCantidad($column['cantidad'])
                 ->setDescripcion($column['nombreProd'])
+
+                // SIN IGV
+                ->setMtoValorUnitario($column['valorUnitario'])
+
+                // CON IGV
+                ->setMtoPrecioUnitario($column['precioUnitario'])
+
+                // SIN IGV TOTAL LINEA
+                ->setMtoValorVenta($column['importe'])
+
                 ->setMtoBaseIgv($column['importe'])
                 ->setPorcentajeIgv($igv)
                 ->setIgv($setIgv)
                 ->setTipAfeIgv($tipoafecto)
-                ->setTotalImpuestos($totalImpuestos)
-                ->setMtoValorVenta($column['importe'])
-                ->setMtoValorUnitario($column['valorUnitario'])
-                ->setMtoPrecioUnitario($column['precioUnitario']);
+                ->setTotalImpuestos($totalImpuestos);
 
             $arrayItem[$i] = $item;
         }
@@ -279,6 +286,23 @@ if ($conexion) {
     $legend->setCode('1000')->setValue($manuel);
 
 
+    if (empty($arrayItem)) {
+        $fallbackItem = new SaleDetail();
+        $fallbackItem->setCodProducto('GEN')
+            ->setUnidad('NIU')
+            ->setCantidad(1)
+            ->setDescripcion('VENTA')
+            ->setMtoBaseIgv($importe)
+            ->setPorcentajeIgv($importeNograbada > 0 ? 0 : 18)
+            ->setIgv($importeNograbada > 0 ? 0 : $importeGeneralVentas)
+            ->setTipAfeIgv($importeNograbada > 0 ? '20' : '10')
+            ->setTotalImpuestos($importeNograbada > 0 ? 0 : $importeGeneralVentas)
+            ->setMtoValorVenta($importe)
+            ->setMtoValorUnitario($importe)
+            ->setMtoPrecioUnitario($total);
+        $arrayItem = [$fallbackItem];
+    }
+
     $invoice->setDetails($arrayItem);
 
     $invoice->setLegends([$legend]);
@@ -322,24 +346,8 @@ if ($conexion) {
             echo $cdr->getDescription() . PHP_EOL;
         } else {
             echo 'No se recibió respuesta de CDR desde SUNAT.';
+            echo $util->getErrorResponse($res->getError());
         }
-
-        if ($code === 0) {
-            echo 'ESTADO: ACEPTADA' . PHP_EOL;
-            if (count($cdr->getNotes()) > 0) {
-                echo 'OBSERVACIONES:' . PHP_EOL;
-                // Corregir estas observaciones en siguientes emisiones.
-                var_dump($cdr->getNotes());
-            }
-        } else if ($code >= 2000 && $code <= 3999) {
-            echo 'ESTADO: RECHAZADA' . PHP_EOL;
-        } else {
-            /* Esto no debería darse, pero si ocurre, es un CDR inválido que debería tratarse como un error-excepción. */
-            /*code: 0100 a 1999 */
-            echo 'Excepción';
-        }
-
-        echo $cdr->getDescription() . PHP_EOL;
 
     } else {
 

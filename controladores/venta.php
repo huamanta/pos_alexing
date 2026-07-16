@@ -70,9 +70,9 @@ $direccion = isset($_POST["direccion"]) ? limpiarCadena($_POST["direccion"]) : "
 $telefono = isset($_POST["telefono"]) ? limpiarCadena($_POST["telefono"]) : "";
 $email = isset($_POST["email"]) ? limpiarCadena($_POST["email"]) : "";
 $fecha_hora = date("Y-m-d H:i:s");
-$input_cuotas = isset($_POST["input_cuotas"]) ? limpiarCadena($_POST["input_cuotas"]) : "";
-$input_frecuencia = isset($_POST["input_frecuencia"]) ? limpiarCadena($_POST["input_frecuencia"]) : "";
-$inputInteres = isset($_POST["inputInteres"]) ? limpiarCadena($_POST["inputInteres"]) : "";
+$input_cuotas = trim($_POST["input_cuotas"] ?? '') === '' ? 0 : limpiarCadena($_POST["input_cuotas"]);
+$input_frecuencia = trim($_POST["input_frecuencia"] ?? '') === '' ? 0 : limpiarCadena($_POST["input_frecuencia"]);
+$inputInteres = trim($_POST["inputInteres"] ?? '') === '' ? 0 : limpiarCadena($_POST["inputInteres"]);
 
 switch ($_GET["op"]) {
 
@@ -116,31 +116,31 @@ switch ($_GET["op"]) {
 
 
 	case 'guardaryeditar':
-		if (!empty($_POST["fecha"])) {
-			$fechaInput = limpiarCadena($_POST["fecha"]);
+		// if (!empty($_POST["fecha"])) {
+		// 	$fechaInput = limpiarCadena($_POST["fecha"]);
 
-			// Validar restricción de fecha según cargo
-			if ($_SESSION['cargo'] !== 'Administrador') {
-				$fechaSeleccionada = strtotime($fechaInput);
-				$hoy = strtotime(date('Y-m-d'));
-				$ayer = strtotime(date('Y-m-d', strtotime('-1 day')));
+		// 	// Validar restricción de fecha según cargo
+		// 	if ($_SESSION['cargo'] !== 'Administrador') {
+		// 		$fechaSeleccionada = strtotime($fechaInput);
+		// 		$hoy = strtotime(date('Y-m-d'));
+		// 		$ayer = strtotime(date('Y-m-d', strtotime('-1 day')));
 
-				// Verificar que la fecha esté dentro del rango permitido
-				if ($fechaSeleccionada < $ayer || $fechaSeleccionada > $hoy) {
-					echo json_encode([
-						'status' => 'error',
-						'mensaje' => 'No tienes permisos para usar esta fecha. Solo puedes registrar ventas de hoy o ayer.'
-					]);
-					exit;
-				}
-			}
+		// 		// Verificar que la fecha esté dentro del rango permitido
+		// 		if ($fechaSeleccionada < $ayer || $fechaSeleccionada > $hoy) {
+		// 			echo json_encode([
+		// 				'status' => 'error',
+		// 				'mensaje' => 'No tienes permisos para usar esta fecha. Solo puedes registrar ventas de hoy o ayer.'
+		// 			]);
+		// 			exit;
+		// 		}
+		// 	}
 
-			// Si pasa la validación, concatenamos la hora actual
-			$fecha = $fechaInput . " " . date("H:i:s");
-		} else {
-			// Si no hay fecha en el POST, usamos fecha y hora actual
-			$fecha = date("Y-m-d H:i:s");
-		}
+		// 	// Si pasa la validación, concatenamos la hora actual
+		// 	$fecha = $fechaInput . " " . date("H:i:s");
+		// } else {
+		// 	// Si no hay fecha en el POST, usamos fecha y hora actual
+		// 	$fecha = date("Y-m-d H:i:s");
+		// }
 
 		$idcaja = $_POST['idcaja'];
 		$idpersonal = $_SESSION["idpersonal"];
@@ -154,7 +154,6 @@ switch ($_GET["op"]) {
 				$tipo_comprobante,
 				$serie_comprobante,
 				$num_comprobante,
-				$fecha,
 				$impuesto,
 				$total_venta,
 				$tipopago,
@@ -892,23 +891,23 @@ switch ($_GET["op"]) {
             <tr>
                 <th colspan="3"></th>
                 <th>TOTAL VENTA</th>
-                <th>' . $smoneda . ' ' . number_format($total, 2) . '</th>
+                <th>' . Helpers::get_currency_symbol($total) . '</th>
             </tr>
           </tfoot>';
 
 		echo '<tfoot style="background-color:#E3F2FD;">
             <tr>
                 <th colspan="3"></th>
-                <th>PAGO EN PLATAFORMAS DIGITALES</th>
-                <th>' . $smoneda . ' ' . number_format($total_otro_pago, 2) . '</th>
+                <th>DEPOSITO/TRANSFERNCIA</th>
+                <th>' . Helpers::get_currency_symbol($total_otro_pago) . '</th>
             </tr>
           </tfoot>';
 
 		echo '<tfoot style="background-color:#E3F2FD;">
             <tr>
                 <th colspan="3"></th>
-                <th>PAGO CON EFECTIVO</th>
-                <th>' . $smoneda . ' ' . number_format($total_efectivo, 2) . '</th>
+                <th>EFECTIVO</th>
+                <th>' . Helpers::get_currency_symbol($total_efectivo) . '</th>
             </tr>
           </tfoot>';
 

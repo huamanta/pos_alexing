@@ -170,9 +170,8 @@ class FluentSaver
             : PDO::PARAM_STR;
 
         $stmt->bindValue(':pk_id', $id, $type);
-        $stmt->execute();
-
-        return $stmt->rowCount() > 0;
+        
+        return $stmt->execute();
     }
 
     private function bindValues(PDOStatement $stmt): void
@@ -208,9 +207,7 @@ class FluentSaver
             : PDO::PARAM_STR
         );
 
-        $stmt->execute();
-
-        return $stmt->rowCount() > 0;
+        return $stmt->execute();
     }
 
     public function softDelete(
@@ -238,9 +235,7 @@ class FluentSaver
             : PDO::PARAM_STR
         );
 
-        $stmt->execute();
-
-        return $stmt->rowCount() > 0;
+        return $stmt->execute();
     }
 
     public function restore(
@@ -263,9 +258,7 @@ class FluentSaver
             : PDO::PARAM_STR
         );
 
-        $stmt->execute();
-
-        return $stmt->rowCount() > 0;
+        return $stmt->execute();
     }
 
     public function reset(): self

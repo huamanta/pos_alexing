@@ -216,7 +216,7 @@ function limpiar() {
   $("#codigo").val("");
   $("#nombre").val("");
   $("#descripcion").val("");
-  $("#stock").val("1");
+  $("#stock").val("0");
   $("#stockMinimo").val("0");
   $("#precio").val("");
   $("#precioB").val("");
@@ -377,6 +377,15 @@ function cancelarform() {
     campo.value = "";
   });
 }
+
+$("#controla_stock").change(function () {
+    if ($(this).val() == "Si") {
+        $("#stock").attr("readonly", "readonly");
+        $("#stock").val('0');
+    } else {
+        $("#stock").removeAttr("readonly", "readonly");
+    }
+});
 
 function mostrar(idproducto) {
   $.post(

@@ -269,7 +269,7 @@ class Traslado extends Helpers
                 'idserie' => $idserie,
                 'estado' => 'TRASLADO'
             ])
-            ->save();
+            ->update();
 
         // 2. Obtener inventario de la sucursal
         $sql = "SELECT *
@@ -302,7 +302,7 @@ class Traslado extends Helpers
                 'idinventario' => $inventario['idinventario'],
                 'stock' => $inventario['stock'] - $cantidad
             ])
-            ->save();
+            ->update();
 
         // Actualizar kardex si es necesario
         $config = $this->pdo->prepare("
@@ -421,18 +421,18 @@ class Traslado extends Helpers
 
     // Función opcional para crear notificación al crear traslado
     public function crearNotificacionTraslado($idtraslado, $idsucursal, $mensaje)
-{
-    return (new FluentSaver($this->pdo))
-        ->table('notificaciones')
-        ->data([
-            'idsucursal' => $idsucursal,
-            'mensaje'    => $mensaje,
-            'leido'      => 0,
-            'fecha'       => date('Y-m-d H:i:s'),
-            'idtraslado' => $idtraslado
-        ])
-        ->save();
-}
+    {
+        return (new FluentSaver($this->pdo))
+            ->table('notificaciones')
+            ->data([
+                'idsucursal' => $idsucursal,
+                'mensaje' => $mensaje,
+                'leido' => 0,
+                'fecha' => date('Y-m-d H:i:s'),
+                'idtraslado' => $idtraslado
+            ])
+            ->save();
+    }
 
 
     // listar (igual que antes)
@@ -790,8 +790,6 @@ class Traslado extends Helpers
                 if (!$rowProduct) {
                     throw new Exception("No se encontró información del producto {$p['idproducto']} en origen.");
                 }
-
-                $precio = floatval($rowProduct['precio'] ?? 0);
 
                 // Salida de almacén origen
                 $motivo = "Traslado generado desde la solicitud #{$idtraslado}";

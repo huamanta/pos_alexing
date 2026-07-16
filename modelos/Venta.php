@@ -1324,8 +1324,8 @@ class Venta extends Helpers
                 (SELECT GROUP_CONCAT(vp.fechaDeposito SEPARATOR ' ') FROM venta_pago vp WHERE vp.idventa = dv.idventa) AS fechadeposito
             FROM detalle_venta dv
             INNER JOIN venta v ON v.idventa = dv.idventa
-            LEFT JOIN producto_configuracion pg ON pg.id = dv.idproducto
-            LEFT JOIN producto a ON a.idproducto = pg.idproducto
+            LEFT JOIN producto a ON a.idproducto = dv.idproducto
+            LEFT JOIN producto_configuracion pg ON pg.idproducto = a.idproducto
             LEFT JOIN categoria c ON c.idcategoria = a.idcategoria
             WHERE dv.idventa = '$idventa'";
         return ejecutarConsulta($sql);
