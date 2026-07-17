@@ -3,8 +3,8 @@
 require_once __DIR__ . '/../../../../configuraciones/bootstrap.php';
 use Greenter\Model\DocumentInterface;
 use Greenter\Model\Response\CdrResponse;
+use Greenter\Ws\Services\SunatEndpoints;
 use Greenter\See;
-//session_start();
 
 
 
@@ -57,31 +57,27 @@ final class Util
      * @return See
 
      */
-    public function getSee($endpoint, $estadoCertificado = null)
+    public function getSee($idsucursal)
     {
         $conexion = $this->abrirConexion();
 
-        $resultado = mysqli_query($conexion, "SELECT * from datos_negocio");
-
-        $ruc = '';
-        $usuario = '';
-        $contrasena = '';
-        $contrasenacertificado = '';
-
-        if ($resultado) {
-            foreach ($resultado as $column) {
-                $ruc = $column['documento'];
-                $usuario = $column['usuario_sol'];
-                $contrasena = $column['clave_sol'];
-                $contrasenacertificado = $column['clave_certificado'];
-            }
+        $sqlSucursal = mysqli_query($conexion, 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $idsucursal);
+        $sucursal = mysqli_fetch_assoc($sqlSucursal);
+        $ruc = $sucursal['documento'] ?? '';
+        $usuario = $sucursal['usuario_sol'] ?? '';
+        $contrasena = $sucursal['clave_sol'] ?? '';
+        $contrasenacertificado = $sucursal['clave_certificado'] ?? '';
+        $estadocertificado = $sucursal['estado_certificado'] ?? 'BETA';
+        $rutaCertificado = $sucursal['ruta_certificado'] ?? '';
+        $sunatEnpoint = SunatEndpoints::FE_BETA;
+        if ($estadocertificado == "PRODUCCION") {
+            $sunatEnpoint = SunatEndpoints::FE_PRODUCCION;
         }
-
         $see = new See();
-        $see->setService($endpoint);
+        $see->setService($sunatEnpoint);
 
-        if (file_exists(__DIR__ . '/certificado.pem')) {
-            $pfx = file_get_contents(__DIR__ . '/certificado.pem');
+        if (file_exists(__DIR__ . $rutaCertificado)) {
+            $pfx = file_get_contents(__DIR__ . $rutaCertificado);
             $see->setCertificate($pfx);
         }
 
@@ -177,17 +173,17 @@ HTML;
 
     public function writeFile($filename, $content)
     {
-
         if (getenv('GREENTER_NO_FILES')) {
-
             return;
-
         }
-        //ECHO("FACT_WebService/Facturacion/files/".$filename."--------------------------".$content);
-        file_put_contents(__DIR__ . '/../files/' . $filename, $content);
-        //   echo $filename;
-        //  print_r($content);
 
+        $path = __DIR__ . '/../files/';
+
+        if (!is_dir($path)) {
+            mkdir($path, 0777, true);
+        }
+
+        file_put_contents($path . $filename, $content);
     }
 
 

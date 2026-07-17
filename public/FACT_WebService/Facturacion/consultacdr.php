@@ -3,6 +3,7 @@ declare(strict_types=1);
 header("Content-type: text/html; charset=utf8");
 
 require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/src/Util.php';
 
 use Greenter\Model\Response\StatusCdrResult;
 use Greenter\Ws\Services\ConsultCdrService;
@@ -122,32 +123,27 @@ function process(array $fields): ?StatusCdrResult {
 
 //-----------------------------------------------------------------------------------------
 // EJECUCIÓN PRINCIPAL
-
-// Consulta de datos del negocio
 $conexion = Util::getInstance()->abrirConexion();
-$res = mysqli_query($conexion, "SELECT * FROM datos_negocio");
-if ($res) {  
-    foreach ($res as $column) {
-        $ruc        = $column['documento'];
-        $usuario    = $column['usuario_sol'];
-        $contrasena = $column['clave_sol'];
-    }
-}
-
 // Consulta de datos de la venta
 $res = mysqli_query($conexion, "SELECT v.idventa AS id, v.tipo_comprobante AS tipoDoc, 
-    v.num_comprobante AS numDoc, v.serie_comprobante AS serDoc
+    v.num_comprobante AS numDoc, v.serie_comprobante AS serDoc, v.idsucursal
     FROM detalle_venta dv
     INNER JOIN venta v ON dv.idventa = v.idventa
     WHERE dv.idventa = '".$idVenta."'");
-if ($res) {
-    foreach ($res as $column) {
-        $tipoDocVenta = $column['tipoDoc']; // 'Factura', 'Boleta', etc.
-        $numeroDOC    = $column['numDoc'];
-        $serieDOC     = $column['serDoc'];
-        $IdDOV        = $column['id'];
-    }
-}
+$venta = mysqli_fetch_assoc($res);    
+$tipoDocVenta = $venta['tipoDoc']; // 'Factura', 'Boleta', etc.
+$numeroDOC    = $venta['numDoc'];
+$serieDOC     = $venta['serDoc'];
+$IdDOV        = $venta['id'];
+
+// Consulta de datos del negocio
+$idalmacen = $venta['idsucursal'];
+$sqlSucursal = mysqli_query($conexion, 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $idalmacen);
+$sucursal = mysqli_fetch_assoc($sqlSucursal);
+$ruc        = $sucursal['ruc'];
+$usuario    = $sucursal['usuario_sol'];
+$contrasena = $sucursal['clave_sol'];
+
 
 // Mapear el tipo de comprobante a SUNAT
 if ($tipoDocVenta == 'Factura') {

@@ -813,7 +813,6 @@ function comprobarEstado(idventa, idcol) {
     },
     success: function (resp) {
       listar.load();
-
       swal({
         title: "SUNAT",
         icon: "success",

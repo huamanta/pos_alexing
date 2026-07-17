@@ -21,8 +21,6 @@ use Greenter\Model\Sale\SaleDetail;
 
 use Greenter\Model\Sale\Legend;
 
-use Greenter\Ws\Services\SunatEndpoints;
-
 use Greenter\Model\Sale\Charge;
 
 date_default_timezone_set('America/Lima');
@@ -57,7 +55,7 @@ if ($conexion) {
     $importe = $column['importe'];
     $igv = $column['igv'];
     $ventacredito = $column['ventacredito'];
-    $idalmacen = $column['idsucursal'];
+    $idsucursal = $column['idsucursal'];
 
 
     $resultadoexonerada = mysqli_query($conexion, "SELECT cast(sum((dv.precio_venta*dv.cantidad)-(dv.descuento*dv.cantidad)) as DECIMAL(11,2)) as importe
@@ -96,7 +94,7 @@ if ($conexion) {
 
         ->setRznSocial($clien);
 
-    $sqlSucursal = mysqli_query($conexion, 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $idalmacen);
+    $sqlSucursal = mysqli_query($conexion, 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $idsucursal);
     $sucursal = mysqli_fetch_assoc($sqlSucursal);
     $Ubigeo = $sucursal['ubigeo'];
     $Distrito = $sucursal['distrito'];
@@ -309,11 +307,7 @@ if ($conexion) {
 
 
     // Envio a SUNAT.
-
-    $see = $util->getSee(SunatEndpoints::FE_BETA);
-    if ($estadocertificado == "PRODUCCION") {
-        $see = $util->getSee(SunatEndpoints::FE_PRODUCCION);
-    }
+    $see = $util->getSee($idsucursal);
     $res = $see->send($invoice);
     $util->writeXml($invoice, $see->getFactory()->getLastXml());
 
