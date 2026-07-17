@@ -802,25 +802,26 @@ $("#tipopago").change(function () {
 
 function comprobarEstado(idventa, idcol) {
   $url = "public/FACT_WebService/Facturacion/consultacdr.php?idventa=";
-
+  Swal.fire({
+    title: "Procesando peticion...",
+    text: "Por favor, espera un momento",
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading(),
+  });
   $.ajax({
     url: $url + idventa + "&codColab=" + idcol,
-
     type: "get",
     dataType: "text",
-    beforeSend: function () {
-      $(".modal").show();
-    },
     success: function (resp) {
-      listar.load();
-      swal({
+      Swal.fire({
         title: "SUNAT",
         icon: "success",
         text: resp,
       });
+      listar.load();
     },
-    complete: function () {
-      $(".modal").hide();
+    error: function(e){
+      Swal.close();
     },
   });
 }
@@ -937,11 +938,13 @@ function guardaryeditar(e) {
         });
         return;
       }
+      ventaAGenerarSunat = null;
       if (data.enviar_sunat) {
-        if ($("#tipo_comprobante option:selected").text() !== "Nota de Venta") {
+        if ($("#tipo_comprobante").val() !== "Nota de Venta") {
+          console.log();
           ventaAGenerarSunat = {
-            idventa: data.idventa,
-            tipo: $("#tipo_comprobante option:selected").text() == "Boleta" ? 1 : 2,
+            idventa: data.id_venta,
+            tipo: $("#tipo_comprobante").val() == "Boleta" ? 1 : 2,
             idpersonal: $("#idpersonal").val(),
           };
         }
@@ -949,10 +952,10 @@ function guardaryeditar(e) {
 
       $("#ModalTipocomprobante").modal("show");
       $("#pant-imprimir").html(`
-        <div onclick="imprimirBoleta(${data.idventa}, true)" class="col-sm-6 btn btn-success">
+        <div onclick="imprimirBoleta(${data.id_venta}, true)" class="col-sm-6 btn btn-success">
           <i class="fas fa-ticket-alt"></i> TICKET
         </div>
-        <div onclick="imprimirFactura(${data.idventa}, true)" class="col-sm-6 btn btn-info">
+        <div onclick="imprimirFactura(${data.id_venta}, true)" class="col-sm-6 btn btn-info">
           <i class="fas fa-file-pdf"></i> PDF
         </div>
       `);
@@ -960,7 +963,7 @@ function guardaryeditar(e) {
       $("#formulario")[0].reset();
       marcarImpuesto();
       resetearPagos();
-      $("#tbllistado").DataTable().ajax.reload();
+      listar.load();
       $("#datafechas").empty();
       cargarItemsAlSelect();
     },
@@ -2031,12 +2034,13 @@ function pintarVentas(data, permissions) {
     let enviarSunat = '';
     let pdf = '';
     let ticket = '';
-
-    if (item.tipo_comprobante === 'Boleta') {
-
-      enviarSunat = `
+    let tipo = (item.tipo_comprobante === 'Boleta')? 1 : (item.tipo_comprobante === 'Factura') ? 2: null;
+    let enviarButtons = (item.tipo_comprobante === 'Boleta' || item.tipo_comprobante === 'Factura');
+    if (enviarButtons) {
+      if(item.estado === "Por Enviar"){
+          enviarSunat = `
                 <a data-toggle="tooltip" title="Enviar a Sunat"
-                    onclick="EnviarSunat(1,${item.idventa},${item.idpersonal});">
+                    onclick="EnviarSunat(${tipo},${item.idventa},${item.idpersonal});">
                     <button class="btn btn-primary btn-xs">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -2054,8 +2058,8 @@ function pintarVentas(data, permissions) {
                     </button>
                 </a>
             `;
-
-      pdf = `
+      }else{
+        pdf = `
                 <a title="PDF" onclick="imprimirFactura(${item.idventa})">
                     <button class="btn btn-info btn-xs">
                         <i class="fas fa-file-pdf"></i>
@@ -2071,45 +2075,8 @@ function pintarVentas(data, permissions) {
                 </a>
             `;
 
-    } else {
-
-      enviarSunat = `
-                <a data-toggle="tooltip" title="Enviar a Sunat"
-                    onclick="EnviarSunat(2,${item.idventa},${item.idpersonal});">
-                    <button class="btn btn-primary btn-xs">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </a>
-
-                <a href="${ruta}" style="pointer-events:none;">
-                    <button class="btn btn-warning btn-xs">
-                        <i class="fas fa-file-code"></i>
-                    </button>
-                </a>
-
-                <a href="${rutaCdr}" style="pointer-events:none;">
-                    <button class="btn btn-danger btn-xs">
-                        <i class="fas fa-file-archive"></i>
-                    </button>
-                </a>
-            `;
-
-      pdf = `
-                <a title="PDF" onclick="imprimirFactura(${item.idventa})">
-                    <button class="btn btn-info btn-xs">
-                        <i class="fas fa-file-pdf"></i>
-                    </button>
-                </a>
-            `;
-
-      ticket = `
-                <a title="Ticket" onclick="imprimirBoleta(${item.idventa})">
-                    <button class="btn btn-primary btn-xs">
-                        <i class="fas fa-receipt"></i>
-                    </button>
-                </a>
-            `;
-    }
+      }
+    } 
 
     let estado = "";
 
@@ -2218,76 +2185,82 @@ function pintarVentas(data, permissions) {
 
     let sunat = "";
 
-    if (item.estado === "Por Enviar") {
+const esElectronico =
+    item.tipo_comprobante === "Boleta" ||
+    item.tipo_comprobante === "Factura";
 
-      sunat = enviarSunat;
+// Nota de Venta -> no mostrar acciones SUNAT
+if (!esElectronico) {
 
-    } else if (item.estado === "Activado" || item.estado === "Anulado") {
+    sunat = "-";
 
-      sunat = `
-                <a style="pointer-events:none;">
+} else {
+
+    switch (item.estado) {
+
+        case "Por Enviar":
+
+            sunat = `
+                <a data-toggle="tooltip" title="Enviar a Sunat"
+                    onclick="EnviarSunat(${tipo},${item.idventa},${item.idpersonal});">
                     <button class="btn btn-primary btn-xs">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </a>
 
-                <a href="${ruta}" style="pointer-events:none;">
+                <a style="pointer-events:none;">
                     <button class="btn btn-warning btn-xs">
                         <i class="fas fa-file-code"></i>
                     </button>
                 </a>
 
-                <a href="${rutaCdr}" style="pointer-events:none;">
+                <a style="pointer-events:none;">
                     <button class="btn btn-danger btn-xs">
                         <i class="fas fa-file-archive"></i>
                     </button>
                 </a>
             `;
+            break;
 
-    } else if (item.estado === "Aceptado" || item.estado === "Aceptado por resumen") {
+        case "Aceptado":
+        case "Aceptado por resumen":
 
-      sunat = `
-                <a style="pointer-events:none;">
-                    <button class="btn btn-primary btn-xs">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </a>
-
+            sunat = `
                 <a href="${ruta}"
-                   download="${item.dov_Nombre}.xml"
-                   class="btn btn-warning btn-xs ml-1">
+                    download="${item.dov_Nombre}.xml"
+                    class="btn btn-warning btn-xs">
                     <i class="fas fa-file-code"></i>
                 </a>
 
                 <a href="${rutaCdr}"
-                   target="_blank"
-                   class="btn btn-danger btn-xs ml-1">
+                    target="_blank"
+                    class="btn btn-danger btn-xs">
                     <i class="fas fa-file-archive"></i>
                 </a>
             `;
+            break;
 
-    } else {
+        default:
 
-      sunat = `
-                <a style="pointer-events:none;">
-                    <button class="btn btn-primary btn-xs">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </a>
+            // Para cualquier otro estado ya NO permitir reenviar
+            sunat = `
 
                 <a style="pointer-events:none;">
-                    <button class="btn btn-warning btn-xs ml-1">
+                    <button class="btn btn-warning btn-xs">
                         <i class="fas fa-file-code"></i>
                     </button>
                 </a>
 
                 <a style="pointer-events:none;">
-                    <button class="btn btn-danger btn-xs ml-1">
+                    <button class="btn btn-danger btn-xs">
                         <i class="fas fa-file-archive"></i>
                     </button>
                 </a>
             `;
+            break;
     }
+
+}
 
 
     let comprobarEstado = "";
@@ -2329,26 +2302,26 @@ function pintarVentas(data, permissions) {
     let mostrar = "";
     let sunatE = "";
 
-    if (item.estado === "Anulado") {
+if (item.estado === "Anulado") {
 
-      enviarComprobante = "";
-      mostrar = "";
-      sunatE = "-";
+    enviarComprobante = "";
+    mostrar = "";
+    sunatE = esElectronico ? sunat : "-";
 
-    } else {
+} else {
 
-      enviarComprobante = `
-                <a target="_blank" title="Enviar Comprobantes">
-                    <button class="btn btn-success btn-xs"
-                        onclick="EnviarComprobante(${item.idventa})">
-                        <i class="fab fa-whatsapp"></i>
-                    </button>
-                </a>
-            `;
+    enviarComprobante = `
+        <a target="_blank" title="Enviar Comprobantes">
+            <button class="btn btn-success btn-xs"
+                onclick="EnviarComprobante(${item.idventa})">
+                <i class="fab fa-whatsapp"></i>
+            </button>
+        </a>
+    `;
 
-      mostrar = pdf + ticket;
-      sunatE = sunat;
-    }
+    mostrar = pdf + ticket;
+    sunatE = esElectronico ? sunat : "-";
+}
 
 
     let notaCreditoBtn = "";
@@ -2369,6 +2342,16 @@ function pintarVentas(data, permissions) {
 
 
     let dropdown = "";
+    let btnCronograma = "";
+    if(item.ventacredito == 'Si'){
+      btnCronograma = `<a class="btn btn-danger btn-xs"
+                    title="Descargar cronograma"
+                    onclick="verCronogramPago(${item.idventa})">
+
+                    <i class="fas fa-file-pdf"></i>
+
+                </a>`;
+    }
 
     if (item.estado === "Activado") {
 
@@ -2422,15 +2405,9 @@ function pintarVentas(data, permissions) {
 
                     ${notaCreditoBtn}
 
+                    ${btnCronograma}
+
                 </div>
-
-                <a class="btn btn-danger btn-xs"
-                    title="Descargar cronograma"
-                    onclick="verCronogramPago(${item.idventa})">
-
-                    <i class="fas fa-file-pdf"></i>
-
-                </a>
             `;
 
     } else {
@@ -2440,14 +2417,7 @@ function pintarVentas(data, permissions) {
                 ${enviarComprobante}
                 ${mostrar}
                 ${notaCreditoBtn}
-
-                <a class="btn btn-danger btn-xs"
-                    title="Descargar cronograma"
-                    onclick="verCronogramPago(${item.idventa})">
-
-                    <i class="fas fa-file-pdf"></i>
-
-                </a>
+                ${btnCronograma}
             `;
     }
     html += `
@@ -2456,25 +2426,18 @@ function pintarVentas(data, permissions) {
                 <td>${item.fecha}</td>
 
                 <td>
-                    ${item.cliente} - ${item.num_documento}
+                    ${item.cliente} ${item.num_documento ? '-':''} ${item.num_documento || ''}
                 </td>
-
-                <td>
-                    ${item.sucursal}
-                </td>
-
                 <td>
                     ${item.tipo_comprobante} -
                     ${item.serie_comprobante} -
                     ${item.num_comprobante}
                 </td>
-
                 <td>
                     <span class="badge badge-neon neon-purple sm">
                         S/ ${parseFloat(item.total_venta).toFixed(2)}
                     </span>
                 </td>
-
                 <td>
                     ${item.formapago}
                 </td>

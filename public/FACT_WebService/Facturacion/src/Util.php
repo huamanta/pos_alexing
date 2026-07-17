@@ -141,13 +141,11 @@ final class Util
 
         Error
 
-        C贸digo: {$error->getCode()}
+        Codigo: {$error->getCode()}
 
-        Descripci贸n: {$error->getMessage()}
+        Descripcion: {$error->getMessage()}
 
-HTML;
-
-
+        HTML;
 
         return $result;
 

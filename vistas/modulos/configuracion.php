@@ -334,7 +334,7 @@
                                                             </div>
                                                             <div class="col-md-4">
                                                                 <div class="form-group">
-                                                                    <label for="ubigeo" class="control-label">Email:</label>
+                                                                    <label for="email" class="control-label">Email:</label>
                                                                     <input type="email" class="form-control" name="email"
                                                                         id="email" maxlength="50" required="" value="">
                                                                 </div>
@@ -391,7 +391,7 @@
                                                         <div class="form-group">
                                                             <label for="ubigeo" class="control-label">Ubigeo:</label>
                                                             <input type="text" class="form-control" name="ubigeo"
-                                                                id="ubigeo" maxlength="50" required="" value="061003">
+                                                                id="ubigeo" maxlength="50" required="">
                                                         </div>
                                                     </div>
                                                 </div>

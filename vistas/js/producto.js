@@ -536,7 +536,7 @@ function pintarProductos(data, permissions) {
                 <td>S/ ${parseFloat(item.precio).toFixed(2)}</td>
                 <td>S/ ${parseFloat(item.precio_compra).toFixed(2)}</td>
                 <td>
-                    ${item.color}
+                    ${item.color || 'N/A'}
                 </td>
                 <td>
                     ${item.condicion === 1

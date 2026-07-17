@@ -321,12 +321,12 @@ if ($conexion) {
             $cdrZip = $res->getCdrZip();
         }
         if ($cdr !== null) {
-            $util->writeCdr($invoice, $cdrZip);
+            $ll = $util->writeCdr($invoice, $cdrZip);
             $util->showResponse($invoice, $cdr, $IdDOV, 'DocVenta', $codColab);
             $code = (int) $cdr->getCode();
 
             if ($code === 0) {
-                echo 'ESTADO: ACEPTADA' . PHP_EOL;
+                echo 'ESTADO:' . PHP_EOL;
                 if (method_exists($cdr, 'getNotes') && count($cdr->getNotes()) > 0) {
                     echo 'OBSERVACIONES:' . PHP_EOL;
                     var_dump($cdr->getNotes());

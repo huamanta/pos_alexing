@@ -563,7 +563,7 @@ date_default_timezone_set('America/Lima');
                                     </div>
                                 </div>
 
-                                <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
+                                <!--div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Almacén:</label>
 
                                     <div class="input-group">
@@ -575,7 +575,7 @@ date_default_timezone_set('America/Lima');
                                         <select id="idsucursal2" name="idsucursal2" class="form-control select2">
                                         </select>
                                     </div>
-                                </div>
+                                </div-->
                                 <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Producto:</label>
                                     <div class="input-group">
@@ -601,6 +601,21 @@ date_default_timezone_set('America/Lima');
                                         </select>
                                     </div>
                                 </div>
+                                <div class="col-md-6 d-flex align-items-center">
+                                    <span class="mr-2">Mostrar</span>
+                                    <select id="limit" class="form-control" style="width:100px" onchange="cambiarLimit()">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+
+                                    <span class="ml-2">Registros</span>
+
+                                    </div>
+                                    <div class="col-md-6">
+                                    <input type="text" id="search" class="form-control" placeholder="Buscar...">
+                                    </div>
 
                             </div>
 
@@ -611,21 +626,25 @@ date_default_timezone_set('America/Lima');
                                 <thead>
                                     <th>Fecha</th>
                                     <th>Cliente / N° Documento</th>
-                                    <th>Sucursal</th>
                                     <th>Número</th>
                                     <th>Total Venta</th>
                                     <th>Forma de pago</th>
                                     <th>Tipo Pago</th>
                                     <th>Estado</th>
-                                    <th width="70px;">Sunat</th>
+                                    <th>Sunat</th>
                                     <th style="text-align: center;"><i class="fa fa-shield" aria-hidden="true"
                                             title="Comprobar estado"></i></th>
-                                    <th width="180px;">Acciones</th>
+                                    <th>Acciones</th>
                                 </thead>
                                 <tbody id="tbody_ventas">
                                 </tbody>
                             </table>
-
+                            <div class="row mt-1">
+                                <div class="col-md-6"></div>
+                                <div class="col-md-6">
+                                    <div id="pagination"></div>
+                                </div>
+                            </div>
                         </div>
                         <!-- /.card-body -->
                     </div>
