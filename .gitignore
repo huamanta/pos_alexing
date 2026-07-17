@@ -18,3 +18,7 @@ files/solicitudes/*
 !files/solicitudes/.gitkeep
 files/personal/*
 !files/personal/.gitkeep
+files/logos/*
+!files/logos/default.png
+!files/logos/.gitkeep
+/logs

@@ -686,7 +686,7 @@ class Traslado extends Helpers
                     'fecha_aceptacion' => $fecha,
                     'idusuario_acepta' => $idusuario
                 ])
-                ->save();
+                ->update();
 
             foreach ($productos as $p) {
                 (new FluentSaver($this->pdo))
@@ -697,7 +697,7 @@ class Traslado extends Helpers
                         'estado_detalle' => $p["estado"],
                         'observacion' => $p["observacion"]
                     ])
-                    ->save();
+                    ->update();
             }
 
             $this->pdo->commit();
@@ -751,12 +751,9 @@ class Traslado extends Helpers
             if (in_array($rowSolicitud['estado'], ['1', '2'])) {
                 throw new Exception("El traslado ya fue procesado.");
             }
-
             $idSolicitante = $rowSolicitud['idorigen'];
             $idProveedor = $rowSolicitud['iddestino'];
-            // Validar stock en origen
-
-
+            
             // actualizamos a procesada
             (new FluentSaver($this->pdo))
                 ->table('traslado')
@@ -767,7 +764,7 @@ class Traslado extends Helpers
                     'fecha_aceptacion' => $fecha,
                     'idusuario_acepta' => $idusuario
                 ])
-                ->save();
+                ->update();
 
             foreach ($productos as $p) {
                 (new FluentSaver($this->pdo))
@@ -779,7 +776,7 @@ class Traslado extends Helpers
                         'cantidad_recibida' => $p["cantidad_recibida"],
                         'observacion' => $p["observacion"]
                     ])
-                    ->save();
+                    ->update();
                 $sqlProduct = "SELECT * FROM producto WHERE idproducto=:idproducto AND idsucursal=:idsucursal";
                 $stmtProduct = $this->pdo->prepare($sqlProduct);
                 $stmtProduct->execute([
@@ -790,14 +787,12 @@ class Traslado extends Helpers
                 if (!$rowProduct) {
                     throw new Exception("No se encontró información del producto {$p['idproducto']} en origen.");
                 }
-
                 // Salida de almacén origen
                 $motivo = "Traslado generado desde la solicitud #{$idtraslado}";
                 $resSalida = $this->movimientoSalida($rowProduct, $idSolicitante, $p['idserie'], $p['cantidad'], $motivo);
                 if ($resSalida['success'] != true) {
                     throw new Exception("Error en kardex de salida: " . $resSalida['message']);
                 }
-
                 // ingreso de almace destino
                 $resSalida = $this->movimientoIngreso($rowProduct, $idProveedor, $p['idserie'], $p['cantidad'], $motivo);
                 if ($resSalida['success'] != true) {
@@ -920,7 +915,7 @@ class Traslado extends Helpers
                     'idusuario_acepta' => $idusuario,
                     'estado' => $estado
                 ])
-                ->save();
+                ->update();
             if (!$traslado) {
                 throw new Exception("No se pudo actualizar el traslado.");
             }

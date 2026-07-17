@@ -148,9 +148,10 @@ function mostrar(idusuario)
         $("#idusuario").val(data.idusuario);
 
         // Cargar sucursales asignadas
-        $.post("controladores/usuario.php?op=listarSucursalesUsuario&idusuario="+idusuario, function(r){
-            let sucursales = JSON.parse(r);
-            $("#idsucursal").val(sucursales).trigger('change');
+        $.post("controladores/usuario.php?op=listarSucursalesUsuario&idusuario="+idusuario, function(response){
+            let sucursales = JSON.parse(response);
+			let idsSucursales = sucursales.map(item => item.idsucursal);
+            $("#idsucursal").val(idsSucursales).trigger('change');
         });
     }).always(function(){
         $.post("controladores/usuario.php?op=permisos&id="+idusuario,function(r){

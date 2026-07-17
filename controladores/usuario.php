@@ -367,11 +367,7 @@ switch ($_GET["op"]) {
 	case 'listarSucursalesUsuario':
 		$idusuario = $_GET['idusuario'];
 		$rspta = $usuario->listarSucursalesUsuario($idusuario);
-		$data = array();
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = $reg->idsucursal;
-		}
-		echo json_encode($data);
+		echo json_encode($rspta);
 		break;
 
 	case 'recuperar':

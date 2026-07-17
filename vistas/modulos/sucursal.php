@@ -29,9 +29,8 @@
 
                             <div class="row">
                                 <div class="col-md-1">
-                                    <button id="btnNuevoSucursal"
-                                            type="button"
-                                            class="btn btn-outline-primary btn-block btn-xs">
+                                    <button id="btnNuevoSucursal" type="button"
+                                        class="btn btn-outline-primary btn-block btn-xs">
                                         <i class="fa fa-plus"></i> Nuevo
                                     </button>
                                 </div>
@@ -83,21 +82,24 @@
                     <!-- Nav tabs -->
                     <ul class="nav nav-tabs" role="tablist">
                         <li class="nav-item">
-                            <a class="nav-link active" id="tab-general" data-toggle="tab" href="#general-content" role="tab">Información General</a>
+                            <a class="nav-link active" id="tab-general" data-toggle="tab" href="#general-content"
+                                role="tab">Información General</a>
                         </li>
                     </ul>
 
                     <!-- Tab content -->
                     <div class="tab-content mt-3">
                         <!-- General Information Tab -->
-                        <div class="tab-pane fade show active" id="general-content" role="tabpanel" aria-labelledby="tab-general">
+                        <div class="tab-pane fade show active" id="general-content" role="tabpanel"
+                            aria-labelledby="tab-general">
                             <div class="row">
                                 <div class="col-md-8">
                                     <div class="form-group">
-                                    <label for="name" class="col-sm-2 control-label">Nombre:</label>
+                                        <label for="name" class="col-sm-2 control-label">Nombre:</label>
                                         <div class="col-sm-12">
                                             <input type="hidden" name="idsucursal" id="idsucursal">
-                                            <input type="text" class="form-control" name="nombre" id="nombre" placeholder="Nombre" required>
+                                            <input type="text" class="form-control" name="nombre" id="nombre"
+                                                placeholder="Nombre" required>
                                         </div>
                                     </div>
                                 </div>
@@ -105,7 +107,8 @@
                                     <div class="form-group">
                                         <label for="name" class="col-sm-2 control-label">Telefono:</label>
                                         <div class="col-sm-12">
-                                            <input type="text" class="form-control" name="telefono" id="telefono" maxlength="50" placeholder="Telefono" required>
+                                            <input type="text" class="form-control" name="telefono" id="telefono"
+                                                maxlength="50" placeholder="Telefono" required>
                                         </div>
                                     </div>
                                 </div>
@@ -115,7 +118,8 @@
                                     <div class="form-group">
                                         <label for="name" class="col-sm-2 control-label">Dirección:</label>
                                         <div class="col-sm-12">
-                                            <input type="text" class="form-control" name="direccion" id="direccion" placeholder="Direccion" required>
+                                            <input type="text" class="form-control" name="direccion" id="direccion"
+                                                placeholder="Direccion" required>
                                         </div>
                                     </div>
                                 </div>
@@ -123,7 +127,8 @@
                                     <div class="form-group">
                                         <label for="ubigeo" class="col-sm-2 control-label">Ubigeo:</label>
                                         <div class="col-sm-12">
-                                            <input type="hidden" class="form-control" name="ubigeo" id="ubigeo" maxlength="50" required>
+                                            <input type="hidden" class="form-control" name="ubigeo" id="ubigeo"
+                                                maxlength="50" required>
                                             <span id="ubigeo_display" class="form-control" readonly></span>
                                         </div>
                                     </div>
@@ -133,9 +138,11 @@
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="departamento_select" class="col-sm-12 control-label">Departamento:</label>
+                                        <label for="departamento_select"
+                                            class="col-sm-12 control-label">Departamento:</label>
                                         <div class="col-sm-12">
-                                            <select class="form-control" name="departamento_select" id="departamento_select" required>
+                                            <select class="form-control" name="departamento_select"
+                                                id="departamento_select" required>
                                                 <option value="">Seleccione Departamento</option>
                                             </select>
                                             <input type="hidden" name="departamento" id="departamento">
@@ -146,7 +153,8 @@
                                     <div class="form-group">
                                         <label for="provincia_select" class="col-sm-12 control-label">Provincia:</label>
                                         <div class="col-sm-12">
-                                            <select class="form-control" name="provincia_select" id="provincia_select" required disabled>
+                                            <select class="form-control" name="provincia_select" id="provincia_select"
+                                                required disabled>
                                                 <option value="">Seleccione Provincia</option>
                                             </select>
                                             <input type="hidden" name="provincia" id="provincia">
@@ -157,7 +165,8 @@
                                     <div class="form-group">
                                         <label for="distrito_select" class="col-sm-12 control-label">Distrito:</label>
                                         <div class="col-sm-12">
-                                            <select class="form-control" name="distrito_select" id="distrito_select" required disabled>
+                                            <select class="form-control" name="distrito_select" id="distrito_select"
+                                                required disabled>
                                                 <option value="">Seleccione Distrito</option>
                                             </select>
                                             <input type="hidden" name="distrito" id="distrito">
@@ -165,8 +174,10 @@
                                     </div>
                                 </div>
                                 <div class="form-group col-md-12">
-                                    <hr style="width: 100%; border-top: 1px solid #ced4da; margin-left: 10px; margin-right: 50px;">
-                                    <h5 for="name" class="col-sm-6 control-label" style="font-weight: bold;">Facturacòn y moneda</h5>
+                                    <hr
+                                        style="width: 100%; border-top: 1px solid #ced4da; margin-left: 10px; margin-right: 50px;">
+                                    <h5 for="name" class="col-sm-6 control-label" style="font-weight: bold;">Facturacòn
+                                        y moneda</h5>
                                 </div>
                                 <div class="form-group col-lg-6 col-md-6 col-xs-12">
                                     <label for="name" class="col-sm-6 control-label">Empresa facturacion:</label>
@@ -178,14 +189,17 @@
                                 </div>
                                 <div class="form-group col-lg-3 col-md-6 col-xs-12">
                                     <label for="name" class="col-sm-6 control-label">Moneda:</label>
-                                    <div class="col-sm-12">
-                                        <input class="form-control" type="text" name="moneda" id="moneda" placeholder="SOLES - Dolares">
-                                    </div>
+                                    <select class="form-control" type="text" name="moneda" id="moneda">
+                                        <option value="PEN" selected>Seleccionar...</option>
+                                        <option value="PEN">SOLES</option>
+                                        <option value="USD">Dolares</option>
+                                    </select>
                                 </div>
                                 <div class="form-group col-lg-3 col-md-6 col-xs-12">
                                     <label for="name" class="col-sm-6 control-label">Simbolo:</label>
                                     <div class="col-sm-12">
-                                        <input class="form-control" type="text" name="simbolo" id="simbolo" placeholder="S/ - $">
+                                        <input class="form-control" type="text" name="simbolo" id="simbolo"
+                                            placeholder="S/ - $">
                                     </div>
                                 </div>
                             </div>
@@ -193,7 +207,8 @@
                     </div>
                 </div>
                 <div class="modal-footer justify-content-between">
-                    <button type="button" onclick="cancelarform()" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                    <button type="button" onclick="cancelarform()" class="btn btn-default"
+                        data-dismiss="modal">Cerrar</button>
                     <button class="btn btn-primary" type="submit" id="btnGuardar">Guardar</button>
                 </div>
             </form>

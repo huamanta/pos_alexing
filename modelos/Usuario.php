@@ -169,7 +169,7 @@ public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $pe
     }
 }
 
-    public function listarSucursalesUsuario($idusuario): array
+    public function listarSucursalesUsuario(int $idusuario): array
     {
         // Verificar si es superusuario
         $esSuperusuario = Helpers::esSuperusuario($idusuario);
@@ -207,8 +207,8 @@ public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $pe
                 ':idusuario' => $idusuario
             ]);
         }
-
-        return $stmt->fetchAll(PDO::FETCH_OBJ);
+        $data = $stmt->fetchAll(PDO::FETCH_OBJ);
+        return $data;
     }
 
 	//Implementamos un método para desactivar categorías

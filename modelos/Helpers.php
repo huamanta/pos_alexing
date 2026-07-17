@@ -174,11 +174,11 @@ class Helpers
     }
 
 
-    public function esSuperusuario(): bool
+    public function esSuperusuario($idusuario = null): bool
     {
-        $idusuario = $_SESSION['idusuario'] ?? null;
+        $idUsuario = $idusuario ?? $_SESSION['idusuario'];
 
-        if ($idusuario === null) {
+        if ($idUsuario === null) {
             return false;
         }
 
@@ -190,7 +190,7 @@ class Helpers
         ");
 
         $stmt->execute([
-            ':idusuario' => $idusuario
+            ':idusuario' => $idUsuario
         ]);
 
         return (bool) $stmt->fetchColumn();
@@ -421,5 +421,20 @@ class Helpers
     public static function calcularOperacionGravada(float $monto, float $porcentajeIgv = 18): float
     {
         return self::calcularBaseImponible($monto, $porcentajeIgv);
+    }
+
+    public function sucursalConfiguracion(int $idsucursal)
+    {
+        return (new DBQuery($this->pdo))
+            ->from('sucursal_configuracion')
+            ->where('idsucursal', '=', $idsucursal)
+            ->first();
+    }
+
+
+    public function verificarEnvioSunat(int $idsucursal): bool
+    {
+        $sucursal = self::sucursalConfiguracion($idsucursal);
+        return $sucursal['is_send_sunat'];
     }
 }

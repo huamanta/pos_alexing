@@ -304,7 +304,7 @@ class Producto extends Helpers
 					'proigv' => $tipoigv,
 					'comisionV' => $comisionV || 0
 				])
-				->save();
+				->update();
 
 			if (!$updateProducto) {
 				throw new Exception("No se pudo actualizar producto");
@@ -332,7 +332,7 @@ class Producto extends Helpers
 					'stock_maximo' => $stockMaximo,
 					'precio_compra' => $precioCompra
 				])
-				->save();
+				->update();
 
 
 			/*
@@ -365,7 +365,7 @@ class Producto extends Helpers
 					'clase_vehiculo' => $clase_vehiculo,
 					'propietario_vehiculo' => $propietario_vehiculo
 				])
-				->save();
+				->update();
 
 			$this->pdo->commit();
 
@@ -443,7 +443,7 @@ class Producto extends Helpers
 					'idproducto' => $idproducto,
 					'condicion' => 0,
 				])
-				->save();
+				->update();
 
 			if (!$update) {
 				throw new Exception("No se pudo desactivar el registro");
@@ -476,7 +476,7 @@ class Producto extends Helpers
 					'idproducto' => $idproducto,
 					'condicion' => 1,
 				])
-				->save();
+				->update();
 
 			if (!$update) {
 				throw new Exception("No se pudo activar el registro");
@@ -1195,7 +1195,7 @@ class Producto extends Helpers
 					'idproducto' => $idproducto,
 					'deleted_at' => date('Y-m-d H:i:s'),
 				])
-				->save();
+				->update();
 
 			if (!$update) {
 				throw new Exception("No se pudo eliminar el registro");

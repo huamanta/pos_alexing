@@ -221,6 +221,7 @@ class SisVenta extends Helpers
             return json_encode([
                 'success' => true,
                 'id_venta' => $idVenta,
+                'enviar_sunat' => Helpers::verificarEnvioSunat($idsucursal),
                 'message' => 'Cotizacion registrado correctamente.'
             ]);
 

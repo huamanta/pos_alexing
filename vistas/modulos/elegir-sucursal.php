@@ -5,7 +5,7 @@
     $sucursales = $usuario->listarSucursalesUsuario($_SESSION['idusuario']);
     $baseUrl = dirname($_SERVER['SCRIPT_NAME']);
     $count = count($sucursales);
-    $esAdmin = $usuario->esSuperusuario($_SESSION['idusuario']);
+    $esAdmin = $usuario->esSuperusuario();
 ?>
 <div class="content-wrapper">
     <section class="content">

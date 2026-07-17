@@ -849,12 +849,12 @@ function EnviarSunat(tipoc, idventa, idcol) {
         timerProgressBar: true,
         onClose: function () { },
       });
-      
+
       listar.load();
     },
     complete: function () {
       $(".modal").hide();
-      
+
       listar.load();
     },
   });
@@ -914,13 +914,12 @@ function guardaryeditar(e) {
   }
 
   var formData = new FormData($("#formulario")[0]);
-  /** 
-    Swal.fire({
-      title: "Procesando venta...",
-      text: "Por favor, espera un momento",
-      allowOutsideClick: false,
-      didOpen: () => Swal.showLoading(),
-    });*/
+  Swal.fire({
+    title: "Procesando venta...",
+    text: "Por favor, espera un momento",
+    allowOutsideClick: false,
+    didOpen: () => Swal.showLoading(),
+  });
 
   $.ajax({
     url: "controladores/venta.php?op=guardaryeditar",
@@ -929,6 +928,7 @@ function guardaryeditar(e) {
     contentType: false,
     processData: false,
     success: function (response) {
+      Swal.close();
       const data = JSON.parse(response);
       if (!data.success) {
         Swal.fire({
@@ -938,23 +938,22 @@ function guardaryeditar(e) {
         });
         return;
       }
-
-      if ($("#tipo_comprobante option:selected").text() !== "Nota de Venta") {
-        ventaAGenerarSunat = {
-          idventa: data.idventa,
-          tipo: $("#tipo_comprobante option:selected").text() == "Boleta" ? 1 : 2,
-          idpersonal: $("#idpersonal").val(),
-        };
-      } else {
-        ventaAGenerarSunat = null;
+      if (data.enviar_sunat) {
+        if ($("#tipo_comprobante option:selected").text() !== "Nota de Venta") {
+          ventaAGenerarSunat = {
+            idventa: data.idventa,
+            tipo: $("#tipo_comprobante option:selected").text() == "Boleta" ? 1 : 2,
+            idpersonal: $("#idpersonal").val(),
+          };
+        }
       }
 
       $("#ModalTipocomprobante").modal("show");
       $("#pant-imprimir").html(`
-        <div onclick="imprimirBoleta(${datos}, true)" class="col-sm-6 btn btn-success">
+        <div onclick="imprimirBoleta(${data.idventa}, true)" class="col-sm-6 btn btn-success">
           <i class="fas fa-ticket-alt"></i> TICKET
         </div>
-        <div onclick="imprimirFactura(${datos}, true)" class="col-sm-6 btn btn-info">
+        <div onclick="imprimirFactura(${data.idventa}, true)" class="col-sm-6 btn btn-info">
           <i class="fas fa-file-pdf"></i> PDF
         </div>
       `);

@@ -8,12 +8,11 @@ require_once "../core/FluentSave.php";
 class Empleado extends Helpers
 {
 
-	private PDO $pdo;
 	//Implementamos nuestro constructor
 	public function __construct()
-	{
-		$this->pdo = Conexion::conectar();
-	}
+    {
+        parent::__construct();
+    }
 
 	//Implementamos un método para insertar registros
 	public function insertar($nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $cargo, $imagen, $porcentaje, $salario)
