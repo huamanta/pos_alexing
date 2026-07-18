@@ -102,10 +102,9 @@ switch ($_GET["op"]) {
 
 	case 'verificar_caja_por_sucursal':
 		$idusuario = $_SESSION["idusuario"];
-		$idsucursal = $_GET["idsucursal"];
-
+		$idsucursal = $_SESSION["idsucursal"];
 		$rspta = $venta->verificarCaja($idusuario, $idsucursal);
-		echo json_encode($rspta);
+		echo $rspta;
 		break;
 
 	case 'comprobantesPendientes':
@@ -384,7 +383,7 @@ switch ($_GET["op"]) {
 
 	case 'mostrarf':
 
-		$idsucursal = $_REQUEST["idsucursal"];
+		$idsucursal = $_SESSION["idsucursal"];
 
 		//mostrando el numero de factura de la tabla comprobantes
 		require_once "../modelos/Comprobantes.php";
@@ -428,7 +427,7 @@ switch ($_GET["op"]) {
 
 	case 'mostrars':
 
-		$idsucursal = $_REQUEST["idsucursal"];
+		$idsucursal = $_SESSION["idsucursal"];
 
 		//mostrando el numero de factura de la tabla comprobantes
 		require_once "../modelos/Comprobantes.php";
@@ -470,7 +469,7 @@ switch ($_GET["op"]) {
 	//opcion para mostrar la numeracion y la serie_comprobante de la boleta
 	case 'mostrar_num_boleta':
 
-		$idsucursal = $_REQUEST["idsucursal"];
+		$idsucursal = $_SESSIOON["idsucursal"];
 
 		//mostrando el numero de boleta de la tabla comprobantes
 		require_once "../modelos/Comprobantes.php";
@@ -517,11 +516,8 @@ switch ($_GET["op"]) {
 	case 'mostrar_serie_boleta':
 		//mostrando el numero de factura de la tabla comprobantes
 		require_once "../modelos/Comprobantes.php";
-
-		$idsucursal = $_REQUEST["idsucursal"];
-
+		$idsucursal = $_SESSION["idsucursal"];
 		$comprobantes = new Comprobantes();
-
 		$rspta = $comprobantes->mostrar_serie_boleta($idsucursal);
 		$data = array();
 		$idempresa = 0;
@@ -560,7 +556,7 @@ switch ($_GET["op"]) {
 	//opcion para mostrar la numeracion y la serie_comprobante de la ticket
 	case 'mostrar_num_ticket':
 
-		$idsucursal = $_REQUEST["idsucursal"];
+		$idsucursal = $_SESSION["idsucursal"];
 
 		//mostrando el numero de boleta de la tabla comprobantes
 		require_once "../modelos/Comprobantes.php";
@@ -602,7 +598,7 @@ switch ($_GET["op"]) {
 		break;
 	case 'mostrar_s_ticket':
 
-		$idsucursal = $_REQUEST["idsucursal"];
+		$idsucursal = $_SESSION["idsucursal"];
 
 		// Defaults para evitar Undefined variable
 		$serie_comp_tic = 0;

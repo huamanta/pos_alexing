@@ -7,6 +7,8 @@ $entero = floor($factura['total_venta']);
 $decimales = str_pad(round(($factura['total_venta'] - $entero) * 100), 2, '0', STR_PAD_LEFT);
 $texto = strtoupper($formatter->toWords($entero));
 $con_letra = "{$texto} Y {$decimales}/100 SOLES";
+$logo = !empty($configuracion['logo']) ? $configuracion['logo'] : 'default.png';
+$rutaLogo = realpath(__DIR__ . '/../../files/logos/' . $logo);
 ?>
 
 <!DOCTYPE html>
@@ -162,7 +164,7 @@ $con_letra = "{$texto} Y {$decimales}/100 SOLES";
 <table class="header">
     <tr>
         <td width="18%" class="text-center">
-            <img src="../<?= $configuracion['logo'] ?? '' ?>" width="110">
+            <img src="file://<?php echo $rutaLogo; ?>" width="120"/>
         </td>
 
         <td width="52%" class="empresa">

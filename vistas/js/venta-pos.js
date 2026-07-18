@@ -7,6 +7,7 @@ var modoEditar = false;
 var impuesto = 0;
 var no_aplica = 1;
 let listarProductos = null;
+let listarDataVentas = null;
 
 function actualizarResumenVenta(total, subtotal, impuestoCalculado) {
   const totalFmt = (parseFloat(total) || 0).toFixed(2);
@@ -71,7 +72,7 @@ function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
   marcarImpuesto();
   mostrarform(false);
-  listar.load();
+  listarDataVentas.load();
 
   $("#formulario").on("submit", function (e) {
     guardaryeditar(e);
@@ -362,9 +363,10 @@ function cargarSucursales() {
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
     $("#idsucursal").html(r);
     $("#idsucursal").select2("");
+    $('#idsucursal').prop('disabled', true);
 
-    $("#idsucursal2").html(r);
-    $("#idsucursal2").select2("");
+    // $("#idsucursal2").html(r);
+    // $("#idsucursal2").select2("");
 
     $("#idsucursalVentas").html(r);
     $("#idsucursalVentas").select2("");
@@ -412,13 +414,13 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 */
 
-function cargarItemsAlSelect() {
-  // Cargamos los items al select almacen
-  $.post("controladores/venta.php?op=selectSucursal", function (r) {
-    $("#idsucursal").html(r);
-    $("#idsucursal").select2();
-  });
-}
+// function cargarItemsAlSelect() {
+//   // Cargamos los items al select almacen
+//   $.post("controladores/venta.php?op=selectSucursal", function (r) {
+//     $("#idsucursal").html(r);
+//     $("#idsucursal").select2();
+//   });
+// }
 
 //Función limpiar
 function limpiarCliente() {
@@ -818,9 +820,9 @@ function comprobarEstado(idventa, idcol) {
         icon: "success",
         text: resp,
       });
-      listar.load();
+      listarDataVentas.load();
     },
-    error: function(e){
+    error: function (e) {
       Swal.close();
     },
   });
@@ -850,12 +852,10 @@ function EnviarSunat(tipoc, idventa, idcol) {
         onClose: function () { },
       });
 
-      listar.load();
+      listarDataVentas.load();
     },
     complete: function () {
       $(".modal").hide();
-
-      listar.load();
     },
   });
 }
@@ -963,9 +963,9 @@ function guardaryeditar(e) {
       $("#formulario")[0].reset();
       marcarImpuesto();
       resetearPagos();
-      listar.load();
+      listarDataVentas.load();
       $("#datafechas").empty();
-      cargarItemsAlSelect();
+      // cargarItemsAlSelect();
     },
     error: function () {
       Swal.fire(
@@ -2034,11 +2034,11 @@ function pintarVentas(data, permissions) {
     let enviarSunat = '';
     let pdf = '';
     let ticket = '';
-    let tipo = (item.tipo_comprobante === 'Boleta')? 1 : (item.tipo_comprobante === 'Factura') ? 2: null;
+    let tipo = (item.tipo_comprobante === 'Boleta') ? 1 : (item.tipo_comprobante === 'Factura') ? 2 : null;
     let enviarButtons = (item.tipo_comprobante === 'Boleta' || item.tipo_comprobante === 'Factura');
     if (enviarButtons) {
-      if(item.estado === "Por Enviar"){
-          enviarSunat = `
+      if (item.estado === "Por Enviar") {
+        enviarSunat = `
                 <a data-toggle="tooltip" title="Enviar a Sunat"
                     onclick="EnviarSunat(${tipo},${item.idventa},${item.idpersonal});">
                     <button class="btn btn-primary btn-xs">
@@ -2058,7 +2058,7 @@ function pintarVentas(data, permissions) {
                     </button>
                 </a>
             `;
-      }else{
+      } else {
         pdf = `
                 <a title="PDF" onclick="imprimirFactura(${item.idventa})">
                     <button class="btn btn-info btn-xs">
@@ -2067,7 +2067,7 @@ function pintarVentas(data, permissions) {
                 </a>
             `;
 
-      ticket = `
+        ticket = `
                 <a title="Ticket" onclick="imprimirBoleta(${item.idventa})">
                     <button class="btn btn-primary btn-xs">
                         <i class="fas fa-receipt"></i>
@@ -2076,7 +2076,7 @@ function pintarVentas(data, permissions) {
             `;
 
       }
-    } 
+    }
 
     let estado = "";
 
@@ -2185,22 +2185,22 @@ function pintarVentas(data, permissions) {
 
     let sunat = "";
 
-const esElectronico =
-    item.tipo_comprobante === "Boleta" ||
-    item.tipo_comprobante === "Factura";
+    const esElectronico =
+      item.tipo_comprobante === "Boleta" ||
+      item.tipo_comprobante === "Factura";
 
-// Nota de Venta -> no mostrar acciones SUNAT
-if (!esElectronico) {
+    // Nota de Venta -> no mostrar acciones SUNAT
+    if (!esElectronico) {
 
-    sunat = "-";
+      sunat = "-";
 
-} else {
+    } else {
 
-    switch (item.estado) {
+      switch (item.estado) {
 
         case "Por Enviar":
 
-            sunat = `
+          sunat = `
                 <a data-toggle="tooltip" title="Enviar a Sunat"
                     onclick="EnviarSunat(${tipo},${item.idventa},${item.idpersonal});">
                     <button class="btn btn-primary btn-xs">
@@ -2220,12 +2220,12 @@ if (!esElectronico) {
                     </button>
                 </a>
             `;
-            break;
+          break;
 
         case "Aceptado":
         case "Aceptado por resumen":
 
-            sunat = `
+          sunat = `
                 <a href="${ruta}"
                     download="${item.dov_Nombre}.xml"
                     class="btn btn-warning btn-xs">
@@ -2238,12 +2238,12 @@ if (!esElectronico) {
                     <i class="fas fa-file-archive"></i>
                 </a>
             `;
-            break;
+          break;
 
         default:
 
-            // Para cualquier otro estado ya NO permitir reenviar
-            sunat = `
+          // Para cualquier otro estado ya NO permitir reenviar
+          sunat = `
 
                 <a style="pointer-events:none;">
                     <button class="btn btn-warning btn-xs">
@@ -2257,10 +2257,10 @@ if (!esElectronico) {
                     </button>
                 </a>
             `;
-            break;
-    }
+          break;
+      }
 
-}
+    }
 
 
     let comprobarEstado = "";
@@ -2302,15 +2302,15 @@ if (!esElectronico) {
     let mostrar = "";
     let sunatE = "";
 
-if (item.estado === "Anulado") {
+    if (item.estado === "Anulado") {
 
-    enviarComprobante = "";
-    mostrar = "";
-    sunatE = esElectronico ? sunat : "-";
+      enviarComprobante = "";
+      mostrar = "";
+      sunatE = esElectronico ? sunat : "-";
 
-} else {
+    } else {
 
-    enviarComprobante = `
+      enviarComprobante = `
         <a target="_blank" title="Enviar Comprobantes">
             <button class="btn btn-success btn-xs"
                 onclick="EnviarComprobante(${item.idventa})">
@@ -2319,9 +2319,9 @@ if (item.estado === "Anulado") {
         </a>
     `;
 
-    mostrar = pdf + ticket;
-    sunatE = esElectronico ? sunat : "-";
-}
+      mostrar = pdf + ticket;
+      sunatE = esElectronico ? sunat : "-";
+    }
 
 
     let notaCreditoBtn = "";
@@ -2343,7 +2343,7 @@ if (item.estado === "Anulado") {
 
     let dropdown = "";
     let btnCronograma = "";
-    if(item.ventacredito == 'Si'){
+    if (item.ventacredito == 'Si') {
       btnCronograma = `<a class="btn btn-danger btn-xs"
                     title="Descargar cronograma"
                     onclick="verCronogramPago(${item.idventa})">
@@ -2426,7 +2426,7 @@ if (item.estado === "Anulado") {
                 <td>${item.fecha}</td>
 
                 <td>
-                    ${item.cliente} ${item.num_documento ? '-':''} ${item.num_documento || ''}
+                    ${item.cliente} ${item.num_documento ? '-' : ''} ${item.num_documento || ''}
                 </td>
                 <td>
                     ${item.tipo_comprobante} -
@@ -2473,14 +2473,14 @@ if (item.estado === "Anulado") {
   $("#tbody_ventas").html(html);
 }
 
-listar = new FluentPaginator({
+listarDataVentas = new FluentPaginator({
   url: "controladores/venta.php?op=listar",
   renderTabla: pintarVentas,
   extraParams: () => ({
     fecha_inicio: $("#fecha_inicio").val() || '',
     fecha_fin: $("#fecha_inicio").val() || '',
     estado: $("#estado").val() || '',
-    estado: $("#idproducto").val() || ''
+    idproducto: $("#idproducto").val() || ''
   })
 });
 
@@ -2549,21 +2549,10 @@ async function mostrarform(flag) {
   limpiar();
 
   if (flag) {
-    const idsucursalSeleccionada = $("#idsucursal2").val();
-    const nombreSucursal = $("#idsucursal2 option:selected").text();
 
-    if (!idsucursalSeleccionada) {
-      Swal.fire(
-        "Atención",
-        "Seleccione una sucursal antes de crear una venta.",
-        "warning",
-      );
-      return;
-    }
 
     try {
-      const tieneCaja = await verificarCajaPorSucursal(idsucursalSeleccionada);
-
+      const tieneCaja = await verificarCajaPorSucursal();
       if (tieneCaja) {
         setNavbarPosVisible(true);
         $("#listadoregistros").hide();
@@ -2576,8 +2565,8 @@ async function mostrarform(flag) {
         $("#btnNuevo").hide();
         $("#header").hide();
         //$("body").addClass("sidebar-collapse");
-        $("#idsucursal").val(idsucursalSeleccionada).trigger("change.select2");
-        marcarImpuesto(idsucursalSeleccionada);
+        // $("#idsucursal").val(idsucursalSeleccionada).trigger("change.select2");
+        marcarImpuesto();
 
         listarProductos.load();
         listarArticulos2();
@@ -2595,7 +2584,6 @@ async function mostrarform(flag) {
         listarCajas();
       }
     } catch (error) {
-      console.error("Error al verificar caja:", error);
       Swal.fire("Error", "No se pudo verificar la caja.", "error");
     }
   } else {
@@ -2613,21 +2601,18 @@ async function mostrarform(flag) {
   }
 }
 
-$("#idsucursal2").on("change", async function () {
-  const idsucursal = $(this).val();
-  if (!idsucursal) return;
-
-  const tieneCaja = await verificarCajaPorSucursal(idsucursal);
-  if (!tieneCaja) {
-    Swal.fire({
-      icon: "info",
-      title: "Caja no abierta",
-      text: "No tienes una caja abierta en esta sucursal. Deberás aperturar una antes de vender.",
-      timer: 2500,
-      showConfirmButton: false,
-    });
-  }
-});
+// $("#idsucursal2").on("change", async function () {
+//   const tieneCaja = await verificarCajaPorSucursal();
+//   if (!tieneCaja) {
+//     Swal.fire({
+//       icon: "info",
+//       title: "Caja no abierta",
+//       text: "No tienes una caja abierta en esta sucursal. Deberás aperturar una antes de vender.",
+//       timer: 2500,
+//       showConfirmButton: false,
+//     });
+//   }
+// });
 
 function verificarCaja() {
   return new Promise((resolve, reject) => {
@@ -2767,27 +2752,23 @@ function listarVentas() {
 // =======================================
 $("#estadoVentas").change(listarVentas);
 
-function verificarCajaPorSucursal(idsucursal) {
+function verificarCajaPorSucursal() {
   return new Promise((resolve, reject) => {
     $.ajax({
       url: "controladores/venta.php?op=verificar_caja_por_sucursal",
-      type: "GET",
-      data: {
-        idsucursal
-      },
+      type: "get",
       dataType: "json",
       success: function (response) {
         if (response.success) {
           $("#idcaja").val(response.idcaja);
-          resolve(true);
+          resolve(true);      // <-- IMPORTANTE
         } else {
-          resolve(false);
+          resolve(false);     // <-- IMPORTANTE
         }
       },
-      error: function (error) {
-        console.error("Error al verificar caja:", error);
+      error: function (xhr, status, error) {
         reject(error);
-      },
+      }
     });
   });
 }
@@ -3054,10 +3035,10 @@ function mostrar_impuesto() {
   });
 }
 
-$("#tipo_comprobante").change(function () {
-  var idsucursalSeleccionada = $("#idsucursal2").val();
-  marcarImpuesto(idsucursalSeleccionada);
-});
+// $("#tipo_comprobante").change(function () {
+//   // var idsucursalSeleccionada = $("#idsucursal2").val();
+//   marcarImpuesto();
+// });
 
 // Función unificada para número y serie
 function cargarNumeroSerie(tipoComprobante, idsucursal) {
@@ -3090,9 +3071,7 @@ function cargarNumeroSerie(tipoComprobante, idsucursal) {
   $.ajax({
     url: "controladores/venta.php?op=" + opNum,
     type: "get",
-    data: {
-      idsucursal: idsucursal
-    },
+    data: {},
     dataType: "json",
     success: function (num) {
       num = parseInt(num) || 1; // fallback seguro
@@ -3120,11 +3099,11 @@ function cargarNumeroSerie(tipoComprobante, idsucursal) {
 }
 
 // Nueva función marcarImpuesto usando la unificada
-function marcarImpuesto(idsucursalSeleccionada) {
+function marcarImpuesto() {
   var tipo_comprobante = $("#tipo_comprobante option:selected").text().trim();
-  if (!idsucursalSeleccionada) {
-    idsucursalSeleccionada = $("#idsucursal").val(); // fallback
-  }
+  // if (!idsucursalSeleccionada) {
+  //   idsucursalSeleccionada = $("#idsucursal").val(); // fallback
+  // }
 
   if (
     tipo_comprobante === "Factura" ||
@@ -3132,19 +3111,19 @@ function marcarImpuesto(idsucursalSeleccionada) {
     tipo_comprobante === "Ticket"
   ) {
     mostrar_impuesto();
-    cargarNumeroSerie(tipo_comprobante, idsucursalSeleccionada);
+    cargarNumeroSerie(tipo_comprobante);
   } else {
     // Evita resetear el IGV por coincidencias de texto del comprobante.
     // Si el tipo no coincide exactamente, seguimos usando la tasa del negocio.
     mostrar_impuesto();
-    cargarNumeroSerie("Ticket", idsucursalSeleccionada);
+    cargarNumeroSerie("Ticket");
   }
 }
 
 // Evento change para actualizar cuando se cambie tipo de comprobante
 $("#tipo_comprobante").change(function () {
-  const idsucursalSeleccionada = $("#idsucursal").val();
-  marcarImpuesto(idsucursalSeleccionada);
+  // const idsucursalSeleccionada = $("#idsucursal").val();
+  marcarImpuesto();
 });
 
 function handlePrecioChange(input, idpc) {
@@ -4581,7 +4560,7 @@ function notaCredito(idventa, idsucursal) {
             text: resp,
             icon: "success",
           });
-          listar.load(); // refrescamos la tabla
+          listarDataVentas.load(); // refrescamos la tabla
         },
       ).fail(function (xhr) {
         Swal.fire({

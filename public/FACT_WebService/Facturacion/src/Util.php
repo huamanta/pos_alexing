@@ -67,8 +67,9 @@ final class Util
         $usuario = $sucursal['usuario_sol'] ?? '';
         $contrasena = $sucursal['clave_sol'] ?? '';
         $contrasenacertificado = $sucursal['clave_certificado'] ?? '';
-        $estadocertificado = $sucursal['estado_certificado'] ?? 'BETA';
-        $rutaCertificado = $sucursal['ruta_certificado'] ?? '';
+        $estadocertificado = !empty($sucursal['estado_certificado']) ? $sucursal['estado_certificado'] : 'BETA';
+        $rutaCertificado = !empty($sucursal['ruta_certificado']) ? $sucursal['ruta_certificado'] : '/certificado.pem';
+        
         $sunatEnpoint = SunatEndpoints::FE_BETA;
         if ($estadocertificado == "PRODUCCION") {
             $sunatEnpoint = SunatEndpoints::FE_PRODUCCION;

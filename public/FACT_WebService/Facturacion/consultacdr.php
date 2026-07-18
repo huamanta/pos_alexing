@@ -138,7 +138,7 @@ $IdDOV        = $venta['id'];
 
 // Consulta de datos del negocio
 $idalmacen = $venta['idsucursal'];
-$sqlSucursal = mysqli_query($conexion, 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $idalmacen);
+$sqlSucursal = mysqli_query($conexion, "SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = " . $idalmacen);
 $sucursal = mysqli_fetch_assoc($sqlSucursal);
 $ruc        = $sucursal['ruc'];
 $usuario    = $sucursal['usuario_sol'];
@@ -165,6 +165,7 @@ $fields = [
     'serie'   => $serieDOC,
     'numero'  => $numeroDOC
 ];
+
 
 // Se genera el nombre del archivo (prefijado con "R-")
 $filenameBase = generateFilename($fields);

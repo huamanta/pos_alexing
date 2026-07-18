@@ -3,6 +3,8 @@
 $frecuenciaTexto = '';
 $diasFrecuencia = 30;
 $numCuotas = 1;
+$logo = !empty($configuracion['logo']) ? $configuracion['logo'] : 'default.png';
+$rutaLogo = realpath(__DIR__ . '/../../files/logos/' . $logo);
 
 switch ($factura['frecuencia']) {
 
@@ -66,7 +68,6 @@ $iva = 0;
 $impuesto = 0;
 $tl_sniva = 0;
 $total = 0;
-
 ?>
 
 <!DOCTYPE html>
@@ -185,7 +186,7 @@ $total = 0;
 
 	<?php echo $anulada; ?>
 
-	<div id="page_pdf" >
+	<div id="page_pdf">
 
 		<table id="factura_head" width="100%" cellspacing="0" cellpadding="2" border="0">
 
@@ -194,7 +195,7 @@ $total = 0;
 				<td width="25%" align="left" valign="top">
 
 					<div>
-						<img src="../<?php echo $configuracion['logo']; ?>" width="150px">
+						<img src="file://<?php echo $rutaLogo; ?>" width="120"/>
 					</div>
 
 				</td>

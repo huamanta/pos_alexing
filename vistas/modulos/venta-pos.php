@@ -593,7 +593,7 @@ date_default_timezone_set('America/Lima');
 
                                     <div class="input-group">
                                         <select id="estado" name="estado" class="form-control select2">
-                                            <option value="Todos">Todos</option>
+                                            <option value="">Todos</option>
                                             <option value="Aceptado">Aceptado</option>
                                             <option value="Por Enviar">Por Enviar</option>
                                             <option value="Nota Credito">Nota de Crédito</option>
@@ -1515,7 +1515,7 @@ date_default_timezone_set('America/Lima');
 
                         <div class="input-group">
                             <select id="estadoVentas" name="estadoVentas" class="form-control select2" required>
-                                <option value="Todos">Todos</option>
+                                <option value="">Todos</option>
                                 <option value="Aceptado">Aceptado</option>
                                 <option value="Por Enviar">Por Enviar</option>
                                 <option value="Nota Credito">Nota de Crédito</option>

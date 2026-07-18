@@ -338,6 +338,30 @@ class Helpers
         ];
     }
 
+    public function verificarAperturaCajaUsuario(int $idsucursal, int $idusuario): int
+    {
+        $sql = "
+        SELECT ca.idcaja
+        FROM caja_apertura ca
+        INNER JOIN cajas c ON c.idcaja = ca.idcaja
+        WHERE ca.estado = 1
+          AND ca.idsucursal = :idsucursal
+          AND ca.idusuario = :idusuario
+          AND ca.fecha_cierre IS NULL
+        LIMIT 1
+    ";
+
+        $stmt = $this->pdo->prepare($sql);
+
+        $stmt->execute([
+            'idsucursal' => $idsucursal,
+            'idusuario' => $idusuario,
+        ]);
+
+        $rpta = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $rpta ? (int) $rpta['idcaja'] : 0;
+    }
 
     public function updateKardexSucursal(
         $idsucursal,

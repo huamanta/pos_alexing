@@ -1,13 +1,6 @@
 <?php
 ob_start();
-if (strlen(session_id()) < 1)
-    session_start();
-
-if (!isset($_SESSION["nombre"])) {
-    echo 'Acceso denegado';
-    exit();
-}
-
+require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Venta.php";
 require_once "../modelos/CuentasCobrar.php";
 require_once "../modelos/Negocio.php";
@@ -21,7 +14,7 @@ $negocio = new Negocio();
 $V = new EnLetras();
 
 $reg = $venta->ventacabecera($_GET["id"])->fetch_object();
-$regn = $negocio->listar()->fetch_object();
+$regn = $negocio->listar($reg->idsucursal)->fetch_object();
 
 $formaPago = ($reg->ventacredito == "Si") ? "CRÉDITO" : "CONTADO";
 
@@ -75,7 +68,6 @@ WHERE s.idsucursal = ' . $reg->idsucursal;
 
 $resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
 $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
-
 ?>
 
 <html>
@@ -98,7 +90,7 @@ $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
 
         .ticket {
             width: 72mm;
-            padding: 4px;
+            padding: 8px;
         }
 
         .center {
@@ -140,9 +132,11 @@ $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
 
         <!-- EMPRESA -->
         <div class="center">
-            <img src="../reportes/<?php echo $regn->logo; ?>" width="80"><br>
-            <span class="bold"><?php echo $regn->nombre; ?></span><br>
-            RUC: <?php echo $regn->documento; ?><br>
+            <img src="../files/logos/<?php echo !empty($regn->logo) ? $regn->logo : 'default.png'; ?>" width="80">
+            <br>
+            <h1 class="bold"><?php echo $regn->razon_social; ?></h1>
+            <span class="bold">sucursal: <?php echo $regn->nombre; ?></span><br>
+            RUC: <?php echo $regn->ruc; ?><br>
             <?php echo $regn->direccion; ?><br>
             Tel: <?php echo $regn->telefono; ?>
         </div>
@@ -202,7 +196,8 @@ $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
             <?php } ?>
 
             <tr>
-                <td><?php echo $resultSucursal['nombre_impuesto']; ?>(<?php echo $resultSucursal['monto_impuesto']; ?>%):</td>
+                <td><?php echo $resultSucursal['nombre_impuesto']; ?>(<?php echo $resultSucursal['monto_impuesto']; ?>%):
+                </td>
                 <td class="right"><?php echo $helpers->monedaFormt($igv, $currency); ?></td>
             </tr>
 

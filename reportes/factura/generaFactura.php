@@ -164,7 +164,7 @@ $html = ob_get_clean();
 
 $options = new Options();
 $options->setIsRemoteEnabled(true);
-$options->setChroot(__DIR__); // importante
+$options->setChroot(realpath(__DIR__ . '/../../'));
 
 $dompdf = new Dompdf($options);
 $dompdf->loadHtml($html);

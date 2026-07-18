@@ -12,20 +12,22 @@ class Venta extends Helpers
 
     public function verificarCaja($idusuario, $idsucursal)
     {
-        $sql = "SELECT ca.*
-                FROM caja_apertura ca
-                INNER JOIN cajas c ON c.idcaja = ca.idcaja
-                WHERE ca.estado = 1 
-                  AND ca.idusuario = '$idusuario'
-                  AND ca.fecha_cierre IS NULL
-                  AND c.idsucursal = '$idsucursal'
-                LIMIT 1";
+        try {
+            $idCaja = Helpers::verificarAperturaCajaUsuario($idsucursal, $idusuario);
 
-        $rpta = ejecutarConsultaSimpleFila($sql);
-        if ($rpta) {
-            return array('success' => true, 'idcaja' => $rpta['idcaja']);
-        } else {
-            return array('success' => false, 'idcaja' => 0);
+            if ($idCaja === 0) {
+                throw new Exception("No existe una caja abierta.");
+            }
+            return json_encode([
+                "success" => true,
+                "idcaja" => $idCaja,
+                "message" => "Caja aperturada encontrado"
+            ]);
+        } catch (Throwable $th) {
+            return json_encode([
+                "success" => false,
+                "message" => "Error al eliminar los datos: " . $e->getMessage()
+            ]);
         }
     }
 
@@ -1629,7 +1631,7 @@ class Venta extends Helpers
     public function ventadetalle($idventa)
     {
         $sql = "SELECT 
-                pg.id, 
+                pg.idproducto_configuracion, 
                 a.idproducto,
                 a.idcategoria,
                 pg.contenedor,
@@ -1649,12 +1651,13 @@ class Venta extends Helpers
                     WHEN d.check_precio = 1 THEN d.precio_venta 
                     ELSE (d.cantidad * d.precio_venta - d.descuento)
                 END AS subtotal,
-                a.stock, 
+                ip.stock, 
                 a.proigv,
                 d.check_precio
             FROM detalle_venta d 
-            LEFT JOIN producto_configuracion pg ON pg.id = d.idproducto
-            INNER JOIN producto a ON pg.idproducto = a.idproducto 
+            INNER JOIN producto a ON a.idproducto = d.idproducto 
+            LEFT JOIN producto_configuracion pg ON pg.idproducto = a.idproducto
+            INNER JOIN inventario_producto ip ON ip.idproducto = a.idproducto
             INNER JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida
             INNER JOIN venta v ON v.idventa = d.idventa
             INNER JOIN categoria ca ON a.idcategoria = ca.idcategoria
