@@ -769,7 +769,7 @@ async function guardaryeditar(e) {
     }
 
     var formData = new FormData($("#formulario")[0]);
-    formData.append('idcaja', idcaja); // Asegura idcaja en el formulario
+    formData.append('idcaja', idcaja);
 
     $.ajax({
         url: "controladores/cuentascobrar.php?op=guardaryeditar",
@@ -777,19 +777,406 @@ async function guardaryeditar(e) {
         data: formData,
         contentType: false,
         processData: false,
+        beforeSend: function () {
+            $("#btnGuardarPago").text("Guardando...").prop('disabled', true);
+        },
         success: function (datos) {
             let res = JSON.parse(datos);
-            if (res.success) {
-                Swal.fire('Éxito', res.message, 'success');
-                $('#getCodeModal').modal('hide');
-                $("#formulario")[0].reset();
-                limpiar();
-                listarSaldos();
-                tablaCreditosCliente.ajax.reload();
-                tablaCuotasCredito.ajax.reload();
-            } else {
-                Swal.fire('Error', res.message, 'error');
+            $("#btnGuardarPago").text("Guardar pago").prop('disabled', false);
+            if (!res.success) {
+                Swal.fire("Error", res.message, "error");
+                return;
             }
+
+            const t = res.ticket;
+            let formaPago = "";
+            if (Number(t.monto_efectivo) > 0) {
+                formaPago += `
+                    <tr>
+                        <td>Efectivo</td>
+                        <td style="text-align:right">S/ ${Number(t.monto_efectivo).toFixed(2)}</td>
+                    </tr>`;
+            }
+
+            if (Number(t.monto_tarjeta) > 0) {
+                formaPago += `
+                    <tr>
+                        <td>Tarjeta</td>
+                        <td style="text-align:right">S/ ${Number(t.monto_tarjeta).toFixed(2)}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Banco</td>
+                        <td style="text-align:right">${t.banco || "-"}</td>
+                    </tr>
+
+                    <tr>
+                        <td>Operación</td>
+                        <td style="text-align:right">${t.operacion || "-"}</td>
+                    </tr>`;
+            }
+
+            const win = window.open("", "_blank", "width=800,height=700");
+
+            win.document.write(`
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="utf-8">
+
+<title>Recibo de Pago</title>
+
+<style>
+
+@page{
+    size:80mm auto;
+    margin:0;
+}
+
+body{
+    width:80mm;
+    margin:0;
+    font-family:'Courier New', monospace;
+    font-size:11px;
+}
+
+.ticket{
+    width:76mm;
+    padding:2mm;
+}
+
+.center{
+    text-align:center;
+}
+
+.right{
+    text-align:right;
+}
+
+.bold{
+    font-weight:bold;
+}
+
+.line{
+    border-top:1px dashed #000;
+    margin:5px 0;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+td{
+    padding:2px 0;
+    vertical-align:top;
+}
+
+.small{
+    font-size:10px;
+}
+
+.total{
+    font-size:14px;
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+
+<div class="ticket">
+
+
+<!-- EMPRESA -->
+<div class="center bold">
+
+${t.empresa || ""}
+
+<br>
+
+${t.sucursal || ""}
+
+<br>
+
+RUC: ${t.ruc || ""}
+
+<br>
+
+${t.direccion || ""}
+
+</div>
+
+
+<div class="line"></div>
+
+
+<!-- TITULO -->
+
+<div class="center bold">
+
+RECIBO DE PAGO
+
+<br>
+
+N° ${t.idpago || ""}
+
+</div>
+
+
+<div class="line"></div>
+
+
+
+<!-- DATOS -->
+
+<table>
+
+<tr>
+<td>Fecha:</td>
+<td class="right">${t.fecha}</td>
+</tr>
+
+
+<tr>
+<td>Venta:</td>
+<td class="right">${t.idventa}</td>
+</tr>
+
+
+<tr>
+<td>Cuota:</td>
+<td class="right">${t.idcpc}</td>
+</tr>
+
+
+<tr>
+<td>Cliente:</td>
+<td class="right">${t.cliente || "-"}</td>
+</tr>
+
+
+</table>
+
+
+
+<div class="line"></div>
+
+
+
+<!-- DETALLE PAGO -->
+
+<div class="center bold">
+
+DETALLE DEL PAGO
+
+</div>
+
+
+<table>
+
+
+<tr>
+<td>Capital:</td>
+<td class="right">
+S/ ${Number(t.capital_pagado).toFixed(2)}
+</td>
+</tr>
+
+
+<tr>
+<td>Mora:</td>
+<td class="right">
+S/ ${Number(t.mora_pagada).toFixed(2)}
+</td>
+</tr>
+
+
+<tr>
+<td>Descuento:</td>
+<td class="right">
+S/ ${Number(t.descuento).toFixed(2)}
+</td>
+</tr>
+
+
+
+<tr class="bold total">
+
+<td>
+TOTAL PAGADO:
+</td>
+
+<td class="right">
+S/ ${Number(t.monto_pagado).toFixed(2)}
+</td>
+
+</tr>
+
+
+</table>
+
+
+
+<div class="line"></div>
+
+
+
+<!-- FORMA PAGO -->
+
+
+<div class="center bold">
+
+FORMA DE PAGO
+
+</div>
+
+
+<table>
+
+${formaPago}
+
+</table>
+
+
+
+<div class="line"></div>
+
+
+
+<!-- SALDOS -->
+
+
+<div class="center bold">
+
+SALDO PENDIENTE
+
+</div>
+
+
+<table>
+
+
+<tr>
+
+<td>
+Capital:
+</td>
+
+<td class="right">
+S/ ${Number(t.saldo).toFixed(2)}
+</td>
+
+</tr>
+
+
+<tr>
+
+<td>
+Mora:
+</td>
+
+<td class="right">
+S/ ${Number(t.mora_pendiente || 0).toFixed(2)}
+</td>
+
+</tr>
+
+
+</table>
+
+
+
+<div class="line"></div>
+
+
+
+<!-- OBSERVACION -->
+
+<div>
+
+<b>Observación:</b>
+
+<br>
+
+${t.observacion || "-"}
+
+</div>
+
+
+
+<div class="line"></div>
+
+
+
+<div class="center small">
+
+Gracias por su pago
+
+<br>
+
+Vendedor:
+${t.personal || "-"}
+
+
+<br><br>
+
+
+Documento interno de cobranza
+
+</div>
+
+
+
+</div>
+
+
+
+<script>
+
+window.onload=function(){
+
+    window.focus();
+
+    window.print();
+
+    window.onafterprint=function(){
+
+        window.close();
+
+    }
+
+}
+
+<\/script>
+
+
+</body>
+
+</html>
+`);
+
+            win.document.close();
+
+            Swal.fire("Éxito", res.message, "success");
+
+            $('#getCodeModal').modal('hide');
+            $("#formulario")[0].reset();
+
+            limpiar();
+
+            listarSaldos();
+
+            tablaCreditosCliente.ajax.reload();
+
+            tablaCuotasCredito.ajax.reload();
+        },
+        error: function (e) {
+            $("#btnGuardarPago").text("Guardar pago").prop('disabled', false);
         }
     });
 }
@@ -1102,16 +1489,12 @@ async function amortizar(idventa) {
         data: { idventa: idventa },
         type: "GET",
         success: function (response) {
-
             let cuotas = JSON.parse(response);
-
             let tieneMora = cuotas.some(c => parseFloat(c.mora_calculada || 0) > 0);
-
             if (tieneMora) {
                 Swal.fire('Error', 'No se puede amortizar porque existen cuotas con mora.', 'error');
                 return;
             }
-
             let totalCuotas = cuotas.length;
 
             $("#contenedorRange").html(`

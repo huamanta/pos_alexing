@@ -755,7 +755,7 @@ date_default_timezone_set('America/Lima');
             <div class="col-sm-3">
               <div class="form-group">
                 <label>Monto Tarjeta:</label>
-                <input type="text" class="form-control" id="montoPagarTarjeta" name="montoPagarTarjeta" readonly>
+                <input type="text" class="form-control" id="montoPagarTarjeta" name="montoPagarTarjeta" value="0" readonly>
               </div>
             </div>
 
@@ -815,7 +815,7 @@ date_default_timezone_set('America/Lima');
           <button type="button" onclick="cancelarform()" class="btn btn-secondary" data-dismiss="modal">
             <i class="fa fa-times"></i> Cerrar
           </button>
-          <button class="btn btn-primary" type="submit" id="btnGuardar">
+          <button class="btn btn-primary" type="submit" id="btnGuardarPago">
             <i class="fa fa-check"></i> Guardar Pago
           </button>
         </div>

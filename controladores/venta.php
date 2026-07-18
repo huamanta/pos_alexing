@@ -80,7 +80,7 @@ switch ($_GET["op"]) {
 		$idusuario = $_SESSION["idusuario"];
 		$idsucursal = $_SESSION["idsucursal"];
 		$rspta = $venta->verificarCaja($idusuario, $idsucursal);
-		echo json_encode($rspta);
+		echo $rspta;
 		break;
 
 

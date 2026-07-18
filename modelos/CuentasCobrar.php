@@ -33,13 +33,13 @@ class CuentasCobrar extends Helpers
         $idusuario
     ) {
 
-        ejecutarConsulta("START TRANSACTION");
 
         try {
+            $this->pdo->beginTransaction();
+
+            Helpers::verificarAperturaCajaUsuario($idsucursal, $idusuario);
 
             $fechaPago = $this->obtenerFechaPago($fechaPago);
-
-            $this->validarCaja($idsucursal, $idusuario);
 
             $cuenta = $this->obtenerCuentaPorCobrar($idcpc);
 
@@ -65,25 +65,39 @@ class CuentasCobrar extends Helpers
                 $fechaPago
             );
 
-            $this->guardarCuenta($idcpc, $resultado);
+            $idCuenta = $this->actualizarCuenta($idcpc, $resultado);
 
             $this->actualizarEstadoVenta(
                 $cuenta["idventa"],
-                $idcpc,
+                $idCuenta,
                 $resultado["deuda"]
             );
 
-            ejecutarConsulta("COMMIT");
+            $this->pdo->commit();
 
             return [
                 "success" => true,
-                "message" => "Pago registrado correctamente."
+                "message" => "Pago registrado correctamente.",
+                "ticket" => [
+                    "idcpc" => $idcpc,
+                    "idventa" => $cuenta["idventa"],
+                    "fecha" => $fechaPago,
+                    "monto_efectivo" => $montopagado,
+                    "monto_tarjeta" => $montoPagarTarjeta,
+                    "monto_pagado" => round($montopagado + $montoPagarTarjeta, 2),
+                    "capital_pagado" => round($resultado["abonototal"] - $cuenta["abonototal"], 2),
+                    "mora_pagada" => round($resultado["mora_pagada"] - $cuenta["mora_pagada"], 2),
+                    "descuento" => $resultado["descuento"],
+                    "saldo" => $resultado["deuda"],
+                    "forma_pago" => $formapago,
+                    "banco" => $banco,
+                    "operacion" => $op,
+                    "observacion" => $observacion
+                ]
             ];
 
-        } catch (Exception $e) {
-
-            ejecutarConsulta("ROLLBACK");
-
+        } catch (Throwable $e) {
+            $this->pdo->rollBack();
             return [
                 "success" => false,
                 "message" => $e->getMessage()
@@ -108,20 +122,18 @@ class CuentasCobrar extends Helpers
         }
     }
 
-    private function obtenerCuentaPorCobrar($idcpc)
+    private function obtenerCuentaPorCobrar(int $idcpc): array
     {
-        $sql = "
-        SELECT
-            cc.*,
-            v.idsucursal
-        FROM cuentas_por_cobrar cc
-        INNER JOIN venta v
-            ON v.idventa=cc.idventa
-        WHERE cc.idcpc='$idcpc'
-        FOR UPDATE
-    ";
-
-        $fila = ejecutarConsultaSimpleFila($sql);
+        $fila = (new DBQuery($this->pdo))
+            ->from('cuentas_por_cobrar cc')
+            ->select([
+                'cc.*',
+                'v.idsucursal'
+            ])
+            ->join('venta v', 'v.idventa = cc.idventa')
+            ->where('cc.idcpc', '=', $idcpc)
+            ->lockForUpdate()
+            ->first();
 
         if (!$fila) {
             throw new Exception("No se encontró la cuota.");
@@ -131,49 +143,47 @@ class CuentasCobrar extends Helpers
     }
 
     private function registrarDetallePago(
-        $idcpc,
-        $idcaja,
-        $idpersonal,
-        $montopagado,
-        $montoTarjeta,
-        $banco,
-        $op,
-        $fechaPago,
-        $formapago,
-        $observacion
-    ) {
+        int $idcpc,
+        int $idcaja,
+        int $idpersonal,
+        float $montopagado,
+        float $montoTarjeta,
+        ?string $banco,
+        ?string $op,
+        string $fechaPago,
+        string $formapago,
+        ?string $observacion
+    ): int {
 
-        $sql = "
-    INSERT INTO detalle_cuentas_por_cobrar(
-        idcpc,
-        idcaja,
-        idpersonal,
-        montopagado,
-        montotarjeta,
-        banco,
-        op,
-        fechapago,
-        formapago,
-        observacion
-    ) VALUES(
-        '$idcpc',
-        '$idcaja',
-        '$idpersonal',
-        '$montopagado',
-        '$montoTarjeta',
-        '$banco',
-        '$op',
-        '$fechaPago',
-        '$formapago',
-        '$observacion'
-    )";
+        $idDetalle = (new FluentSaver($this->pdo))
+            ->table('detalle_cuentas_por_cobrar')
+            ->data([
+                'idcpc' => $idcpc,
+                'idcaja' => $idcaja,
+                'idpersonal' => $idpersonal,
+                'montopagado' => $montopagado,
+                'montotarjeta' => $montoTarjeta,
+                'banco' => $banco,
+                'op' => $op,
+                'fechapago' => $fechaPago,
+                'formapago' => $formapago,
+                'observacion' => $observacion
+            ])
+            ->nullable([
+                'banco',
+                'op',
+                'observacion'
+            ])
+            ->save();
 
-        if (!ejecutarConsulta($sql)) {
+        if (!$idDetalle) {
             throw new Exception("No se pudo registrar el pago.");
         }
+
+        return $idDetalle;
     }
 
-    private function actualizarMora($fila, $idcpc)
+    private function actualizarMora(array $fila, int $idcpc): array
     {
         $config = Helpers::verificarMoraCredito($fila["idsucursal"]);
 
@@ -211,14 +221,20 @@ class CuentasCobrar extends Helpers
 
         $fila["mora"] += $moraNueva;
 
-        ejecutarConsulta("
-        UPDATE cuentas_por_cobrar
-        SET
-            mora='{$fila["mora"]}',
-            deudatotal='{$fila["deudatotal"]}',
-            fecha_update_mora=NOW()
-        WHERE idcpc='$idcpc'
-    ");
+        $actualizado = (new FluentSaver($this->pdo))
+            ->table('cuentas_por_cobrar')
+            ->primaryKey('idcpc')
+            ->data([
+                'idcpc' => $idcpc,
+                'mora' => $fila['mora'],
+                'deudatotal' => $fila['deudatotal'],
+                'fecha_update_mora' => date('Y-m-d H:i:s')
+            ])
+            ->update();
+
+        if (!$actualizado) {
+            throw new Exception("No se pudo actualizar la mora.");
+        }
 
         return $fila;
     }
@@ -339,59 +355,83 @@ class CuentasCobrar extends Helpers
         $r["abonototal"] += $pagado;
     }
 
-    private function guardarCuenta($idcpc, $r)
+    private function actualizarCuenta(int $idcpc, array $r): int
     {
+        $idCuenta = (new FluentSaver($this->pdo))
+            ->table('cuentas_por_cobrar')
+            ->primaryKey('idcpc')
+            ->data([
+                'idcpc' => $idcpc,
+                'deuda' => $r['deuda'],
+                'mora' => $r['mora'],
+                'mora_pagada' => $r['mora_pagada'],
+                'abonototal' => $r['abonototal'],
+                'descuento' => $r['descuento'],
+                'deudatotal' => $r['deudatotal']
+            ])
+            ->update();
 
-        ejecutarConsulta("
-        UPDATE cuentas_por_cobrar
-        SET
-            deuda='{$r["deuda"]}',
-            mora='{$r["mora"]}',
-            mora_pagada='{$r["mora_pagada"]}',
-            abonototal='{$r["abonototal"]}',
-            descuento='{$r["descuento"]}',
-            deudatotal='{$r["deudatotal"]}'
-        WHERE idcpc='$idcpc'
-    ");
+        if (!$idCuenta) {
+            throw new Exception("No se pudo actualizar la cuenta por cobrar #{$idcpc}");
+        }
+
+        return $idCuenta;
     }
 
     private function actualizarEstadoVenta(
-        $idventa,
-        $idcpc,
-        $deudaTotal
-    ) {
-        if ($deudaTotal <= 0) {
+        int $idventa,
+        int $idcpc,
+        float $deudaTotal
+    ): void {
 
-            ejecutarConsulta("
-            UPDATE cuentas_por_cobrar
-            SET estado_pago=0
-            WHERE idcpc='$idcpc'
-        ");
+        $estadoPago = $deudaTotal <= 0 ? 0 : 1;
 
-            $pendientes = ejecutarConsultaSimpleFila("
-            SELECT COUNT(*) total
-            FROM cuentas_por_cobrar
-            WHERE idventa='$idventa'
-            AND estado_pago=1
-        ");
+        $actualizado = (new FluentSaver($this->pdo))
+            ->table('cuentas_por_cobrar')
+            ->primaryKey('idcpc')
+            ->data([
+                'idcpc' => $idcpc,
+                'estado_pago' => $estadoPago
+            ])
+            ->update();
 
-            if (intval($pendientes["total"]) == 0) {
+        if (!$actualizado) {
+            throw new Exception("No se pudo actualizar el estado de la cuota.");
+        }
 
-                ejecutarConsulta("
-                UPDATE documentacion
-                SET estado=2
-                WHERE idventa='$idventa'
-                AND tipo='1'
-            ");
+        if ($estadoPago === 0) {
+
+            $pendientes = (new DBQuery($this->pdo))
+                ->from('cuentas_por_cobrar')
+                ->where('idventa', '=', $idventa)
+                ->where('estado_pago', '=', 1)
+                ->count();
+
+            if ($pendientes == 0) {
+
+                $documento = (new DBQuery($this->pdo))
+                    ->from('documentacion')
+                    ->where('idventa', '=', $idventa)
+                    ->where('tipo', '=', 1)
+                    ->first();
+
+                if (!$documento) {
+                    throw new Exception("No se encontró el documento de la venta.");
+                }
+
+                $actualizado = (new FluentSaver($this->pdo))
+                    ->table('documentacion')
+                    ->primaryKey('iddocumentacion') // Cambia por la PK real
+                    ->data([
+                        'iddocumentacion' => $documento['iddocumentacion'],
+                        'estado' => 2
+                    ])
+                    ->update();
+
+                if (!$actualizado) {
+                    throw new Exception("No se pudo actualizar el estado del documento.");
+                }
             }
-
-        } else {
-
-            ejecutarConsulta("
-            UPDATE cuentas_por_cobrar
-            SET estado_pago=1
-            WHERE idcpc='$idcpc'
-        ");
         }
     }
 
@@ -2125,8 +2165,8 @@ class CuentasCobrar extends Helpers
             $descuento = 0;
 
             // ======================
-// CALCULAR MORA
-// ======================
+            // CALCULAR MORA
+            // ======================
 
             $configMora = Helpers::verificarMoraCredito($row["idsucursal"]);
 
@@ -2159,8 +2199,8 @@ class CuentasCobrar extends Helpers
             }
 
             // ======================
-// CALCULAR DESCUENTO
-// ======================
+            // CALCULAR DESCUENTO
+            // ======================
 
             $configDescuento = Helpers::verificarDecuentoPagoAnticipado(
                 $row["idsucursal"]

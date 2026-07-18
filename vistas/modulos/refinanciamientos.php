@@ -20,7 +20,7 @@
     <section class="content">
         <div class="container-fluid">
             <?php
-            $refinanciamiento = Helpers::verificarRefinanciamientos($_SESSION['idsucursal']);
+            $refinanciamiento = $helpers->verificarRefinanciamientos($_SESSION['idsucursal']);
             if (!$refinanciamiento['activo']) {
                 ?>
                 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
