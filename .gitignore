@@ -1,26 +1,64 @@
-/reportes/qr
-/reportes/documentos
-/phpqrcode/img*
-/phpqrcode/cache
+#################################################
+# Dependencias
+#################################################
+
 /vendor
-/temp
+
+#################################################
+# Configuración
+#################################################
+
+.env
+
+#################################################
+# Logs
+#################################################
+
+/logs
 /error_log
 /controladores/error_log
 /reportes/factura/error_log
 /public/FACT_WebService/Facturacion/error_log
+
+#################################################
+# Archivos temporales y cache
+#################################################
+
+/temp
+/phpqrcode/cache
 /public/FACT_WebService/Facturacion/cache
+
+#################################################
+# Archivos generados
+#################################################
+
+/reportes/qr
+/reportes/documentos
 /public/FACT_WebService/Facturacion/cdrs
 /public/FACT_WebService/Facturacion/files
-/.env
+
+#################################################
+# PHP QRCode
+#################################################
+
+/phpqrcode/img*
+
+#################################################
+# Archivos subidos
+#################################################
+
 files/productos/*
 !files/productos/.gitkeep
+
 files/solicitudes/*
 !files/solicitudes/.gitkeep
+
 files/personal/*
 !files/personal/.gitkeep
+
+files/seguimientos/*
+!files/seguimientos/.gitkeep
+
 files/logos/*
 !files/logos/default.png
-!files/seguimientos/.gitkeep
-files/seguimientos/*
 !files/logos/.gitkeep
-/logs
