@@ -47,24 +47,13 @@ switch ($_GET["op"]) {
 
 		break;
 
-
-
 	case 'listar_saldos':
 		$fecha_inicio = $_REQUEST["fecha_inicio"];
 		$fecha_fin = $_REQUEST["fecha_fin"];
 		$idcliente = $_REQUEST["idcliente"];
-		$idsucursal = $_REQUEST["idsucursal"];
-		if (empty($idsucursal) || $idsucursal == "null" || $idsucursal == "Todos") {
-			if (isset($_SESSION['idsucursal']) && $_SESSION['idsucursal'] != 0) {
-				// Si el usuario tiene una sucursal específica asignada
-				$idsucursal = $_SESSION['idsucursal'];
-			} else {
-				// Si el usuario es administrador y puede ver todas
-				$idsucursal = "Todos";
-			}
-		}
+		$idsucursal = $_SESSION["idsucursal"];
 		$rspta = $cuentascobrar->listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal);
-		echo json_encode($rspta);
+		echo $rspta;
 		break;
 
 	case 'listar':
@@ -325,7 +314,7 @@ switch ($_GET["op"]) {
 		$idcliente = $_REQUEST['idcliente'];
 		$fecha_inicio = $_REQUEST['fecha_inicio'];
 		$fecha_fin = $_REQUEST['fecha_fin'];
-		$idsucursal = !empty($_REQUEST['idsucursal']) ? $_REQUEST['idsucursal'] : $_SESSION['idsucursal'];
+		$idsucursal = $_SESSION['idsucursal'];
 
 		echo $cuentascobrar->listaVentasPorCliente($idcliente, $idsucursal, $fecha_inicio, $fecha_fin);
 		break;
@@ -340,7 +329,7 @@ switch ($_GET["op"]) {
 		$idsucursal = isset($_GET["idsucursal"]) ? limpiarCadena($_GET["idsucursal"]) : null;
 		$idcliente = isset($_GET["idcliente"]) ? limpiarCadena($_GET["idcliente"]) : null;
 
-		$sucursal = !empty($idsucursal) ? $idsucursal : $_SESSION['idsucursal'];
+		$sucursal = $_SESSION['idsucursal'];
 
 		$fecha_inicio = $_REQUEST["fecha_inicio"];
 		$fecha_fin = $_REQUEST["fecha_fin"];

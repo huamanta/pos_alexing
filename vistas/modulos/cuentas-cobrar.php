@@ -284,7 +284,7 @@ date_default_timezone_set('America/Lima');
                     </div>
                   </div>
 
-                  <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                  <!--div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
                     <label>Almacén:</label>
 
                     <div class="input-group">
@@ -296,12 +296,12 @@ date_default_timezone_set('America/Lima');
                       <select id="idsucursal2" name="idsucursal2" class="form-control">
                       </select>
                     </div>
-                  </div>
+                  </div-->
 
                   <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
                     <label>Cliente:</label>
 
-                    <div class="input-group mb-3">
+                    <div class="input-group ">
                       <select id="idcliente" name="idcliente" class="form-control select2" required>
                       </select>
                     </div>
@@ -1618,5 +1618,6 @@ date_default_timezone_set('America/Lima');
 
 </div>
 
+<script type="text/javascript" src="vistas/js/recibo-pago-print.js"></script>
 <script type="text/javascript" src="vistas/js/cuentascobrar.js"></script>
 <script type="text/javascript" src="vistas/js/ventasfechacliente2.js"></script>

@@ -1218,14 +1218,8 @@ switch ($_GET["op"]) {
 	case 'selectCliente2':
 		require_once "../modelos/Persona.php";
 		$persona = new Persona();
-
 		$rspta = $persona->listarc();
-
-		echo '<option value="Todos">Todos</options>';
-
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idpersona . '>' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
-		}
+		echo $rspta;
 		break;
 
 	case 'selectCliente3':

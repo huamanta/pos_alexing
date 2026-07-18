@@ -16,37 +16,6 @@ class Helpers
             : 1;
     }
 
-    public static function get_currency_symbol($monto, $currency = 'PEN', $locale = "es_PE")
-    {
-        // Validar monto
-        if (!is_numeric($monto)) {
-            $monto = 0;
-        }
-
-        // Crear formateador
-        $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
-
-        // Formatear moneda correctamente (usa código ISO: PEN, USD, EUR, etc.)
-        $resultado = $formatter->formatCurrency($monto, $currency);
-
-        return $resultado;
-    }
-
-    public static function get_symbol($currency = 'PEN', $locale = "es_PE")
-    {
-        if (!class_exists('NumberFormatter')) {
-            return $currency;
-        }
-
-        $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
-
-        // Truco: formatear 0 y extraer símbolo
-        $formatted = $formatter->formatCurrency(0, $currency);
-
-        // Quitar números y dejar solo símbolo
-        return trim(preg_replace('/[0-9\.\,\s]/', '', $formatted));
-    }
-
     public function get_currency_code($idsucursal)
     {
         $stmt = $this->pdo->prepare("
@@ -65,6 +34,42 @@ class Helpers
         return $result['moneda'] ?? 'PEN';
     }
 
+
+    public function get_currency_symbol($monto, $currency = null, $locale = "es_PE")
+    {
+        if (!$currency) {
+            $sucursal = $_SESSION['idsucursal'];
+            $currency = self::get_currency_code($sucursal);
+        }
+        // Validar monto
+        if (!is_numeric($monto)) {
+            $monto = 0;
+        }
+
+        // Crear formateador
+        $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
+
+        // Formatear moneda correctamente (usa código ISO: PEN, USD, EUR, etc.)
+        $resultado = $formatter->formatCurrency($monto, $currency);
+
+        return $resultado;
+    }
+
+
+    public static function get_symbol($currency = 'PEN', $locale = "es_PE")
+    {
+        if (!class_exists('NumberFormatter')) {
+            return $currency;
+        }
+
+        $formatter = new NumberFormatter($locale, NumberFormatter::CURRENCY);
+
+        // Truco: formatear 0 y extraer símbolo
+        $formatted = $formatter->formatCurrency(0, $currency);
+
+        // Quitar números y dejar solo símbolo
+        return trim(preg_replace('/[0-9\.\,\s]/', '', $formatted));
+    }
 
     public function getUserPermissionAccion(string $nombre_permiso): bool
     {

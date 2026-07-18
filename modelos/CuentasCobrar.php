@@ -4,11 +4,9 @@ require "../configuraciones/Conexion.php";
 require "Contratos.php";
 require_once "Helpers.php";
 require_once "../configuraciones/ConexionPdo.php";
+require_once "../core/FluentQuery.php";
 require_once "../core/FluentSave.php";
 
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
 class CuentasCobrar extends Helpers
 {
 
@@ -451,26 +449,45 @@ class CuentasCobrar extends Helpers
 
     public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
     {
-        $filtroCliente = ($idcliente != "Todos" && $idcliente != null)
-            ? "AND v.idcliente = '$idcliente'" : "";
+        $query = (new DBQuery($this->pdo))
+            ->select([
+                "SUM(cpc.abonototal) AS abonototal",
+                "SUM(cpc.deudatotal) AS deudatotal",
+                "SUM(v.total_venta) AS totalventa",
+                "SUM(v.interes) AS interes"
+            ])
+            ->from("cuentas_por_cobrar cpc")
+            ->join(
+                "venta v",
+                "cpc.idventa = v.idventa"
+            )
+            ->whereBetween(
+                "cpc.fecharegistro",
+                $fecha_inicio . " 00:00:00",
+                $fecha_fin . " 23:59:59"
+            )
+            ->where("cpc.condicion", "=", "1")
+            ->where("v.idsucursal", "=", $idsucursal);
 
-        $filtroSucursal = ($idsucursal != "Todos" && $idsucursal != null && $idsucursal != "")
-            ? "AND v.idsucursal = '$idsucursal'" : "";
 
-        $sql = "SELECT 
-                SUM(cpc.abonototal) AS abonototal,
-                SUM(cpc.deudatotal) AS deudatotal,
-                SUM(v.total_venta) AS totalventa,
-                v.interes AS interes
-            FROM cuentas_por_cobrar cpc
-            INNER JOIN venta v ON cpc.idventa = v.idventa
-            WHERE DATE(cpc.fecharegistro) >= '$fecha_inicio'
-              AND DATE(cpc.fecharegistro) <= '$fecha_fin'
-              AND cpc.condicion = '1'
-              $filtroCliente
-              $filtroSucursal";
+        if (!empty($idcliente)) {
+            $query->where(
+                "v.idcliente",
+                "=",
+                $idcliente
+            );
+        }
 
-        return ejecutarConsulta($sql)->fetch_object();
+        $data = $query->first();
+
+
+        return json_encode([
+            "abonototal" => Helpers::get_currency_symbol($data["abonototal"]),
+            "deudatotal" => Helpers::get_currency_symbol($data["deudatotal"]),
+            "totalventa" => Helpers::get_currency_symbol($data["totalventa"]),
+            "saldo" => Helpers::get_currency_symbol($data["deudatotal"]-$data["abonototal"]),
+            "interes" => Helpers::get_currency_symbol($data["interes"])
+        ]);
     }
 
 
@@ -1433,10 +1450,6 @@ class CuentasCobrar extends Helpers
 
     public function listaVentasPorCliente($idcliente, $idsucursal, $fecha_inicio, $fecha_fin)
     {
-        $filtroSucursal = "";
-        if (!empty($idsucursal) && $idsucursal != "Todos" && $idsucursal != "null") {
-            $filtroSucursal = "AND v.idsucursal = '$idsucursal'";
-        }
 
         $sql = "SELECT
                 v.idventa,
@@ -1453,7 +1466,7 @@ class CuentasCobrar extends Helpers
             FROM venta v
             WHERE v.idcliente='$idcliente'
               AND DATE(v.fecha_hora) BETWEEN '$fecha_inicio' AND '$fecha_fin'
-              $filtroSucursal
+              AND v.idsucursal = '$idsucursal'
             ORDER BY v.idventa DESC";
 
         $result = ejecutarConsulta($sql);
@@ -1560,13 +1573,13 @@ class CuentasCobrar extends Helpers
             $data[] = array(
                 "0" => $row->fecha_venta,
                 "1" => $doc,
-                "2" => number_format($row->total_venta, 2),
-                "3" => number_format($recibido, 2),
+                "2" => Helpers::get_currency_symbol($row->total_venta),
+                "3" => Helpers::get_currency_symbol($recibido),
                 "4" => ($row->interes)
-                    ? number_format($interes, 2) . " <span class='badge badge-info'>{$row->interes}%</span>"
+                    ? Helpers::get_currency_symbol($interes) . " <span class='badge badge-info'>{$row->interes}%</span>"
                     : "0.00",
-                "5" => number_format($totalAbonado, 2),
-                "6" => number_format($saldoPendiente, 2),
+                "5" => Helpers::get_currency_symbol($totalAbonado),
+                "6" => Helpers::get_currency_symbol($saldoPendiente),
                 "7" => $badgeRef,
                 "8" => $estado,
                 "9" => $buttons
@@ -1795,73 +1808,108 @@ class CuentasCobrar extends Helpers
 
     public function listaCreditos($idsucursal, $fecha_inicio, $fecha_fin, $idcliente = null)
     {
-        $filtroSucursal = "";
-        if (!empty($idsucursal) && $idsucursal != "Todos" && $idsucursal != "null") {
-            $filtroSucursal = "AND v.idsucursal = '$idsucursal'";
+        $query = (new DBQuery($this->pdo))
+            ->select([
+                "cl.idpersona",
+                "cl.nombre AS cliente",
+                "COUNT(DISTINCT v.idventa) AS total_creditos",
+                "SUM(c.deudatotal) AS deuda_total",
+                "SUM(c.abonototal) AS total_pagado",
+                "SUM(c.deudatotal - c.abonototal) AS saldo_pendiente",
+                "cl.latitude",
+                "cl.longitude",
+                "cl.direccion"
+            ])
+            ->from("persona cl")
+            ->join(
+                "venta v",
+                "v.idcliente = cl.idpersona"
+            )
+            ->join(
+                "cuentas_por_cobrar c",
+                "c.idventa = v.idventa"
+            )
+            ->whereBetween(
+                "c.fecharegistro",
+                $fecha_inicio . " 00:00:00",
+                $fecha_fin . " 23:59:59"
+            )
+            ->where(
+                "c.condicion",
+                "=",
+                "1"
+            )
+            ->where(
+                "v.idsucursal",
+                "=",
+                $idsucursal
+            );
+
+
+        if (!empty($idcliente)) {
+            $query->where(
+                "cl.idpersona",
+                "=",
+                $idcliente
+            );
         }
 
-        $filtroCliente = "";
-        if (!empty($idcliente) && $idcliente != "Todos" && $idcliente != "null") {
-            $filtroCliente = "AND cl.idpersona = '$idcliente'";
-        }
 
-        $sql = "SELECT 
-                    cl.idpersona,
-                    cl.nombre AS cliente,
-                    COUNT(DISTINCT v.idventa) AS total_creditos,
-                    SUM(c.deudatotal) AS deuda_total,
-                    SUM(c.abonototal) AS total_pagado,
-                    SUM(c.deudatotal - c.abonototal) AS saldo_pendiente,
-                    cl.latitude,
-                    cl.longitude,
-                    cl.direccion
-                FROM persona cl
-                INNER JOIN venta v ON v.idcliente = cl.idpersona
-                INNER JOIN cuentas_por_cobrar c ON c.idventa = v.idventa
-                WHERE DATE(c.fecharegistro) BETWEEN '$fecha_inicio' AND '$fecha_fin'
-                  AND c.condicion = '1'
-                  $filtroSucursal
-                  $filtroCliente
-                GROUP BY cl.idpersona, cl.nombre
-                ORDER BY cl.nombre ASC";
-        $result = ejecutarConsulta($sql);
+        $query->groupBy([
+            "cl.idpersona",
+            "cl.nombre",
+            "cl.latitude",
+            "cl.longitude",
+            "cl.direccion"
+        ])
+            ->orderBy(
+                "cl.nombre",
+                "ASC"
+            );
 
-        $data = array();
+
+        $result = $query->get();
+
+
+        $data = [];
         $count = 1;
-        while ($row = $result->fetch_object()) {
-            $nombreCliente = addslashes($row->cliente);
-            $data[] = array(
+
+
+        foreach ($result as $row) {
+
+            $nombreCliente = addslashes($row["cliente"]);
+
+            $data[] = [
                 "0" => $count++,
-                "1" => $row->cliente,
-                "2" => $row->total_creditos,
-                "3" => number_format($row->deuda_total, 2),
-                "4" => number_format($row->total_pagado, 2),
-                "5" => number_format($row->saldo_pendiente, 2),
+                "1" => $row["cliente"],
+                "2" => $row["total_creditos"],
+                "3" => Helpers::get_currency_symbol($row["deuda_total"]),
+                "4" => Helpers::get_currency_symbol($row["total_pagado"]),
+                "5" => Helpers::get_currency_symbol($row["saldo_pendiente"]),
                 "6" => "
                         <button class='btn btn-sm btn-success'
-                            onclick='verDetalleCliente({$row->idpersona}, " . json_encode($nombreCliente) . ")'>
+                            onclick='verDetalleCliente({$row["idpersona"]}, " . json_encode($nombreCliente) . ")'>
                             <i class='fas fa-eye'></i> Ver Detalle
                         </button>
-
                         <button class='btn btn-info btn-sm'
                             onclick='verUbicacionCliente(
-                                " . json_encode($row->latitude) . ",
-                                " . json_encode($row->longitude) . ",
-                                " . json_encode($row->direccion) . "
+                                " . json_encode($row["latitude"]) . ",
+                                " . json_encode($row["longitude"]) . ",
+                                " . json_encode($row["direccion"]) . "
                             )'
                             title='Ver ubicación del cliente'>
                             <i class='fas fa-search-location'></i> Ubicación
                         </button>
-                        "
-            );
+                    "
+            ];
         }
 
-        return json_encode(array(
+        return json_encode([
             "sEcho" => 1,
             "iTotalRecords" => count($data),
             "iTotalDisplayRecords" => count($data),
             "aaData" => $data
-        ));
+        ]);
     }
 
     public function amortizarDeudaVenta($idsucursal, $idventa, $formapago, $montopago, $idcaja, $idpersonal, $idusuario)

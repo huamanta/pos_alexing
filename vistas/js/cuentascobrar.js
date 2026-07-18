@@ -52,13 +52,6 @@ function init() {
         $('#idsucursal2').select2('');
     });
 
-    //Cargamos los items al select cliente
-    $.post("controladores/venta.php?op=selectCliente2", function (r) {
-        $("#idcliente").html(r);
-        $('#idcliente').select2('');
-        toggleBtnEstadoCuenta();
-    });
-
     $("#btnEstadoCuentaAccion").on("click", function () {
         let idcliente = $("#idcliente").val();
         let fecha_inicio = $("#fecha_inicio").val();
@@ -72,6 +65,47 @@ function init() {
         verEstadoCuentaCliente(idcliente, fecha_inicio, fecha_fin);
     });
 }
+
+$("#idcliente").select2({
+    placeholder: "Buscar cliente...",
+    allowClear: true,
+    minimumInputLength: 2,
+
+    ajax: {
+        url: "controladores/venta.php?op=selectCliente2",
+        type: "POST",
+        dataType: "json",
+        delay: 250,
+
+        data: function (params) {
+            return {
+                search: params.term,
+                page: params.page || 1,
+                only_client: 1
+            };
+        },
+
+        processResults: function (data, params) {
+
+            params.page = params.page || 1;
+
+            return {
+                results: data.data.map(function (item) {
+                    return {
+                        id: item.idpersona,
+                        text: item.nombre + " - " + item.num_documento
+                    };
+                }),
+
+                pagination: {
+                    more: data.meta.current_page < data.meta.last_page
+                }
+            };
+        },
+
+        cache: true
+    }
+});
 
 function toggleBtnEstadoCuenta() {
     let idcliente = $("#idcliente").val();
@@ -271,31 +305,9 @@ function listarSaldos() {
         type: "get",
         dataType: "json",
         success: function (data) {
-            var saldos = 0
-            if (data.abonototal != null && data.deudatotal != null) {
-                saldos = parseFloat(data.deudatotal) - parseFloat(data.abonototal);
-            }
-            $("#saldos").text('S/. ' + parseFloat(data.deudatotal).toFixed(2));
-            // Corrige la evaluación condicional para #abonos
-            $("#abonos").text('S/. ' + ((data.abonototal != null) ? parseFloat(data.abonototal).toFixed(2) : '0.00'));
-
-            // Corrige la evaluación condicional para #deudas
-            $("#deudas").text('S/. ' + ((data.deudatotal != null) ? parseFloat(saldos).toFixed(2) : '0.00'));
-
-            // if (idcliente != "Todos" && idcliente != null && data.deudatotal != 0 && data.deudatotal != null) {
-            //     $('#panel_amortizar').html(`
-            //         <div class="btn-group">
-            //             <button class="btn btn-success btn-sm"
-            //                 onclick="amortizarDeuda(${saldos}, ${idcliente}, '${fecha_inicio}', '${fecha_fin}')">
-            //                  Amortizar
-            //             </button>
-
-
-            //         </div>
-            //     `);
-            // } else {
-            //     $('#panel_amortizar').html('<i class="fas fa-money-bill fa-lg" style="font-size: 20px !important"></i>');
-            // }
+            $("#saldos").text(data.deudatotal);
+            $("#abonos").text(data.abonototal);
+            $("#deudas").text(data.saldo);
             $('#panel_amortizar').html('<i class="fas fa-money-bill fa-lg" style="font-size: 20px !important"></i>');
 
         },
@@ -816,349 +828,7 @@ async function guardaryeditar(e) {
                     </tr>`;
             }
 
-            const win = window.open("", "_blank", "width=800,height=700");
-
-            win.document.write(`
-<!DOCTYPE html>
-<html>
-
-<head>
-<meta charset="utf-8">
-
-<title>Recibo de Pago</title>
-
-<style>
-
-@page{
-    size:80mm auto;
-    margin:0;
-}
-
-body{
-    width:80mm;
-    margin:0;
-    font-family:'Courier New', monospace;
-    font-size:11px;
-}
-
-.ticket{
-    width:76mm;
-    padding:2mm;
-}
-
-.center{
-    text-align:center;
-}
-
-.right{
-    text-align:right;
-}
-
-.bold{
-    font-weight:bold;
-}
-
-.line{
-    border-top:1px dashed #000;
-    margin:5px 0;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-td{
-    padding:2px 0;
-    vertical-align:top;
-}
-
-.small{
-    font-size:10px;
-}
-
-.total{
-    font-size:14px;
-}
-
-</style>
-
-</head>
-
-
-<body>
-
-
-<div class="ticket">
-
-
-<!-- EMPRESA -->
-<div class="center bold">
-
-${t.empresa || ""}
-
-<br>
-
-${t.sucursal || ""}
-
-<br>
-
-RUC: ${t.ruc || ""}
-
-<br>
-
-${t.direccion || ""}
-
-</div>
-
-
-<div class="line"></div>
-
-
-<!-- TITULO -->
-
-<div class="center bold">
-
-RECIBO DE PAGO
-
-<br>
-
-N° ${t.idpago || ""}
-
-</div>
-
-
-<div class="line"></div>
-
-
-
-<!-- DATOS -->
-
-<table>
-
-<tr>
-<td>Fecha:</td>
-<td class="right">${t.fecha}</td>
-</tr>
-
-
-<tr>
-<td>Venta:</td>
-<td class="right">${t.idventa}</td>
-</tr>
-
-
-<tr>
-<td>Cuota:</td>
-<td class="right">${t.idcpc}</td>
-</tr>
-
-
-<tr>
-<td>Cliente:</td>
-<td class="right">${t.cliente || "-"}</td>
-</tr>
-
-
-</table>
-
-
-
-<div class="line"></div>
-
-
-
-<!-- DETALLE PAGO -->
-
-<div class="center bold">
-
-DETALLE DEL PAGO
-
-</div>
-
-
-<table>
-
-
-<tr>
-<td>Capital:</td>
-<td class="right">
-S/ ${Number(t.capital_pagado).toFixed(2)}
-</td>
-</tr>
-
-
-<tr>
-<td>Mora:</td>
-<td class="right">
-S/ ${Number(t.mora_pagada).toFixed(2)}
-</td>
-</tr>
-
-
-<tr>
-<td>Descuento:</td>
-<td class="right">
-S/ ${Number(t.descuento).toFixed(2)}
-</td>
-</tr>
-
-
-
-<tr class="bold total">
-
-<td>
-TOTAL PAGADO:
-</td>
-
-<td class="right">
-S/ ${Number(t.monto_pagado).toFixed(2)}
-</td>
-
-</tr>
-
-
-</table>
-
-
-
-<div class="line"></div>
-
-
-
-<!-- FORMA PAGO -->
-
-
-<div class="center bold">
-
-FORMA DE PAGO
-
-</div>
-
-
-<table>
-
-${formaPago}
-
-</table>
-
-
-
-<div class="line"></div>
-
-
-
-<!-- SALDOS -->
-
-
-<div class="center bold">
-
-SALDO PENDIENTE
-
-</div>
-
-
-<table>
-
-
-<tr>
-
-<td>
-Capital:
-</td>
-
-<td class="right">
-S/ ${Number(t.saldo).toFixed(2)}
-</td>
-
-</tr>
-
-
-<tr>
-
-<td>
-Mora:
-</td>
-
-<td class="right">
-S/ ${Number(t.mora_pendiente || 0).toFixed(2)}
-</td>
-
-</tr>
-
-
-</table>
-
-
-
-<div class="line"></div>
-
-
-
-<!-- OBSERVACION -->
-
-<div>
-
-<b>Observación:</b>
-
-<br>
-
-${t.observacion || "-"}
-
-</div>
-
-
-
-<div class="line"></div>
-
-
-
-<div class="center small">
-
-Gracias por su pago
-
-<br>
-
-Vendedor:
-${t.personal || "-"}
-
-
-<br><br>
-
-
-Documento interno de cobranza
-
-</div>
-
-
-
-</div>
-
-
-
-<script>
-
-window.onload=function(){
-
-    window.focus();
-
-    window.print();
-
-    window.onafterprint=function(){
-
-        window.close();
-
-    }
-
-}
-
-<\/script>
-
-
-</body>
-
-</html>
-`);
+            abrirReciboPagoTicket(t, formaPago);
 
             win.document.close();
 

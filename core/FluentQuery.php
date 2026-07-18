@@ -54,9 +54,15 @@ class DBQuery
         return $this;
     }
 
-    public function groupBy(string $column): self
+    public function groupBy(string|array $columns): self
     {
-        $this->groups[] = $column;
+        if (is_array($columns)) {
+            foreach ($columns as $column) {
+                $this->groups[] = $column;
+            }
+        } else {
+            $this->groups[] = $columns;
+        }
 
         return $this;
     }

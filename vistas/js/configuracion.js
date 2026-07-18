@@ -51,6 +51,7 @@ function listarConfiguracion() {
             }
 
             $("#moneda").val(sucursal.moneda);
+            $("#ubigeo").val(sucursal.ubigeo);
             const ubigeo = sucursal?.ubigeo || null;
             let depIdToSelect = ubigeo ? ubigeo.substring(0, 2) : null;
             cargarDepartamentos(depIdToSelect);
