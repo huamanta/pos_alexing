@@ -542,6 +542,33 @@ date_default_timezone_set('America/Lima');
   </div>
 </div>
 
+<div class="modal fade" id="modalIncidencias">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title">Lista de seguimiento de credito</h4>
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="row table-responsive">
+          <table id="tbllistadohistorialIncidencias" class="table table-striped table-bordered" width="100%">
+            <thead>
+              <th>#</th>
+              <th style="width: 300px;">Detalle</th>
+              <th>F. compromiso</th>
+              <th>Monto</th>
+              <th>F. cumplimiento</th>
+              <th>Descp.</th>
+              <th>Acciones</th>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="modalAdjuntos">
   <div class="modal-dialog modal-md">
     <div class="modal-content">
@@ -755,7 +782,8 @@ date_default_timezone_set('America/Lima');
             <div class="col-sm-3">
               <div class="form-group">
                 <label>Monto Tarjeta:</label>
-                <input type="text" class="form-control" id="montoPagarTarjeta" name="montoPagarTarjeta" value="0" readonly>
+                <input type="text" class="form-control" id="montoPagarTarjeta" name="montoPagarTarjeta" value="0"
+                  readonly>
               </div>
             </div>
 
@@ -927,7 +955,8 @@ date_default_timezone_set('America/Lima');
               <div class="form-group">
                 <label for="name" class="control-label">Monto a Pagar: <a style="float: right; color: blue"
                     id="btn-seleccionar-cuotas"> Seleccionar cuotas</a></label>
-                <input type="text" class="form-control" id="montoPagarAmortizar" name="montoPagarAmortizar" required="" readonly>
+                <input type="text" class="form-control" id="montoPagarAmortizar" name="montoPagarAmortizar" required=""
+                  readonly>
               </div>
             </div>
             <div class="col-sm-4">
@@ -1013,7 +1042,7 @@ date_default_timezone_set('America/Lima');
 
                   <div class="box-info">
                     <span class="label">Cuotas a pagar</span>
-                    <input class="valor" id="cantidadSeleccionada"  style="width: 80px; text-align: center;"/>
+                    <input class="valor" id="cantidadSeleccionada" style="width: 80px; text-align: center;" />
                   </div>
 
                   <div class="box-info total">
@@ -1128,14 +1157,17 @@ date_default_timezone_set('America/Lima');
 
                   <select class="form-control" name="tipo_visita" id="tipo_visita">
 
-                    <option value="LLAMADA">
-                      LLAMADA
-                    </option>
                     <option value="VISITA">
                       VISITA
                     </option>
                     <option value="COBRANZA">
                       COBRANZA
+                    </option>
+                    <option value="REUNION">
+                      REUNION
+                    </option>
+                    <option value="LLAMADA">
+                      LLAMADA
                     </option>
                     <option value="WHATSAPP">
                       WHATSAPP
@@ -1163,14 +1195,11 @@ date_default_timezone_set('America/Lima');
                 <!-- PRIORIDAD -->
                 <div class="form-group col-md-6">
                   <label>Prioridad</label>
-
                   <select class="form-control" name="prioridad" id="prioridad">
-
                     <option value="BAJA">Baja</option>
                     <option value="MEDIA">Media</option>
                     <option value="ALTA">Alta</option>
                     <option value="URGENTE">Urgente</option>
-
                   </select>
                 </div>
 
@@ -1372,10 +1401,10 @@ date_default_timezone_set('America/Lima');
 
         <div class="modal-body">
 
-          <input type="hidden" id="idcpc" name="idcpc">
-          <input type="hidden" id="idventa" name="idventa">
-          <input type="hidden" id="idcliente" name="idcliente">
-
+          <input type="hidden" id="idcpcProgramado" name="idcpc">
+          <input type="hidden" id="idventaProgramado" name="idventa">
+          <input type="hidden" id="idclienteProgramado" name="idcliente">
+          <div id="contenedorMensajeMora"></div>
           <div class="form-group">
             <label>
               Fecha de Compromiso <span class="text-danger">*</span>

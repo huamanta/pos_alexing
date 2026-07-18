@@ -380,6 +380,12 @@ switch ($_GET["op"]) {
 		echo $rspta;
 		break;
 
+	case 'listarHistorialIncidencias':
+		$idventa = isset($_GET["idventa"]) ? limpiarCadena($_GET["idventa"]) : "";
+		$rspta = $cuentascobrar->listarHistorialIncidencias($idventa);
+		echo $rspta;
+		break;
+
 	case 'mostrarSeguimiento':
 		$idseguimiento = isset($_POST["idseguimiento"]) ? limpiarCadena($_POST["idseguimiento"]) : "";
 		$response = $cuentascobrar->mostrarSeguimiento($idseguimiento);

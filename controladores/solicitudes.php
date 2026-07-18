@@ -4,6 +4,11 @@ require_once "../modelos/Solicitudes.php";
 $credito = new Solicitudes();
 
 switch ($_GET["op"]) {
+    case 'listarGeneralSolicitudes':
+        $idsucursal = $_SESSION['idsucursal'];
+        $result = $credito->listarGeneralSolicitudes($idsucursal);
+        echo $result;
+        break;
 
     case 'listarSolicitudes':
 

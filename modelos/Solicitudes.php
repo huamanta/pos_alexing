@@ -7,6 +7,31 @@ require_once 'Helpers.php';
 class Solicitudes extends Persona
 {
 
+    public function listarGeneralSolicitudes($idsucursal)
+    {
+        $result = (new DBQuery($this->pdo))
+            ->select([
+                "COUNT(*) AS total_solicitudes",
+                "SUM(CASE WHEN s.estado = 'EN_PROCESO' THEN 1 ELSE 0 END) AS en_proceso",
+                "SUM(CASE WHEN s.estado = 'OBSERVADO' THEN 1 ELSE 0 END) AS observado",
+                "SUM(CASE WHEN s.estado = 'RECHAZADO' THEN 1 ELSE 0 END) AS rechazado",
+                "SUM(CASE WHEN s.estado = 'APROBADO' THEN 1 ELSE 0 END) AS aprobado"
+            ])
+            ->from("solicitud_credito s")
+            ->join(
+                "persona p",
+                "p.idpersona = s.idcliente"
+            )
+            ->where(
+                "s.idsucursal",
+                "=",
+                $idsucursal
+            )
+            ->first();
+
+        return json_encode($result);
+    }
+
     public function listarSolicitudes(
         $idsucursal,
         $search = '',

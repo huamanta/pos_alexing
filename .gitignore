@@ -20,5 +20,7 @@ files/personal/*
 !files/personal/.gitkeep
 files/logos/*
 !files/logos/default.png
+!files/seguimientos/.gitkeep
+files/seguimientos/*
 !files/logos/.gitkeep
 /logs

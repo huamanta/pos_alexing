@@ -10,6 +10,7 @@ let archivos = [];
 let steps = [];
 
 function init() {
+  listarGeneralSolicitudes();
   listarSolicitudes();
 
   $("#filtroEstado, #filtroRiesgo, #filtroPaso").change(function () {
@@ -65,6 +66,24 @@ $("#idcliente").select2({
         cache: true
     }
 });
+
+function listarGeneralSolicitudes() {
+
+    $.get(
+        "controladores/solicitudes.php?op=listarGeneralSolicitudes",
+        function (response) {
+
+            const data = JSON.parse(response);
+
+            $("#kpiTotalSolicitudes").text(data.total_solicitudes);
+            $("#kpiObservados").text(data.observado);
+            $("#kpiRechazados").text(data.rechazado);
+            $("#kpiAprobados").text(data.aprobado);
+
+        }
+    );
+
+}
 
 function listarSolicitudes() {
   tablaSolicitudes = $("#tblSolicitudes").DataTable({

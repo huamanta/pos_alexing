@@ -485,7 +485,7 @@ class CuentasCobrar extends Helpers
             "abonototal" => Helpers::get_currency_symbol($data["abonototal"]),
             "deudatotal" => Helpers::get_currency_symbol($data["deudatotal"]),
             "totalventa" => Helpers::get_currency_symbol($data["totalventa"]),
-            "saldo" => Helpers::get_currency_symbol($data["deudatotal"]-$data["abonototal"]),
+            "saldo" => Helpers::get_currency_symbol($data["deudatotal"] - $data["abonototal"]),
             "interes" => Helpers::get_currency_symbol($data["interes"])
         ]);
     }
@@ -1608,17 +1608,12 @@ class CuentasCobrar extends Helpers
 
             // Mostrar únicamente las cuotas del último refinanciamiento
             $sql = "SELECT
-                    cc.idcpc,
+                    cc.*,
                     DATE_FORMAT(cc.fecharegistro, '%d/%m/%y | %H:%i:%s %p') AS fecha_registro,
                     DATE_FORMAT(cc.fechavencimiento, '%d/%m/%y') AS fecha_vencimiento,
                     DATE(cc.fechavencimiento) AS fecha_venc_raw,
-                    cc.abonototal,
-                    cc.deudatotal,
-                    cc.deuda,
-                    cc.estado_pago,
-                    cc.mora,
-                    cc.idventa,
-                    v.idcliente
+                    v.idcliente,
+                    v.idsucursal
                 FROM cuentas_por_cobrar cc
                 INNER JOIN venta v ON v.idventa = cc.idventa
                 WHERE cc.idventa = '$idventa'
@@ -1630,21 +1625,16 @@ class CuentasCobrar extends Helpers
 
             // Mostrar cuotas originales
             $sql = "SELECT
-                    cc.idcpc,
+                    cc.*,
                     DATE_FORMAT(cc.fecharegistro, '%d/%m/%y | %H:%i:%s %p') AS fecha_registro,
                     DATE_FORMAT(cc.fechavencimiento, '%d/%m/%y') AS fecha_vencimiento,
                     DATE(cc.fechavencimiento) AS fecha_venc_raw,
-                    cc.abonototal,
-                    cc.deudatotal,
-                    cc.deuda,
-                    cc.estado_pago,
-                    cc.mora,
-                    cc.mora_pagada,
-                    cc.descuento,
-                    cc.idventa,
-                    v.idcliente
+                    v.idcliente,
+                    v.idsucursal,
+                    p.direccion
                 FROM cuentas_por_cobrar cc
                 INNER JOIN venta v ON v.idventa = cc.idventa
+                LEFT JOIN persona p ON p.idpersona = v.idcliente
                 WHERE cc.idventa = '$idventa'
                   AND cc.idrefinanciamiento IS NULL
                   AND cc.idrefinanciamiento_origen IS NULL
@@ -1717,25 +1707,47 @@ class CuentasCobrar extends Helpers
                 if (Helpers::getUserPermissionAccion('Programar visita')) {
 
                     $acciones .= "
-                    <button
-                        type='button'
-                        class='btn btn-sm btn-warning'
-                        onclick='programarVisita({$row->idcpc}, {$row->idventa}, {$row->idcliente})'
-                        title='Programar visita'>
-                        <i class='fas fa-calendar-check'></i>
-                    </button>";
+                            <button
+                                type='button'
+                                class='btn btn-sm btn-warning'
+                                onclick='programarVisita({$row->idcpc}, {$row->idventa}, {$row->idcliente}, " . json_encode($row->direccion) . ")'
+                                title='Programar visita'>
+                                <i class='fas fa-calendar-check'></i>
+                            </button>";
                 }
 
                 if (
                     Helpers::getUserPermissionAccion('Programar compromiso de pago') &&
                     $row->fecha_venc_raw < date('Y-m-d')
                 ) {
+                    $config = Helpers::verificarMoraCredito($row->idsucursal);
+                    $mora = 0;
+                    $dias_mora = 0;
+                    if ($config["activo"] || floatval($row->deuda) > 0) {
+                        $hoy = new DateTime();
+                        $ultimaFecha = !empty($row->fecha_update_mora)
+                            ? $row->fecha_update_mora
+                            : $row->fechavencimiento;
+                        $fechaInicio = new DateTime($ultimaFecha);
+                        $dias = $fechaInicio->diff($hoy)->days;
 
+
+                        if ($dias > 0) {
+                            $moraNueva = round(
+                                floatval($row->deuda) *
+                                ($config["valor"] / 100) *
+                                $dias,
+                                2
+                            );
+                            $dias_mora = $dias;
+                            $mora = $moraNueva;
+                        }
+                    }
                     $acciones .= "
                 <button
                     type='button'
                     class='btn btn-sm btn-danger'
-                    onclick='programarCompromiso({$row->idcpc}, {$row->idventa}, {$row->idcliente})'
+                    onclick='programarCompromiso({$row->idcpc}, {$row->idventa}, {$row->idcliente}, {$saldo}, {$dias_mora}, {$mora})'
                     title='Programar compromiso de pago'>
                     <i class='fas fa-file-signature'></i>
                 </button>";
@@ -2724,6 +2736,45 @@ class CuentasCobrar extends Helpers
         return json_encode($results);
     }
 
+
+    public function listarHistorialIncidencias($idventa)
+    {
+        $sql = "SELECT cp.*, cc.idventa, cc.idcpc
+        FROM compromiso_pago cp
+        INNER JOIN cuentas_por_cobrar cc
+            ON cc.idcpc = cp.idcpc
+        WHERE cc.idventa = $idventa
+          AND cp.deleted_at IS NULL
+          AND cc.deleted_at IS NULL";
+          $rspta = ejecutarConsulta($sql);
+
+        $data = array();
+
+        $count = 1;
+        while ($reg = $rspta->fetch_object()) {
+            $data[] = array(
+                "0" => $count++,
+                "1" => $reg->detalle,
+                "2" => $reg->fecha_compromiso,
+                "3" => Helpers::get_currency_symbol($reg->monto),
+                "4" => $reg->fecha_cumplimiento,
+                "5" => $reg->observacion,
+                "6" => '<button class="btn btn-primary" onclick="verArchivosAdjuntos(' . $reg->idcompromiso_pago . ')">
+                        <i class="fa fa-edit"></i>
+                        </button>'
+            );
+        }
+
+        $results = array(
+            "sEcho" => 1, //Información para el datatables
+            "iTotalRecords" => count($data), //enviamos el total registros al datatable
+            "iTotalDisplayRecords" => count($data), //enviamos el total registros a visualizar
+            "aaData" => $data
+        );
+
+        return json_encode($results);
+    }
+
     public function mostrarSeguimiento($idseguimiento)
     {
         $sql = "SELECT
@@ -2760,31 +2811,26 @@ class CuentasCobrar extends Helpers
         if (empty($idseguimiento)) {
             return json_encode([
                 "status" => false,
-                "msg" => "Debe enviar el segimiento a eliminar"
+                "msg" => "Debe enviar el seguimiento a eliminar"
             ]);
         }
-        $date = date('Y-m-d H:i:s');
 
-        $sql = "UPDATE seguimiento_clientes
-            SET deleted_at = '$date'
-            WHERE idseguimiento = '$idseguimiento'";
-
-        $rspta = ejecutarConsulta($sql);
+        $rspta = (new FluentSaver($this->pdo))
+            ->table("seguimiento_clientes")
+            ->primaryKey("idseguimiento")
+            ->softDelete($idseguimiento);
 
         if ($rspta) {
-
             return json_encode([
                 "status" => true,
                 "msg" => "Seguimiento eliminado correctamente"
             ]);
-
-        } else {
-
-            return json_encode([
-                "status" => false,
-                "msg" => "No se pudo eliminar el seguimiento"
-            ]);
         }
+
+        return json_encode([
+            "status" => false,
+            "msg" => "No se pudo eliminar el seguimiento"
+        ]);
     }
 
 
@@ -2798,10 +2844,29 @@ class CuentasCobrar extends Helpers
         $idusuario
     ) {
 
+        // Obtener datos para generar el detalle
+        $sqlCuota = "SELECT COUNT(*) AS cuota
+             FROM cuentas_por_cobrar
+             WHERE idventa = '$idventa'
+               AND idcpc <= '$idcpc'";
+        $cuota = ejecutarConsultaSimpleFila($sqlCuota);
+
+        $sqlCliente = "SELECT * FROM persona WHERE idpersona = '$idcliente'";
+        $cliente = ejecutarConsultaSimpleFila($sqlCliente);
+
+        $detalle = sprintf(
+            "Compromiso de pago de la cuota %d del cliente %s para el %s por un monto de %s.",
+            $cuota['cuota'],
+            $cliente['nombre'],
+            date('d/m/Y', strtotime($fecha_compromiso)),
+            Helpers::get_currency_symbol($monto)
+        );
+
         $sql = "INSERT INTO compromiso_pago(
                 idcpc,
                 fecha_compromiso,
                 monto,
+                detalle,
                 observacion,
                 idusuario
             )
@@ -2809,6 +2874,7 @@ class CuentasCobrar extends Helpers
                 '$idcpc',
                 '$fecha_compromiso',
                 '$monto',
+                '$detalle',
                 '$observacion',
                 '$idusuario'
             )";
@@ -2818,13 +2884,13 @@ class CuentasCobrar extends Helpers
         if (!$rspta) {
             return json_encode([
                 "status" => false,
-                "msg" => "No se guardo compromiso de pago"
+                "msg" => "No se guardó el compromiso de pago."
             ]);
         }
 
         return json_encode([
             "status" => true,
-            "msg" => "El compromiso de pago se ha guardado correctamente"
+            "msg" => "El compromiso de pago se ha guardado correctamente."
         ]);
     }
 

@@ -1033,6 +1033,34 @@ function listarHistorialSeguimiento(idventa) {
     }).DataTable();
 }
 
+
+function listarHistorialIncidncias(idventa) {
+    $('#modalIncidencias').modal('show');
+    tbllistadohistorial = $("#tbllistadohistorialIncidencias").dataTable({
+        "aProcessing": true,
+        "aServerSide": false,
+        "responsive": true,
+        "lengthChange": false,
+        "autoWidth": false,
+        "ajax": {
+            url: "controladores/cuentascobrar.php?op=listarHistorialIncidencias",
+            data: {
+                idventa: idventa
+            },
+            type: "get",
+            dataType: "json",
+            dataSrc: function (json) {
+                return json && json.aaData ? json.aaData : [];
+            },
+            error: function (e) {
+                console.log(e.responseText);
+            }
+        },
+        "bDestroy": true,
+        "iDisplayLength": 10
+    }).DataTable();
+}
+
 function guardarComentarioCredito() {
     let comentario = $('#comentarioCredito').val();
 
@@ -1072,6 +1100,13 @@ function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
             className: 'btn btn-info btn-sm btn-comment',
             action: function () {
                 listarHistorialSeguimiento(idventa);
+            }
+        },
+        {
+            text: '<i class="fas fa-comment-dots"></i> Incidencias',
+            className: 'btn btn-info btn-sm btn-incidencias',
+            action: function () {
+                listarHistorialIncidncias(idventa);
             }
         },
         {
@@ -1253,15 +1288,40 @@ tomorrow.setDate(tomorrow.getDate() + 1);
 document.getElementById("fecha_compromiso").min =
     tomorrow.toISOString().split("T")[0];
 
-function programarCompromiso(idcpc, idventa, idcliente) {
-    $("#idcpc").val(idcpc);
-    $("#idventa").val(idventa);
-    $("#idcliente").val(idcliente);
+function programarCompromiso(idcpc, idventa, idcliente, saldo, dias_mora, mora) {
+    // 1. Limpiar por si el modal ya se había abierto antes
+    $("#contenedorMensajeMora").empty();
 
+    // 2. Llenar los campos ocultos
+    $("#idcpcProgramado").val(idcpc);
+    $("#idventaProgramado").val(idventa);
+    $("#idclienteProgramado").val(idcliente);
+    $("#monto").val(saldo);
     $("#fecha_compromiso").val('');
-    $("#monto").val('');
     $("#observacion").val('');
 
+    // 3. Construir el mensaje de alerta (Usando clases de Bootstrap)
+    // Formateamos la mora a 2 decimales asumiendo que es una moneda (ej. Soles/Dólares)
+    let moraFormateada = parseFloat(mora).toFixed(2);
+
+    let htmlAlerta = `
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <h5 class="alert-heading"><i class="fas fa-exclamation-triangle mr-2"></i>¡Cuenta Pendiente con Mora!</h5>
+            <p class="mb-0">
+                La cuota presenta <strong>${dias_mora} días de mora</strong> acumulados, 
+                generando un monto de penalidad de <strong>S/ ${moraFormateada}</strong>. 
+                Por favor, registre una fecha de compromiso para gestionar el cobro.
+            </p>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    `;
+
+    // 4. Inyectar el mensaje en el modal
+    $("#contenedorMensajeMora").html(htmlAlerta);
+
+    // 5. Abrir el modal
     $("#modalCompromisoPago").modal("show");
 }
 
@@ -1400,10 +1460,11 @@ function verUbicacionCliente(latitude, longitude, direccion) {
     window.open(url, '_blank');
 }
 
-function programarVisita(idcpc, idventa, idcliente) {
+function programarVisita(idcpc, idventa, idcliente, direccion) {
     $("#idcpc_visita").val(idcpc);
     $("#idventa_visita").val(idventa);
     $("#idcliente_visita").val(idcliente);
+    $("#direccion").val(direccion);
 
     $("#modalProgramarVisita").modal("show");
     $.post("controladores/usuario.php?op=selectEmpleado", function (r) {
