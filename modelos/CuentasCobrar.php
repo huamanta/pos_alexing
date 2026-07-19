@@ -435,8 +435,7 @@ class CuentasCobrar extends Helpers
 
     public function deudacliente($idventa)
     {
-
-        $sql = "SELECT v.idventa,v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal + cc.abonototal,2) as deudatotal, cc.deudatotal as deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
+        $sql = "SELECT v.idventa,v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal + cc.abonototal,2) as deudatotal, cc.deuda as deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
 				FROM venta v 
 				INNER JOIN cuentas_por_cobrar cc
 		        ON v.idventa = cc.idventa
@@ -1827,7 +1826,7 @@ class CuentasCobrar extends Helpers
                 "COUNT(DISTINCT v.idventa) AS total_creditos",
                 "SUM(c.deudatotal) AS deuda_total",
                 "SUM(c.abonototal) AS total_pagado",
-                "SUM(c.deudatotal - c.abonototal) AS saldo_pendiente",
+                "SUM(c.deuda) AS saldo_pendiente",
                 "cl.latitude",
                 "cl.longitude",
                 "cl.direccion"

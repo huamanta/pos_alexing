@@ -31,8 +31,7 @@ function generarReporte(){
 	var fecha_inicio = $("#fecha_inicio").val();
 	var fecha_fin = $("#fecha_fin").val();
 	var idcliente = $("#idcliente").val();
-	var idsucursal = $("#idsucursal2").val();
-	window.open(origin+'/'+lastPath+'/'+'reportes/rptventasxclientec.php?fechai='+fecha_inicio + '&fechaf='+fecha_fin + '&idcliente='+idcliente + '&idsucursal='+idsucursal);
+	window.open('reportes/rptventasxclientec.php?fechai='+fecha_inicio + '&fechaf='+fecha_fin + '&idcliente='+idcliente + '&idsucursal='+idsucursal, "_blank");
 }
 
 //Función Listar

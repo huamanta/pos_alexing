@@ -235,13 +235,12 @@ date_default_timezone_set('America/Lima');
         <div class="col-12">
           <div class="card">
 
-            <div class="card-header" hidden>
+            <div class="card-header">
               <h3 class="card-title"> </h3>
 
               <div class="row">
-                <div class="col-md-2" hidden>
-                  <button class="btn btn-danger" id="btnGenerarReporte" onclick="generarReporte();"><i
-                      class="fa fa-file"></i> Reporte Consolidado</button>
+                <div class="col-md-2">
+
                 </div>
               </div>
 
@@ -250,13 +249,11 @@ date_default_timezone_set('America/Lima');
             <div class="card-body">
               <div id="panelSuperiorCxC">
                 <div class="col-md-3">
-                  <button class="btn btn-warning" id="btnEnviarRecordatorioSemana">
-                    <i class="fas fa-paper-plane"></i> Enviar recordatorios vencidos
-                  </button>
+
                 </div>
                 <div class="row">
 
-                  <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                  <div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-12">
                     <label>Fecha Inicio:</label>
 
                     <div class="input-group">
@@ -270,7 +267,7 @@ date_default_timezone_set('America/Lima');
                     </div>
                   </div>
 
-                  <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                  <div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-12">
                     <label>Fecha Fin:</label>
 
                     <div class="input-group">
@@ -284,20 +281,6 @@ date_default_timezone_set('America/Lima');
                     </div>
                   </div>
 
-                  <!--div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
-                    <label>Almacén:</label>
-
-                    <div class="input-group">
-                      <div class="input-group-prepend">
-                        <span class="input-group-text">
-                          <i class="fas fa-store-alt"></i>
-                        </span>
-                      </div>
-                      <select id="idsucursal2" name="idsucursal2" class="form-control">
-                      </select>
-                    </div>
-                  </div-->
-
                   <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
                     <label>Cliente:</label>
 
@@ -308,6 +291,23 @@ date_default_timezone_set('America/Lima');
                     <div id="btnEstadoCuenta" style="display:none;">
                       <button type="button" class="btn btn-info btn-sm" id="btnEstadoCuentaAccion">
                         Estado de Cuenta
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="form-group col-lg-5 col-md-3 col-sm-4 col-xs-12 text-right">
+                    <br>
+                    <div style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:nowrap;">
+                      <button class="btn btn-danger" id="btnGenerarReporte" onclick="generarReporte();"><i
+                          class="fa fa-file"></i>
+                        Consolidado
+                      </button>
+                      <button class="btn btn-warning" id="btnEnviarRecordatorioSemana">
+                        <i class="fas fa-paper-plane"></i> Recordatorios 
+                      </button>
+                      <button onclick="descragarResumen()" type="button" class="btn btn-success"
+                        id="btnEstadoCuentaAccion">
+                        <i class="fas fa-file-excel"></i> RESUMEN
                       </button>
                     </div>
                   </div>
@@ -422,37 +422,6 @@ date_default_timezone_set('America/Lima');
                   </tfoot>
                 </table>
               </div>
-
-              <!--table id="tbllistadocuentasxcobrar" class="table table-striped">
-                <thead>
-                  <th>Fecha Registro</th>
-                  <th>Documento</th>
-                  <th>Cliente</th>
-                  <th>Dni / Ruc</th>
-                  <th>Saldo</th>
-                  <th>Abonos Total</th>
-                  <th>Total Venta</th>
-                  <th>Fecha Vencimiento</th>
-                  <th>Estado</th>
-                  <th>Detalle</th>
-                  <th>Acciones</th>
-                </thead>
-                <tbody>
-                </tbody>
-                <tfoot>
-                  <th>Fecha Registro</th>
-                  <th>Documento</th>
-                  <th>Cliente</th>
-                  <th>Dni / Ruc</th>
-                  <th>Saldo</th>
-                  <th>Abonos Total</th>
-                  <th>Total Venta</th>
-                  <th>Fecha Vencimiento</th>
-                  <th>Estado</th>
-                  <th>Detalle</th>
-                  <th>Acciones</th>
-                </tfoot>
-              </table-->
             </div>
             <!-- /.card-body -->
           </div>

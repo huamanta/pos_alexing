@@ -466,4 +466,13 @@ class Helpers
         $sucursal = self::sucursalConfiguracion($idsucursal);
         return $sucursal['is_send_sunat'];
     }
+
+    public function dataSucursal(int $idsucursal)
+    {
+        return (new DBQuery($this->pdo))
+            ->from('sucursal s')
+            ->join('empresas e', 's.idempresa = e.idempresa')
+            ->where('idsucursal', '=', $idsucursal)
+            ->first();
+    }
 }

@@ -1674,5 +1674,21 @@ function verArchivosAdjuntos(data) {
     $("#modalAdjuntos").modal("show");
 }
 
+function descragarResumen() {
+    const idcliente = $("#idcliente").val() || '';
+    const fecha_inicio = $("#fecha_inicio").val();
+    const fecha_fin = $("#fecha_fin").val();
+    console.log(fecha_inicio, fecha_fin);
+    
+    const params = new URLSearchParams({
+        idcliente: idcliente,
+        fecha_inicio: fecha_inicio,
+        fecha_fin: fecha_fin
+    });
+    console.log(`modelos/exports/exportar_cuentas_cobrar.php?${params.toString()}`);
+    
+    window.location.href = `modelos/exports/exportar_cuentas_cobrar.php?${params.toString()}`;
+}
+
 
 init();
