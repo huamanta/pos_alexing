@@ -36,6 +36,9 @@ class DBQuery
 
     private bool $lockForUpdate = false;
 
+    private array $havings = [];
+    private array $havingBindings = [];
+
     // Paginación
     private int $page = 1;
     private int $perPage = 15;
@@ -45,6 +48,58 @@ class DBQuery
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
+    }
+
+    public function having(
+        string $column,
+        string $operator,
+        $value
+    ): self {
+
+        $key = 'having_' . count($this->havingBindings);
+
+        $this->havings[] = "{$column} {$operator} :{$key}";
+
+        $this->havingBindings[$key] = $value;
+
+        return $this;
+    }
+
+
+    public function havingRaw(
+        string $sql,
+        array $bindings = []
+    ): self {
+
+        foreach ($bindings as $value) {
+
+            $key = 'having_' . count($this->havingBindings);
+
+            $sql = preg_replace(
+                '/\?/',
+                ':' . $key,
+                $sql,
+                1
+            );
+
+            $this->havingBindings[$key] = $value;
+        }
+
+        $this->havings[] = $sql;
+
+        return $this;
+    }
+
+    private function buildHaving(): string
+    {
+        if (empty($this->havings)) {
+            return '';
+        }
+
+        return "\nHAVING " . implode(
+            ' AND ',
+            $this->havings
+        );
     }
 
     public function lockForUpdate(): self
@@ -191,6 +246,7 @@ class DBQuery
         $sql = $this->buildQuery()
             . $whereSql
             . $this->buildGroupBy()
+            . $this->buildHaving()
             . $this->buildOrderBy();
 
         if ($this->limit !== null) {
@@ -203,7 +259,7 @@ class DBQuery
 
         $stmt = $this->pdo->prepare($sql);
 
-        $this->bindParams($stmt, array_merge($this->baseParams, $params));
+        $this->bindParams($stmt, array_merge($this->baseParams, $params, $this->havingBindings));
 
         $stmt->execute();
 
@@ -218,6 +274,7 @@ class DBQuery
         $sql = $this->buildQuery()
             . $whereSql
             . $this->buildGroupBy()
+            . $this->buildHaving()
             . $this->buildOrderBy()
             . " LIMIT 1";
 
@@ -227,7 +284,7 @@ class DBQuery
 
         $stmt = $this->pdo->prepare($sql);
 
-        $this->bindParams($stmt, array_merge($this->baseParams, $params));
+        $this->bindParams($stmt, array_merge($this->baseParams, $params, $this->havingBindings));
 
         $stmt->execute();
 
@@ -239,18 +296,24 @@ class DBQuery
         [$whereSql, $params] = $this->buildWhereClause();
 
         $sql = "
-        SELECT COUNT(*)
-        FROM (
-            {$this->buildQuery()}
-            {$whereSql}
-        ) t
-    ";
+                SELECT COUNT(*)
+                FROM (
+                    {$this->buildQuery()}
+                    {$whereSql}
+                    {$this->buildGroupBy()}
+                    {$this->buildHaving()}
+                ) t
+                ";
 
         $stmt = $this->pdo->prepare($sql);
 
         $this->bindParams(
             $stmt,
-            array_merge($this->baseParams, $params)
+            array_merge(
+                $this->baseParams,
+                $params,
+                $this->havingBindings
+            )
         );
 
         $stmt->execute();
@@ -614,7 +677,8 @@ class DBQuery
 
         $finalParams = array_merge(
             $this->baseParams,
-            $params
+            $params,
+            $this->havingBindings
         );
 
 
@@ -632,6 +696,7 @@ class DBQuery
             {$this->buildQuery()}
             {$whereSql}
             {$this->buildGroupBy()}
+            {$this->buildHaving()}
             {$orderSql}
             LIMIT :limit
             OFFSET :offset
@@ -704,6 +769,7 @@ class DBQuery
                 {$this->buildQuery()}
                 {$whereSql}
                 {$this->buildGroupBy()}
+                {$this->buildHaving()}
             ) total
             ";
 
@@ -748,14 +814,20 @@ class DBQuery
         array $params
     ): void {
 
-
         foreach ($params as $key => $value) {
 
-            $type =
-                is_int($value)
-                ? PDO::PARAM_INT
-                : PDO::PARAM_STR;
+            // quitar : si viene incluido
+            $key = ltrim($key, ':');
 
+            if (is_int($value)) {
+                $type = PDO::PARAM_INT;
+            } elseif (is_bool($value)) {
+                $type = PDO::PARAM_BOOL;
+            } elseif ($value === null) {
+                $type = PDO::PARAM_NULL;
+            } else {
+                $type = PDO::PARAM_STR;
+            }
 
             $stmt->bindValue(
                 ":" . $key,

@@ -2209,9 +2209,9 @@ class Consultas
 		return ejecutarConsultaSimpleFila($sql);
 	}
 
-	public function totalproductos()
+	public function totalproductos($idsucursal)
 	{
-		$sql = "SELECT COUNT(*) totalpro FROM producto WHERE condicion=1";
+		$sql = "SELECT COUNT(*) totalpro FROM producto WHERE idsucursal='$idsucursal' AND condicion=1";
 		return ejecutarConsultaSimpleFila($sql);
 	}
 

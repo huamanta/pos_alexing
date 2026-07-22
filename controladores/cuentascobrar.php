@@ -353,6 +353,7 @@ switch ($_GET["op"]) {
 	case 'guardarVisita':
 		$id = isset($_POST["id"]) ? limpiarCadena($_POST["id"]) : "";
 		$idcpc = isset($_POST["idcpc"]) ? limpiarCadena($_POST["idcpc"]) : "";
+		$idrecuperacion = isset($_POST["idrecuperacion"]) ? limpiarCadena($_POST["idrecuperacion"]) : "";
 		$idventa = isset($_POST["idventa"]) ? limpiarCadena($_POST["idventa"]) : "";
 		$idcliente = isset($_POST["idcliente"]) ? limpiarCadena($_POST["idcliente"]) : "";
 		$fecha_programada = isset($_POST["fecha_programada"]) ? limpiarCadena($_POST["fecha_programada"]) : "";
@@ -368,7 +369,7 @@ switch ($_GET["op"]) {
 			$rspta = $cuentascobrar->editarVisita($id, $idcpc, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final);
 			echo $rspta;
 		} else {
-			$rspta = $cuentascobrar->guardarVisita($idcpc, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final);
+			$rspta = $cuentascobrar->guardarVisita($idcpc, $idrecuperacion, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final);
 			echo $rspta;
 		}
 

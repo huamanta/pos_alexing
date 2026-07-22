@@ -28,7 +28,6 @@ $idsucursal2 = isset($_POST["idsucursal2"]) ? limpiarCadena($_POST["idsucursal2"
 switch ($_GET["op"]) {
 
 	case 'guardaryeditar':
-
 		if (empty($idmovimiento)) {
 			$rspta = $cajachica->insertar($opcionEI, $idcaja, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento);
 			echo $rspta ? "Movimiento registrada" : "Movimiento no se pudo registrar";

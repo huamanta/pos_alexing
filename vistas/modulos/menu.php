@@ -465,6 +465,15 @@ $helpers = new Helpers();
                 </li>
               <?php endif; ?>
 
+              <?php if ($helpers->getUserPermisoModulo('Recuperacion de vehiculos', 'Cobros')): ?>
+                <li class="nav-item" style="font-size: 14px">
+                  <a href="recuperacion-vehiculos" class="nav-link" id="navRecuperacionVehiculo">
+                    <i class="fas fa-car nav-icon text-primary" style="font-size: 14px"></i>
+                    <p>Recuperación</p>
+                  </a>
+                </li>
+              <?php endif; ?>
+
             </ul>
           </li>
           <?php

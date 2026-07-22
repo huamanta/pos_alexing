@@ -1822,9 +1822,9 @@ class Venta extends Helpers
         return ejecutarConsulta($sql);
     }
 
-    public function comprobantesPendientes()
+    public function comprobantesPendientes($idsucursal)
     {
-        $sql = "SELECT COUNT(*) as total FROM venta WHERE estado = 'Por Enviar'";
+        $sql = "SELECT COUNT(*) as total FROM venta WHERE idsucursal = '$idsucursal' AND estado = 'Por Enviar'";
         return ejecutarConsultaSimpleFila($sql);
     }
 

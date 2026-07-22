@@ -2301,6 +2301,7 @@ class CuentasCobrar extends Helpers
 
     public function guardarVisita(
         $idcpc,
+        $idrecuperacion,
         $idventa,
         $idcliente,
         $fecha_programada,
@@ -2337,6 +2338,7 @@ class CuentasCobrar extends Helpers
                     'idventa',
                     'iddocumento',
                     'idcpc',
+                    'idrecuperacion',
                     'idcliente',
                     'direccion',
                     'fecha_final'
@@ -2345,15 +2347,16 @@ class CuentasCobrar extends Helpers
                     'idventa' => 'int',
                     'iddocumento' => 'int',
                     'idcpc' => 'int',
+                    'idrecuperacion' => 'int',
                     'idcliente' => 'int',
                     'idpersonal' => 'int',
                     'idusuario' => 'int'
                 ])
                 ->data([
-
                     'idventa' => $idventa,
                     'iddocumento' => $iddocumento,
                     'idcpc' => $idcpc,
+                    'idrecuperacion' => $idrecuperacion,
                     'idcliente' => $idcliente,
                     'idpersonal' => $idpersonal,
                     'tipo' => $tipo_visita,

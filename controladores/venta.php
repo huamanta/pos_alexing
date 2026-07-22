@@ -109,7 +109,8 @@ switch ($_GET["op"]) {
 
 	case 'comprobantesPendientes':
 		$venta = new Venta();
-		$result = $venta->comprobantesPendientes();
+		$idsucursal = $_SESSION['idsucursal'];
+		$result = $venta->comprobantesPendientes($idsucursal);
 		echo json_encode($result);
 		break;
 

@@ -6,6 +6,7 @@ class FluentPaginator {
         paginationId = "#pagination",
         searchSelector = "#search",
         limitSelector = "#limit",
+        tableBody = null,
         extraParams = null
     }) {
 
@@ -14,12 +15,63 @@ class FluentPaginator {
         this.paginationId = paginationId;
         this.searchSelector = searchSelector;
         this.limitSelector = limitSelector;
+        this.tableBody = tableBody;
         this.extraParams = extraParams;
 
         this.page = 1;
         this.timer = null;
 
         this.bindEvents();
+    }
+
+    showLoading() {
+
+        if (!this.tableBody) return;
+
+        let colspan = $(this.tableBody)
+            .closest("table")
+            .find("thead th")
+            .length;
+
+        $(this.tableBody).html(`
+        <tr>
+            <td colspan="${colspan}" class="text-center py-5">
+
+                <div class="spinner-border text-primary mb-2"></div>
+
+                <br>
+
+                <strong>Cargando información...</strong>
+
+            </td>
+        </tr>
+    `);
+
+    }
+
+    showError(message = "Ocurrió un error") {
+
+        if (!this.tableBody) return;
+
+        let colspan = $(this.tableBody)
+            .closest("table")
+            .find("thead th")
+            .length;
+
+        $(this.tableBody).html(`
+        <tr>
+            <td colspan="${colspan}" class="text-center text-danger py-4">
+
+                <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+
+                <br>
+
+                ${message}
+
+            </td>
+        </tr>
+    `);
+
     }
 
     bindEvents() {
@@ -48,6 +100,8 @@ class FluentPaginator {
 
         this.page = page;
 
+        this.showLoading();
+
         let params = new URLSearchParams({
             page,
             limit: $(this.limitSelector).val() || 10,
@@ -66,17 +120,34 @@ class FluentPaginator {
 
         }
 
-        let response = await fetch(
-            `${this.url}&${params.toString()}`
-        );
+        try {
 
-        let json = await response.json();
+            let response = await fetch(
+                `${this.url}&${params.toString()}`
+            );
 
-        this.permissions = json.permissions || {};
+            let json = await response.json();
 
-        this.renderTabla(json.data, this.permissions);
+            this.permissions = json.permissions || {};
 
-        this.renderPagination(json.meta);
+            this.renderTabla(
+                json.data,
+                this.permissions
+            );
+
+            this.renderPagination(
+                json.meta
+            );
+
+        } catch (e) {
+
+            console.error(e);
+
+            this.showError(
+                "No se pudo cargar la información."
+            );
+
+        }
 
     }
 

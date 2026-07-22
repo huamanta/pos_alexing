@@ -6,68 +6,68 @@ require_once __DIR__ . "/email.php";
 $usuario = new Usuario();
 function getClientIP(): string
 {
-    $ip = '';
+	$ip = '';
 
-    $isProduction = env('APP_ENV', 'local') === 'production';
-    $checkExternalIP = env('APP_EXTERNAL_IP_CHECK', false);
+	$isProduction = env('APP_ENV', 'local') === 'production';
+	$checkExternalIP = env('APP_EXTERNAL_IP_CHECK', false);
 
-    $headers = [
-        'HTTP_CLIENT_IP',
-        'HTTP_X_FORWARDED_FOR',
-        'HTTP_X_FORWARDED',
-        'HTTP_X_CLUSTER_CLIENT_IP',
-        'HTTP_FORWARDED_FOR',
-        'HTTP_FORWARDED',
-        'REMOTE_ADDR'
-    ];
+	$headers = [
+		'HTTP_CLIENT_IP',
+		'HTTP_X_FORWARDED_FOR',
+		'HTTP_X_FORWARDED',
+		'HTTP_X_CLUSTER_CLIENT_IP',
+		'HTTP_FORWARDED_FOR',
+		'HTTP_FORWARDED',
+		'REMOTE_ADDR'
+	];
 
-    foreach ($headers as $header) {
+	foreach ($headers as $header) {
 
-        if (!empty($_SERVER[$header])) {
+		if (!empty($_SERVER[$header])) {
 
-            $ips = explode(',', $_SERVER[$header]);
+			$ips = explode(',', $_SERVER[$header]);
 
-            foreach ($ips as $i) {
+			foreach ($ips as $i) {
 
-                $i = trim($i);
+				$i = trim($i);
 
-                if (filter_var($i, FILTER_VALIDATE_IP)) {
-                    $ip = $i;
-                    break 2;
-                }
-            }
-        }
-    }
-
-
-    // Resolver IP pública solo si está habilitado
-    if (
-        $isProduction &&
-        $checkExternalIP &&
-        ($ip === '127.0.0.1' || $ip === '::1' || $ip === '')
-    ) {
-
-        try {
-
-            $externalIp = file_get_contents('https://api.ipify.org');
-
-            if (filter_var($externalIp, FILTER_VALIDATE_IP)) {
-                $ip = $externalIp;
-            }
-
-        } catch (Exception $e) {
-            $ip = '0.0.0.0';
-        }
-    }
+				if (filter_var($i, FILTER_VALIDATE_IP)) {
+					$ip = $i;
+					break 2;
+				}
+			}
+		}
+	}
 
 
-    // Ambiente local
-    if (!$isProduction && ($ip === '' || $ip === '::1')) {
-        $ip = '127.0.0.1';
-    }
+	// Resolver IP pública solo si está habilitado
+	if (
+		$isProduction &&
+		$checkExternalIP &&
+		($ip === '127.0.0.1' || $ip === '::1' || $ip === '')
+	) {
+
+		try {
+
+			$externalIp = file_get_contents('https://api.ipify.org');
+
+			if (filter_var($externalIp, FILTER_VALIDATE_IP)) {
+				$ip = $externalIp;
+			}
+
+		} catch (Exception $e) {
+			$ip = '0.0.0.0';
+		}
+	}
 
 
-    return $ip;
+	// Ambiente local
+	if (!$isProduction && ($ip === '' || $ip === '::1')) {
+		$ip = '127.0.0.1';
+	}
+
+
+	return $ip;
 }
 
 
@@ -180,10 +180,17 @@ switch ($_GET["op"]) {
 		$only_personal = isset($_POST["only_personal"]) ? limpiarCadena($_POST["only_personal"]) : "";
 		$idpersonal = isset($_POST["idpersonal"]) ? limpiarCadena($_POST["idpersonal"]) : "";
 		$rspta = $empleado->select($idusuario, $idpersonal, $only_personal);
-		echo '<option value="">Seleccione...</option>';
+		$empleados = [];
 		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idpersonal . '>' . $reg->nombre . '</option>';
+			$empleados[] = $reg;
 		}
+		echo '<option value="">Seleccione...</option>';
+		$autoSelect = count($empleados) === 1;
+		foreach ($empleados as $reg) {
+			$selected = $autoSelect ? ' selected' : '';
+			echo '<option value="' . $reg->idpersonal . '"' . $selected . '>' . $reg->nombre . '</option>';
+		}
+
 		break;
 
 	case "selectEmpleadoServicio":

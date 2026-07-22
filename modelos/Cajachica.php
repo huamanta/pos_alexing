@@ -13,7 +13,7 @@ class Cajachica
 	{
 		$idpersonal_sql = ($idpersonal === '' || $idpersonal === null) ? "NULL" : "'$idpersonal'";
 		$fechaActual = date('Y-m-d H:i:s');
-		$sql = "INSERT INTO movimiento (tipo,idcaja,idsucursal,idpersonal,monto,descripcion, formapago, totaldeposito, noperacion, idconcepto_movimiento,fecha)
+		$sql = "INSERT INTO movimiento (tipo,idcaja,idsucursal,idpersonal,totalefectivo,descripcion, formapago, totaldeposito, noperacion, idconcepto_movimiento,fecha)
 		VALUES ('$tipo','$idcaja','$idsucursal',$idpersonal_sql,'$monto','$descripcion', '$formapago', '$totaldeposito', '$noperacion', '$idconcepto_movimiento','$fechaActual')";
 		return ejecutarConsulta($sql);
 	}
@@ -21,7 +21,7 @@ class Cajachica
 	public function editar($idmovimiento, $tipo, $idcaja, $idsucursal, $idpersonal, $monto, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento)
 	{
 		$idpersonal_sql = ($idpersonal === '' || $idpersonal === null) ? "NULL" : "'$idpersonal'";
-		$sql = "UPDATE movimiento SET tipo='$tipo', idcaja=$idcaja, idsucursal=$idsucursal, idpersonal=$idpersonal_sql, monto='$monto', formapago='$formapago', totaldeposito='$totaldeposito', noperacion='$noperacion', descripcion='$descripcion', idconcepto_movimiento='$idconcepto_movimiento' WHERE idmovimiento='$idmovimiento'";
+		$sql = "UPDATE movimiento SET tipo='$tipo', idcaja=$idcaja, idsucursal=$idsucursal, idpersonal=$idpersonal_sql, totalefectivo='$monto', formapago='$formapago', totaldeposito='$totaldeposito', noperacion='$noperacion', descripcion='$descripcion', idconcepto_movimiento='$idconcepto_movimiento' WHERE idmovimiento='$idmovimiento'";
 		return ejecutarConsulta($sql);
 	}
 
@@ -44,7 +44,7 @@ class Cajachica
             descripcion LIKE '%$search%' OR
             formapago LIKE '%$search%' OR
             tipo LIKE '%$search%' OR
-            monto LIKE '%$search%' OR
+            totalefectivo LIKE '%$search%' OR
             totaldeposito LIKE '%$search%'
         )";
 		}
@@ -69,7 +69,7 @@ class Cajachica
 						    '<span class="badge bg-danger">EGRESO</span>' : 
 						    '<span class="badge bg-success">INGRESO</span>',
 				"3" => $reg->formapago,
-				"4" => $reg->monto,
+				"4" => $reg->totalefectivo,
 				"5" => $reg->totaldeposito,
 				"6" => '<div class="dropdown">
           <button class="btn btn-secondary dropdown-toggle" type="button" data-toggle="dropdown">
@@ -198,11 +198,11 @@ class Cajachica
 			return false; // Tipo inválido
 		}
 		$idpersonal_sql = ($idpersonal === '' || $idpersonal === null) ? "NULL" : "'$idpersonal'";
-		$sql = "INSERT INTO movimiento (tipo,idcaja,idsucursal,idpersonal,monto,descripcion, formapago, totaldeposito, noperacion, idconcepto_movimiento)
+		$sql = "INSERT INTO movimiento (tipo,idcaja,idsucursal,idpersonal,totalefectivo,descripcion, formapago, totaldeposito, noperacion, idconcepto_movimiento)
 		VALUES ('$tipo','$idcaja','$idsucursal',$idpersonal_sql,'$monto','$descripcion', '$formapago', '$totaldeposito', '$noperacion', '$idconcepto_movimiento')";
 		ejecutarConsulta($sql);
 
-		$sql_asistencia = "UPDATE asistencias SET estado_pago='1', monto='$monto' WHERE idasistencia='$idasistencia'";
+		$sql_asistencia = "UPDATE asistencias SET estado_pago='1', totalefectivo='$monto' WHERE idasistencia='$idasistencia'";
 		return ejecutarConsulta($sql_asistencia);
 	}
 
@@ -219,7 +219,7 @@ class Cajachica
     $id = $this->obtenerIdConceptoAdelanto();
     $id_adelanto = $id['idconcepto_movimiento'];
 
-    $sql = "SELECT fecha, descripcion, monto 
+    $sql = "SELECT fecha, descripcion, totalefectivo, totaldeposito 
             FROM movimiento
             WHERE idpersonal='$idpersonal'
             AND idconcepto_movimiento = '$id_adelanto'
@@ -231,7 +231,7 @@ class Cajachica
 
 public function listarIngresosSemana($idpersonal, $desde, $hasta) {
 
-    $sql = "SELECT fecha, descripcion, monto
+    $sql = "SELECT fecha, descripcion, totalefectivo, totaldeposito
             FROM movimiento
             WHERE idpersonal = '$idpersonal'
             AND tipo = 'Ingresos'
@@ -249,7 +249,8 @@ public function listarAdelantosPorFechas($desde, $hasta) {
     $sql = "SELECT 
                 DATE_FORMAT(m.fecha, '%d/%m/%Y %h:%i %p') AS fecha, 
                 m.descripcion, 
-                m.monto, 
+                m.totalefectivo, 
+                m.totaldeposito, 
                 p.nombre AS trabajador
             FROM movimiento m
             LEFT JOIN personal p ON p.idpersonal = m.idpersonal
@@ -265,7 +266,7 @@ public function listarDiasTrabajadosPorFechas($desde, $hasta) {
     $sql = "SELECT 
                 p.nombre AS trabajador,
                 a.fecha,
-                a.monto AS monto_dia
+                SUM(a.totalefectivo + a.totaldeposito) AS monto_dia
             FROM asistencias a
             LEFT JOIN personal p ON p.idpersonal = a.idpersonal
             WHERE DATE(a.fecha) BETWEEN '$desde' AND '$hasta'

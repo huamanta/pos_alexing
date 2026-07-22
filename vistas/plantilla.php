@@ -252,6 +252,7 @@ if (isset($rutaActual)) {
           $_GET["ruta"] == "solicitudes" ||
           $_GET["ruta"] == "refinanciamientos" ||
           $_GET["ruta"] == "configuracion" ||
+          $_GET["ruta"] == "recuperacion-vehiculos" ||
           $_GET["ruta"] == "salir"
         ) {
 

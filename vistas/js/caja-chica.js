@@ -173,7 +173,7 @@ function mostrar(idmovimiento) {
 
       verificarConceptoMovimiento();
 
-      $("#montoPagar").val(data.monto);
+      $("#montoPagar").val(data.totalefectivo);
       $("#descripcion").val(data.descripcion);
       $("#idmovimiento").val(data.idmovimiento);
       setTimeout(function () {

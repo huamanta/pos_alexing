@@ -221,6 +221,7 @@ date_default_timezone_set('America/Lima');
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
             <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item">Creditos</li>
             <li class="breadcrumb-item active">Cuentas por Cobrar</li>
           </ol>
         </div>
@@ -229,23 +230,11 @@ date_default_timezone_set('America/Lima');
   </section>
 
   <!-- Main content -->
-  <section class="content" style="margin-top: -20px;">
+  <section class="content">
     <div class="container-fluid">
       <div class="row">
         <div class="col-12">
           <div class="card">
-
-            <div class="card-header">
-              <h3 class="card-title"> </h3>
-
-              <div class="row">
-                <div class="col-md-2">
-
-                </div>
-              </div>
-
-            </div>
-            <!-- /.card-header -->
             <div class="card-body">
               <div id="panelSuperiorCxC">
                 <div class="col-md-3">
@@ -303,7 +292,7 @@ date_default_timezone_set('America/Lima');
                         Consolidado
                       </button>
                       <button class="btn btn-warning" id="btnEnviarRecordatorioSemana">
-                        <i class="fas fa-paper-plane"></i> Recordatorios 
+                        <i class="fas fa-paper-plane"></i> Recordatorios
                       </button>
                       <button onclick="descragarResumen()" type="button" class="btn btn-success"
                         id="btnEstadoCuentaAccion">
@@ -1350,7 +1339,6 @@ date_default_timezone_set('America/Lima');
     </div>
   </div>
 </div>
-
 
 <div class="modal fade" id="modalCompromisoPago" tabindex="-1" role="dialog" aria-labelledby="modalCompromisoPagoLabel">
   <div class="modal-dialog modal-md" role="document">

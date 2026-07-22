@@ -661,13 +661,13 @@ class Persona extends Helpers
 			"color" => "secondary",
 			"total_creditos" => 0,
 			"cuotas_vencidas" => 0,
+			"porcentaje_pagado" => 0,
 			"deuda_total" => 0,
 			"total_pagado" => 0,
 			"cuotas_pagadas_tarde" => 0,
 			"dias_atraso_actual" => 0,
 			"dias_atraso_historico" => 0,
 			"mora_total" => 0,
-			"porcentaje_pagado" => 0
 		];
 	}
 
