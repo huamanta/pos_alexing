@@ -28,33 +28,49 @@
 
               <div class="row">
                 <div class="col-md-1">
-                  <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Nuevo</button>
+                  <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal"
+                    data-target="#myModal"><i class="fa fa-plus"></i> Nuevo</button>
                 </div>
               </div>
 
             </div>
             <!-- /.card-header -->
             <div class="card-body">
-              <table id="tbllistado" class="table table-striped">
-                <thead>
-                  <th>Nombre</th>
-                  <th>Documento</th>
-                  <th>Número</th>
-                  <th>Teléfono</th>
-                  <th>Email</th>
-                  <th>Acciones</th>
-                </thead>
-                <tbody>
-                </tbody>
-                <tfoot>
-                  <th>Nombre</th>
-                  <th>Documento</th>
-                  <th>Número</th>
-                  <th>Teléfono</th>
-                  <th>Email</th>
-                  <th>Acciones</th>
-                </tfoot>
-              </table>
+              <div class="row">
+                <div class="col-md-6 d-flex align-items-center">
+                  <span class="mr-2">Mostrar</span>
+                  <select id="limit" class="form-control" style="width:100px" onchange="cambiarLimit()">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
+
+                  <span class="ml-2">Registros</span>
+
+                </div>
+                <div class="col-md-6">
+                  <input type="text" id="search" class="form-control" placeholder="Buscar...">
+                </div>
+                <div class="col-md-12">
+                  <table id="tbllistado" class="table table-striped">
+                    <thead>
+                      <th>Nombre</th>
+                      <th>Documento</th>
+                      <th>Número</th>
+                      <th>Teléfono</th>
+                      <th>Email</th>
+                      <th>Acciones</th>
+                    </thead>
+                    <tbody id="tbodyProveedores">
+                    </tbody>
+                  </table>
+                </div>
+                <div class="col-md-6"></div>
+                <div class="col-md-6">
+                  <div id="pagination"></div>
+                </div>
+              </div>
             </div>
             <!-- /.card-body -->
           </div>
@@ -87,7 +103,8 @@
                 <label for="name" class="control-label">Nombre:</label>
                 <input type="hidden" name="idpersona" id="idpersona">
                 <input type="hidden" name="tipo_persona" id="tipo_persona" value="Proveedor">
-                <input type="text" class="form-control" name="nombre" id="nombre" maxlength="100" placeholder="Nombre del proveedor" required>
+                <input type="text" class="form-control" name="nombre" id="nombre" maxlength="100"
+                  placeholder="Nombre del proveedor" required>
               </div>
             </div>
             <div class="col-sm-6">
@@ -105,17 +122,21 @@
             <div class="col-sm-6">
               <label for="name" class="control-label">Número Documento:</label>
               <div class="input-group mb-3">
-                  <input type="text" class="form-control" name="num_documento" id="num_documento" maxlength="20" placeholder="Documento">
-                  <div class="input-group-append">
-                    <span class="input-group-text" style="cursor: pointer;" id="Buscar_Cliente" onclick="BuscarCliente()" title="Buscar Cliente" type="button"><i class="fa fa-search"></i></span>
-                    <span class="input-group-text" id="cargando" title="Cargando" type="button" style="display: none;"><i><img src="files/plantilla/cargando.gif" width="15px"></i></span>
-                  </div>
+                <input type="text" class="form-control" name="num_documento" id="num_documento" maxlength="20"
+                  placeholder="Documento">
+                <div class="input-group-append">
+                  <span class="input-group-text" style="cursor: pointer;" id="Buscar_Cliente" onclick="BuscarCliente()"
+                    title="Buscar Cliente" type="button"><i class="fa fa-search"></i></span>
+                  <span class="input-group-text" id="cargando" title="Cargando" type="button"
+                    style="display: none;"><i><img src="files/plantilla/cargando.gif" width="15px"></i></span>
                 </div>
+              </div>
             </div>
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Dirección:</label>
-                <input type="text" class="form-control" name="direccion" id="direccion" maxlength="70" placeholder="Dirección">
+                <input type="text" class="form-control" name="direccion" id="direccion" maxlength="70"
+                  placeholder="Dirección">
                 Estado:<label for="" id="estado2">-</label>
                 Condición:<label for="" id="condicion">-</label>
               </div>
@@ -125,7 +146,8 @@
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Teléfono:</label>
-                <input type="text" class="form-control" name="telefono" id="telefono" maxlength="20" placeholder="Teléfono">
+                <input type="text" class="form-control" name="telefono" id="telefono" maxlength="20"
+                  placeholder="Teléfono">
               </div>
             </div>
             <div class="col-sm-6">

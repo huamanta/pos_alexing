@@ -671,203 +671,120 @@ class Recuperacion extends Helpers
         return json_encode($data);
     }
 
-    public function verRecuperacion($idrecuperacion)
+    public function verRecuperacion($idsucursal, $idrecuperacion)
     {
+        try {
+            $expediente = (new DBQuery($this->pdo))
+                ->select([
+                    'rv.*',
+                    'p.nombre AS cliente',
+                    'p.num_documento',
+                    'p.telefono',
+                    'pr.nombre AS vehiculo',
+                    'ps.placa',
+                    'ps.numero_serie',
+                    'ps.numero_motor',
+                    'pe.nombre AS gestor'
+                ])
+                ->from('recuperacion_vehiculo rv')
+                ->join('venta v', 'v.idventa = rv.idventa')
+                ->join('persona p', 'p.idpersona = v.idcliente')
+                ->join('detalle_venta dv', 'dv.idventa = v.idventa')
+                ->join('producto pr', 'pr.idproducto = dv.idproducto')
+                ->join('producto_serie ps', 'ps.idserie = rv.idserie')
+                ->leftJoin('usuario u', 'u.idusuario = rv.idusuario')
+                ->leftJoin('personal pe', 'pe.idpersonal = u.idpersonal')
+                ->where('rv.idrecuperacion', '=', $idrecuperacion)
+                ->first();
 
-        $expediente = (new DBQuery($this->pdo))
+            if (!$expediente) {
+                throw new Exception("Expediente no encontrado.");
+            }
 
-            ->select([
+            $expediente['deuda_vencida_str'] = Helpers::get_currency_symbol($expediente['deuda_vencida']);
 
-                'rv.*',
+            // Mora total
+            $moraActiva = Helpers::verificarMoraCredito($idsucursal);
+            $expediente['mora'] = 0;
+            $expediente['mora_str'] = Helpers::get_currency_symbol(0);
+            if ($moraActiva['activo']) {
+                $mora = (new DBQuery($this->pdo))
+                    ->select([
+                        "COALESCE(
+                            SUM(
+                                CASE
+                                    WHEN estado_pago = 1
+                                    AND fechavencimiento < CURDATE()
+                                    THEN DATEDIFF(CURDATE(), fechavencimiento) * ".$moraActiva['valor']."
+                                    ELSE 0
+                                END
+                            ),
+                        0) AS mora"
+                    ])
+                    ->from('cuentas_por_cobrar')
+                    ->where('idventa', '=', $expediente['idventa'])
+                    ->first();
 
-                'p.nombre AS cliente',
-                'p.num_documento',
-                'p.telefono',
+                $expediente['mora'] = $mora['mora'] ?? 0;
+                $expediente['mora_str'] = Helpers::get_currency_symbol($mora['mora']);
+            }
 
-                'pr.nombre AS vehiculo',
+            // Seguimientos
+            $seguimientos = (new DBQuery($this->pdo))
+                ->select([
+                    's.*',
+                    'pe.nombre AS usuario'
+                ])
+                ->from('seguimiento_clientes s')
+                ->join('usuario u', 'u.idusuario = s.idusuario')
+                ->join('personal pe', 'pe.idpersonal = u.idpersonal')
+                ->where('s.idventa', '=', $expediente['idventa'])
+                ->latest('s.fecha_registro')
+                ->get();
 
-                'ps.placa',
-                'ps.numero_serie',
-                'ps.numero_motor',
+            // Compromisos
+            $compromisos = (new DBQuery($this->pdo))
+                ->select(['cp.*', 'pe.nombre AS usuario'])
+                ->from('compromiso_pago cp')
+                ->join('usuario u', 'u.idusuario = cp.idusuario')
+                ->join('personal pe', 'pe.idpersonal = u.idpersonal')
+                ->join('cuentas_por_cobrar cpc', 'cpc.idcpc = cp.idcpc')
+                ->where('cpc.idventa', '=', $expediente['idventa'])
+                ->latest('cp.fecha_compromiso')
+                ->get();
 
-                'pe.nombre AS gestor'
+            // Adjuntos
+            $adjuntos = (new DBQuery($this->pdo))
+                ->select(['a.*'])
+                ->from('seguimiento_adjuntos a')
+                ->join('seguimiento_clientes s', 's.idseguimiento = a.idseguimiento')
+                ->where('s.idventa', '=', $expediente['idventa'])
+                ->latest('a.fecha_registro')
+                ->get();
 
-            ])
-
-            ->from('recuperacion_vehiculo rv')
-
-            ->join(
-                'venta v',
-                'v.idventa = rv.idventa'
-            )
-
-            ->join(
-                'persona p',
-                'p.idpersona = v.idcliente'
-            )
-
-            ->join(
-                'detalle_venta dv',
-                'dv.idventa = v.idventa'
-            )
-
-            ->join(
-                'producto pr',
-                'pr.idproducto = dv.idproducto'
-            )
-
-            ->join(
-                'producto_serie ps',
-                'ps.idserie = rv.idserie'
-            )
-
-            ->leftJoin(
-                'usuario u',
-                'u.idusuario = rv.idusuario'
-            )
-
-            ->leftJoin(
-                'personal pe',
-                'pe.idpersonal = u.idpersonal'
-            )
-
-            ->where(
-                'rv.idrecuperacion',
-                '=',
-                $idrecuperacion
-            )
-
-            ->first();
-
-        if (!$expediente) {
+            // Documentso legales
+            $documentos = (new DBQuery($this->pdo))
+                ->select(['rd.*'])
+                ->from('recuperacion_documento rd')
+                ->where('rd.idrecuperacion', '=', $idrecuperacion)
+                ->latest('rd.fecha_registro')
+                ->get();
 
             return json_encode([
-                "success" => false,
-                "message" => "Expediente no encontrado."
+                "success" => true,
+                "data" => $expediente,
+                "seguimientos" => $seguimientos,
+                "compromisos" => $compromisos,
+                "adjuntos" => $adjuntos,
+                "documentos" => $documentos
             ]);
+        } catch (Throwable $e) {
+            return json_encode([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+
         }
-
-        // Mora total
-        $mora = (new DBQuery($this->pdo))
-
-            ->select([
-                'COALESCE(SUM(mora),0) AS mora'
-            ])
-
-            ->from('cuentas_por_cobrar')
-
-            ->where(
-                'idventa',
-                '=',
-                $expediente['idventa']
-            )
-
-            ->first();
-
-        $expediente['mora'] = $mora['mora'] ?? 0;
-
-        // Seguimientos
-        $seguimientos = (new DBQuery($this->pdo))
-
-            ->select([
-                's.*',
-                'pe.nombre AS usuario'
-            ])
-
-            ->from('seguimiento_clientes s')
-
-            ->join(
-                'usuario u',
-                'u.idusuario = s.idusuario'
-            )
-
-            ->join(
-                'personal pe',
-                'pe.idpersonal = u.idpersonal'
-            )
-
-            ->where(
-                's.idventa',
-                '=',
-                $expediente['idventa']
-            )
-
-            ->latest('s.fecha_registro')
-
-            ->get();
-
-        // Compromisos
-        $compromisos = (new DBQuery($this->pdo))
-
-            ->select([
-                'cp.*',
-                'pe.nombre AS usuario'
-            ])
-
-            ->from('compromiso_pago cp')
-
-            ->join(
-                'usuario u',
-                'u.idusuario = cp.idusuario'
-            )
-
-            ->join(
-                'personal pe',
-                'pe.idpersonal = u.idpersonal'
-            )
-
-            ->join(
-                'cuentas_por_cobrar cpc',
-                'cpc.idcpc = cp.idcpc'
-            )
-
-            ->where(
-                'cpc.idventa',
-                '=',
-                $expediente['idventa']
-            )
-
-            ->latest('cp.fecha_compromiso')
-
-            ->get();
-
-        // Adjuntos
-        $adjuntos = (new DBQuery($this->pdo))
-
-            ->select([
-                'a.*'
-            ])
-
-            ->from('seguimiento_adjuntos a')
-
-            ->join(
-                'seguimiento_clientes s',
-                's.idseguimiento = a.idseguimiento'
-            )
-
-            ->where(
-                's.idventa',
-                '=',
-                $expediente['idventa']
-            )
-
-            ->latest('a.fecha_registro')
-
-            ->get();
-
-        return json_encode([
-
-            "success" => true,
-
-            "data" => $expediente,
-
-            "seguimientos" => $seguimientos,
-
-            "compromisos" => $compromisos,
-
-            "adjuntos" => $adjuntos
-
-        ]);
     }
 
     public function actualizarEstadoRecuperacion(
@@ -908,6 +825,47 @@ class Recuperacion extends Helpers
             return json_encode([
                 "success" => true,
                 "message" => "Estado actualizado correctamente."
+            ]);
+        } catch (Throwable $e) {
+            return json_encode([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+
+        }
+    }
+
+    public function guardarDocumento($post, $file)
+    {
+        try {
+            $ruta = "../files/recuperacion/";
+
+            if (!is_dir($ruta)) {
+                mkdir($ruta, 0777, true);
+            }
+
+            $nombre = uniqid() . "_" . basename($file["name"]);
+
+            move_uploaded_file(
+                $file["tmp_name"],
+                $ruta . $nombre
+            );
+
+            (new FluentSaver($this->pdo))
+                ->table("recuperacion_documento")
+                ->data([
+                    "idrecuperacion" => $post["idrecuperacion"],
+                    "tipo" => $post["tipo"],
+                    "descripcion" => $post["descripcion"],
+                    "archivo" => $nombre,
+                    "nombre_original" => $file["name"],
+                    "idusuario" => $_SESSION["idusuario"]
+                ])
+                ->save();
+
+            return json_encode([
+                "success" => true,
+                "message" => "Documento registrado correctamente."
             ]);
         } catch (Throwable $e) {
             return json_encode([

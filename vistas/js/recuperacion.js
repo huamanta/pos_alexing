@@ -865,12 +865,9 @@ function pintarPendientes(data) {
                 </button>
                 <button
                     class="btn btn-sm btn-warning"
-                    onclick='adjuntarArchivo(
-                        ${row.idrecuperacion},
-                        ${row.idventa},
-                        ${row.idpersona},
-                        ${JSON.stringify(row.direccion ?? "")}
-                    )'
+                    onclick='adjuntarDocumentoRecuperacion(
+                        ${row.idrecuperacion}
+                        )'
                     title="Adjuntar documento">
                     <i class="fas fa-paperclip"></i>
                 </button>
@@ -1284,15 +1281,9 @@ function verRecuperacion(idrecuperacion) {
 
             $("#r_dias").text(d.dias_mora);
 
-            $("#r_deuda").text(
-                "S/ " +
-                parseFloat(d.deuda_vencida).toFixed(2)
-            );
+            $("#r_deuda").text(d.deuda_vencida_str);
 
-            $("#r_mora").text(
-                "S/ " +
-                parseFloat(d.mora).toFixed(2)
-            );
+            $("#r_mora").text(d.mora_str);
 
             $("#r_observacion").text(
                 d.observacion || "-"
@@ -1312,6 +1303,10 @@ function verRecuperacion(idrecuperacion) {
 
             pintarAdjuntos(
                 resp.adjuntos
+            );
+
+            pintarDocumentosLegales(
+                resp.documentos
             );
 
             $("#modalRecuperacion").modal("show");
@@ -1557,6 +1552,54 @@ function pintarAdjuntos(data) {
 }
 
 
+function pintarDocumentosLegales(data) {
+    let html = "";
+
+    if (data.length == 0) {
+
+        html = `
+            <tr>
+                <td colspan="4" class="text-center text-muted">
+                    No existen archivos adjuntos
+                </td>
+            </tr>
+        `;
+
+        $("#tblAdjuntos tbody").html(html);
+
+        return;
+
+    }
+
+    data.forEach(function (row, i) {
+
+        html += `
+
+        <tr>
+            <td>${i + 1}</td>
+            <td>
+                <i class="fas fa-file-alt text-primary mr-2"></i>
+                ${row.tipo}
+            </td>
+            <td>${row.descripcion}</td>
+            <td>${row.fecha_registro}</td>
+            <td class="text-center">
+                <a
+                    href="files/recuperacion/${row.archivo}"
+                    target="_blank"
+                    class="btn btn-sm btn-primary">
+                    <i class="fas fa-download"></i>
+                </a>
+            </td>
+        </tr>
+        `;
+
+    });
+
+    $("#tabDocumentosLegales tbody").html(html);
+}
+
+
 function nuevoSeguimiento(idrecuperacion, idventa, idcliente, direccion) {
     $("#idventa_visita").val(idventa);
     $("#idcliente_visita").val(idcliente);
@@ -1733,3 +1776,50 @@ function guardarEstadoRecuperacion() {
     );
 
 }
+
+
+function adjuntarDocumentoRecuperacion(idrecuperacion) {
+
+    $("#formDocumentoRecuperacion")[0].reset();
+
+    $("#idrecuperacion_documento").val(idrecuperacion);
+
+    $("#modalDocumentoRecuperacion").modal("show");
+
+}
+
+$("#formDocumentoRecuperacion").submit(function (e) {
+
+    e.preventDefault();
+
+    let formData = new FormData(this);
+
+    $.ajax({
+
+        url: "controladores/recuperacion.php?op=guardarDocumento",
+
+        type: "POST",
+
+        data: formData,
+
+        processData: false,
+
+        contentType: false,
+
+        success: function (resp) {
+            if (resp.success) {
+                toastr.success(resp.message);
+                $("#modalDocumentoRecuperacion").modal("hide");
+                verRecuperacion(
+                    $("#idrecuperacion").val()
+                );
+            } else {
+                toastr.error(resp.message);
+
+            }
+
+        }
+
+    });
+
+});

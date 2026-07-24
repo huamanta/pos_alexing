@@ -53,13 +53,11 @@ $("#idcliente").select2({
     placeholder: "Buscar cliente...",
     allowClear: true,
     minimumInputLength: 2,
-
     ajax: {
         url: "controladores/venta.php?op=selectCliente",
         type: "POST",
         dataType: "json",
         delay: 250,
-
         data: function (params) {
             return {
                 search: params.term,
@@ -67,11 +65,8 @@ $("#idcliente").select2({
                 only_client: 1
             };
         },
-
         processResults: function (data, params) {
-
             params.page = params.page || 1;
-
             return {
                 results: data.data.map(function (item) {
                     return {
@@ -79,13 +74,11 @@ $("#idcliente").select2({
                         text: item.nombre + " - " + item.num_documento
                     };
                 }),
-
                 pagination: {
                     more: data.meta.current_page < data.meta.last_page
                 }
             };
         },
-
         cache: true
     }
 });

@@ -23,7 +23,7 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-md-12">
-                    <div class="card card-primary card-outline">
+                    <div class="card card-outline">
                         <div class="card-header p-0 border-bottom-0">
                             <ul class="nav nav-tabs" id="recuperacion-tab" role="tablist">
 
@@ -1183,6 +1183,13 @@
                         </a>
 
                     </li>
+                    <li class="nav-item">
+
+                        <a class="nav-link" data-toggle="tab" href="#tabDocumentosLegales">
+                            Documentos legales
+                        </a>
+
+                    </li>
 
                 </ul>
 
@@ -1261,7 +1268,29 @@
                         </table>
 
                     </div>
+                    <div class="tab-pane fade" id="tabDocumentosLegales">
 
+                        <table class="table table-sm table-bordered" id="tblDocumentosLegales">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>#</th>
+                                    <th>Tipo</th>
+                                    <th>Descripcion</th>
+                                    <th>Fecha</th>
+                                    <th></th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody></tbody>
+
+                        </table>
+
+                    </div>
                 </div>
 
             </div>
@@ -1620,6 +1649,129 @@
                 </button>
 
             </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="modal fade" id="modalDocumentoRecuperacion">
+
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+
+            <form id="formDocumentoRecuperacion" enctype="multipart/form-data">
+
+                <div class="modal-header bg-warning">
+
+                    <h5 class="modal-title">
+                        <i class="fas fa-paperclip"></i>
+                        Adjuntar Documento
+                    </h5>
+
+                    <button type="button" class="close" data-dismiss="modal">
+
+                        <span>&times;</span>
+
+                    </button>
+
+                </div>
+
+                <div class="modal-body">
+
+                    <input type="hidden" name="idrecuperacion" id="idrecuperacion_documento">
+
+                    <div class="form-group">
+
+                        <label>Tipo de documento</label>
+
+                        <select class="form-control" name="tipo" required>
+
+                            <option value="">Seleccione...</option>
+
+                            <option value="NOTIFICACION">
+                                Notificación
+                            </option>
+
+                            <option value="CARTA_NOTARIAL">
+                                Carta Notarial
+                            </option>
+
+                            <option value="ACTA_VISITA">
+                                Acta de Visita
+                            </option>
+
+                            <option value="ACTA_ENTREGA">
+                                Acta de Entrega
+                            </option>
+
+                            <option value="DENUNCIA">
+                                Denuncia
+                            </option>
+
+                            <option value="PODER">
+                                Poder
+                            </option>
+
+                            <option value="CONTRATO">
+                                Contrato
+                            </option>
+
+                            <option value="FOTO">
+                                Fotografía
+                            </option>
+
+                            <option value="OTRO">
+                                Otro
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Descripción</label>
+
+                        <textarea class="form-control" name="descripcion" rows="3"></textarea>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label>Archivo</label>
+
+                        <input type="file" class="form-control" name="archivo" required>
+
+                        <small class="text-muted">
+                            PDF, Word, Excel o imágenes.
+                        </small>
+
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
+
+                    <button type="submit" class="btn btn-success">
+
+                        <i class="fas fa-save"></i>
+
+                        Guardar
+
+                    </button>
+
+                </div>
+
+            </form>
 
         </div>
 

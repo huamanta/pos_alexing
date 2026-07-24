@@ -24,8 +24,8 @@ class Persona extends Helpers
 		$telefono,
 		$email,
 		$fecha_hora,
-		$latitude,
-		$longitude
+		$latitude = null,
+		$longitude = null
 	) {
 
 		try {
@@ -33,9 +33,7 @@ class Persona extends Helpers
 			$this->pdo->beginTransaction();
 
 			$id = (new FluentSaver($this->pdo))
-
 				->table('persona')
-
 				->nullable([
 					'direccion',
 					'telefono',
@@ -44,7 +42,6 @@ class Persona extends Helpers
 					'longitude',
 					'fecha'
 				])
-
 				->data([
 
 					'tipo_persona' => $tipo_persona,
@@ -55,11 +52,9 @@ class Persona extends Helpers
 					'telefono' => $telefono,
 					'email' => $email,
 					'fecha' => $fecha_hora,
-					'latitude' => $latitude,
-					'longitude' => $longitude
-
+					'latitude' => $latitude ?? '',
+					'longitude' => $longitude ?? ''
 				])
-
 				->save();
 
 			$this->pdo->commit();
@@ -206,9 +201,13 @@ class Persona extends Helpers
 	//Implementar un método para listar los registros
 	public function listarp()
 	{
-		return (new DBQuery($this->pdo))
+		$page = (int) ($_GET['page'] ?? 1);
+		$limit = (int) ($_GET['limit'] ?? 10);
+		$search = trim($_GET['search'] ?? '');
+		$response = (new DBQuery($this->pdo))
 			->select('*')
 			->from('persona')
+			->softDeletes()
 			->whereRaw(
 				"(tipo_persona = :tipo OR isproveedor = :proveedor)",
 				[
@@ -216,18 +215,37 @@ class Persona extends Helpers
 					'proveedor' => 1
 				]
 			)
-			->get();
+			->search(
+				$search,
+				[
+					'nombre',
+					'num_documento',
+					'telefono',
+					'email'
+				]
+			)
+			->orderBy('idpersona', 'DESC')
+			->paginate(
+				$page,
+				$limit
+			);
+		$response['permissions'] = [
+			'editar' => Helpers::getUserPermissionAccion('Editar proveedor'),
+			'historial' => Helpers::getUserPermissionAccion('Historial proveedor'),
+			'eliminar' => Helpers::getUserPermissionAccion('Eliminar proveedor')
+		];
+		return json_encode($response);
 	}
+
+
 	//Implementar un método para listar los registros 
 	public function listarc($tipo_documento = "", $excluirId = false)
 	{
-		$pdo = Conexion::conectar();
-
 		$page = (int) ($_GET['page'] ?? 1);
 		$limit = (int) ($_GET['limit'] ?? 10);
 		$search = trim($_GET['search'] ?? '');
 
-		$paginator = (new DBQuery($pdo))
+		$paginator = (new DBQuery($this->pdo))
 			->select('*')
 			->from('persona')
 			->where('tipo_persona', '=', 'Cliente');
@@ -362,7 +380,7 @@ class Persona extends Helpers
 		);
 
 		$creditos = $this->obtenerCuotasCreditoCliente($idcliente);
-		
+
 		$moraCliente = $this->calcularMoraCliente($creditos);
 
 		$score = $this->calcularScoreCredito(
@@ -672,9 +690,9 @@ class Persona extends Helpers
 	}
 
 	private function obtenerCuotasCreditoCliente($idcliente)
-{
-    return (new DBQuery($this->pdo))
-        ->query("
+	{
+		return (new DBQuery($this->pdo))
+			->query("
             SELECT
                 c.idcpc,
                 c.estado_pago,
@@ -691,11 +709,12 @@ class Persona extends Helpers
             WHERE v.idcliente = :idcliente
             AND c.idrefinanciamiento IS NULL
         ",
-        [
-            'idcliente' => $idcliente
-        ])
-        ->get();
-}
+				[
+					'idcliente' => $idcliente
+				]
+			)
+			->get();
+	}
 
 
 	private function calcularMoraCliente(array $cuotas): array

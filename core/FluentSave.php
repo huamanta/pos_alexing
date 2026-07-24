@@ -11,11 +11,29 @@ class FluentSaver
     private array $casts = [];
     private array $nullable = [];
 
+    private array $wheres = [];
+    private array $bindings = [];
+
     private bool $timestamps = true;
 
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
+    }
+
+    public function where(
+        string $column,
+        string $operator,
+        $value
+    ): self {
+
+        $this->wheres[] = [
+            'column' => $column,
+            'operator' => $operator,
+            'value' => $value
+        ];
+
+        return $this;
     }
 
     public function table(string $table): self
@@ -72,6 +90,10 @@ class FluentSaver
 
     public function update(): bool
     {
+        if (!empty($this->wheres)) {
+            return $this->executeUpdateWhere();
+        }
+
         if (!isset($this->data[$this->primaryKey])) {
             throw new Exception(
                 "No se encontró la clave primaria '{$this->primaryKey}'."
@@ -170,7 +192,64 @@ class FluentSaver
             : PDO::PARAM_STR;
 
         $stmt->bindValue(':pk_id', $id, $type);
-        
+
+        return $stmt->execute();
+    }
+
+
+    private function executeUpdateWhere(): bool
+    {
+        if (empty($this->wheres)) {
+            throw new Exception(
+                "Debe especificar al menos una condición WHERE."
+            );
+        }
+
+        $setClauses = [];
+
+        foreach (array_keys($this->data) as $column) {
+            $setClauses[] = "{$column} = :{$column}";
+        }
+
+        $whereClauses = [];
+        $bindings = [];
+
+        foreach ($this->wheres as $i => $where) {
+
+            $param = ":where{$i}";
+
+            $whereClauses[] =
+                "{$where['column']} {$where['operator']} {$param}";
+
+            $bindings[$param] = $where['value'];
+
+        }
+
+        $sql = "
+        UPDATE {$this->table}
+        SET " . implode(", ", $setClauses) . "
+        WHERE " . implode(" AND ", $whereClauses);
+
+        $stmt = $this->pdo->prepare($sql);
+
+        // Datos a actualizar
+        $this->bindValues($stmt);
+
+        // Condiciones WHERE
+        foreach ($bindings as $param => $value) {
+
+            $type = is_int($value)
+                ? PDO::PARAM_INT
+                : PDO::PARAM_STR;
+
+            $stmt->bindValue(
+                $param,
+                $value,
+                $type
+            );
+
+        }
+
         return $stmt->execute();
     }
 

@@ -1,386 +1,499 @@
 var tabla;
 var sucursalActual;
-function init(){
-	 $("#body").addClass("sidebar-collapse sidebar-mini");
-	mostrar_impuesto();
-	
-	mostrarform(false);
-	
-    listar();
-	
-    $("#formulario").on("submit",function(e)
-	{
-		guardaryeditar(e);	
-	});
+let listarArticulos = null;
+let listarVentas = null;
+function init() {
+    $("#body").addClass("sidebar-collapse sidebar-mini");
+    mostrar_impuesto();
 
-	$("#formularioGuardarImagen").on("submit",function(e)
-	{
-		guardarImagen(e);	
-	});
-	
-	$("#formularioProveedores").on("submit", function (e) {
-    guardarProveedor(e);
-  });
+    mostrarform(false);
 
-    $.post("controladores/venta.php?op=selectSucursal", function(r){
-        $("#idsucursal").html(r);
-        $('#idsucursal').select2('');
+    listarVentas.load();
 
-        // 1. Guardamos la sucursal inicial (la que viene por defecto)
-        sucursalActual = $("#idsucursal").val();
-
-        // 2. Cargamos los artículos de esa sucursal inicial
-        listarArticulos();
-
-        // 3. EVENTO ESPECIAL DE SELECT2: "select2:selecting"
-        // Este evento ocurre ANTES de que el valor cambie visualmente
-        $('#idsucursal').on('select2:selecting', function (e) {
-            
-            // Verificamos si hay filas agregadas en la compra (detalles > 0)
-            // Nota: Asegúrate de que la variable 'detalles' esté definida globalmente en tu archivo
-            if (typeof detalles !== 'undefined' && detalles > 0) {
-                
-                // DETENEMOS el cambio automático del select
-                e.preventDefault(); 
-                
-                // Guardamos el ID de la sucursal que el usuario INTENTÓ seleccionar
-                var nuevaSucursal = e.params.args.data.id;
-
-                Swal.fire({
-                    title: '¿Cambiar de Sucursal?',
-                    text: "Tienes productos agregados en el carrito. Si cambias de sucursal, se limpiará toda la compra actual. ¿Deseas continuar?",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Sí, cambiar y limpiar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        // SI EL USUARIO DICE QUE SÍ:
-                        
-                        // 1. Limpiamos formulario y variables (Tu función limpiar)
-                        limpiar(); 
-                        
-                        // 2. Forzamos el cambio de valor manualmente (porque lo bloqueamos antes)
-                        $("#idsucursal").val(nuevaSucursal).trigger('change.select2');
-                        
-                        // 3. Actualizamos la variable de control
-                        sucursalActual = nuevaSucursal;
-                        
-                        // 4. Recargamos la tabla de artículos con la nueva sucursal
-                        listarArticulos(); 
-                        
-                        Swal.fire('¡Cambiado!', 'Ahora estás comprando en la nueva sucursal.', 'success');
-                    }
-                    // Si dice que NO, no hacemos nada, y el select se queda como estaba gracias al e.preventDefault()
-                });
-
-            } else {
-                // SI NO HAY DETALLES (Carrito vacío):
-                // Dejamos que el cambio ocurra, pero necesitamos actualizar la tabla
-                // Usamos un pequeño timeout para asegurar que el valor ya cambió
-                setTimeout(function(){
-                    sucursalActual = $("#idsucursal").val();
-                    listarArticulos();
-                }, 100);
-            }
-        });
+    $("#formulario").on("submit", function (e) {
+        guardaryeditar(e);
     });
 
-	//Cargamos los items al select proveedor
-	$.post("controladores/compra.php?op=selectProveedor", function(r){
-	            $("#idproveedor").html(r);
-	            $('#idproveedor').select2({
-					placeholder: 'Seleccionar Proveedor ...',
-					allowClear: true
-				}).val(null).trigger('change');
-	});
+    $("#formularioGuardarImagen").on("submit", function (e) {
+        guardarImagen(e);
+    });
 
-	//cargamos los items al select almacen
-	$.post("controladores/venta.php?op=selectSucursal3", function(r){
-		$("#idsucursal2").html(r);
-		$("#idsucursal2").select2("");
-	});
-	
-	$('#navComprasActive').addClass("treeview active");
+    $("#formularioProveedores").on("submit", function (e) {
+        guardarProveedor(e);
+    });
+
+    // $.post("controladores/venta.php?op=selectSucursal", function (r) {
+    //     $("#idsucursal").html(r);
+    //     $('#idsucursal').select2('');
+
+    //     // 1. Guardamos la sucursal inicial (la que viene por defecto)
+    //     sucursalActual = $("#idsucursal").val();
+
+    //     // 2. Cargamos los artículos de esa sucursal inicial
+    //     listarArticulos();
+
+    //     // 3. EVENTO ESPECIAL DE SELECT2: "select2:selecting"
+    //     // Este evento ocurre ANTES de que el valor cambie visualmente
+    //     $('#idsucursal').on('select2:selecting', function (e) {
+
+    //         // Verificamos si hay filas agregadas en la compra (detalles > 0)
+    //         // Nota: Asegúrate de que la variable 'detalles' esté definida globalmente en tu archivo
+    //         if (typeof detalles !== 'undefined' && detalles > 0) {
+
+    //             // DETENEMOS el cambio automático del select
+    //             e.preventDefault();
+
+    //             // Guardamos el ID de la sucursal que el usuario INTENTÓ seleccionar
+    //             var nuevaSucursal = e.params.args.data.id;
+
+    //             Swal.fire({
+    //                 title: '¿Cambiar de Sucursal?',
+    //                 text: "Tienes productos agregados en el carrito. Si cambias de sucursal, se limpiará toda la compra actual. ¿Deseas continuar?",
+    //                 icon: 'warning',
+    //                 showCancelButton: true,
+    //                 confirmButtonColor: '#3085d6',
+    //                 cancelButtonColor: '#d33',
+    //                 confirmButtonText: 'Sí, cambiar y limpiar',
+    //                 cancelButtonText: 'Cancelar'
+    //             }).then((result) => {
+    //                 if (result.isConfirmed) {
+    //                     // SI EL USUARIO DICE QUE SÍ:
+
+    //                     // 1. Limpiamos formulario y variables (Tu función limpiar)
+    //                     limpiar();
+
+    //                     // 2. Forzamos el cambio de valor manualmente (porque lo bloqueamos antes)
+    //                     $("#idsucursal").val(nuevaSucursal).trigger('change.select2');
+
+    //                     // 3. Actualizamos la variable de control
+    //                     sucursalActual = nuevaSucursal;
+
+    //                     // 4. Recargamos la tabla de artículos con la nueva sucursal
+    //                     listarArticulos();
+
+    //                     Swal.fire('¡Cambiado!', 'Ahora estás comprando en la nueva sucursal.', 'success');
+    //                 }
+    //                 // Si dice que NO, no hacemos nada, y el select se queda como estaba gracias al e.preventDefault()
+    //             });
+
+    //         } else {
+    //             // SI NO HAY DETALLES (Carrito vacío):
+    //             // Dejamos que el cambio ocurra, pero necesitamos actualizar la tabla
+    //             // Usamos un pequeño timeout para asegurar que el valor ya cambió
+    //             setTimeout(function () {
+    //                 sucursalActual = $("#idsucursal").val();
+    //                 listarArticulos();
+    //             }, 100);
+    //         }
+    //     });
+    // });
+
+    //cargamos los items al select almacen
+    // $.post("controladores/venta.php?op=selectSucursal3", function (r) {
+    //     $("#idsucursal2").html(r);
+    //     $("#idsucursal2").select2("");
+    // });
+
+    //Cargamos los items al select proveedor
+    // $.post("controladores/compra.php?op=selectProveedor", function (r) {
+    //     const response = JSON.parse(r);
+
+    //     $("#idproveedor").html(r);
+    //     $('#idproveedor').select2({
+    //         placeholder: 'Seleccionar Proveedor ...',
+    //         allowClear: true
+    //     }).val(null).trigger('change');
+    // });
+
+    $.post("controladores/venta.php?op=selectSucursal", function (r) {
+        $("#idsucursal").html(r);
+        $('#idsucursal').select2('');
+    });
+
+    $('#navComprasActive').addClass("treeview active");
     $('#navCompras').addClass("treeview menu-open");
     $('#navCompra').addClass("active");
 
-	$("#fecha_inicio").change(listar);
-	$("#fecha_fin").change(listar);
-	$("#idsucursal2").change(listar);
+    // $("#fecha_inicio").change(listar);
+    // $("#fecha_fin").change(listar);
+    // $("#idsucursal2").change(listar);
+}
 
+$("#idproveedor").select2({
+    placeholder: "Buscar proveedor...",
+    allowClear: true,
+    minimumInputLength: 2,
+    ajax: {
+        url: "controladores/compra.php?op=selectProveedor",
+        type: "GET",
+        dataType: "json",
+        delay: 250,
+        data: function (params) {
+            return {
+                search: params.term,
+                page: params.page || 1
+            };
+        },
+        processResults: function (data, params) {
+            params.page = params.page || 1;
+            return {
+                results: data.data.map(function (item) {
+                    return {
+                        id: item.idpersona,
+                        text: item.nombre + " - " + item.num_documento
+                    };
+                }),
+                pagination: {
+                    more: data.meta.current_page < data.meta.last_page
+                }
+            };
+        },
+        cache: true
+    }
+});
+
+
+listarVentas = new FluentPaginator({
+    url: "controladores/compra.php?op=listar",
+    renderTabla: pintarCompras,
+    tableBody: "#tbodyCompras",
+    extraParams: () => ({
+        fecha_inicio: $("#fecha_inicio").val() || "",
+        fecha_fin: $("#fecha_fin").val() || ""
+    })
+});
+
+
+function pintarCompras(data, permissions) {
+
+    let html = "";
+
+    if (data.length === 0) {
+
+        html = `
+            <tr>
+                <td colspan="10" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+        $("#tbllistado tbody").html(html);
+        return;
+    }
+
+    data.forEach(item => {
+        let numero = "Sin Número";
+        if (item.tipo_c == "Compra") {
+            numero = `${item.tipo_comprobante}: ${item.serie_comprobante} - ${item.num_comprobante}`;
+        };
+
+        let estado = '';
+        if (item.estado == 'REGISTRADO') {
+            estado = '<span class="badge bg-green">REGISTRADO</span>';
+        } else if (item.estado == 'REALIZADO') {
+            estado = '<span class="badge bg-blue">REALIZADO</span>';
+        } else {
+            estado = '<span class="badge bg-red">ANULADO</span>';
+        }
+
+        let anular = '';
+        let editar = '';
+        // BOTÓN DE EDITAR (solo si está REGISTRADO)
+        if (item.estado == 'REGISTRADO') {
+            editar = permissions.editar ? `<button class="btn btn-primary btn-xs" onclick="mostrarEditar(${item.idcompra})" data-toggle="tooltip" title="Editar Compra"><i class="fas fa-edit"></i></button>` : '';
+        }
+        anular = permissions.anular ? `<button class="btn btn-danger btn-xs" onclick="anular(${item.idcompra},'${item.documento_rel}')"><i class="fas fa-times-circle"></i></button>` : '';
+
+
+        html += `
+            <tr>
+                <td>${item.fecha}</td>
+                <td>${item.proveedor || ''}</td>
+                <td>${item.personal || ''}</td>
+                <td>${item.tipo_c}</td>
+                <td>S/ ${parseFloat(item.precio).toFixed(2)}</td>
+                <td>${numero}</td>
+                <td>${item.gravadas}</td>
+                <td>${item.exoneradas}</td>
+                <td>${item.igv}</td>
+                <td>${item.total_compra}</td>
+                <td>${estado}</td>
+                <td>
+                <button class="btn btn-warning btn-xs" onclick="mostrar(${item.idcompra})"><i class="fa fa-eye"></i></button>
+					${editar}
+					${anular}
+					<a target="_blank" href="reportes/factura/generaFacturaCompra.php?id=${item.idcompra}"> <button class="btn btn-info btn-xs"><i class="fa fa-file"></i></button></a>
+	 			<button class="btn btn-dark btn-xs" onclick="subirImagen(${item.idcompra}, '${item.imagen}')" data-toggle="tooltip" title="Subir/Ver Imagen" target="blanck"><i class="fa fa-upload"></i></button>
+                </td>
+            </tr>
+        `;
+
+    });
+
+    $("#tbllistado tbody").html(html);
 
 }
+
 
 //Función limpiar
 function limpiarProveedor() {
     $("#nombre").val("");
-	$("#num_documento").val("");
-	$("#direccion").val("");
-	$("#telefono").val("");
-	$("#email").val("");
-	$("#idpersona").val("");
+    $("#num_documento").val("");
+    $("#direccion").val("");
+    $("#telefono").val("");
+    $("#email").val("");
+    $("#idpersona").val("");
 }
 
-function limpiar()
-{
-	$("#idproveedor").val("");
-	$('#idproveedor').select2({
-		placeholder: 'Seleccionar Proveedor ...',
-		allowClear: true
-	}).val(null).trigger('change');
-	$("#proveedor").val("");
-	$("#serie_comprobante").val("");
-	$("#num_comprobante").val("");
-	articuloAdd="";
-	no_aplica=16;
-	$("#total_compra").val("");
-	$(".filas").remove();
-	
-	// Limpiar todos los valores mostrados y ocultos de totales
-	$("#total").html("0.00");
-	$("#most_total").html("0.00");
-	$("#most_imp").html("0.00");
-	$("#most_gravado").html("0.00");        // ← NUEVO
-	$("#most_exonerado").html("0.00");      // ← NUEVO
-	
-	// Limpiar inputs hidden
-	$("#monto_gravado").val("0");           // ← NUEVO
-	$("#monto_exonerado").val("0");         // ← NUEVO
-	$("#monto_igv").val("0");               // ← NUEVO
-	$("#impuesto").val("0");                // ← NUEVO
-	
-	// Resetear tipo_igv a EXONERADA por defecto
-	$("#tipo_igv").val("EXONERADA");        // ← NUEVO
-	
-	//Obtenemos la fecha actual
-	var now = new Date();
-	var day = ("0" + now.getDate()).slice(-2);
-	var month = ("0" + (now.getMonth() + 1)).slice(-2);
-	var today = now.getFullYear()+"-"+(month)+"-"+(day);
-	$('#fecha').val(today);
-	
-	//Marcamos el primer tipo_documento
-	$("#tipo_comprobante").val("Boleta");
-	$("#tipo_comprobante").select2('');
-	$("#formapago").select2('');
-	$("#lugar_entrega").val("");
-	$("#motivo_compra").val("");
-	$("#totaldeposito").val("");
-	$("#totalrecibido").val("");
-	
-	// Limpiar campos de crédito si existen
-	$("#tipopago").val("No");               // ← OPCIONAL
-	$("#montoPagado").val("0");             // ← OPCIONAL
-	$("#montoDeuda").val("0");              // ← OPCIONAL
-	$("#input_cuotas").val("");             // ← OPCIONAL
-	$("#datafechas").html("");              // ← OPCIONAL (limpiar tabla de cuotas)
-	
-	// Ocultar paneles de crédito si están visibles
-	$("#n0, #n1, #n2, #n3, #n4").hide();   // ← OPCIONAL
-	$("#panel1").hide();                    // ← OPCIONAL
+function limpiar() {
+    $("#proveedor").val("");
+    $("#serie_comprobante").val("");
+    $("#num_comprobante").val("");
+    articuloAdd = "";
+    no_aplica = 16;
+    $("#total_compra").val("");
+    $(".filas").remove();
+
+    // Limpiar todos los valores mostrados y ocultos de totales
+    $("#total").html("0.00");
+    $("#most_total").html("0.00");
+    $("#most_imp").html("0.00");
+    $("#most_gravado").html("0.00");        // ← NUEVO
+    $("#most_exonerado").html("0.00");      // ← NUEVO
+
+    // Limpiar inputs hidden
+    $("#monto_gravado").val("0");           // ← NUEVO
+    $("#monto_exonerado").val("0");         // ← NUEVO
+    $("#monto_igv").val("0");               // ← NUEVO
+    $("#impuesto").val("0");                // ← NUEVO
+
+    // Resetear tipo_igv a EXONERADA por defecto
+    $("#tipo_igv").val("EXONERADA");        // ← NUEVO
+
+    //Obtenemos la fecha actual
+    var now = new Date();
+    var day = ("0" + now.getDate()).slice(-2);
+    var month = ("0" + (now.getMonth() + 1)).slice(-2);
+    var today = now.getFullYear() + "-" + (month) + "-" + (day);
+    $('#fecha').val(today);
+
+    //Marcamos el primer tipo_documento
+    $("#tipo_comprobante").val("Boleta");
+    $("#tipo_comprobante").select2('');
+    $("#formapago").select2('');
+    $("#lugar_entrega").val("");
+    $("#motivo_compra").val("");
+    $("#totaldeposito").val("");
+    $("#totalrecibido").val("");
+
+    // Limpiar campos de crédito si existen
+    $("#tipopago").val("No");               // ← OPCIONAL
+    $("#montoPagado").val("0");             // ← OPCIONAL
+    $("#montoDeuda").val("0");              // ← OPCIONAL
+    $("#input_cuotas").val("");             // ← OPCIONAL
+    $("#datafechas").html("");              // ← OPCIONAL (limpiar tabla de cuotas)
+
+    // Ocultar paneles de crédito si están visibles
+    $("#n0, #n1, #n2, #n3, #n4").hide();   // ← OPCIONAL
+    $("#panel1").hide();                    // ← OPCIONAL
 }
 
-function limpiarImagen(){
+function limpiarImagen() {
 
-	$("#imagenmuestra").attr("src","files/productos/anonymous.png");
-	$("#imagenactual").val("anonymous.png");
-	$("#imagen").val("");
-	$("#idcompraI").val("");
+    $("#imagenmuestra").attr("src", "files/productos/anonymous.png");
+    $("#imagenactual").val("anonymous.png");
+    $("#imagen").val("");
+    $("#idcompraI").val("");
 
 }
 
 //Función cancelarform
-function cancelarform()
-{
-	
-	limpiar();
-	mostrarform(false);
+function cancelarform() {
+
+    limpiar();
+    mostrarform(false);
 }
 
 
 
 //funcion para Guardar Clientes
 function guardarProveedor(e) {
-  e.preventDefault(); //no se activara la accion predeterminada
-  //$("#btnGuardar").prop("disabled",true);
-  var formData = new FormData($("#formularioProveedores")[0]);
+    e.preventDefault(); //no se activara la accion predeterminada
+    //$("#btnGuardar").prop("disabled",true);
+    var formData = new FormData($("#formularioProveedores")[0]);
 
-  $.ajax({
-    url: "controladores/compra.php?op=guardarProveedor",
-    type: "POST",
-    data: formData,
-    contentType: false,
-    processData: false,
+    $.ajax({
+        url: "controladores/compra.php?op=guardarProveedor",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
 
-    success: function (datos) {
-      Swal.fire({
-        title: "Proveedor",
-        icon: "success",
-        text: datos,
-      });
-      
-      	$.post("controladores/compra.php?op=selectProveedor", function(r){
-	            $("#idproveedor").html(r);
-	            $('#idproveedor').select2({
-					placeholder: 'Seleccionar Proveedor ...',
-					allowClear: true
-				}).val(null).trigger('change');
-	});
+        success: function (datos) {
+            Swal.fire({
+                title: "Proveedor",
+                icon: "success",
+                text: datos,
+            });
 
-      $.post(
-        "controladores/venta.php?op=mostrarUltimoCliente",
-        function (data, status) {
-          data = JSON.parse(data);
+            $.post("controladores/compra.php?op=selectProveedor", function (r) {
+                $("#idproveedor").html(r);
+                $('#idproveedor').select2({
+                    placeholder: 'Seleccionar Proveedor ...',
+                    allowClear: true
+                }).val(null).trigger('change');
+            });
 
-          seleccionarCliente(data.nombre, data.idpersona);
-        }
-      );
-    },
-  });
+            $.post(
+                "controladores/venta.php?op=mostrarUltimoCliente",
+                function (data, status) {
+                    data = JSON.parse(data);
 
-  $("#myModalProveedor").modal("hide");
-  // Resetear el formulario
-  document.getElementById("formularioProveedores").reset();
+                    seleccionarCliente(data.nombre, data.idpersona);
+                }
+            );
+        },
+    });
 
-  limpiarCliente();
+    $("#myModalProveedor").modal("hide");
+    // Resetear el formulario
+    document.getElementById("formularioProveedores").reset();
+
+    limpiarCliente();
 }
 
 //Función limpiar
-function limpiarCliente()
-{
-	$("#nombre").val("");
-	$("#num_documento").val("");
-	$("#direccion").val("");
-	$("#telefono").val("");
-	$("#email").val("");
-	$("#estado2").val("");
-	$("#condicion").val("");
-	$("#idpersona").val("");
+function limpiarCliente() {
+    $("#nombre").val("");
+    $("#num_documento").val("");
+    $("#direccion").val("");
+    $("#telefono").val("");
+    $("#email").val("");
+    $("#estado2").val("");
+    $("#condicion").val("");
+    $("#idpersona").val("");
 }
 
 
 function seleccionarCliente(nombre, idcliente) {
-  $("#idcliente").val(idcliente);
-  $("#idcliente").select2("");
+    $("#idcliente").val(idcliente);
+    $("#idcliente").select2("");
 }
 
-function BuscarCliente(){
+function BuscarCliente() {
 
-    let numero=$("#num_documento").val();
+    let numero = $("#num_documento").val();
 
-    $.post("controladores/venta.php?op=selectCliente5&numero="+numero,function(data, status){
+    $.post("controladores/venta.php?op=selectCliente5&numero=" + numero, function (data, status) {
 
-		data=JSON.parse(data);
+        data = JSON.parse(data);
 
-		if(data != null){
+        if (data != null) {
 
             Swal.fire({
                 title: '¡Aviso!',
                 icon: 'info',
-                  text:'El Proveedor ya se encuentra registrado'
-              });
-
-			$("#num_documento").val('');
-
-		}else{
-
-			if ($('#tipo_documento').val()=='DNI'){
-    var cod = $.trim($('#tipo_documento').val());
-    $numero=$("#num_documento").val();
-    if($numero.length<8)
-    {
-        Swal.fire({
-            title: 'Falta Números en el DNI',
-            icon: 'info',
-              text:'El DNI debe tener 8 Carácteres'
-          });	
-    }else{
-    	$('#Buscar_Cliente').hide();
-    	var numdni=$('#num_documento').val();
-        var url = 'https://dniruc.apisperu.com/api/v1/dni/'+numdni+'?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo';
-
-    	$('#cargando').show();
-    	$.ajax({
-            type:'GET',
-            url:url,
-            success: function(dat){
-              	if(dat.success == false){
-
-                    Swal.fire({
-                        title: 'DNI Inválido',
-                        icon: 'error',
-                          text:'¡No Existe DNI!'
-                      });
-                  
-                    }else{
-                        //$('#nombre').val(dat.success[0]);
-                        $('#nombre').val(dat.nombres + " " + dat.apellidoPaterno + " " + dat.apellidoMaterno);
-                        $('#Buscar_Cliente').hide();
-                        $('#cargando').hide();
-                  }
-                }, complete: function(){
-
-                	$('#Buscar_Cliente').show();
-                	$('#cargando').hide();
-                	
-                }, error: function(){
-                	
-                }
-        });
-      }
-
-  	}else{
-    	var cod = $.trim($('#tipo_documento').val());
-        $numero=$("#num_documento").val();
-        if($numero.length<11){
-            Swal.fire({
-                title: 'Falta Números en el RUC',
-                icon: 'info',
-                  text:'El DNI debe tener 11 Carácteres'
-              });
-        }else{
-    		$('#Buscar_Cliente').hide();          
-            var numdni=$('#num_documento').val();
-            var url = 'https://dniruc.apisperu.com/api/v1/ruc/'+numdni+'?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo';
-    		$('#cargando').show();
-            $.ajax({
-	            type:'GET',
-	            url:url,
-	            success: function(dat){
-					console.log(dat);
-	                if(dat.success == false){
-                        Swal.fire({
-                            title: 'Ruc Inválido',
-                            icon: 'info',
-                              text:'¡No Existe RUC!'
-                          });
-	                }else{
-	                    $('#nombre').val(dat.razonSocial);
-	                    $('#direccion').val(dat.direccion);
-						document.getElementById('estado2').innerHTML= dat.estado;
-						document.getElementById('condicion').innerHTML= dat.condicion;
-	                    $('#Buscar_Cliente').hide();
-                        $('#cargando').hide();         
-	        		}
-	            }, complete: function(){
-
-                	$('#Buscar_Cliente').show();
-                	$('#cargando').hide();
-	            	
-	            }, error: function(){
-	            	
-	            }            
+                text: 'El Proveedor ya se encuentra registrado'
             });
+
+            $("#num_documento").val('');
+
+        } else {
+
+            if ($('#tipo_documento').val() == 'DNI') {
+                var cod = $.trim($('#tipo_documento').val());
+                $numero = $("#num_documento").val();
+                if ($numero.length < 8) {
+                    Swal.fire({
+                        title: 'Falta Números en el DNI',
+                        icon: 'info',
+                        text: 'El DNI debe tener 8 Carácteres'
+                    });
+                } else {
+                    $('#Buscar_Cliente').hide();
+                    var numdni = $('#num_documento').val();
+                    var url = 'https://dniruc.apisperu.com/api/v1/dni/' + numdni + '?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo';
+
+                    $('#cargando').show();
+                    $.ajax({
+                        type: 'GET',
+                        url: url,
+                        success: function (dat) {
+                            if (dat.success == false) {
+
+                                Swal.fire({
+                                    title: 'DNI Inválido',
+                                    icon: 'error',
+                                    text: '¡No Existe DNI!'
+                                });
+
+                            } else {
+                                //$('#nombre').val(dat.success[0]);
+                                $('#nombre').val(dat.nombres + " " + dat.apellidoPaterno + " " + dat.apellidoMaterno);
+                                $('#Buscar_Cliente').hide();
+                                $('#cargando').hide();
+                            }
+                        }, complete: function () {
+
+                            $('#Buscar_Cliente').show();
+                            $('#cargando').hide();
+
+                        }, error: function () {
+
+                        }
+                    });
+                }
+
+            } else {
+                var cod = $.trim($('#tipo_documento').val());
+                $numero = $("#num_documento").val();
+                if ($numero.length < 11) {
+                    Swal.fire({
+                        title: 'Falta Números en el RUC',
+                        icon: 'info',
+                        text: 'El DNI debe tener 11 Carácteres'
+                    });
+                } else {
+                    $('#Buscar_Cliente').hide();
+                    var numdni = $('#num_documento').val();
+                    var url = 'https://dniruc.apisperu.com/api/v1/ruc/' + numdni + '?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo';
+                    $('#cargando').show();
+                    $.ajax({
+                        type: 'GET',
+                        url: url,
+                        success: function (dat) {
+                            console.log(dat);
+                            if (dat.success == false) {
+                                Swal.fire({
+                                    title: 'Ruc Inválido',
+                                    icon: 'info',
+                                    text: '¡No Existe RUC!'
+                                });
+                            } else {
+                                $('#nombre').val(dat.razonSocial);
+                                $('#direccion').val(dat.direccion);
+                                document.getElementById('estado2').innerHTML = dat.estado;
+                                document.getElementById('condicion').innerHTML = dat.condicion;
+                                $('#Buscar_Cliente').hide();
+                                $('#cargando').hide();
+                            }
+                        }, complete: function () {
+
+                            $('#Buscar_Cliente').show();
+                            $('#cargando').hide();
+
+                        }, error: function () {
+
+                        }
+                    });
+                }
+            }
+
+
         }
-  	}
 
-
-		}
-		
-	});
+    });
 
 }
 
@@ -388,275 +501,268 @@ function BuscarCliente(){
 SUBIENDO LA FOTO DEL PRODUCTO
 =============================================*/
 
-$("#imagen").change(function(){
+$("#imagen").change(function () {
 
-	var imagen = this.files[0];
-	
-	/*=============================================
-	  VALIDAMOS EL FORMATO DE LA IMAGEN SEA JPG O PNG
-	  =============================================*/
-  
-	  if(imagen["type"] != "image/jpeg" && imagen["type"] != "image/png"){
-  
-		$(".nuevaImagen").val("");
-  
-		 Swal.fire({
-			title: 'Error al subir la imagen',
-			icon: '¡La imagen debe estar en formato JPG o PNG!',
-			  text:datos
-		  });
-  
-	  }else if(imagen["size"] > 2000000){
-  
-		$(".nuevaImagen").val("");
-		
-		 Swal.fire({
-			title: 'Error al subir la imagen',
-			icon: '¡La imagen no debe pesar más de 2MB!',
-			  text:datos
-		  });
-  
-	  }else{
-  
-		var datosImagen = new FileReader;
-		datosImagen.readAsDataURL(imagen);
-  
-		$(datosImagen).on("load", function(event){
-  
-		  var rutaImagen = event.target.result;
-  
-		  $("#imagenmuestra").attr("src", rutaImagen);
-  
-		})
-  
-	  }
-  })
+    var imagen = this.files[0];
+
+    /*=============================================
+      VALIDAMOS EL FORMATO DE LA IMAGEN SEA JPG O PNG
+      =============================================*/
+
+    if (imagen["type"] != "image/jpeg" && imagen["type"] != "image/png") {
+
+        $(".nuevaImagen").val("");
+
+        Swal.fire({
+            title: 'Error al subir la imagen',
+            icon: '¡La imagen debe estar en formato JPG o PNG!',
+            text: datos
+        });
+
+    } else if (imagen["size"] > 2000000) {
+
+        $(".nuevaImagen").val("");
+
+        Swal.fire({
+            title: 'Error al subir la imagen',
+            icon: '¡La imagen no debe pesar más de 2MB!',
+            text: datos
+        });
+
+    } else {
+
+        var datosImagen = new FileReader;
+        datosImagen.readAsDataURL(imagen);
+
+        $(datosImagen).on("load", function (event) {
+
+            var rutaImagen = event.target.result;
+
+            $("#imagenmuestra").attr("src", rutaImagen);
+
+        })
+
+    }
+})
 
 //funcion para Guardar Clientes
-function guardarImagen(e){
-	e.preventDefault();//no se activara la accion predeterminada 
-	//$("#btnGuardar").prop("disabled",true);
-	var formData=new FormData($("#formularioGuardarImagen")[0]);
+function guardarImagen(e) {
+    e.preventDefault();//no se activara la accion predeterminada 
+    //$("#btnGuardar").prop("disabled",true);
+    var formData = new FormData($("#formularioGuardarImagen")[0]);
 
-	$.ajax({
-		url: "controladores/compra.php?op=guardarImagen",
-		type: "POST",
-		data: formData,
-		contentType: false,
-		processData: false,
+    $.ajax({
+        url: "controladores/compra.php?op=guardarImagen",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
 
-		success: function(datos){
-			Swal.fire({
-				title: 'Imagen Guardada',
-				icon: 'success',
-				  text:datos
-			  });
-		}
-	});
+        success: function (datos) {
+            Swal.fire({
+                title: 'Imagen Guardada',
+                icon: 'success',
+                text: datos
+            });
+        }
+    });
 
-	$("#myModalP").modal('hide');
+    $("#myModalP").modal('hide');
 
-	limpiarImagen();
+    limpiarImagen();
 
-	listar();
+    listarVentas.load();
 
 }
 
-$(document).ready(function() {
-    $('#formulario').on('keypress', function(e) {
+$(document).ready(function () {
+    $('#formulario').on('keypress', function (e) {
         if (e.which === 13) { // Código de tecla Enter
             e.preventDefault(); // Evita el envío del formulario
         }
     });
 
-    $('#formulario').on('', function(e) {
+    $('#formulario').on('', function (e) {
         guardaryeditar(e);
     });
 });
 
-function guardaryeditar(e)
-{
-	e.preventDefault(); //No se activará la acción predeterminada del evento
-	//$("#btnGuardar").prop("disabled",true);
-	var formData = new FormData($("#formulario")[0]);
+function guardaryeditar(e) {
+    e.preventDefault(); //No se activará la acción predeterminada del evento
+    //$("#btnGuardar").prop("disabled",true);
+    var formData = new FormData($("#formulario")[0]);
 
-	$.ajax({
-		url: "controladores/compra.php?op=guardaryeditar",
-	    type: "POST",
-	    data: formData,
-	    contentType: false,
-	    processData: false,
-
-	    success: function(datos)
-	    {              
-			
-			console.log(datos);
-	          Swal.fire({
-				  title: 'Compra',
-				  icon: 'success',
-					text:datos
-				});
-			  mostrarform(false);
-			  listar();
-	    },
-		error: function(error){
-			console.log(error.responseText);
-		}
-
-	});
-	limpiar();
+    $.ajax({
+        url: "controladores/compra.php?op=guardaryeditar",
+        type: "POST",
+        data: formData,
+        contentType: false,
+        processData: false,
+        success: function (datos) {
+            const response = JSON.parse(datos);
+            if (!response.success) {
+                Swal.fire({
+                    title: 'Cotización',
+                    icon: 'error',
+                    text: response.message
+                });
+                return;
+            }
+            Swal.fire({
+                title: 'Cotización',
+                icon: 'success',
+                text: response.message
+            });
+            mostrarform(false);
+            listarVentas.load();
+            limpiar();
+        },
+        error: function (error) {
+            console.log(error.responseText);
+        }
+    });
 }
 
-function mostrar_impuesto(){
+function mostrar_impuesto() {
 
-	$.ajax({
-		url: 'controladores/negocio.php?op=mostrar_impuesto',
-		type:'get',
-		dataType:'json',
-		success: function(i){
+    $.ajax({
+        url: 'controladores/negocio.php?op=mostrar_impuesto',
+        type: 'get',
+        dataType: 'json',
+        success: function (i) {
 
-			 impuesto=i;
+            impuesto = i;
 
-			 $("#impuesto").val(impuesto);
+            $("#impuesto").val(impuesto);
 
-		}
+        }
 
-	});
+    });
 
 }
 
 //Función mostrar formulario
-function mostrarform(flag)
-{
+function mostrarform(flag) {
     limpiar();
-    if (flag)
-    {
+    if (flag) {
         $('#body').addClass('sidebar-collapse');
         $("#listadoregistros").hide();
         $("#formularioregistros").show();
         $("#btnagregar").hide();
         $("#btnGuardar").hide();
         $("#btnCancelar").show();
-        detalles=0;
+        detalles = 0;
         $("#btnAgregarArt").show();
         $("#btnNuevo").hide();
         $("#header").hide();
 
-        listarArticulos();
+        listarArticulos.load();
         $("#pagos_wrapper").html("");
         initPagos();
-        
+
         // ✅ RESET
         $('#detalles tbody').empty();
         articuloAdd = "";
         cont = 0;
         detalles = 0;
-        
-        // ⚠️ SOLO CARGAR SI NO HAY idcompra (modo nuevo)
-        if (!$("#idcompra").val()) {
-            listarDetalleTmp();
-        }
+
+
     }
-    else
-    {
+    else {
         $("#listadoregistros").show();
         $("#formularioregistros").hide();
         $("#btnagregar").show();
         $("#btnNuevo").show();
         $("#header").show();
         $("#btnGuardar").show();
-        
+
         // Restaurar texto del botón al salir
         $("#btnGuardar").html('<i class="fas fa-check-circle"></i> Realizar Compra');
     }
 }
-function mostrarE(idcompra){
-	
-	mostrarform(true);
+function mostrarE(idcompra) {
 
-	$.post("controladores/compra.php?op=mostrar2",{idcompra : idcompra}, function(data,status)
-		{
-			data=JSON.parse(data);
+    mostrarform(true);
 
-			$("#eliminar").val('Si');
-			
-			$("#idcompra").val(data.idcompra);
-			$("#estadoC").val(data.estadoC);
-			$("#idsucursal").val(data.idsucursal);
-			$("#idproveedor").val(data.idproveedor);
-			$('#idproveedor').select2('');
-			$("#fecha").val(data.fecha);	
-			$("#tipo_comprobantem").val(data.tipo_comprobante);
-			$("#impuesto").val(data.impuesto);
-			$("#serie_comprobante").val(data.serie_comprobante);
-			$("#num_comprobante").val(data.num_comprobante);
+    $.post("controladores/compra.php?op=mostrar2", { idcompra: idcompra }, function (data, status) {
+        data = JSON.parse(data);
 
-			$("#formapago").val(data.formapago);
-			$('#formapago').select2('');
-			$("#lugar_entrega").val(data.lugar_entrega);
-			$("#motivo_compra").val(data.motivo_compra);
-			$("#documento").val(data.documento);
+        $("#eliminar").val('Si');
 
-		});
-		
-		$.post("controladores/compra.php?op=listarDetalleCompra",{idcompra : idcompra}, function(data,status)
-		{
-			data=JSON.parse(data);
+        $("#idcompra").val(data.idcompra);
+        $("#estadoC").val(data.estadoC);
+        $("#idsucursal").val(data.idsucursal);
+        $("#idproveedor").val(data.idproveedor);
+        $('#idproveedor').select2('');
+        $("#fecha").val(data.fecha);
+        $("#tipo_comprobantem").val(data.tipo_comprobante);
+        $("#impuesto").val(data.impuesto);
+        $("#serie_comprobante").val(data.serie_comprobante);
+        $("#num_comprobante").val(data.num_comprobante);
 
-			for(var i=0; i < data.length; i++){
-				
-				agregarDetalle(data[i][0],data[i][1],data[i][4],data[i][3],data[i][5],data[i][2])
+        $("#formapago").val(data.formapago);
+        $('#formapago').select2('');
+        $("#lugar_entrega").val(data.lugar_entrega);
+        $("#motivo_compra").val(data.motivo_compra);
+        $("#documento").val(data.documento);
+
+    });
+
+    $.post("controladores/compra.php?op=listarDetalleCompra", { idcompra: idcompra }, function (data, status) {
+        data = JSON.parse(data);
+
+        for (var i = 0; i < data.length; i++) {
+
+            agregarDetalle(data[i][0], data[i][1], data[i][4], data[i][3], data[i][5], data[i][2])
 
 
-			}
+        }
 
-		});
+    });
 
-		$("#btnEliminarD").hide();
+    $("#btnEliminarD").hide();
 
 }
 
-function subirImagen(idcompra,imagen){
-	
-	if(imagen != ""){
-		
-		$("#imagenmuestra").show();
-		$("#imagenmuestra").attr("src","files/compras/"+imagen);
-		$("#imagenactual").val(imagen);
+function subirImagen(idcompra, imagen) {
 
-	}else{
+    if (imagen != "") {
 
-		$("#imagenmuestra").attr("src","files/productos/anonymous.png");
+        $("#imagenmuestra").show();
+        $("#imagenmuestra").attr("src", "files/compras/" + imagen);
+        $("#imagenactual").val(imagen);
 
-	}
+    } else {
 
-	$("#myModalP").modal('show');
-	$("#idcompraI").val(idcompra);
-	
+        $("#imagenmuestra").attr("src", "files/productos/anonymous.png");
+
+    }
+
+    $("#myModalP").modal('show');
+    $("#idcompraI").val(idcompra);
+
 }
 
-function mostrar(idcompra)
-{
-	$("#getCodeModal").modal('show');
-	$.post("controladores/compra.php?op=mostrar",{idcompra : idcompra}, function(data, status)
-	{
-		data = JSON.parse(data);		
-		//mostrarform(true);
+function mostrar(idcompra) {
+    $("#getCodeModal").modal('show');
+    $.post("controladores/compra.php?op=mostrar", { idcompra: idcompra }, function (data, status) {
+        data = JSON.parse(data);
+        //mostrarform(true);
 
-		$("#idproveedorm").val(data.proveedor);
-		$("#tipo_comprobantem").val('Compra');
-		$("#serie_comprobantem").val(data.serie_comprobante);
-		$("#num_comprobantem").val(data.num_comprobante);
-		$("#fecha_horam").val(data.fecha);
-		$("#impuestom").val(data.impuesto);
-		$("#idingresom").val(data.idingreso);
+        $("#idproveedorm").val(data.proveedor);
+        $("#tipo_comprobantem").val('Compra');
+        $("#serie_comprobantem").val(data.serie_comprobante);
+        $("#num_comprobantem").val(data.num_comprobante);
+        $("#fecha_horam").val(data.fecha);
+        $("#impuestom").val(data.impuesto);
+        $("#idingresom").val(data.idingreso);
 
 
- 	});
-	//enviar mediante get listar detalle a la varible op de ajax
- 	$.post("controladores/compra.php?op=listarDetalle&id="+idcompra,function(r){
-	        $("#detallesm").html(r);
-	});
+    });
+    //enviar mediante get listar detalle a la varible op de ajax
+    $.post("controladores/compra.php?op=listarDetalle&id=" + idcompra, function (r) {
+        $("#detallesm").html(r);
+    });
 }
 
 /*
@@ -665,158 +771,225 @@ $("#idsucursal").change(function() {
 });
 */
 
-function listarArticulos(){
-    var idsucursal = $("#idsucursal").val();
-    
-    // Destruir tabla si existe
-    if ($.fn.DataTable.isDataTable('#tblarticulos')) {
-        $('#tblarticulos').DataTable().destroy();
+listarArticulos = new FluentPaginator({
+    url: "controladores/compra.php?op=listarArticulos",
+    renderTabla: pintarProductos,
+    searchSelector: "#searchProductos",
+    limitSelector: "#limitProductos",
+    paginationId: "#paginationProductos",
+    tableBody: "#tbodyProductos"
+});
+
+function pintarProductos(data, permissions) {
+
+    let html = "";
+
+    if (data.length === 0) {
+
+        html = `
+            <tr>
+                <td colspan="10" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+        $("#tblarticulos tbody").html(html);
+        return;
     }
-    
-    tabla = $('#tblarticulos').DataTable({
-        "processing": true,
-        "serverSide": true,
-        "pageLength": 5,
-        "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
-        "order": [[0, "asc"]],
-        "searchDelay": 500,
-        "dom": 'frtip',
-        "language": {
-            "processing": "Procesando...",
-            "search": "Buscar:",
-            "lengthMenu": "Mostrar _MENU_ registros",
-            "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
-            "infoEmpty": "No hay registros disponibles",
-            "infoFiltered": "(filtrado de _MAX_ registros)",
-            "zeroRecords": "No se encontraron resultados",
-            "emptyTable": "No hay productos disponibles",
-            "loadingRecords": "Cargando...",
-            "paginate": {
-                "first": "Primero",
-                "last": "Último",
-                "next": "Siguiente",
-                "previous": "Anterior"
-            }
-        },
-        "ajax": {
-            "url": 'controladores/compra.php?op=listarArticulos',
-            "data": function(d) {
-                d.idsucursal = idsucursal;
-            },
-            "type": "GET",
-            "dataType": "json",
-            "error": function(xhr, error, thrown){
-                console.error('Error al cargar productos:', error);
-                Swal.fire({
-                    title: 'Error',
-                    text: 'No se pudieron cargar los productos. Intenta recargar la página.',
-                    icon: 'error',
-                    confirmButtonText: 'Aceptar'
-                });
-            }
-        },
+
+    data.forEach(item => {
+        html += `
+            <tr>
+                <td>
+                <button type="button"
+                    class="btn btn-success"
+                    onclick="agregarDetalle(
+                        ${item.idproducto},
+                        '${item.nombre}',
+                        ${item.precio},
+                        ${item.precio_compra},
+                        '${item.contenedor}',
+                        1
+                    )"
+                    >
+                    <i class="fas fa-shopping-cart"></i>
+                </button>
+                <td>${item.codigo || ''}</td>
+                <td style="text-align:left;">
+                    <strong>${item.nombre || ''}</strong><br>
+                    <small>
+                        <strong>Motor:</strong> ${item.numero_motor || '-'} &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <strong>Serie:</strong> ${item.numero_serie || '-'}
+                    </small>
+                </td>
+                <td>${item.stock}</td>
+                <td>S/ ${parseFloat(item.precio).toFixed(2)}</td>
+                <td>
+                    ${item.color || 'S/N'}
+                </td>
+
+            </tr>
+        `;
+
     });
-    
-    // Delegación de eventos para botones dinámicos
-    $('#tblarticulos tbody').off('click', '.btn-agregar');
-    $('#tblarticulos tbody').on('click', '.btn-agregar', function(){
-        var id = $(this).data('id');
-        var input = $('#cantidaC_' + id);
-        var cantidad = parseFloat(input.val()) || 0;
-        
-        if (cantidad <= 0) {
-            Swal.fire({
-                title: 'Cantidad inválida',
-                text: 'Por favor ingrese una cantidad válida',
-                icon: 'warning',
-                confirmButtonText: 'Aceptar'
-            });
-            input.focus();
-            return;
-        }
-        
-        // Solo llamar a tu función agregarDetalle existente
-        agregarDetalle(
-            id,
-            input.data('nombre'),
-            input.data('precio'),
-            input.data('precio-compra'),
-            input.data('unidad'),
-            cantidad
-        );
-        
-        // Limpiar input
-        input.val('');
-    });
-    
-    // Enter para agregar
-    $('#tblarticulos tbody').off('keypress', '.cantidad-input');
-    $('#tblarticulos tbody').on('keypress', '.cantidad-input', function(e){
-        if (e.which === 13) {
-            e.preventDefault();
-            $(this).closest('tr').find('.btn-agregar').click();
-        }
-    });
+
+    $("#tblarticulos tbody").html(html);
+
 }
+
+
+
+// function listarArticulos(){
+//     var idsucursal = $("#idsucursal").val();
+
+//     // Destruir tabla si existe
+//     if ($.fn.DataTable.isDataTable('#tblarticulos')) {
+//         $('#tblarticulos').DataTable().destroy();
+//     }
+
+//     tabla = $('#tblarticulos').DataTable({
+//         "processing": true,
+//         "serverSide": true,
+//         "pageLength": 5,
+//         "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
+//         "order": [[0, "asc"]],
+//         "searchDelay": 500,
+//         "dom": 'frtip',
+//         "language": {
+//             "processing": "Procesando...",
+//             "search": "Buscar:",
+//             "lengthMenu": "Mostrar _MENU_ registros",
+//             "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
+//             "infoEmpty": "No hay registros disponibles",
+//             "infoFiltered": "(filtrado de _MAX_ registros)",
+//             "zeroRecords": "No se encontraron resultados",
+//             "emptyTable": "No hay productos disponibles",
+//             "loadingRecords": "Cargando...",
+//             "paginate": {
+//                 "first": "Primero",
+//                 "last": "Último",
+//                 "next": "Siguiente",
+//                 "previous": "Anterior"
+//             }
+//         },
+//         "ajax": {
+//             "url": 'controladores/compra.php?op=listarArticulos',
+//             "data": function(d) {
+//                 d.idsucursal = idsucursal;
+//             },
+//             "type": "GET",
+//             "dataType": "json",
+//             "error": function(xhr, error, thrown){
+//                 console.error('Error al cargar productos:', error);
+//                 Swal.fire({
+//                     title: 'Error',
+//                     text: 'No se pudieron cargar los productos. Intenta recargar la página.',
+//                     icon: 'error',
+//                     confirmButtonText: 'Aceptar'
+//                 });
+//             }
+//         },
+//     });
+
+//     // Delegación de eventos para botones dinámicos
+//     $('#tblarticulos tbody').off('click', '.btn-agregar');
+//     $('#tblarticulos tbody').on('click', '.btn-agregar', function(){
+//         var id = $(this).data('id');
+//         var input = $('#cantidaC_' + id);
+//         var cantidad = parseFloat(input.val()) || 0;
+
+//         if (cantidad <= 0) {
+//             Swal.fire({
+//                 title: 'Cantidad inválida',
+//                 text: 'Por favor ingrese una cantidad válida',
+//                 icon: 'warning',
+//                 confirmButtonText: 'Aceptar'
+//             });
+//             input.focus();
+//             return;
+//         }
+
+//         // Solo llamar a tu función agregarDetalle existente
+//         agregarDetalle(
+//             id,
+//             input.data('nombre'),
+//             input.data('precio'),
+//             input.data('precio-compra'),
+//             input.data('unidad'),
+//             cantidad
+//         );
+
+//         // Limpiar input
+//         input.val('');
+//     });
+
+//     // Enter para agregar
+//     $('#tblarticulos tbody').off('keypress', '.cantidad-input');
+//     $('#tblarticulos tbody').on('keypress', '.cantidad-input', function(e){
+//         if (e.which === 13) {
+//             e.preventDefault();
+//             $(this).closest('tr').find('.btn-agregar').click();
+//         }
+//     });
+// }
 
 //Función Listar
-function listar()
-{
+// function listar() {
 
-    let fecha_inicio = $("#fecha_inicio").val();
-	let fecha_fin = $("#fecha_fin").val();
-	let idsucursal2 = $("#idsucursal2").val();
+//     let fecha_inicio = $("#fecha_inicio").val();
+//     let fecha_fin = $("#fecha_fin").val();
 
-	tabla=$('#tbllistado').dataTable(
-	{
-		//"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-		"aProcessing": true,//Activamos el procesamiento del datatables
-	    "aServerSide": true,//Paginación y filtrado realizados por el servidor
-	    "processing": true,
-	    "language": 
-		{          
-		"processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-		},
-        "responsive": true, "lengthChange": false, "autoWidth": false,
-	    dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-		lengthMenu: [
-            [5,10, 25, 50, 100, -1],
-            ['5 filas','10 filas', '25 filas', '50 filas','100 filas', 'Mostrar todo']
-        ],
-        buttons: ['pageLength',
-					{
-						extend: 'excelHtml5', 
-						text: "<i class='fas fa-file-csv'></i>", 
-						titleAttr: 'Exportar a Excel', 
-						// className: 'btn btn-success'
-					},
-					{
-						extend: 'pdf', 
-						text: "<i class='fas fa-file-pdf'></i>", 
-						titleAttr: 'Exportar a PDF', 
-						// className: 'btn btn-danger'
-					},
-					{
-						extend: 'colvis', 
-						text: "<i class='fas fa-bars'></i>", 
-						titleAttr: '', 
-						// className: 'btn btn-danger'
-					}],
-		"ajax":
-				{
-					url: 'controladores/compra.php?op=listar',
-                    data:{fecha_inicio: fecha_inicio,fecha_fin: fecha_fin,idsucursal2: idsucursal2},
-					type : "get",
-					dataType : "json",						
-					error: function(e){
-						console.log(e.responseText);	
-					}
-				},
-		"bDestroy": true,
-		"iDisplayLength": 5,//Paginación
-	    "order": [[ 0, "desc" ]]//Ordenar (columna,orden)
-	}).DataTable();
-}
+//     tabla = $('#tbllistado').dataTable(
+//         {
+//             //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
+//             "aProcessing": true,//Activamos el procesamiento del datatables
+//             "aServerSide": true,//Paginación y filtrado realizados por el servidor
+//             "processing": true,
+//             "language":
+//             {
+//                 "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+//             },
+//             "responsive": true, "lengthChange": false, "autoWidth": false,
+//             dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+//             lengthMenu: [
+//                 [5, 10, 25, 50, 100, -1],
+//                 ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
+//             ],
+//             buttons: ['pageLength',
+//                 {
+//                     extend: 'excelHtml5',
+//                     text: "<i class='fas fa-file-csv'></i>",
+//                     titleAttr: 'Exportar a Excel',
+//                     // className: 'btn btn-success'
+//                 },
+//                 {
+//                     extend: 'pdf',
+//                     text: "<i class='fas fa-file-pdf'></i>",
+//                     titleAttr: 'Exportar a PDF',
+//                     // className: 'btn btn-danger'
+//                 },
+//                 {
+//                     extend: 'colvis',
+//                     text: "<i class='fas fa-bars'></i>",
+//                     titleAttr: '',
+//                     // className: 'btn btn-danger'
+//                 }],
+//             "ajax":
+//             {
+//                 url: 'controladores/compra.php?op=listar',
+//                 data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, idsucursal2: 1 },
+//                 type: "get",
+//                 dataType: "json",
+//                 error: function (e) {
+//                     console.log(e.responseText);
+//                 }
+//             },
+//             "bDestroy": true,
+//             "iDisplayLength": 5,//Paginación
+//             "order": [[0, "desc"]]//Ordenar (columna,orden)
+//         }).DataTable();
+// }
 
 function agregarDetalle(idproducto, producto, precioVenta, precioCompra, unidadmedida, cantidad) {
     if (event) {
@@ -848,61 +1021,61 @@ function agregarDetalle(idproducto, producto, precioVenta, precioCompra, unidadm
     // Truncar nombre si es muy largo
     var productoCompleto = producto + ' x ' + unidadmedida;
     var productoCorto = productoCompleto;
-    
+
     if (productoCompleto.length > 45) {
         productoCorto = productoCompleto.substring(0, 42) + '...';
     }
 
     var fila = '<tr class="filas" id="fila' + cont + '">' +
         '<td>' +
-            '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
-            '<div class="nombre-producto-wrapper">' +
-                '<input class="form-control form-control-sm producto-nombre-input" ' +
-                'style="width: 100%; max-width: 350px; font-weight: bold;" ' +
-                'type="text" name="nombreProducto[]" ' +
-                'value="' + productoCorto + '" ' +
-                'title="' + productoCompleto + '" ' +
-                'readonly>' +
-                (productoCompleto.length > 45 ? 
-                    '<div class="nombre-producto-full">' +
-                        '<small class="text-muted">Nombre completo:</small><br>' +
-                        '<strong>' + productoCompleto + '</strong>' +
-                    '</div>' 
-                : '') +
-            '</div>' +
+        '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
+        '<div class="nombre-producto-wrapper">' +
+        '<input class="form-control form-control-sm producto-nombre-input" ' +
+        'style="width: 100%; max-width: 350px; font-weight: bold;" ' +
+        'type="text" name="nombreProducto[]" ' +
+        'value="' + productoCorto + '" ' +
+        'title="' + productoCompleto + '" ' +
+        'readonly>' +
+        (productoCompleto.length > 45 ?
+            '<div class="nombre-producto-full">' +
+            '<small class="text-muted">Nombre completo:</small><br>' +
+            '<strong>' + productoCompleto + '</strong>' +
+            '</div>'
+            : '') +
+        '</div>' +
         '</td>' +
         '<td>' +
-            '<input class="form-control form-control-sm text-center" style="width: 100px;" ' +
-            'type="number" step="0.01" name="cantidad[]" id="cantidad[]" value="' + cantidad + '" ' +
-            'oninput="modificarSubtotales(); datosCambiados(this);">' +
+        '<input class="form-control form-control-sm text-center" style="width: 100px;" ' +
+        'type="number" step="0.01" name="cantidad[]" id="cantidad[]" value="' + cantidad + '" ' +
+        'oninput="modificarSubtotales(); datosCambiados(this);">' +
         '</td>' +
         '<td>' +
-            '<input class="form-control form-control-sm text-center" style="width: 100px;" ' +
-            'type="number" step="0.00000001" name="precio_compra[]" id="precio_compra[]" value="' + precioCompra + '" ' +
-            'oninput="modificarSubtotales(); datosCambiados(this);">' +
+        '<input class="form-control form-control-sm text-center" style="width: 100px;" ' +
+        'type="number" step="0.00000001" name="precio_compra[]" id="precio_compra[]" value="' + precioCompra + '" ' +
+        'oninput="modificarSubtotales(); datosCambiados(this);">' +
         '</td>' +
         '<td>' +
-            '<input class="form-control form-control-sm text-center" style="width: 100px;" ' +
-            'type="number" step="0.00000001" name="precio_venta[]" value="' + precioVenta + '" ' +
-            'oninput="datosCambiados(this);">' +
+        '<input class="form-control form-control-sm text-center" style="width: 100px;" ' +
+        'type="number" step="0.00000001" name="precio_venta[]" value="' + precioVenta + '" ' +
+        'oninput="datosCambiados(this);">' +
         '</td>' +
         '<td>' +
-            '<span class="badge bg-success" style="text-align:center; width: 90px; font-size: 15px;" ' +
-            'id="subtotal' + cont + '" name="subtotal">' + subtotal + '</span>' +
+        '<span class="badge bg-success" style="text-align:center; width: 90px; font-size: 15px;" ' +
+        'id="subtotal' + cont + '" name="subtotal">' + subtotal + '</span>' +
         '</td>' +
         '<td>' +
-            '<input class="form-control form-control-sm" type="text" name="nlote[]" oninput="datosCambiados(this)" onblur="datosCambiados(this)">' +
+        '<input class="form-control form-control-sm" type="text" name="nlote[]" oninput="datosCambiados(this)" onblur="datosCambiados(this)">' +
         '</td>' +
         '<td>' +
-            '<input class="form-control form-control-sm" type="date" name="fvencimiento[]" onchange="datosCambiados(this)" onblur="datosCambiados(this)">' +
+        '<input class="form-control form-control-sm" type="date" name="fvencimiento[]" onchange="datosCambiados(this)" onblur="datosCambiados(this)">' +
         '</td>' +
         '<td class="text-center">' +
-            '<button type="button" class="btn btn-danger btn-sm" ' +
-            'onclick="eliminarDetalle(' + cont + ', ' + idproducto + ')">' +
-                '<i class="fa fa-trash"></i>' +
-            '</button>' +
+        '<button type="button" class="btn btn-danger btn-sm" ' +
+        'onclick="eliminarDetalle(' + cont + ', ' + idproducto + ')">' +
+        '<i class="fa fa-trash"></i>' +
+        '</button>' +
         '</td>' +
-    '</tr>';
+        '</tr>';
 
     cont++;
     detalles = detalles + 1;
@@ -910,31 +1083,31 @@ function agregarDetalle(idproducto, producto, precioVenta, precioCompra, unidadm
     $('#detalles').append(fila);
     modificarSubtotales();
     actualizarMontoPagoDefault();
-    
+
     var nlote = '';
     var fvencimiento = '';
-    
-    agregarDetalleTmp(
-        idproducto,
-        producto,
-        cantidad,
-        precioCompra,
-        precioVenta,
-        unidadmedida,
-        nlote,
-        fvencimiento
-    );
+
+    // agregarDetalleTmp(
+    //     idproducto,
+    //     producto,
+    //     cantidad,
+    //     precioCompra,
+    //     precioVenta,
+    //     unidadmedida,
+    //     nlote,
+    //     fvencimiento
+    // );
 }
 
 function datosCambiados(inputElement) {
     var fila = $(inputElement).closest('tr');
 
-    var idproducto     = fila.find('input[name="idproducto[]"]').val();
-    var cantidad       = fila.find('input[name="cantidad[]"]').val();
-    var precioCompra   = fila.find('input[name="precio_compra[]"]').val();
-    var precioVenta    = fila.find('input[name="precio_venta[]"]').val();
-    var nlote          = fila.find('input[name="nlote[]"]').val();
-    var fvencimiento   = fila.find('input[name="fvencimiento[]"]').val();
+    var idproducto = fila.find('input[name="idproducto[]"]').val();
+    var cantidad = fila.find('input[name="cantidad[]"]').val();
+    var precioCompra = fila.find('input[name="precio_compra[]"]').val();
+    var precioVenta = fila.find('input[name="precio_venta[]"]').val();
+    var nlote = fila.find('input[name="nlote[]"]').val();
+    var fvencimiento = fila.find('input[name="fvencimiento[]"]').val();
 
     actualizarDetalleTmp(
         idproducto,
@@ -977,36 +1150,36 @@ function agregarDetalleTmp(idproducto, producto, cantidad, precioCompra, precioV
     });
 }
 
-function listarDetalleTmp() {
-    $.post("controladores/compra.php?op=listar_tmp", {
-        idsucursal: $("#idsucursal").val()
-    }, function (data) {
+// function listarDetalleTmp() {
+//     $.post("controladores/compra.php?op=listar_tmp", {
+//         idsucursal: $("#idsucursal").val()
+//     }, function (data) {
 
-        data = JSON.parse(data);
+//         data = JSON.parse(data);
 
-        if (data.length === 0) return;
+//         if (data.length === 0) return;
 
-        data.forEach(function (p) {
-            pintarDetalle(
-                p.idproducto,
-                p.nombre_producto,
-                p.precio_venta,
-                p.precio_compra,
-                p.unidadmedida,
-                p.cantidad,
-                p.nlote,
-                p.fvencimiento
-            );
-        });
-        modificarSubtotales();
-        actualizarMontoPagoDefault();
-    });
-}
+//         data.forEach(function (p) {
+//             pintarDetalle(
+//                 p.idproducto,
+//                 p.nombre_producto,
+//                 p.precio_venta,
+//                 p.precio_compra,
+//                 p.unidadmedida,
+//                 p.cantidad,
+//                 p.nlote,
+//                 p.fvencimiento
+//             );
+//         });
+//         modificarSubtotales();
+//         actualizarMontoPagoDefault();
+//     });
+// }
 
 function pintarDetalle(idproducto, producto, precioVenta, precioCompra, unidadmedida, cantidad, nlote, fvencimiento) {
 
     precioCompra = parseFloat(precioCompra);
-    precioVenta  = parseFloat(precioVenta);
+    precioVenta = parseFloat(precioVenta);
     var subtotal = parseFloat(cantidad * precioCompra).toFixed(2);
 
     var productoCompleto = producto + ' x ' + unidadmedida;
@@ -1017,66 +1190,66 @@ function pintarDetalle(idproducto, producto, precioVenta, precioCompra, unidadme
 
     // Cantidad mínima = lo que ya fue vendido (no se puede bajar de ahí)
     var cantidadVendida = (window._cantidadVendida && window._cantidadVendida[idproducto])
-                         ? window._cantidadVendida[idproducto]
-                         : 0;
+        ? window._cantidadVendida[idproducto]
+        : 0;
     var cantidadMin = cantidadVendida > 0 ? cantidadVendida : 0.01;
-    var avisoMin    = cantidadVendida > 0
-                     ? '<small class="text-warning"><i class="fa fa-exclamation-triangle"></i> ' +
-                       'Mín: ' + cantidadVendida + ' (ya vendido)</small>'
-                     : '';
+    var avisoMin = cantidadVendida > 0
+        ? '<small class="text-warning"><i class="fa fa-exclamation-triangle"></i> ' +
+        'Mín: ' + cantidadVendida + ' (ya vendido)</small>'
+        : '';
 
     var fila =
         '<tr class="filas" id="fila' + cont + '">' +
-            '<td>' +
-                '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
-                '<div class="nombre-producto-wrapper">' +
-                    '<input class="form-control form-control-sm producto-nombre-input" ' +
-                    'style="width:100%;max-width:350px;font-weight:bold;" ' +
-                    'type="text" name="nombreProducto[]" ' +
-                    'value="' + productoCorto + '" ' +
-                    'title="' + productoCompleto + '" readonly>' +
-                '</div>' +
-                avisoMin +
-            '</td>' +
-            '<td>' +
-                '<input class="form-control form-control-sm text-center" style="width:100px;" ' +
-                'type="number" step="0.01" ' +
-                'min="' + cantidadMin + '" ' +       // ← mínimo bloqueado
-                'name="cantidad[]" value="' + cantidad + '" ' +
-                'oninput="validarCantidadMin(this, ' + cantidadMin + '); modificarSubtotales(); datosCambiados(this);">' +
-            '</td>' +
-            '<td>' +
-                '<input class="form-control form-control-sm text-center" style="width:100px;" ' +
-                'type="number" step="0.00000001" name="precio_compra[]" value="' + precioCompra + '" ' +
-                'oninput="modificarSubtotales(); datosCambiados(this);">' +
-            '</td>' +
-            '<td>' +
-                '<input class="form-control form-control-sm text-center" style="width:100px;" ' +
-                'type="number" step="0.00000001" name="precio_venta[]" value="' + precioVenta + '" ' +
-                'oninput="datosCambiados(this);">' +
-            '</td>' +
-            '<td>' +
-                '<span class="badge bg-success" style="width:90px;font-size:15px;" ' +
-                'id="subtotal'  + cont + '" name="subtotal">' + subtotal + '</span>' +
-            '</td>' +
-            '<td>' +
-                '<input class="form-control form-control-sm" style="width:90px;" ' +
-                'type="text" name="nlote[]" ' +
-                'value="' + (nlote ? nlote : '') + '" ' +
-                'oninput="datosCambiados(this)">' +
-            '</td>' +
-            '<td>' +
-                '<input class="form-control form-control-sm" style="width:150px;" ' +
-                'type="date" name="fvencimiento[]" ' +
-                'value="' + (fvencimiento ? fvencimiento : '') + '" ' +
-                'onchange="datosCambiados(this)">' +
-            '</td>' +
-            '<td class="text-center">' +
-                '<button type="button" class="btn btn-danger btn-sm" ' +
-                'onclick="eliminarDetalle(' + cont + ', ' + idproducto + ')">' +
-                    '<i class="fa fa-trash"></i>' +
-                '</button>' +
-            '</td>' +
+        '<td>' +
+        '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
+        '<div class="nombre-producto-wrapper">' +
+        '<input class="form-control form-control-sm producto-nombre-input" ' +
+        'style="width:100%;max-width:350px;font-weight:bold;" ' +
+        'type="text" name="nombreProducto[]" ' +
+        'value="' + productoCorto + '" ' +
+        'title="' + productoCompleto + '" readonly>' +
+        '</div>' +
+        avisoMin +
+        '</td>' +
+        '<td>' +
+        '<input class="form-control form-control-sm text-center" style="width:100px;" ' +
+        'type="number" step="0.01" ' +
+        'min="' + cantidadMin + '" ' +       // ← mínimo bloqueado
+        'name="cantidad[]" value="' + cantidad + '" ' +
+        'oninput="validarCantidadMin(this, ' + cantidadMin + '); modificarSubtotales(); datosCambiados(this);">' +
+        '</td>' +
+        '<td>' +
+        '<input class="form-control form-control-sm text-center" style="width:100px;" ' +
+        'type="number" step="0.00000001" name="precio_compra[]" value="' + precioCompra + '" ' +
+        'oninput="modificarSubtotales(); datosCambiados(this);">' +
+        '</td>' +
+        '<td>' +
+        '<input class="form-control form-control-sm text-center" style="width:100px;" ' +
+        'type="number" step="0.00000001" name="precio_venta[]" value="' + precioVenta + '" ' +
+        'oninput="datosCambiados(this);">' +
+        '</td>' +
+        '<td>' +
+        '<span class="badge bg-success" style="width:90px;font-size:15px;" ' +
+        'id="subtotal' + cont + '" name="subtotal">' + subtotal + '</span>' +
+        '</td>' +
+        '<td>' +
+        '<input class="form-control form-control-sm" style="width:90px;" ' +
+        'type="text" name="nlote[]" ' +
+        'value="' + (nlote ? nlote : '') + '" ' +
+        'oninput="datosCambiados(this)">' +
+        '</td>' +
+        '<td>' +
+        '<input class="form-control form-control-sm" style="width:150px;" ' +
+        'type="date" name="fvencimiento[]" ' +
+        'value="' + (fvencimiento ? fvencimiento : '') + '" ' +
+        'onchange="datosCambiados(this)">' +
+        '</td>' +
+        '<td class="text-center">' +
+        '<button type="button" class="btn btn-danger btn-sm" ' +
+        'onclick="eliminarDetalle(' + cont + ', ' + idproducto + ')">' +
+        '<i class="fa fa-trash"></i>' +
+        '</button>' +
+        '</td>' +
         '</tr>';
 
     $('#detalles').append(fila);
@@ -1098,7 +1271,7 @@ function validarCantidadMin(input, min) {
         });
     }
 }
-    
+
 function agregarConEnter(event, idproducto, producto, precioVenta, precioCompra, unidadmedida) {
     if (event.key === 'Enter') {
         var cantidad = document.getElementById('cantidaC_' + idproducto).value;
@@ -1117,21 +1290,19 @@ function mostrarAlerta(mensaje) {
         timeOut: 300 // Establece el tiempo de duración en milisegundos (en este caso, 3000 ms o 3 segundos)
     });
 }
-function evaluar(){
+function evaluar() {
 
-	if (detalles>0) 
-	{
-		$("#btnGuardar").show();
-	}
-	else
-	{
-		$("#btnGuardar").hide();
-		cont=0;
-		igv=0;
-		igv_dec=0;
-		$('#most_total').val('0');
-		$('#most_imp').val('0');
-	}
+    if (detalles > 0) {
+        $("#btnGuardar").show();
+    }
+    else {
+        $("#btnGuardar").hide();
+        cont = 0;
+        igv = 0;
+        igv_dec = 0;
+        $('#most_total').val('0');
+        $('#most_imp').val('0');
+    }
 }
 
 function modificarSubtotales() {
@@ -1183,7 +1354,7 @@ function modificarSubtotales() {
     $("#monto_gravado").val(monto_gravado.toFixed(2));
     $("#monto_igv").val(monto_igv.toFixed(2));
     $("#total_compra").val(total_compra.toFixed(2));
-    
+
     // Actualizar el campo impuesto (debe ser 0 si es exonerada)
     $("#impuesto").val(monto_igv.toFixed(2));
 
@@ -1198,12 +1369,12 @@ function modificarSubtotales() {
 }
 
 // Evento para recalcular cuando cambie el tipo de IGV
-$(document).ready(function() {
+$(document).ready(function () {
     // Establecer EXONERADA por defecto
     $('#tipo_igv').val('EXONERADA');
-    
+
     // Recalcular cuando cambie el tipo de IGV
-    $('#tipo_igv').on('change', function() {
+    $('#tipo_igv').on('change', function () {
         modificarSubtotales();
     });
 });
@@ -1212,9 +1383,9 @@ function actualizarTotales() {
     let totalEfectivo = 0;
     let totalDeposito = 0;
 
-    $("input[name='monto_pago[]']").each(function(index){
+    $("input[name='monto_pago[]']").each(function (index) {
         let monto = parseFloat($(this).val()) || 0;
-        let tipo  = $("select[name='tipo_pago[]']").eq(index).val();
+        let tipo = $("select[name='tipo_pago[]']").eq(index).val();
 
         if (tipo === "Efectivo") {
             totalEfectivo += monto;
@@ -1246,91 +1417,89 @@ function actualizarMontoPagoDefault() {
 }
 
 
- function limpiarsubtotales(){
- 	$("#most_total").html("0");
-	$("#most_imp").html("0");
-	$("#totalVenta").html("0");
- }
-
-//Función para desactivar registros
-function aprobar(idcompra)
-{
-
-		Swal.fire({
-			title: 'Aprobar?',
-			text: "¿Está seguro Que Desea Aprobar la Aprobar?",
-			icon: 'warning',
-			showCancelButton: true,
-			confirmButtonColor: '#3085d6',
-			cancelButtonColor: '#d33',
-			confirmButtonText: 'Si'
-			}).then((result) => {
-			if (result.isConfirmed) {
-				$.post("controladores/compra.php?op=aprobar", {idcompra : idcompra}, function(e){
-					Swal.fire(
-						'Aprobado!',
-						e,
-						'success'
-						)
-					tabla.ajax.reload();
-				});
-			}else{
-				Swal.fire(
-					'Aviso!',
-					"Se Cancelo la aprobación de la Compra",
-					'info'
-					)
-			}
-			})
-		
+function limpiarsubtotales() {
+    $("#most_total").html("0");
+    $("#most_imp").html("0");
+    $("#totalVenta").html("0");
 }
 
 //Función para desactivar registros
-function anular(idcompra)
-{
+function aprobar(idcompra) {
 
-	Swal.fire({
-		title: '¿Anular?',
-		text: "¿Está seguro Que Desea anular la Compra?",
-		icon: 'warning',
-		showCancelButton: true,
-		confirmButtonColor: '#3085d6',
-		cancelButtonColor: '#d33',
-		confirmButtonText: 'Si'
-		}).then((result) => {
-		if (result.isConfirmed) {
-			$.post("controladores/compra.php?op=anular", {idcompra :idcompra}, function(e){
-				Swal.fire(
-					'Anulado!',
-					e,
-					'success'
-					)
-				tabla.ajax.reload();
-			});
-		}else{
-			Swal.fire(
-				'Aviso!',
-				"Se Cancelo la anulación de la Compra",
-				'error'
-				)
-		}
-		})
-		
+    Swal.fire({
+        title: 'Aprobar?',
+        text: "¿Está seguro Que Desea Aprobar la Aprobar?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post("controladores/compra.php?op=aprobar", { idcompra: idcompra }, function (e) {
+                Swal.fire(
+                    'Aprobado!',
+                    e,
+                    'success'
+                )
+                tabla.ajax.reload();
+            });
+        } else {
+            Swal.fire(
+                'Aviso!',
+                "Se Cancelo la aprobación de la Compra",
+                'info'
+            )
+        }
+    })
+
+}
+
+//Función para desactivar registros
+function anular(idcompra) {
+
+    Swal.fire({
+        title: '¿Anular?',
+        text: "¿Está seguro Que Desea anular la Compra?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.post("controladores/compra.php?op=anular", { idcompra: idcompra }, function (e) {
+                Swal.fire(
+                    'Anulado!',
+                    e,
+                    'success'
+                )
+                tabla.ajax.reload();
+            });
+        } else {
+            Swal.fire(
+                'Aviso!',
+                "Se Cancelo la anulación de la Compra",
+                'error'
+            )
+        }
+    })
+
 }
 
 //funcion que espera el id de la fila a eliminar
-function eliminarDetalle(indice, idproducto){
-	//id fila mas el indice
-	$("#fila" + indice).remove();
-	modificarSubtotales();
-	detalles=detalles-1;
+function eliminarDetalle(indice, idproducto) {
+    //id fila mas el indice
+    $("#fila" + indice).remove();
+    modificarSubtotales();
+    detalles = detalles - 1;
 
-	// Remover el idproducto de la lista de control articuloAdd
+    // Remover el idproducto de la lista de control articuloAdd
     articuloAdd = articuloAdd.replace(idproducto + "-", "");
 
-	evaluar();
+    evaluar();
 
-	// Llamada AJAX para eliminar el registro de la tabla temporal
+    // Llamada AJAX para eliminar el registro de la tabla temporal
     $.post("controladores/compra.php?op=eliminar_tmp", {
         idsucursal: $("#idsucursal").val(),
         idproducto: idproducto
@@ -1340,8 +1509,8 @@ function eliminarDetalle(indice, idproducto){
 }
 
 function toggleCard() {
-  var card = document.getElementById("datosgenerales");
-  card.hidden = !card.hidden;
+    var card = document.getElementById("datosgenerales");
+    card.hidden = !card.hidden;
 }
 
 var fechaSpan = document.getElementById("fechaActual");
@@ -1351,46 +1520,46 @@ var fechaActual = new Date();
 
 // Días de la semana en español
 var diasSemana = [
-  "Domingo",
-  "Lunes",
-  "Martes",
-  "Miércoles",
-  "Jueves",
-  "Viernes",
-  "Sábado",
+    "Domingo",
+    "Lunes",
+    "Martes",
+    "Miércoles",
+    "Jueves",
+    "Viernes",
+    "Sábado",
 ];
 
 // Meses en español
 var meses = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
 ];
 
 // Formatea la fecha según el formato deseado
 var formatoFecha =
-  diasSemana[fechaActual.getDay()] +
-  ", " +
-  fechaActual.getDate() +
-  " de " +
-  meses[fechaActual.getMonth()] +
-  " de " +
-  fechaActual.getFullYear() +
-  ", " +
-  (fechaActual.getHours() < 10 ? "0" : "") +
-  fechaActual.getHours() +
-  ":" +
-  (fechaActual.getMinutes() < 10 ? "0" : "") +
-  fechaActual.getMinutes();
+    diasSemana[fechaActual.getDay()] +
+    ", " +
+    fechaActual.getDate() +
+    " de " +
+    meses[fechaActual.getMonth()] +
+    " de " +
+    fechaActual.getFullYear() +
+    ", " +
+    (fechaActual.getHours() < 10 ? "0" : "") +
+    fechaActual.getHours() +
+    ":" +
+    (fechaActual.getMinutes() < 10 ? "0" : "") +
+    fechaActual.getMinutes();
 
 // Inserta la fecha formateada en el elemento span
 fechaSpan.innerHTML = formatoFecha;
@@ -1404,7 +1573,7 @@ function toggleCard2() {
     }
 }
 
-window.onload = function() {
+window.onload = function () {
     const input = document.getElementById('totalrecibido');
     input.classList.add('animate');
 
@@ -1416,11 +1585,11 @@ window.onload = function() {
 
 function actualizarDepositoReadonly() {
     document.querySelectorAll('select[name="tipo_pago[]"]').forEach(select => {
-        select.addEventListener('change', function() {
+        select.addEventListener('change', function () {
             const fila = this.closest('.pago_item');
             const montoInput = fila.querySelector('input[name="monto_pago[]"]');
-            
-            if(this.value === 'Efectivo'){
+
+            if (this.value === 'Efectivo') {
                 montoInput.readOnly = true;
                 montoInput.style.backgroundColor = 'lightcoral';
             } else {
@@ -1434,43 +1603,43 @@ function actualizarDepositoReadonly() {
 
 $('#tipopago').change(function (e) {
     e.preventDefault();
-    
+
     if ($(this).val() == 'Si') {
         // Mostrar campos de crédito
         $('#n0, #n1, #n2, #n3, #n4').show();
-        
+
         // Readonly en campos de depósito
         $('#totaldeposito').attr('readonly', 'readonly');
         $('#noperacion').attr('readonly', 'readonly');
         $('#fecha_deposito').attr('readonly', 'readonly');
         $('#totalrecibido').attr('readonly', 'readonly');
         $('#formapago').attr('readonly', 'readonly');
-        
+
         // Valores por defecto
         $('#formapago').val('Efectivo');
         $('#formapago').select2();
         $('#totaldeposito').val('0');
         $('#noperacion').val('0');
         $('#fecha_deposito').val('');
-        
+
         // ← INICIALIZAR VALORES DE CRÉDITO
         var totalCompra = parseFloat($('#total_compra').val()) || 0;
         $('#montoPagado').val('0');
         $('#montoDeuda').val(totalCompra.toFixed(2));
         $('#fechaOperacion').val(new Date().toISOString().split('T')[0]);
-        
+
     } else {
         // Ocultar campos de crédito
         $('#n0, #n1, #n2, #n3, #n4').hide();
         $('#panel1').hide();
-        
+
         // Quitar readonly
         $('#totaldeposito').removeAttr('readonly');
         $('#totalrecibido').removeAttr('readonly');
         $('#noperacion').removeAttr('readonly');
         $('#fecha_deposito').removeAttr('readonly');
         $('#formapago').removeAttr('readonly');
-        
+
         // Limpiar valores
         $('#montoPagado').val('0');
         $('#montoDeuda').val('0');
@@ -1487,40 +1656,40 @@ $('#montoPagado').on('keyup change', function (e) {
 
 $("#calcular_cuotas").click(function (e) {
     e.preventDefault();
-    
+
     var cuotas = parseInt($("#input_cuotas").val());
     var fechaOperacion = $("#fechaOperacion").val();
     var montoDeuda = parseFloat($("#montoDeuda").val()) || 0;
-    
+
     // ← VALIDACIONES
     if (!cuotas || cuotas <= 0) {
         Swal.fire('Advertencia', 'Debe seleccionar el número de cuotas', 'warning');
         return;
     }
-    
+
     if (!fechaOperacion) {
         Swal.fire('Advertencia', 'Debe seleccionar la fecha de pago', 'warning');
         return;
     }
-    
+
     if (montoDeuda <= 0) {
         Swal.fire('Advertencia', 'El monto de la deuda debe ser mayor a 0', 'warning');
         return;
     }
-    
+
     var e = new Date(fechaOperacion);
     $('#panel1').show();
-    
+
     var html = "";
     var montoPorCuota = (montoDeuda / cuotas).toFixed(2);
-    
+
     for (let index = 0; index < cuotas; index++) {
         e.setMonth(e.getMonth() + 1);
-        
-        var fechaFormateada = e.getFullYear() + 
-            `-` + ("0" + (e.getMonth() + 1)).slice(-2) + 
+
+        var fechaFormateada = e.getFullYear() +
+            `-` + ("0" + (e.getMonth() + 1)).slice(-2) +
             `-` + ("0" + e.getDate()).slice(-2);
-        
+
         html += `
             <tr>
                 <td>
@@ -1536,24 +1705,24 @@ $("#calcular_cuotas").click(function (e) {
                 </td>
             </tr>`;
     }
-    
+
     $("#datafechas").html(html);
 });
 
-$('#formapago').change(function(e){
-	if($(this).val() != 'Efectivo'){
-		$('#totaldeposito').removeAttr('readonly', 'readonly');
-		$('#noperacion').removeAttr('readonly', 'readonly');
-		$('#fecha_deposito').removeAttr('readonly', 'readonly');
-	}else{
-		$('#totaldeposito').attr('readonly', 'readonly');
-		$('#noperacion').attr('readonly', 'readonly');
-		$('#fecha_deposito').attr('readonly', 'readonly');
-		
-    $('#totaldeposito').val('0');
-		$('#noperacion').val('0');
-		$('#fecha_deposito').val('');
-	};
+$('#formapago').change(function (e) {
+    if ($(this).val() != 'Efectivo') {
+        $('#totaldeposito').removeAttr('readonly', 'readonly');
+        $('#noperacion').removeAttr('readonly', 'readonly');
+        $('#fecha_deposito').removeAttr('readonly', 'readonly');
+    } else {
+        $('#totaldeposito').attr('readonly', 'readonly');
+        $('#noperacion').attr('readonly', 'readonly');
+        $('#fecha_deposito').attr('readonly', 'readonly');
+
+        $('#totaldeposito').val('0');
+        $('#noperacion').val('0');
+        $('#fecha_deposito').val('');
+    };
 })
 
 function addPago() {
@@ -1564,7 +1733,7 @@ function addPago() {
 
     // Calcular cuánto ya se ha ingresado en pagos
     let totalPagosActuales = 0;
-    $("input[name='monto_pago[]']").each(function(){
+    $("input[name='monto_pago[]']").each(function () {
         totalPagosActuales += parseFloat($(this).val()) || 0;
     });
 
@@ -1668,11 +1837,11 @@ function initPagos() {
 }
 
 // Escucha cuando el DOM esté listo
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     initPagos();
 
     // Listener para actualizar totales cada vez que se cambie monto o tipo de pago
-    $(document).on("input change", "input[name='monto_pago[]'], select[name='tipo_pago[]']", function() {
+    $(document).on("input change", "input[name='monto_pago[]'], select[name='tipo_pago[]']", function () {
         actualizarTotales();
     });
 });
@@ -1680,15 +1849,15 @@ document.addEventListener("DOMContentLoaded", function() {
 function calcularDeuda() {
     var montoPagado = parseFloat($('#montoPagado').val()) || 0;
     var totalCompra = parseFloat($('#total_compra').val()) || 0;
-    
+
     var montoDeuda = totalCompra - montoPagado;
-    
+
     // Asegurar que la deuda no sea negativa
     if (montoDeuda < 0) {
         montoDeuda = 0;
         $('#montoPagado').val(totalCompra.toFixed(2));
     }
-    
+
     $('#montoDeuda').val(montoDeuda.toFixed(2));
 }
 
@@ -1705,8 +1874,7 @@ $("#btnExportarExcel").on("click", function () {
     window.open(url, '_blank');
 });
 
-function mostrarEditar(idcompra)
-{
+function mostrarEditar(idcompra) {
     Swal.fire({
         title: '¿Editar Compra?',
         text: "Se cargarán los datos para edición. Los cambios afectarán el stock.",
@@ -1719,15 +1887,15 @@ function mostrarEditar(idcompra)
     }).then((result) => {
         if (result.isConfirmed) {
             // 1. PRIMERO: Limpiar la tabla temporal
-            limpiarDetalleTemporal(function() {
-                
+            limpiarDetalleTemporal(function () {
+
                 // 2. SEGUNDO: Cargar los datos de la compra
-                $.post("controladores/compra.php?op=mostrarEditar", {idcompra: idcompra}, function(data, status) {
+                $.post("controladores/compra.php?op=mostrarEditar", { idcompra: idcompra }, function (data, status) {
                     data = JSON.parse(data);
-                    
+
                     // 3. TERCERO: Mostrar formulario SIN cargar detalles automáticamente
                     mostrarFormularioEdicion();
-                    
+
                     // 4. CUARTO: Cargar datos de la cabecera
                     $("#idcompra").val(data.idcompra);
                     $("#idsucursal").val(data.idsucursal).trigger('change');
@@ -1738,14 +1906,14 @@ function mostrarEditar(idcompra)
                     $("#fecha").val(data.fecha);
                     $("#tipo_igv").val(data.tipo_igv);
                     $("#formapago").val(data.formapago);
-                    
+
                     // 5. QUINTO: Cargar detalles de la compra a la tabla temporal
                     cargarDetallesParaEdicion(data.idcompra, data.idsucursal);
-                    
+
                     // 6. SEXTO: Cambiar el botón
                     $("#btnGuardar").html('<i class="fas fa-sync-alt"></i> Actualizar Compra');
                     $("#btnGuardar").show();
-                    
+
                     Swal.fire(
                         'Modo Edición',
                         'Puedes modificar los precios, cantidades o eliminar productos.',
@@ -1758,8 +1926,7 @@ function mostrarEditar(idcompra)
 }
 
 // Nueva función para mostrar formulario sin cargar detalles automáticamente
-function mostrarFormularioEdicion()
-{
+function mostrarFormularioEdicion() {
     $('#body').addClass('sidebar-collapse');
     $("#listadoregistros").hide();
     $("#formularioregistros").show();
@@ -1769,112 +1936,111 @@ function mostrarFormularioEdicion()
     $("#btnAgregarArt").show();
     $("#btnNuevo").hide();
     $("#header").hide();
-    
+
     // Limpiar variables
     detalles = 0;
     articuloAdd = "";
     cont = 0;
-    
+
     // Limpiar tabla visual
     $('#detalles tbody').empty();
-    
+
     // Inicializar pagos
     $("#pagos_wrapper").html("");
     initPagos();
-    
+
     // Cargar artículos disponibles
-    listarArticulos();
+    listarArticulos.load();
 }
 
-function cargarDetallesParaEdicion(idcompra, idsucursal)
-{
-    $.post("controladores/compra.php?op=listarDetalleEdicion", {idcompra: idcompra}, function(data) {
-        let detalles = JSON.parse(data);
+// function cargarDetallesParaEdicion(idcompra, idsucursal) {
+//     $.post("controladores/compra.php?op=listarDetalleEdicion", { idcompra: idcompra }, function (data) {
+//         let detalles = JSON.parse(data);
 
-        if (detalles.length === 0) return;
+//         if (detalles.length === 0) return;
 
-        let promesas = [];
+//         let promesas = [];
 
-        detalles.forEach(function(detalle) {
+//         detalles.forEach(function (detalle) {
 
-            // Totalmente vendido → bloqueado
-            if (parseFloat(detalle.fifo_restante) <= 0) {
-                pintarDetalleBloqueado(
-                    detalle.idproducto,
-                    detalle.nombre_producto,
-                    detalle.precio_venta,
-                    detalle.precio_compra,
-                    detalle.idunidad_medida,
-                    detalle.cantidad,
-                    detalle.nlote,
-                    detalle.fvencimiento
-                );
-                return;
-            }
+//             // Totalmente vendido → bloqueado
+//             if (parseFloat(detalle.fifo_restante) <= 0) {
+//                 pintarDetalleBloqueado(
+//                     detalle.idproducto,
+//                     detalle.nombre_producto,
+//                     detalle.precio_venta,
+//                     detalle.precio_compra,
+//                     detalle.idunidad_medida,
+//                     detalle.cantidad,
+//                     detalle.nlote,
+//                     detalle.fvencimiento
+//                 );
+//                 return;
+//             }
 
-            // Parcialmente vendido o sin ventas → editable pero con cantidad mínima
-            let promesa = $.post("controladores/compra.php?op=agregar_tmp", {
-                idsucursal: idsucursal,
-                idproducto: detalle.idproducto,
-                nombreProducto: detalle.nombre_producto,
-                cantidad: detalle.cantidad,
-                precio_compra: detalle.precio_compra,
-                precio_venta: detalle.precio_venta,
-                unidadmedida: detalle.idunidad_medida,
-                nlote: detalle.nlote || '',
-                fvencimiento: detalle.fvencimiento || ''
-            });
+//             // Parcialmente vendido o sin ventas → editable pero con cantidad mínima
+//             let promesa = $.post("controladores/compra.php?op=agregar_tmp", {
+//                 idsucursal: idsucursal,
+//                 idproducto: detalle.idproducto,
+//                 nombreProducto: detalle.nombre_producto,
+//                 cantidad: detalle.cantidad,
+//                 precio_compra: detalle.precio_compra,
+//                 precio_venta: detalle.precio_venta,
+//                 unidadmedida: detalle.idunidad_medida,
+//                 nlote: detalle.nlote || '',
+//                 fvencimiento: detalle.fvencimiento || ''
+//             });
 
-            promesas.push({ promesa: promesa, cantidad_vendida: parseFloat(detalle.cantidad_vendida) });
-        });
+//             promesas.push({ promesa: promesa, cantidad_vendida: parseFloat(detalle.cantidad_vendida) });
+//         });
 
-        if (promesas.length === 0) {
-            modificarSubtotales();
-            actualizarMontoPagoDefault();
-            return;
-        }
+//         if (promesas.length === 0) {
+//             modificarSubtotales();
+//             actualizarMontoPagoDefault();
+//             return;
+//         }
 
-        let soloPromesas = promesas.map(p => p.promesa);
+//         let soloPromesas = promesas.map(p => p.promesa);
 
-        $.when.apply($, soloPromesas).done(function() {
-            setTimeout(function() {
-                // Guardar cantidad_vendida por producto para usarla al pintar
-                window._cantidadVendida = {};
-                detalles.forEach(function(d) {
-                    window._cantidadVendida[d.idproducto] = parseFloat(d.cantidad_vendida);
-                });
-                listarDetalleTmp();
-            }, 300);
-        });
+//         $.when.apply($, soloPromesas).done(function () {
+//             setTimeout(function () {
+//                 // Guardar cantidad_vendida por producto para usarla al pintar
+//                 window._cantidadVendida = {};
+//                 detalles.forEach(function (d) {
+//                     window._cantidadVendida[d.idproducto] = parseFloat(d.cantidad_vendida);
+//                 });
+//                 listarDetalleTmp();
+//             }, 300);
+//         });
 
-    }).fail(function(error) {
-        Swal.fire('Error', 'No se pudieron cargar los detalles de la compra', 'error');
-    });
-}
+//     }).fail(function (error) {
+//         Swal.fire('Error', 'No se pudieron cargar los detalles de la compra', 'error');
+//     });
+// }
 
 function pintarDetalleBloqueado(idproducto, producto, precioVenta, precioCompra, unidadmedida, cantidad, nlote, fvencimiento) {
     precioCompra = parseFloat(precioCompra);
-    precioVenta  = parseFloat(precioVenta);
+    precioVenta = parseFloat(precioVenta);
     var subtotal = parseFloat(cantidad * precioCompra).toFixed(2);
     var productoCompleto = producto + ' x ' + unidadmedida;
 
     var fila =
         '<tr class="filas table-secondary" id="fila' + cont + '" style="opacity:0.65;">' +
-            '<td>' +
-                // idproducto vacío → el backend lo ignora al guardar
-                '<input type="hidden" name="idproducto[]" value="">' +
-                '<input class="form-control form-control-sm" type="text" ' +
-                'value="' + productoCompleto + '" readonly ' +
-                'style="font-weight:bold; background:#e9ecef; color:#6c757d;">' +
-                '<small class="text-danger"><i class="fa fa-lock"></i> Ya vendido — no editable</small>' +
-            '</td>' +
-            '<td><input class="form-control form-control-sm text-center" style="width:100px;" type="number" value="' + cantidad + '" readonly></td>' +
-            '<td><input class="form-control form-control-sm text-center" style="width:100px;" type="number" value="' + precioCompra + '" readonly></td>' +
-            '<td><input class="form-control form-control-sm text-center" style="width:100px;" type="number" value="' + precioVenta + '" readonly></td>' +
-            '<td><span class="badge bg-secondary" style="width:90px;font-size:15px;">' + subtotal + '</span></td>' +
-            '<td><input class="form-control form-control-sm" style="width:90px;" type="text" value="' + (nlote || '') + '" readonly></td>' +
-            '<td><input class="form-control form-control-sm" style="width:150px;" type="date" value="' + (fvencimiento || '') + '" readonly></td>' +
-            '<td class="text-center"><span class="text-danger"><i class="fa fa-lock"></i></span></td>' +
+        '<td>' +
+        // idproducto vacío → el backend lo ignora al guardar
+        '<input type="hidden" name="idproducto[]" value="">' +
+        '<input class="form-control form-control-sm" type="text" ' +
+        'value="' + productoCompleto + '" readonly ' +
+        'style="font-weight:bold; background:#e9ecef; color:#6c757d;">' +
+        '<small class="text-danger"><i class="fa fa-lock"></i> Ya vendido — no editable</small>' +
+        '</td>' +
+        '<td><input class="form-control form-control-sm text-center" style="width:100px;" type="number" value="' + cantidad + '" readonly></td>' +
+        '<td><input class="form-control form-control-sm text-center" style="width:100px;" type="number" value="' + precioCompra + '" readonly></td>' +
+        '<td><input class="form-control form-control-sm text-center" style="width:100px;" type="number" value="' + precioVenta + '" readonly></td>' +
+        '<td><span class="badge bg-secondary" style="width:90px;font-size:15px;">' + subtotal + '</span></td>' +
+        '<td><input class="form-control form-control-sm" style="width:90px;" type="text" value="' + (nlote || '') + '" readonly></td>' +
+        '<td><input class="form-control form-control-sm" style="width:150px;" type="date" value="' + (fvencimiento || '') + '" readonly></td>' +
+        '<td class="text-center"><span class="text-danger"><i class="fa fa-lock"></i></span></td>' +
         '</tr>';
 
     $('#detalles').append(fila);
@@ -1882,30 +2048,29 @@ function pintarDetalleBloqueado(idproducto, producto, precioVenta, precioCompra,
     cont++;
     detalles++;
 }
-function limpiarDetalleTemporal(callback)
-{
+function limpiarDetalleTemporal(callback) {
     let idsucursal = $("#idsucursal").val();
-    
+
     // Si no hay sucursal seleccionada, solo ejecutar callback
     if (!idsucursal) {
         if (callback) callback();
         return;
     }
-    
+
     $.post("controladores/compra.php?op=limpiar_tmp", {
         idsucursal: idsucursal
-    }, function(r) {
+    }, function (r) {
         console.log("Temporal limpiado:", r);
-        
+
         // Limpiar también la tabla visual
         $('#detalles tbody').empty();
         articuloAdd = "";
         cont = 0;
         detalles = 0;
-        
+
         // Ejecutar callback cuando termine
         if (callback) callback();
-    }).fail(function(error) {
+    }).fail(function (error) {
         console.error("Error al limpiar temporal:", error);
         if (callback) callback(); // Ejecutar callback aunque falle
     });

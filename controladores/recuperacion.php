@@ -34,8 +34,9 @@ switch ($_GET["op"]) {
         break;
 
     case 'verRecuperacion':
+        $idsucursal = $_SESSION['idsucursal'];
         $idrecuperacion = $_GET['idrecuperacion'];
-        $resp = $recuperacion->verRecuperacion($idrecuperacion);
+        $resp = $recuperacion->verRecuperacion($idsucursal, $idrecuperacion);
         echo $resp;
         break;
 
@@ -65,5 +66,12 @@ switch ($_GET["op"]) {
         $estado = $_POST["estado"];
         $observacion = $_POST["observacion"] ?? "";
         echo $recuperacion->actualizarEstadoRecuperacion($idrecuperacion, $estado, $observacion);
+        break;
+
+    case "guardarDocumento":
+        echo $recuperacion->guardarDocumento(
+            $_POST,
+            $_FILES["archivo"]
+        );
         break;
 }

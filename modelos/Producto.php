@@ -1230,50 +1230,53 @@ class Producto extends Helpers
 	}
 
 	//Implementar un método para listar los registros activos
-	public function listarActivos($idsucursal, $buscar = "", $inicio = 0, $limite = 5)
+	public function listarActivos($idsucursal)
 	{
-		// Sanitizar idsucursal
-		$idsucursal = intval($idsucursal);
-		$inicio = intval($inicio);
-		$limite = intval($limite);
+		$page = (int) ($_GET['page'] ?? 1);
+		$limit = (int) ($_GET['limit'] ?? 20);
+		$search = trim($_GET['search'] ?? '');
 
-		// Preparar búsqueda
-		$condicionBusqueda = "";
-		if (!empty(trim($buscar))) {
-			// Escapar caracteres especiales
-			$buscar = addslashes(trim($buscar));
-			$condicionBusqueda = " AND (
-            a.nombre LIKE '%$buscar%' 
-            OR a.codigo LIKE '%$buscar%' 
-            OR c.nombre LIKE '%$buscar%'
-            OR m.nombre LIKE '%$buscar%'
-            OR mo.nombre LIKE '%$buscar%'
-        )";
-		}
+		$query = (new DBQuery($this->pdo))
+			->select([
+				'a.idproducto',
+				'a.codigo',
+				'a.nombre',
+				'ip.stock',
+				'a.precio',
+				'ip.precio_compra',
+				'um.nombre AS unidadmedida',
+				'c.nombre AS categoria'
+			])
+			->from('producto a')
+			->join('inventario_producto ip', "ip.idproducto = a.idproducto")
+			->join('categoria c','c.idcategoria = a.idcategoria')
+			->join('unidad_medida um', 'um.idunidad_medida = a.idunidad_medida')
+			->join('rubro r', 'r.idrubro = a.idrubro')
+			->leftJoin('marca m', 'm.idmarca = a.idmarca')
+			->leftJoin('modelo mo', 'mo.idmodelo = a.idmodelo')
+			->where('a.condicion', '=', 1)
+			->where('a.idsucursal', '=', $idsucursal)
+			->search(
+				$search,
+				[
+					'a.nombre',
+					'a.codigo',
+					'c.nombre',
+					'm.nombre',
+					'mo.nombre'
+				]
+			)
+			->orderBy(
+				'a.nombre',
+				'ASC'
+			);
 
-		$sql = "SELECT 
-            a.idproducto, 
-            a.codigo, 
-            a.nombre, 
-            a.stock, 
-            a.precio, 
-            a.precio_compra,
-            um.nombre as unidadmedida,
-            c.nombre as categoria
-        FROM producto a 
-        INNER JOIN categoria c ON a.idcategoria = c.idcategoria 
-        INNER JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
-        INNER JOIN rubro r ON a.idrubro = r.idrubro
-		LEFT JOIN marca m ON a.idmarca = m.idmarca
-		LEFT JOIN modelo mo ON a.idmodelo = mo.idmodelo
-        WHERE a.condicion = '1' 
-            AND a.idcategoria != '1' 
-            AND a.idsucursal = $idsucursal
-            $condicionBusqueda
-        ORDER BY a.nombre ASC
-        LIMIT $inicio, $limite";
-
-		return ejecutarConsulta($sql);
+		return json_encode(
+			$query->paginate(
+				$page,
+				$limit
+			)
+		);
 	}
 
 	public function contarActivos($idsucursal, $buscar = "")

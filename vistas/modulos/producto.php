@@ -654,14 +654,14 @@
                     </div>
                   </div>
 
-                  <div class="row" style="margin-top:-15px">
+                  <!--div class="row" style="margin-top:-15px">
                     <div class="col-sm-12">
                       <div class="form-group">
                         <label class="control-label">Sucursales:</label>
                         <ul style="list-style: none;" id="sucursales"></ul>
                       </div>
                     </div>
-                  </div>
+                  </div-->
                 </div>
 
                 <div class="tab-pane fade" id="tab-producto" role="tabpanel" aria-labelledby="tab-producto-link">
