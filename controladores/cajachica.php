@@ -27,6 +27,18 @@ $idsucursal2 = isset($_POST["idsucursal2"]) ? limpiarCadena($_POST["idsucursal2"
 
 switch ($_GET["op"]) {
 
+	case "resumenBancosCuentasCobrar":
+		$idsucursal = $_SESSION['idsucursal'];
+		$rspta = $cajachica->resumenBancosCuentasCobrar($idsucursal);
+		echo $rspta;
+		break;
+
+	case "resumenBancosVentas":
+		$idsucursal = $_SESSION['idsucursal'];
+		$rspta = $cajachica->resumenBancosVentas($idsucursal);
+		echo $rspta;
+		break;
+
 	case 'guardaryeditar':
 		if (empty($idmovimiento)) {
 			$rspta = $cajachica->insertar($opcionEI, $idcaja, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento);

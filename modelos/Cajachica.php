@@ -1,13 +1,162 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
-require "../configuraciones/Conexion.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
 
-class Cajachica
+class Cajachica extends Helpers
 {
 	//Implementamos nuestro constructor
-	public function __construct() {}
+	public function __construct()
+	{
+		parent::__construct();
+	}
 
-	//Implementamos un método para insertar registros
+	public function resumenBancosCuentasCobrar($idsucursal)
+	{
+		$movimientos = (new DBQuery($this->pdo))
+			->select("
+            dcpc.formapago,
+            dcpc.banco,
+            dcpc.montopagado,
+            dcpc.montotarjeta
+        ")
+			->from("detalle_cuentas_por_cobrar dcpc")
+			->join("cajas c", "dcpc.idcaja = c.idcaja")
+			->where("c.idsucursal", "=", $idsucursal)
+			->whereNull("dcpc.deleted_at")
+			->get();
+
+		$resumen = [];
+
+		foreach ($movimientos as $item) {
+
+			// EFECTIVO
+			if ((float) $item['montopagado'] > 0) {
+
+				if (!isset($resumen['EFECTIVO'])) {
+					$resumen['EFECTIVO'] = [
+						'forma_pago' => 'EFECTIVO',
+						'banco' => '',
+						'cantidad' => 0,
+						'total' => 0
+					];
+				}
+
+				$resumen['EFECTIVO']['cantidad']++;
+				$resumen['EFECTIVO']['total'] += (float) $item['montopagado'];
+			}
+
+			// Otros medios de pago
+			if ((float) $item['montotarjeta'] > 0) {
+
+				$formaPago = strtoupper(trim($item['formapago']));
+				$banco = strtoupper(trim($item['banco'] ?? ''));
+
+				// Solo Transferencia y Depósito se agrupan por banco
+				if (in_array($formaPago, ['TRANSFERENCIA', 'DEPOSITO', 'DEPÓSITO']) && $banco !== '') {
+					$key = $formaPago . '_' . $banco;
+					$nombreBanco = $banco;
+				} else {
+					$key = $formaPago;
+					$nombreBanco = '';
+				}
+
+				if (!isset($resumen[$key])) {
+					$resumen[$key] = [
+						'forma_pago' => $formaPago,
+						'banco' => $nombreBanco,
+						'cantidad' => 0,
+						'total' => 0
+					];
+				}
+
+				$resumen[$key]['cantidad']++;
+				$resumen[$key]['total'] += (float) $item['montotarjeta'];
+			}
+		}
+
+		foreach ($resumen as &$item) {
+			$item['total'] = Helpers::get_currency_symbol($item['total']);
+		}
+
+		unset($item);
+
+		return json_encode(array_values($resumen));
+	}
+
+	public function resumenBancosVentas($idsucursal)
+	{
+		$ventas = (new DBQuery($this->pdo))
+			->select("
+            formapago,
+            banco,
+            montoPagado,
+            totaldeposito
+        ")
+			->from("venta")
+			->where("idsucursal", "=", $idsucursal)
+			->where("estado", "<>", "Anulado")
+			->whereNull("deleted_at")
+			->get();
+
+		$resumen = [];
+
+		foreach ($ventas as $item) {
+
+			// EFECTIVO
+			if ((float) $item['montoPagado'] > 0) {
+
+				if (!isset($resumen['EFECTIVO'])) {
+					$resumen['EFECTIVO'] = [
+						'forma_pago' => 'EFECTIVO',
+						'banco' => '',
+						'cantidad' => 0,
+						'total' => 0
+					];
+				}
+
+				$resumen['EFECTIVO']['cantidad']++;
+				$resumen['EFECTIVO']['total'] += (float) $item['montoPagado'];
+			}
+
+			// Otros medios de pago
+			if ((float) $item['totaldeposito'] > 0) {
+
+				$formaPago = strtoupper(trim($item['formapago'] ?? ''));
+				$banco = strtoupper(trim($item['banco'] ?? ''));
+
+				// Solo Transferencia y Depósito se separan por banco
+				if (in_array($formaPago, ['TRANSFERENCIA', 'DEPOSITO', 'DEPÓSITO']) && $banco !== '') {
+					$key = $formaPago . '_' . $banco;
+					$nombreBanco = $banco;
+				} else {
+					$key = $formaPago;
+					$nombreBanco = '';
+				}
+
+				if (!isset($resumen[$key])) {
+					$resumen[$key] = [
+						'forma_pago' => $formaPago,
+						'banco' => $nombreBanco,
+						'cantidad' => 0,
+						'total' => 0
+					];
+				}
+
+				$resumen[$key]['cantidad']++;
+				$resumen[$key]['total'] += (float) $item['totaldeposito'];
+			}
+		}
+
+		foreach ($resumen as &$item) {
+			$item['total'] = round($item['total'], 2);
+		}
+
+		unset($item);
+
+		return json_encode(array_values($resumen));
+	}
+
 	//Implementamos un método para insertar registros
 	public function insertar($tipo, $idcaja, $idsucursal, $idpersonal, $monto, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento)
 	{
@@ -65,9 +214,9 @@ class Cajachica
 			$data[] = array(
 				"0" => $reg->fecha,
 				"1" => $reg->descripcion,
-				"2" => (strtolower($reg->tipo) == 'egresos') ? 
-						    '<span class="badge bg-danger">EGRESO</span>' : 
-						    '<span class="badge bg-success">INGRESO</span>',
+				"2" => (strtolower($reg->tipo) == 'egresos') ?
+					'<span class="badge bg-danger">EGRESO</span>' :
+					'<span class="badge bg-success">INGRESO</span>',
 				"3" => $reg->formapago,
 				"4" => $reg->totalefectivo,
 				"5" => $reg->totaldeposito,
@@ -186,14 +335,15 @@ class Cajachica
 		  VALUES ('$descripcion', '$tipo', '$categoria_concepto', '1')";
 		return ejecutarConsulta($sql);
 	}
-	
+
 	public function editarConcepto($idconcepto_movimiento, $descripcion, $tipo, $categoria_concepto)
 	{
 		$sql = "UPDATE concepto_movimiento SET descripcion='$descripcion', tipo='$tipo', categoria_concepto='$categoria_concepto' WHERE idconcepto_movimiento='$idconcepto_movimiento'";
 		return ejecutarConsulta($sql);
 	}
 
-	function guardarPagoDiario($tipo, $idcaja, $idsucursal, $idpersonal, $monto, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idasistencia){
+	function guardarPagoDiario($tipo, $idcaja, $idsucursal, $idpersonal, $monto, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idasistencia)
+	{
 		if (!$idcaja) {
 			return false; // Tipo inválido
 		}
@@ -206,47 +356,51 @@ class Cajachica
 		return ejecutarConsulta($sql_asistencia);
 	}
 
-	public function obtenerIdConceptoAdelanto() {
-	    $sql = "SELECT idconcepto_movimiento 
+	public function obtenerIdConceptoAdelanto()
+	{
+		$sql = "SELECT idconcepto_movimiento 
 	            FROM concepto_movimiento
 	            WHERE descripcion LIKE '%adelanto%'
 	            LIMIT 1";
-	    return ejecutarConsultaSimpleFila($sql);
+		return ejecutarConsultaSimpleFila($sql);
 	}
 
-	public function listarAdelantos($idpersonal, $desde, $hasta){
-    // obtener id dinámico
-    $id = $this->obtenerIdConceptoAdelanto();
-    $id_adelanto = $id['idconcepto_movimiento'];
+	public function listarAdelantos($idpersonal, $desde, $hasta)
+	{
+		// obtener id dinámico
+		$id = $this->obtenerIdConceptoAdelanto();
+		$id_adelanto = $id['idconcepto_movimiento'];
 
-    $sql = "SELECT fecha, descripcion, totalefectivo, totaldeposito 
+		$sql = "SELECT fecha, descripcion, totalefectivo, totaldeposito 
             FROM movimiento
             WHERE idpersonal='$idpersonal'
             AND idconcepto_movimiento = '$id_adelanto'
             AND DATE(fecha) BETWEEN '$desde' AND '$hasta'
             ORDER BY fecha ASC";
 
-    return ejecutarConsulta($sql);
-}
+		return ejecutarConsulta($sql);
+	}
 
-public function listarIngresosSemana($idpersonal, $desde, $hasta) {
+	public function listarIngresosSemana($idpersonal, $desde, $hasta)
+	{
 
-    $sql = "SELECT fecha, descripcion, totalefectivo, totaldeposito
+		$sql = "SELECT fecha, descripcion, totalefectivo, totaldeposito
             FROM movimiento
             WHERE idpersonal = '$idpersonal'
             AND tipo = 'Ingresos'
             AND DATE(fecha) BETWEEN '$desde' AND '$hasta'
             ORDER BY fecha ASC";
 
-    return ejecutarConsulta($sql);
-}
+		return ejecutarConsulta($sql);
+	}
 
-public function listarAdelantosPorFechas($desde, $hasta) {
-    // obtener id dinámico del concepto "adelanto"
-    $id = $this->obtenerIdConceptoAdelanto();
-    $id_adelanto = $id['idconcepto_movimiento'];
+	public function listarAdelantosPorFechas($desde, $hasta)
+	{
+		// obtener id dinámico del concepto "adelanto"
+		$id = $this->obtenerIdConceptoAdelanto();
+		$id_adelanto = $id['idconcepto_movimiento'];
 
-    $sql = "SELECT 
+		$sql = "SELECT 
                 DATE_FORMAT(m.fecha, '%d/%m/%Y %h:%i %p') AS fecha, 
                 m.descripcion, 
                 m.totalefectivo, 
@@ -258,12 +412,13 @@ public function listarAdelantosPorFechas($desde, $hasta) {
             AND DATE(m.fecha) BETWEEN '$desde' AND '$hasta'
             ORDER BY m.fecha ASC";
 
-    return ejecutarConsulta($sql);
-}
+		return ejecutarConsulta($sql);
+	}
 
-public function listarDiasTrabajadosPorFechas($desde, $hasta) {
+	public function listarDiasTrabajadosPorFechas($desde, $hasta)
+	{
 
-    $sql = "SELECT 
+		$sql = "SELECT 
                 p.nombre AS trabajador,
                 a.fecha,
                 SUM(a.totalefectivo + a.totaldeposito) AS monto_dia
@@ -273,8 +428,8 @@ public function listarDiasTrabajadosPorFechas($desde, $hasta) {
               AND a.estado = 'asistio'
             ORDER BY p.nombre, a.fecha ASC";
 
-    return ejecutarConsulta($sql);
-}
+		return ejecutarConsulta($sql);
+	}
 
 
 
