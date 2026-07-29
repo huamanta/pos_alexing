@@ -424,7 +424,7 @@ $total = 0;
 					</td>
 
 					<td style="border:1px solid #000;" class="textcenter">
-						<strong><?php echo Helpers::get_currency_symbol($factura['total_venta']); ?></strong>
+						<strong><?php echo $helpers->get_currency_symbol($factura['total_venta']); ?></strong>
 					</td>
 
 				</tr>
@@ -470,17 +470,17 @@ $total = 0;
 						<tr>
 
 							<td><strong>Total Venta</strong></td>
-							<td><?php echo Helpers::get_currency_symbol($totalVenta); ?></td>
+							<td><?php echo $helpers->get_currency_symbol($totalVenta); ?></td>
 
 							<td><strong>Inicial</strong></td>
-							<td><?php echo Helpers::get_currency_symbol($inicial); ?></td>
+							<td><?php echo $helpers->get_currency_symbol($inicial); ?></td>
 
 						</tr>
 
 						<tr>
 
 							<td><strong>Saldo</strong></td>
-							<td><?php echo Helpers::get_currency_symbol($saldoFinanciar); ?></td>
+							<td><?php echo $helpers->get_currency_symbol($saldoFinanciar); ?></td>
 
 							<td><strong>Interés</strong></td>
 							<td><?php echo number_format($interes, 2); ?> %</td>
@@ -549,16 +549,16 @@ $total = 0;
 									<td><?php echo $fechaPago; ?></td>
 
 									<td>
-										<?php echo Helpers::get_currency_symbol($capitalCuota); ?>
+										<?php echo $helpers->get_currency_symbol($capitalCuota); ?>
 									</td>
 
 									<td>
-										<?php echo Helpers::get_currency_symbol($interesCuota); ?>
+										<?php echo $helpers->get_currency_symbol($interesCuota); ?>
 									</td>
 
 									<td>
 										<strong>
-											<?php echo Helpers::get_currency_symbol($montoCuota); ?>
+											<?php echo $helpers->get_currency_symbol($montoCuota); ?>
 										</strong>
 									</td>
 
@@ -568,13 +568,13 @@ $total = 0;
 							<tr>
 								<td colspan="2">TOTALES</td>
 								<td>
-									<?php echo Helpers::get_currency_symbol($capitalCuotaTotal); ?>
+									<?php echo $helpers->get_currency_symbol($capitalCuotaTotal); ?>
 								</td>
 								<td>
-									<?php echo Helpers::get_currency_symbol($interesCuotaTotal); ?>
+									<?php echo $helpers->get_currency_symbol($interesCuotaTotal); ?>
 								</td>
 								<td>
-									<?php echo Helpers::get_currency_symbol($montoCuotaTotal); ?>
+									<?php echo $helpers->get_currency_symbol($montoCuotaTotal); ?>
 								</td>
 							</tr>
 

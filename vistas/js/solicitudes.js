@@ -1,8 +1,7 @@
 $("#navPosActive").addClass("treeview active");
 $("#navPos").addClass("treeview menu-open");
 $("#navSolicitudes").addClass("active");
-
-var tablaSolicitudes;
+let listarSolicitudes = null;
 var pasoSeleccionado = null;
 var pasoActualSolicitud = null;
 var solicitudActual = null;
@@ -11,14 +10,14 @@ let steps = [];
 
 function init() {
   listarGeneralSolicitudes();
-  listarSolicitudes();
+  listarSolicitudes.load();
 
   $("#filtroEstado, #filtroRiesgo, #filtroPaso").change(function () {
-    tablaSolicitudes.ajax.reload();
+    listarSolicitudes.load();
   });
 
   $("#filtroTexto").keyup(function () {
-    tablaSolicitudes.ajax.reload();
+    listarSolicitudes.load();
   });
 
   $("#formSolicitud").submit(function (e) {
@@ -27,101 +26,176 @@ function init() {
 }
 
 $("#idcliente").select2({
-    placeholder: "Buscar cliente...",
-    allowClear: true,
-    minimumInputLength: 2,
+  placeholder: "Buscar cliente...",
+  allowClear: true,
+  minimumInputLength: 2,
 
-    ajax: {
-        url: "controladores/venta.php?op=selectCliente",
-        type: "POST",
-        dataType: "json",
-        delay: 250,
+  ajax: {
+    url: "controladores/venta.php?op=selectCliente",
+    type: "POST",
+    dataType: "json",
+    delay: 250,
 
-        data: function (params) {
-            return {
-                search: params.term,
-                page: params.page || 1,
-                only_client: 1
-            };
+    data: function (params) {
+      return {
+        search: params.term,
+        page: params.page || 1,
+        only_client: 1,
+      };
+    },
+
+    processResults: function (data, params) {
+      params.page = params.page || 1;
+
+      return {
+        results: data.data.map(function (item) {
+          return {
+            id: item.idpersona,
+            text: item.nombre + " - " + item.num_documento,
+          };
+        }),
+
+        pagination: {
+          more: data.meta.current_page < data.meta.last_page,
         },
+      };
+    },
 
-        processResults: function (data, params) {
-
-            params.page = params.page || 1;
-
-            return {
-                results: data.data.map(function (item) {
-                    return {
-                        id: item.idpersona,
-                        text: item.nombre + " - " + item.num_documento
-                    };
-                }),
-
-                pagination: {
-                    more: data.meta.current_page < data.meta.last_page
-                }
-            };
-        },
-
-        cache: true
-    }
+    cache: true,
+  },
 });
 
 function listarGeneralSolicitudes() {
+  $.get(
+    "controladores/solicitudes.php?op=listarGeneralSolicitudes",
+    function (response) {
+      const data = JSON.parse(response);
 
-    $.get(
-        "controladores/solicitudes.php?op=listarGeneralSolicitudes",
-        function (response) {
-
-            const data = JSON.parse(response);
-
-            $("#kpiTotalSolicitudes").text(data.total_solicitudes);
-            $("#kpiObservados").text(data.observado);
-            $("#kpiRechazados").text(data.rechazado);
-            $("#kpiAprobados").text(data.aprobado);
-
-        }
-    );
-
+      $("#kpiTotalSolicitudes").text(data.total_solicitudes);
+      $("#kpiObservados").text(data.observado);
+      $("#kpiRechazados").text(data.rechazado);
+      $("#kpiAprobados").text(data.aprobado);
+    },
+  );
 }
 
-function listarSolicitudes() {
-  tablaSolicitudes = $("#tblSolicitudes").DataTable({
-    processing: true,
-    serverSide: true,
+function pintarSolicitudes(data, permissions) {
+  let html = "";
 
-    responsive: true,
-    autoWidth: false,
+  if (data.length === 0) {
+    html = `
+            <tr>
+                <td colspan="10" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
 
-    ajax: {
-      url: "controladores/solicitudes.php?op=listarSolicitudes",
-      type: "GET",
+    $("#tblSolicitudes tbody").html(html);
+    return;
+  }
 
-      data: function (d) {
-        d.estado = $("#filtroEstado").val();
-        d.riesgo = $("#filtroRiesgo").val();
-        d.paso = $("#filtroPaso").val();
-        d.texto = $("#filtroTexto").val();
-      },
+  data.forEach((item) => {
+    let botones = "";
+    if (permissions.aprobar) {
+      botones += `<button
+                        class="btn btn-info btn-sm"
+                        onclick="verSolicitud(${item.idsolicitud})">
+                        <i class="fa fa-eye"></i>
+                    </button>`;
+    }
+    if (permissions.pasos) {
+      botones += `<button
+                        class="btn btn-warning btn-sm"
+                        onclick="verWorkflow(${item.idsolicitud})">
+                        <i class="fa fa-route"></i>
+                    </button>`;
+    }
 
-      dataType: "json",
+    if (permissions.archivos) {
+      botones += `<button
+                        class="btn btn-success btn-sm"
+                        onclick="verArchivos(${item.idsolicitud})">
+                        <i class="fa fa-folder"></i>
+                    </button>`;
+    }
+    html += `
+            <tr>
+                <td>${item.codigo}</td>
+                <td style="text-align:left;">
+                    <strong>${item.cliente || ""}</strong><br>
+                </td>
+                <td>
+                  <span class="badge badge-dark">
+                    ${item.score}
+                  </span>
+                </td>
+                <td>${item.riesgo}</td>
+                <td>
+                    ${item.paso_actual_nombre || "-"} Und.
+                </td>
+                <td>
+                    ${item.dias_etapa} día(s)
+                </td>
+                <td>${item.estado}</td>
+                <td>${item.fecha_registro}</td>
+                <td>${botones}</td>
 
-      error: function (e) {
-        console.log(e.responseText);
-      },
-    },
-
-    destroy: true,
-
-    pageLength: 10,
-
-    order: [[7, "desc"]],
-
-    language: {
-      processing: "<img src='files/plantilla/loading-page.gif' width='60'>",
-    },
+            </tr>
+        `;
   });
+
+  $("#tblSolicitudes tbody").html(html);
 }
+
+listarSolicitudes = new FluentPaginator({
+  url: "controladores/solicitudes.php?op=listarSolicitudes",
+  tableBody: "#tbodyData",
+  renderTabla: pintarSolicitudes,
+  extraParams: () => ({
+    estado: $("#filtroEstado").val() || "",
+    riesgo: $("#filtroRiesgo").val() || "",
+    paso: $("#filtroPaso").val() || "",
+  }),
+});
+
+// function listarSolicitudes() {
+//   tablaSolicitudes = $("#tblSolicitudes").DataTable({
+//     processing: true,
+//     serverSide: true,
+
+//     responsive: true,
+//     autoWidth: false,
+
+//     ajax: {
+//       url: "controladores/solicitudes.php?op=listarSolicitudes",
+//       type: "GET",
+
+//       data: function (d) {
+//         d.estado = $("#filtroEstado").val();
+//         d.riesgo = $("#filtroRiesgo").val();
+//         d.paso = $("#filtroPaso").val();
+//         d.texto = $("#filtroTexto").val();
+//       },
+
+//       dataType: "json",
+
+//       error: function (e) {
+//         console.log(e.responseText);
+//       },
+//     },
+
+//     destroy: true,
+
+//     pageLength: 10,
+
+//     order: [[7, "desc"]],
+
+//     language: {
+//       processing: "<img src='files/plantilla/loading-page.gif' width='60'>",
+//     },
+//   });
+// }
 
 function nuevaSolicitud() {
   $("#formSolicitud")[0].reset();
@@ -158,7 +232,7 @@ function guardarSolicitud(e) {
 
       $("#modalSolicitud").modal("hide");
 
-      tablaSolicitudes.ajax.reload();
+      listarSolicitudes.load();
 
       cargarKPIs();
     },
@@ -669,7 +743,7 @@ function registrarVerificacionDomiciliaria(idsolicitud) {
 
       $("#modalDetalleSolicitud").modal("hide");
 
-      tablaSolicitudes.ajax.reload();
+      listarSolicitudes.load();
 
       cargarKPIs();
     },
@@ -769,7 +843,7 @@ function cargarDocumentacion(idsolicitud) {
       Swal.fire("Correcto", data.msg, "success");
 
       $("#modalDetalleSolicitud").modal("hide");
-      tablaSolicitudes.ajax.reload();
+      listarSolicitudes.load();
       cargarKPIs();
     },
   );
@@ -815,7 +889,7 @@ function ejecutarAprobacion(idsolicitud) {
       Swal.fire("Correcto", data.msg, "success");
 
       $("#modalDetalleSolicitud").modal("hide");
-      tablaSolicitudes.ajax.reload();
+      listarSolicitudes.load();
       cargarKPIs();
     },
   );
@@ -843,7 +917,7 @@ function observarSolicitud(idsolicitud) {
       Swal.fire("Correcto", data.msg, "success");
 
       $("#modalDetalleSolicitud").modal("hide");
-      tablaSolicitudes.ajax.reload();
+      listarSolicitudes.load();
       cargarKPIs();
     },
   );
@@ -903,7 +977,7 @@ function avanzarPasoSolicitud(idsolicitud, idpaso, observacion) {
       Swal.fire("Correcto", data.msg, "success");
 
       $("#modalDetalleSolicitud").modal("hide");
-      tablaSolicitudes.ajax.reload();
+      listarSolicitudes.load();
       cargarKPIs();
     },
   );
@@ -927,7 +1001,7 @@ function aprobarSolicitud(idsolicitud) {
       Swal.fire("Correcto", data.msg, "success");
 
       $("#modalDetalleSolicitud").modal("hide");
-      tablaSolicitudes.ajax.reload();
+      listarSolicitudes.load();
       cargarKPIs();
     },
   );

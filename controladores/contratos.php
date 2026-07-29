@@ -3,12 +3,12 @@ require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Contratos.php";
 $contratos = new Contratos();
 $op = $_GET['op'] ?? '';
+$idsucursal = $_SESSION['idsucursal'];
 
 switch ($op) {
     case 'listar':
         $fecha_inicio = $_GET['fecha_inicio'] ?? '';
         $fecha_fin = $_GET['fecha_fin'] ?? '';
-        $idsucursal = $_GET['idsucursal'] ?? '';
         $estado = $_GET['estado'] ?? '';
         $condicion = $_GET['condicion'] ?? '';
         $frecuencia = $_GET['frecuencia'] ?? '';
@@ -20,14 +20,14 @@ switch ($op) {
         $idventa = $_POST['idventa'] ?? '';
         $motivo = $_POST['motivo'] ?? '';
         $resultado = $contratos->retenerContrato($idventa, $motivo);
-        echo json_encode($resultado);
+        echo $resultado;
         break;
 
     case 'quitar_retencion':
         $idventa = $_POST['idventa'] ?? '';
         $idretencion = $_POST['idretencion'] ?? '';
         $resultado = $contratos->quitarRetencion($idventa, $idretencion);
-        echo json_encode($resultado);
+        echo $resultado;
         break;
 
     case 'selectUsuarios':

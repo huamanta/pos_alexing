@@ -1,15 +1,135 @@
 <?php
-require "../configuraciones/Conexion.php";
+require_once __DIR__ . "/../configuraciones/bootstrap.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
 date_default_timezone_set('America/Lima');
 
-class Contratos
+class Contratos extends Helpers
 {
 
     public function __construct()
     {
+        parent::__construct();
     }
 
     public function listar($fecha_inicio, $fecha_fin, $idsucursal = '', $estado = '', $condicion = '', $frecuencia = '')
+    {
+        $page = $_GET['page'] ?? 1;
+        $limit = $_GET['limit'] ?? 20;
+        $search = $_GET['search'] ?? '';
+
+        $paginator = (new DBQuery($this->pdo))
+            ->select('c.idpersona,
+                    c.nombre,
+                    c.num_documento,
+                    c.direccion,
+                    v.formapago,
+                    v.num_comprobante,
+                    v.serie_comprobante,
+                    v.tipo_comprobante,
+                    v.total_venta,
+                    d.iddocumento,
+                    v.idventa,
+                    d.fecha_contrato,
+                    d.tipo,
+                    d.correlativo,
+                    d.estado,
+                    v.frecuencia,
+                    c.latitude,
+                    c.longitude,
+                    dv.nombre_producto')
+            ->from('documentacion d ')
+            ->join('venta v', 'd.idventa = v.idventa')
+            ->join('detalle_venta dv', 'dv.idventa = v.idventa')
+            ->join('persona c', 'v.idcliente = c.idpersona')
+            ->where('d.tipo', '=', 1)
+            ->where('v.idsucursal', '=', $idsucursal);
+
+        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $paginator->whereBetween(
+                'DATE(d.fecha_contrato)',
+                $fecha_inicio,
+                $fecha_fin
+            );
+        }
+
+        // Agregar filtro de estado (0 = Anulado, 1 = pendiente, 2 = finalizado )
+        if (!empty($estado)) {
+            $paginator->where('d.estado', '=', $estado);
+        }
+
+        // Agregar filtro frecuencia
+        if (!empty($frecuencia)) {
+            $paginator->where('v.frecuencia', '=', $frecuencia);
+        }
+
+        if (!empty($condicion)) {
+
+            // Morosos
+            if ($condicion == 2) {
+                $paginator->whereExists("
+                                    SELECT 1
+                                    FROM cuentas_por_cobrar cpc
+                                    WHERE cpc.idventa = v.idventa
+                                    AND cpc.abonototal < cpc.deudatotal
+                                    AND cpc.fechavencimiento < CURDATE()
+                                ");
+            }
+
+            if ($condicion == 1) {
+                $paginator->whereNotExists("
+                                    SELECT 1
+                                    FROM cuentas_por_cobrar cpc
+                                    WHERE cpc.idventa = v.idventa
+                                    AND cpc.abonototal < cpc.deudatotal
+                                    AND cpc.fechavencimiento < CURDATE()
+                                ");
+            }
+        }
+
+        if ($search !== '') {
+            $paginator->search($search, [
+                'c.nombre',
+                'dv.nombre_producto'
+            ]);
+        }
+
+        $response = $paginator
+            ->orderBy('d.iddocumento', 'DESC')
+            ->paginate($page, $limit);
+
+        foreach ($response['data'] as &$value) {
+            $retencion = $this->buscarRetencion($value['idventa']);
+            $value['retencion'] = $retencion;
+            $value['estado_cuotas'] = $this->estadoCuotas($value['idventa']);
+            $value['vehiculo'] = $this->verVehiculoVendido($value['idventa']);
+            $value['documento'] = $this->tiposDocumentacion($value['tipo'])
+                . ($value['tipo'] == 1
+                    ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT)
+                    : '');
+            $value['frecuencia_texto'] =
+                $this->getDataFrecuencia($value['frecuencia'])->texto;
+            $value['total_venta_formateado'] =
+                Helpers::get_currency_symbol($value['total_venta']);
+            // Solo flags para el frontend
+            $value['puede_anular'] = $value['estado'] == 1;
+            $value['puede_retener'] =
+                $value['estado'] == 1 && !$retencion['estado'];
+            $value['puede_quitar_retencion'] =
+                $value['estado'] == 1 && $retencion['estado'];
+            $value['puede_amortizar'] =
+                $value['estado'] == 1 && !$retencion['estado'];
+        }
+
+        unset($value);
+
+        unset($value);
+
+        return json_encode($response);
+
+    }
+
+    public function listar2($fecha_inicio, $fecha_fin, $idsucursal = '', $estado = '', $condicion = '', $frecuencia = '')
     {
         $query = "SELECT 
                     c.idpersona,
@@ -88,7 +208,7 @@ class Contratos
 
         // Agregar paginación
         $query .= " ORDER BY d.fecha_contrato DESC";
-
+        error_log($query);
         $contratos = ejecutarConsulta($query);
         $data = [];
         foreach ($contratos as $key => $value) {
@@ -305,9 +425,7 @@ class Contratos
             $color = "danger";
         }
 
-        return "<span class='badge bg-$color' style='font-size: 12px; padding: 10px;'>
-                $atrasadas
-            </span>";
+        return ['color' => $color, 'atrasados' => $atrasadas];
     }
 
     public function tiposDocumentacion($tipo)
@@ -344,37 +462,69 @@ class Contratos
         if ($retenido) {
             return array(
                 "estado" => true,
-                "data" => $data
+                "id" => $data['idretencion']
             );
         }
 
         return array(
             "estado" => false,
-            "data" => null
+            "id" => null
         );
     }
 
     public function retenerContrato($idventa, $motivo)
     {
         $fecha_retenido = date('Y-m-d H:i:s');
-        $sql = "INSERT INTO retenciones (idventa, motivo, fecha) VALUES ('$idventa', '$motivo', '$fecha_retenido')";
-        $result = ejecutarConsulta($sql);
-        if ($result) {
-            return ["status" => true, "message" => "Contrato retenido exitosamente."];
-        } else {
-            return ["status" => false, "message" => "Error al retener el contrato."];
+        try {
+            $resultado = (new FluentSaver($this->pdo))
+                ->table('retenciones')
+                ->data([
+                    'idventa' => $idventa,
+                    'motivo' => $motivo,
+                    'fecha' => $fecha_retenido
+                ])
+                ->save();
+            if (!$resultado) {
+                throw new Exception('No se pudo crear la retención');
+            }
+            return json_encode([
+                'success' => true,
+                'message' => 'Retención creada exitosamente'
+            ]);
+        } catch (Throwable $e) {
+            return json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
     }
 
     public function quitarRetencion($idventa, $idretencion)
     {
-        $sql = "UPDATE retenciones SET estado = 0 WHERE idretencion = '$idretencion' AND idventa = '$idventa'";
-        $result = ejecutarConsulta($sql);
-        if ($result) {
-            return ["status" => true, "message" => "Retención quitada exitosamente."];
-        } else {
-            return ["status" => false, "message" => "Error al quitar la retención."];
+        try {
+            $resultado = (new FluentSaver($this->pdo))
+                ->table('retenciones')
+                ->primaryKey('idretencion')
+                ->data([
+                    'idretencion' => $idretencion,
+                    'estado' => 0
+                ])
+                ->update();
+            if (!$resultado) {
+                throw new Exception('No se pudo quitar la retención');
+            }
+
+            return json_encode([
+                'success' => true,
+                'message' => 'Retención quitada exitosamente'
+            ]);
+        } catch (Throwable $e) {
+            return json_encode([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
+
     }
 
     public function selectUsuarios($idventa, $idsucursal)

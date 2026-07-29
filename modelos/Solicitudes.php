@@ -32,63 +32,19 @@ class Solicitudes extends Persona
         return json_encode($result);
     }
 
-    public function listarSolicitudes(
-        $idsucursal,
-        $search = '',
-        $start = 0,
-        $length = 10,
-        $estado = '',
-        $riesgo = '',
-        $paso = '',
-        $texto = ''
-    ) {
 
-        $where = "AND s.idsucursal = '$idsucursal'";
+    public function listarSolicitudes($idsucursal, $estado, $riesgo, $paso)
+    {
+        try {
 
-        if (!empty($texto)) {
-            $search = $texto;
-        }
+            $page = $_GET['page'] ?? 1;
+            $limit = $_GET['limit'] ?? 20;
+            $search = $_GET['search'] ?? '';
 
-        if (!empty($search)) {
-
-            $search = mysqli_real_escape_string(
-                $GLOBALS['conexion'],
-                $search
-            );
-
-            $where .= " AND (
-                s.codigo LIKE '%$search%'
-                OR p.nombre LIKE '%$search%'
-                OR s.estado LIKE '%$search%'
-                OR s.riesgo LIKE '%$search%'
-            )";
-        }
-
-        if (!empty($estado)) {
-            $where .= " AND s.estado='$estado'";
-        }
-
-        if (!empty($riesgo)) {
-            $where .= " AND s.riesgo='$riesgo'";
-        }
-
-        if (!empty($paso)) {
-            $where .= " AND s.paso_actual='$paso'";
-        }
-
-        $sqlTotal = "SELECT COUNT(*) total
-                    FROM solicitud_credito s
-                    INNER JOIN persona p
-                        ON p.idpersona=s.idcliente
-                    WHERE 1=1 $where";
-
-        $total = ejecutarConsultaSimpleFila($sqlTotal);
-
-        $sql = "SELECT
-                    s.*,
+            $paginator = (new DBQuery($this->pdo))
+                ->select('s.*,
                     p.nombre cliente,
                     wp.nombre paso_actual_nombre,
-
                     (
                         SELECT DATEDIFF(
                             NOW(),
@@ -96,84 +52,193 @@ class Solicitudes extends Persona
                         )
                         FROM solicitud_workflow sw
                         WHERE sw.idsolicitud=s.idsolicitud
-                    ) dias_etapa
+                    ) dias_etapa')
+                ->from('solicitud_credito s')
+                ->join('persona p', 'p.idpersona=s.idcliente')
+                ->join('workflow_paso wp', 'wp.idpaso=s.paso_actual')
+                ->where('s.idsucursal', '=', $idsucursal);
 
-                FROM solicitud_credito s
-
-                INNER JOIN persona p
-                    ON p.idpersona=s.idcliente
-
-                LEFT JOIN workflow_paso wp
-                    ON wp.idpaso=s.paso_actual
-
-                WHERE 1=1 $where
-
-                ORDER BY s.idsolicitud DESC
-
-                LIMIT $start,$length";
-
-        $rspta = ejecutarConsulta($sql);
-
-        $data = array();
-        while ($reg = $rspta->fetch_object()) {
-            $botones = '';
-            if (Helpers::getUserPermissionAccion('Aprobar solicitudes')) {
-                $botones .= '<button
-                        class="btn btn-info btn-sm"
-                        onclick="verSolicitud(' . $reg->idsolicitud . ')">
-                        <i class="fa fa-eye"></i>
-                    </button>';
-            }
-            if (Helpers::getUserPermissionAccion('Ver flujo de pasos')) {
-                $botones .= '<button
-                        class="btn btn-warning btn-sm"
-                        onclick="verWorkflow(' . $reg->idsolicitud . ')">
-                        <i class="fa fa-route"></i>
-                    </button>';
+            if (!empty($estado)) {
+                $paginator->where('s.estado', '=', $estado);
             }
 
-            if (Helpers::getUserPermissionAccion('Ver archivos de solicitud')) {
-                $botones .= '<button
-                        class="btn btn-success btn-sm"
-                        onclick="verArchivos(' . $reg->idsolicitud . ')">
-                        <i class="fa fa-folder"></i>
-                    </button>';
+            if (!empty($riesgo)) {
+                $paginator->where('s.riesgo', '=', $riesgo);
             }
-            $data[] = array(
 
-                "0" => $reg->codigo,
+            if (!empty($paso)) {
+                $paginator->where('s.paso_actual', '=', $paso);
+            }
 
-                "1" => $reg->cliente,
+            if ($search !== '') {
+                $paginator->search($search, [
+                    's.codigo',
+                    'p.nombre',
+                    's.estado',
+                    's.riesgo'
+                ]);
+            }
 
-                "2" => '<span class="badge badge-dark">'
-                    . $reg->score .
-                    '</span>',
+            $response = $paginator
+                ->orderBy('s.idsolicitud', 'DESC')
+                ->paginate($page, $limit);
 
-                "3" => $reg->riesgo,
+            $response['permissions'] = [
+                'aprobar' => Helpers::getUserPermissionAccion('Aprobar solicitudes'),
+                'pasos' => Helpers::getUserPermissionAccion('Ver flujo de pasos'),
+                'archivos' => Helpers::getUserPermissionAccion('Ver archivos de solicitud')
+            ];
 
-                "4" => $reg->paso_actual_nombre,
+            return json_encode($response);
 
-                "5" => intval($reg->dias_etapa) . ' día(s)',
-
-                "6" => $reg->estado,
-
-                "7" => date(
-                    'd/m/Y H:i',
-                    strtotime($reg->fecha_registro)
-                ),
-                "8" => '
-                <div class="btn-group">
-                    ' . $botones . '
-                </div>'
-            );
+        } catch (\Throwable $th) {
+            throw $th;
         }
-
-        return array(
-            "recordsTotal" => (int) $total['total'],
-            "recordsFiltered" => (int) $total['total'],
-            "data" => $data
-        );
     }
+
+    
+    // public function listarSolicitudes(
+    //     $idsucursal,
+    //     $search = '',
+    //     $start = 0,
+    //     $length = 10,
+    //     $estado = '',
+    //     $riesgo = '',
+    //     $paso = '',
+    //     $texto = ''
+    // ) {
+
+    //     $where = "AND s.idsucursal = '$idsucursal'";
+
+    //     if (!empty($texto)) {
+    //         $search = $texto;
+    //     }
+
+    //     if (!empty($search)) {
+
+    //         $search = mysqli_real_escape_string(
+    //             $GLOBALS['conexion'],
+    //             $search
+    //         );
+
+    //         $where .= " AND (
+    //             s.codigo LIKE '%$search%'
+    //             OR p.nombre LIKE '%$search%'
+    //             OR s.estado LIKE '%$search%'
+    //             OR s.riesgo LIKE '%$search%'
+    //         )";
+    //     }
+
+    //     if (!empty($estado)) {
+    //         $where .= " AND s.estado='$estado'";
+    //     }
+
+    //     if (!empty($riesgo)) {
+    //         $where .= " AND s.riesgo='$riesgo'";
+    //     }
+
+    //     if (!empty($paso)) {
+    //         $where .= " AND s.paso_actual='$paso'";
+    //     }
+
+    //     $sqlTotal = "SELECT COUNT(*) total
+    //                 FROM solicitud_credito s
+    //                 INNER JOIN persona p
+    //                     ON p.idpersona=s.idcliente
+    //                 WHERE 1=1 $where";
+
+    //     $total = ejecutarConsultaSimpleFila($sqlTotal);
+
+    //     $sql = "SELECT
+    //                 s.*,
+    //                 p.nombre cliente,
+    //                 wp.nombre paso_actual_nombre,
+
+    //                 (
+    //                     SELECT DATEDIFF(
+    //                         NOW(),
+    //                         MAX(sw.fecha_inicio)
+    //                     )
+    //                     FROM solicitud_workflow sw
+    //                     WHERE sw.idsolicitud=s.idsolicitud
+    //                 ) dias_etapa
+
+    //             FROM solicitud_credito s
+
+    //             INNER JOIN persona p
+    //                 ON p.idpersona=s.idcliente
+
+    //             LEFT JOIN workflow_paso wp
+    //                 ON wp.idpaso=s.paso_actual
+
+    //             WHERE 1=1 $where
+
+    //             ORDER BY s.idsolicitud DESC
+
+    //             LIMIT $start,$length";
+
+    //     $rspta = ejecutarConsulta($sql);
+
+    //     $data = array();
+    //     while ($reg = $rspta->fetch_object()) {
+    //         $botones = '';
+    //         if (Helpers::getUserPermissionAccion('Aprobar solicitudes')) {
+    //             $botones .= '<button
+    //                     class="btn btn-info btn-sm"
+    //                     onclick="verSolicitud(' . $reg->idsolicitud . ')">
+    //                     <i class="fa fa-eye"></i>
+    //                 </button>';
+    //         }
+    //         if (Helpers::getUserPermissionAccion('Ver flujo de pasos')) {
+    //             $botones .= '<button
+    //                     class="btn btn-warning btn-sm"
+    //                     onclick="verWorkflow(' . $reg->idsolicitud . ')">
+    //                     <i class="fa fa-route"></i>
+    //                 </button>';
+    //         }
+
+    //         if (Helpers::getUserPermissionAccion('Ver archivos de solicitud')) {
+    //             $botones .= '<button
+    //                     class="btn btn-success btn-sm"
+    //                     onclick="verArchivos(' . $reg->idsolicitud . ')">
+    //                     <i class="fa fa-folder"></i>
+    //                 </button>';
+    //         }
+    //         $data[] = array(
+
+    //             "0" => $reg->codigo,
+
+    //             "1" => $reg->cliente,
+
+    //             "2" => '<span class="badge badge-dark">'
+    //                 . $reg->score .
+    //                 '</span>',
+
+    //             "3" => $reg->riesgo,
+
+    //             "4" => $reg->paso_actual_nombre,
+
+    //             "5" => intval($reg->dias_etapa) . ' día(s)',
+
+    //             "6" => $reg->estado,
+
+    //             "7" => date(
+    //                 'd/m/Y H:i',
+    //                 strtotime($reg->fecha_registro)
+    //             ),
+    //             "8" => '
+    //             <div class="btn-group">
+    //                 ' . $botones . '
+    //             </div>'
+    //         );
+    //     }
+
+    //     return array(
+    //         "recordsTotal" => (int) $total['total'],
+    //         "recordsFiltered" => (int) $total['total'],
+    //         "data" => $data
+    //     );
+    // }
 
     public function guardar(
         $idcliente,

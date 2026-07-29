@@ -2,61 +2,33 @@
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Solicitudes.php";
 $credito = new Solicitudes();
+$idsucursal = $_SESSION['idsucursal'];
 
 switch ($_GET["op"]) {
     case 'listarGeneralSolicitudes':
-        $idsucursal = $_SESSION['idsucursal'];
         $result = $credito->listarGeneralSolicitudes($idsucursal);
         echo $result;
         break;
 
     case 'listarSolicitudes':
-
-        $draw   = isset($_GET['draw']) ? intval($_GET['draw']) : 1;
-        $start  = isset($_GET['start']) ? intval($_GET['start']) : 0;
-        $length = isset($_GET['length']) ? intval($_GET['length']) : 10;
-
-        $search = "";
-
-        if (isset($_GET['search']['value'])) {
-            $search = $_GET['search']['value'];
-        }
-
         $estado = isset($_GET['estado'])
             ? limpiarCadena($_GET['estado'])
             : "";
-
         $riesgo = isset($_GET['riesgo'])
             ? limpiarCadena($_GET['riesgo'])
             : "";
-
         $paso = isset($_GET['paso'])
             ? limpiarCadena($_GET['paso'])
             : "";
 
-        $texto = isset($_GET['texto'])
-            ? limpiarCadena($_GET['texto'])
-            : "";
-
-        $idsucursal = $_SESSION['idsucursal'];
-
         $result = $credito->listarSolicitudes(
             $idsucursal,
-            $search,
-            $start,
-            $length,
             $estado,
             $riesgo,
-            $paso,
-            $texto
+            $paso
         );
 
-        echo json_encode([
-            "draw" => $draw,
-            "recordsTotal" => $result["recordsTotal"],
-            "recordsFiltered" => $result["recordsFiltered"],
-            "data" => $result["data"]
-        ]);
+        echo $result;
 
     break;
 

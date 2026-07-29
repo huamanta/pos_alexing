@@ -7,6 +7,7 @@
 require_once __DIR__ . '/../../configuraciones/bootstrap.php';
 include __DIR__ . "/../../configuraciones/Conexion.php";
 require_once __DIR__ . "/../../modelos/Helpers.php";
+$helpers = new Helpers();
 
 use Dompdf\Dompdf;
 use Dompdf\Options;

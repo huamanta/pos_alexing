@@ -564,6 +564,7 @@ function pintarProductos(data, permissions) {
 
 listarProductos = new FluentPaginator({
   url: "controladores/producto.php?op=listar",
+  tableBody: "#tbody_productos",
   renderTabla: pintarProductos
 });
 

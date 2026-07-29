@@ -11,7 +11,7 @@ $venta = new Venta();
 $sisVenta = new SisVenta();
 $helpers = new Helpers();
 $idventa = isset($_POST["idventa"]) ? limpiarCadena($_POST["idventa"]) : "";
-$idsucursal = isset($_POST["idsucursal"]) ? limpiarCadena($_POST["idsucursal"]) : "";
+$idsucursal = $_SESSION["idsucursal"];
 $idcliente = isset($_POST["idcliente"]) ? limpiarCadena($_POST["idcliente"]) : "";
 $idpersonal = isset($_POST["idpersonal"]) ? limpiarCadena($_POST["idpersonal"]) : "";
 $tipo_comprobante = isset($_POST["tipo_comprobante"]) ? limpiarCadena($_POST["tipo_comprobante"]) : "";
@@ -189,7 +189,8 @@ switch ($_GET["op"]) {
 				$_POST["idcategoria"],
 				$idgarante,
 				$idacompanante,
-				$idtipoacompanante
+				$idtipoacompanante,
+				$_POST['idserie']
 			);
 			echo $rspta;
 		} else {
@@ -888,7 +889,7 @@ switch ($_GET["op"]) {
             <tr>
                 <th colspan="3"></th>
                 <th>TOTAL VENTA</th>
-                <th>' . Helpers::get_currency_symbol($total) . '</th>
+                <th>' . $helpers->get_currency_symbol($total) . '</th>
             </tr>
           </tfoot>';
 
@@ -896,7 +897,7 @@ switch ($_GET["op"]) {
             <tr>
                 <th colspan="3"></th>
                 <th>DEPOSITO/TRANSFERNCIA</th>
-                <th>' . Helpers::get_currency_symbol($total_otro_pago) . '</th>
+                <th>' . $helpers->get_currency_symbol($total_otro_pago) . '</th>
             </tr>
           </tfoot>';
 
@@ -904,7 +905,7 @@ switch ($_GET["op"]) {
             <tr>
                 <th colspan="3"></th>
                 <th>EFECTIVO</th>
-                <th>' . Helpers::get_currency_symbol($total_efectivo) . '</th>
+                <th>' . $helpers->get_currency_symbol($total_efectivo) . '</th>
             </tr>
           </tfoot>';
 
@@ -1350,21 +1351,10 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'selectProducto':
-		$idsucursal = $_REQUEST["idsucursal2"]; // Obtiene el ID de la sucursal seleccionada
-
+		$idsucursal = $_SESSION["idsucursal"]; // Obtiene el ID de la sucursal seleccionada
 		$producto = new Producto();
-
-		if ($idsucursal === 'all') {
-			$rspta = $producto->listarTodos(); // Llama a la función que devuelve todos los productos
-		} else {
-			$rspta = $producto->listar($idsucursal); // Llama a la función que filtra por sucursal
-		}
-
-		echo '<option value="Todos">Todos</option>'; // Opción por defecto
-
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
-		}
+		$rspta = $producto->listar($idsucursal);
+		echo $rspta;
 		break;
 
 	case 'selectProductoV':

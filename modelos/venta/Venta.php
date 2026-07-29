@@ -51,9 +51,9 @@ class SisVenta extends Helpers
         $idcategoria,
         $idgarante,
         $idacompanante,
-        $idtipoacompanante
+        $idtipoacompanante, 
+        $idserie
     ) {
-
         if (empty($_SESSION['idpersonal'])) {
             throw new Exception('Sesión no válida.');
         }
@@ -171,6 +171,7 @@ class SisVenta extends Helpers
                 $idVenta,
                 $idsucursal,
                 $idproducto,
+                $idserie,
                 $nombre,
                 $cantidad,
                 $precio_venta,
@@ -192,7 +193,7 @@ class SisVenta extends Helpers
             if ($tipopago == "Si") {
                 $this->crearCredito(
                     $idVenta,
-                    $fecha_hora,
+                    $fechaActual,
                     $montoDeuda,
                     $interes,
                     $input_cuotas,
@@ -615,6 +616,7 @@ class SisVenta extends Helpers
         int $idVenta,
         int $idsucursal,
         array $idproducto,
+        array $idserie,
         array $nombre,
         array $cantidad,
         array $precio_venta,
@@ -632,6 +634,7 @@ class SisVenta extends Helpers
 
         foreach ($idp as $i => $idProductoConfig) {
             $idProducto = (int) ($idproducto[$i] ?? 0);
+            $idSerie = (int) ($idserie[$i] ?? null);
             $cant = floatval(
                 $cantidad[$i] ?? 0
             );
@@ -681,9 +684,9 @@ class SisVenta extends Helpers
             $serie = (new DBQuery($this->pdo))
                 ->from('producto_serie')
                 ->where(
-                    'idproducto',
+                    'idserie',
                     '=',
-                    $idProducto
+                    $idSerie
                 )
                 ->where(
                     'idsucursal',

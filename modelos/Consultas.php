@@ -1,15 +1,17 @@
 <?php
 //Inclu¨ªmos inicialmente la conexi¨®n a la base de datos
 require_once __DIR__ . "/../configuraciones/bootstrap.php";
-require "../configuraciones/Conexion.php";
+require_once  __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
 date_default_timezone_set('America/Lima');
 
-class Consultas
+class Consultas extends Helpers
 {
 	//Implementamos nuestro constructor
 	public function __construct()
-	{
-	}
+    {
+        parent::__construct();
+    }
 
 	public function TotalUtilidadNetaPV($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal, $idproducto)
 	{
@@ -1131,7 +1133,7 @@ class Consultas
 		$sqlCliente
 		AND v.tipo_comprobante IN ('Factura','Boleta','Nota de Venta') 
 		AND v.idsucursal = '$idsucursal'";
-		
+
 		return ejecutarConsulta($sql);
 	}
 
@@ -1551,26 +1553,39 @@ class Consultas
 
 	public function listarKardex($fecha_inicio, $fecha_fin, $idproducto, $idcliente, $idsucursal)
 	{
-		// Inicia la consulta base
-		$sql = "SELECT k.* 
-                FROM kardex k 
-                JOIN producto p ON k.idproducto = p.idproducto 
-                JOIN categoria c ON p.idcategoria = c.idcategoria 
-                WHERE DATE(k.fecha_kardex)>='$fecha_inicio' AND DATE(k.fecha_kardex)<='$fecha_fin'
-                AND c.nombre != 'SERVICIO'";
+		$page = $_GET['page'] ?? 1;
+		$limit = $_GET['limit'] ?? 20;
+		$search = $_GET['search'] ?? '';
 
-		// Añadir condiciones según los parámetros
-		if ($idproducto != 'Todos') {
-			$sql .= " AND k.idproducto = '$idproducto'";
+		$paginator = (new DBQuery($this->pdo))
+			->select(['k.*, p.nombre'])
+			->from('kardex k')
+			->join('producto p', 'k.idproducto = p.idproducto')
+			->join('categoria c', 'p.idcategoria = c.idcategoria');
+
+		if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+			$paginator->whereBetween(
+				'DATE(k.fecha_kardex)',
+				$fecha_inicio,
+				$fecha_fin
+			);
 		}
-		if ($idsucursal != 'Todos') {
-			$sql .= " AND k.idsucursal = '$idsucursal'";
+
+		if (!empty($idproducto)) {
+			$paginator->where('k.idproducto', '=', $idproducto);
 		}
 
-		// Ordenar por fecha del movimiento (no por id)
-		$sql .= " ORDER BY k.fecha_kardex DESC";
+		if ($search !== '') {
+			$paginator->search($search, [
+				'p.nombre'
+			]);
+		}
 
-		return ejecutarConsulta($sql);
+		$response = $paginator
+			->orderBy('k.id', 'DESC')
+			->paginate($page, $limit);
+
+		return json_encode($response);
 	}
 
 	public function verProducto($idproducto)

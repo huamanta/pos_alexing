@@ -86,12 +86,16 @@ function init() {
     guardaryeditarmovimiento(e);
   });
   //cargamos los items al select comprobantes
-  $.post("controladores/cotizaciones.php?op=selectCotizaciones", {
-    is_aprobated: 1
-  }, function (c) {
-    $("#comprobanteReferencia").html(c);
-    $("#comprobanteReferencia").select2("");
-  });
+  $.post(
+    "controladores/cotizaciones.php?op=selectCotizaciones",
+    {
+      is_aprobated: 1,
+    },
+    function (c) {
+      $("#comprobanteReferencia").html(c);
+      $("#comprobanteReferencia").select2("");
+    },
+  );
 
   $.post("controladores/usuario.php?op=selectEmpleado", function (r) {
     $("#idpersonal").html(r);
@@ -109,56 +113,16 @@ function init() {
   });
 
   // Cargar productos en el filtro
-  $.post("controladores/venta.php?op=selectProductoFiltro", function (r) {
-    $("#idproducto").html(r);
-    $("#idproducto").select2();
-  });
+  // $.post("controladores/venta.php?op=selectProductoFiltro", function (r) {
+  //   $("#idproducto").html(r);
+  //   $("#idproducto").select2();
+  // });
 
   //cargamos los items al celect comprobantes
   $.post("controladores/venta.php?op=selectTipoAcompanante", function (c) {
     $("#idtipoacompanante").html(c);
   });
 
-  $("#idcliente").select2({
-    placeholder: "Buscar cliente...",
-    allowClear: true,
-    minimumInputLength: 2,
-
-    ajax: {
-      url: "controladores/venta.php?op=selectCliente",
-      type: "POST",
-      dataType: "json",
-      delay: 250,
-
-      data: function (params) {
-        return {
-          search: params.term,
-          page: params.page || 1,
-          only_client: 1
-        };
-      },
-
-      processResults: function (data, params) {
-
-        params.page = params.page || 1;
-
-        return {
-          results: data.data.map(function (item) {
-            return {
-              id: item.idpersona,
-              text: item.nombre + " - " + item.num_documento
-            };
-          }),
-
-          pagination: {
-            more: data.meta.current_page < data.meta.last_page
-          }
-        };
-      },
-
-      cache: true
-    }
-  });
   /*
 
   $("#tipo_comprobante").on("change", function () {
@@ -249,6 +213,88 @@ function init() {
   actualizarFilaVaciaDetalles();
 }
 
+$("#idcliente").select2({
+  placeholder: "Buscar cliente...",
+  allowClear: true,
+  minimumInputLength: 2,
+
+  ajax: {
+    url: "controladores/venta.php?op=selectCliente",
+    type: "POST",
+    dataType: "json",
+    delay: 250,
+
+    data: function (params) {
+      return {
+        search: params.term,
+        page: params.page || 1,
+        only_client: 1,
+      };
+    },
+
+    processResults: function (data, params) {
+      params.page = params.page || 1;
+
+      return {
+        results: data.data.map(function (item) {
+          return {
+            id: item.idpersona,
+            text: item.nombre + " - " + item.num_documento,
+          };
+        }),
+
+        pagination: {
+          more: data.meta.current_page < data.meta.last_page,
+        },
+      };
+    },
+
+    cache: true,
+  },
+});
+
+$("#idproducto").select2({
+  placeholder: "Buscar producto...",
+  allowClear: true,
+  minimumInputLength: 2,
+
+  ajax: {
+    url: "controladores/venta.php?op=selectProducto",
+    type: "POST",
+    dataType: "json",
+    delay: 250,
+
+    data: function (params) {
+      return {
+        search: params.term,
+        page: params.page || 1,
+        only_client: 1,
+      };
+    },
+
+    processResults: function (data, params) {
+      params.page = params.page || 1;
+      return {
+        results: data.data.map(function (item) {
+          return {
+            id: item.idproducto,
+            text: item.codigo + " - " + item.nombre,
+          };
+        }),
+        pagination: {
+          more: data.meta.current_page < data.meta.last_page,
+        },
+      };
+    },
+
+    cache: true,
+  },
+});
+
+$("#fecha_inicio, #fecha_fin, #estado, #idproducto").change(function () {
+  listarDataVentas.load();
+});
+
 function initSelectAcompananteGarante() {
   const $modal = $("#modalAcompananteGarante");
 
@@ -261,8 +307,10 @@ function initSelectAcompananteGarante() {
     }
 
     $select.select2({
-      placeholder: selector === "#idacompanante" ?
-        "Buscar acompañante..." : "Buscar garante...",
+      placeholder:
+        selector === "#idacompanante"
+          ? "Buscar acompañante..."
+          : "Buscar garante...",
       allowClear: true,
       width: "100%",
       dropdownParent: $modal,
@@ -363,7 +411,7 @@ function cargarSucursales() {
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
     $("#idsucursal").html(r);
     $("#idsucursal").select2("");
-    $('#idsucursal').prop('disabled', true);
+    $("#idsucursal").prop("disabled", true);
 
     // $("#idsucursal2").html(r);
     // $("#idsucursal2").select2("");
@@ -482,10 +530,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                    " " +
-                    dat.apellidoPaterno +
-                    " " +
-                    dat.apellidoMaterno,
+                      " " +
+                      dat.apellidoPaterno +
+                      " " +
+                      dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -495,7 +543,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         } else {
@@ -539,7 +587,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         }
@@ -656,7 +704,7 @@ function verificarTipoPago() {
     $("#fechadeposito").show();
     $("#banco").show();
   }
-};
+}
 
 function obtenerMontoTotalPagar() {
   var totalInput = parseFloat($("#total_venta").val());
@@ -849,7 +897,7 @@ function EnviarSunat(tipoc, idventa, idcol) {
         icon: "success",
         text: resp,
         timerProgressBar: true,
-        onClose: function () { },
+        onClose: function () {},
       });
 
       listarDataVentas.load();
@@ -934,7 +982,7 @@ function guardaryeditar(e) {
         Swal.fire({
           title: "Ventas",
           text: data.message,
-          icon: "error"
+          icon: "error",
         });
         return;
       }
@@ -1040,13 +1088,12 @@ function resetearPagos() {
 // Recalcular al cambiar monto o método
 // --- Funciones para calcular ---
 function calcularTotalRecibido() {
-
   let totalRecibido = 0;
 
   $(".pagoItem").each(function () {
     let metodo = $(this).find(".metodoPago").val();
     let monto = Number(
-      ($(this).find(".montoPago").val() || "0").replace(",", ".")
+      ($(this).find(".montoPago").val() || "0").replace(",", "."),
     );
 
     if (isNaN(monto)) monto = 0;
@@ -1057,8 +1104,7 @@ function calcularTotalRecibido() {
 
   $("#totalrecibido").val(totalRecibido.toFixed(2));
 
-  let montoDeudaOriginal =
-    parseFloat($("#total_venta").val()) || 0;
+  let montoDeudaOriginal = parseFloat($("#total_venta").val()) || 0;
 
   if ($("#tipopago").val() === "Si") {
     let montoRestante = montoDeudaOriginal - totalRecibido;
@@ -1218,7 +1264,6 @@ function obtenerTotalVentaReal() {
 
 // Actualizar el primer pago automáticamente
 function actualizarMontoPrimerPago() {
-
   let totalVenta = obtenerTotalVentaReal();
 
   // MONTO INICIAL
@@ -1232,15 +1277,12 @@ function actualizarMontoPrimerPago() {
 
   // Solo actualizar si el usuario no editó manualmente
   if (!montoInput.data("editado")) {
-
     // SI HAY INICIAL USARLA
-    let montoMostrar = ($("#tipopago").val() === "Si") ? inicial : totalVenta;
+    let montoMostrar = $("#tipopago").val() === "Si" ? inicial : totalVenta;
 
     montoInput.val(montoMostrar.toFixed(2));
 
-    primeraFila
-      .find(".montoRealPago")
-      .val(montoMostrar.toFixed(2));
+    primeraFila.find(".montoRealPago").val(montoMostrar.toFixed(2));
   }
 
   montoInput.off("keyup").on("keyup", function () {
@@ -1450,9 +1492,10 @@ function buscarProductoCod(e, codigo) {
   if (e.keyCode === 13) {
     if (codigo.length > 0) {
       $.post(
-        "controladores/venta.php?op=buscarProducto", {
-        codigo: codigo
-      },
+        "controladores/venta.php?op=buscarProducto",
+        {
+          codigo: codigo,
+        },
         function (data, status) {
           data = JSON.parse(data);
 
@@ -1516,10 +1559,11 @@ function verificarProductosDisponibles() {
 
   // Verificar cada producto si está disponible en la nueva sucursal
   $.post(
-    "controladores/venta.php?op=verificarProductos", {
-    idsucursal: idsucursal,
-    productos: productosAgregados
-  },
+    "controladores/venta.php?op=verificarProductos",
+    {
+      idsucursal: idsucursal,
+      productos: productosAgregados,
+    },
     function (response) {
       if (response.no_disponibles.length > 0) {
         // Eliminar los productos no disponibles de la tabla
@@ -1528,8 +1572,8 @@ function verificarProductosDisponibles() {
           Swal.fire(
             "Advertencia",
             "El producto con ID " +
-            idproducto +
-            " no existe en el almacén seleccionado.",
+              idproducto +
+              " no existe en el almacén seleccionado.",
             "warning",
           );
         });
@@ -1628,11 +1672,9 @@ function listarArticulosSearchFIFO(search = "") {
 }
 */
 function pintarProductos(data, permissions) {
-
   let html = "";
 
   if (data.length === 0) {
-
     html = `
             <tr>
                 <td colspan="10" class="text-center">
@@ -1645,12 +1687,12 @@ function pintarProductos(data, permissions) {
     return;
   }
 
-  data.forEach(item => {
-    let btnActivarDesactivar = (permissions.desactivar) ?
-      (item.condicion === 1) ?
-        `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>` :
-        `<button class="btn btn-info btn-xs" onclick="activar(${item.idproducto})"><i class="fas fa-check"></i></button>` :
-      ''
+  data.forEach((item) => {
+    let btnActivarDesactivar = permissions.desactivar
+      ? item.condicion === 1
+        ? `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>`
+        : `<button class="btn btn-info btn-xs" onclick="activar(${item.idproducto})"><i class="fas fa-check"></i></button>`
+      : "";
 
     html += `
             <tr>
@@ -1672,37 +1714,36 @@ function pintarProductos(data, permissions) {
                         '${item.proigv}',
                         '${item.cantidad_contenedor}',
                         '${item.contenedor}',
-                        ${item.idcategoria}
+                        ${item.idcategoria},
+                        ${item.idserie}
                     )"
-                    ${parseFloat(item.stock) <= 0 ? 'disabled' : ''}>
+                    ${parseFloat(item.stock) <= 0 || item.estado_serie != "DISPONIBLE" ? "disabled" : ""}>
                     <i class="fas fa-shopping-cart"></i>
                 </button>
-                <td>${item.codigo || ''}</td>
+                <td>${item.codigo || ""}</td>
                 <td style="text-align:left;">
-                    <strong>${item.nombre || ''}</strong><br>
+                    <strong>${item.nombre || ""}</strong><br>
                     <small>
-                        <strong>Motor:</strong> ${item.numero_motor || '-'} &nbsp;&nbsp;|&nbsp;&nbsp;
-                        <strong>Serie:</strong> ${item.numero_serie || '-'}
+                        <strong>Motor:</strong> ${item.numero_motor || "-"} &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <strong>Serie:</strong> ${item.numero_serie || "-"}
                     </small>
                 </td>
                 <td>${item.stock}</td>
                 <td>S/ ${parseFloat(item.precio).toFixed(2)}</td>
                 <td>
-                    ${item.color || 'S/N'}
+                    ${item.color || "S/N"}
                 </td>
 
             </tr>
         `;
-
   });
 
   $("#tbody_articulos").html(html);
-
 }
-
 
 listarProductos = new FluentPaginator({
   url: "controladores/cotizaciones.php?op=listarArticulos",
+  tableBody: "#tbody_articulos",
   renderTabla: pintarProductos,
   searchSelector: "#searchProductos",
   limitSelector: "#limitProductos",
@@ -1799,7 +1840,7 @@ function listarArticulos() {
       ajax: {
         url: "controladores/venta.php?op=listarArticulos",
         data: {
-          idsucursal: idsucursal
+          idsucursal: idsucursal,
         },
         type: "get",
         dataType: "json",
@@ -1834,7 +1875,7 @@ function listarArticulos2() {
       ajax: {
         url: "controladores/venta.php?op=listarArticulos2",
         data: {
-          idsucursal: idsucursal
+          idsucursal: idsucursal,
         },
         type: "get",
         dataType: "json",
@@ -1874,9 +1915,10 @@ function verimagen(idproducto, imagen, nombre, stock, precio) {
 
   // Obtener precios adicionales
   $.post(
-    "controladores/producto.php?op=precios_adicionales", {
-    idproducto: idproducto
-  },
+    "controladores/producto.php?op=precios_adicionales",
+    {
+      idproducto: idproducto,
+    },
     function (data) {
       $("#detallePreciosAdicionales").html(data);
     },
@@ -1913,7 +1955,7 @@ function listarArticulos2() {
       ajax: {
         url: "controladores/venta.php?op=listarArticulos2",
         data: {
-          idsucursal: idsucursal
+          idsucursal: idsucursal,
         },
         type: "get",
         dataType: "json",
@@ -2009,7 +2051,6 @@ function listarArticulos2() {
 // }
 
 function pintarVentas(data, permissions) {
-
   let html = "";
 
   if (data.length === 0) {
@@ -2023,19 +2064,24 @@ function pintarVentas(data, permissions) {
     return;
   }
 
-  data.forEach(item => {
-
-    const url1 = 'reportes/exTicket.php?id=';
-    const url2 = 'reportes/factura/generaFactura.php?id=';
+  data.forEach((item) => {
+    const url1 = "reportes/exTicket.php?id=";
+    const url2 = "reportes/factura/generaFactura.php?id=";
 
     const ruta = `public/FACT_WebService/Facturacion/files/${item.dov_Nombre}.xml`;
     const rutaCdr = `public/FACT_WebService/Facturacion/files/R-${item.dov_Nombre}.zip`;
 
-    let enviarSunat = '';
-    let pdf = '';
-    let ticket = '';
-    let tipo = (item.tipo_comprobante === 'Boleta') ? 1 : (item.tipo_comprobante === 'Factura') ? 2 : null;
-    let enviarButtons = (item.tipo_comprobante === 'Boleta' || item.tipo_comprobante === 'Factura');
+    let enviarSunat = "";
+    let pdf = "";
+    let ticket = "";
+    let tipo =
+      item.tipo_comprobante === "Boleta"
+        ? 1
+        : item.tipo_comprobante === "Factura"
+          ? 2
+          : null;
+    let enviarButtons =
+      item.tipo_comprobante === "Boleta" || item.tipo_comprobante === "Factura";
     if (enviarButtons) {
       if (item.estado === "Por Enviar") {
         enviarSunat = `
@@ -2074,14 +2120,12 @@ function pintarVentas(data, permissions) {
                     </button>
                 </a>
             `;
-
       }
     }
 
     let estado = "";
 
     if (item.estado === "Aceptado") {
-
       estado = '<span class="badge badge-neon neon-green">ACEPTADO</span>';
 
       pdf = `
@@ -2097,21 +2141,13 @@ function pintarVentas(data, permissions) {
                         <i class="fas fa-receipt"></i>
                     </button>
                 </a>`;
-
     } else if (item.estado === "Por Enviar") {
-
       estado = '<span class="badge badge-neon neon-yellow">POR ENVIAR</span>';
-
     } else if (item.estado === "En Resumen") {
-
       estado = '<span class="badge badge-neon neon-blue">EN RESUMEN</span>';
-
     } else if (item.estado === "Anulado") {
-
       estado = '<span class="badge badge-neon neon-red">ANULADO</span>';
-
     } else if (item.estado === "Nota Credito") {
-
       estado = '<span class="badge badge-neon neon-red">NOTA DE CRÉDITO</span>';
 
       pdf = `
@@ -2127,9 +2163,7 @@ function pintarVentas(data, permissions) {
                         <i class="fas fa-receipt"></i>
                     </button>
                 </a>`;
-
     } else if (item.estado === "Rechazado") {
-
       estado = '<span class="badge badge-neon neon-red">RECHAZADO</span>';
 
       pdf = `
@@ -2145,10 +2179,9 @@ function pintarVentas(data, permissions) {
                         <i class="fas fa-receipt"></i>
                     </button>
                 </a>`;
-
     } else if (item.estado === "Aceptado por resumen") {
-
-      estado = '<span class="badge badge-neon neon-green">ACEPTADO POR RESUMEN</span>';
+      estado =
+        '<span class="badge badge-neon neon-green">ACEPTADO POR RESUMEN</span>';
 
       pdf = `
                 <a target="_blank" href="${url2}${item.idventa}">
@@ -2163,9 +2196,7 @@ function pintarVentas(data, permissions) {
                         <i class="fas fa-receipt"></i>
                     </button>
                 </a>`;
-
     } else {
-
       estado = '<span class="badge badge-neon neon-blue">ACTIVADO</span>';
 
       pdf = `
@@ -2186,20 +2217,14 @@ function pintarVentas(data, permissions) {
     let sunat = "";
 
     const esElectronico =
-      item.tipo_comprobante === "Boleta" ||
-      item.tipo_comprobante === "Factura";
+      item.tipo_comprobante === "Boleta" || item.tipo_comprobante === "Factura";
 
     // Nota de Venta -> no mostrar acciones SUNAT
     if (!esElectronico) {
-
       sunat = "-";
-
     } else {
-
       switch (item.estado) {
-
         case "Por Enviar":
-
           sunat = `
                 <a data-toggle="tooltip" title="Enviar a Sunat"
                     onclick="EnviarSunat(${tipo},${item.idventa},${item.idpersonal});">
@@ -2224,7 +2249,6 @@ function pintarVentas(data, permissions) {
 
         case "Aceptado":
         case "Aceptado por resumen":
-
           sunat = `
                 <a href="${ruta}"
                     download="${item.dov_Nombre}.xml"
@@ -2241,7 +2265,6 @@ function pintarVentas(data, permissions) {
           break;
 
         default:
-
           // Para cualquier otro estado ya NO permitir reenviar
           sunat = `
 
@@ -2259,14 +2282,11 @@ function pintarVentas(data, permissions) {
             `;
           break;
       }
-
     }
-
 
     let comprobarEstado = "";
 
     if (item.tipo_comprobante === "Nota de Venta") {
-
       comprobarEstado = `
                 <center>
                     <a style="pointer-events:none;">
@@ -2276,9 +2296,7 @@ function pintarVentas(data, permissions) {
                     </a>
                 </center>
             `;
-
     } else {
-
       comprobarEstado = `
                 <center>
                     <a onclick="comprobarEstado(${item.idventa},${item.idpersonal});">
@@ -2289,7 +2307,6 @@ function pintarVentas(data, permissions) {
                 </center>
             `;
     }
-
 
     let mostrarResumen = `
             <button class="btn btn-warning btn-xs"
@@ -2303,13 +2320,10 @@ function pintarVentas(data, permissions) {
     let sunatE = "";
 
     if (item.estado === "Anulado") {
-
       enviarComprobante = "";
       mostrar = "";
       sunatE = esElectronico ? sunat : "-";
-
     } else {
-
       enviarComprobante = `
         <a target="_blank" title="Enviar Comprobantes">
             <button class="btn btn-success btn-xs"
@@ -2323,11 +2337,9 @@ function pintarVentas(data, permissions) {
       sunatE = esElectronico ? sunat : "-";
     }
 
-
     let notaCreditoBtn = "";
 
     if (item.estado === "Aceptado") {
-
       notaCreditoBtn = `
                 <a title="Pasar a Nota de Crédito"
                     onclick="notaCredito(${item.idventa},${item.idsucursal})">
@@ -2340,10 +2352,9 @@ function pintarVentas(data, permissions) {
             `;
     }
 
-
     let dropdown = "";
     let btnCronograma = "";
-    if (item.ventacredito == 'Si') {
+    if (item.ventacredito == "Si") {
       btnCronograma = `<a class="btn btn-danger btn-xs"
                     title="Descargar cronograma"
                     onclick="verCronogramPago(${item.idventa})">
@@ -2354,7 +2365,6 @@ function pintarVentas(data, permissions) {
     }
 
     if (item.estado === "Activado") {
-
       dropdown = `
                 <div class="dropdown">
 
@@ -2368,32 +2378,35 @@ function pintarVentas(data, permissions) {
 
                     <div class="dropdown-menu">
 
-                        ${permissions.editar
-          ? `<a class="dropdown-item"
+                        ${
+                          permissions.editar
+                            ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="generarComprobante(${item.idventa})">
                                 Editar
                             </a>`
-          : ""
-        }
+                            : ""
+                        }
 
-                        ${permissions.eliminar
-          ? `<a class="dropdown-item"
+                        ${
+                          permissions.eliminar
+                            ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="anularComprobante(${item.idventa})">
                                 Eliminar
                             </a>`
-          : ""
-        }
+                            : ""
+                        }
 
-                        ${item.tipo_comprobante === "Nota de Venta"
-          ? `<a class="dropdown-item"
+                        ${
+                          item.tipo_comprobante === "Nota de Venta"
+                            ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="cambiarComprobante(${item.idventa},${item.idsucursal})">
                                 Cambiar a Boleta/Factura
                             </a>`
-          : ""
-        }
+                            : ""
+                        }
 
                     </div>
 
@@ -2409,9 +2422,7 @@ function pintarVentas(data, permissions) {
 
                 </div>
             `;
-
     } else {
-
       dropdown = `
                 ${mostrarResumen}
                 ${enviarComprobante}
@@ -2426,7 +2437,7 @@ function pintarVentas(data, permissions) {
                 <td>${item.fecha}</td>
 
                 <td>
-                    ${item.cliente} ${item.num_documento ? '-' : ''} ${item.num_documento || ''}
+                    ${item.cliente} ${item.num_documento ? "-" : ""} ${item.num_documento || ""}
                 </td>
                 <td>
                     ${item.tipo_comprobante} -
@@ -2443,10 +2454,11 @@ function pintarVentas(data, permissions) {
                 </td>
 
                 <td align="center">
-                    ${item.ventacredito === "Si"
-        ? '<span class="badge badge-neon neon-red">Crédito</span>'
-        : '<span class="badge badge-neon neon-blue">Contado</span>'
-      }
+                    ${
+                      item.ventacredito === "Si"
+                        ? '<span class="badge badge-neon neon-red">Crédito</span>'
+                        : '<span class="badge badge-neon neon-blue">Contado</span>'
+                    }
                 </td>
 
                 <td>
@@ -2467,7 +2479,6 @@ function pintarVentas(data, permissions) {
 
             </tr>
         `;
-
   });
 
   $("#tbody_ventas").html(html);
@@ -2476,12 +2487,13 @@ function pintarVentas(data, permissions) {
 listarDataVentas = new FluentPaginator({
   url: "controladores/venta.php?op=listar",
   renderTabla: pintarVentas,
+  tableBody: "#tbody_ventas",
   extraParams: () => ({
-    fecha_inicio: $("#fecha_inicio").val() || '',
-    fecha_fin: $("#fecha_inicio").val() || '',
-    estado: $("#estado").val() || '',
-    idproducto: $("#idproducto").val() || ''
-  })
+    fecha_inicio: $("#fecha_inicio").val() || "",
+    fecha_fin: $("#fecha_inicio").val() || "",
+    estado: $("#estado").val() || "",
+    idproducto: $("#idproducto").val() || "",
+  }),
 });
 
 //cancelar form
@@ -2549,8 +2561,6 @@ async function mostrarform(flag) {
   limpiar();
 
   if (flag) {
-
-
     try {
       const tieneCaja = await verificarCajaPorSucursal();
       if (tieneCaja) {
@@ -2687,7 +2697,8 @@ function listarVentas() {
       aServerSide: true, //Paginación y filtrado realizados por el servidor
       processing: true,
       language: {
-        processing: "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+        processing:
+          "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
       },
       responsive: true,
       lengthChange: false,
@@ -2726,7 +2737,8 @@ function listarVentas() {
         },
       ],
       ajax: {
-        url: "controladores/pos.php?op=listarVentas&estado=" +
+        url:
+          "controladores/pos.php?op=listarVentas&estado=" +
           estado +
           "&idcaja=" +
           idcaja +
@@ -2740,9 +2752,7 @@ function listarVentas() {
       },
       bDestroy: true,
       iDisplayLength: 5, //Paginación
-      order: [
-        [0, "desc"]
-      ], //Ordenar (columna,orden)
+      order: [[0, "desc"]], //Ordenar (columna,orden)
     })
     .DataTable();
 }
@@ -2761,14 +2771,14 @@ function verificarCajaPorSucursal() {
       success: function (response) {
         if (response.success) {
           $("#idcaja").val(response.idcaja);
-          resolve(true);      // <-- IMPORTANTE
+          resolve(true); // <-- IMPORTANTE
         } else {
-          resolve(false);     // <-- IMPORTANTE
+          resolve(false); // <-- IMPORTANTE
         }
       },
       error: function (xhr, status, error) {
         reject(error);
-      }
+      },
     });
   });
 }
@@ -2789,7 +2799,7 @@ function listarCajas() {
     url: "controladores/venta.php?op=listar_cajas",
     type: "GET",
     data: {
-      idsucursal: idsucursal
+      idsucursal: idsucursal,
     }, // 👈 enviamos la sucursal seleccionada
     dataType: "json",
     success: function (response) {
@@ -2847,7 +2857,8 @@ function cerrarcaja() {
   var idsucursal2 = $("#idsucursal2").val(); // Tomamos la sucursal seleccionada
 
   $.ajax({
-    url: "controladores/pos.php?op=showResumenCaja&idcaja=" +
+    url:
+      "controladores/pos.php?op=showResumenCaja&idcaja=" +
       idcaja +
       "&idsucursal=" +
       idsucursal2,
@@ -3088,7 +3099,7 @@ function cargarNumeroSerie(tipoComprobante, idsucursal) {
     url: "controladores/venta.php?op=" + opSerie,
     type: "get",
     data: {
-      idsucursal: idsucursal
+      idsucursal: idsucursal,
     },
     dataType: "json",
     success: function (serie) {
@@ -3296,8 +3307,9 @@ function agregarDetalle(
   cantidad_contenedor,
   contenedor,
   idcategoria,
-  unidadmedida,
-  id_detalle_compra_lote,
+  idserie,
+  unidadmedida = "",
+  id_detalle_compra_lote = "",
   fabricante = "",
   modelo = "",
   color = "",
@@ -3357,8 +3369,8 @@ function agregarDetalle(
         Swal.fire(
           "Aviso",
           "El stock es menor a 1, se agregará solo la cantidad disponible (" +
-          stock +
-          "), ajustando el precio proporcionalmente.",
+            stock +
+            "), ajustando el precio proporcionalmente.",
           "info",
         );
       }
@@ -3383,13 +3395,11 @@ function agregarDetalle(
 
   //aquí preguntamos si el idarticulo ya fue agregado
   if (articuloAdd.split("-").indexOf(idproducto.toString()) !== -1) {
-
     let cant = document.getElementsByName("cantidad[]");
 
     let id = document.getElementsByName("idproducto[]");
 
     for (var i = 0; i < cant.length; i++) {
-
       if (parseInt(id[i].value) === parseInt(idproducto)) {
         let total = Number(cant[i].value) + 1;
         let stockverify = Number(cant[i].value) + Number(cantidad_contenedor);
@@ -3511,6 +3521,9 @@ function agregarDetalle(
         '<input type="hidden" name="idproducto[]" value="' +
         idproducto +
         '">' +
+        '<input type="hidden" name="idserie[]" value="' +
+        idserie +
+        '">' +
         '<input type="hidden" name="idcategoria[]" value="' +
         idcategoria +
         '">' +
@@ -3518,22 +3531,22 @@ function agregarDetalle(
         id_detalle_compra_lote +
         '">' +
         '<div style="display:flex;align-items:center;justify-content:center;gap:5px;">' +
-        (modoEditar ?
-          "" :
-          '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' +
-          cont +
-          ')"></i>') +
+        (modoEditar
+          ? ""
+          : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' +
+            cont +
+            ')"></i>') +
         '<textarea class="form-control nombre-producto" ' +
         'name="nombreProducto[]" rows="1" ' +
         'oninput="autoResize(this)" onfocus="this.select()" ' +
         'style="font-weight:bold;width:300px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:1.2;">' +
         producto +
-        (fabricante || modelo || color ?
-          " " +
-          (fabricante ? fabricante + " " : "") +
-          (modelo ? modelo + " " : "") +
-          (color ? color : "") :
-          "") +
+        (fabricante || modelo || color
+          ? " " +
+            (fabricante ? fabricante + " " : "") +
+            (modelo ? modelo + " " : "") +
+            (color ? color : "")
+          : "") +
         "</textarea>" +
         "</div>" +
         "</td>" +
@@ -3699,11 +3712,12 @@ function validarCantidad(input, stock, cantidad_contenedor, controla_stock) {
 function actualizarDataItem(idproducto, campo, value) {
   var token = $("#token").val(); // si lo necesitas
   $.post(
-    "controladores/pos.php?op=actualizarDataItem", {
-    idproducto: idproducto,
-    campo: campo,
-    value: value,
-  },
+    "controladores/pos.php?op=actualizarDataItem",
+    {
+      idproducto: idproducto,
+      campo: campo,
+      value: value,
+    },
     function (res) {
       if (res.status == 1) {
         console.log("Precio actualizado.");
@@ -3955,11 +3969,7 @@ function calcularMontos(deuda, interes, cuotas) {
   };
 }
 
-function validarDatos({
-  cuotas,
-  frecuencia,
-  deuda
-}) {
+function validarDatos({ cuotas, frecuencia, deuda }) {
   if (!frecuencia) {
     Swal.fire("Selecciona frecuencia de pago", "", "warning");
     return false;
@@ -3986,21 +3996,18 @@ function obtenerFechaHoyISO() {
   return yyyy + "-" + mm + "-" + dd;
 }
 
-
 $("#calcular_cuotas").click(function (e) {
   e.preventDefault();
   calcularCuotas();
 });
 
-
 function calcularCuotas() {
-
   // Si no se eligio cuotas manualmente, intentar autocalcular desde N° meses + frecuencia.
   if (!$("#input_cuotas").val()) {
     calcularCuotasDesdeNumeroMeses();
   }
 
-  if ($('#tipopago').val() === 'Si') {
+  if ($("#tipopago").val() === "Si") {
     calcularCuotasDesdeNumeroMeses();
   }
 
@@ -4020,9 +4027,7 @@ function calcularCuotas() {
 
   if (!validarDatos(data)) return;
 
-  let {
-    montoCuota
-  } = calcularMontos(data.deuda, data.interes, data.cuotas);
+  let { montoCuota } = calcularMontos(data.deuda, data.interes, data.cuotas);
 
   let html = generarTabla(
     data.cuotas,
@@ -4033,7 +4038,7 @@ function calcularCuotas() {
   );
 
   $("#datafechas").html(html);
-};
+}
 
 function calcularDeuda() {
   $("#totalrecibido").val(0);
@@ -4206,9 +4211,10 @@ function generarComprobante(idventa) {
 
   //Cargar los detalles de la venta
   $.post(
-    "controladores/venta.php?op=listarDetalleVenta", {
-    idventa: idventa
-  },
+    "controladores/venta.php?op=listarDetalleVenta",
+    {
+      idventa: idventa,
+    },
     function (data, status) {
       try {
         data = JSON.parse(data);
@@ -4247,9 +4253,10 @@ function generarComprobante(idventa) {
 
   // Cargar datos generales de la venta
   $.post(
-    "controladores/venta.php?op=mostraredit", {
-    idventa: idventa
-  },
+    "controladores/venta.php?op=mostraredit",
+    {
+      idventa: idventa,
+    },
     function (data, status) {
       try {
         data = JSON.parse(data);
@@ -4330,9 +4337,10 @@ function generarComprobante(idventa) {
 
   //Cargar cuotas de la venta
   $.post(
-    "controladores/venta.php?op=listarCuotas", {
-    idventa: idventa
-  },
+    "controladores/venta.php?op=listarCuotas",
+    {
+      idventa: idventa,
+    },
     function (data, status) {
       try {
         var cuotas = JSON.parse(data);
@@ -4364,18 +4372,26 @@ function mostrarE() {
     return;
   }
   $.post(
-    "controladores/cotizaciones.php?op=mostrar", {
-    idcotizacion: idcotizacion
-  },
+    "controladores/cotizaciones.php?op=mostrar",
+    {
+      idcotizacion: idcotizacion,
+    },
     function (data) {
-
       const dataCotizacion = JSON.parse(data);
 
       if (dataCotizacion && dataCotizacion.idcliente) {
         $("#idcliente").empty().trigger("change");
-        const texto = `${dataCotizacion.cliente} - ${dataCotizacion.num_documento || ''}`;
-        if ($("#idcliente option[value='" + dataCotizacion.idcliente + "']").length === 0) {
-          const option = new Option(texto, dataCotizacion.idcliente, true, true);
+        const texto = `${dataCotizacion.cliente} - ${dataCotizacion.num_documento || ""}`;
+        if (
+          $("#idcliente option[value='" + dataCotizacion.idcliente + "']")
+            .length === 0
+        ) {
+          const option = new Option(
+            texto,
+            dataCotizacion.idcliente,
+            true,
+            true,
+          );
           $("#idcliente").append(option);
         }
         $("#idcliente").val(dataCotizacion.idcliente).trigger("change");
@@ -4388,16 +4404,19 @@ function mostrarE() {
         $("#inputInteres").val(dataCotizacion.interes);
         $("#numeroMeses").val(dataCotizacion.meses);
         $("#montoPagado").val(dataCotizacion.inicial);
-        const deuda = parseFloat(dataCotizacion.total_venta) - parseFloat(dataCotizacion.inicial);
+        const deuda =
+          parseFloat(dataCotizacion.total_venta) -
+          parseFloat(dataCotizacion.inicial);
         $("#montoDeuda").val(deuda.toFixed(2));
         verificarTipoPago();
       }
     },
   );
   $.post(
-    "controladores/cotizaciones.php?op=listarDetalleCotizacion", {
-    idcotizacion: idcotizacion
-  },
+    "controladores/cotizaciones.php?op=listarDetalleCotizacion",
+    {
+      idcotizacion: idcotizacion,
+    },
     function (response, status) {
       const data = JSON.parse(response);
 
@@ -4426,7 +4445,11 @@ function mostrarE() {
 
       setTimeout(() => {
         calcularCuotas();
-        Swal.fire('Ventas', 'La cotizacion se ha cargado correctamente', 'success');
+        Swal.fire(
+          "Ventas",
+          "La cotizacion se ha cargado correctamente",
+          "success",
+        );
       }, 500);
     },
   );
@@ -4444,9 +4467,10 @@ function anularComprobante(idventa) {
   }).then((result) => {
     if (result.isConfirmed) {
       $.post(
-        "controladores/venta.php?op=anular", {
-        idventa: idventa
-      },
+        "controladores/venta.php?op=anular",
+        {
+          idventa: idventa,
+        },
         function (e) {
           Swal.fire("!!! Anulado !!!", e, "success");
           tabla.ajax.reload();
@@ -4549,11 +4573,12 @@ function notaCredito(idventa, idsucursal) {
   }).then((result) => {
     if (result.isConfirmed) {
       $.post(
-        "controladores/venta.php?op=notacredito", {
-        comprobanteReferencia: idventa,
-        idsucursal: idsucursal,
-        idmotivo: 1
-      },
+        "controladores/venta.php?op=notacredito",
+        {
+          comprobanteReferencia: idventa,
+          idsucursal: idsucursal,
+          idmotivo: 1,
+        },
         function (resp) {
           Swal.fire({
             title: "Nota de Crédito",
@@ -4577,9 +4602,10 @@ function mostrar(idventa) {
   $("#getCodeModal22").modal("show");
 
   $.post(
-    "controladores/venta.php?op=mostrar", {
-    idventa: idventa
-  },
+    "controladores/venta.php?op=mostrar",
+    {
+      idventa: idventa,
+    },
     function (data, status) {
       data = JSON.parse(data);
       // Mostrar datos
@@ -4587,21 +4613,21 @@ function mostrar(idventa) {
       $("#cliente").text(data.cliente);
       $("#personalm").text(data.personal);
       $("#tipo_comprobantem").html(
-        data.tipo_comprobante == "Boleta" ?
-          '<span class="badge badge-primary">' +
-          data.tipo_comprobante +
-          "</span>" :
-          '<span class="badge badge-info">' +
-          data.tipo_comprobante +
-          "</span>",
+        data.tipo_comprobante == "Boleta"
+          ? '<span class="badge badge-primary">' +
+              data.tipo_comprobante +
+              "</span>"
+          : '<span class="badge badge-info">' +
+              data.tipo_comprobante +
+              "</span>",
       );
       $("#correlativo").text(
         data.serie_comprobante + " - " + data.num_comprobante,
       );
       $("#ventacreditom").html(
-        data.ventacredito == "Si" ?
-          '<span class="badge badge-success">' + data.ventacredito + "</span>" :
-          '<span class="badge badge-danger">' + data.ventacredito + "</span>",
+        data.ventacredito == "Si"
+          ? '<span class="badge badge-success">' + data.ventacredito + "</span>"
+          : '<span class="badge badge-danger">' + data.ventacredito + "</span>",
       );
       $("#fecha_hora").text(data.fecha);
       $("#impuestom").text(data.impuesto);
@@ -4709,10 +4735,11 @@ function seleccionarClienteFactura(idventa, idsucursal) {
         if (!r.isConfirmed) return;
         let idcliente = $("#clienteFactura").val();
         $.post(
-          "controladores/venta.php?op=actualizarClienteVentaFactura", {
-          idventa: idventa,
-          idcliente: idcliente
-        },
+          "controladores/venta.php?op=actualizarClienteVentaFactura",
+          {
+            idventa: idventa,
+            idcliente: idcliente,
+          },
           function (resp) {
             ejecutarCambioComprobante(idventa, "Factura", idsucursal);
           },
@@ -4724,11 +4751,12 @@ function seleccionarClienteFactura(idventa, idsucursal) {
 
 function ejecutarCambioComprobante(idventa, tipo, idsucursal) {
   $.post(
-    "controladores/venta.php?op=cambiar_comprobante", {
-    idventa: idventa,
-    tipo: tipo,
-    idsucursal: idsucursal
-  },
+    "controladores/venta.php?op=cambiar_comprobante",
+    {
+      idventa: idventa,
+      tipo: tipo,
+      idsucursal: idsucursal,
+    },
     function (resp) {
       if (resp.trim() === "ok") {
         Swal.fire("Correcto", "Comprobante actualizado", "success");
@@ -4782,13 +4810,13 @@ function verHistorialCliente() {
         $.each(data, function (i, item) {
           // ... tu lógica de filas ...
           let claseExtra = item.coincide ? "resaltado-carrito" : "";
-          let icono = item.coincide ?
-            '<i class="fas fa-star text-warning mr-1"></i> ' :
-            "";
+          let icono = item.coincide
+            ? '<i class="fas fa-star text-warning mr-1"></i> '
+            : "";
           let colorDesc =
-            item.descuento !== "-" ?
-              "text-danger font-weight-bold" :
-              "text-muted";
+            item.descuento !== "-"
+              ? "text-danger font-weight-bold"
+              : "text-muted";
           let estiloFila = i >= 8 ? 'style="display:none;"' : "";
 
           html += `<tr class="${claseExtra}" ${estiloFila}>
@@ -4907,8 +4935,8 @@ function cancelarmodalCelular() {
 }
 
 function abrirWhatsApp() {
-  let nombre_empresa = '';
-  let telefono_empresa = '';
+  let nombre_empresa = "";
+  let telefono_empresa = "";
   let telefono = document.getElementById("numeroCelular").value;
   let tipo_comprobante = document.getElementById("tipoComprobante").value;
   let num_comprobante = document.getElementById("numComprobante").value;
@@ -4942,7 +4970,7 @@ function abrirWhatsApp() {
     // Mostramos el SweetAlert con los detalles del comprobante
     Swal.fire({
       title: "Confirmar envío",
-      text: '¿Desea enviar el comprobante al número de WhatsApp proporcionado?',
+      text: "¿Desea enviar el comprobante al número de WhatsApp proporcionado?",
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Sí, enviar",
@@ -4988,19 +5016,20 @@ function abrirWhatsApp() {
 
 function EnviarComprobante(idventa) {
   $.post(
-    "controladores/venta.php?op=mostrar", {
-    idventa: idventa
-  },
+    "controladores/venta.php?op=mostrar",
+    {
+      idventa: idventa,
+    },
     function (data, status) {
       if (status === "success") {
         data = JSON.parse(data);
 
         // Si el cliente tiene teléfono, agrega el prefijo '51'
-        let telefono = data.telefono ?
-          data.telefono.startsWith("51") ?
-            data.telefono :
-            "51" + data.telefono :
-          "";
+        let telefono = data.telefono
+          ? data.telefono.startsWith("51")
+            ? data.telefono
+            : "51" + data.telefono
+          : "";
         let urlPdf =
           window.location.origin +
           "/reportes/documentos/" +
@@ -5032,20 +5061,22 @@ function EnviarComprobante(idventa) {
 }
 
 function encrypt_decrypt(action, string) {
-  if (action === 'encrypt') {
+  if (action === "encrypt") {
     // Encriptación simple pero efectiva para este caso
     const encoded = btoa(string);
-    return encoded.replace(/=/g, '').replace(/\//g, '_').replace(/\+/g, '-');
+    return encoded.replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
   }
   return string;
 }
 
 function verCronogramPago(idventa) {
-  const encryptedId = encrypt_decrypt('encrypt', idventa);
-  const url = 'public/docs_service/cronograma_pagos?idventa=' + encryptedId;
-  const win = window.open(url, '_blank');
+  const encryptedId = encrypt_decrypt("encrypt", idventa);
+  const url = "public/docs_service/cronograma_pagos?idventa=" + encryptedId;
+  const win = window.open(url, "_blank");
   if (!win) {
-    alert('Por favor habilita ventanas emergentes o descarga manualmente: ' + url);
+    alert(
+      "Por favor habilita ventanas emergentes o descarga manualmente: " + url,
+    );
     return;
   }
 }

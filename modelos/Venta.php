@@ -1463,7 +1463,7 @@ class Venta extends Helpers
                 SELECT 1
                 FROM detalle_venta dv
                 INNER JOIN producto_configuracion pc 
-                    ON pc.id = dv.idproducto
+                    ON pc.idproducto = dv.idproducto
                 WHERE dv.idventa = v.idventa
                 AND pc.idproducto = '$idproducto'
             )

@@ -129,7 +129,7 @@
 
             <div class="card">
 
-                <div class="card-header">
+                <div class="card-body">
 
                     <div class="row">
 
@@ -240,43 +240,55 @@
 
                         </div>
 
-                        <div class="col-md-3">
 
-                            <input type="text" class="form-control" id="filtroTexto"
-                                placeholder="Buscar cliente o código">
+
+                        <div class="col-md-6 d-flex align-items-center mt-2">
+                            <span class="mr-2">Mostrar</span>
+                            <select id="limit" class="form-control" style="width:100px" onchange="cambiarLimit()">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+
+                            <span class="ml-2">Registros</span>
 
                         </div>
+                        <div class="col-md-6 mt-2">
+                            <input type="text" id="search" class="form-control" placeholder="Buscar...">
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <div class="table-responsive">
+                                <table id="tblSolicitudes" class="table table-bordered table-striped">
 
+                                    <thead>
+
+                                        <tr>
+
+                                            <th>Código</th>
+                                            <th>Cliente</th>
+                                            <th>Score</th>
+                                            <th>Riesgo</th>
+                                            <th>Paso Actual</th>
+                                            <th>Días Etapa</th>
+                                            <th>Estado</th>
+                                            <th>Fecha Registro</th>
+                                            <th width="120">Acciones</th>
+
+                                        </tr>
+
+                                    </thead>
+
+                                    <tbody id="tbodyData"></tbody>
+
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-6"></div>
+                        <div class="col-md-6">
+                            <div id="pagination"></div>
+                        </div>
                     </div>
-
-                </div>
-
-                <div class="card-body">
-
-                    <table id="tblSolicitudes" class="table table-bordered table-striped">
-
-                        <thead>
-
-                            <tr>
-
-                                <th>Código</th>
-                                <th>Cliente</th>
-                                <th>Score</th>
-                                <th>Riesgo</th>
-                                <th>Paso Actual</th>
-                                <th>Días Etapa</th>
-                                <th>Estado</th>
-                                <th>Fecha Registro</th>
-                                <th width="120">Acciones</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody></tbody>
-
-                    </table>
-
                 </div>
 
             </div>

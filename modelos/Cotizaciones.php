@@ -237,27 +237,60 @@ class Cotizacion extends Helpers
     //listar registros
     public function listar($fecha_inicio, $fecha_fin, $idsucursal)
     {
+        $page = $_GET['page'] ?? 1;
+        $limit = $_GET['limit'] ?? 20;
+        $search = trim($_GET['search'] ?? '');
 
-        if ($idsucursal == "Todos" || $idsucursal == '') {
+        $paginator = (new DBQuery($this->pdo))
+            ->select('c.idcotizacion, date_format(c.fecha_h,"%d/%m/%y | %H:%i:%s %p") as fecha,c.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, c.tipo_comprobante,c.serie_comprobante,c.num_comprobante,c.total_venta,c.estado')
+            ->from('cotizacion c')
+            ->join('persona p', 'c.idcliente=p.idpersona')
+            ->join('personal u', 'c.idpersonal=u.idpersonal')
+            ->where('c.condicion', '=', '1')
+            ->where('c.idsucursal', '=', $idsucursal);
 
-            $sql = "SELECT c.idcotizacion,date_format(c.fecha_h,'%d/%m/%y | %H:%i:%s %p') as fecha,c.idcliente,p.nombre as cliente,u.idpersonal,u.nombre 
-		as personal, c.tipo_comprobante,c.serie_comprobante,c.num_comprobante,c.total_venta,c.estado FROM cotizacion c 
-		INNER JOIN persona p ON c.idcliente=p.idpersona INNER JOIN personal u ON c.idPersonal=u.idpersonal 
-		WHERE c.condicion = 1 AND DATE(c.fecha_hora)>='$fecha_inicio' AND DATE(c.fecha_hora)<='$fecha_fin'
-		ORDER BY c.idcotizacion DESC";
-
-        } else {
-
-            $sql = "SELECT c.idcotizacion,date_format(c.fecha_h,'%d/%m/%y | %H:%i:%s %p') as fecha,c.idcliente,p.nombre as cliente,u.idpersonal,u.nombre 
-		as personal, c.tipo_comprobante,c.serie_comprobante,c.num_comprobante,c.total_venta,c.estado FROM cotizacion c 
-		INNER JOIN persona p ON c.idcliente=p.idpersona INNER JOIN personal u ON c.idPersonal=u.idpersonal 
-		WHERE c.condicion = 1 AND DATE(c.fecha_hora)>='$fecha_inicio' AND DATE(c.fecha_hora)<='$fecha_fin' AND c.idsucursal = '$idsucursal'
-		ORDER BY c.idcotizacion DESC";
-
+        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $paginator->whereBetween(
+                'DATE(c.fecha_hora)',
+                $fecha_inicio,
+                $fecha_fin
+            );
         }
 
+        if ($search !== '') {
+            $paginator->search($search, [
+                'p.nombre',
+                'u.nombre',
+                'c.serie_comprobante',
+                'c.num_comprobante'
+            ]);
+        }
 
-        return ejecutarConsulta($sql);
+        $response = $paginator
+            ->orderBy('c.idcotizacion', 'DESC')
+            ->paginate($page, $limit);
+
+        return json_encode($response);
+
+        // if ($idsucursal == "Todos" || $idsucursal == '') {
+
+        //     $sql = " FROM cotizacion c 
+        // INNER JOIN  ON INNER JOIN  ON 
+        // WHERE c.condicion = 1 AND DATE(c.fecha_hora)>='$fecha_inicio' AND DATE(c.fecha_hora)<='$fecha_fin'
+        // ORDER BY c.idcotizacion DESC";
+
+        // } else {
+
+        //     $sql = "SELECT c.idcotizacion,date_format(c.fecha_h,'%d/%m/%y | %H:%i:%s %p') as fecha,c.idcliente,p.nombre as cliente,u.idpersonal,u.nombre 
+        // as personal, c.tipo_comprobante,c.serie_comprobante,c.num_comprobante,c.total_venta,c.estado FROM cotizacion c 
+        // INNER JOIN persona p ON c.idcliente=p.idpersona INNER JOIN personal u ON c.idPersonal=u.idpersonal 
+        // WHERE c.condicion = 1 AND DATE(c.fecha_hora)>='$fecha_inicio' AND DATE(c.fecha_hora)<='$fecha_fin' AND c.idsucursal = '$idsucursal'
+        // ORDER BY c.idcotizacion DESC";
+
+        // }
+
+
+        // return ejecutarConsulta($sql);
     }
 
     public function listar2($idsucursal, $is_aprobated = false)
@@ -297,8 +330,8 @@ class Cotizacion extends Helpers
     }
 
     public function ventadetalle($idcotizacion)
-{
-    $sql = "
+    {
+        $sql = "
     SELECT
         d.iddetalle_cotizacion,
 
@@ -348,8 +381,8 @@ class Cotizacion extends Helpers
     WHERE d.idcotizacion = '$idcotizacion'
     ";
 
-    return ejecutarConsulta($sql);
-}
+        return ejecutarConsulta($sql);
+    }
 
     /*public function ventadetalle($idcotizacion)
         {

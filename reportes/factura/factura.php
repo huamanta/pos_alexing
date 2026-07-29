@@ -292,10 +292,10 @@ if ($factura['tipo_comprobante'] == 'Nota de Venta') {
         <td width="32%">
             <div class="totales-box">
                 <table>
-                    <tr><td>Op. Gravada</td><td class="text-right"> <?= Helpers::get_currency_symbol($tl_sniva) ?></td></tr>
-                    <tr><td>Op. Exonerada</td><td class="text-right"> <?= Helpers::get_currency_symbol($exonerado) ?></td></tr>
-                    <tr><td>Descuento</td><td class="text-right"> <?= Helpers::get_currency_symbol($descuento) ?></td></tr>
-                    <tr><td>IGV (<?= $iva ?>%)</td><td class="text-right"> <?= Helpers::get_currency_symbol($igv) ?></td></tr>
+                    <tr><td>Op. Gravada</td><td class="text-right"> <?= $helpers->get_currency_symbol($tl_sniva) ?></td></tr>
+                    <tr><td>Op. Exonerada</td><td class="text-right"> <?= $helpers->get_currency_symbol($exonerado) ?></td></tr>
+                    <tr><td>Descuento</td><td class="text-right"> <?= $helpers->get_currency_symbol($descuento) ?></td></tr>
+                    <tr><td>IGV (<?= $iva ?>%)</td><td class="text-right"> <?= $helpers->get_currency_symbol($igv) ?></td></tr>
                     <tr class="total-final">
                         <td>TOTAL</td>
                         <td class="text-right">S/ <?= number_format($factura['total_venta'],2,'.','') ?></td>

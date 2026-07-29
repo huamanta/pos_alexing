@@ -195,9 +195,8 @@
             <div class="row">
                 <div class="col-12">
                     <div class="card">
-                        <div class="card-header" id="header">
+                        <div class="card-header">
                             <div class="row">
-
                                 <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Fecha Inicio:</label>
 
@@ -207,8 +206,7 @@
                                                 <i class="far fa-calendar-alt"></i>
                                             </span>
                                         </div>
-                                        <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio"
-                                            value="<?php echo date('Y-m-01'); ?>">
+                                        <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio" />
                                     </div>
                                 </div>
 
@@ -221,12 +219,11 @@
                                                 <i class="far fa-calendar-alt"></i>
                                             </span>
                                         </div>
-                                        <input type="date" class="form-control" name="fecha_fin" id="fecha_fin"
-                                            value="<?php echo date("Y-m-d"); ?>">
+                                        <input type="date" class="form-control" name="fecha_fin" id="fecha_fin" />
                                     </div>
                                 </div>
 
-                                <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
+                                <!--div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Almacén:</label>
 
                                     <div class="input-group">
@@ -238,7 +235,7 @@
                                             </select>
                                         </div>
                                     </div>
-                                </div>
+                                </div-->
 
                                 <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Estado:</label>
@@ -280,46 +277,75 @@
                                     </select>
                                 </div>
 
+                                <div class="col-md-3 d-flex align-items-center">
+                                    <span class="mr-2">Mostrar</span>
+                                    <select id="limit" class="form-control" style="width:100px">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                    <span class="ml-2">Registros</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex gap-3 flex-wrap align-items-center mt-4">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="badge bg-success d-inline-block"
+                                                style="width: 15px; height: 15px;"></span>
+                                            <small>Normal</small>
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="badge bg-warning d-inline-block"
+                                                style="width: 15px; height: 15px;"></span>
+                                            <small>1 - 30% Letras atrasadas</small>
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="badge bg-orange d-inline-block"
+                                                style="width: 15px; height: 15px;"></span>
+                                            <small>31 - 60% Letras atrasadas</small>
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-1">
+                                            <span class="badge bg-danger d-inline-block"
+                                                style="width: 15px; height: 15px;"></span>
+                                            <small>+60% Letras atrasadas</small>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <input type="text" id="search" class="form-control" placeholder="Buscar...">
+                                </div>
+                                <div class="col-md-12 mt-2">
+                                    <div class="table-responsive">
+                                        <table id="tbllistado" class="table table-striped table-hover">
+                                            <thead>
+                                                <th>Fecha</th>
+                                                <th>Estado pagos</th>
+                                                <th>N° Documento</th>
+                                                <th>Cliente</th>
+                                                <th>Vehiculo </th>
+                                                <th>N° Contrato</th>
+                                                <th>Venta referencia</th>
+                                                <th>Estado contrato</th>
+                                                <th>Forma de pago</th>
+                                                <th>Frecuencia</th>
+                                                <th>Monto</th>
+                                                <th width="180px;">Acciones</th>
+                                            </thead>
+                                            <tbody id="tbody_contratos">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mt-2"></div>
+                                <div class="col-md-6 mt-2">
+                                    <div id="pagination"></div>
+                                </div>
                             </div>
-
                         </div>
-                        <!-- /.card-header -->
-                        <div class="card-body" id="listadoregistros">
-                            <table id="tbllistado" class="table table-tailpanel dt-responsive">
-                                <thead>
-                                    <th>Fecha</th>
-                                    <th>Estado pagos</th>
-                                    <th>N° Documento</th>
-                                    <th>Cliente</th>
-                                    <th>Vehiculo </th>
-                                    <th>N° Contrato</th>
-                                    <th>Venta referencia</th>
-                                    <th>Estado contrato</th>
-                                    <th>Forma de pago</th>
-                                    <th>Frecuencia</th>
-                                    <th>Monto</th>
-                                    <th width="180px;">Acciones</th>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                                <tfoot>
-                                    <th>Fecha</th>
-                                    <th>Estado pagos</th>
-                                    <th>N° Documento</th>
-                                    <th>Cliente </th>
-                                    <th>Vehiculo </th>
-                                    <th>N° Contrato</th>
-                                    <th>Venta referencia</th>
-                                    <th>Estado contrato</th>
-                                    <th>Forma de pago</th>
-                                    <th>Frecuencia</th>
-                                    <th>Monto</th>
-                                    <th width="180px;">Acciones</th>
-                                </tfoot>
-                            </table>
-
-                        </div>
-
                     </div>
                     <!-- /.card -->
                 </div>
@@ -766,7 +792,8 @@
 
                                         <div class="box-info">
                                             <span class="label">Cuotas a pagar</span>
-                                            <input class="valor" type="text" id="cantidadSeleccionada" style="width: 80px; text-align: center;">
+                                            <input class="valor" type="text" id="cantidadSeleccionada"
+                                                style="width: 80px; text-align: center;">
                                         </div>
 
                                         <div class="box-info total">

@@ -331,7 +331,7 @@
               <input type="text" id="search" class="form-control" placeholder="Buscar...">
             </div>
             <!-- Tabla HTML -->
-            <div class="col-md-12">
+            <div class="col-md-12 mt-2">
               <div class="responsive">
                 <table id="tbllistado" class="table table-hover" style="width:100%">
                   <thead class="thead-light">

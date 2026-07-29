@@ -139,7 +139,7 @@ class SisCompra extends Helpers
             ]);
 
         } catch (Exception $e) {
-            $this->pdo->commit();
+            $this->pdo->rollBack();
             return json_encode([
                 'success' => false,
                 'message' => $e->getMessage()

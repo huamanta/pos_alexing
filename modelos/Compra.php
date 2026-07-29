@@ -11,6 +11,7 @@ class Compra extends Helpers
     {
         parent::__construct();
     }
+    
     public function insertar(
         $idsucursal,
         $idproveedor,

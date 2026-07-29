@@ -52,7 +52,7 @@
                 <div class="col-md-6">
                   <input type="text" id="search" class="form-control" placeholder="Buscar...">
                 </div>
-                <div class="col-md-12">
+                <div class="col-md-12 mt-2">
                   <table id="tbllistado" class="table table-striped">
                     <thead>
                       <th>Nombre</th>

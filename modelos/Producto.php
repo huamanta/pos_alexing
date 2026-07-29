@@ -693,17 +693,35 @@ class Producto extends Helpers
 
 	public function listar($idsucursal)
 	{
-		$sql = "SELECT a.idproducto,a.idcategoria,a.idunidad_medida,um.nombre as unidad,date_format(a.fecha,'%d/%m/%y') as fecha,c.nombre as categoria,r.nombre as rubro,a.registrosan,a.idmarca, a.idmodelo, a.codigo,a.nombre,a.stock, a.stock_minimo,a.precioB,a.precioC,a.precioD, a.numserie,a.descripcion,a.imagen,a.condicion 
-		FROM producto a 
-		INNER JOIN categoria c ON a.idcategoria=c.idcategoria 
-		INNER JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
-		INNER JOIN rubro r ON a.idrubro = r.idrubro
-		INNER JOIN condicionventa cv ON a.idcondicionventa = cv.idcondicionventa 
-		LEFT JOIN marca m ON a.idmarca = m.idmarca
-		LEFT JOIN modelo mo ON a.idmodelo = mo.idmodelo
-		WHERE c.nombre != 'SERVICIO' AND a.idsucursal='$idsucursal'
-		ORDER BY a.idproducto DESC";
-		return ejecutarConsulta($sql);
+		$page = $_GET['page'] ?? 1;
+		$limit = $_GET['limit'] ?? 20;
+		$search = $_GET['search'] ?? '';
+
+		$paginator = (new DBQuery($this->pdo))
+		->select('a.idproducto,a.idcategoria,a.idunidad_medida,um.nombre as unidad, date_format(a.fecha,"%d/%m/%y") as fecha,c.nombre as categoria,r.nombre as rubro,a.registrosan,a.idmarca, a.idmodelo, a.codigo,a.nombre,ip.stock, ip.stock_minimo,a.precioB,a.precioC,a.precioD, ps.numero_serie,a.descripcion,a.imagen,a.condicion')
+		->from('producto a')
+		->join('inventario_producto ip', 'ip.idproducto = a.idproducto')
+		->join('producto_serie ps', 'ps.idproducto = a.idproducto')
+		->join('categoria c', 'a.idcategoria=c.idcategoria ')
+		->join('unidad_medida um', 'a.idunidad_medida = um.idunidad_medida')
+		->join('rubro r', 'a.idrubro = r.idrubro')
+		->join('condicionventa cv', 'a.idcondicionventa = cv.idcondicionventa')
+		->leftJoin('marca m', 'a.idmarca = m.idmarca')
+		->leftJoin('modelo mo', 'a.idmodelo = mo.idmodelo')
+		->where('c.nombre', '<>', 'SERVICIO')
+		->where('a.idsucursal', '=', $idsucursal);
+
+		if ($search !== '') {
+			$paginator->search($search, [
+				'p.nombre'
+			]);
+		}
+
+		$response = $paginator
+			->orderBy('a.idproducto', 'DESC')
+			->paginate($page, $limit);
+
+		return json_encode($response);
 	}
 
 	public function listarcatalogo($idsucursal, $idcategoria = 0)
@@ -1412,7 +1430,6 @@ class Producto extends Helpers
 				'pg.idfifo_origen',
 				'pg.precio_promocion',
 				'pg.estado AS estado_config',
-
 				'ps.idserie',
 				'ps.numero_serie',
 				'ps.numero_motor',
@@ -1441,9 +1458,7 @@ class Producto extends Helpers
 			)
 			->leftJoin(
 				'producto_serie ps',
-				'ps.idproducto = p.idproducto
-            AND ps.idsucursal = p.idsucursal
-            AND ps.estado = "DISPONIBLE"'
+				'ps.idproducto = p.idproducto'
 			)
 			->where('p.condicion', '=', 1)
 			->where('p.idsucursal', '=', $idsucursal)

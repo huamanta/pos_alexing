@@ -4,241 +4,241 @@ date_default_timezone_set('America/Lima');
 ?>
 <!-- Content Wrapper. Contains page content -->
 <style type="text/css">
-/* ================== OPTIMIZACIONES Y ESTÉTICA ================== */
+    /* ================== OPTIMIZACIONES Y ESTÉTICA ================== */
 
-/* Encabezados fijos en tablas con scroll interno */
-#tbllistado thead th,
-#tblarticulos thead th,
-#tblarticulos2 thead th,
-#detalles thead th,
-#detallesm thead th {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: #007bff;
-    color: #fff;
-    text-align: center;
-}
-
-
-/* Hover en filas */
-#tbllistado tbody tr:hover,
-#tblarticulos tbody tr:hover,
-#tblarticulos2 tbody tr:hover,
-#detalles tbody tr:hover,
-#detallesm tbody tr:hover {
-    background-color: #f0f8ff;
-    cursor: pointer;
-    transition: background 0.3s ease;
-}
-
-/* Feedback visual de validación */
-input:valid,
-select:valid,
-textarea:valid {
-    border: 1px solid #28a745 !important;
-}
-
-input:invalid,
-select:invalid,
-textarea:invalid {
-    border: 1px solid #dc3545 !important;
-}
-
-/* Botones flotantes con animación pulsante */
-.btn-flotante,
-.btn-flotante2 {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(1)
+    /* Encabezados fijos en tablas con scroll interno */
+    #tbllistado thead th,
+    #tblarticulos thead th,
+    #tblarticulos2 thead th,
+    #detalles thead th,
+    #detallesm thead th {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #007bff;
+        color: #fff;
+        text-align: center;
     }
 
-    50% {
-        transform: scale(1.05)
+
+    /* Hover en filas */
+    #tbllistado tbody tr:hover,
+    #tblarticulos tbody tr:hover,
+    #tblarticulos2 tbody tr:hover,
+    #detalles tbody tr:hover,
+    #detallesm tbody tr:hover {
+        background-color: #f0f8ff;
+        cursor: pointer;
+        transition: background 0.3s ease;
     }
 
-    100% {
-        transform: scale(1)
-    }
-}
-
-.collapse-section {
-    position: absolute;
-    top: 90%;
-    left: 0;
-    width: 100%;
-    z-index: 1050;
-    border: rgba(0, 0, 0, .15) solid 1px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
-
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-
-    transition: all .25s ease;
-}
-
-.collapse-section.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .content-wrapper {
-        padding: 10px;
+    /* Feedback visual de validación */
+    input:valid,
+    select:valid,
+    textarea:valid {
+        border: 1px solid #28a745 !important;
     }
 
+    input:invalid,
+    select:invalid,
+    textarea:invalid {
+        border: 1px solid #dc3545 !important;
+    }
+
+    /* Botones flotantes con animación pulsante */
     .btn-flotante,
     .btn-flotante2 {
-        font-size: 12px;
-        padding: 10px 15px;
+        animation: pulse 2s infinite;
     }
 
-    table th,
-    table td {
-        font-size: 11px;
+    @keyframes pulse {
+        0% {
+            transform: scale(1)
+        }
+
+        50% {
+            transform: scale(1.05)
+        }
+
+        100% {
+            transform: scale(1)
+        }
     }
-}
 
-/* ================== TUS ESTILOS (ajustados) ================== */
-/* Establecer una altura máxima para la tabla */
-#detalles {
-    max-height: 300px;
-    overflow-y: auto;
-    display: block;
-    width: 100%;
-}
+    .collapse-section {
+        position: absolute;
+        top: 90%;
+        left: 0;
+        width: 100%;
+        z-index: 1050;
+        border: rgba(0, 0, 0, .15) solid 1px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
 
-.btn-flotante {
-    font-size: 16px;
-    text-transform: uppercase;
-    font-weight: bold;
-    color: #ffffff;
-    border-radius: 5px;
-    letter-spacing: 2px;
-    background-color: #008000;
-    padding: 18px 30px;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    transition: all 300ms ease 0ms;
-    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-    z-index: 99;
-}
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
 
-.btn-flotante:hover {
-    background-color: #2c2fa5;
-    box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
-    transform: translateY(-7px);
-}
+        transition: all .25s ease;
+    }
 
-@media only screen and (max-width: 600px) {
+    .collapse-section.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .content-wrapper {
+            padding: 10px;
+        }
+
+        .btn-flotante,
+        .btn-flotante2 {
+            font-size: 12px;
+            padding: 10px 15px;
+        }
+
+        table th,
+        table td {
+            font-size: 11px;
+        }
+    }
+
+    /* ================== TUS ESTILOS (ajustados) ================== */
+    /* Establecer una altura máxima para la tabla */
+    #detalles {
+        max-height: 300px;
+        overflow-y: auto;
+        display: block;
+        width: 100%;
+    }
+
     .btn-flotante {
-        font-size: 14px;
-        padding: 12px 20px;
+        font-size: 16px;
+        text-transform: uppercase;
+        font-weight: bold;
+        color: #ffffff;
+        border-radius: 5px;
+        letter-spacing: 2px;
+        background-color: #008000;
+        padding: 18px 30px;
+        position: fixed;
         bottom: 20px;
         right: 20px;
+        transition: all 300ms ease 0ms;
+        box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+        z-index: 99;
     }
-}
 
-.btn-flotante2 {
-    font-size: 16px;
-    text-transform: uppercase;
-    font-weight: bold;
-    color: #ffffff;
-    border-radius: 5px;
-    letter-spacing: 2px;
-    background-color: red;
-    padding: 18px 30px;
-    position: fixed;
-    bottom: 20px;
-    right: 325px;
-    transition: all 300ms ease 0ms;
-    box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-    z-index: 99;
-}
+    .btn-flotante:hover {
+        background-color: #2c2fa5;
+        box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
+        transform: translateY(-7px);
+    }
 
-.btn-flotante2:hover {
-    background-color: #2c2fa5;
-    box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
-    transform: translateY(-7px);
-}
+    @media only screen and (max-width: 600px) {
+        .btn-flotante {
+            font-size: 14px;
+            padding: 12px 20px;
+            bottom: 20px;
+            right: 20px;
+        }
+    }
 
-@media only screen and (max-width: 600px) {
     .btn-flotante2 {
-        font-size: 14px;
-        padding: 12px 20px;
+        font-size: 16px;
+        text-transform: uppercase;
+        font-weight: bold;
+        color: #ffffff;
+        border-radius: 5px;
+        letter-spacing: 2px;
+        background-color: red;
+        padding: 18px 30px;
+        position: fixed;
         bottom: 20px;
-        right: 290px;
+        right: 325px;
+        transition: all 300ms ease 0ms;
+        box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+        z-index: 99;
     }
-}
 
-.orange-cart {
-    color: orange;
-}
+    .btn-flotante2:hover {
+        background-color: #2c2fa5;
+        box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
+        transform: translateY(-7px);
+    }
 
-#datosgenerales2 {
-    display: none;
-    transition: display 0.3s ease;
-}
+    @media only screen and (max-width: 600px) {
+        .btn-flotante2 {
+            font-size: 14px;
+            padding: 12px 20px;
+            bottom: 20px;
+            right: 290px;
+        }
+    }
 
-/* Reducir tamaño de texto en tabla */
-#tblarticulos,
-#tblarticulos2 {
-    font-size: 12px;
-}
+    .orange-cart {
+        color: orange;
+    }
 
-#tblarticulos th,
-#tblarticulos td,
-#tblarticulos2 th,
-#tblarticulos2 td {
-    padding: 4px;
-    white-space: nowrap;
-    text-align: center;
-}
+    #datosgenerales2 {
+        display: none;
+        transition: display 0.3s ease;
+    }
 
-#detalles th,
-#detalles td {
-    padding: 4px;
-    white-space: nowrap;
-    text-align: center;
-}
+    /* Reducir tamaño de texto en tabla */
+    #tblarticulos,
+    #tblarticulos2 {
+        font-size: 12px;
+    }
 
-.img-thumbnail {
-    border-radius: 5px;
-}
+    #tblarticulos th,
+    #tblarticulos td,
+    #tblarticulos2 th,
+    #tblarticulos2 td {
+        padding: 4px;
+        white-space: nowrap;
+        text-align: center;
+    }
 
-.btn-xs {
-    padding: 2px 5px;
-    font-size: 10px;
-}
+    #detalles th,
+    #detalles td {
+        padding: 4px;
+        white-space: nowrap;
+        text-align: center;
+    }
 
-.table-responsive {
-    overflow-x: auto;
-    max-width: 100%;
-}
+    .img-thumbnail {
+        border-radius: 5px;
+    }
 
-/* Caja total destacada */
-.total-box {
-    padding: 10px 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
+    .btn-xs {
+        padding: 2px 5px;
+        font-size: 10px;
+    }
 
-.total-box span {
-    font-size: 28px;
-    font-weight: bold;
-}
+    .table-responsive {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    /* Caja total destacada */
+    .total-box {
+        padding: 10px 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .total-box span {
+        font-size: 28px;
+        font-weight: bold;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -282,8 +282,7 @@ textarea:invalid {
                                     <div class="input-group">
                                         <div class="input-group-prepend"><span class="input-group-text"><i
                                                     class="far fa-calendar-alt"></i></span></div>
-                                        <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio"
-                                            value="<?php echo date('Y-m-01'); ?>">
+                                        <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio" />
                                     </div>
                                 </div>
                                 <div class="form-group col-lg-4 col-md-4 col-sm-4 col-xs-12">
@@ -291,47 +290,51 @@ textarea:invalid {
                                     <div class="input-group">
                                         <div class="input-group-prepend"><span class="input-group-text"><i
                                                     class="far fa-calendar-alt"></i></span></div>
-                                        <input type="date" class="form-control" name="fecha_fin" id="fecha_fin"
-                                            value="<?php echo date('Y-m-d'); ?>">
+                                        <input type="date" class="form-control" name="fecha_fin" id="fecha_fin" />
                                     </div>
                                 </div>
-                                <div class="form-group col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                                    <label>Almacén:</label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend"><span class="input-group-text"><i
-                                                    class="fas fa-store-alt"></i></span></div>
-                                        <select id="idsucursal2" name="idsucursal2" class="form-control"></select>
+
+
+                                <div class="col-md-6 d-flex align-items-center">
+                                    <span class="mr-2">Mostrar</span>
+                                    <select id="limit" class="form-control" style="width:100px"
+                                        onchange="cambiarLimit()">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+
+                                    <span class="ml-2">Registros</span>
+
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" id="search" class="form-control" placeholder="Buscar...">
+                                </div>
+                                <div class="col-md-12 mt-2">
+                                    <div class="table-responcive">
+                                        <table id="tbllistado" class="table table-striped table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th>Fecha</th>
+                                                    <th>Proveedor</th>
+                                                    <th>Personal</th>
+                                                    <th>Tipo Documento</th>
+                                                    <th>Número</th>
+                                                    <th>Total</th>
+                                                    <th>Estado</th>
+                                                    <th style="width: 120px;">Acciones</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tbody_cotizaciones"></tbody>
+                                        </table>
                                     </div>
+                                </div>
+                                <div class="col-md-6 mt-2"></div>
+                                <div class="col-md-6 mt-2">
+                                    <div id="pagination"></div>
                                 </div>
                             </div>
-
-                            <table id="tbllistado" class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Proveedor</th>
-                                        <th>Personal</th>
-                                        <th>Tipo Documento</th>
-                                        <th>Número</th>
-                                        <th>Total</th>
-                                        <th>Estado</th>
-                                        <th style="width: 120px;">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th>Fecha</th>
-                                        <th>Proveedor</th>
-                                        <th>Personal</th>
-                                        <th>Tipo Documento</th>
-                                        <th>Número</th>
-                                        <th>Total</th>
-                                        <th>Estado</th>
-                                        <th style="width: 120px;">Acciones</th>
-                                    </tr>
-                                </tfoot>
-                            </table>
                         </div>
                         <!-- /.card-body listado -->
                     </div>
@@ -679,14 +682,14 @@ textarea:invalid {
                                                         <label style="font-size: 11px;">Interes %:</label>
                                                         <div class="input-group">
                                                             <?php if ($helpers->getUserPermissionAccion('Editar interes credito')): ?>
-                                                            <input style="border-color: #FFC7BB; text-align:center"
-                                                                type="text" class="form-control" id="inputInteres"
-                                                                name="inputInteres" value="0">
+                                                                <input style="border-color: #FFC7BB; text-align:center"
+                                                                    type="text" class="form-control" id="inputInteres"
+                                                                    name="inputInteres" value="0">
                                                             <?php endif; ?>
                                                             <?php if (!$helpers->getUserPermissionAccion('Editar interes credito')): ?>
-                                                            <input style="border-color: #FFC7BB; text-align:center"
-                                                                type="text" class="form-control" id="inputInteres"
-                                                                name="inputInteres" value="0" readonly>
+                                                                <input style="border-color: #FFC7BB; text-align:center"
+                                                                    type="text" class="form-control" id="inputInteres"
+                                                                    name="inputInteres" value="0" readonly>
                                                             <?php endif; ?>
                                                         </div>
 
@@ -711,22 +714,22 @@ textarea:invalid {
                                                         </thead>
 
                                                         <style>
-                                                        #datafechas {
-                                                            display: block;
-                                                            max-height: 300px;
-                                                            overflow-y: auto;
-                                                            width: 100%;
-                                                        }
+                                                            #datafechas {
+                                                                display: block;
+                                                                max-height: 300px;
+                                                                overflow-y: auto;
+                                                                width: 100%;
+                                                            }
 
-                                                        #datafechas tr {
-                                                            display: table;
-                                                            width: 100%;
-                                                            table-layout: fixed;
-                                                        }
+                                                            #datafechas tr {
+                                                                display: table;
+                                                                width: 100%;
+                                                                table-layout: fixed;
+                                                            }
 
-                                                        #datafechas td {
-                                                            width: 25%;
-                                                        }
+                                                            #datafechas td {
+                                                                width: 25%;
+                                                            }
                                                         </style>
 
                                                         <tbody id="datafechas">
@@ -744,7 +747,8 @@ textarea:invalid {
                                         </div>
 
                                         <div class="col-md-6">
-                                            <button type="button" class="btn-flotante" id="btnGuardar" onclick="guardaryeditar()">
+                                            <button type="button" class="btn-flotante" id="btnGuardar"
+                                                onclick="guardaryeditar()">
                                                 <i class="fas fa-shopping-cart"></i> Realizar Cotizacion
                                             </button>
                                             <button id="btnCancelar" class="btn-flotante2" onclick="cancelarform()"
@@ -788,9 +792,9 @@ textarea:invalid {
                                                                     <th>Op</th>
                                                                     <th>Codigo</th>
                                                                     <th>Nombre</th>
-                                                                    <th>Código</th>
                                                                     <th>Stock</th>
-                                                                    <th>P Venta</th>
+                                                                    <th>P. venta</th>
+                                                                    <th>Color</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody id="tbody_productos"></tbody>
@@ -849,130 +853,130 @@ textarea:invalid {
                 </button>
             </div>
             <style>
-            .modal-body {
-                background: #f2f3f3;
-            }
+                .modal-body {
+                    background: #f2f3f3;
+                }
 
-            .card-section {
-                background: #fff;
-                border-radius: 14px;
-                padding: 18px;
-                margin-bottom: 18px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-                border: 1px solid #e9ecef;
-            }
+                .card-section {
+                    background: #fff;
+                    border-radius: 14px;
+                    padding: 18px;
+                    margin-bottom: 18px;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+                    border: 1px solid #e9ecef;
+                }
 
-            .section-title {
-                font-size: 15px;
-                font-weight: 700;
-                color: #343a40;
-                margin-bottom: 15px;
-                border-left: 4px solid #007bff;
-                padding-left: 10px;
-            }
+                .section-title {
+                    font-size: 15px;
+                    font-weight: 700;
+                    color: #343a40;
+                    margin-bottom: 15px;
+                    border-left: 4px solid #007bff;
+                    padding-left: 10px;
+                }
 
-            .custom-label {
-                font-size: 12px;
-                font-weight: 600;
-                color: #6c757d;
-                margin-bottom: 5px;
-                display: block;
-            }
+                .custom-label {
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #6c757d;
+                    margin-bottom: 5px;
+                    display: block;
+                }
 
-            .form-control {
-                border-radius: 10px;
-                border: 1px solid #dcdfe3;
-                height: 42px;
-                background: #fdfdfd;
-                font-size: 14px;
-            }
+                .form-control {
+                    border-radius: 10px;
+                    border: 1px solid #dcdfe3;
+                    height: 42px;
+                    background: #fdfdfd;
+                    font-size: 14px;
+                }
 
-            .form-control:focus {
-                border-color: #007bff;
-                box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, .15);
-            }
+                .form-control:focus {
+                    border-color: #007bff;
+                    box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, .15);
+                }
 
-            .table-modern {
-                border-radius: 12px;
-                overflow: hidden;
-                background: #fff;
-            }
+                .table-modern {
+                    border-radius: 12px;
+                    overflow: hidden;
+                    background: #fff;
+                }
 
-            .table-modern thead {
-                background: linear-gradient(90deg, #007bff, #0056b3);
-                color: white;
-            }
+                .table-modern thead {
+                    background: linear-gradient(90deg, #007bff, #0056b3);
+                    color: white;
+                }
 
-            .table-modern th {
-                font-size: 13px;
-                font-weight: 600;
-                border: none;
-                padding: 14px;
-            }
+                .table-modern th {
+                    font-size: 13px;
+                    font-weight: 600;
+                    border: none;
+                    padding: 14px;
+                }
 
-            .table-modern td {
-                vertical-align: middle;
-                padding: 12px;
-                border-color: #f1f1f1;
-                font-size: 13px;
-            }
+                .table-modern td {
+                    vertical-align: middle;
+                    padding: 12px;
+                    border-color: #f1f1f1;
+                    font-size: 13px;
+                }
 
-            .table-modern tbody tr:hover {
-                background: #f8fbff;
-                transition: .2s;
-            }
+                .table-modern tbody tr:hover {
+                    background: #f8fbff;
+                    transition: .2s;
+                }
 
-            .info-box-credit {
-                background: linear-gradient(135deg, #ffffff, #f8f9fa);
-                border-radius: 12px;
-                padding: 15px;
-                text-align: center;
-                border: 1px solid #e9ecef;
-                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
-            }
+                .info-box-credit {
+                    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+                    border-radius: 12px;
+                    padding: 15px;
+                    text-align: center;
+                    border: 1px solid #e9ecef;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+                }
 
-            .info-box-credit h6 {
-                font-size: 12px;
-                color: #6c757d;
-                margin-bottom: 6px;
-                font-weight: 600;
-                text-transform: uppercase;
-            }
+                .info-box-credit h6 {
+                    font-size: 12px;
+                    color: #6c757d;
+                    margin-bottom: 6px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                }
 
-            .info-box-credit p {
-                margin: 0;
-                font-size: 18px;
-                font-weight: bold;
-                color: #212529;
-            }
+                .info-box-credit p {
+                    margin: 0;
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #212529;
+                }
 
-            #dataCuotasCredito {
-                display: block;
-                max-height: 280px;
-                overflow-y: auto;
-                width: 100%;
-            }
+                #dataCuotasCredito {
+                    display: block;
+                    max-height: 280px;
+                    overflow-y: auto;
+                    width: 100%;
+                }
 
-            #dataCuotasCredito tr {
-                display: table;
-                width: 100%;
-                table-layout: fixed;
-            }
+                #dataCuotasCredito tr {
+                    display: table;
+                    width: 100%;
+                    table-layout: fixed;
+                }
 
-            #dataCuotasCredito td {
-                width: 25%;
-            }
+                #dataCuotasCredito td {
+                    width: 25%;
+                }
 
-            .table-cuotas thead {
-                background: #343a40;
-                color: white;
-            }
+                .table-cuotas thead {
+                    background: #343a40;
+                    color: white;
+                }
 
-            .table-cuotas th,
-            .table-cuotas td {
-                padding: 12px;
-                font-size: 13px;
-            }
+                .table-cuotas th,
+                .table-cuotas td {
+                    padding: 12px;
+                    font-size: 13px;
+                }
             </style>
 
             <div class="modal-body">
@@ -1220,55 +1224,55 @@ textarea:invalid {
 </div>
 
 <style>
-.img-producto {
-    cursor: pointer;
-}
+    .img-producto {
+        cursor: pointer;
+    }
 </style>
 
 <script>
-document.addEventListener("click", cerrarCollapse);
+    document.addEventListener("click", cerrarCollapse);
 
-function toggleCollapse(e, btn) {
-    e.stopPropagation();
+    function toggleCollapse(e, btn) {
+        e.stopPropagation();
 
-    const panel = document.getElementById(btn.dataset.target);
-    panel.classList.toggle("show");
+        const panel = document.getElementById(btn.dataset.target);
+        panel.classList.toggle("show");
 
-    const icon = btn.querySelector("i");
-    icon.classList.toggle("fa-chevron-down");
-    icon.classList.toggle("fa-chevron-up");
-}
-
-function cerrarCollapse(e) {
-
-    // Si el click fue dentro de Select2 no cerrar
-    if (
-        e.target.closest(".select2-container") ||
-        e.target.closest(".select2-dropdown")
-    ) {
-        return;
+        const icon = btn.querySelector("i");
+        icon.classList.toggle("fa-chevron-down");
+        icon.classList.toggle("fa-chevron-up");
     }
 
+    function cerrarCollapse(e) {
 
-    document.querySelectorAll(".collapse.show").forEach(panel => {
-
-        const btn = document.querySelector(`[data-target="${panel.id}"]`);
-
-        if (panel.contains(e.target) || (btn && btn.contains(e.target))) {
+        // Si el click fue dentro de Select2 no cerrar
+        if (
+            e.target.closest(".select2-container") ||
+            e.target.closest(".select2-dropdown")
+        ) {
             return;
         }
 
-        panel.classList.remove("show");
 
-        if (btn) {
-            const icon = btn.querySelector("i");
-            icon.classList.remove("fa-chevron-up");
-            icon.classList.add("fa-chevron-down");
-        }
+        document.querySelectorAll(".collapse.show").forEach(panel => {
 
-    });
+            const btn = document.querySelector(`[data-target="${panel.id}"]`);
 
-}
+            if (panel.contains(e.target) || (btn && btn.contains(e.target))) {
+                return;
+            }
+
+            panel.classList.remove("show");
+
+            if (btn) {
+                const icon = btn.querySelector("i");
+                icon.classList.remove("fa-chevron-up");
+                icon.classList.add("fa-chevron-down");
+            }
+
+        });
+
+    }
 </script>
 
 <!-- Tu JS principal -->

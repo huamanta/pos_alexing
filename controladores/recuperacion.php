@@ -3,10 +3,9 @@ session_start();
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/venta/Recuperacion.php";
 $recuperacion = new Recuperacion();
-
+$idsucursal = $_SESSION['idsucursal'];
 switch ($_GET["op"]) {
     case 'listarCandidatos':
-        $idsucursal = $_SESSION['idsucursal'];
         $resp = $recuperacion->listarCandidatosRecuperacion($idsucursal);
         echo $resp;
         break;
@@ -27,21 +26,18 @@ switch ($_GET["op"]) {
         break;
 
     case 'listarRecuperaciones':
-        $idsucursal = $_SESSION['idsucursal'];
         $estado = $_GET['estado'] ?? null;
         $resp = $recuperacion->listarRecuperaciones($idsucursal, $estado);
         echo $resp;
         break;
 
     case 'verRecuperacion':
-        $idsucursal = $_SESSION['idsucursal'];
         $idrecuperacion = $_GET['idrecuperacion'];
         $resp = $recuperacion->verRecuperacion($idsucursal, $idrecuperacion);
         echo $resp;
         break;
 
     case 'listarCompromisos':
-        $idsucursal = $_SESSION['idsucursal'];
         $resp = $recuperacion->listarCompromisos($idsucursal);
         echo $resp;
         break;
@@ -65,7 +61,7 @@ switch ($_GET["op"]) {
         $idrecuperacion = $_POST["idrecuperacion"];
         $estado = $_POST["estado"];
         $observacion = $_POST["observacion"] ?? "";
-        echo $recuperacion->actualizarEstadoRecuperacion($idrecuperacion, $estado, $observacion);
+        echo $recuperacion->actualizarEstadoRecuperacion($idsucursal, $idrecuperacion, $estado, $observacion);
         break;
 
     case "guardarDocumento":

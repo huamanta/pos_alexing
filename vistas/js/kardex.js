@@ -1,46 +1,52 @@
 var tabla;
-
+let listarKardex = null;
 function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
 
   // Nav actual
-  $('#navKardex').addClass("treeview active active");
-
-  // Selects iniciales
-  $.post("controladores/venta.php?op=selectSucursal3", function (r) {
-    $("#idsucursal2").html(r);
-    $('#idsucursal2').select2({ width: '100%' });
-
-    // Cargar productos de la sucursal seleccionada
-    cargarProductos($('#idsucursal2').val());
-  });
-
-  $.post("controladores/venta.php?op=selectVendedor", function (r) {
-    $("#idvendedor").html(r);
-    $('#idvendedor').select2({ width: '100%' });
-  });
-
-  // Producto general (fallback)
-  $.post("controladores/venta.php?op=selectProducto", function (r) {
-    $("#idproducto").html(r);
-    $('#idproducto').select2({ width: '100%' });
-  });
-
-  // Eventos de filtros
-  $("#idsucursal2, #fecha_inicio, #fecha_fin, #idproducto").on("change", listar);
-
-  // Botón limpiar
-  $("#btnLimpiar").on("click", function () {
-    $("#fecha_inicio").val(getHoy());
-    $("#fecha_fin").val(getHoy());
-    $('#idsucursal2').val($('#idsucursal2 option:first').val()).trigger('change');
-    $('#idproducto').val($('#idproducto option:first').val()).trigger('change');
-    listar();
-  });
+  $("#navKardex").addClass("treeview active active");
 
   // Primera carga
-  listar();
+  listarKardex.load();
 }
+
+$("#fecha_inicio, #fecha_fin, #idproducto").change(function (e) {
+  listarKardex.load();
+});
+
+$("#idproducto").select2({
+  placeholder: "Buscar producto...",
+  allowClear: true,
+  minimumInputLength: 2,
+  ajax: {
+    url: "controladores/venta.php?op=selectProducto",
+    type: "POST",
+    dataType: "json",
+    delay: 250,
+    data: function (params) {
+      return {
+        search: params.term,
+        page: params.page || 1,
+        only_client: 1,
+      };
+    },
+    processResults: function (data, params) {
+      params.page = params.page || 1;
+      return {
+        results: data.data.map(function (item) {
+          return {
+            id: item.idproducto,
+            text: item.codigo + " - " + item.nombre,
+          };
+        }),
+        pagination: {
+          more: data.meta.current_page < data.meta.last_page,
+        },
+      };
+    },
+    cache: true,
+  },
+});
 
 function getHoy() {
   var d = new Date();
@@ -51,98 +57,75 @@ function getHoy() {
 
 function cargarProductos(idsucursal) {
   // Si es "Todos", mandar 'all' al backend (como lo manejabas)
-  if (idsucursal === 'Todos') idsucursal = 'all';
+  if (idsucursal === "Todos") idsucursal = "all";
 
-  $.post("controladores/venta.php?op=selectProducto", { idsucursal2: idsucursal }, function (r) {
-    $("#idproducto").html(r);
-    $('#idproducto').select2({ width: '100%' });
-  });
+  $.post(
+    "controladores/venta.php?op=selectProducto",
+    { idsucursal2: idsucursal },
+    function (r) {
+      $("#idproducto").html(r);
+      $("#idproducto").select2({ width: "100%" });
+    },
+  );
 }
 
-function listar() {
-  var fecha_inicio = $("#fecha_inicio").val();
-  var fecha_fin = $("#fecha_fin").val();
-  var idproducto = $("#idproducto").val();
-  var idvendedor = $("#idvendedor").val();
-  var idsucursal = $("#idsucursal2").val();
+listarKardex = new FluentPaginator({
+  url: "controladores/consultas.php?op=kardex",
+  tableBody: "#tbodyData",
+  renderTabla: pintarProductos,
+  extraParams: () => ({
+    fecha_inicio: $("#fecha_inicio").val(),
+    fecha_fin: $("#fecha_fin").val(),
+    idproducto: $("#idproducto").val() || "",
+  }),
+});
 
-  // Destruir instancia previa antes de crear
-  if ($.fn.DataTable.isDataTable('#tbllistado')) {
-    $('#tbllistado').DataTable().destroy();
+function pintarProductos(data, permissions) {
+  let html = "";
+
+  if (data.length === 0) {
+    html = `
+            <tr>
+                <td colspan="10" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+    $("#tbllistado tbody").html(html);
+    return;
   }
 
-  tabla = $('#tbllistado').DataTable({
-    aProcessing: true,
-    aServerSide: true,
-    processing: true,
-    language: {
-      processing: "<div class='p-3 text-center'><img style='width:80px;height:80px;' src='../files/plantilla/loading-page.gif' /><div class='mt-2'>Cargando...</div></div>",
-      url: "//cdn.datatables.net/plug-ins/1.10.25/i18n/Spanish.json"
-    },
-    responsive: true,
-    lengthChange: false,
-    autoWidth: false,
-    deferRender: true,
-    scrollX: true,
-    order: [[0, 'desc']],
-    dom:
-      '<"row mb-2"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4 text-center"B><"col-sm-12 col-md-4"f>>' +
-      't' +
-      '<"row mt-2"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-    lengthMenu: [
-      [5, 10, 25, 50, 100, -1],
-      ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
-    ],
-    buttons: [
-      'pageLength',
-      {
-        extend: 'excelHtml5',
-        text: "<i class='fas fa-file-excel'></i> Excel",
-        titleAttr: 'Exportar a Excel',
-        className: 'btn btn-sm btn-excel',
-        filename: function () {
-          return 'Kardex_' + (idproducto || 'todos') + '_' + fecha_inicio + '_a_' + fecha_fin;
-        }
-      },
-      {
-        extend: 'pdfHtml5',
-        text: "<i class='fas fa-file-pdf'></i> PDF",
-        titleAttr: 'Exportar a PDF',
-        className: 'btn btn-sm btn-pdf',
-        orientation: 'landscape',
-        pageSize: 'A4',
-        filename: function () {
-          return 'Kardex_' + (idproducto || 'todos') + '_' + fecha_inicio + '_a_' + fecha_fin;
-        },
-        exportOptions: { columns: ':visible' }
-      },
-      {
-        extend: 'colvis',
-        text: "<i class='fas fa-bars'></i> Columnas",
-        className: 'btn btn-sm btn-colvis'
-      }
-    ],
-    columnDefs: [
-      { targets: [5, 6, 7, 8, 9], className: 'text-right' }
-    ],
-    ajax: {
-      url: 'controladores/consultas.php?op=kardex',
-      data: {
-        fecha_inicio: fecha_inicio,
-        fecha_fin: fecha_fin,
-        idproducto: idproducto,
-        idvendedor: idvendedor,
-        idsucursal: idsucursal
-      },
-      type: "get",
-      dataType: "json",
-      error: function (e) {
-        console.log(e.responseText);
-      }
-    },
-    bDestroy: true,
-    iDisplayLength: 10
+  data.forEach((item) => {
+    let btnActivarDesactivar = permissions.desactivar
+      ? item.condicion === 1
+        ? `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>`
+        : `<button class="btn btn-info btn-xs" onclick="activar(${item.idproducto})"><i class="fas fa-check"></i></button>`
+      : "";
+
+    html += `
+            <tr>
+                <td>${item.fecha_kardex}</td>
+                <td style="text-align:left;">
+                    <strong>${item.nombre || ""}</strong><br>
+                </td>
+                <td>${item.motivo}</td>
+                <td>${item.tipo_movimiento == 1 ? '<span class="badge badge-neon neon-green">Entrada</span>' : '<span class="badge badge-neon neon-red">Salida</span>'}</td>
+                <td>
+                    ${item.cantidad || 0} Und.
+                </td>
+                <td>
+                    ${item.precio_unitario || "S/N"}
+                </td>
+                <td>${(item.cantidad / item.cantidad_contenedor) * item.precio_unitario}</td>
+                <td>${item.cantidad_contenedor == 1 ? item.stock_actual : item.stock_actual - item.stock_actual / item.cantidad_contenedor}</td>
+                <td>${(item.stock_actual / item.cantidad_contenedor) * item.precio_unitario}</td>
+
+            </tr>
+        `;
   });
+
+  $("#tbllistado tbody").html(html);
 }
 
 $(document).ready(init);

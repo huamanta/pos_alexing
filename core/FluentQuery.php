@@ -50,6 +50,16 @@ class DBQuery
         $this->pdo = $pdo;
     }
 
+    public function whereExists(string $sql): self
+    {
+        return $this->whereRaw("EXISTS ($sql)");
+    }
+
+    public function whereNotExists(string $sql): self
+    {
+        return $this->whereRaw("NOT EXISTS ($sql)");
+    }
+
     public function having(
         string $column,
         string $operator,

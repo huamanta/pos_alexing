@@ -494,56 +494,57 @@ switch ($_GET["op"]) {
 
 		$fecha_inicio = $_REQUEST["fecha_inicio"];
 		$fecha_fin = $_REQUEST["fecha_fin"];
-		$idsucursal = !empty($_REQUEST["idsucursal2"])? $_REQUEST["idsucursal2"] : ($_SESSION['idsucursal'] ?? "");
+		$idsucursal = $_SESSION['idsucursal'];
 		$rspta = $venta->listar($fecha_inicio, $fecha_fin, $idsucursal);
-		$data = array();
+		echo $rspta;
+		// $data = array();
 
-		while ($reg = $rspta->fetch_object()) {
-			$url1 = 'reportes/exTicketCoti.php?id=';
-			$url2 = 'reportes/factura/generaFacturaCoti.php?id=';
+		// while ($reg = $rspta->fetch_object()) {
+		// 	$url1 = 'reportes/exTicketCoti.php?id=';
+		// 	$url2 = 'reportes/factura/generaFacturaCoti.php?id=';
 
-			if ($reg->estado == 'EN ESPERA') {
+		// 	if ($reg->estado == 'EN ESPERA') {
 
-				$estado = '<span class="badge bg-yellow">EN ESPERA</span>';
-				$editar = '<button class="btn btn-success btn-xs" onclick="mostrarEditar(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="EDITAR COTIZACIÓN"><i class="fas fa-edit"></i></button> ';
-				$desistir = '<button class="btn btn-danger btn-xs" onclick="desistir(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="DESISTIR"><i class="fa fa-times"></i></button>';
+		// 		$estado = '<span class="badge bg-yellow">EN ESPERA</span>';
+		// 		$editar = '<button class="btn btn-success btn-xs" onclick="mostrarEditar(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="EDITAR COTIZACIÓN"><i class="fas fa-edit"></i></button> ';
+		// 		$desistir = '<button class="btn btn-danger btn-xs" onclick="desistir(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="DESISTIR"><i class="fa fa-times"></i></button>';
 
-			} else if ($reg->estado == 'VENDIDO') {
+		// 	} else if ($reg->estado == 'VENDIDO') {
 
-				$estado = '<span class="badge bg-green">VENDIDO</span>';
-				$editar = '';
-				$desistir = '';
+		// 		$estado = '<span class="badge bg-green">VENDIDO</span>';
+		// 		$editar = '';
+		// 		$desistir = '';
 
-			} else {
+		// 	} else {
 
-				$estado = '<span class="badge bg-red">DESISTIÓ</span>';
-				$editar = '';
-				$desistir = '';
+		// 		$estado = '<span class="badge bg-red">DESISTIÓ</span>';
+		// 		$editar = '';
+		// 		$desistir = '';
 
-			}
+		// 	}
 
-			$data[] = array(
-				"0" => $reg->fecha,
-				"1" => $reg->cliente,
-				"2" => $reg->personal,
-				"3" => $reg->tipo_comprobante,
-				"4" => $reg->serie_comprobante . '-' . $reg->num_comprobante,
-				"5" => $reg->total_venta,
-				"6" => $estado,
-				"7" => '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="VER"><i class="fa fa-eye"></i></button>' . ' ' .
-					$editar .
-					'<a target="_blank" href="' . $url2 . $reg->idcotizacion . '" data-toggle="tooltip" title="" target="blanck" data-original-title="PDF"> <button class="btn btn-info btn-xs"><i class="fa fa-file"></i></button></a>' .
-					'<a target="_blank" data-toggle="tooltip" title="" target="blanck" data-original-title="ENVIAR COMPROBANTE"> <button class="btn btn-success btn-xs" onclick="EnviarComprobante(' . $reg->idcotizacion . ')"><i class="fab fa-whatsapp"></i></button></a> ' .
-					$desistir
-			);
-		}
-		$results = array(
-			"sEcho" => 1, //info para datatables
-			"iTotalRecords" => count($data), //enviamos el total de registros al datatable
-			"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-			"aaData" => $data
-		);
-		echo json_encode($results);
+		// 	$data[] = array(
+		// 		"0" => $reg->fecha,
+		// 		"1" => $reg->cliente,
+		// 		"2" => $reg->personal,
+		// 		"3" => $reg->tipo_comprobante,
+		// 		"4" => $reg->serie_comprobante . '-' . $reg->num_comprobante,
+		// 		"5" => $reg->total_venta,
+		// 		"6" => $estado,
+		// 		"7" => '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="VER"><i class="fa fa-eye"></i></button>' . ' ' .
+		// 			$editar .
+		// 			'<a target="_blank" href="' . $url2 . $reg->idcotizacion . '" data-toggle="tooltip" title="" target="blanck" data-original-title="PDF"> <button class="btn btn-info btn-xs"><i class="fa fa-file"></i></button></a>' .
+		// 			'<a target="_blank" data-toggle="tooltip" title="" target="blanck" data-original-title="ENVIAR COMPROBANTE"> <button class="btn btn-success btn-xs" onclick="EnviarComprobante(' . $reg->idcotizacion . ')"><i class="fab fa-whatsapp"></i></button></a> ' .
+		// 			$desistir
+		// 	);
+		// }
+		// $results = array(
+		// 	"sEcho" => 1, //info para datatables
+		// 	"iTotalRecords" => count($data), //enviamos el total de registros al datatable
+		// 	"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
+		// 	"aaData" => $data
+		// );
+		// echo json_encode($results);
 		break;
 
 	case 'selectCliente':
@@ -584,7 +585,6 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarArticulos':
-		$fechaActual = date('Y-m-d');
 		$idsucursal = $_SESSION["idsucursal"];
 		require_once "../modelos/Producto.php";
 		$producto = new Producto();

@@ -715,7 +715,7 @@ class Recuperacion extends Helpers
                                 CASE
                                     WHEN estado_pago = 1
                                     AND fechavencimiento < CURDATE()
-                                    THEN DATEDIFF(CURDATE(), fechavencimiento) * ".$moraActiva['valor']."
+                                    THEN DATEDIFF(CURDATE(), fechavencimiento) * " . $moraActiva['valor'] . "
                                     ELSE 0
                                 END
                             ),
@@ -788,12 +788,13 @@ class Recuperacion extends Helpers
     }
 
     public function actualizarEstadoRecuperacion(
+        $idsucursal,
         $idrecuperacion,
         $estado,
         $observacion = null
     ) {
         try {
-
+            $this->pdo->beginTransaction();
             $estadosPermitidos = [
                 'PENDIENTE',
                 'CONTACTADO',
@@ -816,23 +817,120 @@ class Recuperacion extends Helpers
                 $data['observacion'] = $observacion;
             }
 
-            $ok = (new FluentSaver($this->pdo))
+            $updateRecuperacion = (new FluentSaver($this->pdo))
                 ->table('recuperacion_vehiculo')
                 ->primaryKey('idrecuperacion')
                 ->data($data)
                 ->update();
 
+            if (!$updateRecuperacion) {
+                throw new Exception("No se pudo actualizar la recuperacion de vehiculo.");
+            }
+
+            #Si es recuperado poner en mantenimiento vehiculo
+            if ($estado == 'RECUPERADO') {
+                $recuperacion = (new DBQuery($this->pdo))
+                    ->from('recuperacion_vehiculo')
+                    ->where('idrecuperacion', '=', $idrecuperacion)
+                    ->first();
+
+                $productos = (new DBQuery($this->pdo))
+                    ->from('detalle_venta')
+                    ->where('idventa', '=', $recuperacion['idventa'])
+                    ->get();
+
+                $this->actualizarStock($idsucursal, $productos);
+            }
+
+            $this->pdo->commit();
+
             return json_encode([
                 "success" => true,
-                "message" => "Estado actualizado correctamente."
+                "message" => "La recuperacion se actualizo correctamente."
             ]);
         } catch (Throwable $e) {
+            $this->pdo->rollBack();
             return json_encode([
                 'status' => false,
                 'message' => $e->getMessage()
             ]);
 
         }
+    }
+
+
+    private function actualizarStock(
+        $idsucursal,
+        array $productos
+    ) {
+        foreach ($productos as $producto) {
+            $inventario = (new DBQuery($this->pdo))
+                ->from("inventario_producto")
+                ->where(
+                    "idproducto",
+                    "=",
+                    $producto["idproducto"]
+                )
+                ->where(
+                    "idsucursal",
+                    "=",
+                    $idsucursal
+                )
+                ->first();
+
+
+            if (!$inventario) {
+                throw new Exception("No existe inventario para actualizar");
+            }
+
+
+            $nuevoStock = $inventario["stock"] + $producto["cantidad"];
+
+
+            (new FluentSaver($this->pdo))
+                ->table("inventario_producto")
+                ->where(
+                    "idinventario",
+                    "=",
+                    $inventario["idinventario"]
+                )
+                ->data([
+                    "stock" => $nuevoStock
+                ])
+                ->update();
+
+            $serie = (new DBQuery($this->pdo))
+                ->from("producto_serie")
+                ->where(
+                    "idproducto",
+                    "=",
+                    $producto["idproducto"]
+                )
+                ->where(
+                    "idsucursal",
+                    "=",
+                    $idsucursal
+                )
+                ->first();
+
+            if (!$serie) {
+                throw new Exception("No existe la serie para actualizar");
+            }
+
+            (new FluentSaver($this->pdo))
+                ->table("producto_serie")
+                ->where(
+                    "idserie",
+                    "=",
+                    $serie["idserie"]
+                )
+                ->data([
+                    "estado" => "MANTENIMIENTO"
+                ])
+                ->update();
+        }
+
+        return true;
     }
 
     public function guardarDocumento($post, $file)

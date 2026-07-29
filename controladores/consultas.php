@@ -1322,85 +1322,14 @@ switch ($_GET["op"]) {
 
 
 	case 'kardex':
+		$fecha_inicio = $_REQUEST["fecha_inicio"] ?? null;
+		$fecha_fin = $_REQUEST["fecha_fin"] ?? null;
+		$idproducto = $_REQUEST["idproducto"] ?? null;
+		$idvendedor = $_REQUEST["idvendedor"] ?? null;
+		$idsucursal = $_SESSION["idsucursal"] ?? null;
 
-		$fecha_inicio = $_REQUEST["fecha_inicio"];
-		$fecha_fin = $_REQUEST["fecha_fin"];
-		$idproducto = $_REQUEST["idproducto"];
-		$idvendedor = $_REQUEST["idvendedor"];
-		$idsucursal = $_REQUEST["idsucursal"];
-
-		if ($idproducto == NULL) {
-			$idproducto = "Todos";
-		}
-
-		if ($idvendedor == NULL) {
-			$idvendedor = "Todos";
-		}
-
-		if ($idsucursal != "Todos") {
-
-			if ($idsucursal == null AND $_SESSION['idsucursal'] == 0) {
-
-				$idsucursal = "Todos";
-
-			} else if ($idsucursal == null AND $_SESSION['idsucursal'] != 0) {
-
-				$idsucursal = $_SESSION['idsucursal'];
-
-			} else if ($idsucursal != null AND $_SESSION['idsucursal'] == 0) {
-
-				$idsucursal = $idsucursal;
-
-			} else {
-
-				$idsucursal = $_REQUEST["idsucursal"];
-
-			}
-
-		}
 		$rspta = $consulta->listarKardex($fecha_inicio, $fecha_fin, $idproducto, $idvendedor, $idsucursal);
-		//Vamos a declarar un array
-		$data = array();
-
-		$contador = 0;
-		$stockUltimo = 0;
-
-		while ($reg = $rspta->fetch_object()) {
-
-			/*if($reg->cantidad > 0 && $contador == 0){
-				$reg->stock = $reg->cantidad;
-				$stockInicial = $reg->stock;
-			}
-
-			if($reg->cantidad > 0 && $reg->salida == 0 && $contador > 0){
-				$reg->stock = $stockUltimo + $reg->cantidad;
-			}else if($reg->cantidad == 0 && $reg->salida > 0 && $contador > 0){
-				$reg->stock = $stockUltimo - $reg->salida;
-			}*/
-
-			$data[] = array(
-				"0" => $reg->fecha_kardex,
-				"1" => $consulta->verSucursal($reg->idsucursal),
-				"2" => $consulta->verProducto($reg->idproducto),
-				"3" => $reg->motivo,
-				"4" => $reg->tipo_movimiento == 1 ? '<span class="badge badge-neon neon-green">Entrada</span>' : '<span class="badge badge-neon neon-red">Salida</span>',
-				"5" => $reg->cantidad . ' Und.',
-				"6" => 'S/. ' . $reg->precio_unitario,
-				"7" => 'S/. ' . number_format(($reg->cantidad / $reg->cantidad_contenedor) * $reg->precio_unitario, 2, ".", ","),
-				"8" => $reg->cantidad_contenedor == 1 ? $reg->stock_actual : $reg->stock_actual . ' - ' . floor($reg->stock_actual / $reg->cantidad_contenedor),
-				"9" => 'S/. ' . number_format(($reg->stock_actual / $reg->cantidad_contenedor) * $reg->precio_unitario, 2, ".", ",")
-			);
-
-		}
-
-		$results = array(
-			"sEcho" => 1, //Información para el datatables
-			"iTotalRecords" => count($data), //enviamos el total registros al datatable
-			"iTotalDisplayRecords" => count($data), //enviamos el total registros a visualizar
-			"aaData" => $data
-		);
-		echo json_encode($results);
-
+		echo $rspta;
 		break;
 
 	case 'ventadetallecomprobante':
