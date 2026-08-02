@@ -129,111 +129,194 @@ class Traslado extends Helpers
         $motivo = ''
     ) {
 
-        // Obtener la serie original
+        // Buscar si el producto ya existe en el almacén destino
         $stmt = $this->pdo->prepare("
+            SELECT idproducto
+            FROM producto
+            WHERE codigo = :codigo
+            AND idsucursal = :idsucursal
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'codigo' => $rowProduct['codigo'],
+            'idsucursal' => $iddestino
+        ]);
+
+        $idproductoDestino = $stmt->fetchColumn();
+        // ============================================
+        // SI NO EXISTE EL PRODUCTO
+        // ============================================
+        if (!$idproductoDestino) {
+
+            // Obtener la serie original
+            $stmt = $this->pdo->prepare("
                 SELECT *
                 FROM producto_serie
                 WHERE idserie = :idserie
             ");
 
-        $stmt->execute([
-            'idserie' => $idserie
-        ]);
+            $stmt->execute([
+                'idserie' => $idserie
+            ]);
 
-        $serie = $stmt->fetch(PDO::FETCH_ASSOC);
+            $serie = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$serie) {
-            throw new Exception("No se encontró la serie.");
-        }
+            if (!$serie) {
+                throw new Exception("No se encontró la serie.");
+            }
 
-        // 1. Crear nuevo producto
-        $nuevoProducto = $rowProduct;
+            // Crear producto
+            $nuevoProducto = $rowProduct;
 
-        unset(
-            $nuevoProducto['idproducto'],
-            $nuevoProducto['created_at'],
-            $nuevoProducto['updated_at']
-        );
+            unset(
+                $nuevoProducto['idproducto'],
+                $nuevoProducto['created_at'],
+                $nuevoProducto['updated_at']
+            );
 
-        $nuevoProducto['idsucursal'] = $iddestino;
+            $nuevoProducto['idsucursal'] = $iddestino;
 
-        $idproductoDestino = (new FluentSaver($this->pdo))
-            ->table('producto')
-            ->data($nuevoProducto)
-            ->save();
+            $idproductoDestino = (new FluentSaver($this->pdo))
+                ->table('producto')
+                ->data($nuevoProducto)
+                ->save();
 
-        if (!$idproductoDestino) {
-            throw new Exception("No se pudo crear el producto destino.");
-        }
+            if (!$idproductoDestino) {
+                throw new Exception("No se pudo crear el producto destino.");
+            }
 
-        // 2. Inventario
-        // Obtener inventario del origen
-        $stmt = $this->pdo->prepare("
+            // Inventario origen
+            $stmt = $this->pdo->prepare("
                 SELECT *
                 FROM inventario_producto
                 WHERE idproducto = :idproducto
                 AND idsucursal = :idsucursal
             ");
 
-        $stmt->execute([
-            'idproducto' => $rowProduct['idproducto'],
-            'idsucursal' => $rowProduct['idsucursal']
-        ]);
+            $stmt->execute([
+                'idproducto' => $rowProduct['idproducto'],
+                'idsucursal' => $rowProduct['idsucursal']
+            ]);
 
-        $inventarioOrigen = $stmt->fetch(PDO::FETCH_ASSOC);
+            $inventarioOrigen = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if (!$inventarioOrigen) {
-            throw new Exception("No existe inventario del producto en el almacén origen.");
+            if (!$inventarioOrigen) {
+                throw new Exception("No existe inventario del producto origen.");
+            }
+
+            // Crear inventario
+            (new FluentSaver($this->pdo))
+                ->table('inventario_producto')
+                ->data([
+                    'idproducto' => $idproductoDestino,
+                    'idsucursal' => $iddestino,
+                    'stock' => $cantidad,
+                    'stock_minimo' => $inventarioOrigen['stock_minimo'],
+                    'stock_maximo' => $inventarioOrigen['stock_maximo'],
+                    'precio_compra' => $inventarioOrigen['precio_compra']
+                ])
+                ->save();
+
+            // Configuración
+            $config = $this->pdo->prepare("
+                SELECT *
+                FROM producto_configuracion
+                WHERE idproducto = :idproducto
+            ");
+
+            $config->execute([
+                'idproducto' => $rowProduct['idproducto']
+            ]);
+
+            $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
+
+            if (!$rowConfiguracion) {
+                throw new Exception("No existe configuración del producto.");
+            }
+
+            unset($rowConfiguracion['idproducto_configuracion']);
+
+            $rowConfiguracion['idproducto'] = $idproductoDestino;
+
+            $saveConfig = (new FluentSaver($this->pdo))
+                ->table('producto_configuracion')
+                ->data($rowConfiguracion)
+                ->save();
+
+            // Crear serie
+            unset($serie['idserie']);
+            $serie['idproducto'] = $idproductoDestino;
+            $serie['idsucursal'] = $iddestino;
+            $serie['estado'] = 'DISPONIBLE';
+
+            (new FluentSaver($this->pdo))
+                ->table('producto_serie')
+                ->data($serie)
+                ->save();
+
+            $stockActual = $cantidad;
+
+        } else {
+
+            // ============================================
+            // EL PRODUCTO YA EXISTE
+            // ============================================
+
+            $nuevoProducto = $rowProduct;
+
+            // Actualizar stock
+            $stmt = $this->pdo->prepare("
+                UPDATE inventario_producto
+                SET stock = stock + :cantidad
+                WHERE idproducto = :idproducto
+                AND idsucursal = :idsucursal
+            ");
+
+            $stmt->execute([
+                'cantidad' => $cantidad,
+                'idproducto' => $idproductoDestino,
+                'idsucursal' => $iddestino
+            ]);
+
+            // Obtener el stock actualizado
+            $stmt2 = $this->pdo->prepare("
+                SELECT stock
+                FROM inventario_producto
+                WHERE idproducto = :idproducto
+                AND idsucursal = :idsucursal
+            ");
+
+            $stmt2->execute([
+                'idproducto' => $idproductoDestino,
+                'idsucursal' => $iddestino
+            ]);
+
+            $stockActual = $stmt2->fetchColumn();
+
+            // Obtener configuración
+            $config = $this->pdo->prepare("
+                SELECT *
+                FROM producto_configuracion
+                WHERE idproducto = :idproducto
+            ");
+
+            $config->execute([
+                'idproducto' => $idproductoDestino
+            ]);
+
+            $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
+
+            if (!$rowConfiguracion) {
+                throw new Exception("No existe configuración del producto destino.");
+            }
+
+            $saveConfig = $rowConfiguracion['idproducto_configuracion'];
         }
 
-        (new FluentSaver($this->pdo))
-            ->table('inventario_producto')
-            ->data([
-                'idproducto' => $idproductoDestino,
-                'idsucursal' => $iddestino,
-                'stock' => $cantidad,
-                'stock_minimo' => $inventarioOrigen['stock_minimo'],
-                'stock_maximo' => $inventarioOrigen['stock_maximo'],
-                'precio_compra' => $inventarioOrigen['precio_compra']
-            ])
-            ->save();
-
-        // 3. Configuración
-        $config = $this->pdo->prepare("
-            SELECT *
-            FROM producto_configuracion
-            WHERE idproducto = :idproducto
-        ");
-
-        $config->execute([
-            'idproducto' => $rowProduct['idproducto']
-        ]);
-
-        $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
-
-        unset($rowConfiguracion['idproducto_configuracion']);
-
-        $rowConfiguracion['idproducto'] = $idproductoDestino;
-
-        $saveConfig = (new FluentSaver($this->pdo))
-            ->table('producto_configuracion')
-            ->data($rowConfiguracion)
-            ->save();
-
-        // 4. Serie
-        unset($serie['idserie']);
-        $serie['idproducto'] = $idproductoDestino;
-        $serie['idsucursal'] = $iddestino;
-        $serie['estado'] = 'DISPONIBLE';
-
-        (new FluentSaver($this->pdo))
-            ->table('producto_serie')
-            ->data($serie)
-            ->save();
-
-        // Actualizar kardex si es necesario
-        $ingreso = 1;
+        // Kardex
         if ($nuevoProducto['controla_stock'] === 'Si') {
+
             Helpers::updateKardexSucursal(
                 $iddestino,
                 $idproductoDestino,
@@ -241,12 +324,13 @@ class Traslado extends Helpers
                 $cantidad,
                 $cantidad * $rowConfiguracion['cantidad_contenedor'],
                 $nuevoProducto['precio'],
-                0,
-                $ingreso,
+                $stockActual,
+                1,
                 'Ingreso por transferencia',
                 $motivo
             );
         }
+
         return [
             'success' => true,
             'message' => ''
@@ -262,15 +346,17 @@ class Traslado extends Helpers
     ) {
 
         // 1. Cambiar estado de la serie
-        (new FluentSaver($this->pdo))
-            ->table('producto_serie')
-            ->primaryKey('idserie')
-            ->data([
-                'idserie' => $idserie,
-                'estado' => 'TRASLADO'
-            ])
-            ->update();
+        if ($rowProduct['tipo_producto'] == "Vehiculo") {
+            (new FluentSaver($this->pdo))
+                ->table('producto_serie')
+                ->primaryKey('idserie')
+                ->data([
+                    'idserie' => $idserie,
+                    'estado' => 'TRASLADO'
+                ])
+                ->update();
 
+        }
         // 2. Obtener inventario de la sucursal
         $sql = "SELECT *
             FROM inventario_producto
@@ -317,6 +403,7 @@ class Traslado extends Helpers
         $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
         $salida = 0;
         if ($rowProduct['controla_stock'] === 'Si') {
+            $nuevo_stock = $rowProduct['stock'] - $cantidad;
             Helpers::updateKardexSucursal(
                 $idsucursal,
                 $rowProduct['idproducto'],
@@ -324,7 +411,7 @@ class Traslado extends Helpers
                 $cantidad,
                 $cantidad * $rowConfiguracion['cantidad_contenedor'],
                 $rowProduct['precio'],
-                0,
+                $nuevo_stock,
                 $salida,
                 'Salida por transferencia',
                 $motivo
@@ -753,7 +840,7 @@ class Traslado extends Helpers
             }
             $idSolicitante = $rowSolicitud['idorigen'];
             $idProveedor = $rowSolicitud['iddestino'];
-            
+
             // actualizamos a procesada
             (new FluentSaver($this->pdo))
                 ->table('traslado')
@@ -777,7 +864,14 @@ class Traslado extends Helpers
                         'observacion' => $p["observacion"]
                     ])
                     ->update();
-                $sqlProduct = "SELECT * FROM producto WHERE idproducto=:idproducto AND idsucursal=:idsucursal";
+                $sqlProduct = "SELECT 
+                    p.*, 
+                    ip.stock
+                FROM producto p
+                INNER JOIN inventario_producto ip 
+                    ON ip.idproducto = p.idproducto
+                WHERE p.idproducto = :idproducto 
+                AND p.idsucursal = :idsucursal";
                 $stmtProduct = $this->pdo->prepare($sqlProduct);
                 $stmtProduct->execute([
                     'idproducto' => $p['idproducto'],

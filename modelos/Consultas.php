@@ -1561,7 +1561,8 @@ class Consultas extends Helpers
 			->select(['k.*, p.nombre'])
 			->from('kardex k')
 			->join('producto p', 'k.idproducto = p.idproducto')
-			->join('categoria c', 'p.idcategoria = c.idcategoria');
+			->join('categoria c', 'p.idcategoria = c.idcategoria')
+			->where('k.idsucursal', '=', $idsucursal);
 
 		if (!empty($fecha_inicio) && !empty($fecha_fin)) {
 			$paginator->whereBetween(
