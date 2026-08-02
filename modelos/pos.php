@@ -9,8 +9,10 @@ final class Pos extends Helpers
 {
     //Implementamos nuestro constructor
     public function __construct()
-    {
-    }
+	{
+		parent::__construct();
+	}
+
 
     public function listarVentas($idcaja, $idsucursal, $idusuario, $estado)
     {

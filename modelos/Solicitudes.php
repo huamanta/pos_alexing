@@ -96,7 +96,7 @@ class Solicitudes extends Persona
         }
     }
 
-    
+
     // public function listarSolicitudes(
     //     $idsucursal,
     //     $search = '',
@@ -350,7 +350,7 @@ class Solicitudes extends Persona
                                 '$ingreso_mensual',
                                 0,
                                 '$ingreso_mensual',
-                                'SI',
+                                '$inicial',
                                 '$score',
                                 '$observacion',
                                 NOW()
@@ -678,6 +678,7 @@ class Solicitudes extends Persona
             }
 
             // Registrar workflow
+            $date = date('Y-m-d H:i:s');
             if (
                 !$this->insertarWorkflow(
                     $idsolicitud,
@@ -685,7 +686,7 @@ class Solicitudes extends Persona
                     $observacion,
                     $idusuario,
                     'APROBADO',
-                    'NOW()'
+                    $date
                 )
             ) {
                 throw new Exception("No se pudo registrar el workflow de aprobación");
@@ -695,7 +696,7 @@ class Solicitudes extends Persona
             $fecha_aprobacion = date('Y-m-d H:i:s');
 
             $update_cotizacion = "UPDATE cotizacion
-                              SET fecha_aprobacion='$fecha_aprobacion'
+                              SET fecha_aprobacion='$fecha_aprobacion', estado='APROBADO'
                               WHERE idcotizacion='{$cotizacion['idcotizacion']}'";
 
             if (!ejecutarConsulta($update_cotizacion)) {

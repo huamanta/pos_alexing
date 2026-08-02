@@ -289,6 +289,41 @@ class FluentSaver
         return $stmt->execute();
     }
 
+    public function deleteWhere(): bool
+    {
+        if (empty($this->wheres)) {
+            throw new Exception("No se especificó ninguna condición para el DELETE.");
+        }
+
+        $sql = "DELETE FROM {$this->table}";
+
+        $params = [];
+        $conditions = [];
+
+        foreach ($this->wheres as $i => $where) {
+
+            $param = ":w{$i}";
+
+            $conditions[] = "{$where['column']} {$where['operator']} {$param}";
+
+            $params[$param] = $where['value'];
+        }
+
+        $sql .= " WHERE " . implode(" AND ", $conditions);
+
+        $stmt = $this->pdo->prepare($sql);
+
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(
+                $key,
+                $value,
+                is_int($value) ? PDO::PARAM_INT : PDO::PARAM_STR
+            );
+        }
+
+        return $stmt->execute();
+    }
+
     public function softDelete(
         mixed $id,
         string $column = 'deleted_at'

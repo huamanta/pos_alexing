@@ -201,6 +201,22 @@ $helpers = new Helpers();
                   </a>
                 </li>
               <?php endif; ?>
+              <?php if ($helpers->getUserPermisoModulo('Conceptos', 'Facturacion y cajas')): ?>
+                <li class="nav-item" style="font-size: 14px">
+                  <a href="conceptos" class="nav-link" id="navConceptos">
+                    <i class="fas fa-tags nav-icon text-orange" style="font-size: 14px"></i>
+                    <p>Conceptos</p>
+                  </a>
+                </li>
+              <?php endif; ?>
+              <?php if ($helpers->getUserPermisoModulo('Movimientos', 'Facturacion y cajas')): ?>
+                <li class="nav-item" style="font-size: 14px">
+                  <a href="movimientos" class="nav-link" id="navMovimientos">
+                    <i class="fas fa-exchange-alt nav-icon text-orange" style="font-size: 14px"></i>
+                    <p>Movimientos</p>
+                  </a>
+                </li>
+              <?php endif; ?>
 
               <?php if ($helpers->getUserPermisoModulo('Cajas', 'Facturacion y cajas')): ?>
                 <li class="nav-item" style="font-size: 14px">

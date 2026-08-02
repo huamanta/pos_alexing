@@ -214,6 +214,9 @@ if (isset($rutaActual)) {
           $_GET["ruta"] == "toma-inventario" ||
           $_GET["ruta"] == "ajuste-inventario" ||
           $_GET["ruta"] == "caja-chica" ||
+          $_GET["ruta"] == "caja-chica2" ||
+          $_GET["ruta"] == "conceptos" ||
+          $_GET["ruta"] == "movimientos" ||
           $_GET["ruta"] == "cuentas-cobrar" ||
           $_GET["ruta"] == "cuentasxpagar" ||
           $_GET["ruta"] == "proveedor" ||

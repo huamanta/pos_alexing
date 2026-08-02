@@ -315,7 +315,6 @@ switch ($_GET["op"]) {
 		$fecha_inicio = $_REQUEST['fecha_inicio'];
 		$fecha_fin = $_REQUEST['fecha_fin'];
 		$idsucursal = $_SESSION['idsucursal'];
-
 		echo $cuentascobrar->listaVentasPorCliente($idcliente, $idsucursal, $fecha_inicio, $fecha_fin);
 		break;
 

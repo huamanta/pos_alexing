@@ -393,8 +393,7 @@ function mostrar(idproducto) {
     { idproducto: idproducto },
     function (response, status) {
       const data = JSON.parse(response);
-      console.log(data);
-
+      
       // Abrir modal y llenar los campos
       $("#myModal").modal("show");
 
@@ -407,6 +406,7 @@ function mostrar(idproducto) {
       $("#registrosan").val(data.registrosan);
       $("#idmodelo").val(data.idmodelo).select2("");
       $("#idmarca").val(data.idmarca).select2("");
+      $("#tipo_producto").val(data.tipo_producto);
       $("#codigo").val(data.codigo);
       $("#nombre").val(data.nombre);
       $("#stock").val(data.stock);

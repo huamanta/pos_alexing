@@ -379,10 +379,10 @@ class CuentasCobrar extends Helpers
     private function actualizarEstadoVenta(
         int $idventa,
         int $idcpc,
-        float $deudaTotal
+        float $deuda
     ): void {
 
-        $estadoPago = $deudaTotal <= 0 ? 0 : 1;
+        $estadoPago = $deuda <= 0 ? 0 : 1;
 
         $actualizado = (new FluentSaver($this->pdo))
             ->table('cuentas_por_cobrar')
@@ -460,14 +460,16 @@ class CuentasCobrar extends Helpers
                 "venta v",
                 "cpc.idventa = v.idventa"
             )
-            ->whereBetween(
-                "cpc.fecharegistro",
-                $fecha_inicio . " 00:00:00",
-                $fecha_fin . " 23:59:59"
-            )
             ->where("cpc.condicion", "=", "1")
             ->where("v.idsucursal", "=", $idsucursal);
 
+        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $query->whereBetween(
+                'DATE(cpc.fecharegistro)',
+                $fecha_inicio,
+                $fecha_fin
+            );
+        }
 
         if (!empty($idcliente)) {
             $query->where(
@@ -1453,7 +1455,8 @@ class CuentasCobrar extends Helpers
         $sql = "SELECT
                 v.idventa,
                 DATE_FORMAT(v.fecha_hora, '%d/%m/%y | %H:%i:%s %p') AS fecha_venta,
-                v.tipo_comprobante,
+                v.idcomprobante_pago,
+                cp.nombre AS tipo_comprobante,
                 v.serie_comprobante,
                 v.num_comprobante,
                 v.total_venta,
@@ -1463,9 +1466,11 @@ class CuentasCobrar extends Helpers
                 v.totalrecibido,
                 v.totaldeposito
             FROM venta v
+            INNER JOIN comp_pago cp ON v.idcomprobante_pago = cp.idcomprobante_pago
             WHERE v.idcliente='$idcliente'
-              AND DATE(v.fecha_hora) BETWEEN '$fecha_inicio' AND '$fecha_fin'
+            --   AND DATE(v.fecha_hora) BETWEEN '$fecha_inicio' AND '$fecha_fin'
               AND v.idsucursal = '$idsucursal'
+            AND cp.condicion = 1
             ORDER BY v.idventa DESC";
 
         $result = ejecutarConsulta($sql);
@@ -1819,10 +1824,16 @@ class CuentasCobrar extends Helpers
 
     public function listaCreditos($idsucursal, $fecha_inicio, $fecha_fin, $idcliente = null)
     {
+
+        $page = $_GET['page'] ?? 1;
+        $limit = $_GET['limit'] ?? 20;
+        $search = trim($_GET['search'] ?? '');
+
         $query = (new DBQuery($this->pdo))
             ->select([
                 "cl.idpersona",
                 "cl.nombre AS cliente",
+                "cl.num_documento",
                 "COUNT(DISTINCT v.idventa) AS total_creditos",
                 "SUM(c.deudatotal) AS deuda_total",
                 "SUM(c.abonototal) AS total_pagado",
@@ -1840,11 +1851,6 @@ class CuentasCobrar extends Helpers
                 "cuentas_por_cobrar c",
                 "c.idventa = v.idventa"
             )
-            ->whereBetween(
-                "c.fecharegistro",
-                $fecha_inicio . " 00:00:00",
-                $fecha_fin . " 23:59:59"
-            )
             ->where(
                 "c.condicion",
                 "=",
@@ -1856,7 +1862,13 @@ class CuentasCobrar extends Helpers
                 $idsucursal
             );
 
-
+        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $query->whereBetween(
+                'DATE(c.fecharegistro)',
+                $fecha_inicio,
+                $fecha_fin
+            );
+        }
         if (!empty($idcliente)) {
             $query->where(
                 "cl.idpersona",
@@ -1865,9 +1877,16 @@ class CuentasCobrar extends Helpers
             );
         }
 
+        if ($search !== '') {
+            $query->search($search, [
+                'cl.nombre',
+                'cl.num_documento'
+            ]);
+        }
 
         $query->groupBy([
             "cl.idpersona",
+            "cl.num_documento",
             "cl.nombre",
             "cl.latitude",
             "cl.longitude",
@@ -1878,49 +1897,58 @@ class CuentasCobrar extends Helpers
                 "ASC"
             );
 
-
-        $result = $query->get();
-
-
-        $data = [];
-        $count = 1;
-
-
-        foreach ($result as $row) {
-
-            $nombreCliente = addslashes($row["cliente"]);
-
-            $data[] = [
-                "0" => $count++,
-                "1" => $row["cliente"],
-                "2" => $row["total_creditos"],
-                "3" => Helpers::get_currency_symbol($row["deuda_total"]),
-                "4" => Helpers::get_currency_symbol($row["total_pagado"]),
-                "5" => Helpers::get_currency_symbol($row["saldo_pendiente"]),
-                "6" => "
-                        <button class='btn btn-sm btn-success'
-                            onclick='verDetalleCliente({$row["idpersona"]}, " . json_encode($nombreCliente) . ")'>
-                            <i class='fas fa-eye'></i> Ver Detalle
-                        </button>
-                        <button class='btn btn-info btn-sm'
-                            onclick='verUbicacionCliente(
-                                " . json_encode($row["latitude"]) . ",
-                                " . json_encode($row["longitude"]) . ",
-                                " . json_encode($row["direccion"]) . "
-                            )'
-                            title='Ver ubicación del cliente'>
-                            <i class='fas fa-search-location'></i> Ubicación
-                        </button>
-                    "
-            ];
+        $response = $query
+            ->paginate($page, $limit);
+        $response['symbol'] = Helpers::get_symbol();
+        foreach ($response['data'] as &$item) {
+            $item['deuda_total_str'] = Helpers::get_currency_symbol($item['deuda_total']);
+            $item['total_pagado_str'] = Helpers::get_currency_symbol($item['total_pagado']);
+            $item['saldo_pendiente_str'] = Helpers::get_currency_symbol($item['saldo_pendiente']);
         }
+        unset($item);
 
-        return json_encode([
-            "sEcho" => 1,
-            "iTotalRecords" => count($data),
-            "iTotalDisplayRecords" => count($data),
-            "aaData" => $data
-        ]);
+        return json_encode($response);
+
+        // $result = $query->get();
+        // $data = [];
+        // $count = 1;
+
+
+        // foreach ($result as $row) {
+
+        //     $nombreCliente = addslashes($row["cliente"]);
+
+        //     $data[] = [
+        //         "0" => $count++,
+        //         "1" => $row["cliente"],
+        //         "2" => $row["total_creditos"],
+        //         "3" => Helpers::get_currency_symbol($row["deuda_total"]),
+        //         "4" => Helpers::get_currency_symbol($row["total_pagado"]),
+        //         "5" => Helpers::get_currency_symbol($row["saldo_pendiente"]),
+        //         "6" => "
+        // <button class='btn btn-sm btn-success'
+        //     onclick='verDetalleCliente({$row["idpersona"]}, " . json_encode($nombreCliente) . ")'>
+        //     <i class='fas fa-eye'></i> Ver Detalle
+        // </button>
+        // <button class='btn btn-info btn-sm'
+        //     onclick='verUbicacionCliente(
+        //         " . json_encode($row["latitude"]) . ",
+        //         " . json_encode($row["longitude"]) . ",
+        //         " . json_encode($row["direccion"]) . "
+        //     )'
+        //     title='Ver ubicación del cliente'>
+        //     <i class='fas fa-search-location'></i> Ubicación
+        // </button>
+        //             "
+        //     ];
+        // }
+
+        // return json_encode([
+        //     "sEcho" => 1,
+        //     "iTotalRecords" => count($data),
+        //     "iTotalDisplayRecords" => count($data),
+        //     "aaData" => $data
+        // ]);
     }
 
     public function amortizarDeudaVenta($idsucursal, $idventa, $formapago, $montopago, $idcaja, $idpersonal, $idusuario)
@@ -2748,7 +2776,7 @@ class CuentasCobrar extends Helpers
         WHERE cc.idventa = $idventa
           AND cp.deleted_at IS NULL
           AND cc.deleted_at IS NULL";
-          $rspta = ejecutarConsulta($sql);
+        $rspta = ejecutarConsulta($sql);
 
         $data = array();
 

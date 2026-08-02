@@ -2,6 +2,7 @@
 require_once __DIR__ . "/../configuraciones/bootstrap.php";
 require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
 date_default_timezone_set('America/Lima');
 
 class Contratos extends Helpers
@@ -26,7 +27,7 @@ class Contratos extends Helpers
                     v.formapago,
                     v.num_comprobante,
                     v.serie_comprobante,
-                    v.tipo_comprobante,
+                    v.idcomprobante_pago,
                     v.total_venta,
                     d.iddocumento,
                     v.idventa,
@@ -125,186 +126,186 @@ class Contratos extends Helpers
 
         unset($value);
 
-        return json_encode($response);
+        return Response::json($response);
 
     }
 
-    public function listar2($fecha_inicio, $fecha_fin, $idsucursal = '', $estado = '', $condicion = '', $frecuencia = '')
-    {
-        $query = "SELECT 
-                    c.idpersona,
-                    c.nombre,
-                    c.num_documento,
-                    c.direccion,
-                    v.formapago,
-                    v.num_comprobante,
-                    v.serie_comprobante,
-                    v.tipo_comprobante,
-                    v.total_venta,
-                    d.iddocumento,
-                    v.idventa,
-                    d.fecha_contrato,
-                    d.tipo,
-                    d.correlativo,
-                    d.estado,
-                    v.frecuencia,
-                    c.latitude,
-                    c.longitude
-                    FROM documentacion d 
-                    INNER JOIN venta v ON d.idventa = v.idventa 
-                    LEFT JOIN persona c ON v.idcliente = c.idpersona
-                    WHERE d.tipo = '1'";
+    // public function listar2($fecha_inicio, $fecha_fin, $idsucursal = '', $estado = '', $condicion = '', $frecuencia = '')
+    // {
+    //     $query = "SELECT 
+    //                 c.idpersona,
+    //                 c.nombre,
+    //                 c.num_documento,
+    //                 c.direccion,
+    //                 v.formapago,
+    //                 v.num_comprobante,
+    //                 v.serie_comprobante,
+    //                 v.tipo_comprobante,
+    //                 v.total_venta,
+    //                 d.iddocumento,
+    //                 v.idventa,
+    //                 d.fecha_contrato,
+    //                 d.tipo,
+    //                 d.correlativo,
+    //                 d.estado,
+    //                 v.frecuencia,
+    //                 c.latitude,
+    //                 c.longitude
+    //                 FROM documentacion d 
+    //                 INNER JOIN venta v ON d.idventa = v.idventa 
+    //                 LEFT JOIN persona c ON v.idcliente = c.idpersona
+    //                 WHERE d.tipo = '1'";
 
-        // Agregar filtros de fecha si se proporcionan
-        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
-            $query .= " AND DATE(d.fecha_contrato) BETWEEN '$fecha_inicio' AND '$fecha_fin'";
-        }
+    //     // Agregar filtros de fecha si se proporcionan
+    //     if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+    //         $query .= " AND DATE(d.fecha_contrato) BETWEEN '$fecha_inicio' AND '$fecha_fin'";
+    //     }
 
-        // Agregar filtro de estado (0 = Anulado, 1 = pendiente, 2 = finalizado )
-        if (!empty($estado)) {
-            $query .= " AND d.estado = '$estado'";
-        }
+    //     // Agregar filtro de estado (0 = Anulado, 1 = pendiente, 2 = finalizado )
+    //     if (!empty($estado)) {
+    //         $query .= " AND d.estado = '$estado'";
+    //     }
 
-        // Agregar filtro de sucursal
-        if (!empty($idsucursal)) {
-            $query .= " AND v.idsucursal = '$idsucursal'";
-        }
+    //     // Agregar filtro de sucursal
+    //     if (!empty($idsucursal)) {
+    //         $query .= " AND v.idsucursal = '$idsucursal'";
+    //     }
 
-        // Agregar filtro de condición (1 = normal, 2 = moroso)
-        if (!empty($condicion)) {
+    //     // Agregar filtro de condición (1 = normal, 2 = moroso)
+    //     if (!empty($condicion)) {
 
-            // MOROSOS 
-            if ($condicion == 2) {
-                $query .= " AND EXISTS (
-                    SELECT 1 
-                    FROM cuentas_por_cobrar cpc
-                    WHERE cpc.idventa = v.idventa
-                    AND cpc.abonototal < cpc.deudatotal
-                    AND cpc.fechavencimiento < CURDATE()
-                )";
-            }
+    //         // MOROSOS 
+    //         if ($condicion == 2) {
+    //             $query .= " AND EXISTS (
+    //                 SELECT 1 
+    //                 FROM cuentas_por_cobrar cpc
+    //                 WHERE cpc.idventa = v.idventa
+    //                 AND cpc.abonototal < cpc.deudatotal
+    //                 AND cpc.fechavencimiento < CURDATE()
+    //             )";
+    //         }
 
-            //NORMALES
-            if ($condicion == 1) {
-                $query .= " AND NOT EXISTS (
-                    SELECT 1 
-                    FROM cuentas_por_cobrar cpc
-                    WHERE cpc.idventa = v.idventa
-                    AND cpc.abonototal < cpc.deudatotal
-                    AND cpc.fechavencimiento < CURDATE()
-                )";
-            }
-        }
+    //         //NORMALES
+    //         if ($condicion == 1) {
+    //             $query .= " AND NOT EXISTS (
+    //                 SELECT 1 
+    //                 FROM cuentas_por_cobrar cpc
+    //                 WHERE cpc.idventa = v.idventa
+    //                 AND cpc.abonototal < cpc.deudatotal
+    //                 AND cpc.fechavencimiento < CURDATE()
+    //             )";
+    //         }
+    //     }
 
-        // Agregar filtro de frecuencia
-        if (!empty($frecuencia)) {
-            $query .= " AND v.frecuencia = '$frecuencia'";
-        }
+    //     // Agregar filtro de frecuencia
+    //     if (!empty($frecuencia)) {
+    //         $query .= " AND v.frecuencia = '$frecuencia'";
+    //     }
 
-        // Obtener total de registros sin paginación
-        $query_total = $query;
-        $total_result = ejecutarConsulta($query_total);
-        $total_records = mysqli_num_rows($total_result);
+    //     // Obtener total de registros sin paginación
+    //     $query_total = $query;
+    //     $total_result = ejecutarConsulta($query_total);
+    //     $total_records = mysqli_num_rows($total_result);
 
-        // Agregar paginación
-        $query .= " ORDER BY d.fecha_contrato DESC";
-        error_log($query);
-        $contratos = ejecutarConsulta($query);
-        $data = [];
-        foreach ($contratos as $key => $value) {
-            $verifiarRetencion = $this->buscarRetencion($value['idventa']);
-            $statusRetencion = $verifiarRetencion['estado'];
+    //     // Agregar paginación
+    //     $query .= " ORDER BY d.fecha_contrato DESC";
+    //     error_log($query);
+    //     $contratos = ejecutarConsulta($query);
+    //     $data = [];
+    //     foreach ($contratos as $key => $value) {
+    //         $verifiarRetencion = $this->buscarRetencion($value['idventa']);
+    //         $statusRetencion = $verifiarRetencion['estado'];
 
-            if ($value['estado'] == 0) {
-                $btnAnular = '';
-                $btnRetencion = '';
-                $btnAmortizar = '';
-                $status = '<span class="badge badge-danger">Anulado</span>';
-            } else if ($value['estado'] == 2) {
-                $btnAnular = '';
-                $btnRetencion = '';
-                $btnAmortizar = '';
-                $status = '<span class="badge badge-info">Finalizado</span>';
-            } else {
-                $btnAnular = '<button class="btn btn-danger btn-sm"
-                            onclick="eliminarContrato(' . (int) $value['idventa'] . ')"
-                            title="Eliminar contrato">
-                            <i class="fa fa-trash"></i>
-                        </button>';
-                if ($statusRetencion == true) {
-                    $btnRetencion = '<button class="btn btn-danger btn-sm" onclick="quitarRetencion(' . $value['idventa'] . ', ' . $verifiarRetencion['data']['idretencion'] . ')" title="Quitar retención">
-                                <i class="fa fa-unlock"></i>
-                            </button>';
-                    $btnAmortizar = '';
-                    $status = '<span class="badge badge-warning">Retenido</span>';
-                } else {
-                    $cuenta_cobrar = $this->cuentasCobrar($value['idpersona'], $value['idventa']);
-                    $doc = $cuenta_cobrar['tipo_comprobante'] . '-' . $cuenta_cobrar['serie_comprobante'] . '-' . $cuenta_cobrar['num_comprobante'];
-                    $saldo = round(floatval($cuenta_cobrar['saldo_pendiente']), 2);
-                    $btnRetencion = '<button class="btn btn-primary btn-sm" onclick="retenerContrato(' . $value['idventa'] . ')" title="Retener">
-                                <i class="fa fa-lock"></i>
-                            </button>';
-                    $btnAmortizar = '<button class="btn btn-warning btn-sm"
-                            onclick=\'verCuotasCredito(' . $cuenta_cobrar['idventa'] . ',
-                            ' . json_encode($saldo) . ',
-                            ' . json_encode($doc) . ',
-                            ' . json_encode($cuenta_cobrar['nota']) . '
-                            )\'
-                            title="Amortizar contrato">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                        </button>';
+    //         if ($value['estado'] == 0) {
+    //             $btnAnular = '';
+    //             $btnRetencion = '';
+    //             $btnAmortizar = '';
+    //             $status = '<span class="badge badge-danger">Anulado</span>';
+    //         } else if ($value['estado'] == 2) {
+    //             $btnAnular = '';
+    //             $btnRetencion = '';
+    //             $btnAmortizar = '';
+    //             $status = '<span class="badge badge-info">Finalizado</span>';
+    //         } else {
+    //             $btnAnular = '<button class="btn btn-danger btn-sm"
+    //                         onclick="eliminarContrato(' . (int) $value['idventa'] . ')"
+    //                         title="Eliminar contrato">
+    //                         <i class="fa fa-trash"></i>
+    //                     </button>';
+    //             if ($statusRetencion == true) {
+    //                 $btnRetencion = '<button class="btn btn-danger btn-sm" onclick="quitarRetencion(' . $value['idventa'] . ', ' . $verifiarRetencion['data']['idretencion'] . ')" title="Quitar retención">
+    //                             <i class="fa fa-unlock"></i>
+    //                         </button>';
+    //                 $btnAmortizar = '';
+    //                 $status = '<span class="badge badge-warning">Retenido</span>';
+    //             } else {
+    //                 $cuenta_cobrar = $this->cuentasCobrar($value['idpersona'], $value['idventa']);
+    //                 $doc = $cuenta_cobrar['tipo_comprobante'] . '-' . $cuenta_cobrar['serie_comprobante'] . '-' . $cuenta_cobrar['num_comprobante'];
+    //                 $saldo = round(floatval($cuenta_cobrar['saldo_pendiente']), 2);
+    //                 $btnRetencion = '<button class="btn btn-primary btn-sm" onclick="retenerContrato(' . $value['idventa'] . ')" title="Retener">
+    //                             <i class="fa fa-lock"></i>
+    //                         </button>';
+    //                 $btnAmortizar = '<button class="btn btn-warning btn-sm"
+    //                         onclick=\'verCuotasCredito(' . $cuenta_cobrar['idventa'] . ',
+    //                         ' . json_encode($saldo) . ',
+    //                         ' . json_encode($doc) . ',
+    //                         ' . json_encode($cuenta_cobrar['nota']) . '
+    //                         )\'
+    //                         title="Amortizar contrato">
+    //                         <i class="fas fa-file-invoice-dollar"></i>
+    //                     </button>';
 
-                    $status = '<span class="badge badge-success">Vigente</span>';
-                }
-            }
+    //                 $status = '<span class="badge badge-success">Vigente</span>';
+    //             }
+    //         }
 
-            $data[] = [
-                "0" => $value['fecha_contrato'],
-                "1" => $this->estadoCuotas($value['idventa']),
-                "2" => $value['num_documento'],
-                "3" => $value['nombre'],
-                "4" => $this->verVehiculoVendido($value['idventa']),
-                "5" => $this->tiposDocumentacion($value['tipo']) . ($value['tipo'] == 1 ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT) : ''),
-                '6' => $value['serie_comprobante'] . '-' . $value['num_comprobante'],
-                "7" => $status,
-                "8" => $value['formapago'],
-                '9' => $this->getDataFrecuencia($value['frecuencia'])->texto,
-                "10" => number_format($value['total_venta'], 2, '.', ','),
-                "11" => '
-                        <button class="btn btn-success btn-sm"
-                            onclick=\'verContrato(
-                                ' . (int) $value['idventa'] . ',
-                                ' . (int) $value['idpersona'] . ',
-                                ' . json_encode($value['nombre']) . '
-                            )\'
-                            title="Ver documentación del contrato">
-                            <i class="fa fa-copy"></i>
-                        </button>
+    //         $data[] = [
+    //             "0" => $value['fecha_contrato'],
+    //             "1" => $this->estadoCuotas($value['idventa']),
+    //             "2" => $value['num_documento'],
+    //             "3" => $value['nombre'],
+    //             "4" => $this->verVehiculoVendido($value['idventa']),
+    //             "5" => $this->tiposDocumentacion($value['tipo']) . ($value['tipo'] == 1 ? str_pad($value['correlativo'], 9, '0', STR_PAD_LEFT) : ''),
+    //             '6' => $value['serie_comprobante'] . '-' . $value['num_comprobante'],
+    //             "7" => $status,
+    //             "8" => $value['formapago'],
+    //             '9' => $this->getDataFrecuencia($value['frecuencia'])->texto,
+    //             "10" => number_format($value['total_venta'], 2, '.', ','),
+    //             "11" => '
+    //                     <button class="btn btn-success btn-sm"
+    //                         onclick=\'verContrato(
+    //                             ' . (int) $value['idventa'] . ',
+    //                             ' . (int) $value['idpersona'] . ',
+    //                             ' . json_encode($value['nombre']) . '
+    //                         )\'
+    //                         title="Ver documentación del contrato">
+    //                         <i class="fa fa-copy"></i>
+    //                     </button>
 
-                        ' . $btnRetencion . '
+    //                     ' . $btnRetencion . '
 
-                        <button class="btn btn-info btn-sm"
-                            onclick=\'verUbicacionCliente(
-                                ' . json_encode($value['latitude']) . ',
-                                ' . json_encode($value['longitude']) . ',
-                                ' . json_encode($value['direccion']) . '
-                            )\'
-                            title="Ver ubicación del cliente">
-                            <i class="fas fa-search-location"></i>
-                        </button>
+    //                     <button class="btn btn-info btn-sm"
+    //                         onclick=\'verUbicacionCliente(
+    //                             ' . json_encode($value['latitude']) . ',
+    //                             ' . json_encode($value['longitude']) . ',
+    //                             ' . json_encode($value['direccion']) . '
+    //                         )\'
+    //                         title="Ver ubicación del cliente">
+    //                         <i class="fas fa-search-location"></i>
+    //                     </button>
 
-                        ' . $btnAmortizar . ' ' . $btnAnular,
-            ];
-        }
+    //                     ' . $btnAmortizar . ' ' . $btnAnular,
+    //         ];
+    //     }
 
-        $results = [
-            "sEcho" => intval($_GET['sEcho'] ?? 1),
-            "iTotalRecords" => $total_records,
-            "iTotalDisplayRecords" => $total_records,
-            "aaData" => $data
-        ];
-        return json_encode($results);
-    }
+    //     $results = [
+    //         "sEcho" => intval($_GET['sEcho'] ?? 1),
+    //         "iTotalRecords" => $total_records,
+    //         "iTotalDisplayRecords" => $total_records,
+    //         "aaData" => $data
+    //     ];
+    //     return json_encode($results);
+    // }
 
 
     public function cuentasCobrar($idcliente, $idventa)
@@ -312,7 +313,7 @@ class Contratos extends Helpers
         $sql = "SELECT
                     v.idventa,
                     DATE_FORMAT(v.fecha_hora, '%d/%m/%y | %H:%i:%s %p') AS fecha_venta,
-                    v.tipo_comprobante,
+                    v.idcomprobante_pago,
                     v.serie_comprobante,
                     v.num_comprobante,
                     v.total_venta,
@@ -323,7 +324,7 @@ class Contratos extends Helpers
                 INNER JOIN cuentas_por_cobrar cc ON cc.idventa = v.idventa
                 WHERE v.idcliente = '$idcliente'
                   AND v.idventa = '$idventa'
-                GROUP BY v.idventa, v.fecha_hora, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta
+                GROUP BY v.idventa, v.fecha_hora, v.idcomprobante_pago, v.serie_comprobante, v.num_comprobante, v.total_venta
                 ORDER BY v.idventa DESC LIMIT 1";
 
         $data = ejecutarConsultaSimpleFila($sql);

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../configuraciones/ConexionPdo.php';
+require_once __DIR__ . '/config/Constants.php';
 class Helpers
 {
     public PDO $pdo;
@@ -13,7 +14,7 @@ class Helpers
     {
         return !empty($idcliente)
             ? (int) $idcliente
-            : 1;
+            : Constants::CLIENTE_DEFAULT;
     }
 
     public function get_currency_code($idsucursal)
@@ -56,8 +57,27 @@ class Helpers
     }
 
 
-    public static function get_symbol($currency = 'PEN', $locale = "es_PE")
+    public function get_impuesto_empresa($idsucursal){
+        $data = (new DBQuery($this->pdo))
+        ->select('e.nombre_impuesto, e.monto_impuesto')
+        ->from('empresas e')
+        ->join('sucursal s', "s.idempresa = e.idempresa")
+        ->where('s.idsucursal', '=', $idsucursal)
+        ->first();
+        return [
+            'impuesto' => $data['nombre_impuesto'],
+            'valor' => $data['monto_impuesto']
+        ];
+    }
+
+
+    public function get_symbol($currency = null, $locale = "es_PE")
     {
+         if (!$currency) {
+            $sucursal = $_SESSION['idsucursal'];
+            $currency = self::get_currency_code($sucursal);
+        }
+
         if (!class_exists('NumberFormatter')) {
             return $currency;
         }
@@ -474,5 +494,49 @@ class Helpers
             ->join('empresas e', 's.idempresa = e.idempresa')
             ->where('idsucursal', '=', $idsucursal)
             ->first();
+    }
+
+    public function getEmpresa($idsucursal): int
+    {
+        $empresa = (new DBQuery($this->pdo))
+            ->select("idempresa")
+            ->from("sucursal")
+            ->where("idsucursal", "=", $idsucursal)
+            ->first();
+
+        return (int) ($empresa['idempresa'] ?? 0);
+    }
+
+    public function obtenerComprobanteSucursal(int $idtipo_comprobante, int $idsucursal): array
+    {
+        $comprobante = (new DBQuery($this->pdo))
+            ->select("idcomprobante_pago, serie_comprobante, num_comprobante")
+            ->from("comp_pago")
+            ->where("idcomprobante_pago", "=", (int) $idtipo_comprobante)
+            ->where("idempresa", "=", $this->getEmpresa($idsucursal))
+            ->first() ?? [];
+
+        if ($comprobante) {
+            $numero = (int) $comprobante['num_comprobante'] + 1;
+            if ($numero > 99999) {
+                $numero = 1;
+            }
+
+            $comprobante['num_comprobante'] = str_pad($numero, 6, '0', STR_PAD_LEFT);
+        }
+
+        return $comprobante;
+    }
+
+    public function actualizarCorrelativo(int $idtipo_comprobante, int $idsucursal, int $numero): void
+    {
+        (new FluentSaver($this->pdo))
+            ->table("comp_pago")
+            ->where("idcomprobante_pago", "=", (int) $idtipo_comprobante)
+            ->where("idempresa", "=", $this->getEmpresa($idsucursal))
+            ->data([
+                "num_comprobante" => $numero
+            ])
+            ->update();
     }
 }

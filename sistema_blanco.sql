@@ -1853,7 +1853,7 @@ CREATE TABLE `recuperacion_vehiculo` (
   `idventa` int(11) NOT NULL,
   `idpersona` int(11) NOT NULL,
   `idserie` int(11) DEFAULT NULL,
-  `fecha_registro` date DEFAULT curdate(),
+  `fecha_registro` date,
   `dias_mora` int(11) DEFAULT NULL,
   `deuda_vencida` decimal(10,2) DEFAULT NULL,
   `nivel_riesgo` enum('BAJO','MEDIO','ALTO','CRITICO') DEFAULT NULL,

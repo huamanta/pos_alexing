@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Cajachica.php";
+
 date_default_timezone_set('America/Lima');
 // Iniciar la sesión solo si aún no está iniciada
 if (session_status() === PHP_SESSION_NONE) {
@@ -27,25 +28,24 @@ $idsucursal2 = isset($_POST["idsucursal2"]) ? limpiarCadena($_POST["idsucursal2"
 
 switch ($_GET["op"]) {
 
-	case "resumenBancosCuentasCobrar":
+	case "resumenBancos":
 		$idsucursal = $_SESSION['idsucursal'];
-		$rspta = $cajachica->resumenBancosCuentasCobrar($idsucursal);
-		echo $rspta;
+		$cajachica->resumenBancos($idsucursal);
 		break;
 
-	case "resumenBancosVentas":
+
+	case "resumenComprobantes":
 		$idsucursal = $_SESSION['idsucursal'];
-		$rspta = $cajachica->resumenBancosVentas($idsucursal);
-		echo $rspta;
+		$cajachica->resumenComprobantes($idsucursal);
 		break;
 
 	case 'guardaryeditar':
+		$idusuario = $_SESSION['idusuario'];
+		$idsucursal = $_SESSION['idsucursal'];
 		if (empty($idmovimiento)) {
-			$rspta = $cajachica->insertar($opcionEI, $idcaja, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento);
-			echo $rspta ? "Movimiento registrada" : "Movimiento no se pudo registrar";
+			$cajachica->insertar($opcionEI, $idcaja, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario);
 		} else {
-			$rspta = $cajachica->editar($idmovimiento, $opcionEI, $idcaja, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento);
-			echo $rspta ? "Movimiento actualizado" : "Movimiento no se pudo actualizar";
+			$cajachica->editar($idmovimiento, $opcionEI, $idcaja, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario);
 		}
 
 		break;
@@ -58,18 +58,14 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'eliminar':
-		$rspta = $cajachica->eliminar($idmovimiento);
-		echo $rspta ? "Movimiento eliminado" : "Movimiento no se puede eliminar";
+		$cajachica->eliminar($idmovimiento);
 		break;
 
 	case 'listar':
-		$fecha_inicio = $_GET["fecha_inicio"];
-		$fecha_fin = $_GET["fecha_fin"];
-		$idsucursal = $_GET["idsucursal"];
-
-		$rspta = $cajachica->listar($fecha_inicio, $fecha_fin, $idsucursal);
-
-		echo json_encode($rspta);
+		$fecha_inicio = $_GET["fecha_inicio"] ?? '';
+		$fecha_fin = $_GET["fecha_fin"] ?? '';
+		$idsucursal = $_SESSION["idsucursal"];
+		$cajachica->listar($fecha_inicio, $fecha_fin, $idsucursal);
 		break;
 
 	case 'coceptoMovimiento':
@@ -88,17 +84,14 @@ switch ($_GET["op"]) {
 		$tipo = isset($_POST["tipo"]) ? limpiarCadena($_POST["tipo"]) : "";
 		$categoria_concepto = isset($_POST["categoria_concepto"]) ? limpiarCadena($_POST["categoria_concepto"]) : "";
 		if (empty($idconcepto_movimiento)) {
-			$rspta = $cajachica->insertarConcepto($descripcion, $tipo, $categoria_concepto);
-			echo $rspta ? "Concepto movimiento registrada" : "Concepto movimiento no se pudo registrar";
+			$cajachica->insertarConcepto($descripcion, $tipo, $categoria_concepto);
 		} else {
-			$rspta = $cajachica->editarConcepto($idconcepto_movimiento, $descripcion, $tipo, $categoria_concepto);
-			echo $rspta ? "Concepto movimiento actualizado" : "Concepto movimiento no se pudo actualizar";
+			$cajachica->editarConcepto($idconcepto_movimiento, $descripcion, $tipo, $categoria_concepto);
 		}
 		break;
 
 	case 'listarConceptos':
-		$rspta = $cajachica->listarConceptos();
-		echo json_encode($rspta);
+		$cajachica->listarConceptos();
 		break;
 
 	case 'guardarPagoDiario':
@@ -188,76 +181,70 @@ switch ($_GET["op"]) {
 		break;
 
 		case 'reporteAdelantos':
+		    $desde = $_GET['fecha_inicio'] ?? '';
+		    $hasta = $_GET['fecha_fin'] ?? '';
+		    $cajachica->reporteAdelantos($desde, $hasta);
+		    // $detalle = [];
+		    // $total = 0;
 
-		    $desde = $_GET['desde'];
-		    $hasta = $_GET['hasta'];
-
-		    /* ============================
-		       1. LISTAR ADELANTOS
-		    ============================= */
-		    $rspta = $cajachica->listarAdelantosPorFechas($desde, $hasta);
-
-		    $detalle = [];
-		    $total = 0;
-
-		    while ($reg = $rspta->fetch_object()) {
-		        $detalle[] = [
-		            'fecha' => $reg->fecha,
-		            'trabajador' => $reg->trabajador,
-		            'descripcion' => $reg->descripcion,
-		            'monto' => floatval($reg->monto)
-		        ];
-		        $total += floatval($reg->monto);
-		    }
+		    // while ($reg = $rspta->fetch_object()) {
+		    //     $detalle[] = [
+		    //         'fecha' => $reg->fecha,
+		    //         'trabajador' => $reg->trabajador,
+		    //         'descripcion' => $reg->descripcion,
+		    //         'monto' => floatval($reg->monto)
+		    //     ];
+		    //     $total += floatval($reg->monto);
+		    // }
 
 
-		    /* ============================
-		       2. LISTAR DÍAS TRABAJADOS
-		    ============================= */
-		    $rsptaDias = $cajachica->listarDiasTrabajadosPorFechas($desde, $hasta);
+		    // /* ============================
+		    //    2. LISTAR DÍAS TRABAJADOS
+		    // ============================= */
+		    // $rsptaDias = $cajachica->listarDiasTrabajadosPorFechas($desde, $hasta);
 
-		    $dias_tmp = [];
+		    // $dias_tmp = [];
 
-		    while ($reg = $rsptaDias->fetch_object()) {
+		    // while ($reg = $rsptaDias->fetch_object()) {
 
-			    $trabajador = (string)$reg->trabajador;
-			    $fecha = $reg->fecha;
-			    $monto_dia  = floatval($reg->monto_dia);
+			//     $trabajador = (string)$reg->trabajador;
+			//     $fecha = $reg->fecha;
+			//     $monto_dia  = floatval($reg->monto_dia);
 
-			    if (!isset($dias_tmp[$trabajador])) {
-			        $dias_tmp[$trabajador] = [
-			            'trabajador' => $trabajador,
-			            'dias' => 0,
-			            'monto_dia' => $monto_dia,
-			            'total_pago' => 0,
-			            'fechas' => []
-			        ];
-			    }
+			//     if (!isset($dias_tmp[$trabajador])) {
+			//         $dias_tmp[$trabajador] = [
+			//             'trabajador' => $trabajador,
+			//             'dias' => 0,
+			//             'monto_dia' => $monto_dia,
+			//             'total_pago' => 0,
+			//             'fechas' => []
+			//         ];
+			//     }
 
-			    // Contar días trabajados
-			    $dias_tmp[$trabajador]['dias'] += 1;
+			//     // Contar días trabajados
+			//     $dias_tmp[$trabajador]['dias'] += 1;
 
-			    // Sumar total pagado
-			    $dias_tmp[$trabajador]['total_pago'] += $monto_dia;
+			//     // Sumar total pagado
+			//     $dias_tmp[$trabajador]['total_pago'] += $monto_dia;
 
-			    // Mantener el monto por día real (NO promedio)
-			    $dias_tmp[$trabajador]['monto_dia'] = $monto_dia;
+			//     // Mantener el monto por día real (NO promedio)
+			//     $dias_tmp[$trabajador]['monto_dia'] = $monto_dia;
 
-			    // Guardar fechas trabajadas
-			    $dias_tmp[$trabajador]['fechas'][] = [
-				    "fecha" => $reg->fecha,
-				    "monto" => $monto_dia
-				];
-			}
+			//     // Guardar fechas trabajadas
+			//     $dias_tmp[$trabajador]['fechas'][] = [
+			// 	    "fecha" => $reg->fecha,
+			// 	    "monto" => $monto_dia
+			// 	];
+			// }
 
-		    // Convertir a array final
-		    $dias = array_values($dias_tmp);
+		    // // Convertir a array final
+		    // $dias = array_values($dias_tmp);
 
-		    echo json_encode([
-		        "detalle" => $detalle,
-		        "total" => $total,
-		        "dias" => $dias
-		    ]);
+		    // echo json_encode([
+		    //     "detalle" => $detalle,
+		    //     "total" => $total,
+		    //     "dias" => $dias
+		    // ]);
 
 		break;
 

@@ -3,7 +3,7 @@
     require_once __DIR__."/../../modelos/Helpers.php";
     $usuario = new Usuario();
     $sucursales = $usuario->listarSucursalesUsuario($_SESSION['idusuario']);
-    $baseUrl = dirname($_SERVER['SCRIPT_NAME']);
+    $baseUrl = rtrim($_ENV['APP_URL'], '/');
     $count = count($sucursales);
     $esAdmin = $usuario->esSuperusuario();
 ?>

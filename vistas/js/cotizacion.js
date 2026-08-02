@@ -13,8 +13,6 @@ function init() {
   listarCotizaciones.load();
   $.post("controladores/cotizaciones.php?op=selectComprobante", function (c) {
     $("#tipo_comprobante").html(c);
-    $("#tipo_comprobante").select2("");
-    $("#tipo_comprobante").prop("disabled", true);
   });
 
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
@@ -25,9 +23,9 @@ function init() {
     $("#idsucursal").prop("disabled", true);
   });
 
-//   $.post("controladores/venta.php?op=selectSucursal3", function (r) {
-//     $("#idsucursal2").html(r);
-//   });
+  //   $.post("controladores/venta.php?op=selectSucursal3", function (r) {
+  //     $("#idsucursal2").html(r);
+  //   });
 
   $("#navPosActive").addClass("treeview active");
   $("#navPos").addClass("treeview menu-open");
@@ -43,8 +41,8 @@ function init() {
   );
 }
 
-$("#fecha_inicio, #fecha_fin").change(function(){
-    listarCotizaciones.load();
+$("#fecha_inicio, #fecha_fin").change(function () {
+  listarCotizaciones.load();
 })
 
 function setNavbarPosVisible(visible) {
@@ -94,39 +92,39 @@ function nostock() {
   Swal.fire("Alerta", "Sin Stock", "info");
 }
 
-function cargarDatosTemporales() {
-  $.getJSON(
-    "controladores/cotizaciones.php?op=obtenerDatosTmp",
-    function (data) {
-      if (!data || !data.idcliente) {
-        console.warn("No se encontraron datos temporales.");
-        return;
-      }
-      $("#idsucursal").val(data.idsucursal).trigger("change");
-      esperarSelect("#idcliente", data.idcliente);
-      esperarSelect("#tipo_comprobante", data.tipo_comprobante);
-      esperarSelect("#formapago", data.formapago);
-      esperarSelect("#nota", data.nota);
-      $("#serie_comprobante").val(data.serie_comprobante);
-      $("#num_comprobante").val(data.num_comprobante);
-      $("#titulo").val(data.titulo);
-      $("#saludo").val(data.saludo);
-      $("#igv").val(data.igv);
-      $("#observaciones").val(data.observacion);
-      $("#tiempoproduccion").val(data.tiempoproduccion);
-      $("#total_venta").val(data.total_venta);
-    },
-  );
-}
+// function cargarDatosTemporales() {
+//   $.getJSON(
+//     "controladores/cotizaciones.php?op=obtenerDatosTmp",
+//     function (data) {
+//       if (!data || !data.idcliente) {
+//         console.warn("No se encontraron datos temporales.");
+//         return;
+//       }
+//       $("#idsucursal").val(data.idsucursal).trigger("change");
+//       esperarSelect("#idcliente", data.idcliente);
+//       esperarSelect("#tipo_comprobante", data.tipo_comprobante);
+//       esperarSelect("#formapago", data.formapago);
+//       esperarSelect("#nota", data.nota);
+//       $("#serie_comprobante").val(data.serie_comprobante);
+//       $("#num_comprobante").val(data.num_comprobante);
+//       $("#titulo").val(data.titulo);
+//       $("#saludo").val(data.saludo);
+//       $("#igv").val(data.igv);
+//       $("#observaciones").val(data.observacion);
+//       $("#tiempoproduccion").val(data.tiempoproduccion);
+//       $("#total_venta").val(data.total_venta);
+//     },
+//   );
+// }
 
-function esperarSelect(selector, valor) {
-  const $select = $(selector);
-  if ($select.find("option[value='" + valor + "']").length > 0) {
-    $select.val(valor).trigger("change");
-  } else {
-    setTimeout(() => esperarSelect(selector, valor), 100);
-  }
-}
+// function esperarSelect(selector, valor) {
+//   const $select = $(selector);
+//   if ($select.find("option[value='" + valor + "']").length > 0) {
+//     $select.val(valor).trigger("change");
+//   } else {
+//     setTimeout(() => esperarSelect(selector, valor), 100);
+//   }
+// }
 
 function toggleCard() {
   var card = document.getElementById("datosgenerales");
@@ -198,7 +196,6 @@ function limpiar() {
   var month = ("0" + (now.getMonth() + 1)).slice(-2);
   var today = now.getFullYear() + "-" + month + "-" + day;
   $("#fecha").val(today);
-  $("#tipo_comprobante").val("Cotización").trigger("change");
   $("#titulo").val("");
   $("#saludo").val("");
   $("#formapago").val("No").trigger("change");
@@ -530,7 +527,7 @@ function mostrar(idcotizacion) {
     function (data, status) {
       data = JSON.parse(data);
       $("#cliente").val(data.cliente);
-      $("#tipo_comprobantem").val(data.tipo_comprobante);
+      $("#tipo_comprobantem").val(data.idcomprobante_pago);
       $("#serie_comprobantem").val(data.serie_comprobante);
       $("#num_comprobantem").val(data.num_comprobante);
       $("#fecha_horam").val(data.fecha);
@@ -698,7 +695,7 @@ function mostrarEditar(idcotizacion) {
           $("#fecha_hora").val(data.fecha);
           $("#serie_comprobante").val(data.serie_comprobante);
           $("#num_comprobante").val(data.num_comprobante);
-          $("#tipo_comprobante").val(data.tipo_comprobante).trigger("change");
+          $("#tipo_comprobante").val(data.idcomprobante_pago).trigger("change");
           $("#titulo").val(data.titulo);
           $("#nota").val(data.nota).trigger("change");
           $("#tiempoproduccion").val(data.tiempo_pro).trigger("change");
@@ -732,24 +729,30 @@ function guardaryeditar() {
     contentType: false,
     processData: false,
     success: function (response) {
-      const data = JSON.parse(response);
-      if (!data.success) {
+      if (!response.success) {
         Swal.fire({
           title: "Cotización",
           icon: "error",
-          text: data.message,
+          text: response.message,
         });
         return;
       }
       Swal.fire({
         title: "Cotización",
         icon: "success",
-        text: data.message,
+        text: response.message,
       });
       mostrarform(false);
       listarCotizaciones.load();
       limpiar();
     },
+    error: function (error) {
+      Swal.fire({
+        title: "Cotización",
+        icon: "error",
+        text: error?.responseJSON?.message || "Error al guardar la cotización.",
+      });
+    }
   });
 }
 
@@ -780,8 +783,19 @@ function pintarCotizaciones(data, permissions) {
       desistir = `<button class="btn btn-danger btn-xs" onclick="desistir(${item.idcotizacion})" data-toggle="tooltip" title="" target="blanck" data-original-title="DESISTIR"><i class="fa fa-times"></i></button>`;
     } else if (item.estado == "VENDIDO") {
       estado = '<span class="badge bg-green">VENDIDO</span>';
-    } else {
-      estado = '<span class="badge bg-red">DESISTIÓ</span>';
+    } else if (item.estado == "APROBADO") {
+      estado = '<span class="badge bg-info">APROBADO</span>';
+    } else if (item.estado == "RECHAZADO") {
+      estado = '<span class="badge bg-red">RECHAZADO</span>';
+    }
+
+    let fechaVencimiento = new Date(item.fecha_hora);
+    fechaVencimiento.setDate(fechaVencimiento.getDate() + parseInt(item.nota));
+
+    let now = new Date();
+
+    if (fechaVencimiento < now) {
+      estado = '<span class="badge bg-gray">VENCIDO</span>';
     }
 
     html += `
@@ -1016,17 +1030,18 @@ function numTicket() {
 }
 
 function numSerieTicket() {
-  var idsucursal = $("#idsucursal").val();
+  const idsucursal = $("#idsucursal").val();
+  const idtipo_comprobante = $("#tipo_comprobante").val();
   $.ajax({
     url: "controladores/cotizaciones.php?op=mostrar_s_ticket",
     type: "get",
     data: {
-      idsucursal: idsucursal,
+      idtipo_comprobante: idtipo_comprobante
     },
     dataType: "json",
     success: function (s) {
-      $("#numeros").html(("000" + s).slice(-3));
-      $("#serie_comprobante").val(("000" + s).slice(-3));
+      $("#serie_comprobante").val(s.serie);
+      $("#num_comprobante").val(s.numero);
     },
   });
 }
@@ -1241,14 +1256,8 @@ function mostrarform(flag) {
   setNavbarPosVisible(true);
   // cargarDatosTemporales();
   $("#nota").val("7");
-  esperarSelect("#idsucursal", $("#idsucursal").val());
-  setTimeout(() => {
-    let idsucursal = $("#idsucursal").val();
-    if (idsucursal) {
-      numSerieTicket();
-      numTicket();
-      listarConfiguracionCreditos();
-    }
-  }, 300);
+  // esperarSelect("#idsucursal", $("#idsucursal").val());
+  numSerieTicket();
+  listarConfiguracionCreditos();
 }
 init();

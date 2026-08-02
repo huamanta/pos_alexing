@@ -252,28 +252,28 @@
     }
 
     .collapse-section {
-    position: absolute;
-    top: 90%;
-    left: 0;
-    width: 100%;
-    z-index: 1050;
-    border: rgba(0, 0, 0, .15) solid 1px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+        position: absolute;
+        top: 90%;
+        left: 0;
+        width: 100%;
+        z-index: 1050;
+        border: rgba(0, 0, 0, .15) solid 1px;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
 
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
 
-    transition: all .25s ease;
-}
+        transition: all .25s ease;
+    }
 
-.collapse-section.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
+    .collapse-section.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
 
     @media only screen and (max-width: 600px) {
         .btn-flotante {
@@ -603,7 +603,8 @@ date_default_timezone_set('America/Lima');
                                 </div>
                                 <div class="col-md-6 d-flex align-items-center">
                                     <span class="mr-2">Mostrar</span>
-                                    <select id="limit" class="form-control" style="width:100px" onchange="cambiarLimit()">
+                                    <select id="limit" class="form-control" style="width:100px"
+                                        onchange="cambiarLimit()">
                                         <option value="10">10</option>
                                         <option value="25">25</option>
                                         <option value="50">50</option>
@@ -612,10 +613,10 @@ date_default_timezone_set('America/Lima');
 
                                     <span class="ml-2">Registros</span>
 
-                                    </div>
-                                    <div class="col-md-6">
+                                </div>
+                                <div class="col-md-6">
                                     <input type="text" id="search" class="form-control" placeholder="Buscar...">
-                                    </div>
+                                </div>
 
                             </div>
 
@@ -709,142 +710,147 @@ date_default_timezone_set('America/Lima');
                                                 </div>
 
                                                 <!-- Cuerpo del formulario (oculto inicialmente) -->
-                                                 <div class="position-relative">
-                                                <div class="p-2 collapse collapse-section" id="detalle1">
-                                                <div class="card-body">
+                                                <div class="position-relative">
+                                                    <div class="p-2 collapse collapse-section" id="detalle1">
+                                                        <div class="card-body">
 
-                                                    <!-- Sección de Personal (oculta) -->
-                                                    <div class="form-group mb-3" hidden>
-                                                        <label for="idpersonal" class="font-weight-bold">
-                                                            <i class="fas fa-users"></i> Personal
-                                                        </label>
-                                                        <select id="idpersonal" name="idpersonal"
-                                                            class="form-control select2" required></select>
-                                                    </div>
-
-                                                    <!-- Almacén y Cliente (estructura mejorada) -->
-                                                    <fieldset class="border p-2 rounded mb-3">
-                                                        <legend class="w-auto px-2 small font-weight-bold text-primary">
-                                                            Datos principales</legend>
-                                                        <div class="row">
-                                                            <div class="col-md-4 col-sm-12 mb-2">
-                                                                <label for="idsucursal" class="font-weight-bold">
-                                                                    <i class="fas fa-map-marked-alt"></i>
-                                                                    Almacén
+                                                            <!-- Sección de Personal (oculta) -->
+                                                            <div class="form-group mb-3" hidden>
+                                                                <label for="idpersonal" class="font-weight-bold">
+                                                                    <i class="fas fa-users"></i> Personal
                                                                 </label>
-                                                                <select id="idsucursal" name="idsucursal"
-                                                                    class="form-control"></select>
+                                                                <select id="idpersonal" name="idpersonal"
+                                                                    class="form-control select2" required></select>
                                                             </div>
-                                                            <div class="col-md-8 col-sm-12 mb-2">
-                                                                <label for="idcliente" class="font-weight-bold">
-                                                                    <i class="fas fa-users"></i> Cliente
-                                                                </label>
-                                                                <div
-                                                                    class="d-flex align-items-center justify-content-between mb-1">
-                                                                    <div>
-                                                                        <a class="text-info" style="cursor:pointer;"
-                                                                            data-toggle="modal"
-                                                                            data-target="#ModalClientes">
-                                                                            <i class="fa fa-plus"></i> Nuevo
-                                                                        </a>
-                                                                        <a class="ml-3 text-success"
-                                                                            style="cursor:pointer;"
-                                                                            onclick="verHistorialCliente()">
-                                                                            <i class="fas fa-history"></i>
-                                                                            Historial
-                                                                        </a>
+
+                                                            <!-- Almacén y Cliente (estructura mejorada) -->
+                                                            <fieldset class="border p-2 rounded mb-3">
+                                                                <legend
+                                                                    class="w-auto px-2 small font-weight-bold text-primary">
+                                                                    Datos principales</legend>
+                                                                <div class="row">
+                                                                    <div class="col-md-4 col-sm-12 mb-2">
+                                                                        <label for="idsucursal"
+                                                                            class="font-weight-bold">
+                                                                            <i class="fas fa-map-marked-alt"></i>
+                                                                            Almacén
+                                                                        </label>
+                                                                        <select id="idsucursal" name="idsucursal"
+                                                                            class="form-control"></select>
+                                                                    </div>
+                                                                    <div class="col-md-8 col-sm-12 mb-2">
+                                                                        <label for="idcliente" class="font-weight-bold">
+                                                                            <i class="fas fa-users"></i> Cliente
+                                                                        </label>
+                                                                        <div
+                                                                            class="d-flex align-items-center justify-content-between mb-1">
+                                                                            <div>
+                                                                                <a class="text-info"
+                                                                                    style="cursor:pointer;"
+                                                                                    data-toggle="modal"
+                                                                                    data-target="#ModalClientes">
+                                                                                    <i class="fa fa-plus"></i> Nuevo
+                                                                                </a>
+                                                                                <a class="ml-3 text-success"
+                                                                                    style="cursor:pointer;"
+                                                                                    onclick="verHistorialCliente()">
+                                                                                    <i class="fas fa-history"></i>
+                                                                                    Historial
+                                                                                </a>
+                                                                            </div>
+                                                                        </div>
+                                                                        <select id="idcliente" name="idcliente"
+                                                                            class="form-control" required></select>
                                                                     </div>
                                                                 </div>
-                                                                <select id="idcliente" name="idcliente"
-                                                                    class="form-control" required></select>
+                                                            </fieldset>
+
+                                                            <fieldset class="border p-2 rounded mb-3">
+                                                                <legend
+                                                                    class="w-auto px-2 small font-weight-bold text-primary">
+                                                                    Documento</legend>
+                                                                <div class="row">
+                                                                    <div class="col-md-4 col-sm-12 mb-2">
+                                                                        <label for="tipo_comprobante"
+                                                                            class="font-weight-bold">
+                                                                            <i class="fas fa-file-alt"></i> Tipo
+                                                                            Documento
+                                                                        </label>
+                                                                        <select class="form-control"
+                                                                            name="tipo_comprobante"
+                                                                            id="tipo_comprobante">
+
+                                                                        </select>
+                                                                        <small id="validate_categoria"
+                                                                            class="text-danger d-none">Debe seleccionar
+                                                                            documento</small>
+                                                                    </div>
+                                                                    <div class="col-md-4 col-sm-12 mb-2">
+                                                                        <label for="serie_comprobante"
+                                                                            class="font-weight-bold">
+                                                                            <i class="fas fa-store-alt"></i> Serie
+                                                                        </label>
+                                                                        <input type="text"
+                                                                            class="form-control form-control-sm text-center bg-warning"
+                                                                            name="serie_comprobante"
+                                                                            id="serie_comprobante" maxlength="7"
+                                                                            placeholder="Serie" readonly>
+                                                                    </div>
+                                                                    <div class="col-md-4 col-sm-12 mb-2">
+                                                                        <label for="num_comprobante"
+                                                                            class="font-weight-bold">
+                                                                            <i class="fas fa-file-alt"></i> Nº Orden
+                                                                        </label>
+                                                                        <input type="text"
+                                                                            class="form-control form-control-sm text-center bg-warning"
+                                                                            name="num_comprobante" id="num_comprobante"
+                                                                            maxlength="10" placeholder="Número"
+                                                                            readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </fieldset>
+
+                                                            <!-- Fecha (oculta) -->
+                                                            <!-- Fecha -->
+                                                            <div class="form-group">
+                                                                <label class="font-weight-bold">
+                                                                    <i class="far fa-calendar-alt"></i> Fecha
+                                                                </label>
+                                                                <input type="date" class="form-control text-center"
+                                                                    name="fecha" id="fecha"
+                                                                    value="<?php echo date('Y-m-d'); ?>" <?php if ($_SESSION['cargo'] !== 'Administrador'): ?>
+                                                                        min="<?php echo date('Y-m-d', strtotime('-1 day')); ?>"
+                                                                        max="<?php echo date('Y-m-d'); ?>" <?php endif; ?>
+                                                                    required>
+                                                                <?php if ($_SESSION['cargo'] !== 'Administrador'): ?>
+                                                                    <small class="text-muted">Solo puedes seleccionar hoy o
+                                                                        un día atrás</small>
+                                                                <?php endif; ?>
+                                                            </div>
+
+                                                            <!-- Importar Cotizaciones -->
+                                                            <div class="form-group mb-3">
+                                                                <label for="comprobanteReferencia"
+                                                                    class="font-weight-bold">
+                                                                    <i class="fas fa-money-bill-alt"></i> Importar
+                                                                    Cotizaciones
+                                                                </label>
+                                                                <select id="comprobanteReferencia"
+                                                                    name="comprobanteReferencia"
+                                                                    class="form-control select2"
+                                                                    onchange="mostrarE();"></select>
+                                                            </div>
+
+                                                            <!-- Observaciones -->
+                                                            <div class="form-group">
+                                                                <label for="observaciones" class="font-weight-bold">
+                                                                    <i class="fas fa-file-alt"></i> Observaciones
+                                                                </label>
+                                                                <textarea class="form-control" name="observaciones"
+                                                                    id="observaciones" rows="3"></textarea>
                                                             </div>
                                                         </div>
-                                                    </fieldset>
-
-                                                    <fieldset class="border p-2 rounded mb-3">
-                                                        <legend class="w-auto px-2 small font-weight-bold text-primary">
-                                                            Documento</legend>
-                                                        <div class="row">
-                                                            <div class="col-md-4 col-sm-12 mb-2">
-                                                                <label for="tipo_comprobante" class="font-weight-bold">
-                                                                    <i class="fas fa-file-alt"></i> Tipo
-                                                                    Documento
-                                                                </label>
-                                                                <select class="form-control" name="tipo_comprobante"
-                                                                    id="tipo_comprobante">
-                                                                    <?php if ($helpers->getUserPermissionAccion('Crear nota de venta')): ?>
-                                                                        <option value="Nota de Venta">Nota de Venta
-                                                                        </option>
-                                                                    <?php endif; ?>
-                                                                    <?php if ($helpers->getUserPermissionAccion('Crear boleta')): ?>
-                                                                        <option value="Boleta">Boleta</option>
-                                                                    <?php endif; ?>
-                                                                    <?php if ($helpers->getUserPermissionAccion('Crear factura')): ?>
-                                                                        <option value="Factura">Factura</option>
-                                                                    <?php endif; ?>
-                                                                </select>
-                                                                <small id="validate_categoria"
-                                                                    class="text-danger d-none">Debe seleccionar
-                                                                    documento</small>
-                                                            </div>
-                                                            <div class="col-md-4 col-sm-12 mb-2">
-                                                                <label for="serie_comprobante" class="font-weight-bold">
-                                                                    <i class="fas fa-store-alt"></i> Serie
-                                                                </label>
-                                                                <input type="text"
-                                                                    class="form-control form-control-sm text-center bg-warning"
-                                                                    name="serie_comprobante" id="serie_comprobante"
-                                                                    maxlength="7" placeholder="Serie" readonly>
-                                                            </div>
-                                                            <div class="col-md-4 col-sm-12 mb-2">
-                                                                <label for="num_comprobante" class="font-weight-bold">
-                                                                    <i class="fas fa-file-alt"></i> Nº Orden
-                                                                </label>
-                                                                <input type="text"
-                                                                    class="form-control form-control-sm text-center bg-warning"
-                                                                    name="num_comprobante" id="num_comprobante"
-                                                                    maxlength="10" placeholder="Número" readonly>
-                                                            </div>
-                                                        </div>
-                                                    </fieldset>
-
-                                                    <!-- Fecha (oculta) -->
-                                                    <!-- Fecha -->
-                                                    <div class="form-group">
-                                                        <label class="font-weight-bold">
-                                                            <i class="far fa-calendar-alt"></i> Fecha
-                                                        </label>
-                                                        <input type="date" class="form-control text-center" name="fecha"
-                                                            id="fecha" value="<?php echo date('Y-m-d'); ?>" <?php if ($_SESSION['cargo'] !== 'Administrador'): ?>
-                                                                min="<?php echo date('Y-m-d', strtotime('-1 day')); ?>"
-                                                                max="<?php echo date('Y-m-d'); ?>" <?php endif; ?> required>
-                                                        <?php if ($_SESSION['cargo'] !== 'Administrador'): ?>
-                                                            <small class="text-muted">Solo puedes seleccionar hoy o
-                                                                un día atrás</small>
-                                                        <?php endif; ?>
                                                     </div>
-
-                                                    <!-- Importar Cotizaciones -->
-                                                    <div class="form-group mb-3">
-                                                        <label for="comprobanteReferencia" class="font-weight-bold">
-                                                            <i class="fas fa-money-bill-alt"></i> Importar
-                                                            Cotizaciones
-                                                        </label>
-                                                        <select id="comprobanteReferencia" name="comprobanteReferencia"
-                                                            class="form-control select2"
-                                                            onchange="mostrarE();"></select>
-                                                    </div>
-
-                                                    <!-- Observaciones -->
-                                                    <div class="form-group">
-                                                        <label for="observaciones" class="font-weight-bold">
-                                                            <i class="fas fa-file-alt"></i> Observaciones
-                                                        </label>
-                                                        <textarea class="form-control" name="observaciones"
-                                                            id="observaciones" rows="3"></textarea>
-                                                    </div>
-                                                </div>
-                                                </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-12">
@@ -1682,74 +1688,117 @@ date_default_timezone_set('America/Lima');
 </div>
 
 
-<div class="modal fade" id="getCodeModal22" tabindex="-1" aria-labelledby="getCodeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="card card-primary">
-                <div class="card-header">
-                    <h3 class="card-title">Datos de venta</h3>
-                </div>
+<div class="modal fade" id="getCodeModal22" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow-lg border-0">
+
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-receipt mr-2"></i>Detalle de Venta
+                </h5>
+                <button type="button" class="close text-white" data-bs-dismiss="modal" aria-label="Close">
+                    <span>&times;</span>
+                </button>
             </div>
-            <div class="modal-body panel-body">
 
-                <div class="row m-0">
-                    <div class="col-sm-4">
-                        <label>Cliente:</label>
-                        <h4 id="cliente"></h4>
+            <div class="modal-body">
+
+                <!-- Información General -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header bg-light">
+                        <strong><i class="fas fa-info-circle"></i> Información General</strong>
                     </div>
-                    <div class="col-sm-4">
-                        <label>Personal:</label>
-                        <h4 id="personalm"></h4>
-                    </div>
-                    <div class="col-sm-4">
-                        <label>Fecha:</label>
-                        <h4 id="fecha_hora"></h4>
-                    </div>
-                    <div class="col-sm-4">
-                        <label>Tipo comprobante:</label>
-                        <h4 id="tipo_comprobantem"></h4>
-                    </div>
-                    <div class="col-sm-4">
-                        <label>Correlativo:</label>
-                        <h4 id="correlativo"></h4>
-                    </div>
-                    <div class="col-sm-4">
-                        <label>Forma Pago:</label>
-                        <h4 id="formapagom"></h4>
-                    </div>
-                    <div class="col-sm-4">
-                        <label>Observaciones:</label>
-                        <h4 id="observaciones"></h4>
+
+                    <div class="card-body">
+                        <div class="row">
+
+                            <div class="col-md-4 mb-3">
+                                <small class="text-muted">Cliente</small>
+                                <h5 id="cliente" class="font-weight-bold mb-0"></h5>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <small class="text-muted">Vendedor</small>
+                                <h5 id="personalm" class="mb-0"></h5>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <small class="text-muted">Fecha</small>
+                                <h5 id="fecha_hora" class="mb-0"></h5>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <small class="text-muted">Comprobante</small>
+                                <h5 id="tipo_comprobantem" class="mb-0"></h5>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <small class="text-muted">Correlativo</small>
+                                <h5 id="correlativo" class="mb-0"></h5>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <small class="text-muted">Forma de Pago</small>
+                                <span id="formapagom" class="badge badge-success p-2"></span>
+                            </div>
+
+                            <div class="col-12">
+                                <small class="text-muted">Observaciones</small>
+                                <div id="observaciones" class="border rounded p-3 bg-light text-secondary">
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
 
-                <br>
-                <div class="form-group col-lg-12 col-md-12 col-xs-12">
-                    <table id="detallesm" class="table table-striped table-responsive-lg" width="100%">
-                        <tbody></tbody>
-                    </table>
+                <!-- Detalle -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-light">
+                        <strong><i class="fas fa-shopping-cart"></i> Productos</strong>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <table id="detallesm" class="table table-hover table-striped mb-0" style="width: 100%;">
+
+                        </table>
+                    </div>
                 </div>
 
-                <div class="row m-0" hidden>
-                    <div class="col-sm-4">
-                        <label>Subtotal:</label>
-                        <h4 id="subtotalm"></h4>
-                    </div>
-                    <div class="col-sm-4">
-                        <label>IGV:</label>
-                        <h4 id="impuestom"></h4>
-                    </div>
-                    <div class="col-sm-4">
-                        <label>Total:</label>
-                        <h4 id="totalm"></h4>
+                <!-- Totales -->
+                <div class="card mt-3 shadow-sm">
+                    <div class="card-body">
+
+                        <div class="row text-center">
+
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">Subtotal</small>
+                                <h4 id="subtotalm" class="mb-0 text-primary"></h4>
+                            </div>
+
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">IGV</small>
+                                <h4 id="impuestom" class="mb-0 text-warning"></h4>
+                            </div>
+
+                            <div class="col-md-4">
+                                <small class="text-muted d-block">Total</small>
+                                <h3 id="totalm" class="mb-0 text-success font-weight-bold"></h3>
+                            </div>
+
+                        </div>
+
                     </div>
                 </div>
 
             </div>
-            <div class="modal-footer justify-content-between">
-                <button type="button" onclick="cancelarform02()" class="btn btn-default"
-                    data-bs-dismiss="modal">Cerrar</button>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
             </div>
+
         </div>
     </div>
 </div>
@@ -1988,49 +2037,48 @@ date_default_timezone_set('America/Lima');
 </div>
 </div>
 <script>
-document.addEventListener("click", cerrarCollapse);
+    document.addEventListener("click", cerrarCollapse);
 
-function toggleCollapse(e, btn) {
-    e.stopPropagation();
+    function toggleCollapse(e, btn) {
+        e.stopPropagation();
 
-    const panel = document.getElementById(btn.dataset.target);
-    panel.classList.toggle("show");
+        const panel = document.getElementById(btn.dataset.target);
+        panel.classList.toggle("show");
 
-    const icon = btn.querySelector("i");
-    icon.classList.toggle("fa-chevron-down");
-    icon.classList.toggle("fa-chevron-up");
-}
-
-function cerrarCollapse(e) {
-
-    // Si el click fue dentro de Select2 no cerrar
-    if (
-        e.target.closest(".select2-container") ||
-        e.target.closest(".select2-dropdown")
-    ) {
-        return;
+        const icon = btn.querySelector("i");
+        icon.classList.toggle("fa-chevron-down");
+        icon.classList.toggle("fa-chevron-up");
     }
 
+    function cerrarCollapse(e) {
 
-    document.querySelectorAll(".collapse.show").forEach(panel => {
-
-        const btn = document.querySelector(`[data-target="${panel.id}"]`);
-
-        if (panel.contains(e.target) || (btn && btn.contains(e.target))) {
+        // Si el click fue dentro de Select2 no cerrar
+        if (
+            e.target.closest(".select2-container") ||
+            e.target.closest(".select2-dropdown")
+        ) {
             return;
         }
 
-        panel.classList.remove("show");
 
-        if (btn) {
-            const icon = btn.querySelector("i");
-            icon.classList.remove("fa-chevron-up");
-            icon.classList.add("fa-chevron-down");
-        }
+        document.querySelectorAll(".collapse.show").forEach(panel => {
 
-    });
+            const btn = document.querySelector(`[data-target="${panel.id}"]`);
 
-}
+            if (panel.contains(e.target) || (btn && btn.contains(e.target))) {
+                return;
+            }
+
+            panel.classList.remove("show");
+
+            if (btn) {
+                const icon = btn.querySelector("i");
+                icon.classList.remove("fa-chevron-up");
+                icon.classList.add("fa-chevron-down");
+            }
+
+        });
+
+    }
 </script>
 <script src="vistas/js/venta-pos.js"></script>
-

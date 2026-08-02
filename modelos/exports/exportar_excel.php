@@ -1,6 +1,6 @@
 <?php
-require_once __DIR__ . '/../configuraciones/bootstrap.php';
-require "../configuraciones/Conexion.php";
+require_once __DIR__ . '/../../configuraciones/bootstrap.php';
+require "../../configuraciones/Conexion.php";
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -11,21 +11,24 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 /* ---------------------------------------------------------
    Lectura de parámetros
 --------------------------------------------------------- */
-$inicio = $_GET['inicio'] ?? null;
-$fin    = $_GET['fin']    ?? null;
+$inicio = $_GET['inicio'] ?? '';
+$fin = $_GET['fin'] ?? '';
 
-if (!$inicio || !$fin) {
-    die("Fechas no enviadas");
+$condicionAsistencia = '';
+$condicionMovimiento = '';
+
+if (!empty($inicio) && !empty($fin)) {
+    $condicionAsistencia = "AND DATE(a.fecha) BETWEEN '$inicio' AND '$fin'";
+    $condicionMovimiento = "AND DATE(m.fecha) BETWEEN '$inicio' AND '$fin'";
 }
-
 /* =========================================================
    DATOS DEL NEGOCIO
    ========================================================= */
 $neg = ejecutarConsultaSimpleFila("SELECT * FROM datos_negocio LIMIT 1");
 $nombre_negocio = $neg['nombre'] ?? '';
-$ruc_negocio    = $neg['documento'] ?? '';
+$ruc_negocio = $neg['documento'] ?? '';
 $direccion_negocio = $neg['direccion'] ?? '';
-$telefono_negocio  = $neg['telefono'] ?? '';
+$telefono_negocio = $neg['telefono'] ?? '';
 
 /* =========================================================
    FUNCIONES AUXILIARES
@@ -56,8 +59,8 @@ function crearEncabezado(Worksheet $sheet, $nombre_negocio, $ruc, $direccion, $t
 $sql_trabajadores = "
 SELECT DISTINCT p.idpersonal, p.nombre
 FROM personal p
-LEFT JOIN asistencias a ON a.idpersonal = p.idpersonal AND a.fecha BETWEEN '$inicio' AND '$fin'
-LEFT JOIN movimiento m ON m.idpersonal = p.idpersonal AND m.descripcion LIKE '%Adelanto%' AND m.tipo = 'Egresos' AND DATE(m.fecha) BETWEEN '$inicio' AND '$fin'
+LEFT JOIN asistencias a ON a.idpersonal = p.idpersonal $condicionAsistencia
+LEFT JOIN movimiento m ON m.idpersonal = p.idpersonal AND m.descripcion LIKE '%Adelanto%' AND m.tipo = 'Egresos' $condicionMovimiento
 WHERE a.idpersonal IS NOT NULL OR m.idpersonal IS NOT NULL
 ORDER BY p.nombre
 ";
@@ -97,22 +100,48 @@ $hojaResumen->getStyle("A$fila:E$fila")->applyFromArray([
 ]);
 $fila++;
 
-$totalG = 0.0; $totalA = 0.0; $totalDiasGlobal = 0;
+$totalG = 0.0;
+$totalA = 0.0;
+$totalDiasGlobal = 0;
 
 /* Para acelerar, precalculamos totales por trabajador con queries agrupadas */
+$whereAsistencia = "estado = 'asistio'";
+$whereMovimiento = "descripcion LIKE '%Adelanto%' AND tipo = 'Egresos'";
+
+if (!empty($inicio) && !empty($fin)) {
+    $whereAsistencia .= " AND DATE(fecha) BETWEEN '$inicio' AND '$fin'";
+    $whereMovimiento .= " AND DATE(fecha) BETWEEN '$inicio' AND '$fin'";
+}
 foreach ($trabajadores as $t) {
     $idp = $t['id'];
 
     // Total ganado (asistencias)
-    $r1 = ejecutarConsulta("SELECT IFNULL(SUM(monto),0) AS total FROM asistencias WHERE idpersonal = '$idp' AND fecha BETWEEN '$inicio' AND '$fin' AND estado = 'asistio'")->fetch_assoc();
+    $r1 = ejecutarConsulta("
+        SELECT IFNULL(SUM(monto),0) AS total
+        FROM asistencias
+        WHERE idpersonal = '$idp'
+        AND $whereAsistencia
+    ")->fetch_assoc();
     $g = floatval($r1['total']);
 
+
     // Total adelantos (movimientos)
-    $r2 = ejecutarConsulta("SELECT IFNULL(SUM(monto),0) AS total FROM movimiento WHERE idpersonal = '$idp' AND descripcion LIKE '%Adelanto%' AND tipo = 'Egresos' AND DATE(fecha) BETWEEN '$inicio' AND '$fin'")->fetch_assoc();
+    $r2 = ejecutarConsulta("
+        SELECT IFNULL(SUM(totalefectivo + totaldeposito),0) AS total
+        FROM movimiento
+        WHERE idpersonal = '$idp'
+        AND $whereMovimiento
+    ")->fetch_assoc();
     $a = floatval($r2['total']);
 
-    // Dias trabajados
-    $r3 = ejecutarConsulta("SELECT COUNT(DISTINCT DATE(fecha)) AS dias FROM asistencias WHERE idpersonal = '$idp' AND fecha BETWEEN '$inicio' AND '$fin' AND estado = 'asistio'")->fetch_assoc();
+
+    // Días trabajados
+    $r3 = ejecutarConsulta("
+        SELECT COUNT(DISTINCT DATE(fecha)) AS dias
+        FROM asistencias
+        WHERE idpersonal = '$idp'
+        AND $whereAsistencia
+    ")->fetch_assoc();
     $d = intval($r3['dias']);
 
     $n = $g - $a;
@@ -141,15 +170,16 @@ $hojaResumen->getStyle("A$fila:E$fila")->applyFromArray(['font' => ['bold' => tr
 $hojaResumen->getStyle("C$fila:E$fila")->getNumberFormat()->setFormatCode('"S/ "#,##0.00');
 
 $hojaResumen->getStyle("A8:E$fila")->applyFromArray(['borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN]]]);
-foreach (range('A','E') as $col) $hojaResumen->getColumnDimension($col)->setAutoSize(true);
+foreach (range('A', 'E') as $col)
+    $hojaResumen->getColumnDimension($col)->setAutoSize(true);
 
 /* =========================================================
    HOJAS POR TRABAJADOR: POR SEMANA (LUN - DOM)
    ========================================================= */
 /* Utils: convertir a DateTime y obtener lunes de la semana */
 $start = new DateTime($inicio);
-$end   = new DateTime($fin);
-$end->setTime(0,0,0);
+$end = new DateTime($fin);
+$end->setTime(0, 0, 0);
 
 // Normalizar start al LUNES de su semana (si quieres empezar la semana LUN)
 $startMon = clone $start;
@@ -163,7 +193,7 @@ $periodStart = clone $startMon;
 $oneWeek = new DateInterval('P7D');
 
 foreach ($trabajadores as $tIndex => $t) {
-    $hoja = new Worksheet($excel, \substr($t['nombre'],0,30)); // nombre de hoja limitado
+    $hoja = new Worksheet($excel, \substr($t['nombre'], 0, 30)); // nombre de hoja limitado
     $excel->addSheet($hoja);
     $fila = crearEncabezado($hoja, $nombre_negocio, $ruc_negocio, $direccion_negocio, $telefono_negocio, $inicio, $fin);
 
@@ -179,7 +209,7 @@ foreach ($trabajadores as $tIndex => $t) {
 
         // Calculamos rangos intersectados con [inicio, fin]
         $actualStart = max($weekStart->format('Y-m-d'), $start->format('Y-m-d'));
-        $actualEnd   = min($weekEnd->format('Y-m-d'), $end->format('Y-m-d'));
+        $actualEnd = min($weekEnd->format('Y-m-d'), $end->format('Y-m-d'));
 
         // Si no hay intersección con el rango inicial -> saltar
         if ($actualStart > $actualEnd) {
@@ -197,145 +227,145 @@ foreach ($trabajadores as $tIndex => $t) {
    NUEVO CUADRO DE DÍAS — VERTICAL (IZQUIERDA)
 --------------------------------------------------------- */
 
-/* ---------------------------------------------------------
-   CUADRO SEMANA: DÍAS Y ADELANTOS (ALINEADOS Y LIMPIOS)
---------------------------------------------------------- */
+        /* ---------------------------------------------------------
+           CUADRO SEMANA: DÍAS Y ADELANTOS (ALINEADOS Y LIMPIOS)
+        --------------------------------------------------------- */
 
-$dias = ["LUNES","MARTES","MIERCOLES","JUEVES","VIERNES","SABADO","DOMINGO"];
-$montosSemana = [];
-$totalIngresoSemana = 0.0;
+        $dias = ["LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO", "DOMINGO"];
+        $montosSemana = [];
+        $totalIngresoSemana = 0.0;
 
-// Guardamos la fila inicial para ambos cuadros
-$filaDiasInicio = $fila;
-$filaAdelInicio  = $fila;
+        // Guardamos la fila inicial para ambos cuadros
+        $filaDiasInicio = $fila;
+        $filaAdelInicio = $fila;
 
-// -------------------- CUADRO DÍAS (IZQUIERDA) --------------------
-$hoja->setCellValue("A{$fila}", "DÍA");
-$hoja->setCellValue("B{$fila}", "MONTO S/");
+        // -------------------- CUADRO DÍAS (IZQUIERDA) --------------------
+        $hoja->setCellValue("A{$fila}", "DÍA");
+        $hoja->setCellValue("B{$fila}", "MONTO S/");
 
-// Estilo encabezado días
-$hoja->getStyle("A{$fila}:B{$fila}")->applyFromArray([
-    'font' => ['bold' => true],
-    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'BDD7EE']],
-    'alignment' => ['horizontal' => 'center']
-]);
+        // Estilo encabezado días
+        $hoja->getStyle("A{$fila}:B{$fila}")->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'BDD7EE']],
+            'alignment' => ['horizontal' => 'center']
+        ]);
 
-$fila++;
-$inicioFilaDias = $fila;
+        $fila++;
+        $inicioFilaDias = $fila;
 
-for ($i = 0; $i < 7; $i++) {
-    $d = (clone $weekStart)->modify("+$i days");
-    $dStr = $d->format('Y-m-d');
+        for ($i = 0; $i < 7; $i++) {
+            $d = (clone $weekStart)->modify("+$i days");
+            $dStr = $d->format('Y-m-d');
 
-    $hoja->setCellValue("A{$fila}", $dias[$i]);
+            $hoja->setCellValue("A{$fila}", $dias[$i]);
 
-    if ($dStr < $inicio || $dStr > $fin) {
-        $hoja->setCellValue("B{$fila}", "");
-        $montosSemana[$i] = 0;
-    } else {
-        $idp = $t['id'];
-        $rq = ejecutarConsulta("SELECT IFNULL(SUM(monto),0) AS total 
+            if ($dStr < $inicio || $dStr > $fin) {
+                $hoja->setCellValue("B{$fila}", "");
+                $montosSemana[$i] = 0;
+            } else {
+                $idp = $t['id'];
+                $rq = ejecutarConsulta("SELECT IFNULL(SUM(monto),0) AS total 
                                 FROM asistencias 
                                 WHERE idpersonal='$idp' 
                                   AND DATE(fecha)='$dStr' 
                                   AND estado='asistio'")->fetch_assoc();
-        $m = floatval($rq['total']);
-        $montosSemana[$i] = $m;
+                $m = floatval($rq['total']);
+                $montosSemana[$i] = $m;
 
-        // Mostrar vacío si 0
-        $hoja->setCellValue("B{$fila}", $m);
-        $hoja->getStyle("B{$fila}")->getNumberFormat()->setFormatCode('"S/ "#,##0.00');
-        $totalIngresoSemana += $m;
-    }
+                // Mostrar vacío si 0
+                $hoja->setCellValue("B{$fila}", $m);
+                $hoja->getStyle("B{$fila}")->getNumberFormat()->setFormatCode('"S/ "#,##0.00');
+                $totalIngresoSemana += $m;
+            }
 
-    $fila++;
-}
+            $fila++;
+        }
 
-$ultimaFilaDias = $fila - 1;
+        $ultimaFilaDias = $fila - 1;
 
-// Bordes y alineación derecha en montos
-$hoja->getStyle("A{$inicioFilaDias}:B{$ultimaFilaDias}")
-     ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-$hoja->getStyle("B{$inicioFilaDias}:B{$ultimaFilaDias}")
-     ->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        // Bordes y alineación derecha en montos
+        $hoja->getStyle("A{$inicioFilaDias}:B{$ultimaFilaDias}")
+            ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $hoja->getStyle("B{$inicioFilaDias}:B{$ultimaFilaDias}")
+            ->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
-// -------------------- CUADRO ADELANTOS (DERECHA) --------------------
-$colA = "D"; // Fecha
-$colB = "E"; // Descripción
-$colC = "F"; // Importe
+        // -------------------- CUADRO ADELANTOS (DERECHA) --------------------
+        $colA = "D"; // Fecha
+        $colB = "E"; // Descripción
+        $colC = "F"; // Importe
 
-$filaAd = $filaDiasInicio; // arrancar en la misma fila que el encabezado días
+        $filaAd = $filaDiasInicio; // arrancar en la misma fila que el encabezado días
 
-// Encabezado adelantos
-$hoja->setCellValue("{$colA}{$filaAd}", "FECHA");
-$hoja->setCellValue("{$colB}{$filaAd}", "DESCRIPCIÓN");
-$hoja->setCellValue("{$colC}{$filaAd}", "IMPORTE S/");
+        // Encabezado adelantos
+        $hoja->setCellValue("{$colA}{$filaAd}", "FECHA");
+        $hoja->setCellValue("{$colB}{$filaAd}", "DESCRIPCIÓN");
+        $hoja->setCellValue("{$colC}{$filaAd}", "IMPORTE S/");
 
-$hoja->getStyle("{$colA}{$filaAd}:{$colC}{$filaAd}")->applyFromArray([
-    'font' => ['bold' => true],
-    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'BDD7EE']],
-    'alignment' => ['horizontal' => 'center']
-]);
+        $hoja->getStyle("{$colA}{$filaAd}:{$colC}{$filaAd}")->applyFromArray([
+            'font' => ['bold' => true],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'BDD7EE']],
+            'alignment' => ['horizontal' => 'center']
+        ]);
 
-$filaAd++;
-$inicioFilaAdel = $filaAd;
-
-$qAd = "
-SELECT fecha, descripcion, monto 
-FROM movimiento
-WHERE idpersonal='{$t['id']}' 
-  AND descripcion LIKE '%Adelanto%'
-  AND tipo='Egresos'
-  AND DATE(fecha) BETWEEN '{$weekStart->format('Y-m-d')}' AND '{$weekEnd->format('Y-m-d')}'
-ORDER BY fecha
-";
-
-$rsAd = ejecutarConsulta($qAd);
-$totalAdelSemana = 0.0;
-
-if ($rsAd->num_rows > 0) {
-    while ($ad = $rsAd->fetch_assoc()) {
-        $hoja->setCellValue("{$colA}{$filaAd}", date('d/m/Y', strtotime($ad['fecha'])));
-        $hoja->setCellValue("{$colB}{$filaAd}", $ad['descripcion']);
-        $hoja->setCellValue("{$colC}{$filaAd}", $ad['monto']);
-        $hoja->getStyle("{$colC}{$filaAd}")->getNumberFormat()->setFormatCode('"S/ "#,##0.00');
-        $totalAdelSemana += floatval($ad['monto']);
         $filaAd++;
-    }
-} else {
-    $hoja->setCellValue("{$colA}{$filaAd}", "—");
-    $hoja->setCellValue("{$colB}{$filaAd}", "Sin adelantos");
-    $hoja->setCellValue("{$colC}{$filaAd}", "");
-    $filaAd++;
-}
+        $inicioFilaAdel = $filaAd;
 
-$ultimaFilaAdel = $filaAd - 1;
+        $qAd = "
+            SELECT fecha, descripcion, totalefectivo + totaldeposito as monto
+            FROM movimiento
+            WHERE idpersonal='{$t['id']}' 
+            AND descripcion LIKE '%Adelanto%'
+            AND tipo='Egresos'
+            AND DATE(fecha) BETWEEN '{$weekStart->format('Y-m-d')}' AND '{$weekEnd->format('Y-m-d')}'
+            ORDER BY fecha
+            ";
 
-// Bordes solo donde hay datos y alinear importes a la derecha
-$hoja->getStyle("{$colA}{$inicioFilaAdel}:{$colC}{$ultimaFilaAdel}")
-     ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-$hoja->getStyle("{$colC}{$inicioFilaAdel}:{$colC}{$ultimaFilaAdel}")
-     ->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $rsAd = ejecutarConsulta($qAd);
+        $totalAdelSemana = 0.0;
 
-// -------------------- TOTAL ADELANTOS --------------------
-$filaTot = $ultimaFilaAdel + 1;
+        if ($rsAd->num_rows > 0) {
+            while ($ad = $rsAd->fetch_assoc()) {
+                $hoja->setCellValue("{$colA}{$filaAd}", date('d/m/Y', strtotime($ad['fecha'])));
+                $hoja->setCellValue("{$colB}{$filaAd}", $ad['descripcion']);
+                $hoja->setCellValue("{$colC}{$filaAd}", $ad['monto']);
+                $hoja->getStyle("{$colC}{$filaAd}")->getNumberFormat()->setFormatCode('"S/ "#,##0.00');
+                $totalAdelSemana += floatval($ad['monto']);
+                $filaAd++;
+            }
+        } else {
+            $hoja->setCellValue("{$colA}{$filaAd}", "—");
+            $hoja->setCellValue("{$colB}{$filaAd}", "Sin adelantos");
+            $hoja->setCellValue("{$colC}{$filaAd}", "");
+            $filaAd++;
+        }
 
-$hoja->setCellValue("{$colA}{$filaTot}", "TOTAL ADELANTOS S/");
-$hoja->setCellValue("{$colC}{$filaTot}", $totalAdelSemana);
-$hoja->getStyle("{$colC}{$filaTot}")->getNumberFormat()->setFormatCode('"S/ "#,##0.00');
+        $ultimaFilaAdel = $filaAd - 1;
 
-// Fondo gris y negrita para total
-$hoja->getStyle("{$colA}{$filaTot}:{$colC}{$filaTot}")->applyFromArray([
-    'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9D9D9']],
-    'font' => ['bold' => true]
-]);
+        // Bordes solo donde hay datos y alinear importes a la derecha
+        $hoja->getStyle("{$colA}{$inicioFilaAdel}:{$colC}{$ultimaFilaAdel}")
+            ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        $hoja->getStyle("{$colC}{$inicioFilaAdel}:{$colC}{$ultimaFilaAdel}")
+            ->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
 
-// Bordes del total
-$hoja->getStyle("{$colA}{$filaTot}:{$colC}{$filaTot}")
-     ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+        // -------------------- TOTAL ADELANTOS --------------------
+        $filaTot = $ultimaFilaAdel + 1;
 
-// Ajustar la siguiente fila para seguir (separador de 2 filas)
-$fila = max($ultimaFilaDias, $filaTot) + 2;
+        $hoja->setCellValue("{$colA}{$filaTot}", "TOTAL ADELANTOS S/");
+        $hoja->setCellValue("{$colC}{$filaTot}", $totalAdelSemana);
+        $hoja->getStyle("{$colC}{$filaTot}")->getNumberFormat()->setFormatCode('"S/ "#,##0.00');
+
+        // Fondo gris y negrita para total
+        $hoja->getStyle("{$colA}{$filaTot}:{$colC}{$filaTot}")->applyFromArray([
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D9D9D9']],
+            'font' => ['bold' => true]
+        ]);
+
+        // Bordes del total
+        $hoja->getStyle("{$colA}{$filaTot}:{$colC}{$filaTot}")
+            ->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+
+        // Ajustar la siguiente fila para seguir (separador de 2 filas)
+        $fila = max($ultimaFilaDias, $filaTot) + 2;
 
 
         /* ---------------------------------------------------------
@@ -347,8 +377,8 @@ $fila = max($ultimaFilaDias, $filaTot) + 2;
            - Entregado en efectivo = neto - adelantos
            --------------------------------------------------------- */
         $dscto = $totalIngresoSemana * 0.20;
-        $neto  = $totalIngresoSemana - $dscto;
-        $adel  = $totalAdelSemana; // por definición
+        $neto = $totalIngresoSemana - $dscto;
+        $adel = $totalAdelSemana; // por definición
         $a_cuenta = $adel;
         $entregado_efectivo = $neto - $adel;
 
@@ -378,7 +408,7 @@ $fila = max($ultimaFilaDias, $filaTot) + 2;
         $hoja->getStyle("B{$fila}")->getNumberFormat()->setFormatCode('"S/ "#,##0.00');
         $fila += 2;
 
-        
+
         // Separador entre semanas
         $fila += 1;
 
@@ -387,7 +417,8 @@ $fila = max($ultimaFilaDias, $filaTot) + 2;
     } // end semanas
 
     // Auto-ajustar columnas y terminar hoja
-    foreach (range('A', 'G') as $col) $hoja->getColumnDimension($col)->setAutoSize(true);
+    foreach (range('A', 'G') as $col)
+        $hoja->getColumnDimension($col)->setAutoSize(true);
 }
 
 /* Quitamos la hoja por defecto si la hojaResumen no es la activa (ya la dejamos como hoja 0) */

@@ -85,6 +85,7 @@ function init() {
   $("#formularioMovimiento").on("submit", function (e) {
     guardaryeditarmovimiento(e);
   });
+
   //cargamos los items al select comprobantes
   $.post(
     "controladores/cotizaciones.php?op=selectCotizaciones",
@@ -112,15 +113,27 @@ function init() {
     $("#idsucursal02").select2("");
   });
 
-  // Cargar productos en el filtro
-  // $.post("controladores/venta.php?op=selectProductoFiltro", function (r) {
-  //   $("#idproducto").html(r);
-  //   $("#idproducto").select2();
-  // });
+  // Cargar comprobantes disponibles para la sucursal actual
+  $.post("controladores/venta.php?op=selectProductoFiltro", function (r) {
+    $("#idproducto").html(r);
+    $("#idproducto").select2();
+  });
 
   //cargamos los items al celect comprobantes
-  $.post("controladores/venta.php?op=selectTipoAcompanante", function (c) {
-    $("#idtipoacompanante").html(c);
+  $.post("controladores/venta.php?op=selectComprobante", function (response) {
+
+    const data = response;
+
+    let html = data.map(item => {
+      if (!item.status) return ''; // Omitir sin permisos
+      return `
+            <option value="${item.idcomprobante_pago}" ${item.selected ? 'selected' : ''}>
+                ${item.nombre}
+            </option>
+        `;
+    }).join('');
+
+    $("#tipo_comprobante").html(html);
   });
 
   /*
@@ -530,10 +543,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                      " " +
-                      dat.apellidoPaterno +
-                      " " +
-                      dat.apellidoMaterno,
+                    " " +
+                    dat.apellidoPaterno +
+                    " " +
+                    dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -543,7 +556,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         } else {
@@ -587,7 +600,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         }
@@ -897,7 +910,7 @@ function EnviarSunat(tipoc, idventa, idcol) {
         icon: "success",
         text: resp,
         timerProgressBar: true,
-        onClose: function () {},
+        onClose: function () { },
       });
 
       listarDataVentas.load();
@@ -1415,8 +1428,6 @@ function limpiar() {
   $("#num_comprobante").val("");
   // $("#impuesto").val("");
   articuloAdd = "";
-  impuesto = 0;
-  no_aplica = 0;
 
   $("#total_venta").val("");
   $(".filas").remove();
@@ -1572,8 +1583,8 @@ function verificarProductosDisponibles() {
           Swal.fire(
             "Advertencia",
             "El producto con ID " +
-              idproducto +
-              " no existe en el almacén seleccionado.",
+            idproducto +
+            " no existe en el almacén seleccionado.",
             "warning",
           );
         });
@@ -2378,35 +2389,32 @@ function pintarVentas(data, permissions) {
 
                     <div class="dropdown-menu">
 
-                        ${
-                          permissions.editar
-                            ? `<a class="dropdown-item"
+                        ${permissions.editar
+          ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="generarComprobante(${item.idventa})">
                                 Editar
                             </a>`
-                            : ""
-                        }
+          : ""
+        }
 
-                        ${
-                          permissions.eliminar
-                            ? `<a class="dropdown-item"
+                        ${permissions.eliminar
+          ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="anularComprobante(${item.idventa})">
                                 Eliminar
                             </a>`
-                            : ""
-                        }
+          : ""
+        }
 
-                        ${
-                          item.tipo_comprobante === "Nota de Venta"
-                            ? `<a class="dropdown-item"
+                        ${item.tipo_comprobante === "Nota de Venta"
+          ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="cambiarComprobante(${item.idventa},${item.idsucursal})">
                                 Cambiar a Boleta/Factura
                             </a>`
-                            : ""
-                        }
+          : ""
+        }
 
                     </div>
 
@@ -2454,11 +2462,10 @@ function pintarVentas(data, permissions) {
                 </td>
 
                 <td align="center">
-                    ${
-                      item.ventacredito === "Si"
-                        ? '<span class="badge badge-neon neon-red">Crédito</span>'
-                        : '<span class="badge badge-neon neon-blue">Contado</span>'
-                    }
+                    ${item.ventacredito === "Si"
+        ? '<span class="badge badge-neon neon-red">Crédito</span>'
+        : '<span class="badge badge-neon neon-blue">Contado</span>'
+      }
                 </td>
 
                 <td>
@@ -2784,23 +2791,11 @@ function verificarCajaPorSucursal() {
 }
 
 function listarCajas() {
-  // Obtenemos la sucursal seleccionada del combo principal
-  const idsucursal = $("#idsucursal2").val();
-
-  // Si no se ha seleccionado ninguna sucursal, mostramos mensaje
-  if (!idsucursal) {
-    $("#cajas").html(
-      "<option value=''>Seleccione una sucursal primero</option>",
-    );
-    return;
-  }
 
   $.ajax({
     url: "controladores/venta.php?op=listar_cajas",
     type: "GET",
-    data: {
-      idsucursal: idsucursal,
-    }, // 👈 enviamos la sucursal seleccionada
+    data: {},
     dataType: "json",
     success: function (response) {
       let html = "";
@@ -3038,8 +3033,8 @@ function mostrar_impuesto() {
     url: "controladores/negocio.php?op=mostrar_impuesto",
     type: "get",
     dataType: "json",
-    success: function (i) {
-      impuesto = parseFloat(i) || 0;
+    success: function (response) {
+      impuesto = response.valor || 0;
       no_aplica = impuesto;
       calcularTotales();
     },
@@ -3053,82 +3048,27 @@ function mostrar_impuesto() {
 
 // Función unificada para número y serie
 function cargarNumeroSerie(tipoComprobante, idsucursal) {
-  let opNum = "",
-    opSerie = "",
-    prefijo = "";
-
-  switch (tipoComprobante) {
-    case "Factura":
-      opNum = "mostrarf";
-      opSerie = "mostrars";
-      prefijo = "F";
-      break;
-    case "Boleta":
-      opNum = "mostrar_num_boleta";
-      opSerie = "mostrar_serie_boleta";
-      prefijo = "B";
-      break;
-    case "Ticket":
-      opNum = "mostrar_num_ticket";
-      opSerie = "mostrar_s_ticket";
-      prefijo = "P";
-      break;
-    default:
-      console.warn("Tipo de comprobante no reconocido:", tipoComprobante);
-      return;
-  }
 
   // Obtener número de comprobante
   $.ajax({
-    url: "controladores/venta.php?op=" + opNum,
-    type: "get",
-    data: {},
-    dataType: "json",
-    success: function (num) {
-      num = parseInt(num) || 1; // fallback seguro
-      $("#num_comprobante").val(("0000000" + num).slice(-7));
-      $("#nFacturas").html(("0000000" + num).slice(-7));
-
-      // Para Ticket habilitar porcentaje, para otros deshabilitar
-      $("#porcentaje").attr("disabled", tipoComprobante !== "Ticket");
-    },
-  });
-
-  // Obtener serie de comprobante
-  $.ajax({
-    url: "controladores/venta.php?op=" + opSerie,
+    url: "controladores/cotizaciones.php?op=mostrar_s_ticket",
     type: "get",
     data: {
-      idsucursal: idsucursal,
+      idtipo_comprobante: tipoComprobante
     },
     dataType: "json",
-    success: function (serie) {
-      $("#numeros").html(("000" + serie).slice(-3));
-      $("#serie_comprobante").val(prefijo + ("000" + serie).slice(-3));
+    success: function (s) {
+      $("#serie_comprobante").val(s.serie);
+      $("#num_comprobante").val(s.numero);
     },
   });
 }
 
 // Nueva función marcarImpuesto usando la unificada
 function marcarImpuesto() {
-  var tipo_comprobante = $("#tipo_comprobante option:selected").text().trim();
-  // if (!idsucursalSeleccionada) {
-  //   idsucursalSeleccionada = $("#idsucursal").val(); // fallback
-  // }
-
-  if (
-    tipo_comprobante === "Factura" ||
-    tipo_comprobante === "Boleta" ||
-    tipo_comprobante === "Ticket"
-  ) {
-    mostrar_impuesto();
-    cargarNumeroSerie(tipo_comprobante);
-  } else {
-    // Evita resetear el IGV por coincidencias de texto del comprobante.
-    // Si el tipo no coincide exactamente, seguimos usando la tasa del negocio.
-    mostrar_impuesto();
-    cargarNumeroSerie("Ticket");
-  }
+  var tipo_comprobante = $("#tipo_comprobante").val();
+  mostrar_impuesto();
+  cargarNumeroSerie(tipo_comprobante);
 }
 
 // Evento change para actualizar cuando se cambie tipo de comprobante
@@ -3369,8 +3309,8 @@ function agregarDetalle(
         Swal.fire(
           "Aviso",
           "El stock es menor a 1, se agregará solo la cantidad disponible (" +
-            stock +
-            "), ajustando el precio proporcionalmente.",
+          stock +
+          "), ajustando el precio proporcionalmente.",
           "info",
         );
       }
@@ -3534,8 +3474,8 @@ function agregarDetalle(
         (modoEditar
           ? ""
           : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' +
-            cont +
-            ')"></i>') +
+          cont +
+          ')"></i>') +
         '<textarea class="form-control nombre-producto" ' +
         'name="nombreProducto[]" rows="1" ' +
         'oninput="autoResize(this)" onfocus="this.select()" ' +
@@ -3543,9 +3483,9 @@ function agregarDetalle(
         producto +
         (fabricante || modelo || color
           ? " " +
-            (fabricante ? fabricante + " " : "") +
-            (modelo ? modelo + " " : "") +
-            (color ? color : "")
+          (fabricante ? fabricante + " " : "") +
+          (modelo ? modelo + " " : "") +
+          (color ? color : "")
           : "") +
         "</textarea>" +
         "</div>" +
@@ -3835,36 +3775,29 @@ function modificarSubtotales(e) {
 
 function calcularTotales() {
   const sub = document.querySelectorAll('#detalles span[name="subtotal"]');
-  const proigvNodes = document.querySelectorAll(
-    '#detalles span[name="proigv"]',
-  );
-  let total = 0.0;
-  let totalConIgv = 0.0;
-  let igv = 0.0;
+  const proigvNodes = document.querySelectorAll('#detalles span[name="proigv"]');
+
+  let total = 0;
+  let totalGravado = 0;
 
   for (let i = 0; i < sub.length; i++) {
-    const val = parseFloat(sub[i].innerText || sub[i].textContent || 0);
-    if (isNaN(val)) continue;
+    const monto = parseFloat(sub[i].textContent) || 0;
+    total += monto;
 
-    total += val;
+    const tipo = (proigvNodes[i]?.textContent || "").trim().toUpperCase();
 
-    const proigvNode = proigvNodes[i];
-    const proigv = (proigvNode.textContent || "").trim();
-
-    if (
-      proigv.toLowerCase() === "gravada" ||
-      proigv.toLowerCase() === "gravado"
-    ) {
-      totalConIgv += val;
+    if (tipo === "GRAVADA" || tipo === "GRAVADO") {
+      totalGravado += monto;
     }
   }
 
-  if (totalConIgv > 0 && parseFloat(no_aplica) > 0) {
-    igv = (totalConIgv * parseFloat(no_aplica)) / (parseFloat(no_aplica) + 100);
-  }
+  // IGV solo de los productos gravados
+  const igv = totalGravado * (parseFloat(impuesto) / (100 + parseFloat(impuesto)));
 
-  const subtotal = total - igv;
-  actualizarResumenVenta(total, esnulo(subtotal), igv);
+  // Base imponible gravada
+  const subtotalGravado = total - igv;
+
+  actualizarResumenVenta(total, esnulo(subtotalGravado), esnulo(igv));
   evaluar();
 }
 
@@ -4615,11 +4548,11 @@ function mostrar(idventa) {
       $("#tipo_comprobantem").html(
         data.tipo_comprobante == "Boleta"
           ? '<span class="badge badge-primary">' +
-              data.tipo_comprobante +
-              "</span>"
+          data.tipo_comprobante +
+          "</span>"
           : '<span class="badge badge-info">' +
-              data.tipo_comprobante +
-              "</span>",
+          data.tipo_comprobante +
+          "</span>",
       );
       $("#correlativo").text(
         data.serie_comprobante + " - " + data.num_comprobante,
@@ -4643,7 +4576,7 @@ function mostrar(idventa) {
       $("#deuda").text(
         data.ventacredito == "Si" ? "S/. " + deuda.toFixed(2) : "---",
       );
-      $("#subtotalm").text(parseFloat(data.subtotal || 0).toFixed(2));
+      $("#subtotalm").text(parseFloat(data.total_venta-data.impuesto || 0).toFixed(2));
       $("#impuestom").text(parseFloat(data.impuesto || 0).toFixed(2));
       $("#totalm").text(parseFloat(data.total_venta || 0).toFixed(2));
     },
@@ -4653,7 +4586,7 @@ function mostrar(idventa) {
   $.post(
     "controladores/venta.php?op=listarDetalle&id=" + idventa,
     function (r) {
-      $("#detallesm tbody").html(r);
+      $("#detallesm").html(r);
     },
   );
 }
@@ -4681,7 +4614,7 @@ function cancelarform02() {
   $("#total").text("");
 
   // Limpiar la tabla de detalles
-  $("#detallesm tbody").empty();
+  $("#detallesm").empty();
 }
 
 actualizarFilaVaciaDetalles();

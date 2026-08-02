@@ -1,6 +1,7 @@
 <?php
-require "../configuraciones/Conexion.php";
-require "Helpers.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
 date_default_timezone_set('America/Lima');
 class Venta extends Helpers
 {
@@ -18,15 +19,15 @@ class Venta extends Helpers
             if ($idCaja === 0) {
                 throw new Exception("No existe una caja abierta.");
             }
-            return json_encode([
+            Response::json([
                 "success" => true,
                 "idcaja" => $idCaja,
                 "message" => "Caja aperturada encontrado"
             ]);
-        } catch (Throwable $th) {
+        } catch (Throwable $e) {
             return json_encode([
                 "success" => false,
-                "message" => "Error al eliminar los datos: " . $e->getMessage()
+                "message" => $e->getMessage()
             ]);
         }
     }
@@ -1197,20 +1198,53 @@ class Venta extends Helpers
 
     //implementar un metodopara mostrar los datos de unregistro a modificar
     public function mostrar($idventa)
-    {
-        $sql = "SELECT v.idventa, DATE(v.fecha_hora) as fecha,DATE(v.fecha_kardex) as fechahora ,c.idcaja as caja, s.idsucursal as sucursal, v.idcliente, p.nombre as cliente, u.idpersonal, u.nombre as personal, p.telefono, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta, v.impuesto, v.ventacredito, v.formapago, v.meses,v.observacion, v.descuento, v.totalrecibido,cpc.deudatotal,SUM(dcpc.montopagado) as montopagado, v.vuelto, vp.nroOperacion, DATE(vp.fechaDeposito) as fechaDeposito, v.estado,vp.banco
-	            FROM venta v 
-	            INNER JOIN persona p ON v.idcliente = p.idpersona
-                LEFT JOIN venta_pago vp ON v.idventa = vp.idventa 
-	            INNER JOIN personal u ON v.idpersonal = u.idpersonal 
-	            INNER JOIN cajas c ON v.idcaja = c.idcaja
-	            INNER JOIN sucursal s ON v.idsucursal = s.idsucursal
-				LEFT JOIN cuentas_por_cobrar cpc ON v.idventa = cpc.idventa
-				LEFT JOIN detalle_cuentas_por_cobrar dcpc ON cpc.idcpc = dcpc.idcpc
-	            WHERE v.idventa  = '$idventa'
-	            GROUP BY v.idventa";
-        return ejecutarConsultaSimpleFila($sql);
-    }
+{
+    $sql = "SELECT
+                v.idventa,
+                DATE(v.fecha_hora) AS fecha,
+                DATE(v.fecha_kardex) AS fechahora,
+                c.idcaja AS caja,
+                s.idsucursal AS sucursal,
+                v.idcliente,
+                p.nombre AS cliente,
+                u.idpersonal,
+                u.nombre AS personal,
+                p.telefono,
+                v.idcomprobante_pago,
+                cp.nombre AS tipo_comprobante,
+                v.serie_comprobante,
+                v.num_comprobante,
+                v.total_venta,
+                v.impuesto,
+                v.ventacredito,
+                v.formapago,
+                v.meses,
+                v.observacion,
+                v.descuento,
+                v.totalrecibido,
+                cpc.deudatotal,
+                (
+                    SELECT IFNULL(SUM(dcpc.montopagado), 0)
+                    FROM detalle_cuentas_por_cobrar dcpc
+                    WHERE dcpc.idcpc = cpc.idcpc
+                ) AS montopagado,
+                v.vuelto,
+                vp.nroOperacion,
+                DATE(vp.fechaDeposito) AS fechaDeposito,
+                v.estado,
+                vp.banco
+            FROM venta v
+            INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
+            INNER JOIN persona p ON v.idcliente = p.idpersona
+            INNER JOIN personal u ON v.idpersonal = u.idpersonal
+            INNER JOIN cajas c ON v.idcaja = c.idcaja
+            INNER JOIN sucursal s ON v.idsucursal = s.idsucursal
+            LEFT JOIN venta_pago vp ON v.idventa = vp.idventa
+            LEFT JOIN cuentas_por_cobrar cpc ON v.idventa = cpc.idventa
+            WHERE v.idventa = '$idventa'";
+
+    return ejecutarConsultaSimpleFila($sql);
+}
 
     public function mostrarEdit($idventa)
     {
@@ -1384,7 +1418,8 @@ class Venta extends Helpers
             v.estadoS,
             u.idpersonal,
             u.nombre AS personal,
-            v.tipo_comprobante,
+            v.idcomprobante_pago,
+            cp.nombre AS tipo_comprobante,
             v.serie_comprobante,
             v.num_comprobante,
             (v.total_venta-v.descuento) AS total_venta,
@@ -1398,7 +1433,7 @@ class Venta extends Helpers
             ->join('persona p', 'v.idcliente = p.idpersona')
             ->join('personal u', 'v.idpersonal = u.idpersonal')
             ->join('sucursal s', 's.idsucursal = v.idsucursal')
-            ->whereRaw("v.tipo_comprobante IN ('Boleta','Factura','Nota de Venta')")
+            ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
             ->whereRaw("v.serie_comprobante <> '-'");
 
 
@@ -1497,7 +1532,7 @@ class Venta extends Helpers
         ];
 
 
-        return json_encode($response);
+        return Response::json($response);
     }
 
 
@@ -1617,8 +1652,9 @@ class Venta extends Helpers
 
     public function ventacabecera($idventa)
     {
-        $sql = "SELECT v.idventa,v.idsucursal, v.idcliente, p.nombre AS cliente, s.nombre as sucursal, p.direccion, p.tipo_documento, p.num_documento, p.email, p.telefono, v.idpersonal, v.montoPagado, v.formapago, v.numoperacion, date_format(v.fechadeposito,'%d/%m/%y') as fechadeposito, u.nombre AS personal, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, DATE(v.fecha_hora) AS fecha, date_format(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex, v.impuesto, v.total_venta, v.ventacredito, v.descuento, v.vuelto, v.observacion, v.totalrecibido
+        $sql = "SELECT v.idventa,v.idsucursal, v.idcliente, p.nombre AS cliente, s.nombre as sucursal, p.direccion, p.tipo_documento, p.num_documento, p.email, p.telefono, v.idpersonal, v.montoPagado, v.formapago, v.numoperacion, date_format(v.fechadeposito,'%d/%m/%y') as fechadeposito, u.nombre AS personal, cp.nombre AS tipo_comprobante, v.idcomprobante_pago, v.serie_comprobante, v.num_comprobante, DATE(v.fecha_hora) AS fecha, date_format(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex, v.impuesto, v.total_venta, v.ventacredito, v.descuento, v.vuelto, v.observacion, v.totalrecibido
 		FROM venta v 
+        INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago 
 		INNER JOIN persona p 
 		ON v.idcliente=p.idpersona 
 		INNER JOIN personal u 

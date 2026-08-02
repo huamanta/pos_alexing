@@ -1,12 +1,15 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
-require_once "../modelos/Cotizaciones.php";
+require_once __DIR__ . '/../modelos/Cotizaciones.php';
+require_once __DIR__ . '/../modelos/Helpers.php';
 
-if (!isset($_SESSION['cotizacion_token'])) {
-	// Generar token único para esta cotización temporal
-	$_SESSION['cotizacion_token'] = bin2hex(random_bytes(8)); // 16 caracteres
-}
-$token = $_SESSION['cotizacion_token'];
+$helpers = new Helpers();
+
+// if (!isset($_SESSION['cotizacion_token'])) {
+// 	// Generar token único para esta cotización temporal
+// 	$_SESSION['cotizacion_token'] = bin2hex(random_bytes(8)); // 16 caracteres
+// }
+// $token = $_SESSION['cotizacion_token'];
 
 
 $venta = new Cotizacion();
@@ -57,7 +60,7 @@ switch ($_GET["op"]) {
 	case 'guardaryeditar':
 
 		if (empty($idcotizacion)) {
-			$rspta = $venta->insertar(
+			$venta->insertar(
 				$idsucursal,
 				$idcliente,
 				$idpersonal,
@@ -85,9 +88,8 @@ switch ($_GET["op"]) {
 				$meses,
 				$interes
 			);
-			echo $rspta;
 		} else {
-			$rspta = $venta->editar(
+			$venta->editar(
 				$idcotizacion,
 				$idsucursal,
 				$idcliente,
@@ -116,7 +118,6 @@ switch ($_GET["op"]) {
 				$meses,
 				$interes
 			);
-			echo $rspta ? "Datos editados correctamente" : "No se pudo editar la Cotización";
 		}
 
 		break;
@@ -180,102 +181,110 @@ switch ($_GET["op"]) {
 	//_______________________________________________________________________________________________________
 
 	//opcion para mostrar la numeracion y la serie_comprobante de la ticket
-	case 'mostrar_num_ticket':
-		$idsucursal = $_REQUEST["idsucursal"];
-		//mostrando el numero de boleta de la tabla comprobantes
-		require_once "../modelos/Comprobantes.php";
-		$comprobantes = new Comprobantes();
+	// case 'mostrar_num_ticket':
+	// 	$idsucursal = $_REQUEST["idsucursal"];
+	// 	//mostrando el numero de boleta de la tabla comprobantes
+	// 	require_once "../modelos/Comprobantes.php";
+	// 	$comprobantes = new Comprobantes();
 
-		$rspta = $comprobantes->mostrar_numero_cotizacion($idsucursal);
-		$data = array();
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = array(
-				$num_comp_tic = $reg->num_comprobante
-			);
-		}
-		$numero_tic_comp = (int) $num_comp_tic;
-		//fin de mostrar numero de boleta de la tabla comprobantes
-		$rspta = $venta->numero_venta_cotizacion($idsucursal);
-		$data = array();
-		$numerot = $numero_tic_comp;
+	// 	$rspta = $comprobantes->mostrar_numero_cotizacion($idsucursal);
+	// 	$data = array();
+	// 	while ($reg = $rspta->fetch_object()) {
+	// 		$data[] = array(
+	// 			$num_comp_tic = $reg->num_comprobante
+	// 		);
+	// 	}
+	// 	$numero_tic_comp = (int) $num_comp_tic;
+	// 	//fin de mostrar numero de boleta de la tabla comprobantes
+	// 	$rspta = $venta->numero_venta_cotizacion($idsucursal);
+	// 	$data = array();
+	// 	$numerot = $numero_tic_comp;
 
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = array(
-				$numerot = $reg->num_comprobante
-			);
-		}
-		$numero_ticket = (int) $numerot;
-		$new_ticket = '';
+	// 	while ($reg = $rspta->fetch_object()) {
+	// 		$data[] = array(
+	// 			$numerot = $reg->num_comprobante
+	// 		);
+	// 	}
+	// 	$numero_ticket = (int) $numerot;
+	// 	$new_ticket = '';
 
-		if ($numero_ticket == 9999999 or empty($numerot)) {
-			$new_ticket = '0000001';
-			echo json_encode($new_ticket);
-		} elseif ($numerot == 9999999) {
-			$new_ticket = '0000001';
-			echo json_encode($new_ticket);
-		} else {
-			$sumatic = $numero_ticket + 1;
-			echo json_encode($sumatic);
-		}
-		//$num = (int)$numerof; 
-		//echo json_encode($numerof);
-		break;
+	// 	if ($numero_ticket == 9999999 or empty($numerot)) {
+	// 		$new_ticket = '0000001';
+	// 		echo json_encode($new_ticket);
+	// 	} elseif ($numerot == 9999999) {
+	// 		$new_ticket = '0000001';
+	// 		echo json_encode($new_ticket);
+	// 	} else {
+	// 		$sumatic = $numero_ticket + 1;
+	// 		echo json_encode($sumatic);
+	// 	}
+	// 	//$num = (int)$numerof; 
+	// 	//echo json_encode($numerof);
+	// 	break;
+
 	case 'mostrar_s_ticket':
-		$idsucursal = $_REQUEST["idsucursal"];
-		//mostrando el numero de factura de la tabla comprobantes
 		require_once "../modelos/Comprobantes.php";
 		$comprobantes = new Comprobantes();
+		$idsucursal = $_SESSION["idsucursal"];
+		$idtipo_comprobante = $_GET["idtipo_comprobante"];
+		$comprobantes->mostrarSerieTicket($idsucursal, $idtipo_comprobante);
+		break;
+		//mostrando el numero de factura de la tabla comprobantes
+		// require_once "../modelos/Comprobantes.php";
+		// $comprobantes = new Comprobantes();
 
-		$rspta = $comprobantes->mostrar_serie_cotizacion($idsucursal);
-		$data = array();
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = array(
-				$serie_comp_tic = $reg->serie_comprobante,
-				$num_comp_tic = $reg->num_comprobante
-			);
-		}
-		$serie_tic_comp = (int) $serie_comp_tic;
-		$num_tic_comp = (int) $num_comp_tic;
-		//fin de mostrar numero de factura de la tabla comprobantes
-		$rspta = $venta->numero_serie_cotizacion($idsucursal);
-		$data = array();
-		$numero_s_tic = $serie_tic_comp;
-		$numero_bolet = $num_tic_comp;
+		// $rspta = $comprobantes->mostrar_serie_cotizacion($idsucursal);
+		// $data = array();
+		// while ($reg = $rspta->fetch_object()) {
+		// 	$data[] = array(
+		// 		$serie_comp_tic = $reg->serie_comprobante,
+		// 		$num_comp_tic = $reg->num_comprobante
+		// 	);
+		// }
+		// $serie_tic_comp = (int) $serie_comp_tic;
+		// $num_tic_comp = (int) $num_comp_tic;
+		// //fin de mostrar numero de factura de la tabla comprobantes
+		// $rspta = $venta->numero_serie_cotizacion($idsucursal);
+		// $data = array();
+		// $numero_s_tic = $serie_tic_comp;
+		// $numero_bolet = $num_tic_comp;
 
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = array(
-				$numero_s_tic = $reg->serie_comprobante,
-				$numero_bolet = $reg->num_comprobante
-			);
-		}
-		$num_s_ticket = (int) $numero_s_tic;
-		$nuew_serie_ticket = 0;
-		$numbo = (int) $numero_bolet;
-		if ($numbo == 9999999 or empty($numero_s_tic)) {
-			$nuew_serie_ticket = $num_s_ticket + 1;
-			echo json_encode($nuew_serie_ticket);
-		} else {
-			echo json_encode($num_s_ticket);
-		}
-		break; //fin de opcion de mostrar num_comprobante y serie_comprobante del ticket
+		// while ($reg = $rspta->fetch_object()) {
+		// 	$data[] = array(
+		// 		$numero_s_tic = $reg->serie_comprobante,
+		// 		$numero_bolet = $reg->num_comprobante
+		// 	);
+		// }
+		// $num_s_ticket = (int) $numero_s_tic;
+		// $nuew_serie_ticket = 0;
+		// $numbo = (int) $numero_bolet;
+		// if ($numbo == 9999999 or empty($numero_s_tic)) {
+		// 	$nuew_serie_ticket = $num_s_ticket + 1;
+		// 	echo json_encode($nuew_serie_ticket);
+		// } else {
+		// 	echo json_encode($num_s_ticket);
+		// }
+		// break; //fin de opcion de mostrar num_comprobante y serie_comprobante del ticket
 
 	//______________________________________________________________________________________________
 
 
 	case 'listarDetalle':
 
-		require_once "../modelos/Negocio.php";
+		// require_once "../modelos/Negocio.php";
 
-		$cnegocio = new Negocio();
-		$rsptan = $cnegocio->listar();
-		$regn = $rsptan->fetch_object();
+		// $cnegocio = new Negocio();
+		// $rsptan = $cnegocio->listar();
+		// $regn = $rsptan->fetch_object();
 
-		if (empty($regn)) {
-			$smoneda = 'S/';
-		} else {
-			$smoneda = $regn->simbolo;
-			$nom_imp = $regn->nombre_impuesto;
-		}
+		// if (empty($regn)) {
+		
+		$idsucursal = $_SESSION["idsucursal"];
+		$smoneda = $helpers->get_symbol();
+		// } else {
+		// 	$smoneda = $regn->simbolo;
+		// 	$nom_imp = $regn->nombre_impuesto;
+		// }
 
 		// Recibir ID
 		$id = $_GET['id'];
@@ -390,9 +399,9 @@ switch ($_GET["op"]) {
 				<tbody>
 			';
 
-				while ($reg = $rspta->fetch_object()) {
+		while ($reg = $rspta->fetch_object()) {
 
-					echo '
+			echo '
 				<tr class="filas">
 
 					<td>
@@ -428,10 +437,10 @@ switch ($_GET["op"]) {
 				</tr>
 				';
 
-					$total += $reg->total_venta;
-				}
+			$total += $reg->total_venta;
+		}
 
-				echo '
+		echo '
 				</tbody>
 
 				<tfoot class="tfoot-total">
@@ -628,21 +637,21 @@ switch ($_GET["op"]) {
 	case 'selectComprobante':
 		require_once "../modelos/Comprobantes.php";
 		$comprobantes = new Comprobantes();
-
-		$rspta = $comprobantes->select2();
+		$idsucursal = $_SESSION["idsucursal"];
+		$rspta = $comprobantes->select2($idsucursal);
 
 		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->nombre . '>' . $reg->nombre . '</option>';
+			echo '<option value="' . $reg->idcomprobante_pago . '" selected>' . $reg->nombre . '</option>';
 		}
 		break;
 
 	case 'selectCotizaciones':
 		$idsucursal = $_SESSION['idsucursal'];
-		$is_aprobated = $_POST['is_aprobated'] ?? false;
+		$is_aprobated = $_POST['is_aprobated'] ?? false; // Valor predeterminado si no se proporciona
 		$rspta = $venta->listar2($idsucursal, $is_aprobated);
 
 		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idcotizacion . '>' . $reg->serie_comprobante . '-' . $reg->num_comprobante.': '. $reg->cliente . '</option>';
+			echo '<option value="' . $reg->idcotizacion . '">' . $reg->serie_comprobante . '-' . $reg->num_comprobante . ': ' . $reg->cliente . '</option>';
 		}
 		break;
 
@@ -751,80 +760,80 @@ switch ($_GET["op"]) {
 		echo $rspta ? "Eliminado del carrito temporal" : "No se pudo eliminar o no existe.";
 		break;
 
-	case 'guardarDatosTmp':
-		$idusuario = $_SESSION['idusuario'];
-		$token = $_SESSION['cotizacion_token'] ?? '';
+	// case 'guardarDatosTmp':
+	// 	$idusuario = $_SESSION['idusuario'];
+	// 	$token = $_SESSION['cotizacion_token'] ?? '';
 
-		if (!$token) {
-			echo json_encode(["status" => "error", "msg" => "No hay token de cotización"]);
-			exit;
-		}
+	// 	if (!$token) {
+	// 		echo json_encode(["status" => "error", "msg" => "No hay token de cotización"]);
+	// 		exit;
+	// 	}
 
-		// Recibir valores de forma segura
-		$idsucursal = $_POST['idsucursal'] ?? '';
-		$idcliente = $_POST['idcliente'] ?? '';
-		$tipo_comprobante = $_POST['tipo_comprobante'] ?? '';
-		$serie_comprobante = $_POST['serie_comprobante'] ?? '';
-		$num_comprobante = $_POST['num_comprobante'] ?? '';
-		$titulo = $_POST['titulo'] ?? '';
-		$saludo = $_POST['saludo'] ?? '';
-		$nota = $_POST['nota'] ?? '';
-		$igv = $_POST['igv'] ?? '0.00';
-		$formapago = $_POST['formapago'] ?? '';
-		$observacion = $_POST['observacion'] ?? '';
-		$tiempo_pro = $_POST['tiempoproduccion'] ?? '';
-		$total_venta = $_POST['total_venta'] ?? '0.00';
+	// 	// Recibir valores de forma segura
+	// 	$idsucursal = $_POST['idsucursal'] ?? '';
+	// 	$idcliente = $_POST['idcliente'] ?? '';
+	// 	$tipo_comprobante = $_POST['tipo_comprobante'] ?? '';
+	// 	$serie_comprobante = $_POST['serie_comprobante'] ?? '';
+	// 	$num_comprobante = $_POST['num_comprobante'] ?? '';
+	// 	$titulo = $_POST['titulo'] ?? '';
+	// 	$saludo = $_POST['saludo'] ?? '';
+	// 	$nota = $_POST['nota'] ?? '';
+	// 	$igv = $_POST['igv'] ?? '0.00';
+	// 	$formapago = $_POST['formapago'] ?? '';
+	// 	$observacion = $_POST['observacion'] ?? '';
+	// 	$tiempo_pro = $_POST['tiempoproduccion'] ?? '';
+	// 	$total_venta = $_POST['total_venta'] ?? '0.00';
 
-		if (empty($idsucursal) || empty($idcliente) || empty($tipo_comprobante)) {
-			echo json_encode(["status" => "incompleto", "msg" => "Faltan campos clave"]);
-			exit;
-		}
+	// 	if (empty($idsucursal) || empty($idcliente) || empty($tipo_comprobante)) {
+	// 		echo json_encode(["status" => "incompleto", "msg" => "Faltan campos clave"]);
+	// 		exit;
+	// 	}
 
-		$sql_check = "SELECT idtmp FROM cotizacion_cab_tmp WHERE token='$token'";
-		$rspta = ejecutarConsultaSimpleFila($sql_check);
+	// 	$sql_check = "SELECT idtmp FROM cotizacion_cab_tmp WHERE token='$token'";
+	// 	$rspta = ejecutarConsultaSimpleFila($sql_check);
 
-		if ($rspta) {
-			// Actualizar temporal existente
-			$sql_update = "UPDATE cotizacion_cab_tmp SET
-            idsucursal='$idsucursal',
-            idcliente='$idcliente',
-            tipo_comprobante='$tipo_comprobante',
-            serie_comprobante='$serie_comprobante',
-            num_comprobante='$num_comprobante',
-            titulo='$titulo',
-            saludo='$saludo',
-            nota='$nota',
-            igv='$igv',
-            formapago='$formapago',
-            observacion='$observacion',
-            tiempoproduccion='$tiempo_pro',
-            total_venta='$total_venta'
-        WHERE token='$token'";
-			ejecutarConsulta($sql_update);
-		} else {
-			// Insertar nuevo temporal
-			$sql_insert = "INSERT INTO cotizacion_cab_tmp 
-            (idusuario, token, idsucursal, idcliente, tipo_comprobante, serie_comprobante, num_comprobante, titulo, saludo, nota, igv, formapago, observacion, tiempoproduccion, total_venta)
-        VALUES
-            ('$idusuario','$token','$idsucursal','$idcliente','$tipo_comprobante','$serie_comprobante','$num_comprobante','$titulo','$saludo','$nota','$igv','$formapago','$observacion','$tiempo_pro','$total_venta')";
-			ejecutarConsulta($sql_insert);
-		}
+	// 	if ($rspta) {
+	// 		// Actualizar temporal existente
+	// 		$sql_update = "UPDATE cotizacion_cab_tmp SET
+    //         idsucursal='$idsucursal',
+    //         idcliente='$idcliente',
+    //         tipo_comprobante='$tipo_comprobante',
+    //         serie_comprobante='$serie_comprobante',
+    //         num_comprobante='$num_comprobante',
+    //         titulo='$titulo',
+    //         saludo='$saludo',
+    //         nota='$nota',
+    //         igv='$igv',
+    //         formapago='$formapago',
+    //         observacion='$observacion',
+    //         tiempoproduccion='$tiempo_pro',
+    //         total_venta='$total_venta'
+    //     WHERE token='$token'";
+	// 		ejecutarConsulta($sql_update);
+	// 	} else {
+	// 		// Insertar nuevo temporal
+	// 		$sql_insert = "INSERT INTO cotizacion_cab_tmp 
+    //         (idusuario, token, idsucursal, idcliente, tipo_comprobante, serie_comprobante, num_comprobante, titulo, saludo, nota, igv, formapago, observacion, tiempoproduccion, total_venta)
+    //     VALUES
+    //         ('$idusuario','$token','$idsucursal','$idcliente','$tipo_comprobante','$serie_comprobante','$num_comprobante','$titulo','$saludo','$nota','$igv','$formapago','$observacion','$tiempo_pro','$total_venta')";
+	// 		ejecutarConsulta($sql_insert);
+	// 	}
 
-		echo json_encode(["status" => "ok"]);
-		break;
+	// 	echo json_encode(["status" => "ok"]);
+	// 	break;
 
 
-	case 'obtenerDatosTmp':
-		$token = $_SESSION['cotizacion_token'] ?? '';
-		if (!$token) {
-			echo json_encode([]);
-			exit;
-		}
+	// case 'obtenerDatosTmp':
+	// 	$token = $_SESSION['cotizacion_token'] ?? '';
+	// 	if (!$token) {
+	// 		echo json_encode([]);
+	// 		exit;
+	// 	}
 
-		$sql = "SELECT * FROM cotizacion_cab_tmp WHERE token='$token' LIMIT 1";
-		$rspta = ejecutarConsultaSimpleFila($sql);
-		echo json_encode($rspta);
-		break;
+	// 	$sql = "SELECT * FROM cotizacion_cab_tmp WHERE token='$token' LIMIT 1";
+	// 	$rspta = ejecutarConsultaSimpleFila($sql);
+	// 	echo json_encode($rspta);
+	// 	break;
 
 	case 'cotizacionesCliente':
 		$idsucursal = $_SESSION['idsucursal'];

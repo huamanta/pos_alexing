@@ -1,12 +1,15 @@
 <?php
 //incluir la conexion de base de datos
-require "../configuraciones/Conexion.php";
-class Comprobantes
+require_once __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/../core/Response.php";
+
+class Comprobantes extends Helpers
 {
 
 	//implementamos nuestro constructor
 	public function __construct()
 	{
+		parent::__construct();
 	}
 
 	private function getIdEmpresaBySucursal($idsucursal)
@@ -68,13 +71,13 @@ class Comprobantes
 	//listar y mostrar en selct
 	public function selectDocumentos($idsucursal)
 	{
-	    $sql = "SELECT idventa, serie_comprobante, num_comprobante 
+		$sql = "SELECT idventa, serie_comprobante, num_comprobante 
 	            FROM venta 
 	            WHERE dov_Estado='ACEPTADO' 
 	            AND estado NOT IN ('Nota Credito', 'Nota Credito Parcial' ,'Anulado', 'Activado') 
 	            AND tipo_comprobante IN ('Boleta', 'Factura', 'Nota de Venta')
 	            AND idsucursal='$idsucursal'";
-	    return ejecutarConsulta($sql);
+		return ejecutarConsulta($sql);
 	}
 
 	public function selectMotivos()
@@ -84,11 +87,39 @@ class Comprobantes
 	}
 
 	//listar y mostrar en selct
-	public function select2()
+	public function select2($idsucursal)
 	{
-		$sql = "SELECT * FROM comp_pago WHERE condicion=1 AND nombre = 'Cotización' LIMIT 1";
+		$idempresa = Helpers::getEmpresa($idsucursal);
+		$sql = "SELECT * FROM comp_pago WHERE condicion=1 AND nombre = 'Cotización' AND idempresa = $idempresa LIMIT 1";
 		return ejecutarConsulta($sql);
 	}
+
+
+	public function selectComprobantesVenta()
+	{
+		$idempresa = Helpers::getEmpresa($_SESSION['idsucursal']);
+
+		$data = (new DBQuery($this->pdo))
+			->select("*")
+			->from("comp_pago")
+			->where("condicion", "=", 1)
+			->whereIn("nombre", [
+				"Nota de Venta",
+				"Boleta",
+				"Factura"
+			])
+			->where("idempresa", "=", $idempresa)
+			->orderBy("idcomprobante_pago", "ASC")
+			->get();
+
+		foreach ($data as &$item) {
+			$item['selected'] = ($item['nombre'] == "Nota de Venta");
+			$item['status'] = Helpers::getUserPermissionAccion('Crear ' . $item['nombre']);
+		}
+
+		return Response::json($data);
+	}
+
 	public function mostrar_serie_ticket($idsucursal)
 	{
 		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Nota de Venta' AND " . $this->getEmpresaFilter($idsucursal);
@@ -112,7 +143,7 @@ class Comprobantes
 	}
 
 	public function mostrar_serie_boleta($idsucursal)
-	{  
+	{
 
 		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Boleta' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
@@ -156,16 +187,31 @@ class Comprobantes
 		$sql = "SELECT idempresa, num_comprobante FROM comp_pago WHERE nombre='Factura' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
+
+	public function mostrarSerieTicket($idsucursal, $idtipo_comprobante)
+	{
+		$config = Helpers::obtenerComprobanteSucursal($idtipo_comprobante, $idsucursal);
+		return Response::json([
+			'serie' => $config['serie_comprobante'] ?? '',
+			'numero' => $config['num_comprobante'] ?? ''
+		]);
+	}
+
+	/**
+	 * Calcula la serie que corresponde utilizar.
+	 */
+
 	public function mostrar_serie_cotizacion($idsucursal)
 	{
 		$sql = "SELECT idempresa, serie_comprobante, num_comprobante FROM comp_pago WHERE nombre='Cotización' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
 	}
-	public function mostrar_numero_cotizacion($idsucursal)
-	{
-		$sql = "SELECT idempresa, num_comprobante FROM comp_pago WHERE nombre='Cotización' AND " . $this->getEmpresaFilter($idsucursal);
-		return ejecutarConsulta($sql);
-	}
+
+	// public function mostrar_numero_cotizacion($idsucursal)
+	// {
+	// 	$sql = "SELECT idempresa, num_comprobante FROM comp_pago WHERE nombre='Cotización' AND " . $this->getEmpresaFilter($idsucursal);
+	// 	return ejecutarConsulta($sql);
+	// }
 	public function mostrar_numero_ordencompra($idsucursal)
 	{
 		$sql = "SELECT idempresa, num_comprobante FROM comp_pago WHERE nombre='Orden Compra' AND " . $this->getEmpresaFilter($idsucursal);
@@ -190,38 +236,40 @@ class Comprobantes
 		return ejecutarConsulta($sql);
 	}
 
-	public function siguiente_numero_real($nombre_comprobante, $idsucursal) {
-	    // Obtener la serie actual del comprobante
-	    $sql_serie = "SELECT serie_comprobante FROM comp_pago 
+	public function siguiente_numero_real($nombre_comprobante, $idsucursal)
+	{
+		// Obtener la serie actual del comprobante
+		$sql_serie = "SELECT serie_comprobante FROM comp_pago 
 	                  WHERE nombre='$nombre_comprobante' AND " . $this->getEmpresaFilter($idsucursal);
-	    $rspta_serie = ejecutarConsulta($sql_serie);
-	    $serie = '';
-	    if ($reg = $rspta_serie->fetch_object()) {
-	        $serie = $reg->serie_comprobante;
-	    }
+		$rspta_serie = ejecutarConsulta($sql_serie);
+		$serie = '';
+		if ($reg = $rspta_serie->fetch_object()) {
+			$serie = $reg->serie_comprobante;
+		}
 
-	    // Consultar el último número emitido de esta serie
-	    $empresaId = $this->getIdEmpresaBySucursal($idsucursal);
-	    if ($empresaId) {
-	        $sql = "SELECT MAX(num_comprobante) as ultimo FROM venta 
+		// Consultar el último número emitido de esta serie
+		$empresaId = $this->getIdEmpresaBySucursal($idsucursal);
+		if ($empresaId) {
+			$sql = "SELECT MAX(num_comprobante) as ultimo FROM venta 
 	                WHERE tipo_comprobante='$nombre_comprobante' AND serie_comprobante='$serie' 
 	                AND idsucursal IN (SELECT idsucursal FROM sucursal WHERE idempresa='$empresaId')";
-	    } else {
-	        $sql = "SELECT MAX(num_comprobante) as ultimo FROM venta 
+		} else {
+			$sql = "SELECT MAX(num_comprobante) as ultimo FROM venta 
 	                WHERE tipo_comprobante='$nombre_comprobante' AND serie_comprobante='$serie' 
 	                AND idsucursal='$idsucursal'";
-	    }
-	    $rspta = ejecutarConsulta($sql);
-	    $num = 0;
-	    if ($reg = $rspta->fetch_object()) {
-	        $num = (int)$reg->ultimo;
-	    }
+		}
+		$rspta = ejecutarConsulta($sql);
+		$num = 0;
+		if ($reg = $rspta->fetch_object()) {
+			$num = (int) $reg->ultimo;
+		}
 
-	    // Siguiente número
-	    $num++;
-	    if ($num > 9999999) $num = 1; // reinicia si pasa el límite
+		// Siguiente número
+		$num++;
+		if ($num > 9999999)
+			$num = 1; // reinicia si pasa el límite
 
-	    return $num;
+		return $num;
 	}
 
 	public function select_comprobantes_guia()

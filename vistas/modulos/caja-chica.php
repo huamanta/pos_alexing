@@ -1,58 +1,4 @@
-<!-- Content Wrapper. Contains page content -->
-<?php
-date_default_timezone_set('America/Lima');
-$idcajaSesion = isset($_SESSION['idcaja']) ? $_SESSION['idcaja'] : '';
-?>
-
-<style>
-
-#tablaAsistenciaRapida {
-    width: 100% !important;
-}
-
-/* Tipografía más profesional */
-.modal-title {
-    letter-spacing: 0.5px;
-}
-
-/* Filas más limpias */
-.table tbody tr td {
-    vertical-align: middle !important;
-    font-size: 14px;
-}
-
-/* Icono calendario */
-.fa-calendar {
-    transition: 0.2s;
-}
-.fa-calendar:hover {
-    transform: scale(1.2);
-    color: #0d6efd !important;
-}
-
-/* Botones más modernos */
-.btn {
-    border-radius: 6px !important;
-}
-
-/* ============================
-   ZOOM GLOBAL FUNCIONAL
-   ============================ */
-.scale-global {
-    zoom: 0.85; /* Cambia el valor a gusto: 0.80 / 0.70 / 0.65 */
-    transform-origin: top center;
-}
-
-/* Para navegadores que no soportan zoom */
-@supports not (zoom:1) {
-    .scale-global {
-        transform: scale(0.85);
-        transform-origin: top center;
-    }
-}
-
-</style>
-<div class="scale-global">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
@@ -74,572 +20,578 @@ $idcajaSesion = isset($_SESSION['idcaja']) ? $_SESSION['idcaja'] : '';
     <!-- Main content -->
     <section class="content">
         <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
+
+            <style>
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                    font-family: Segoe UI, Tahoma, Geneva, Verdana, sans-serif;
+                }
+
+                body {
+                    background: #f4f6f9;
+                    color: #333;
+                }
+
+                .container {
+                    max-width: 1400px;
+                    margin: 25px auto;
+                    padding: 15px;
+                }
+
+                .header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 20px;
+                }
+
+                .header h2 {
+                    font-size: 30px;
+                }
+
+                .filters {
+                    display: flex;
+                    gap: 10px;
+                }
+
+                .filters select,
+                .filters input {
+                    padding: 10px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                }
+
+                .cards {
+                    display: grid;
+                    grid-template-columns: repeat(5, 1fr);
+                    gap: 20px;
+                    margin-bottom: 25px;
+                }
+
+                .card {
+                    background: #fff;
+                    border-radius: 15px;
+                    padding: 20px;
+                    box-shadow: 0 3px 12px rgba(0, 0, 0, .08);
+                    transition: .3s;
+                }
+
+                .card:hover {
+                    transform: translateY(-5px);
+                }
+
+                .card-top {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                }
+
+                .icon {
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 50%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    font-size: 25px;
+                    color: #fff;
+                }
+
+                .blue {
+                    background: #0d6efd;
+                }
+
+                .green {
+                    background: #28a745;
+                }
+
+                .orange {
+                    background: #fd7e14;
+                }
+
+                .purple {
+                    background: #6f42c1;
+                }
+
+                .red {
+                    background: #dc3545;
+                }
+
+                .value {
+                    margin-top: 10px;
+                    font-size: 20px;
+                    color: #198754;
+                    font-weight: bold;
+                }
+
+                .subtitle {
+                    color: #888;
+                    margin-top: 5px;
+                }
+
+                .tables {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 20px;
+                }
+
+                .box {
+                    background: #fff;
+                    border-radius: 15px;
+                    box-shadow: 0 3px 12px rgba(0, 0, 0, .08);
+                    overflow: hidden;
+                }
+
+                .box-header {
+                    padding: 18px;
+                    font-size: 20px;
+                    font-weight: bold;
+                    border-bottom: 1px solid #eee;
+                }
+
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+
+                th {
+                    background: #f8f9fa;
+                    padding: 12px;
+                }
+
+                td {
+                    padding: 12px;
+                    border-bottom: 1px solid #eee;
+                }
+
+                tfoot {
+                    background: #eaf8ec;
+                    font-weight: bold;
+                }
+
+                tfoot td {
+                    color: #198754;
+                }
+
+                .summary {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 20px;
+                    margin-top: 25px;
+                }
+
+                .summary .card {
+                    text-align: center;
+                }
+
+                .summary h3 {
+                    font-size: 35px;
+                    color: #0d6efd;
+                }
+
+                @media(max-width:1100px) {
+
+                    .cards {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+
+                    .tables {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .summary {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+
+                }
+
+                @media(max-width:700px) {
+
+                    .cards,
+                    .summary {
+                        grid-template-columns: 1fr;
+                    }
+
+                }
+
+                /* ===========================
+   TABLA COMPROBANTES
+=========================== */
+
+                #tablaComprobantes td:nth-child(1) {
+                    font-weight: 600;
+                }
+
+                #tablaComprobantes td:nth-child(2) {
+                    text-align: center;
+                }
+
+                #tablaComprobantes td:nth-child(3),
+                #tablaComprobantes td:nth-child(4) {
+                    text-align: right;
+                }
+
+                #tablaComprobantes tr:hover {
+                    background: #f8f9fa;
+                }
+
+                #tablaComprobantes td {
+                    vertical-align: middle;
+                }
+
+                #cantidadComprobantes,
+                #totalComprobantes {
+                    font-weight: bold;
+                    color: #198754;
+                }
+
+                .badge-contado {
+                    background: #28a745;
+                    color: #fff;
+                    padding: 4px 10px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+
+                .badge-credito {
+                    background: #fd7e14;
+                    color: #fff;
+                    padding: 4px 10px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                }
+            </style>
+
+            <div class="container">
+
+                <div class="header">
+
+
+                    <div class="filters">
+
+                        <input type="date">
+
+                        <input type="date">
+
+                    </div>
+
+                </div>
+
+                <div class="cards">
+
                     <div class="card">
 
-                        <!-- /.card-header -->
-                        <div class="card-body">
+                        <div class="card-top">
+                            <div class="icon blue">
+                                <i class="fa-solid fa-wallet"></i>
+                            </div>
 
-                            <div class="row">
+                            <div>
+                                <h4>Total Ingresos</h4>
+                                <div class="value caja-total">S/0.00</div>
+                                <div class="subtitle caja-operaciones">0 operaciones</div>
+                            </div>
+                        </div>
 
-                                <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
-                                    <label>Fecha Inicio:</label>
+                    </div>
 
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="far fa-calendar-alt"></i>
+                    <div class="card">
+
+                        <div class="card-top">
+                            <div class="icon green">
+                                <i class="fa-solid fa-money-bill-wave"></i>
+                            </div>
+
+                            <div>
+                                <h4>Efectivo</h4>
+                                <div class="value caja-efectivo">S/0.00</div>
+                                <div class="subtitle">Efectivo</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="card">
+
+                        <div class="card-top">
+                            <div class="icon purple">
+                                <i class="fa-solid fa-building-columns"></i>
+                            </div>
+
+                            <div>
+                                <h4>Transferencias</h4>
+                                <div class="value caja-transferencias">S/0.00</div>
+                                <div class="subtitle">Transferencias</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="card">
+
+                        <div class="card-top">
+                            <div class="icon orange">
+                                <i class="fa-solid fa-money-check-dollar"></i>
+                            </div>
+
+                            <div>
+                                <h4>Depósitos</h4>
+                                <div class="value caja-depositos">S/0.00</div>
+                                <div class="subtitle">Depósitos</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="card">
+
+                        <div class="card-top">
+                            <div class="icon red">
+                                <i class="fa-solid fa-credit-card"></i>
+                            </div>
+
+                            <div>
+                                <h4>Tarjetas</h4>
+                                <div class="value caja-tarjetas">S/0.00</div>
+                                <div class="subtitle">Tarjetas</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="tables">
+
+                    <div class="box">
+
+                        <div class="box-header">
+                            <i class="fa-solid fa-hand-holding-dollar"></i>
+                            Cuentas por Cobrar
+                        </div>
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Forma Pago</th>
+                                    <th>Banco</th>
+                                    <th>Cantidad</th>
+                                    <th>Total</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="tablaCuentasCobrar">
+                            </tbody>
+
+                            <tfoot>
+
+                                <tr>
+
+                                    <td colspan="2">TOTAL</td>
+
+                                    <td id="cantidadCuentasCobrar">
+                                        0
+                                    </td>
+
+                                    <td id="totalCuentasCobrar">
+                                        S/0.00
+                                    </td>
+
+                                </tr>
+
+                            </tfoot>
+
+                        </table>
+
+                    </div>
+
+                    <div class="box">
+
+                        <div class="box-header">
+                            <i class="fa-solid fa-cart-shopping"></i>
+                            Ventas
+                        </div>
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>Forma Pago</th>
+                                    <th>Banco</th>
+                                    <th>Cantidad</th>
+                                    <th>Total</th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="tablaVentas">
+                            </tbody>
+
+                            <tfoot>
+
+                                <tr>
+
+                                    <td colspan="2">TOTAL</td>
+
+                                    <td id="cantidadVentas">
+                                        0
+                                    </td>
+
+                                    <td id="totalVentas">
+                                        S/0.00
+                                    </td>
+
+                                </tr>
+
+                            </tfoot>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+                <div class="summary">
+
+                    <div class="card">
+                        <h4>Total General</h4>
+                        <h3 id="summaryTotal">
+                            S/0.00
+                        </h3>
+                    </div>
+
+
+                    <div class="card">
+                        <h4>Operaciones</h4>
+                        <h3 id="summaryOperaciones">
+                            0
+                        </h3>
+                    </div>
+
+
+                    <div class="card">
+                        <h4>Promedio</h4>
+                        <h3 id="summaryPromedio">
+                            S/0.00
+                        </h3>
+                    </div>
+
+
+                    <div class="card">
+                        <h4>Última actualización</h4>
+
+                        <h3 id="summaryFecha" style="font-size:22px">
+                            -
+                        </h3>
+
+                    </div>
+
+                </div>
+
+
+                <div class="row mt-4">
+
+                    <div class="col-md-12">
+                        <div class="box">
+                            <div class="box-header">
+                                <i class="fa-solid fa-file-invoice"></i>
+                                Resumen de Comprobantes
+                            </div>
+                            <div class="box-body p-3">
+
+                                <div class="row">
+
+                                    <div class="col-md-4">
+                                        <div class="info-box bg-info">
+                                            <span class="info-box-icon">
+                                                <i class="fa-solid fa-file-lines"></i>
                                             </span>
+
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Comprobantes</span>
+                                                <span class="info-box-number" id="cmpCantidad">0</span>
+                                                <small id="cmpTotal">S/ 0.00</small>
+                                            </div>
                                         </div>
-                                        <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio" value="<?php echo date("Y-m-d"); ?>">
                                     </div>
-                                </div>
 
-                                <div class="form-group col-lg-3 col-md-3 col-sm-3 col-xs-12">
-                                    <label>Fecha Fin:</label>
-
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="far fa-calendar-alt"></i>
+                                    <div class="col-md-4">
+                                        <div class="info-box bg-success">
+                                            <span class="info-box-icon">
+                                                <i class="fa-solid fa-money-bill-wave"></i>
                                             </span>
+
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Contado</span>
+                                                <span class="info-box-number" id="cmpContadoCantidad">0</span>
+                                                <small id="cmpContadoTotal">S/ 0.00</small>
+                                            </div>
                                         </div>
-                                        <input type="date" class="form-control" name="fecha_fin" id="fecha_fin" value="<?php echo date("Y-m-d"); ?>">
                                     </div>
-                                </div>
 
-                                <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
-                                    <label>Almacén:</label>
+                                    <div class="col-md-4">
+                                        <div class="info-box bg-warning">
+                                            <span class="info-box-icon">
+                                                <i class="fa-solid fa-credit-card"></i>
+                                            </span>
 
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">
-                                            <i class="fas fa-store-alt"></i>
-                                        </span>
-                                        <select id="idsucursal2" name="idsucursal2" class="form-control select2">
-                                        </select>
-
-                                    </div>
-                                </div>
-
-                                <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
-
-                                    <label>Vendedor:</label>
-
-                                    <div class="input-group-prepend">
-                                        <select id="idvendedor" name="idvendedor" class="form-control select2" required>
-                                        </select>
+                                            <div class="info-box-content">
+                                                <span class="info-box-text">Crédito</span>
+                                                <span class="info-box-number" id="cmpCreditoCantidad">0</span>
+                                                <small id="cmpCreditoTotal">S/ 0.00</small>
+                                            </div>
+                                        </div>
                                     </div>
 
                                 </div>
 
                             </div>
-
-                            <br>
-
-                            <ul class="nav nav-tabs" id="myTab" role="tablist">
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link active" id="home-tab" data-toggle="tab" data-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">Entradas</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="salidas-tab" data-toggle="tab" data-target="#salidas" type="button" role="tab" aria-controls="salidas" aria-selected="false">Salidas</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="profile-tab" data-toggle="tab" data-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">Ingresos / Egresos</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="profile-tab" data-toggle="tab" data-target="#Asistenc" type="button" role="tab" aria-controls="Asistenc" aria-selected="false">Asistencia</button>
-                                </li>
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="profile-tab" data-toggle="tab" data-target="#concepts" type="button" role="tab" aria-controls="concepts" aria-selected="false">Conceptos</button>
-                                </li>
-                            </ul>
-
-                            <div class="tab-content" id="myTabContent">
-                                <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                                    <section class="content table-responsive">
-                                        <table id="tablaCaja" class="table table-striped table-sm table-hover" style="width: 100%;">
-                                            <thead style="background: #3C8DBC; color: white;">
-                                                <tr>
-                                                    <th style="text-align: center; width: 600px;">Comprobantes</th>
-                                                    <th style="text-align: center; width: 500px;">Cash/Efectivo</th>
-                                                    <th style="text-align: center; width: 500px;">Tarjeta / Transferencia</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="tblCompraS">
-                                                <tr>
-                                                    <td><img src="files/plantilla/facturaa.svg" style="width: 25px; margin-left: 30px;"> Facturas
-                                                        <span id="boleta_total_documentos_fac" class="badge badge-success"></span>
-                                                    </td>
-                                                    <td style="text-align: center;"><label for="facturas" id="facturas">0</label></td>
-                                                    <td style="text-align: center;"><label for="facturasT" id="facturasT">0</label></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="files/plantilla/boleta.svg" style="width: 25px; margin-left: 30px;"> Boletas
-                                                        <span id="boleta_total_documentos_bol" class="badge badge-success"></span>
-                                                    </td>
-                                                    <td style="text-align: center;"><label for="boletas" id="boletas">0</label></td>
-                                                    <td style="text-align: center;"><label for="boletasT" id="boletasT">0</label></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="files/plantilla/note.svg" style="width: 25px; margin-left: 30px;"> Notas de Venta
-                                                        <span id="boleta_total_documentos_not" class="badge badge-success"></span>
-                                                    </td>
-                                                    <td style="text-align: center;"><label for="notasVenta" id="notasVenta">0</label></td>
-                                                    <td style="text-align: center;"><label for="notasVentaT" id="notasVentaT">0</label></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="files/plantilla/download.svg" style="width: 25px; margin-left: 30px;"> Cuentas x Cobrar
-                                                        <span id="boleta_total_documentos_cuentas" class="badge badge-success"></span>
-                                                    </td>
-                                                    <td style="text-align: center;"><label for="cuentasCobrar" id="cuentasCobrar">0</label></td>
-                                                    <td style="text-align: center;"><label for="cuentasCobrarT" id="cuentasCobrarT">0</label></td>
-                                                    <th style="text-align: center; width: 300px; background: #3C8DBC; color: white;">Total</th>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="files/plantilla/subtotales.svg" style="width: 25px; margin-left: 30px;"> SubTotales</td>
-                                                    <td style="text-align: center;"><label for="totalEfectivo" id="totalEfectivo">0</label></td>
-                                                    <td style="text-align: center;"><label for="totalTransferencia" id="totalTransferencia">0</label></td>
-                                                    <td style="text-align: center;"><label for="totalT" id="totalT"></label></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </section>
+                            <div class="box">
+                                <div class="box-header">
+                                    <i class="fa-solid fa-file-invoice"></i>
+                                    Resumen de Comprobantes
                                 </div>
 
-                                <div class="tab-pane fade" id="salidas" role="tabpanel" aria-labelledby="salidas-tab">
-                                    <section class="content table-responsive">
-                                        <table id="tablaCaja" class="table table-striped table-sm table-hover" style="width: 100%;">
-                                            <thead style="background: #3C8DBC; color: white;">
-                                                <tr>
-                                                    <th style="text-align: center; width: 600px;">Comprobantes</th>
-                                                    <th style="text-align: center; width: 500px;">Cash/Efectivo</th>
-                                                    <th style="text-align: center; width: 500px;">Tarjeta / Transferencia</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="tblCompraS">
-                                                <tr>
-                                                    <td><img src="files/plantilla/facturac.svg" style="width: 25px; margin-left: 30px;"> Facturas
-                                                        <span id="boleta_total_documentos_fac2" class="badge badge-success"></span>
-                                                    </td>
-                                                    <td style="text-align: center;"><label for="facturassalida" id="facturassalida">0</label></td>
-                                                    <td style="text-align: center;"><label for="facturassalidaT" id="facturassalidaT">0</label></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="files/plantilla/boletac.svg" style="width: 25px; margin-left: 30px;"> Boletas
-                                                        <span id="boleta_total_documentos_bol2" class="badge badge-success"></span>
-                                                    </td>
-                                                    <td style="text-align: center;"><label for="boletassalida" id="boletassalida">0</label></td>
-                                                    <td style="text-align: center;"><label for="boletassalidaT" id="boletassalidaT">0</label></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="files/plantilla/ticketc.svg" style="width: 25px; margin-left: 30px;"> Ticket
-                                                        <span id="boleta_total_documentos_tick" class="badge badge-success"></span>
-                                                    </td>
-                                                    <td style="text-align: center;"><label for="notasCompra" id="notasCompra">0</label></td>
-                                                    <td style="text-align: center;"><label for="notasCompraT" id="notasCompraT">0</label></td>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="files/plantilla/cuentaspagar.svg" style="width: 25px; margin-left: 30px;"> Cuentas x Pagar
-                                                        <span id="boleta_total_documentos_cuentas" class="badge badge-success"></span>
-                                                    </td>
-                                                    <td style="text-align: center;"><label for="cuentasPagar" id="cuentasPagar">0</label></td>
-                                                    <td style="text-align: center;"><label for="cuentasPagarT" id="cuentasPagarT">0</label></td>
-                                                    <th style="text-align: center; width: 300px; background: #3C8DBC; color: white;">Total</th>
-                                                </tr>
-                                                <tr>
-                                                    <td><img src="files/plantilla/subtotalcompra.svg" style="width: 25px; margin-left: 30px;"> SubTotales</td>
-                                                    <td style="text-align: center;"><label for="totalEfectivoSalida" id="totalEfectivoSalida">0</label></td>
-                                                    <td style="text-align: center;"><label for="totalTransferenciaSalida" id="totalTransferenciaSalida">0</label></td>
-                                                    <td style="text-align: center;"><label for="totalSalidaT2" id="totalSalidaT2">0</label></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </section>
-                                </div>
-
-                                <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                                    <div class="row">
-                                        <div class="col-md-2">
-                                            <button type="button" class="btn btn-outline-primary btn-block btn-xs" onclick="crearMovimiento()"><i class="fa fa-plus"></i> Crear Movimiento</button>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button class="btn btn-warning btn-block btn-xs" onclick="nuevoAdelanto()">
-                                                    <i class="fa fa-money-bill-wave"></i> Registrar adelanto
-                                            </button>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button id="btnReporteAdelantos" class="btn btn-primary btn-block btn-xs">
-                                              Reporte Adelantos
-                                            </button>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button id="btnExportarExcel" class="btn btn-success btn-block btn-xs">
-                                                <i class="fa fa-file-excel"></i> Exportar reporte
-                                            </button>
-                                        </div>
-                                        <div class="col-md-2" hidden>
-                                            <form method="post" action="controladores/exportar_excel.php">
-                                                <button type="submit" class="btn btn-outline-success btn-block btn-xs"><i class="fa fa-file-excel-o"></i> Reporte</button>
-                                            </form>
-                                        </div>
-                                    </div>
-
-                                    <div class="card-body">
-                                        <table id="tbllistado" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>Fecha</th>
-                                                    <th>Descripción</th>
-                                                    <th>Tipo</th>
-                                                    <th>Forma pago</th>
-                                                    <th>Efectivo</th>
-                                                    <th>Otras op</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <th>Fecha</th>
-                                                    <th>Descripción</th>
-                                                    <th>Tipo</th>
-                                                    <th>Forma pago</th>
-                                                    <th>Efectivo</th>
-                                                    <th>Otras op</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="concepts" role="tabpanel" aria-labelledby="concepts-tab">
-                                    <div class="row">
-                                        <div class="col-md-2">
-                                            <button type="button" class="btn btn-outline-primary btn-block btn-xs" onclick="crearConcepto()"><i class="fa fa-plus"></i> Crear concepto</button>
-                                        </div>
-                                    </div>
-
-                                    <div class="card-body">
-                                        <table id="tbllistadoconceptos" class="table table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>Descripcion</th>
-                                                    <th>Tipo concepto</th>
-                                                    <th>Categoria concepto</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                            </tbody>
-                                            <tfoot>
-                                                <tr>
-                                                    <th>Nombre</th>
-                                                    <th>Tipo concepto</th>
-                                                    <th>Categoria concepto</th>
-                                                    <th>Acciones</th>
-                                                </tr>
-                                            </tfoot>
-                                        </table>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="Asistenc" role="tabpanel" aria-labelledby="concepts-tab">
-
-                                    <div class="card-body">
-                                        <table id="tablaAsistenciaRapida" class="table table-bordered table-striped">
-                                            <thead>
-                                                <tr>
-                                                    <th>
-                                                        <input type="checkbox" id="seleccionarTodos" />
-                                                    </th>
-                                                    <th>Empleado</th>
-                                                    <th>Asistencia</th>
-                                                    <th>Fecha</th>
-                                                    <th>Entrada</th>
-                                                    <th>Salida</th>
-                                                    <th>Monto día</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <!-- Se llenará con JS -->
-                                            </tbody>
-                                        </table>
-                                        <br>
-                                        <button id="guardarAsistenciaRapida" class="btn btn-primary">Guardar</button>
-                                    </div>
-                                </div>
-                                <table class="table table-striped table-sm table-hover table-lg table-responsive" width="100%">
+                                <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th style="width: 400px;"></th>
-                                            <th style="width: 400px;"></th>
-                                            <th class="text-right" style="width: 300px; background: #3C8DBC; color: white;">Operaciones</th>
-                                            <th style="text-align: center; width: 300px; background: #3C8DBC; color: white;">Totales</th>
+                                            <th>Comprobante</th>
+                                            <th>Credito</th>
+                                            <th>Cantidad</th>
+                                            <th>Total</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+
+                                    <tbody id="tablaComprobantes"></tbody>
+
+                                    <tfoot>
                                         <tr>
-                                            <td colspan="3" class="text-right" style="color: green;"><strong>Ingresos Caja efectivo:</strong></td>
-                                            <td style="text-align: center;"><label for="totalI" id="totalI">0.00</label></td>
+                                            <td colspan="2"><strong>TOTAL</strong></td>
+                                            <td class="text-center" id="cantidadComprobantes">0</td>
+                                            <td class="text-right" id="totalComprobantes">S/0.00</td>
                                         </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-right" style="color: green;"><strong>Ingresos Caja tarjeta:</strong></td>
-                                            <td style="text-align: center;"><label for="totalITar" id="totalITar">0.00</label></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-right" style="color: red;"><strong>Egresos Caja efectivo:</strong></td>
-                                            <td style="text-align: center;"><label for="totalE" id="totalE">0.00</label></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-right" style="color: red;"><strong>Egresos Caja tarjeta:</strong></td>
-                                            <td style="text-align: center;"><label for="totalETar" id="totalETar">0.00</label></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-right" style="color: green;"><strong>Ventas Efectivo:</strong></td>
-                                            <td style="text-align: center;"><label for="totalEf" id="totalEf">0.00</label></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-right" style="color: green;"><strong>Ventas Tarjeta:</strong></td>
-                                            <td style="text-align: center;"><label for="totalTar" id="totalTar">0.00</label></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-right" style="color: red;"><strong>Salidas Efectivo Caja:</strong></td>
-                                            <td style="text-align: center;"><label for="totalSalEf" id="totalSalEf">0.00</label></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-right" style="color: red;"><strong>Salidas Op. Tarjeta:</strong></td>
-                                            <td style="text-align: center;"><label for="totalSalTar" id="totalSalTar">0.00</label></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-right" style="color: blue;"><strong>Caja General Efectivo:</strong></td>
-                                            <td style="text-align: center;"><label for="totalEC" id="totalEC">0.00</label></td>
-                                        </tr>
-                                        <tr>
-                                            <td colspan="3" class="text-right" style="color: blue;"><strong>Caja General Tarjeta:</strong></td>
-                                            <td style="text-align: center;"><label for="totalET" id="totalET">0.00</label></td>
-                                        </tr>
-                                    </tbody>
+                                    </tfoot>
                                 </table>
                             </div>
-
-
                         </div>
-                        <!-- /.card-body -->
                     </div>
-                    <!-- /.card -->
 
                 </div>
-                <!-- /.col -->
             </div>
-            <!-- /.row -->
         </div>
-        <!-- /.container-fluid -->
     </section>
-    <!-- /.content -->
-</div>
-
-<div class="modal fade" id="myModal">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Movimiento</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form class="form-horizontal" role="form" name="formulario" id="formulario" method="POST">
-                <div class="modal-body">
-                    <input type="hidden" name="idmovimiento" id="idmovimiento">
-                    <input type="hidden" name="idcaja" id="idcaja" value="<?= $idcajaSesion ?>">
-                    <div class="row">
-                        <div class="form-group col-6">
-                            <div class="col-sm-12 text-danger" style="text-align: center;">
-                                <input type="radio" id="egresos" name="opcionEI" value="Egresos" checked="" onchange="verificarConceptoMovimiento()">
-                                <label for="male">Egresos (-)</label>
-                            </div>
-                        </div>
-                        <div class="form-group col-6">
-                            <div class="col-sm-12 text-success" style="text-align: center;">
-                                <input type="radio" id="ingresos" name="opcionEI" value="Ingresos" onchange="verificarConceptoMovimiento()">
-                                <label for="male">Ingresos (+)</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-lg-6">
-                            <label for="name" class="control-label">Almacen <span class="text-danger">*</span></label>
-                            <select id="idsucursal" name="idsucursal" class="form-control select2" data-live-search="true">
-                            </select>
-                        </div>
-                        <div class="form-group col-lg-6">
-                            <label>Concepto movimiento <span class="text-danger">*</span></label>
-                            <select id="idconcepto_movimiento" name="idconcepto_movimiento" class="form-control" data-live-search="true" required>
-                            </select>
-                        </div>
-                        <div class="form-group col-md-12">
-                            <label class="col-form-label">
-                                <i class="fas fa-users fs-6"></i>
-                                <span class="small">Personal</span>
-                            </label>
-                            <select id="idpersonal" name="idpersonal" class="form-control select2"></select>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="form-group col-lg-6">
-                            <label>Forma de pago <span class="text-danger">*</span></label>
-                            <select id="formapago" name="formapago" class="form-control" data-live-search="true" required>
-                                <option value="Efectivo">Efectivo</option>
-                                <option value="Transferencia">Transferencia bancaria</option>
-                                <option value="Tarjeta">Tarjeta POS</option>
-                                <option value="Deposito">Depósito</option>
-                                <option value="Yape">Yape</option>
-                                <option value="Plin">Plin</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-lg-6">
-                            <label>Total Monto tarjeta </label>
-                            <div class="input-group">
-                                <input style="text-align:center;background-color:#E1FEFF ; border-color: #38F0F9; border-radius:10px;" type="text" class="form-control" id="totaldeposito" name="totaldeposito" placeholder="Monto recibido" value="0" readonly>
-                            </div>
-
-                        </div>
-
-                        <div class="form-group col-lg-6">
-
-                            <label># operación</label>
-                            <div class="input-group">
-                                <input style="text-align:center;background-color:#E1FEFF ; border-color: #38F0F9; border-radius:10px;" type="text" class="form-control" name="noperacion" id="noperacion" maxlength="7" placeholder="Descuento" value="0" readonly>
-                            </div>
-
-                        </div>
-                        <div class="form-group col-lg-6">
-                            <label class="col-form-label">Monto efectivo</label>
-                            <input type="number" step="any" class="form-control" id="montoPagar" name="montoPagar">
-                        </div>
-                        <div class="form-group col-12">
-                            <label for="name" class="col-sm-2 control-label">Descripción <span class="text-danger">*</span></label>
-                            <textarea class="form-control" name="descripcion" id="descripcion"></textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-                    <button class="btn btn-primary" type="submit" id="btnGuardar">Guardar</button>
-                </div>
-            </form>
-        </div>
-        <!-- /.modal-content -->
-    </div>
-    <!-- /.modal-dialog -->
-</div>
-
-<div class="modal fade" id="myModalCocepto">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Conceptos</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form class="form-horizontal" role="form" name="formularioConcepto" id="formularioConcepto" method="POST">
-                <div class="modal-body">
-                    <input type="hidden" name="idconcepto_movimiento" id="idconcepto_movimiento_form">
-                    <div class="row">
-                        <div class="form-group col-12">
-                            <label for="name" class="control-label">Concepto movimiento <span class="text-danger">*</span></label>
-                            <textarea class="form-control" name="descripcion" id="descripcion_concepto"></textarea>
-                        </div>
-                        <div class="form-group col-lg-12">
-                            <label>Tipo concepto<span class="text-danger">*</span></label>
-                            <select id="tipo" name="tipo" class="form-control" data-live-search="true" required>
-                                <option value="">Seleccione...</option>
-                                <option value="ingresos">Ingresos</option>
-                                <option value="egresos">Egresos</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group col-lg-12" id="divCategoriaMov" hidden>
-                            <label>Categoria concepto</label>
-                            <select id="categoria_concepto" name="categoria_concepto" class="form-control" data-live-search="true">
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-                    <button class="btn btn-primary" type="submit" id="btnGuardarC">Guardar</button>
-                </div>
-            </form>
-        </div>
-        <!-- /.modal-content -->
-    </div>
-    <!-- /.modal-dialog -->
-</div>
-
-<!-- ========================================================= -->
-<!-- MODAL DE RECIBO SEMANAL -->
-<!-- ========================================================= -->
-<div class="modal fade" id="modalRecibo" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-xl">
-
-    <div class="modal-content shadow-lg border-0" style="border-radius:12px;">
-      <div class="modal-body" id="recibo_content" style="
-            padding:35px;">
-        <!-- Se inserta el reporte aquí -->
-      </div>
-
-      <div class="modal-footer" style="background:#f3f4f6; border-bottom-left-radius:12px; border-bottom-right-radius:12px;">
-        <button class="btn btn-primary px-4 shadow-sm" onclick="imprimirModalRecibo()">
-          <i class="fa fa-print mr-1"></i> Imprimir
-        </button>
-
-        <button class="btn btn-danger px-4 shadow-sm" data-dismiss="modal">
-          Cerrar
-        </button>
-      </div>
-
-    </div>
-
-  </div>
-</div>
-
-<div class="modal fade" id="modalCalendario" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
-
-    <div class="modal-content shadow-lg border-0" style="border-radius:12px;">
-
-      <div class="modal-header" style="
-            background:#2563eb; 
-            color:white; 
-            border-top-left-radius:12px; 
-            border-top-right-radius:12px;">
-        <h5 class="modal-title font-weight-bold">Calendario de Días Trabajados</h5>
-        <button type="button" class="close text-white" data-dismiss="modal">
-          <span>&times;</span>
-        </button>
-      </div>
-
-      <div class="modal-body" style="background:#f3f4f6;">
-        <div class="card shadow-sm border-0" style="border-radius:10px;">
-          <div class="card-body">
-            <div id="calendario_trabajo" style="height:500px;"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-footer" style="background:#f9fafb; border-bottom-left-radius:12px; border-bottom-right-radius:12px;">
-        <button class="btn btn-secondary px-4" data-dismiss="modal">
-          Cerrar
-        </button>
-      </div>
-
-    </div>
-
-  </div>
-</div>
 </div>
 
 <script src="vistas/js/caja-chica.js"></script>

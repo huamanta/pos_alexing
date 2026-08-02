@@ -501,25 +501,14 @@ date_default_timezone_set('America/Lima');
                                                         <div class="row">
                                                             <div class="col-md-4">
                                                                 <div class="form-group mb-2">
-                                                                    <label class="col-form-label" for="selCategoriaReg">
+                                                                    <label class="col-form-label" for="tipo_comprobante">
                                                                         <i class="fas fa-file-alt fs-6"></i>
                                                                         <span class="small">Tipo Documento </span>
                                                                     </label>
                                                                     <select name="tipo_comprobante"
                                                                         id="tipo_comprobante" class="form-control"
                                                                         required>
-                                                                        <option value="Boleta">Boleta</option>
-                                                                        <option value="Factura">Factura</option>
-                                                                        <option value="Ticket">Ticket</option>
                                                                     </select>
-                                                                    <select name="tipo_c" id="tipo_c"
-                                                                        class="form-control" hidden>
-                                                                        <option value="Compra">Compra</option>
-                                                                    </select>
-                                                                    <span id="validate_categoria"
-                                                                        class="text-danger small fst-italic"
-                                                                        style="display:none">Debe Seleccione
-                                                                        documento</span>
                                                                 </div>
                                                             </div>
                                                             <div class="col-md-4">

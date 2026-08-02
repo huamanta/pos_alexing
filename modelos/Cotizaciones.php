@@ -2,6 +2,8 @@
 //incluir la conexion de base de datos
 require "../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/config/Constants.php";
+require_once __DIR__ . "/../core/Response.php";
 
 date_default_timezone_set('America/Lima');
 
@@ -20,7 +22,7 @@ class Cotizacion extends Helpers
         $idsucursal,
         $idcliente,
         $idpersonal,
-        $tipo_comprobante,
+        $idtipo_comprobante,
         $serie_comprobante,
         $num_comprobante,
         $fecha_hora,
@@ -47,21 +49,14 @@ class Cotizacion extends Helpers
 
         try {
 
-            $idcliente = Helpers::clienteDefault($idcliente);
-
             $this->pdo->beginTransaction();
 
-            $ultimo = (new DBQuery($this->pdo))
-                ->select('num_comprobante')
-                ->from('cotizacion')
-                ->where('serie_comprobante', '=', $serie_comprobante)
-                ->where('tipo_comprobante', '=', $tipo_comprobante)
-                ->latest('idcotizacion')
-                ->lockForUpdate()
-                ->first();
-            $num_comprobante = $ultimo
-                ? str_pad(((int) $ultimo['num_comprobante']) + 1, 6, '0', STR_PAD_LEFT)
-                : '000001';
+            $idcliente = Helpers::clienteDefault($idcliente);
+            if ($idcliente == Constants::CLIENTE_DEFAULT) {
+                throw new Exception("Debe seleccionar un cliente válido.");
+            }
+
+            $config = Helpers::obtenerComprobanteSucursal($idtipo_comprobante, $idsucursal);
 
             $idcotizacion = (new FluentSaver($this->pdo))
                 ->table('cotizacion')
@@ -75,9 +70,9 @@ class Cotizacion extends Helpers
                     'idsucursal' => $idsucursal,
                     'idcliente' => $idcliente,
                     'idpersonal' => $idpersonal,
-                    'tipo_comprobante' => $tipo_comprobante,
-                    'serie_comprobante' => $serie_comprobante,
-                    'num_comprobante' => $num_comprobante,
+                    'idcomprobante_pago' => $idtipo_comprobante,
+                    'serie_comprobante' => $config['serie_comprobante'],
+                    'num_comprobante' => $config['num_comprobante'],
                     'fecha_hora' => $fecha_hora,
                     'total_venta' => $total_venta,
                     'titulo' => $titulo,
@@ -95,6 +90,10 @@ class Cotizacion extends Helpers
                 ])
                 ->save();
 
+            if (!$idcotizacion) {
+                throw new Exception("No se pudo registrar la cotización.");
+            }
+
             foreach ($idp as $i => $producto) {
 
                 (new FluentSaver($this->pdo))
@@ -111,47 +110,126 @@ class Cotizacion extends Helpers
                     ->save();
             }
 
+            Helpers::actualizarCorrelativo($idtipo_comprobante, $idsucursal, $config['num_comprobante']);
+
             $this->pdo->commit();
 
-            return json_encode([
+            return Response::json([
                 'success' => true,
                 'message' => 'Cotizacion registrado correctamente.'
             ]);
 
         } catch (Throwable $e) {
             $this->pdo->rollBack();
-            return json_encode([
-                'success' => false,
-                'message' => $e->getMessage()
-            ]);
+            return Response::error($e->getMessage());
         }
     }
 
 
-    public function editar($idcotizacion, $idsucursal, $idcliente, $idpersonal, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $total_venta, $titulo, $saludo, $nota, $igv, $formapago, $observaciones, $tiempoproduccion, $idproducto, $cantidad, $precio_venta, $descuento, $contenedor, $cantidad_contenedor, $idp, $inicial, $frecuencia, $meses, $interes)
-    {
+    public function editar(
+        $idcotizacion,
+        $idsucursal,
+        $idcliente,
+        $idpersonal,
+        $idtipo_comprobante,
+        $serie_comprobante,
+        $num_comprobante,
+        $fecha_hora,
+        $total_venta,
+        $titulo,
+        $saludo,
+        $nota,
+        $igv,
+        $formapago,
+        $observaciones,
+        $tiempoproduccion,
+        $idproducto,
+        $cantidad,
+        $precio_venta,
+        $descuento,
+        $contenedor,
+        $cantidad_contenedor,
+        $idp,
+        $inicial,
+        $frecuencia,
+        $meses,
+        $interes
+    ) {
+        try {
 
-        $sql = "UPDATE cotizacion SET idsucursal='$idsucursal',idcliente='$idcliente', idpersonal='$idpersonal', tipo_comprobante='$tipo_comprobante', serie_comprobante='$serie_comprobante', num_comprobante='$num_comprobante',fecha_hora='$fecha_hora',total_venta='$total_venta',titulo='$titulo',nota='$nota',igv='$igv',formapago='$formapago',observacion='$observaciones',tiempo_pro='$tiempoproduccion', inicial='$inicial', frecuencia='$frecuencia', meses='$meses', interes='$interes' WHERE idcotizacion='$idcotizacion'";
+            $this->pdo->beginTransaction();
 
-        ejecutarConsulta($sql);
+            $idcliente = Helpers::clienteDefault($idcliente);
 
-        $sql2 = "DELETE FROM detalle_cotizacion WHERE idcotizacion='$idcotizacion'";
+            (new FluentSaver($this->pdo))
+                ->table("cotizacion")
+                ->primaryKey("idcotizacion")
+                ->nullable([
+                    "inicial",
+                    "frecuencia",
+                    "meses",
+                    "interes"
+                ])
+                ->data([
+                    "idcotizacion" => $idcotizacion,
+                    "idsucursal" => $idsucursal,
+                    "idcliente" => $idcliente,
+                    "idpersonal" => $idpersonal,
+                    "fecha_hora" => $fecha_hora,
+                    "total_venta" => $total_venta,
+                    "titulo" => $titulo,
+                    "saludo" => $saludo,
+                    "nota" => $nota,
+                    "igv" => $igv,
+                    "formapago" => $formapago,
+                    "observacion" => $observaciones,
+                    "tiempo_pro" => $tiempoproduccion,
+                    "inicial" => $inicial,
+                    "frecuencia" => $frecuencia,
+                    "meses" => $meses,
+                    "interes" => $interes
+                ])
+                ->update();
 
-        ejecutarConsulta($sql2);
+            // Eliminar detalle anterior
+            (new FluentSaver($this->pdo))
+                ->table("detalle_cotizacion")
+                ->where("idcotizacion", "=", $idcotizacion)
+                ->deleteWhere();
 
-        $num_elementos = 0;
-        $sw = true;
-        while ($num_elementos < count($idproducto)) {
+            // Registrar nuevo detalle
+            foreach ($idproducto as $i => $producto) {
 
-            $sql_detalle = "INSERT INTO detalle_cotizacion (idcotizacion,idproducto,cantidad,contenedor,cantidad_contenedor,precio_venta,descuento) VALUES('$idcotizacion','$idp[$num_elementos]','$cantidad[$num_elementos]','$contenedor[$num_elementos]','$cantidad_contenedor[$num_elementos]','$precio_venta[$num_elementos]','$descuento[$num_elementos]')";
+                (new FluentSaver($this->pdo))
+                    ->table("detalle_cotizacion")
+                    ->data([
+                        "idcotizacion" => $idcotizacion,
+                        "idproducto" => $idproducto[$i],
+                        "cantidad" => $cantidad[$i],
+                        "contenedor" => $contenedor[$i],
+                        "cantidad_contenedor" => $cantidad_contenedor[$i],
+                        "precio_venta" => $precio_venta[$i],
+                        "descuento" => $descuento[$i]
+                    ])
+                    ->save();
+            }
 
-            ejecutarConsulta($sql_detalle) or $sw = false;
+            $this->pdo->commit();
 
-            $num_elementos = $num_elementos + 1;
+            return Response::json([
+                "success" => true,
+                "message" => "Cotización actualizada correctamente."
+            ]);
 
+        } catch (Throwable $e) {
+
+            $this->pdo->rollBack();
+
+            return Response::json([
+                "success" => false,
+                "message" => $e->getMessage()
+            ]);
         }
-
-        return $sw;
     }
 
     //Implementamos un método para desactivar categorías
@@ -175,7 +253,7 @@ class Cotizacion extends Helpers
         u.idpersonal,
         u.nombre as personal,
         p.telefono,
-        c.tipo_comprobante,
+        c.idcomprobante_pago,
         c.serie_comprobante,
         c.num_comprobante,
         c.formapago,
@@ -242,16 +320,17 @@ class Cotizacion extends Helpers
         $search = trim($_GET['search'] ?? '');
 
         $paginator = (new DBQuery($this->pdo))
-            ->select('c.idcotizacion, date_format(c.fecha_h,"%d/%m/%y | %H:%i:%s %p") as fecha,c.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, c.tipo_comprobante,c.serie_comprobante,c.num_comprobante,c.total_venta,c.estado')
+            ->select('c.idcotizacion, DATE(c.fecha_h) as fecha_hora, date_format(c.fecha_h,"%d/%m/%y | %H:%i:%s %p") as fecha, c.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, cp.nombre as tipo_comprobante,c.serie_comprobante,c.num_comprobante,c.total_venta,c.estado, c.nota')
             ->from('cotizacion c')
             ->join('persona p', 'c.idcliente=p.idpersona')
             ->join('personal u', 'c.idpersonal=u.idpersonal')
+            ->join('comp_pago cp', 'c.idcomprobante_pago=cp.idcomprobante_pago')
             ->where('c.condicion', '=', '1')
             ->where('c.idsucursal', '=', $idsucursal);
 
         if (!empty($fecha_inicio) && !empty($fecha_fin)) {
             $paginator->whereBetween(
-                'DATE(c.fecha_hora)',
+                'DATE(c.fecha_h)',
                 $fecha_inicio,
                 $fecha_fin
             );
@@ -295,29 +374,41 @@ class Cotizacion extends Helpers
 
     public function listar2($idsucursal, $is_aprobated = false)
     {
+
         $sql = "SELECT
-                c.idcotizacion,
-                DATE(c.fecha_hora) AS fecha,
-                c.idcliente,
-                p.nombre AS cliente,
-                u.idpersonal,
-                u.nombre AS personal,
-                c.tipo_comprobante,
-                c.serie_comprobante,
-                c.num_comprobante,
-                c.total_venta
-            FROM cotizacion c
-            INNER JOIN persona p ON c.idcliente = p.idpersona
-            INNER JOIN personal u ON c.idPersonal = u.idpersonal
-            WHERE c.idsucursal = '$idsucursal' AND c.condicion = 1 AND c.estado = 'EN ESPERA'";
-
-        if ($is_aprobated) {
-            $sql .= "AND c.fecha_aprobacion IS NOT NULL";
-        } else {
-            $sql .= "AND c.fecha_aprobacion IS NULL";
-        }
-
-        $sql .= " ORDER BY c.idcotizacion DESC";
+            c.idcotizacion,
+            DATE(c.fecha_hora) AS fecha,
+            c.idcliente,
+            p.nombre AS cliente,
+            u.idpersonal,
+            u.nombre AS personal,
+            c.idcomprobante_pago,
+            cp.nombre AS tipo_comprobante,
+            c.serie_comprobante,
+            c.num_comprobante,
+            c.total_venta,
+            c.formapago,
+            c.estado
+        FROM cotizacion c
+        INNER JOIN persona p ON c.idcliente = p.idpersona
+        INNER JOIN personal u ON c.idPersonal = u.idpersonal
+        INNER JOIN comp_pago cp ON c.idcomprobante_pago = cp.idcomprobante_pago
+        WHERE c.idsucursal = '$idsucursal'
+        AND c.condicion = 1
+        AND DATE_ADD(c.fecha_hora, INTERVAL c.nota DAY) >= CURDATE()
+        AND (
+            (
+                c.formapago = 'Si'
+                AND c.estado = 'APROBADO'
+                AND c.fecha_aprobacion IS NOT NULL
+            )
+            OR
+            (
+                c.formapago = 'No'
+                AND c.estado = 'EN ESPERA'
+            )
+        )
+        ORDER BY c.idcotizacion DESC";
 
         return ejecutarConsulta($sql);
     }
@@ -405,73 +496,74 @@ class Cotizacion extends Helpers
 
 
     //funcion para selecciolnar el numero de factura
-    public function numero_venta()
-    {
+    // public function numero_venta()
+    // {
 
-        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Factura' ORDER BY idventa DESC limit 1 ";
-        return ejecutarConsulta($sql);
+    //     $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Factura' ORDER BY idventa DESC limit 1 ";
+    //     return ejecutarConsulta($sql);
 
-    }
+    // }
 
     //funcion para seleccionar la serie de la factura
-    public function numero_serie()
-    {
+    // public function numero_serie()
+    // {
 
-        $sql = "SELECT serie_comprobante ,num_comprobante FROM venta WHERE tipo_comprobante='Factura' ORDER BY idventa DESC limit 1";
+    //     $sql = "SELECT serie_comprobante ,num_comprobante FROM venta WHERE tipo_comprobante='Factura' ORDER BY idventa DESC limit 1";
 
-        return ejecutarConsulta($sql);
-    }
+    //     return ejecutarConsulta($sql);
+    // }
 
     //funcion para selecciolnar el numero de boleta
-    public function numero_venta_boleta()
-    {
+    // public function numero_venta_boleta()
+    // {
 
-        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Boleta' ORDER BY idventa DESC limit 1 ";
-        return ejecutarConsulta($sql);
+    //     $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Boleta' ORDER BY idventa DESC limit 1 ";
+    //     return ejecutarConsulta($sql);
 
-    }
+    // }
     //funcion para seleccionar la serie de la boleta
-    public function numero_serie_boleta()
-    {
+    // public function numero_serie_boleta()
+    // {
 
-        $sql = "SELECT serie_comprobante ,num_comprobante FROM venta WHERE tipo_comprobante='Boleta' ORDER BY idventa DESC limit 1";
+    //     $sql = "SELECT serie_comprobante ,num_comprobante FROM venta WHERE tipo_comprobante='Boleta' ORDER BY idventa DESC limit 1";
 
-        return ejecutarConsulta($sql);
-    }
-
-    //funcion para selecciolnar el numero de ticket
-    public function numero_venta_ticket()
-    {
-
-        $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Ticket' ORDER BY idventa DESC limit 1 ";
-        return ejecutarConsulta($sql);
-
-    }
-    //funcion para seleccionar la serie de la ticket
-    public function numero_serie_ticket()
-    {
-
-        $sql = "SELECT serie_comprobante ,num_comprobante FROM venta WHERE tipo_comprobante='Ticket' ORDER BY idventa DESC limit 1";
-
-        return ejecutarConsulta($sql);
-    }
+    //     return ejecutarConsulta($sql);
+    // }
 
     //funcion para selecciolnar el numero de ticket
-    public function numero_venta_cotizacion($idsucursal)
-    {
+    // public function numero_venta_ticket()
+    // {
 
-        $sql = "SELECT num_comprobante FROM cotizacion WHERE tipo_comprobante='Cotización' AND idsucursal = '$idsucursal' ORDER BY idcotizacion DESC limit 1";
-        return ejecutarConsulta($sql);
+    //     $sql = "SELECT num_comprobante FROM venta WHERE tipo_comprobante='Ticket' ORDER BY idventa DESC limit 1 ";
+    //     return ejecutarConsulta($sql);
 
-    }
+    // }
     //funcion para seleccionar la serie de la ticket
-    public function numero_serie_cotizacion($idsucursal)
-    {
+    // public function numero_serie_ticket()
+    // {
 
-        $sql = "SELECT serie_comprobante ,num_comprobante FROM cotizacion WHERE tipo_comprobante='Cotización' AND idsucursal = '$idsucursal' ORDER BY idcotizacion DESC limit 1";
+    //     $sql = "SELECT serie_comprobante ,num_comprobante FROM venta WHERE tipo_comprobante='Ticket' ORDER BY idventa DESC limit 1";
 
-        return ejecutarConsulta($sql);
-    }
+    //     return ejecutarConsulta($sql);
+    // }
+
+    //funcion para selecciolnar el numero de ticket
+    // public function numero_venta_cotizacion($idsucursal)
+    // {
+
+    //     $sql = "SELECT num_comprobante FROM cotizacion WHERE tipo_comprobante='Cotización' AND idsucursal = '$idsucursal' ORDER BY idcotizacion DESC limit 1";
+    //     return ejecutarConsulta($sql);
+
+    // }
+
+    //funcion para seleccionar la serie de la ticket
+    // public function numero_serie_cotizacion($idsucursal)
+    // {
+
+    //     $sql = "SELECT serie_comprobante ,num_comprobante FROM cotizacion WHERE tipo_comprobante='Cotización' AND idsucursal = '$idsucursal' ORDER BY idcotizacion DESC limit 1";
+
+    //     return ejecutarConsulta($sql);
+    // }
 
     public function buscarProducto($codigo)
     {
@@ -554,7 +646,8 @@ class Cotizacion extends Helpers
                 serie_comprobante,
                 num_comprobante
             FROM cotizacion
-            WHERE idsucursal = '$idsucursal' AND idcliente = '$idcliente'";
+            WHERE idsucursal = '$idsucursal' AND idcliente = '$idcliente'
+            AND DATE_ADD(fecha_hora, INTERVAL nota DAY) >= CURDATE()";
 
         if ($is_aprobated) {
             $sql .= " AND fecha_aprobacion IS NOT NULL";

@@ -39,9 +39,7 @@ while ($d = $rsptad->fetch_object()) {
 }
 
 // ===== IGV =====
-$igv = ($reg->tipo_comprobante != 'Nota de Venta')
-    ? round($gravado * ($reg->impuesto / 100), 2)
-    : 0;
+$igv = $reg->impuesto;
 
 $total = $reg->total_venta;
 
@@ -199,6 +197,10 @@ $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
                 <td><?php echo $resultSucursal['nombre_impuesto']; ?>(<?php echo $resultSucursal['monto_impuesto']; ?>%):
                 </td>
                 <td class="right"><?php echo $helpers->monedaFormt($igv, $currency); ?></td>
+            </tr>
+            <tr>
+                <td>SUBTOTAL:</td>
+                <td class="right"><?php echo $helpers->monedaFormt($total-$igv, $currency); ?></td>
             </tr>
 
             <tr class="bold">

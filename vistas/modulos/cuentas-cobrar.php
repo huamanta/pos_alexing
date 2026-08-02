@@ -251,8 +251,7 @@ date_default_timezone_set('America/Lima');
                           <i class="far fa-calendar-alt"></i>
                         </span>
                       </div>
-                      <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio"
-                        value="<?php echo date("Y-m-01"); ?>">
+                      <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio" />
                     </div>
                   </div>
 
@@ -265,8 +264,7 @@ date_default_timezone_set('America/Lima');
                           <i class="far fa-calendar-alt"></i>
                         </span>
                       </div>
-                      <input type="date" class="form-control" name="fecha_fin" id="fecha_fin"
-                        value="<?php echo date("Y-m-d"); ?>">
+                      <input type="date" class="form-control" name="fecha_fin" id="fecha_fin" />
                     </div>
                   </div>
 
@@ -349,32 +347,45 @@ date_default_timezone_set('America/Lima');
                 </div>
                 <!-- ./row Tarjetas Informativas -->
               </div>
+              <div class="row" id="vistaListaClientes">
+                <div class="col-md-6 d-flex align-items-center">
+                  <span class="mr-2">Mostrar</span>
+                  <select id="limit" class="form-control" style="width:100px">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                  </select>
 
-              <div id="vistaListaClientes">
-                <table id="tbllistadocuentasxcobrar" class="table table-striped">
-                  <thead>
-                    <th>#</th>
-                    <th>Cliente</th>
-                    <th>Total creditos</th>
-                    <th>Deuda total</th>
-                    <th>Total pagado</th>
-                    <th>Saldo pendiente</th>
-                    <th>Acciones</th>
-                  </thead>
-                  <tbody>
-                  </tbody>
-                  <tfoot>
-                    <th>#</th>
-                    <th>Cliente</th>
-                    <th>Total creditos</th>
-                    <th>Deuda total</th>
-                    <th>Total pagado</th>
-                    <th>Saldo pendiente</th>
-                    <th>Acciones</th>
-                  </tfoot>
-                </table>
+                  <span class="ml-2">Registros</span>
+
+                </div>
+                <div class="col-md-6">
+                  <input type="text" id="search" class="form-control" placeholder="Buscar...">
+                </div>
+                <div class="col-md-12 mt-2">
+                  <div class="table-responsive">
+                    <table id="tbllistadocuentasxcobrar" class="table table-striped">
+                      <thead>
+                        <th>#</th>
+                        <th>Cliente</th>
+                        <th>N° documento</th>
+                        <th>Total creditos</th>
+                        <th>Deuda total</th>
+                        <th>Total pagado</th>
+                        <th>Saldo pendiente</th>
+                        <th>Acciones</th>
+                      </thead>
+                      <tbody>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="col-md-6"></div>
+                <div class="col-md-6">
+                  <div id="pagination"></div>
+                </div>
               </div>
-
               <div id="vistaCreditosCliente" style="display:none;">
                 <div class="d-flex justify-content-between align-items-center mb-2">
                   <h5 style="margin:0;">Créditos / Ventas de <span id="detalleClienteTitulo"></span></h5>

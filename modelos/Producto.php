@@ -23,6 +23,7 @@ class Producto extends Helpers
 		$idcondicionventa,
 		$registrosan,
 		$idmarca,
+		$tipo_producto,
 		$codigo,
 		$nombre,
 		$stock,
@@ -89,6 +90,7 @@ class Producto extends Helpers
 					'idcondicionventa' => $idcondicionventa,
 					'registrosan' => $registrosan,
 					'idmarca' => $idmarca,
+					'tipo_producto' => $tipo_producto,
 					'idmodelo' => $idmodelo,
 					'codigo' => $codigo,
 					'nombre' => $nombre,
@@ -207,6 +209,7 @@ class Producto extends Helpers
 		$idcondicionventa,
 		$registrosan,
 		$idmarca,
+		$tipo_producto,
 		$codigo,
 		$nombre,
 		$stock,
@@ -278,6 +281,7 @@ class Producto extends Helpers
 					'idcondicionventa' => $idcondicionventa,
 					'registrosan' => $registrosan,
 					'idmarca' => $idmarca,
+					'tipo_producto' => $tipo_producto,
 					'idmodelo' => $idmodelo,
 					'codigo' => $codigo,
 					'nombre' => $nombre,
@@ -698,18 +702,18 @@ class Producto extends Helpers
 		$search = $_GET['search'] ?? '';
 
 		$paginator = (new DBQuery($this->pdo))
-		->select('a.idproducto,a.idcategoria,a.idunidad_medida,um.nombre as unidad, date_format(a.fecha,"%d/%m/%y") as fecha,c.nombre as categoria,r.nombre as rubro,a.registrosan,a.idmarca, a.idmodelo, a.codigo,a.nombre,ip.stock, ip.stock_minimo,a.precioB,a.precioC,a.precioD, ps.numero_serie,a.descripcion,a.imagen,a.condicion')
-		->from('producto a')
-		->join('inventario_producto ip', 'ip.idproducto = a.idproducto')
-		->join('producto_serie ps', 'ps.idproducto = a.idproducto')
-		->join('categoria c', 'a.idcategoria=c.idcategoria ')
-		->join('unidad_medida um', 'a.idunidad_medida = um.idunidad_medida')
-		->join('rubro r', 'a.idrubro = r.idrubro')
-		->join('condicionventa cv', 'a.idcondicionventa = cv.idcondicionventa')
-		->leftJoin('marca m', 'a.idmarca = m.idmarca')
-		->leftJoin('modelo mo', 'a.idmodelo = mo.idmodelo')
-		->where('c.nombre', '<>', 'SERVICIO')
-		->where('a.idsucursal', '=', $idsucursal);
+			->select('a.idproducto,a.idcategoria,a.idunidad_medida,um.nombre as unidad, date_format(a.fecha,"%d/%m/%y") as fecha,c.nombre as categoria,r.nombre as rubro,a.registrosan,a.idmarca, a.idmodelo, a.codigo,a.nombre,ip.stock, ip.stock_minimo,a.precioB,a.precioC,a.precioD, ps.numero_serie,a.descripcion,a.imagen,a.condicion')
+			->from('producto a')
+			->join('inventario_producto ip', 'ip.idproducto = a.idproducto')
+			->join('producto_serie ps', 'ps.idproducto = a.idproducto')
+			->join('categoria c', 'a.idcategoria=c.idcategoria ')
+			->join('unidad_medida um', 'a.idunidad_medida = um.idunidad_medida')
+			->join('rubro r', 'a.idrubro = r.idrubro')
+			->join('condicionventa cv', 'a.idcondicionventa = cv.idcondicionventa')
+			->leftJoin('marca m', 'a.idmarca = m.idmarca')
+			->leftJoin('modelo mo', 'a.idmodelo = mo.idmodelo')
+			->where('c.nombre', '<>', 'SERVICIO')
+			->where('a.idsucursal', '=', $idsucursal);
 
 		if ($search !== '') {
 			$paginator->search($search, [
@@ -1267,7 +1271,7 @@ class Producto extends Helpers
 			])
 			->from('producto a')
 			->join('inventario_producto ip', "ip.idproducto = a.idproducto")
-			->join('categoria c','c.idcategoria = a.idcategoria')
+			->join('categoria c', 'c.idcategoria = a.idcategoria')
 			->join('unidad_medida um', 'um.idunidad_medida = a.idunidad_medida')
 			->join('rubro r', 'r.idrubro = a.idrubro')
 			->leftJoin('marca m', 'm.idmarca = a.idmarca')

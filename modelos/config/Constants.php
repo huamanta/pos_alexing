@@ -1,5 +1,6 @@
 <?php
 class Constants {
+    const CLIENTE_DEFAULT = 1;
     const MAX_USUARIOS = 100;
     const MESES_RECUPERACION = 3;
     const DIAS_MORA = 90;

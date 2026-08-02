@@ -13,7 +13,7 @@ class SisVenta extends Helpers
         $idcliente,
         $idpersonal,
         $idcaja,
-        $tipo_comprobante,
+        $idtipo_comprobante,
         $serie_comprobante,
         $num_comprobante,
         $impuesto,
@@ -51,20 +51,18 @@ class SisVenta extends Helpers
         $idcategoria,
         $idgarante,
         $idacompanante,
-        $idtipoacompanante, 
+        $idtipoacompanante,
         $idserie
     ) {
         if (empty($_SESSION['idpersonal'])) {
             throw new Exception('Sesión no válida.');
         }
 
-        if (empty($idcliente)) {
-            $idcliente = Helpers::clienteDefault($idcliente);
-        }
 
         $this->pdo->beginTransaction();
 
         try {
+            $idcliente = Helpers::clienteDefault($idcliente);
             //=========================
             // Datos por defecto
             //=========================
@@ -74,7 +72,7 @@ class SisVenta extends Helpers
             $fechaDepostivo = $fechaDepostivo ?: $fechaActual;
             $input_cuotas = $input_cuotas ?: 0;
 
-            if ($tipo_comprobante == "Nota de Venta") {
+            if ($idtipo_comprobante == 1) {
                 $estado = "Activado";
                 $dovEstado = "ACEPTADO";
             } else {
@@ -82,24 +80,14 @@ class SisVenta extends Helpers
                 $dovEstado = "";
             }
 
-            if ($serie_comprobante == "-" && $num_comprobante == "-") {
-                $tipo_comprobante = "Anular";
-            }
+            // if ($serie_comprobante == "-" && $num_comprobante == "-") {
+            //     $tipo_comprobante = "Anular";
+            // }
 
             //=========================
             // Correlativo
             //=========================
-
-            if (empty($num_comprobante)) {
-
-                $correlativo = $this->generarNumeroComprobante(
-                    $idsucursal,
-                    $tipo_comprobante
-                );
-
-                $serie_comprobante = $correlativo['serie'];
-                $num_comprobante = $correlativo['numero'];
-            }
+            $config = Helpers::obtenerComprobanteSucursal($idtipo_comprobante, $idsucursal);
 
             //=========================
             // Forma de pago real
@@ -130,9 +118,9 @@ class SisVenta extends Helpers
                 $idcliente,
                 $idpersonal,
                 $idmotivo,
-                $tipo_comprobante,
-                $serie_comprobante,
-                $num_comprobante,
+                $idtipo_comprobante,
+                $config['serie_comprobante'],
+                $config['num_comprobante'],
                 $fechaActual,
                 $impuesto,
                 $total_venta,
@@ -216,6 +204,8 @@ class SisVenta extends Helpers
                     $idVenta
                 );
             }
+
+            Helpers::actualizarCorrelativo($idtipo_comprobante, $idsucursal, $config['num_comprobante']);
 
             $this->pdo->commit();
 
@@ -303,51 +293,51 @@ class SisVenta extends Helpers
     }
 
 
-    private function generarNumeroComprobante(
-        int $idsucursal,
-        string $tipoComprobante
-    ): array {
+    // private function generarNumeroComprobante(
+    //     int $idsucursal,
+    //     string $tipoComprobante
+    // ): array {
 
-        $row = (new DBQuery($this->pdo))
+    //     $row = (new DBQuery($this->pdo))
 
-            ->query("
-            SELECT
-                serie_comprobante,
-                num_comprobante
-            FROM venta
-            WHERE idsucursal = :idsucursal
-            AND tipo_comprobante = :tipo
-            ORDER BY idventa DESC
-            LIMIT 1
-            FOR UPDATE
-        ", [
-                'idsucursal' => $idsucursal,
-                'tipo' => $tipoComprobante
-            ])
+    //         ->query("
+    //         SELECT
+    //             serie_comprobante,
+    //             num_comprobante
+    //         FROM venta
+    //         WHERE idsucursal = :idsucursal
+    //         AND tipo_comprobante = :tipo
+    //         ORDER BY idventa DESC
+    //         LIMIT 1
+    //         FOR UPDATE
+    //     ", [
+    //             'idsucursal' => $idsucursal,
+    //             'tipo' => $tipoComprobante
+    //         ])
 
-            ->first();
+    //         ->first();
 
-        if (!$row) {
+    //     if (!$row) {
 
-            return [
-                'serie' => '001',
-                'numero' => '0000001'
-            ];
-        }
+    //         return [
+    //             'serie' => '001',
+    //             'numero' => '0000001'
+    //         ];
+    //     }
 
-        return [
+    //     return [
 
-            'serie' => $row['serie_comprobante'],
+    //         'serie' => $row['serie_comprobante'],
 
-            'numero' => str_pad(
-                ((int) $row['num_comprobante']) + 1,
-                7,
-                '0',
-                STR_PAD_LEFT
-            )
+    //         'numero' => str_pad(
+    //             ((int) $row['num_comprobante']) + 1,
+    //             7,
+    //             '0',
+    //             STR_PAD_LEFT
+    //         )
 
-        ];
-    }
+    //     ];
+    // }
 
 
     private function crearCredito(
@@ -483,7 +473,7 @@ class SisVenta extends Helpers
         $idcliente,
         $idpersonal,
         $idmotivo,
-        $tipo_comprobante,
+        $idtipo_comprobante,
         $serie_comprobante,
         $num_comprobante,
         $fecha_hora,
@@ -519,7 +509,7 @@ class SisVenta extends Helpers
                 'idcliente' => $idcliente,
                 'idpersonal' => $idpersonal,
                 'idmotivo_nota' => $idmotivo,
-                'tipo_comprobante' => $tipo_comprobante,
+                'idcomprobante_pago' => $idtipo_comprobante,
                 'serie_comprobante' => $serie_comprobante,
                 'num_comprobante' => $num_comprobante,
                 'fecha_hora' => $fecha_hora,
@@ -661,7 +651,8 @@ class SisVenta extends Helpers
                 ->select([
                     'p.controla_stock',
                     'p.nombre',
-                    'p.idcategoria'
+                    'p.idcategoria',
+                    'p.tipo_producto',
                 ])
                 ->where(
                     'p.idproducto',
@@ -676,10 +667,10 @@ class SisVenta extends Helpers
                 );
             }
             /*
-                |--------------------------------------------------------------------------
-                | Motos con serie
-                |--------------------------------------------------------------------------
-                */
+            |--------------------------------------------------------------------------
+            | Motos con serie
+            |--------------------------------------------------------------------------
+            */
 
             $serie = (new DBQuery($this->pdo))
                 ->from('producto_serie')
@@ -701,14 +692,8 @@ class SisVenta extends Helpers
                 );
             }
 
-            $idSerie = null;
 
-
-            if ($serie) {
-
-                $idSerie = $serie['idserie'];
-
-
+            if ($serie && ($producto['tipo_producto'] == 'Vehiculo')) {
                 (new DBQuery($this->pdo))
 
                     ->query("
@@ -719,7 +704,6 @@ class SisVenta extends Helpers
                     ", [
                         'id' => $idSerie
                     ])
-
                     ->get();
 
             }
@@ -755,18 +739,18 @@ class SisVenta extends Helpers
         $motivo = ''
     ) {
         // 1. Cambiar estado de la serie
-        $updateSerie = (new FluentSaver($this->pdo))
-            ->table('producto_serie')
-            ->primaryKey('idserie')
-            ->data([
-                'idserie' => $idserie,
-                'estado' => 'VENDIDO'
-            ])
-            ->update();
-            
-        if (!$updateSerie) {
-            throw new Exception("La serie de producto no ha sido actualizado");
-        }
+        // $updateSerie = (new FluentSaver($this->pdo))
+        //     ->table('producto_serie')
+        //     ->primaryKey('idserie')
+        //     ->data([
+        //         'idserie' => $idserie,
+        //         'estado' => 'VENDIDO'
+        //     ])
+        //     ->update();
+
+        // if (!$updateSerie) {
+        //     throw new Exception("La serie de producto no ha sido actualizado");
+        // }
         // 2. Obtener inventario de la sucursal
         $sql = "SELECT *
             FROM inventario_producto

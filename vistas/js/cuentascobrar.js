@@ -6,10 +6,12 @@ var saldoActualCuotas = 0;
 var tbllistadohistorial;
 let archivosSeleccionados = [];
 let calendar = null;
+let listaCreditos = null;
 
 //Función que se ejecuta al inicio
 function init() {
-    listar();
+    // listar();
+    listaCreditos.load();
     listarSaldos();
     enviarRecordatoriosAutomatico();
     $("#body").addClass("sidebar-collapse sidebar-mini");
@@ -20,26 +22,26 @@ function init() {
 
     $("#fecha_inicio").change(function (e) {
         e.preventDefault();
-        listar();
+        listaCreditos.load();
         listarSaldos();
     });
     $("#fecha_fin").change(function (e) {
         e.preventDefault();
-        listar();
+        listaCreditos.load();
         listarSaldos();
     });
     $("#idcliente").change(function (e) {
         e.preventDefault();
-        listar();
+        listaCreditos.load();
         listarSaldos();
         toggleBtnEstadoCuenta();
     });
 
-    $("#idsucursal2").change(function (e) {
-        e.preventDefault();
-        listar();
-        listarSaldos();
-    });
+    // $("#idsucursal2").change(function (e) {
+    //     e.preventDefault();
+    //     listaCreditos.load();
+    //     listarSaldos();
+    // });
 
     $('#navCobros').addClass("treeview menu-open");
     $('#navCobrosActive').addClass("treeview active");
@@ -197,85 +199,152 @@ function enviarRecordatoriosAutomatico() {
     });
 }
 
-function listar() {
-
-    var fecha_inicio = $("#fecha_inicio").val();
-    var fecha_fin = $("#fecha_fin").val();
-    var idcliente = $("#idcliente").val();
-    var idsucursal = $("#idsucursal2").val();
-    // Verificar si fecha de inicio es mayor que fecha de fin
-    var fechaInicio = new Date(fecha_inicio);
-    var fechaFin = new Date(fecha_fin);
-
-    if (fechaInicio > fechaFin) {
-        // Establecer fecha de fin en la fecha actual
-        var hoy = new Date();
-        var dd = String(hoy.getDate()).padStart(2, '0');
-        var mm = String(hoy.getMonth() + 1).padStart(2, '0');
-        var yyyy = hoy.getFullYear();
-
-        fecha_fin = yyyy + '-' + mm + '-' + dd;
-        $("#fecha_fin").val(fecha_fin);
-    }
-
+function pintarCreditos(data, permissions) {
     $('#vistaListaClientes').show();
     $('#vistaCreditosCliente').hide();
     $('#panelSuperiorCxC').show();
+    let html = "";
 
-    tabla = $('#tbllistadocuentasxcobrar').dataTable(
-        {
-            //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-            "aProcessing": true,//Activamos el procesamiento del datatables
-            "aServerSide": true,//Paginación y filtrado realizados por el servidor
-            "processing": true,
-            "language":
-            {
-                "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-            },
-            "responsive": true, "lengthChange": false, "autoWidth": false,
-            dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-            lengthMenu: [
-                [5, 10, 25, 50, 100, -1],
-                ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
-            ],
-            buttons: [
-                {
-                    extend: 'pageLength',
-                    orientation: 'landscape',
-                    pageSize: 'LEGAL'
-                },
-                {
-                    extend: 'pdfHtml5',
-                    orientation: 'landscape',
-                    title: 'Lista de documentos pendientes por cobrar',
-                    pageSize: 'LEGAL'
-                },
-                {
-                    extend: 'copy',
-                    orientation: 'landscape',
-                    pageSize: 'LEGAL'
-                },
-                {
-                    extend: 'excel',
-                    orientation: 'landscape',
-                    title: 'Lista de documentos pendientes por cobrar',
-                    pageSize: 'LEGAL'
-                }],
-            "ajax":
-            {
-                url: 'controladores/cuentascobrar.php?op=listaCreditos',
-                data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, idcliente: idcliente, idsucursal: idsucursal },
-                type: "get",
-                dataType: "json",
-                error: function (e) {
-                    console.log(e.responseText);
-                }
+    if (data.length === 0) {
 
-            },
-            "bDestroy": true,
-            "iDisplayLength": 10,//Paginación
-        }).DataTable();
+        html = `
+            <tr>
+                <td colspan="10" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+        $("#tbllistadocuentasxcobrar tbody").html(html);
+        return;
+    }
+
+    data.forEach((item, i) => {
+
+        html += `
+                <tr>
+                    <td>${i+1}</td>
+                    <td>${item.cliente}</td>
+                    <td>${item.num_documento || ''}</td>
+                    <td>${item.total_creditos || ''}</td>
+                    <td>${item.deuda_total_str}</td>
+                    <td>${item.total_pagado_str}</td>
+                    <td>${item.saldo_pendiente_str}</td>
+                    <td>
+                        <button class="btn btn-sm btn-success"
+                            onclick='verDetalleCliente(${item.idpersona}, ${JSON.stringify(item.cliente)})'>
+                            <i class="fas fa-eye"></i> Ver Detalle
+                        </button>
+
+                        <button class="btn btn-info btn-sm"
+                            onclick='verUbicacionCliente(
+                                ${JSON.stringify(item.latitude)},
+                                ${JSON.stringify(item.longitude)},
+                                ${JSON.stringify(item.direccion)}
+                            )'
+                            title="Ver ubicación del cliente">
+                            <i class="fas fa-search-location"></i> Ubicación
+                        </button>
+                    </td>
+                </tr>
+                `;
+    });
+
+    $("#tbllistadocuentasxcobrar tbody").html(html);
+
 }
+
+
+listaCreditos = new FluentPaginator({
+    url: "controladores/cuentascobrar.php?op=listaCreditos",
+    renderTabla: pintarCreditos,
+    tableBody: "#tbodyCreditos",
+    extraParams: () => ({
+        fecha_inicio: $("#fecha_inicio").val() || "",
+        fecha_fin: $("#fecha_fin").val() || "",
+        idcliente: $("#idcliente").val() || ""
+    })
+});
+
+// function listar() {
+
+//     var fecha_inicio = $("#fecha_inicio").val();
+//     var fecha_fin = $("#fecha_fin").val();
+//     var idcliente = $("#idcliente").val();
+//     var idsucursal = $("#idsucursal2").val();
+//     // Verificar si fecha de inicio es mayor que fecha de fin
+//     var fechaInicio = new Date(fecha_inicio);
+//     var fechaFin = new Date(fecha_fin);
+
+//     if (fechaInicio > fechaFin) {
+//         // Establecer fecha de fin en la fecha actual
+//         var hoy = new Date();
+//         var dd = String(hoy.getDate()).padStart(2, '0');
+//         var mm = String(hoy.getMonth() + 1).padStart(2, '0');
+//         var yyyy = hoy.getFullYear();
+
+//         fecha_fin = yyyy + '-' + mm + '-' + dd;
+//         $("#fecha_fin").val(fecha_fin);
+//     }
+
+//     $('#vistaListaClientes').show();
+//     $('#vistaCreditosCliente').hide();
+//     $('#panelSuperiorCxC').show();
+
+//     tabla = $('#tbllistadocuentasxcobrar').dataTable(
+//         {
+//             //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
+//             "aProcessing": true,//Activamos el procesamiento del datatables
+//             "aServerSide": true,//Paginación y filtrado realizados por el servidor
+//             "processing": true,
+//             "language":
+//             {
+//                 "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+//             },
+//             "responsive": true, "lengthChange": false, "autoWidth": false,
+//             dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+//             lengthMenu: [
+//                 [5, 10, 25, 50, 100, -1],
+//                 ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
+//             ],
+//             buttons: [
+//                 {
+//                     extend: 'pageLength',
+//                     orientation: 'landscape',
+//                     pageSize: 'LEGAL'
+//                 },
+//                 {
+//                     extend: 'pdfHtml5',
+//                     orientation: 'landscape',
+//                     title: 'Lista de documentos pendientes por cobrar',
+//                     pageSize: 'LEGAL'
+//                 },
+//                 {
+//                     extend: 'copy',
+//                     orientation: 'landscape',
+//                     pageSize: 'LEGAL'
+//                 },
+//                 {
+//                     extend: 'excel',
+//                     orientation: 'landscape',
+//                     title: 'Lista de documentos pendientes por cobrar',
+//                     pageSize: 'LEGAL'
+//                 }],
+//             "ajax":
+//             {
+//                 url: 'controladores/cuentascobrar.php?op=listaCreditos',
+//                 data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, idcliente: idcliente, idsucursal: idsucursal },
+//                 type: "get",
+//                 dataType: "json",
+//                 error: function (e) {
+//                     console.log(e.responseText);
+//                 }
+
+//             },
+//             "bDestroy": true,
+//             "iDisplayLength": 10,//Paginación
+//         }).DataTable();
+// }
 
 
 function listarSaldos() {
@@ -830,7 +899,7 @@ async function guardaryeditar(e) {
 
             abrirReciboPagoTicket(t, formaPago);
 
-            win.document.close();
+            window.document.close();
 
             Swal.fire("Éxito", res.message, "success");
 
@@ -1002,7 +1071,7 @@ function volverListaClientes() {
     $('#vistaCreditosCliente').hide();
     $('#vistaListaClientes').show();
     $('#panelSuperiorCxC').show();
-    listar();
+    listaCreditos.load();
 }
 
 
@@ -1679,14 +1748,14 @@ function descragarResumen() {
     const fecha_inicio = $("#fecha_inicio").val();
     const fecha_fin = $("#fecha_fin").val();
     console.log(fecha_inicio, fecha_fin);
-    
+
     const params = new URLSearchParams({
         idcliente: idcliente,
         fecha_inicio: fecha_inicio,
         fecha_fin: fecha_fin
     });
     console.log(`modelos/exports/exportar_cuentas_cobrar.php?${params.toString()}`);
-    
+
     window.location.href = `modelos/exports/exportar_cuentas_cobrar.php?${params.toString()}`;
 }
 

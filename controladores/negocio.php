@@ -98,15 +98,7 @@ switch ($_GET["op"]) {
 	case 'mostrar_impuesto':
 		$idsucursal = $_SESSION['idsucursal'];
 		$rspta = $negocio->mostrar_impuesto($idsucursal);
-		$data = array();
-
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = array(
-				$numeroimp = $reg->monto_impuesto
-			);
-		}
-		$impuesto = (floatval($numeroimp));
-		echo json_encode($impuesto);
+		echo $rspta;
 		break;
 
 	case 'nombre_impuesto':

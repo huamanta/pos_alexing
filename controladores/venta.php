@@ -4,8 +4,6 @@ require_once __DIR__ . "/../modelos/Venta.php";
 require_once __DIR__ . "/../modelos/venta/Venta.php";
 require_once __DIR__ . "/../modelos/Producto.php";
 require_once __DIR__ . "/../modelos/Helpers.php";
-if (strlen(session_id()) < 1)
-	session_start();
 
 $venta = new Venta();
 $sisVenta = new SisVenta();
@@ -85,7 +83,7 @@ switch ($_GET["op"]) {
 
 
 	case 'listar_cajas':
-		$idsucursal = isset($_GET["idsucursal"]) ? $_GET["idsucursal"] : $_SESSION["idsucursal"];
+		$idsucursal = $_SESSION["idsucursal"];
 		$rspta = $venta->listarCajas($idsucursal);
 		echo json_encode($rspta);
 		break;
@@ -243,6 +241,12 @@ switch ($_GET["op"]) {
 			echo $rspta;
 		}
 
+		break;
+
+	case 'selectComprobante':
+		require_once "../modelos/Comprobantes.php";
+		$comprobantes = new Comprobantes();
+		$comprobantes->selectComprobantesVenta();
 		break;
 
 	case 'agregar_carrito':
@@ -598,47 +602,13 @@ switch ($_GET["op"]) {
 		//$num = (int)$numerof; 
 		//echo json_encode($numerof);
 		break;
+
 	case 'mostrar_s_ticket':
-
-		$idsucursal = $_SESSION["idsucursal"];
-
-		// Defaults para evitar Undefined variable
-		$serie_comp_tic = 0;
-		$num_comp_tic = 0;
-
 		require_once "../modelos/Comprobantes.php";
 		$comprobantes = new Comprobantes();
-
-		$rspta = $comprobantes->mostrar_serie_ticket($idsucursal);
-
-		while ($reg = $rspta->fetch_object()) {
-			$serie_comp_tic = (int) $reg->serie_comprobante;
-			$num_comp_tic = (int) $reg->num_comprobante;
-		}
-
-		$serie_tic_comp = (int) $serie_comp_tic;
-		$num_tic_comp = (int) $num_comp_tic;
-
-		// fin de mostrar numero de factura de la tabla comprobantes
-		$rspta = $venta->numero_serie_ticket($idsucursal);
-
-		$numero_s_tic = $serie_tic_comp;
-		$numero_bolet = $num_tic_comp;
-
-		while ($reg = $rspta->fetch_object()) {
-			$numero_s_tic = (int) $reg->serie_comprobante;
-			$numero_bolet = (int) $reg->num_comprobante;
-		}
-
-		$num_s_ticket = (int) $numero_s_tic;
-		$numbo = (int) $numero_bolet;
-
-		if ($numbo == 9999999 || empty($numero_s_tic)) {
-			$nuew_serie_ticket = $num_s_ticket + 1;
-			echo json_encode($nuew_serie_ticket);
-		} else {
-			echo json_encode($num_s_ticket);
-		}
+		$idsucursal = $_SESSION["idsucursal"];
+		$idtipo_comprobante = $_GET["idtipo_comprobante"];
+		$comprobantes->mostrarSerieTicket($idsucursal, $idtipo_comprobante);
 		break;
 
 	case 'mostrar_num_nc':
@@ -821,13 +791,8 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarDetalle':
-		require_once "../modelos/Negocio.php";
-		$cnegocio = new Negocio();
-		$rsptan = $cnegocio->listar();
-		$regn = $rsptan->fetch_object();
-		$smoneda = empty($regn) ? 'Simbolo de moneda' : $regn->simbolo;
-		$nom_imp = empty($regn) ? '' : $regn->nombre_impuesto;
-
+		$idscursal = $_SESSION['idsucursal'];
+		$smoneda = $helpers->get_symbol($idscursal);
 		$id = $_GET['id'];
 
 		$rspta = $venta->listarDetalle($id);
@@ -845,7 +810,7 @@ switch ($_GET["op"]) {
                 <th>P. Venta</th>
                 <th>Subtotal</th>
             </tr>
-          </thead>';
+          </thead><tbody>';
 
 		while ($reg = $rspta->fetch_object()) {
 
@@ -865,12 +830,12 @@ switch ($_GET["op"]) {
 				$subtotalCalc = $reg->precio_venta;
 			}
 
-			echo '<tr class="filas" style="border-bottom: 1px solid #ccc;">
+			echo '<tr >
                 <td><span class="badge bg-success">' . $reg->cantidad . '</span> ' . htmlspecialchars($reg->nombre_producto) . ' <span class="badge bg-danger">' . htmlspecialchars($reg->contenedor) . '</span></td>
                 <td>' . htmlspecialchars($reg->categoria) . '</td>
                 <td>' . $reg->cantidad . '</td>
-                <td>' . number_format($reg->precio_venta, 2) . '</td>
-                <td>' . number_format($subtotalCalc, 2) . '</td>
+                <td>' . $helpers->get_currency_symbol($reg->precio_venta) . '</td>
+                <td>' . $helpers->get_currency_symbol($subtotalCalc) . '</td>
             </tr>';
 
 			// Totales
@@ -885,7 +850,7 @@ switch ($_GET["op"]) {
 		}
 
 		// TOTALES ORDENADOS
-		echo '<tfoot style="background-color:#E3F2FD;">
+		echo '</tbody><tfoot style="background-color:#E3F2FD;">
             <tr>
                 <th colspan="3"></th>
                 <th>TOTAL VENTA</th>
@@ -926,214 +891,7 @@ switch ($_GET["op"]) {
 		$estado = $_REQUEST["estado"];
 		$idsucursal = $_SESSION["idsucursal"];
 		$idproducto = isset($_REQUEST["idproducto"]) ? $_REQUEST["idproducto"] : "";
-
-		$rspta = $venta->listar($idsucursal, $idpersonal, $fecha_inicio, $fecha_fin, $estado, $idproducto);
-		echo $rspta;
-		// $data = array();
-
-		// while ($reg = $rspta->fetch_object()) {
-		// 	$url1 = 'reportes/exTicket.php?id=';
-		// 	$url2 = 'reportes/factura/generaFactura.php?id=';
-
-		// 	$ruta = 'public/FACT_WebService/Facturacion/files/' . $reg->dov_Nombre . '.xml';
-		// 	$rutaCdr = 'public/FACT_WebService/Facturacion/files/R-' . $reg->dov_Nombre . '.zip';
-
-		// 	if ($reg->tipo_comprobante == 'Boleta') {
-
-		// 		$enviarSunat = '<a data-toggle="tooltip" title="Enviar a Sunat" onclick="EnviarSunat(1,' . $reg->idventa . ',' . $reg->idpersonal . ');"> 
-		// 		<button class="btn btn-primary btn-xs"><i class="fas fa-paper-plane"></i></button></a> 
-		// 		<a href="' . $ruta . '" style="pointer-events: none;"> 
-		// 		<button class="btn btn-warning btn-xs"><i class="fas fa-file-code"></i></button></a> 
-		// 		<a href="' . $rutaCdr . '" style="pointer-events: none;"> 
-		// 		<button class="btn btn-danger btn-xs"><i class="fas fa-file-archive"></i></button></a>';
-
-		// 		$pdf = '<a target="_blank" title="PDF" onclick="imprimirFactura(' . $reg->idventa . ')"> 
-		// 		<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-
-		// 		$ticket = '<a target="_blank" title="Ticket" onclick="imprimirBoleta(' . $reg->idventa . ')"> 
-		// 		<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
-
-		// 	} else {
-		// 		$enviarSunat = '<a data-toggle="tooltip" title="Enviar a Sunat" onclick="EnviarSunat(2,' . $reg->idventa . ',' . $reg->idpersonal . ');"> 
-		// 		<button class="btn btn-primary btn-xs"><i class="fas fa-paper-plane"></i></button></a> 
-		// 		<a href="' . $ruta . '" style="pointer-events: none;"> 
-		// 		<button class="btn btn-warning btn-xs"><i class="fas fa-file-code"></i></button></a> 
-		// 		<a href="' . $rutaCdr . '" style="pointer-events: none;"> 
-		// 		<button class="btn btn-danger btn-xs"><i class="fas fa-file-archive"></i></button></a>';
-
-		// 		$pdf = '<a target="_blank" title="PDF" onclick="imprimirFactura(' . $reg->idventa . ')"> 
-		// 		<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-
-		// 		$ticket = '<a target="_blank" title="Ticket" onclick="imprimirBoleta(' . $reg->idventa . ')"> 
-		// 		<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
-		// 	}
-
-		// 	$urlComprobarEstado = 'public/FACT_WebService/Facturacion/consultacdr.php?idventa=' . $reg->idventa . '&codColab=' . $reg->idpersonal;
-
-		// 	if ($reg->estado == 'Aceptado') {
-		// 		$estado = '<span class="badge badge-neon neon-green">ACEPTADO</span>';
-		// 		$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
-		// 		<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-		// 		$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
-		// 		<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
-
-		// 	} else if ($reg->estado == 'Por Enviar') {
-		// 		$estado = '<span class="badge badge-neon neon-yellow">POR ENVIAR</span>';
-
-		// 	} else if ($reg->estado == 'En Resumen') {
-		// 		$estado = '<span class="badge badge-neon neon-blue">EN RESUMEN</span>';
-
-		// 	} else if ($reg->estado == 'Anulado') {
-		// 		$estado = '<span class="badge badge-neon neon-red">ANULADO</span>';
-
-		// 	} else if ($reg->estado == 'Nota Credito') {
-		// 		$estado = '<span class="badge badge-neon neon-red">NOTA DE CRÉDITO</span>';
-		// 		$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
-		// 		<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-		// 		$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
-		// 		<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
-
-		// 	} else if ($reg->estado == 'Rechazado') {
-		// 		$estado = '<span class="badge badge-neon neon-red">RECHAZADO</span>';
-		// 		$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
-		// 		<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-		// 		$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
-		// 		<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
-
-		// 	} else if ($reg->estado == 'Aceptado por resumen') {
-		// 		$estado = '<span class="badge badge-neon neon-green">ACEPTADO POR RESUMEN</span>';
-		// 		$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
-		// 		<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-		// 		$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
-		// 		<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
-
-		// 	} else {
-		// 		$estado = '<span class="badge badge-neon neon-blue">ACTIVADO</span>';
-		// 		$pdf = '<a target="_blank" href="' . $url2 . $reg->idventa . '"> 
-		// 		<button class="btn btn-info btn-xs"><i class="fas fa-file-pdf"></i></button></a>';
-		// 		$ticket = '<a target="_blank" href="' . $url1 . $reg->idventa . '"> 
-		// 		<button class="btn btn-primary btn-xs"><i class="fas fa-receipt"></i></button></a>';
-		// 	}
-
-		// 	if ($reg->estado == 'Por Enviar') {
-		// 		$sunat = $enviarSunat;
-		// 	} else if ($reg->estado == 'Activado' || $reg->estado == 'Anulado') {
-		// 		$sunat = '<a style="pointer-events: none;"> 
-		// 		<button class="btn btn-primary btn-xs"><i class="fas fa-paper-plane"></i></button></a> 
-		// 		<a href="' . $ruta . '" style="pointer-events: none;"> 
-		// 		<button class="btn btn-warning btn-xs"><i class="fas fa-file-code"></i></button></a> 
-		// 		<a href="' . $rutaCdr . '" style="pointer-events: none;"> 
-		// 		<button class="btn btn-danger btn-xs"><i class="fas fa-file-archive"></i></button></a>';
-		// 	} else if ($reg->estado == 'Aceptado' || $reg->estado == 'Aceptado por resumen') {
-		// 		// Solo cuando está ACEPTADO se pueden descargar los archivos
-		// 		$sunat = '<a style="pointer-events: none;"> 
-		// 		<button class="btn btn-primary btn-xs" title="No Disponible"><i class="fas fa-paper-plane"></i></button></a> 
-		// 		<a href="' . $ruta . '" download="' . $reg->dov_Nombre . '.xml" class="btn btn-warning btn-xs ml-1" title="Descargar XML"> 
-		// 		<i class="fas fa-file-code"></i></a> 
-		// 		<a href="' . $rutaCdr . '" target="_blank" class="btn btn-danger btn-xs ml-1" title="Descargar CDR ZIP"> 
-		// 		<i class="fas fa-file-archive"></i></a>';
-		// 	} else {
-		// 		// Para 'En Resumen', 'Nota Credito', 'Rechazado' - botones deshabilitados
-		// 		$sunat = '<a style="pointer-events: none;"> 
-		// 		<button class="btn btn-primary btn-xs" title="No Disponible"><i class="fas fa-paper-plane"></i></button></a> 
-		// 		<a style="pointer-events: none;"> 
-		// 		<button class="btn btn-warning btn-xs ml-1" title="No Disponible"><i class="fas fa-file-code"></i></button></a> 
-		// 		<a style="pointer-events: none;"> 
-		// 		<button class="btn btn-danger btn-xs ml-1" title="No Disponible"><i class="fas fa-file-archive"></i></button></a>';
-		// 	}
-
-		// 	if ($reg->tipo_comprobante == 'Nota de Venta') {
-		// 		$comprobarEstado = '<center><a style="pointer-events: none;"> 
-		// 		<button class="btn btn-warning btn-xs" onclick="ComprobarEstado(' . $reg->idventa . ')"><i class="fas fa-exclamation-circle"></i></button></a></center>';
-		// 	} else {
-		// 		$comprobarEstado = '<center><a onclick="comprobarEstado(' . $reg->idventa . ',' . $reg->idpersonal . ');"> 
-		// 		<button class="btn btn-warning btn-xs"><i class="fas fa-exclamation-circle"></i></button></a></center>';
-		// 	}
-
-		// 	if ($reg->estado == 'Anulado') {
-		// 		// Mostrar solo el botón de ojo para ver los productos de la nota anulada
-		// 		$mostrarResumen = '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idventa . ')"><i class="fas fa-eye"></i></button>';
-		// 		$enviarComprobante = '';
-		// 		$mostrar = " ";
-		// 		$sunatE = "-";
-		// 	} else {
-		// 		// Casos normales
-		// 		$mostrarResumen = '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idventa . ')"><i class="fas fa-eye"></i></button>';
-		// 		$enviarComprobante = '<a target="_blank" title="Enviar Comprobantes"> 
-		//         <button class="btn btn-success btn-xs" onclick="EnviarComprobante(' . $reg->idventa . ')"><i class="fab fa-whatsapp"></i></button></a>';
-		// 		$mostrar = $pdf . $ticket;
-		// 		$sunatE = $sunat;
-		// 	}
-
-		// 	// --- NUEVO BOTÓN DE NOTA DE CRÉDITO ---
-		// 	if ($reg->estado == 'Aceptado') {
-		// 		$notaCreditoBtn = '<a title="Pasar a Nota de Crédito" onclick="notaCredito(' . $reg->idventa . ',' . $reg->idsucursal . ')"> 
-		//         <button class="btn btn-danger btn-xs"><i class="fas fa-ban"></i></button></a>';
-		// 	} else {
-		// 		$notaCreditoBtn = '';
-		// 	}
-
-
-		// 	if ($reg->estadoS == '') {
-		// 		$estadoS = '-';
-		// 	} else if ($reg->estadoS == 'PENDIENTE') {
-		// 		$estadoS = '<span class="badge bg-red">PENDIENTE</span>';
-		// 	} else if ($reg->estadoS == 'TERMINADO') {
-		// 		$estadoS = '<span class="badge bg-green">TERMINADO</span>';
-		// 	} else {
-		// 		$estadoS = '<span class="badge bg-yellow">ENTREGADO</span>';
-		// 	}
-
-		// 	$data[] = array(
-		// 		"0" => $reg->fecha,
-		// 		"1" => $reg->cliente . ' - ' . $reg->num_documento,
-		// 		"2" => $reg->sucursal,
-		// 		"3" => $reg->tipo_comprobante . ' - ' . $reg->serie_comprobante . ' - ' . $reg->num_comprobante,
-		// 		"4" => '<span class="badge badge-neon neon-purple sm">S/ ' . number_format($reg->total_venta, 2) . '</span>',
-		// 		"5" => $reg->formapago,
-		// 		"6" => ($reg->ventacredito == 'Si') ? '<center><span class="badge badge-neon neon-red">Crédito</span></center>' : '<center><span class="badge badge-neon neon-blue">Contado</span></center>',
-		// 		"7" => $estado,
-		// 		"8" => $sunatE,
-		// 		"9" => $comprobarEstado,
-		// 		"10" => (($reg->estado == 'Activado') ?
-		// 			'<div class="dropdown">
-		// 		        <button class="btn dropdown-toggle" type="button" data-toggle="dropdown"> 
-		// 		            <i class="fas fa-list-ul"></i>
-		// 		        <span class="caret"></span></button>
-
-		// 		        <div class="dropdown-menu">'
-		// 			. ($helpers->getUserPermissionAccion('Editar venta') ?
-		// 				'<a class="dropdown-item" style="cursor:pointer;" onclick="generarComprobante(' . $reg->idventa . ')">Editar</a>'
-		// 				: '')
-		// 			. ($helpers->getUserPermissionAccion('Eliminar venta') ?
-		// 				'<a class="dropdown-item" style="cursor:pointer;" onclick="anularComprobante(' . $reg->idventa . ')">Eliminar</a>'
-		// 				: '')
-		// 			. (($reg->tipo_comprobante == 'Nota de Venta') ?
-		// 				'<a class="dropdown-item" style="cursor:pointer;" onclick="cambiarComprobante(' . $reg->idventa . ',' . $reg->idsucursal . ')">
-		// 		                Cambiar a Boleta/Factura
-		// 		            </a>'
-		// 				: '')
-		// 			. '</div>
-
-		// 		        <button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idventa . ')"><i class="fas fa-eye"></i></button>
-		// 		        <a target="_blank" title="Enviar Comprobantes"> 
-		// 		            <button class="btn btn-success btn-xs" onclick="EnviarComprobante(' . $reg->idventa . ')"><i class="fab fa-whatsapp"></i></button></a>'
-		// 			:
-		// 			$mostrarResumen . $enviarComprobante . ''
-		// 		)
-		// 			. $mostrar
-		// 			. $notaCreditoBtn
-		// 			. '</div> <a class="btn btn-danger btn-xs" title="descargar cronograma de pagos" onclick="verCronogramPago(' . $reg->idventa . ')"><i class="fas fa-file-pdf"></i></a>'
-		// 	);
-		// }
-
-		// $results = array(
-		// 	"sEcho" => 1,
-		// 	"iTotalRecords" => count($data),
-		// 	"iTotalDisplayRecords" => count($data),
-		// 	"aaData" => $data
-		// );
-		// echo json_encode($results);
+		$venta->listar($idsucursal, $idpersonal, $fecha_inicio, $fecha_fin, $estado, $idproducto);
 		break;
 
 
@@ -1788,16 +1546,16 @@ switch ($_GET["op"]) {
 		echo json_encode($rspta);
 		break;
 
-	case 'selectComprobante':
-		require_once "../modelos/Comprobantes.php";
-		$comprobantes = new Comprobantes();
+	// case 'selectComprobante':
+	// 	require_once "../modelos/Comprobantes.php";
+	// 	$comprobantes = new Comprobantes();
 
-		$rspta = $comprobantes->select();
+	// 	$rspta = $comprobantes->select();
 
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value="' . $reg->nombre . '">' . $reg->nombre . '</option>';
-		}
-		break;
+	// 	while ($reg = $rspta->fetch_object()) {
+	// 		echo '<option value="' . $reg->nombre . '">' . $reg->nombre . '</option>';
+	// 	}
+	// 	break;
 
 	case 'selectComprobante2':
 		require_once "../modelos/Comprobantes.php";

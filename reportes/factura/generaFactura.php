@@ -44,7 +44,7 @@ $query = mysqli_query($conexion, "
         DATE_FORMAT(v.fechadeposito, '%d/%m/%y') as fechadeposito, 
         v.banco, 
         v.numoperacion, 
-        v.tipo_comprobante, 
+        cp.nombre AS tipo_comprobante,
         v.serie_comprobante, 
         v.num_comprobante, 
         DATE_FORMAT(v.fecha_hora, '%d/%m/%Y') as fecha,
@@ -57,6 +57,7 @@ $query = mysqli_query($conexion, "
         v.observacion,
         v.interes 
     FROM venta v 
+    INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
     INNER JOIN persona p ON v.idcliente = p.idpersona 
     INNER JOIN personal u ON v.idpersonal = u.idpersonal
     INNER JOIN sucursal s ON v.idsucursal = s.idsucursal

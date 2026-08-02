@@ -4,7 +4,7 @@ require '../modelos/Configuracion.php';
 $configuracion = new Configuracion();
 switch ($_GET['op']) {
     case 'listarConfiguracion':
-        $idsucursal = $_GET['idsucursal'] ?? $_SESSION['idsucursal'];
+        $idsucursal = $_SESSION['idsucursal'];
         $res = $configuracion->listarConfiguracion($idsucursal);
         echo $res;
         break;

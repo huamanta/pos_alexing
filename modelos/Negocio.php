@@ -1,14 +1,16 @@
 <?php
 //incluir la conexion de base de datos
-require "../configuraciones/Conexion.php";
-class Negocio
-{
+require_once __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
 
+class Negocio extends Helpers
+{
 
 	//implementamos nuestro constructor
 	public function __construct()
 	{
-
+		parent::__construct();
 	}
 
 	//metodo insertar regiustro
@@ -51,8 +53,8 @@ class Negocio
 
 	public function mostrar_impuesto($idsucursal)
 	{
-		$sql = "SELECT e.monto_impuesto FROM sucursal s, empresas e WHERE s.idempresa = e.idempresa AND s.idsucursal='$idsucursal'";
-		return ejecutarConsulta($sql);
+		$impuesto = Helpers::get_impuesto_empresa($idsucursal);
+		Response::json($impuesto);
 	}
 	public function nombre_impuesto($idsucursal)
 	{

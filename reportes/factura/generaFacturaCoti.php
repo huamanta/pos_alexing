@@ -41,7 +41,7 @@ if (empty($_GET["id"])) {
         p.telefono,
         v.idpersonal,
         u.nombre AS personal,
-        v.tipo_comprobante,
+        v.idcomprobante_pago,
         v.serie_comprobante,
         v.num_comprobante,
 		v.fecha_h as fecha_original,
