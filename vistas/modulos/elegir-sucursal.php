@@ -17,12 +17,25 @@
                     <?php if ($count == 0 && $esAdmin): ?>
 
                     <div class="row justify-content-center">
-                        <div class="col-md-4 mt-3">
+                        <div class="col-md-6 mt-3">
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <h3 class="card-title" id="cardTitle">Crear nueva sucursal</h3>
                                 </div>
                                 <div class="card-body">
+                                     <div class="alert alert-info border-left border-info">
+        <h5><i class="fas fa-info-circle mr-2"></i>Bienvenido a Syspider</h5>
+        <p class="mb-2">
+            Para comenzar a utilizar el sistema, primero debe registrar la información de su
+            <strong>empresa</strong> y crear su <strong>primera sucursal</strong>.
+        </p>
+        <ul class="mb-0 pl-3">
+            <li>Ingrese el <strong>RUC</strong> de la empresa.</li>
+            <li>Complete la <strong>Razón Social</strong> y los datos tributarios.</li>
+            <li>Registre el nombre y la dirección de la sucursal principal.</li>
+            <li>Presione <strong>"Crear y Continuar"</strong> para finalizar la configuración inicial.</li>
+        </ul>
+    </div>
                                     <form id="formCrearSucursal">
                                         <h5>Datos de la Empresa</h5>
                                         <div class="form-group"> <label for="ruc">RUC:</label> <input type="text"
