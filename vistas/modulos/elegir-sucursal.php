@@ -54,18 +54,24 @@ $esAdmin = $usuario->esSuperusuario();
                                                     <option value="IGV" selected>IGV</option>
                                                 </select>
                                             </div>
-                                            <div class="form-group"> <label for="monto_impuesto">Monto Impuesto (%):</label>
+                                            <div class="form-group">
+                                                <label for="monto_impuesto">Monto Impuesto (%):</label>
                                                 <input type="number" step="0.01" class="form-control" id="monto_impuesto"
                                                     name="monto_impuesto" value="18.00" required>
                                             </div>
                                             <h5>Datos de la Sucursal</h5>
-                                            <div class="form-group"> <label for="nombre">Nombre de la Sucursal:</label>
+                                            <div class="form-group">
+                                                <label for="nombre">Nombre de la Sucursal:</label>
                                                 <input type="text" class="form-control" id="nombre" name="nombre" required>
                                             </div>
-                                            <div class="form-group"> <label for="direccion">Dirección:</label> <input
-                                                    type="text" class="form-control" id="direccion" name="direccion"> </div>
-                                            <div class="form-group"> <label for="telefono">Teléfono:</label> <input
-                                                    type="text" class="form-control" id="telefono" name="telefono"> </div>
+                                            <div class="form-group">
+                                                <label for="direccion">Dirección:</label>
+                                                <input type="text" class="form-control" id="direccion" name="direccion">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="telefono">Teléfono:</label>
+                                                <input type="text" class="form-control" id="telefono" name="telefono">
+                                            </div>
                                             <button type="submit" class="btn btn-primary">Crear y Continuar</button>
                                         </form>
                                     </div>
