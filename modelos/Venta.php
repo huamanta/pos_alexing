@@ -1834,10 +1834,22 @@ class Venta extends Helpers
         return $result ? $result['idempresa'] : null;
     }
 
-    public function buscarProducto($codigo)
+    public function buscarProducto($idsucursal)
     {
-        $sql = "SELECT p.*, um.nombre as unidadmedida FROM producto p INNER JOIN unidad_medida um ON p.idunidad_medida = um.idunidad_medida WHERE codigo='$codigo'";
-        return ejecutarConsultaSimpleFila($sql);
+        $page = $_GET['page'] ?? 1;
+		$limit = $_GET['limit'] ?? 20;
+		$search = trim($_GET['search'] ?? '');
+        $data = (new DBQuery($this->pdo))
+        ->select('p.*, numero_serie, ps.numero_motor, ps.placa, ps.color, ps.anio_fabricacion, ps.estado, um.nombre as unidadmedida')
+        ->from('producto p')
+        ->join('unidad_medida um', 'p.idunidad_medida = um.idunidad_medida')
+        ->join('producto_serie ps', 'ps.idproducto=p.idproducto')
+        ->where('p.tipo_producto', '=', 'Vehiculo')
+        ->where('p.idsucursal', '=', $idsucursal)
+        ->whereIn('ps.estado', ['DISPONIBLE', 'MANTENIMIENTO'])
+        ->search($search, ['p.codigo', 'p.nombre'])
+        ->paginate($page, $limit);
+        return Response::json($data);
     }
 
     public function updateNV($idventa)

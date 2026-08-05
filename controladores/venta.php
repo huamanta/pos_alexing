@@ -1593,13 +1593,8 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'buscarProducto':
-
-		$codigo = $_REQUEST["codigo"];
-
-		$rspta = $venta->buscarProducto($codigo);
-		//Codificar el resultado utilizando json
-		echo json_encode($rspta);
-
+		$idsucursal = $_SESSION['idsucursal'];
+		$venta->buscarProducto($idsucursal);
 		break;
 
 	case 'mostrarUltimoCliente':

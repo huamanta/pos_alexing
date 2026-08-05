@@ -527,7 +527,31 @@ $helpers = new Helpers();
         ?>
 
 
-
+        <?php
+        if ($helpers->getUserPermisoModulo('Facturacion y cajas')) {
+          ?>
+          <li class="nav-item" id="navTaller">
+            <a href="#" class="nav-link" id="navTallerActive">
+              <i class="nav-icon fas fa-store-alt"></i>
+              <p>
+                Taller
+                <i class="fas fa-angle-left right"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <?php if ($helpers->getUserPermisoModulo('Comprobantes', 'Facturacion y cajas')): ?>
+                <li class="nav-item" style="font-size: 14px">
+                  <a href="orden-trabajo" class="nav-link" id="navOrdenTrabajo">
+                    <i class="fas fa-file-invoice nav-icon te xt-orange" style="font-size: 14px"></i>
+                    <p>Ordenes Tabajo</p>
+                  </a>
+                </li>
+              <?php endif; ?>
+            </ul>
+          </li>
+          <?php
+        }
+        ?>
 
 
         <?php

@@ -1,9 +1,9 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
-require "../configuraciones/Conexion.php";
-require_once "Helpers.php";
-require_once "../configuraciones/ConexionPdo.php";
-require_once "../core/FluentSave.php";
+require_once __DIR__ . "../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "../configuraciones/ConexionPdo.php";
+require_once __DIR__ . "../core/FluentSave.php";
 
 class Empleado extends Helpers
 {

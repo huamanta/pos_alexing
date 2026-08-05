@@ -556,29 +556,29 @@ switch ($_GET["op"]) {
 		// echo json_encode($results);
 		break;
 
-	case 'selectCliente':
-		require_once "../modelos/Persona.php";
-		$persona = new Persona();
+	// case 'selectCliente':
+	// 	require_once "../modelos/Persona.php";
+	// 	$persona = new Persona();
 
-		$rspta = $persona->listarc();
+	// 	$rspta = $persona->listarc();
 
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idpersona . '>' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
-		}
-		break;
+	// 	while ($reg = $rspta->fetch_object()) {
+	// 		echo '<option value=' . $reg->idpersona . '>' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
+	// 	}
+	// 	break;
 
-	case 'selectProducto':
-		require_once "../modelos/Producto.php";
-		$persona = new Producto();
+	// case 'selectProducto':
+	// 	require_once "../modelos/Producto.php";
+	// 	$persona = new Producto();
 
-		$rspta = $persona->listar();
+	// 	$rspta = $persona->listar();
 
-		echo '<option value="Todos">Todos</options>';
+	// 	echo '<option value="Todos">Todos</options>';
 
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idproducto . '>' . $reg->nombre . '</option>';
-		}
-		break;
+	// 	while ($reg = $rspta->fetch_object()) {
+	// 		echo '<option value=' . $reg->idproducto . '>' . $reg->nombre . '</option>';
+	// 	}
+	// 	break;
 
 	case 'selectVendedor':
 		require_once "../modelos/Persona.php";
