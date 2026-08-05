@@ -42,17 +42,17 @@ $esAdmin = $usuario->esSuperusuario();
                                             <h5>Datos de la Empresa</h5>
                                             <div class="form-group">
                                                 <label for="ruc">RUC:</label>
-                                                <select class="form-control" id="ruc" name="ruc">
-                                                    <option value="RUC" selected>RUC</option>
-                                                </select>
+                                                <input type="text" class="form-control" id="ruc" name="ruc" required>
                                             </div>
                                             <div class="form-group"> <label for="razon_social">Razón Social:</label> <input
                                                     type="text" class="form-control" id="razon_social" name="razon_social"
                                                     required>
                                             </div>
-                                            <div class="form-group"> <label for="nombre_impuesto">Nombre Impuesto:</label>
-                                                <input type="text" class="form-control" id="nombre_impuesto"
-                                                    name="nombre_impuesto" value="IGV" required>
+                                            <div class="form-group">
+                                                <input type="text" name="nombre_impuesto" value="IGV" required>
+                                                <select class="form-control" id="nombre_impuesto">
+                                                    <option value="IGV" selected>IGV</option>
+                                                </select>
                                             </div>
                                             <div class="form-group"> <label for="monto_impuesto">Monto Impuesto (%):</label>
                                                 <input type="number" step="0.01" class="form-control" id="monto_impuesto"
