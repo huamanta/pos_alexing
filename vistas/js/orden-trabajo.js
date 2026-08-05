@@ -401,6 +401,9 @@ $("#vehiculoBuscar").on("select2:select", function (e) {
     $("#productoAnio").text(producto.anio_fabricacion);
     $("#productoKilometraje").text(producto.kilometraje);
     $("#productoPrecio").text(producto.precio);
+    $("#imagenmuestra")
+        .show()
+        .attr("src", "files/productos/" + producto.imagen);
 
 });
 

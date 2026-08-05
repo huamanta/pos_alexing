@@ -103,15 +103,56 @@ switch ($_GET["op"]) {
 			}
 		}
 
-		if (!file_exists($_FILES['imagen']['tmp_name']) || !is_uploaded_file($_FILES['imagen']['tmp_name'])) {
+		if (
+    !file_exists($_FILES['imagen']['tmp_name']) ||
+    !is_uploaded_file($_FILES['imagen']['tmp_name'])
+		) {
 			$imagen = $_POST["imagenactual"];
 		} else {
-			$ext = explode(".", $_FILES["imagen"]["name"]);
-			if ($_FILES['imagen']['type'] == "image/jpg" || $_FILES['imagen']['type'] == "image/jpeg" || $_FILES['imagen']['type'] == "image/png") {
-				$imagen = round(microtime(true)) . '.' . end($ext);
-				move_uploaded_file($_FILES["imagen"]["tmp_name"], "../files/productos/" . $imagen);
+
+			$tmp = $_FILES["imagen"]["tmp_name"];
+			$info = getimagesize($tmp);
+
+			if ($info === false) {
+				die("El archivo no es una imagen válida.");
 			}
+
+			switch ($info["mime"]) {
+				case "image/jpeg":
+				case "image/jpg":
+					$source = imagecreatefromjpeg($tmp);
+					break;
+
+				case "image/png":
+					$source = imagecreatefrompng($tmp);
+					imagepalettetotruecolor($source);
+					imagealphablending($source, true);
+					imagesavealpha($source, true);
+					break;
+
+				case "image/gif":
+					$source = imagecreatefromgif($tmp);
+					break;
+
+				case "image/webp":
+					$source = imagecreatefromwebp($tmp);
+					break;
+
+				case "image/bmp":
+					$source = imagecreatefrombmp($tmp);
+					break;
+
+				default:
+					die("Formato de imagen no soportado.");
+			}
+
+			$imagen = round(microtime(true)) . ".webp";
+
+			imagewebp($source, "../files/productos/" . $imagen, 85);
+
+			imagedestroy($source);
 		}
+
 		if (empty($idproducto)) {
 			$rspta = $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $tipo_producto, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV);
 			echo $rspta;
