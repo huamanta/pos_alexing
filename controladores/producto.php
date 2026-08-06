@@ -104,8 +104,8 @@ switch ($_GET["op"]) {
 		}
 
 		if (
-    !file_exists($_FILES['imagen']['tmp_name']) ||
-    !is_uploaded_file($_FILES['imagen']['tmp_name'])
+			!file_exists($_FILES['imagen']['tmp_name']) ||
+			!is_uploaded_file($_FILES['imagen']['tmp_name'])
 		) {
 			$imagen = $_POST["imagenactual"];
 		} else {
@@ -148,7 +148,19 @@ switch ($_GET["op"]) {
 
 			$imagen = round(microtime(true)) . ".webp";
 
-			imagewebp($source, "../files/productos/" . $imagen, 85);
+			$carpeta = __DIR__ . "/../files/productos/";
+
+			if (!file_exists($carpeta)) {
+				mkdir($carpeta, 0755, true);
+			}
+
+			$imagen = round(microtime(true)) . ".webp";
+
+			$ruta = $carpeta . $imagen;
+
+			if (!imagewebp($source, $ruta, 85)) {
+				die("No se pudo guardar la imagen WebP");
+			}
 
 			imagedestroy($source);
 		}

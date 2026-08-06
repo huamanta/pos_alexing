@@ -49,6 +49,7 @@
 
 files/productos/*
 !files/productos/.gitkeep
+!files/productos/anonymous.png
 
 files/solicitudes/*
 !files/solicitudes/.gitkeep
