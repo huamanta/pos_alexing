@@ -144,7 +144,6 @@ function listar() {
 			},
 			"bDestroy": true,
 			"iDisplayLength": 5,//Paginación
-			"order": [[0, "desc"]]//Ordenar (columna,orden)
 		}).DataTable();
 }
 
@@ -224,6 +223,7 @@ $("#imagen").change(function () {
 	  VALIDAMOS EL FORMATO DE LA IMAGEN SEA JPG O PNG
 	  =============================================*/
 
+	/*
 	if (imagen["type"] != "image/jpeg" && imagen["type"] != "image/png") {
 
 		$(".nuevaImagen").val("");
@@ -235,11 +235,13 @@ $("#imagen").change(function () {
 			confirmButtonText: "¡Cerrar!"
 		});
 
-	} else if (imagen["size"] > 2000000) {
+	} else */
+
+	if (imagen["size"] > 2000000) {
 
 		$(".nuevaImagen").val("");
 
-		swal({
+		Swal.fire({
 			title: "Error al subir la imagen",
 			text: "¡La imagen no debe pesar más de 2MB!",
 			type: "error",

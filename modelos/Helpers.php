@@ -57,13 +57,14 @@ class Helpers
     }
 
 
-    public function get_impuesto_empresa($idsucursal){
+    public function get_impuesto_empresa($idsucursal)
+    {
         $data = (new DBQuery($this->pdo))
-        ->select('e.nombre_impuesto, e.monto_impuesto')
-        ->from('empresas e')
-        ->join('sucursal s', "s.idempresa = e.idempresa")
-        ->where('s.idsucursal', '=', $idsucursal)
-        ->first();
+            ->select('e.nombre_impuesto, e.monto_impuesto')
+            ->from('empresas e')
+            ->join('sucursal s', "s.idempresa = e.idempresa")
+            ->where('s.idsucursal', '=', $idsucursal)
+            ->first();
         return [
             'impuesto' => $data['nombre_impuesto'],
             'valor' => $data['monto_impuesto']
@@ -73,7 +74,7 @@ class Helpers
 
     public function get_symbol($currency = null, $locale = "es_PE")
     {
-         if (!$currency) {
+        if (!$currency) {
             $sucursal = $_SESSION['idsucursal'];
             $currency = self::get_currency_code($sucursal);
         }
@@ -507,36 +508,94 @@ class Helpers
         return (int) ($empresa['idempresa'] ?? 0);
     }
 
-    public function obtenerComprobanteSucursal(int $idtipo_comprobante, int $idsucursal): array
+    // public function obtenerComprobanteSucursal(int $idtipo_comprobante, int $idsucursal): array
+    // {
+    //     $comprobante = (new DBQuery($this->pdo))
+    //         ->select("idcomprobante_pago, serie_comprobante, num_comprobante")
+    //         ->from("comp_pago")
+    //         ->where("idcomprobante_pago", "=", (int) $idtipo_comprobante)
+    //         ->where("idempresa", "=", $this->getEmpresa($idsucursal))
+    //         ->first() ?? [];
+
+    //     if ($comprobante) {
+    //         $numero = (int) $comprobante['num_comprobante'] + 1;
+    //         if ($numero > 99999) {
+    //             $numero = 1;
+    //         }
+
+    //         $comprobante['num_comprobante'] = str_pad($numero, 6, '0', STR_PAD_LEFT);
+    //     }
+
+    //     return $comprobante;
+    // }
+
+    public function actualizarCorrelativo(int $idtipo_comprobante, int $idsucursal): array
     {
+        $idempresa = $this->getEmpresa($idsucursal);
+
         $comprobante = (new DBQuery($this->pdo))
             ->select("idcomprobante_pago, serie_comprobante, num_comprobante")
             ->from("comp_pago")
-            ->where("idcomprobante_pago", "=", (int) $idtipo_comprobante)
-            ->where("idempresa", "=", $this->getEmpresa($idsucursal))
-            ->first() ?? [];
+            ->where("idcomprobante_pago", "=", $idtipo_comprobante)
+            ->where("idempresa", "=", $idempresa)
+            ->softDeletes()
+            ->orderBy("idcomprobante_pago", 'DESC')
+            ->forUpdate()
+            ->first();
 
-        if ($comprobante) {
-            $numero = (int) $comprobante['num_comprobante'] + 1;
-            if ($numero > 99999) {
-                $numero = 1;
-            }
-
-            $comprobante['num_comprobante'] = str_pad($numero, 6, '0', STR_PAD_LEFT);
+        if (!$comprobante) {
+            throw new Exception("No se encontró la configuración del comprobante.");
         }
+
+        $numero = (int) $comprobante['num_comprobante'] + 1;
+
+        if ($numero > 999999) {
+            throw new Exception(
+                "La serie {$comprobante['serie_comprobante']} llegó a su límite. Cree una nueva serie antes de continuar."
+            );
+        }
+
+        $update = (new FluentSaver($this->pdo))
+            ->table('comp_pago')
+            ->primaryKey('idcomprobante_pago')
+            ->data([
+                'idcomprobante_pago' => $idtipo_comprobante,
+                'num_comprobante' => $numero,
+            ])
+            ->update();
+
+        if (!$update) {
+            throw new Exception(
+                "Ocurrio un error al actualizar la serie del comprobante."
+            );
+        }
+
+        $comprobante['num_comprobante'] = str_pad($numero, 6, '0', STR_PAD_LEFT);
 
         return $comprobante;
     }
 
-    public function actualizarCorrelativo(int $idtipo_comprobante, int $idsucursal, int $numero): void
+    public function obtenerComprobanteSucursal(int $idtipo_comprobante, int $idsucursal): array
     {
-        (new FluentSaver($this->pdo))
-            ->table("comp_pago")
-            ->where("idcomprobante_pago", "=", (int) $idtipo_comprobante)
-            ->where("idempresa", "=", $this->getEmpresa($idsucursal))
-            ->data([
-                "num_comprobante" => $numero
-            ])
-            ->update();
+        $idempresa = $this->getEmpresa($idsucursal);
+
+        $comprobante = (new DBQuery($this->pdo))
+            ->select("idcomprobante_pago, serie_comprobante, num_comprobante")
+            ->from("comp_pago")
+            ->where("idcomprobante_pago", "=", $idtipo_comprobante)
+            ->where("idempresa", "=", $idempresa)
+            ->softDeletes()
+            ->orderBy("idcomprobante_pago", 'DESC')
+            ->first();
+
+        if (!$comprobante) {
+            throw new Exception("No se encontró la configuración del comprobante.");
+        }
+
+        $numero = (int) $comprobante['num_comprobante'] + 1;
+
+        $comprobante['num_comprobante'] = str_pad($numero, 6, '0', STR_PAD_LEFT);
+
+        return $comprobante;
     }
 }

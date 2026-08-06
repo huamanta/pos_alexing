@@ -80,14 +80,10 @@ class SisVenta extends Helpers
                 $dovEstado = "";
             }
 
-            // if ($serie_comprobante == "-" && $num_comprobante == "-") {
-            //     $tipo_comprobante = "Anular";
-            // }
-
             //=========================
             // Correlativo
             //=========================
-            $config = Helpers::obtenerComprobanteSucursal($idtipo_comprobante, $idsucursal);
+            $config = Helpers::actualizarCorrelativo($idtipo_comprobante, $idsucursal);
 
             //=========================
             // Forma de pago real
@@ -204,8 +200,6 @@ class SisVenta extends Helpers
                     $idVenta
                 );
             }
-
-            Helpers::actualizarCorrelativo($idtipo_comprobante, $idsucursal, $config['num_comprobante']);
 
             $this->pdo->commit();
 

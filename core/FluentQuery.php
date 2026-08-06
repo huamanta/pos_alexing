@@ -112,7 +112,7 @@ class DBQuery
         );
     }
 
-    public function lockForUpdate(): self
+    public function forUpdate(): self
     {
         $this->lockForUpdate = true;
 

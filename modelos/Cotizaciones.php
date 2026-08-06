@@ -46,7 +46,6 @@ class Cotizacion extends Helpers
         $meses,
         $interes
     ) {
-
         try {
 
             $this->pdo->beginTransaction();
@@ -56,7 +55,7 @@ class Cotizacion extends Helpers
                 throw new Exception("Debe seleccionar un cliente válido.");
             }
 
-            $config = Helpers::obtenerComprobanteSucursal($idtipo_comprobante, $idsucursal);
+            $comprobante = Helpers::actualizarCorrelativo($idtipo_comprobante, $idsucursal);
 
             $idcotizacion = (new FluentSaver($this->pdo))
                 ->table('cotizacion')
@@ -71,8 +70,8 @@ class Cotizacion extends Helpers
                     'idcliente' => $idcliente,
                     'idpersonal' => $idpersonal,
                     'idcomprobante_pago' => $idtipo_comprobante,
-                    'serie_comprobante' => $config['serie_comprobante'],
-                    'num_comprobante' => $config['num_comprobante'],
+                    'serie_comprobante' => $comprobante['serie_comprobante'],
+                    'num_comprobante' => $comprobante['num_comprobante'],
                     'fecha_hora' => $fecha_hora,
                     'total_venta' => $total_venta,
                     'titulo' => $titulo,
@@ -109,8 +108,6 @@ class Cotizacion extends Helpers
                     ])
                     ->save();
             }
-
-            Helpers::actualizarCorrelativo($idtipo_comprobante, $idsucursal, $config['num_comprobante']);
 
             $this->pdo->commit();
 

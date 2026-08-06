@@ -1164,17 +1164,6 @@ date_default_timezone_set('America/Lima');
                                                                         acompañante</label>
                                                                     <select class="form-control" id="idtipoacompanante"
                                                                         name="idtipoacompanante">
-                                                                        <option value="" selected hidden>
-                                                                            Seleccionar...</option>
-                                                                        <option value="1">Cónyuge</option>
-                                                                        <option value="2">Hijo(a)</option>
-                                                                        <option value="3">Padre</option>
-                                                                        <option value="4">Madre</option>
-                                                                        <option value="5">Hermano(a)</option>
-                                                                        <option value="6">Amigo(a)</option>
-                                                                        <option value="7">Compañero(a) de
-                                                                            trabajo</option>
-                                                                        <option value="8">Otro</option>
                                                                     </select>
                                                                 </div>
 

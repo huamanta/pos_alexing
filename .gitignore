@@ -56,6 +56,7 @@ files/solicitudes/*
 
 files/personal/*
 !files/personal/.gitkeep
+!files/personal/user.png
 
 files/seguimientos/*
 !files/seguimientos/.gitkeep

@@ -1,110 +1,159 @@
-<?php 
+<?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Empleado.php";
 
-$empleado=new Empleado();
+$empleado = new Empleado();
 
 // Validar si el usuario tiene una sesión activa
 if (!isset($_SESSION["cargo"])) {
-    echo json_encode(["error" => "Acceso denegado"]);
-    exit;
+	echo json_encode(["error" => "Acceso denegado"]);
+	exit;
 }
 
-$idpersonal=isset($_POST["idpersonal"])? limpiarCadena($_POST["idpersonal"]):"";
-$nombre=isset($_POST["nombre"])? limpiarCadena($_POST["nombre"]):"";
-$tipo_documento=isset($_POST["tipo_documento"])? limpiarCadena($_POST["tipo_documento"]):"";
-$num_documento=isset($_POST["num_documento"])? limpiarCadena($_POST["num_documento"]):"";
-$direccion=isset($_POST["direccion"])? limpiarCadena($_POST["direccion"]):"";
-$telefono=isset($_POST["telefono"])? limpiarCadena($_POST["telefono"]):"";
-$email=isset($_POST["email"])? limpiarCadena($_POST["email"]):"";
-$cargo=isset($_POST["cargo"])? limpiarCadena($_POST["cargo"]):"";
-$imagen=isset($_POST["imagen"])? limpiarCadena($_POST["imagen"]):"";
-$porcentaje=isset($_POST["porcentaje"])? limpiarCadena($_POST["porcentaje"]):0;
-$salario=isset($_POST["salario"])? limpiarCadena($_POST["salario"]):"";
+$idpersonal = isset($_POST["idpersonal"]) ? limpiarCadena($_POST["idpersonal"]) : "";
+$nombre = isset($_POST["nombre"]) ? limpiarCadena($_POST["nombre"]) : "";
+$tipo_documento = isset($_POST["tipo_documento"]) ? limpiarCadena($_POST["tipo_documento"]) : "";
+$num_documento = isset($_POST["num_documento"]) ? limpiarCadena($_POST["num_documento"]) : "";
+$direccion = isset($_POST["direccion"]) ? limpiarCadena($_POST["direccion"]) : "";
+$telefono = isset($_POST["telefono"]) ? limpiarCadena($_POST["telefono"]) : "";
+$email = isset($_POST["email"]) ? limpiarCadena($_POST["email"]) : "";
+$cargo = isset($_POST["cargo"]) ? limpiarCadena($_POST["cargo"]) : "";
+$imagen = isset($_POST["imagen"]) ? limpiarCadena($_POST["imagen"]) : "";
+$porcentaje = isset($_POST["porcentaje"]) ? limpiarCadena($_POST["porcentaje"]) : 0;
+$salario = isset($_POST["salario"]) ? limpiarCadena($_POST["salario"]) : "";
 // Verificar si se está solicitando la verificación de administrador
 if (isset($_GET["op"]) && $_GET["op"] == "verificarAdmin") {
-    $es_admin = ($_SESSION['cargo'] == 'Administrador');
-    echo json_encode(["es_admin" => $es_admin]);
-    exit; // IMPORTANTE: Finalizar el script aquí para evitar ejecución adicional
+	$es_admin = ($_SESSION['cargo'] == 'Administrador');
+	echo json_encode(["es_admin" => $es_admin]);
+	exit; // IMPORTANTE: Finalizar el script aquí para evitar ejecución adicional
 }
 
-switch ($_GET["op"]){
+switch ($_GET["op"]) {
 	case 'guardaryeditar':
 
-		if (!file_exists($_FILES['imagen']['tmp_name']) || !is_uploaded_file($_FILES['imagen']['tmp_name']))
-		{
-			$imagen=$_POST["imagenactual"];
-		}
-		else 
-		{
-			$ext = explode(".", $_FILES["imagen"]["name"]);
-			if ($_FILES['imagen']['type'] == "image/jpg" || $_FILES['imagen']['type'] == "image/jpeg" || $_FILES['imagen']['type'] == "image/png")
-			{
-				$imagen = round(microtime(true)) . '.' . end($ext);
-				move_uploaded_file($_FILES["imagen"]["tmp_name"], "../files/personal/" . $imagen);
+		if (
+			!file_exists($_FILES['imagen']['tmp_name']) ||
+			!is_uploaded_file($_FILES['imagen']['tmp_name'])
+		) {
+			$imagen = $_POST["imagenactual"];
+		} else {
+
+			$tmp = $_FILES["imagen"]["tmp_name"];
+			$info = getimagesize($tmp);
+
+			if ($info === false) {
+				die("El archivo no es una imagen válida.");
 			}
+
+			switch ($info["mime"]) {
+				case "image/jpeg":
+				case "image/jpg":
+					$source = imagecreatefromjpeg($tmp);
+					break;
+
+				case "image/png":
+					$source = imagecreatefrompng($tmp);
+					imagepalettetotruecolor($source);
+					imagealphablending($source, true);
+					imagesavealpha($source, true);
+					break;
+
+				case "image/gif":
+					$source = imagecreatefromgif($tmp);
+					break;
+
+				case "image/webp":
+					$source = imagecreatefromwebp($tmp);
+					break;
+
+				case "image/bmp":
+					$source = imagecreatefrombmp($tmp);
+					break;
+
+				default:
+					die("Formato de imagen no soportado.");
+			}
+
+			$imagen = round(microtime(true)) . ".webp";
+
+			$carpeta = __DIR__ . "/../files/personal/";
+
+			if (!file_exists($carpeta)) {
+				mkdir($carpeta, 0755, true);
+			}
+
+			$imagen = round(microtime(true)) . ".webp";
+
+			$ruta = $carpeta . $imagen;
+
+			if (!imagewebp($source, $ruta, 85)) {
+				die("No se pudo guardar la imagen WebP");
+			}
+
+			imagedestroy($source);
 		}
-		if (empty($idpersonal)){
-			$rspta=$empleado->insertar($nombre,$tipo_documento,$num_documento,$direccion,$telefono,$email,$cargo,$imagen,$porcentaje,$salario);
+
+		if (empty($idpersonal)) {
+			$rspta = $empleado->insertar($nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $cargo, $imagen, $porcentaje, $salario);
+			echo $rspta;
+		} else {
+			$rspta = $empleado->editar($idpersonal, $nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $cargo, $imagen, $porcentaje, $salario);
 			echo $rspta;
 		}
-		else {
-			$rspta=$empleado->editar($idpersonal,$nombre,$tipo_documento,$num_documento,$direccion,$telefono,$email,$cargo,$imagen,$porcentaje,$salario);
-			echo $rspta;
-		}
-	break;
+		break;
 
 	case 'desactivar':
-		$rspta=$empleado->desactivar($idpersonal);
- 		echo $rspta ? "Empleado Desactivado" : "Empleado no se puede desactivar";
-	break;
+		$rspta = $empleado->desactivar($idpersonal);
+		echo $rspta ? "Empleado Desactivado" : "Empleado no se puede desactivar";
+		break;
 
 	case 'activar':
-		$rspta=$empleado->activar($idpersonal);
- 		echo $rspta ? "Empleado activado" : "Empleado no se puede activar";
-	break;
+		$rspta = $empleado->activar($idpersonal);
+		echo $rspta ? "Empleado activado" : "Empleado no se puede activar";
+		break;
 
 	case 'mostrar':
-		$rspta=$empleado->mostrar($idpersonal);
- 		//Codificar el resultado utilizando json
- 		echo json_encode($rspta);
- 		
-	break;
+		$rspta = $empleado->mostrar($idpersonal);
+		//Codificar el resultado utilizando json
+		echo json_encode($rspta);
+
+		break;
 
 	case 'listar':
-		$rspta=$empleado->listar();
- 		//Vamos a declarar un array
- 		$data= Array();
+		$rspta = $empleado->listar();
+		//Vamos a declarar un array
+		$data = array();
 
- 		while ($reg=$rspta->fetch_object()){
-		 			$data[]=array(
-		 				"0"=>$reg->nombre,
-		 				"1"=>$reg->tipo_documento,
-		 				"2"=>$reg->num_documento,
-		 				"3"=>$reg->telefono,
-		 				"4"=>$reg->email,
-		 				"5"=>"<img src='files/personal/".$reg->imagen."' height='60px' width='60px' >",
-		 				"6"=>($reg->condicion)?'<span class="badge bg-green">ACTIVADO</span>':
-		 				'<span class="badge bg-red">DESACTIVADO</span>',
-		 				"7"=>($reg->condicion)?'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idpersonal.')"><i class="fas fa-edit"></i></button>'.
-		 					' <button class="btn btn-danger btn-xs" onclick="desactivar('.$reg->idpersonal.')"><i class="fas fa-times-circle"></i></button>'.
-		 					' <button class="btn btn-primary btn-xs" onclick="verEventos('.$reg->idpersonal.', 1)"><i class="fas fa-calendar"></i></button>':
-		 					'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idpersonal.')"><i class="fas fa-edit"></i></button>'.
-		 					' <button class="btn btn-primary btn-xs" onclick="activar('.$reg->idpersonal.')"><i class="fa fa-check"></i></button>'
-		 				);
-		 		}
- 		$results = array(
- 			"sEcho"=>1, //Información para el datatables
- 			"iTotalRecords"=>count($data), //enviamos el total registros al datatable
- 			"iTotalDisplayRecords"=>count($data), //enviamos el total registros a visualizar
- 			"aaData"=>$data);
- 		echo json_encode($results);
+		while ($reg = $rspta->fetch_object()) {
+			$data[] = array(
+				"0" => $reg->nombre,
+				"1" => $reg->tipo_documento,
+				"2" => $reg->num_documento,
+				"3" => $reg->telefono,
+				"4" => $reg->email,
+				"5" => "<img src='files/personal/" . $reg->imagen . "' height='60px' width='60px' >",
+				"6" => ($reg->condicion) ? '<span class="badge bg-green">ACTIVADO</span>' :
+					'<span class="badge bg-red">DESACTIVADO</span>',
+				"7" => ($reg->condicion) ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idpersonal . ')"><i class="fas fa-edit"></i></button>' .
+					' <button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idpersonal . ')"><i class="fas fa-times-circle"></i></button>' .
+					' <button class="btn btn-primary btn-xs" onclick="verEventos(' . $reg->idpersonal . ', 1)"><i class="fas fa-calendar"></i></button>' :
+					'<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idpersonal . ')"><i class="fas fa-edit"></i></button>' .
+					' <button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idpersonal . ')"><i class="fa fa-check"></i></button>'
+			);
+		}
+		$results = array(
+			"sEcho" => 1, //Información para el datatables
+			"iTotalRecords" => count($data), //enviamos el total registros al datatable
+			"iTotalDisplayRecords" => count($data), //enviamos el total registros a visualizar
+			"aaData" => $data
+		);
+		echo json_encode($results);
 
-	break;
+		break;
 
 	case 'eventosCalendario':
-		$idpersonal = isset($_GET["idpersonal"])? limpiarCadena($_GET["idpersonal"]):"";
+		$idpersonal = isset($_GET["idpersonal"]) ? limpiarCadena($_GET["idpersonal"]) : "";
 		$rspta = $empleado->eventosCalendario($idpersonal);
 		echo $rspta;
-	break;
+		break;
 }

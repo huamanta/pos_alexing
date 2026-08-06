@@ -285,13 +285,13 @@ switch ($_GET["op"]) {
 		echo json_encode($rpta);
 		break;
 
-	case 'actualizarDataItem':
-		$idproducto = isset($_POST["idproducto"]) ? limpiarCadena($_POST["idproducto"]) : "";
-		$campo = isset($_POST["campo"]) ? limpiarCadena($_POST["campo"]) : "";
-		$value = isset($_POST["value"]) ? limpiarCadena($_POST["value"]) : "";
-		$rpta = $pos->actualizarDataItem($idproducto, $campo, $value);
-		echo $rpta ? json_encode(array('status' => 1)) : json_encode(array('status' => 0));
-		break;
+	// case 'actualizarDataItem':
+	// 	$idproducto = isset($_POST["idproducto"]) ? limpiarCadena($_POST["idproducto"]) : "";
+	// 	$campo = isset($_POST["campo"]) ? limpiarCadena($_POST["campo"]) : "";
+	// 	$value = isset($_POST["value"]) ? limpiarCadena($_POST["value"]) : "";
+	// 	$rpta = $pos->actualizarDataItem($idproducto, $campo, $value);
+	// 	echo $rpta ? json_encode(array('status' => 1)) : json_encode(array('status' => 0));
+	// 	break;
 
 	case 'verificarProductos':
 		// Verificar si se reciben los parámetros necesarios
@@ -1149,13 +1149,13 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'selectProductoDesempaquetar':
-		$persona = new Producto();
+		$producto = new Producto();
+		$idsucursal = $_SESSION['idsucursal'];
+		echo $producto->listar($idsucursal);
 
-		$rspta = $persona->listar();
-
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idproducto . '>' . $reg->nombre . ' - ' . $reg->unidad . '</option>';
-		}
+		// while ($reg = $rspta->fetch_object()) {
+		// 	echo '<option value=' . $reg->idproducto . '>' . $reg->nombre . ' - ' . $reg->unidad . '</option>';
+		// }
 		break;
 
 	case 'selectVendedor':
@@ -1210,44 +1210,44 @@ switch ($_GET["op"]) {
 		}
 		break;
 
-	case 'listarArticulos3':
+	// case 'listarArticulos3':
 
-		$fechaActual = date('Y-m-d');
+	// 	$fechaActual = date('Y-m-d');
 
-		$idsucursal = $_REQUEST["idsucursal"];
+	// 	$idsucursal = $_REQUEST["idsucursal"];
 
-		require_once "../modelos/Producto.php";
-		$producto = new Producto();
+	// 	require_once "../modelos/Producto.php";
+	// 	$producto = new Producto();
 
-		$rspta = $producto->listarActivosVenta($idsucursal);
+	// 	$rspta = $producto->listarActivosVenta($idsucursal);
 
-		$data = array();
+	// 	$data = array();
 
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = array(
-				"0" => (($reg->stock == 0 && $reg->controla_stock == 'Si') ?
-					'<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>' :
-					'<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->unidadmedida . '\'); mostrarAlerta(\'Se agrego correctamente al carrito\');"><span class="fa fa-shopping-cart"></span></a>'),
+	// 	while ($reg = $rspta->fetch_object()) {
+	// 		$data[] = array(
+	// 			"0" => (($reg->stock == 0 && $reg->controla_stock == 'Si') ?
+	// 				'<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>' :
+	// 				'<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->unidadmedida . '\'); mostrarAlerta(\'Se agrego correctamente al carrito\');"><span class="fa fa-shopping-cart"></span></a>'),
 
-				"1" => "<img src='files/productos/" . $reg->imagen . "' height='50px' width='50px'>",
-				"2" => '<span style="font-weight: bold;">' . $reg->nombre . '</span>' . ' - ' . '<span style="font-size:10px">' . $reg->descripcion . '</span>',
-				"3" => $reg->categoria,
-				"4" => $reg->unidadmedida,
-				"5" => $reg->stock,
-				"6" => '<span class="badge bg-info">' . $reg->precio_venta . '</span>',
-				"7" => $reg->descripcion
+	// 			"1" => "<img src='files/productos/" . $reg->imagen . "' height='50px' width='50px'>",
+	// 			"2" => '<span style="font-weight: bold;">' . $reg->nombre . '</span>' . ' - ' . '<span style="font-size:10px">' . $reg->descripcion . '</span>',
+	// 			"3" => $reg->categoria,
+	// 			"4" => $reg->unidadmedida,
+	// 			"5" => $reg->stock,
+	// 			"6" => '<span class="badge bg-info">' . $reg->precio_venta . '</span>',
+	// 			"7" => $reg->descripcion
 
-			);
-		}
-		$results = array(
-			"sEcho" => 1, //info para datatables
-			"iTotalRecords" => count($data), //enviamos el total de registros al datatable
-			"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-			"aaData" => $data
-		);
-		echo json_encode($results);
+	// 		);
+	// 	}
+	// 	$results = array(
+	// 		"sEcho" => 1, //info para datatables
+	// 		"iTotalRecords" => count($data), //enviamos el total de registros al datatable
+	// 		"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
+	// 		"aaData" => $data
+	// 	);
+	// 	echo json_encode($results);
 
-		break;
+	// 	break;
 
 	/*case 'listarArticulos2':
 
@@ -1485,56 +1485,56 @@ switch ($_GET["op"]) {
 		echo json_encode($data);
 		break;
 
-	case 'listarArticulos':
+	// case 'listarArticulos':
 
-		$fechaActual = date('Y-m-d');
+	// 	$fechaActual = date('Y-m-d');
 
-		$idsucursal = $_REQUEST["idsucursal"];
+	// 	$idsucursal = $_REQUEST["idsucursal"];
 
-		require_once "../modelos/Producto.php";
-		$producto = new Producto();
+	// 	require_once "../modelos/Producto.php";
+	// 	$producto = new Producto();
 
-		$rspta = $producto->listarActivosVenta($idsucursal);
+	// 	$rspta = $producto->listarActivosVenta($idsucursal);
 
-		$data = array();
+	// 	$data = array();
 
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = array(
-				"0" => (($reg->stock == 0 && $reg->controla_stock == 'Si') ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
-					: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
-				"1" => "<div style='display: flex; align-items: center; gap: 1px;'>
-				            <img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->precioB . "\",\"" . $reg->precioC . "\",\"" . $reg->precioD . "\",\"" . $reg->precioE . "\" ,\"" . $reg->margenpubl . "\",\"" . $reg->margendes . "\",\"" . $reg->margenp1 . "\",\"" . $reg->margenp2 . "\",\"" . $reg->margendist . "\",\"" . $reg->utilprecio . "\",\"" . $reg->utilprecioB . "\",\"" . $reg->utilprecioC . "\",\"" . $reg->utilprecioD . "\",\"" . $reg->utilprecioE . "\")' 
-				                 src='files/productos/" . $reg->imagen . "' 
-				                 height='35px' width='35px' 
-				                 style='border-radius: 5px; cursor: pointer;'>
+	// 	while ($reg = $rspta->fetch_object()) {
+	// 		$data[] = array(
+	// 			"0" => (($reg->stock == 0 && $reg->controla_stock == 'Si') ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
+	// 				: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
+	// 			"1" => "<div style='display: flex; align-items: center; gap: 1px;'>
+	// 			            <img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->precioB . "\",\"" . $reg->precioC . "\",\"" . $reg->precioD . "\",\"" . $reg->precioE . "\" ,\"" . $reg->margenpubl . "\",\"" . $reg->margendes . "\",\"" . $reg->margenp1 . "\",\"" . $reg->margenp2 . "\",\"" . $reg->margendist . "\",\"" . $reg->utilprecio . "\",\"" . $reg->utilprecioB . "\",\"" . $reg->utilprecioC . "\",\"" . $reg->utilprecioD . "\",\"" . $reg->utilprecioE . "\")' 
+	// 			                 src='files/productos/" . $reg->imagen . "' 
+	// 			                 height='35px' width='35px' 
+	// 			                 style='border-radius: 5px; cursor: pointer;'>
 
-				            <div style='min-width: 250px; text-align: left; word-wrap: break-word; overflow-wrap: break-word;'>
-				                <span style='font-weight: bold; font-size:12px; display: block;'>" . wordwrap($reg->nombre, 30, "<br>", true) . "</span>
-				                <span class='badge bg-green' style='font-size:10px;'>" . $reg->cantidad_contenedor . " Und.</span>
-				                <span style='font-size:10px; display: block;'>" . $reg->contenedor . "</span>
-				            </div>
-       				 	</div>",
-				//"2" => $reg->categoria,
-				"2" => "<div style='min-width: 120px; text-align: left;'>" . $reg->codigo . "</div>",
-				"3" => floor($reg->stock / $reg->cantidad_contenedor),
-				"4" => '<span class="badge bg-info">' . 'S/ ' . $reg->precio_venta . '</span>',
-				"5" => '<span class="badge bg-orange text-white">' . 'S/ ' . $reg->precioB . '</span>',
-				"6" => '<span class="badge bg-purple">' . ' S/ ' . $reg->precioC . '</span>',
-				"7" => '<span class="badge bg-primary">' . 'S/ ' . $reg->precioD . '</span>',
-				"8" => '<span class="badge bg-orange">' . 'S/ ' . $reg->precioE . '</span>',
-				//' '.'<span class="badge bg-purple">'.'PrecioII '.' S/ '.$reg->precioC.'</span>'.
-				//' '.'<span class="badge bg-primary">'.'PrecioIII '.'S/ '.$reg->precioD.'</span>',
-			);
-		}
-		$results = array(
-			"sEcho" => 1, //info para datatables
-			"iTotalRecords" => count($data), //enviamos el total de registros al datatable
-			"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-			"aaData" => $data
-		);
-		echo json_encode($results);
+	// 			            <div style='min-width: 250px; text-align: left; word-wrap: break-word; overflow-wrap: break-word;'>
+	// 			                <span style='font-weight: bold; font-size:12px; display: block;'>" . wordwrap($reg->nombre, 30, "<br>", true) . "</span>
+	// 			                <span class='badge bg-green' style='font-size:10px;'>" . $reg->cantidad_contenedor . " Und.</span>
+	// 			                <span style='font-size:10px; display: block;'>" . $reg->contenedor . "</span>
+	// 			            </div>
+    //    				 	</div>",
+	// 			//"2" => $reg->categoria,
+	// 			"2" => "<div style='min-width: 120px; text-align: left;'>" . $reg->codigo . "</div>",
+	// 			"3" => floor($reg->stock / $reg->cantidad_contenedor),
+	// 			"4" => '<span class="badge bg-info">' . 'S/ ' . $reg->precio_venta . '</span>',
+	// 			"5" => '<span class="badge bg-orange text-white">' . 'S/ ' . $reg->precioB . '</span>',
+	// 			"6" => '<span class="badge bg-purple">' . ' S/ ' . $reg->precioC . '</span>',
+	// 			"7" => '<span class="badge bg-primary">' . 'S/ ' . $reg->precioD . '</span>',
+	// 			"8" => '<span class="badge bg-orange">' . 'S/ ' . $reg->precioE . '</span>',
+	// 			//' '.'<span class="badge bg-purple">'.'PrecioII '.' S/ '.$reg->precioC.'</span>'.
+	// 			//' '.'<span class="badge bg-primary">'.'PrecioIII '.'S/ '.$reg->precioD.'</span>',
+	// 		);
+	// 	}
+	// 	$results = array(
+	// 		"sEcho" => 1, //info para datatables
+	// 		"iTotalRecords" => count($data), //enviamos el total de registros al datatable
+	// 		"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
+	// 		"aaData" => $data
+	// 	);
+	// 	echo json_encode($results);
 
-		break;
+	// 	break;
 
 	case 'updateFactura':
 		$rspta = $venta->updateBoleta($idventa);
@@ -1716,17 +1716,17 @@ switch ($_GET["op"]) {
 		echo ejecutarConsulta($sql);
 		break;
 
-	case 'selectProductoFiltro':
-		require_once "../modelos/Producto.php";
-		$producto = new Producto();
-		$rspta = $producto->selectProductosVenta();
+	// case 'selectProductoFiltro':
+	// 	require_once "../modelos/Producto.php";
+	// 	$producto = new Producto();
+	// 	$rspta = $producto->selectProductosVenta();
 
-		echo '<option value="Todos">Todos</option>';  // ← ESTA ES LA LÍNEA NECESARIA
+	// 	echo '<option value="Todos">Todos</option>';  // ← ESTA ES LA LÍNEA NECESARIA
 
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
-		}
-		break;
+	// 	while ($reg = $rspta->fetch_object()) {
+	// 		echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
+	// 	}
+	// 	break;
 
 	case 'listarProductosCliente':
 		$idcliente = isset($_POST["idcliente"]) ? $_POST["idcliente"] : "";
@@ -1785,14 +1785,6 @@ switch ($_GET["op"]) {
 		break;
 
 	case "selectTipoAcompanante":
-		$rspta = $venta->buscarTipoAcompanante();
-		echo '<option value="">Seleccione tipo de acompañante</option>';
-		if ($rspta) {
-			while ($reg = $rspta->fetch_object()) {
-				echo '<option value="' . $reg->idtipoacompanante . '">' . $reg->nombre . '</option>';
-			}
-		} else {
-			echo json_encode(null);
-		}
+		echo $venta->selectTipoAcompanante();
 		break;
 }

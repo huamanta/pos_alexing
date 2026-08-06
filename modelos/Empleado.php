@@ -1,10 +1,7 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
-require_once __DIR__ . "../configuraciones/Conexion.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
-require_once __DIR__ . "../configuraciones/ConexionPdo.php";
-require_once __DIR__ . "../core/FluentSave.php";
-
 class Empleado extends Helpers
 {
 
@@ -145,7 +142,7 @@ class Empleado extends Helpers
 	//Implementar un método para listar los registros
 	public function listar()
 	{
-		$sql = "SELECT * FROM personal";
+		$sql = "SELECT * FROM personal ORDER BY idpersonal DESC";
 		return ejecutarConsulta($sql);
 	}
 

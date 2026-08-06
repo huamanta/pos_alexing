@@ -2343,9 +2343,13 @@ class Venta extends Helpers
         return ejecutarConsulta($sql);
     }
 
-    public function buscarTipoAcompanante()
+    public function selectTipoAcompanante()
     {
-        $sql = "SELECT * FROM tipoacompanante WHERE estado = 1";
-        return ejecutarConsulta($sql);
+        $data = (new DBQuery($this->pdo))
+        ->select('*')
+        ->from('tipoacompanante')
+        ->where('estado', '=', 1)
+        ->get();
+        return Response::json($data);
     }
 }

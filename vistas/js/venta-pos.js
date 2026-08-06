@@ -70,7 +70,7 @@ function setNavbarPosVisible(visible) {
 
 function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
-  marcarImpuesto();
+  // marcarImpuesto();
   mostrarform(false);
   listarDataVentas.load();
 
@@ -101,11 +101,26 @@ function init() {
   $.post("controladores/usuario.php?op=selectEmpleado", function (r) {
     $("#idpersonal").html(r);
     $("#idpersonal").select2("");
-  });
-
-  $.post("controladores/usuario.php?op=selectEmpleado", function (r) {
     $("#idpersonal02").html(r);
     $("#idpersonal02").select2("");
+  });
+
+  $.get("controladores/venta.php?op=selectTipoAcompanante", function (response) {
+    const data = response;
+
+    let html = `
+        <option value="">Seleccione...</option>
+    `;
+
+    html += data.map(item => {
+      return `
+            <option value="${item.idtipoacompanante}">
+                ${item.nombre}
+            </option>
+        `;
+    }).join('');
+
+    $("#idtipoacompanante").html(html);
   });
 
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
@@ -1412,14 +1427,14 @@ function seleccionarCliente(nombre, idcliente) {
   $("#idcliente").select2("");
 }
 
-function documentosSucursal() {
-  // No forzar tipo comprobante aquí
-  let firstOption = $("#tipo_comprobante option:first").val();
-  if (firstOption) {
-    $("#tipo_comprobante").val(firstOption).trigger("change");
-    marcarImpuesto(); // Esto ya llama a numTicket, numBoleta, etc.
-  }
-}
+// function documentosSucursal() {
+//   // No forzar tipo comprobante aquí
+//   let firstOption = $("#tipo_comprobante option:first").val();
+//   if (firstOption) {
+//     $("#tipo_comprobante").val(firstOption).trigger("change");
+//     marcarImpuesto(); // Esto ya llama a numTicket, numBoleta, etc.
+//   }
+// }
 
 function limpiar() {
   $("#idventa").val("");
@@ -1440,11 +1455,11 @@ function limpiar() {
   var today = now.getFullYear() + "-" + month + "-" + day;
   $("#fecha").val(today);
 
-  let firstOption = $("#tipo_comprobante option:first").val();
-  if (firstOption) {
-    $("#tipo_comprobante").val(firstOption).trigger("change");
-    marcarImpuesto(); // Carga serie y número correspondientes
-  }
+  // let firstOption = $("#tipo_comprobante option:first").val();
+  // if (firstOption) {
+  //   $("#tipo_comprobante").val(firstOption).trigger("change");
+  //   marcarImpuesto(); // Carga serie y número correspondientes
+  // }
 
   $("#porcentaje").val("");
 
@@ -4576,7 +4591,7 @@ function mostrar(idventa) {
       $("#deuda").text(
         data.ventacredito == "Si" ? "S/. " + deuda.toFixed(2) : "---",
       );
-      $("#subtotalm").text(parseFloat(data.total_venta-data.impuesto || 0).toFixed(2));
+      $("#subtotalm").text(parseFloat(data.total_venta - data.impuesto || 0).toFixed(2));
       $("#impuestom").text(parseFloat(data.impuesto || 0).toFixed(2));
       $("#totalm").text(parseFloat(data.total_venta || 0).toFixed(2));
     },
