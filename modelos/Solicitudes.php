@@ -12,21 +12,14 @@ class Solicitudes extends Persona
         $result = (new DBQuery($this->pdo))
             ->select([
                 "COUNT(*) AS total_solicitudes",
-                "SUM(CASE WHEN s.estado = 'EN_PROCESO' THEN 1 ELSE 0 END) AS en_proceso",
-                "SUM(CASE WHEN s.estado = 'OBSERVADO' THEN 1 ELSE 0 END) AS observado",
-                "SUM(CASE WHEN s.estado = 'RECHAZADO' THEN 1 ELSE 0 END) AS rechazado",
-                "SUM(CASE WHEN s.estado = 'APROBADO' THEN 1 ELSE 0 END) AS aprobado"
+                "COALESCE(SUM(CASE WHEN s.estado = 'EN_PROCESO' THEN 1 ELSE 0 END), 0) AS en_proceso",
+                "COALESCE(SUM(CASE WHEN s.estado = 'OBSERVADO' THEN 1 ELSE 0 END), 0) AS observado",
+                "COALESCE(SUM(CASE WHEN s.estado = 'RECHAZADO' THEN 1 ELSE 0 END), 0) AS rechazado",
+                "COALESCE(SUM(CASE WHEN s.estado = 'APROBADO' THEN 1 ELSE 0 END), 0) AS aprobado"
             ])
             ->from("solicitud_credito s")
-            ->join(
-                "persona p",
-                "p.idpersona = s.idcliente"
-            )
-            ->where(
-                "s.idsucursal",
-                "=",
-                $idsucursal
-            )
+            ->join("persona p", "p.idpersona = s.idcliente")
+            ->where("s.idsucursal", "=", $idsucursal)
             ->first();
 
         return json_encode($result);

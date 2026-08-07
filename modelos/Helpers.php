@@ -484,8 +484,9 @@ class Helpers
 
     public function verificarEnvioSunat(int $idsucursal): bool
     {
-        $sucursal = self::sucursalConfiguracion($idsucursal);
-        return $sucursal['is_send_sunat'];
+        $sucursal = $this->sucursalConfiguracion($idsucursal);
+
+        return (bool)($sucursal['is_send_sunat'] ?? false);
     }
 
     public function dataSucursal(int $idsucursal)
