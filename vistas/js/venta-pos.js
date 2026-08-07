@@ -647,7 +647,7 @@ function verificarTipoPago() {
     $("#n4").hide();
     $("#fechadeposito").hide();
     $("#banco").hide();
-    $("#panel1").show();
+    $("#panel1").hide();
   } else if (
     $("#formapago").val() == "Efectivo" &&
     $("#tipopago").val() == "No"
@@ -663,7 +663,7 @@ function verificarTipoPago() {
     $("#banco").hide();
     $("#fechadeposito").hide();
     $("#banco").hide();
-    $("#panel1").show();
+    $("#panel1").hide();
   } else if (
     $("#formapago").val() == "Efectivo" &&
     $("#tipopago").val() == "Si"
@@ -691,6 +691,7 @@ function verificarTipoPago() {
     $("#n5").hide();
     $("#fechadeposito").hide();
     $("#banco").hide();
+    $("#panel1").hide();
   } else if (
     $("#formapago").val() == "Reposicion" &&
     $("#tipopago").val() == "Si"
@@ -731,6 +732,8 @@ function verificarTipoPago() {
     $("#n6").show();
     $("#fechadeposito").show();
     $("#banco").show();
+    
+    $("#panel1").hide();
   }
 }
 
@@ -792,6 +795,7 @@ $("#tipopago").change(function () {
     $("#totalrecibido").val("0.00");
     $("#totaldeposito").val("0.00");
     recalcularPagos();
+    aplicarPrecioSegunPago();
 
     // $('#fp2').show();
 
@@ -875,6 +879,7 @@ $("#tipopago").change(function () {
     $("#totalrecibido").val(totalVenta.toFixed(2));
     $("#totaldeposito").val("0.00");
     recalcularPagos();
+    aplicarPrecioSegunPago();
   }
 });
 
@@ -1732,6 +1737,7 @@ function pintarProductos(data, permissions) {
                         1,
                         0,
                         ${item.precio},
+                        ${item.precio_credito},
                         '${item.preciocigv}',
                         '${item.precioB}',
                         '${item.precioC}',
@@ -1748,7 +1754,7 @@ function pintarProductos(data, permissions) {
                 </button>
                 <td>${item.codigo || ""}</td>
                 <td style="text-align:left;">
-                    <strong>${item.nombre || ""}</strong><br>
+                    <strong>${item.nombre || ""} ${item.marca || ''} ${item.modelo || ''}</strong><br>
                     <small>
                         <strong>Motor:</strong> ${item.numero_motor || "-"} &nbsp;&nbsp;|&nbsp;&nbsp;
                         <strong>Serie:</strong> ${item.numero_serie || "-"}
@@ -1855,34 +1861,34 @@ function selectTab(index) {
   }
 }
 
-function listarArticulos() {
-  var idsucursal = $("#idsucursal").val();
-  tabla = $("#tblarticulos")
-    .dataTable({
-      aProcessing: true, //activamos el procedimiento del datatable
-      aServerSide: true, //paginacion y filrado realizados por el server
-      dom: "Bfrtip", //definimos los elementos del control de la tabla
-      buttons: [],
-      ajax: {
-        url: "controladores/venta.php?op=listarArticulos",
-        data: {
-          idsucursal: idsucursal,
-        },
-        type: "get",
-        dataType: "json",
-        error: function (e) {
-          console.log(e.responseText);
-        },
-      },
-      bDestroy: true,
-      iDisplayLength: 5, //paginacion
-      order: [
-        [1, "asc"],
-        [2, "asc"],
-      ], //ordenar (columna, orden)
-    })
-    .DataTable();
-}
+// function listarArticulos() {
+//   var idsucursal = $("#idsucursal").val();
+//   tabla = $("#tblarticulos")
+//     .dataTable({
+//       aProcessing: true, //activamos el procedimiento del datatable
+//       aServerSide: true, //paginacion y filrado realizados por el server
+//       dom: "Bfrtip", //definimos los elementos del control de la tabla
+//       buttons: [],
+//       ajax: {
+//         url: "controladores/venta.php?op=listarArticulos",
+//         data: {
+//           idsucursal: idsucursal,
+//         },
+//         type: "get",
+//         dataType: "json",
+//         error: function (e) {
+//           console.log(e.responseText);
+//         },
+//       },
+//       bDestroy: true,
+//       iDisplayLength: 5, //paginacion
+//       order: [
+//         [1, "asc"],
+//         [2, "asc"],
+//       ], //ordenar (columna, orden)
+//     })
+//     .DataTable();
+// }
 
 function listarArticulos2() {
   var idsucursal = $("#idsucursal").val();
@@ -3246,6 +3252,27 @@ function toggleCheckPrecio(idpc, checkbox) {
   modificarSubtotales();
 }
 
+function aplicarPrecioSegunPago() {
+  const usarCredito = $("#tipopago").val() === "Si";
+
+  $(".filas").each(function () {
+    const $fila = $(this);
+    const precioNormal = parseFloat($fila.attr("data-precio-normal")) || 0;
+    const precioCredito =
+      parseFloat($fila.attr("data-precio-credito")) || precioNormal;
+    const precioSeleccionado = usarCredito ? precioCredito : precioNormal;
+    const $input = $fila.find('input[name="precio_venta[]"]');
+
+    if ($input.length) {
+      $input.val(precioSeleccionado.toFixed(2));
+      $input.attr("data-previo", precioSeleccionado.toFixed(2));
+      $input.attr("data-precio-base", precioSeleccionado.toFixed(2));
+    }
+  });
+
+  modificarSubtotales();
+}
+
 function agregarDetalle(
   idpc,
   idproducto,
@@ -3253,6 +3280,7 @@ function agregarDetalle(
   cant,
   desc,
   precio_venta,
+  precio_credito,
   preciocigv,
   precioB,
   precioC,
@@ -3270,6 +3298,7 @@ function agregarDetalle(
   color = "",
   controla_stock = "",
 ) {
+
   if (precio_venta == 0) {
     Swal.fire({
       title: "Alerta",
@@ -3348,25 +3377,32 @@ function agregarDetalle(
     precio_venta = precio_venta;
   }
 
+  const precioNormal = parseFloat(precio_venta) || 0;
+  const precioCredito = parseFloat(precio_credito) || precioNormal;
+  const usarCredito = $("#tipopago").val() === "Si";
+  const precioSeleccionado = usarCredito ? precioCredito : precioNormal;
+
   //aquí preguntamos si el idarticulo ya fue agregado
-  if (articuloAdd.split("-").indexOf(idproducto.toString()) !== -1) {
-    let cant = document.getElementsByName("cantidad[]");
+  const existeProducto = articuloAdd.split("-").filter(Boolean).includes(String(idproducto));
 
-    let id = document.getElementsByName("idproducto[]");
+  if (existeProducto) {
+    const inputsCantidad = document.getElementsByName("cantidad[]");
+    const inputsIdProducto = document.getElementsByName("idproducto[]");
 
-    for (var i = 0; i < cant.length; i++) {
-      if (parseInt(id[i].value) === parseInt(idproducto)) {
-        let total = Number(cant[i].value) + 1;
-        let stockverify = Number(cant[i].value) + Number(cantidad_contenedor);
-        if (idcategoria != 1) {
-          if (stock < stockverify && controla_stock == "Si") {
-            Swal.fire("Alerta", "No hay suficiente stock!", "error");
-            return false;
-          }
+    for (var i = 0; i < inputsCantidad.length; i++) {
+      if (parseInt(inputsIdProducto[i].value) === parseInt(idproducto)) {
+        const cantidadActual = Number(inputsCantidad[i].value) || 0;
+        const nuevaCantidad = cantidadActual + Number(cant || 1);
+        const stockverify = nuevaCantidad * Number(cantidad_contenedor || 1);
+
+        if (idcategoria != 1 && controla_stock == "Si" && stock < stockverify) {
+          Swal.fire("Alerta", "No hay suficiente stock!", "error");
+          return false;
         }
-        document.getElementsByName("cantidad[]")[i].value = total;
 
+        inputsCantidad[i].value = nuevaCantidad;
         modificarSubtotales();
+        return true;
       }
     }
   } else {
@@ -3377,12 +3413,6 @@ function agregarDetalle(
       Swal.fire("Alerta", "No hay suficiente stock!", "error");
       return false;
     }
-
-    /*if (idcategoria == 1) {
-      stock = "Servicio";
-    } else {
-      stock = stock;
-    }*/
     var detail = "";
     if (cantidad_contenedor != undefined && unidadmedida != undefined) {
       detail =
@@ -3408,10 +3438,13 @@ function agregarDetalle(
       idpc +
       '" ' +
       'value="' +
-      precio_venta +
+      precioSeleccionado.toFixed(2) +
       '" ' +
       'data-previo="' +
-      precio_venta +
+      precioSeleccionado.toFixed(2) +
+      '" ' +
+      'data-precio-base="' +
+      precioSeleccionado.toFixed(2) +
       '">';
 
     var btnVerPrecios =
@@ -3441,9 +3474,6 @@ function agregarDetalle(
       }
 
       select =
-        //'<select style="width:100px;height:35px;" oninput="modificarSubtotales()" name="precio_venta[]" id="precio_venta[]" class="form-control" required>' +
-        ///cad +
-        //"</select>";
         '<input class="form-control" style="text-align:center; width: 80px;" type="number" step="0.01" oninput="modificarSubtotales()" name="precio_venta[]" id="precio_venta[]" value="' +
         precio_venta +
         '">';
@@ -3459,6 +3489,10 @@ function agregarDetalle(
       var fila =
         '<tr class="filas custom-row" id="fila' +
         cont +
+        '" data-precio-normal="' +
+        precioNormal.toFixed(2) +
+        '" data-precio-credito="' +
+        precioCredito.toFixed(2) +
         '" style="margin-bottom:-10px;border-radius:10px;box-shadow:0 0 5px rgba(0,0,0,0.3);">' +
         '<td style="text-align:center;vertical-align:middle;">' +
         '<input type="hidden" name="contenedor[]" value="' +
@@ -4315,91 +4349,104 @@ function generarComprobante(idventa) {
 
 function mostrarE() {
   let idcotizacion = $("#comprobanteReferencia").val();
+  let cotizacionData = null;
 
   if (!idcotizacion) {
     return;
   }
-  $.post(
+  $.get(
     "controladores/cotizaciones.php?op=mostrar",
     {
       idcotizacion: idcotizacion,
     },
-    function (data) {
-      const dataCotizacion = JSON.parse(data);
+    function (response) {
+      cotizacionData =
+        typeof response === "string" ? JSON.parse(response) : response;
 
-      if (dataCotizacion && dataCotizacion.idcliente) {
+      if (cotizacionData && cotizacionData.idcliente) {
         $("#idcliente").empty().trigger("change");
-        const texto = `${dataCotizacion.cliente} - ${dataCotizacion.num_documento || ""}`;
+        const texto = `${cotizacionData.cliente} - ${cotizacionData.num_documento || ""}`;
         if (
-          $("#idcliente option[value='" + dataCotizacion.idcliente + "']")
+          $("#idcliente option[value='" + cotizacionData.idcliente + "']")
             .length === 0
         ) {
           const option = new Option(
             texto,
-            dataCotizacion.idcliente,
+            cotizacionData.idcliente,
             true,
             true,
           );
           $("#idcliente").append(option);
         }
-        $("#idcliente").val(dataCotizacion.idcliente).trigger("change");
+        $("#idcliente").val(cotizacionData.idcliente).trigger("change");
       } else {
-        console.error("No se recibió idcliente:", dataCotizacion);
-      }
-      $("#tipopago").val(dataCotizacion.formapago);
-      if ($("#tipopago").val() == "Si") {
-        $("#input_frecuencia").val(dataCotizacion.frecuencia);
-        $("#inputInteres").val(dataCotizacion.interes);
-        $("#numeroMeses").val(dataCotizacion.meses);
-        $("#montoPagado").val(dataCotizacion.inicial);
-        const deuda =
-          parseFloat(dataCotizacion.total_venta) -
-          parseFloat(dataCotizacion.inicial);
-        $("#montoDeuda").val(deuda.toFixed(2));
-        verificarTipoPago();
+        console.error("No se recibió idcliente:", cotizacionData);
       }
     },
   );
-  $.post(
+  $.get(
     "controladores/cotizaciones.php?op=listarDetalleCotizacion",
     {
       idcotizacion: idcotizacion,
     },
     function (response, status) {
-      const data = JSON.parse(response);
+      const data =
+        typeof response === "string" ? JSON.parse(response) : response;
 
       for (var y = 0; y < contador; y++) {
         eliminarDetalle(y);
       }
 
-      for (var i = 0; i < data.length; i++) {
+      data.forEach((item) => {
         agregarDetalle(
-          data[i][0],
-          data[i][1],
-          data[i][2],
-          data[i][3],
-          data[i][4],
-          data[i][5],
-          data[i][6],
-          data[i][7],
-          data[i][8],
-          data[i][9],
-          data[i][10],
-          data[i][12],
-          data[i][13],
-          data[i][14],
+          item.idproducto_configuracion,
+          item.idproducto,
+          item.nombre,
+          item.cantidad,
+          item.descuento,
+          item.precio,
+          item.precio_credito,
+          item.preciocigv,
+          item.precioB,
+          item.precioC,
+          item.precioD,
+          item.stock,
+          item.proigv,
+          item.cantidad_contenedor,
+          item.contenedor,
+          item.idcategoria,
+          item.idserie,
         );
+      });
+
+      detalles = data.length;
+      if (String(cotizacionData?.formapago || "").trim() === "Si") {
+        $("#tipopago").val("Si");
+        aplicarPrecioSegunPago();
+        $("#input_frecuencia").val(cotizacionData.frecuencia || "");
+        $("#inputInteres").val(cotizacionData.interes || "0");
+        $("#numeroMeses").val(cotizacionData.meses || "");
+        $("#montoPagado").val(cotizacionData.inicial || "0");
+        const deuda = Math.max(
+          0,
+          parseFloat(cotizacionData.total_venta || 0) -
+          parseFloat(cotizacionData.inicial || 0),
+        );
+        $("#montoDeuda").val(deuda.toFixed(2));
+
+        calcularCuotas();
+      } else {
+        $("#tipopago").val("No");
       }
 
-      setTimeout(() => {
-        calcularCuotas();
-        Swal.fire(
-          "Ventas",
-          "La cotizacion se ha cargado correctamente",
-          "success",
-        );
-      }, 500);
+      verificarTipoPago();
     },
+  );
+
+  Swal.fire(
+    "Ventas",
+    "La cotizacion se ha cargado correctamente",
+    "success",
   );
 }
 

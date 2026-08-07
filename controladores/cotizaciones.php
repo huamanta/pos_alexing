@@ -14,7 +14,7 @@ $helpers = new Helpers();
 
 $venta = new Cotizacion();
 
-$idcotizacion = isset($_POST["idcotizacion"]) ? limpiarCadena($_POST["idcotizacion"]) : "";
+$idcotizacion = isset($_GET["idcotizacion"]) ? limpiarCadena($_GET["idcotizacion"]) : "";
 $idsucursal = $_SESSION['idsucursal'] ?? (isset($_POST["idsucursal"]) ? limpiarCadena($_POST["idsucursal"]) : "");
 $idcliente = isset($_POST["idcliente"]) ? limpiarCadena($_POST["idcliente"]) : "";
 $idpersonal = $_SESSION["idpersonal"];
@@ -65,8 +65,6 @@ switch ($_GET["op"]) {
 				$idcliente,
 				$idpersonal,
 				$tipo_comprobante,
-				$serie_comprobante,
-				$num_comprobante,
 				$fecha,
 				$total_venta,
 				$titulo,
@@ -86,7 +84,8 @@ switch ($_GET["op"]) {
 				$inicial,
 				$frecuencia,
 				$meses,
-				$interes
+				$interes,
+				$_POST["idserie"]
 			);
 		} else {
 			$venta->editar(
@@ -95,8 +94,6 @@ switch ($_GET["op"]) {
 				$idcliente,
 				$idpersonal,
 				$tipo_comprobante,
-				$serie_comprobante,
-				$num_comprobante,
 				$fecha,
 				$total_venta,
 				$titulo,
@@ -116,7 +113,8 @@ switch ($_GET["op"]) {
 				$inicial,
 				$frecuencia,
 				$meses,
-				$interes
+				$interes,
+				$_POST["idserie"]
 			);
 		}
 
@@ -135,12 +133,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'mostrar':
-		$rspta = $venta->mostrar($idcotizacion);
-		if ($rspta) {
-			echo json_encode($rspta);
-		} else {
-			echo json_encode(["error" => "No se encontró la cotización"]);
-		}
+		echo $venta->mostrar($idcotizacion);
 		break;
 
 	case 'desistir':
@@ -178,50 +171,6 @@ switch ($_GET["op"]) {
 
 		break;
 
-	//_______________________________________________________________________________________________________
-
-	//opcion para mostrar la numeracion y la serie_comprobante de la ticket
-	// case 'mostrar_num_ticket':
-	// 	$idsucursal = $_REQUEST["idsucursal"];
-	// 	//mostrando el numero de boleta de la tabla comprobantes
-	// 	require_once "../modelos/Comprobantes.php";
-	// 	$comprobantes = new Comprobantes();
-
-	// 	$rspta = $comprobantes->mostrar_numero_cotizacion($idsucursal);
-	// 	$data = array();
-	// 	while ($reg = $rspta->fetch_object()) {
-	// 		$data[] = array(
-	// 			$num_comp_tic = $reg->num_comprobante
-	// 		);
-	// 	}
-	// 	$numero_tic_comp = (int) $num_comp_tic;
-	// 	//fin de mostrar numero de boleta de la tabla comprobantes
-	// 	$rspta = $venta->numero_venta_cotizacion($idsucursal);
-	// 	$data = array();
-	// 	$numerot = $numero_tic_comp;
-
-	// 	while ($reg = $rspta->fetch_object()) {
-	// 		$data[] = array(
-	// 			$numerot = $reg->num_comprobante
-	// 		);
-	// 	}
-	// 	$numero_ticket = (int) $numerot;
-	// 	$new_ticket = '';
-
-	// 	if ($numero_ticket == 9999999 or empty($numerot)) {
-	// 		$new_ticket = '0000001';
-	// 		echo json_encode($new_ticket);
-	// 	} elseif ($numerot == 9999999) {
-	// 		$new_ticket = '0000001';
-	// 		echo json_encode($new_ticket);
-	// 	} else {
-	// 		$sumatic = $numero_ticket + 1;
-	// 		echo json_encode($sumatic);
-	// 	}
-	// 	//$num = (int)$numerof; 
-	// 	//echo json_encode($numerof);
-	// 	break;
-
 	case 'mostrar_s_ticket':
 		require_once "../modelos/Comprobantes.php";
 		$comprobantes = new Comprobantes();
@@ -229,63 +178,11 @@ switch ($_GET["op"]) {
 		$idtipo_comprobante = $_GET["idtipo_comprobante"];
 		$comprobantes->mostrarSerieTicket($idsucursal, $idtipo_comprobante);
 		break;
-		//mostrando el numero de factura de la tabla comprobantes
-		// require_once "../modelos/Comprobantes.php";
-		// $comprobantes = new Comprobantes();
-
-		// $rspta = $comprobantes->mostrar_serie_cotizacion($idsucursal);
-		// $data = array();
-		// while ($reg = $rspta->fetch_object()) {
-		// 	$data[] = array(
-		// 		$serie_comp_tic = $reg->serie_comprobante,
-		// 		$num_comp_tic = $reg->num_comprobante
-		// 	);
-		// }
-		// $serie_tic_comp = (int) $serie_comp_tic;
-		// $num_tic_comp = (int) $num_comp_tic;
-		// //fin de mostrar numero de factura de la tabla comprobantes
-		// $rspta = $venta->numero_serie_cotizacion($idsucursal);
-		// $data = array();
-		// $numero_s_tic = $serie_tic_comp;
-		// $numero_bolet = $num_tic_comp;
-
-		// while ($reg = $rspta->fetch_object()) {
-		// 	$data[] = array(
-		// 		$numero_s_tic = $reg->serie_comprobante,
-		// 		$numero_bolet = $reg->num_comprobante
-		// 	);
-		// }
-		// $num_s_ticket = (int) $numero_s_tic;
-		// $nuew_serie_ticket = 0;
-		// $numbo = (int) $numero_bolet;
-		// if ($numbo == 9999999 or empty($numero_s_tic)) {
-		// 	$nuew_serie_ticket = $num_s_ticket + 1;
-		// 	echo json_encode($nuew_serie_ticket);
-		// } else {
-		// 	echo json_encode($num_s_ticket);
-		// }
-		// break; //fin de opcion de mostrar num_comprobante y serie_comprobante del ticket
-
-	//______________________________________________________________________________________________
 
 
 	case 'listarDetalle':
-
-		// require_once "../modelos/Negocio.php";
-
-		// $cnegocio = new Negocio();
-		// $rsptan = $cnegocio->listar();
-		// $regn = $rsptan->fetch_object();
-
-		// if (empty($regn)) {
-		
 		$idsucursal = $_SESSION["idsucursal"];
 		$smoneda = $helpers->get_symbol();
-		// } else {
-		// 	$smoneda = $regn->simbolo;
-		// 	$nom_imp = $regn->nombre_impuesto;
-		// }
-
 		// Recibir ID
 		$id = $_GET['id'];
 
@@ -468,35 +365,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarDetalleCotizacion':
-
-		$rspta = $venta->ventadetalle($idcotizacion);
-
-		$data = array();
-
-		while ($reg = $rspta->fetch_object()) {
-
-			$data[] = array(
-				"0" => $reg->idproducto_configuracion,
-				"1" => $reg->idproducto,
-				"2" => $reg->nombre . ' (' . $reg->contenedor . ')',
-				"3" => $reg->cantidad,
-				"4" => $reg->descuento,
-				"5" => $reg->precio_venta,
-				"6" => $reg->precioB,
-				"7" => $reg->precioC,
-				"8" => $reg->precioD,
-				"9" => $reg->preciocigv,
-				"10" => $reg->stock,
-				"11" => $reg->proigv,
-				"12" => $reg->unidadmedida,
-				"13" => $reg->cantidad_contenedor,
-				"14" => $reg->contenedor
-			);
-		}
-
-		echo json_encode($data);
-
-
+		echo $venta->listarDetalleCotizacion($idcotizacion);
 		break;
 
 	case 'listar':
@@ -504,56 +373,7 @@ switch ($_GET["op"]) {
 		$fecha_inicio = $_REQUEST["fecha_inicio"];
 		$fecha_fin = $_REQUEST["fecha_fin"];
 		$idsucursal = $_SESSION['idsucursal'];
-		$rspta = $venta->listar($fecha_inicio, $fecha_fin, $idsucursal);
-		echo $rspta;
-		// $data = array();
-
-		// while ($reg = $rspta->fetch_object()) {
-		// 	$url1 = 'reportes/exTicketCoti.php?id=';
-		// 	$url2 = 'reportes/factura/generaFacturaCoti.php?id=';
-
-		// 	if ($reg->estado == 'EN ESPERA') {
-
-		// 		$estado = '<span class="badge bg-yellow">EN ESPERA</span>';
-		// 		$editar = '<button class="btn btn-success btn-xs" onclick="mostrarEditar(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="EDITAR COTIZACIÓN"><i class="fas fa-edit"></i></button> ';
-		// 		$desistir = '<button class="btn btn-danger btn-xs" onclick="desistir(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="DESISTIR"><i class="fa fa-times"></i></button>';
-
-		// 	} else if ($reg->estado == 'VENDIDO') {
-
-		// 		$estado = '<span class="badge bg-green">VENDIDO</span>';
-		// 		$editar = '';
-		// 		$desistir = '';
-
-		// 	} else {
-
-		// 		$estado = '<span class="badge bg-red">DESISTIÓ</span>';
-		// 		$editar = '';
-		// 		$desistir = '';
-
-		// 	}
-
-		// 	$data[] = array(
-		// 		"0" => $reg->fecha,
-		// 		"1" => $reg->cliente,
-		// 		"2" => $reg->personal,
-		// 		"3" => $reg->tipo_comprobante,
-		// 		"4" => $reg->serie_comprobante . '-' . $reg->num_comprobante,
-		// 		"5" => $reg->total_venta,
-		// 		"6" => $estado,
-		// 		"7" => '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idcotizacion . ')" data-toggle="tooltip" title="" target="blanck" data-original-title="VER"><i class="fa fa-eye"></i></button>' . ' ' .
-		// 			$editar .
-		// 			'<a target="_blank" href="' . $url2 . $reg->idcotizacion . '" data-toggle="tooltip" title="" target="blanck" data-original-title="PDF"> <button class="btn btn-info btn-xs"><i class="fa fa-file"></i></button></a>' .
-		// 			'<a target="_blank" data-toggle="tooltip" title="" target="blanck" data-original-title="ENVIAR COMPROBANTE"> <button class="btn btn-success btn-xs" onclick="EnviarComprobante(' . $reg->idcotizacion . ')"><i class="fab fa-whatsapp"></i></button></a> ' .
-		// 			$desistir
-		// 	);
-		// }
-		// $results = array(
-		// 	"sEcho" => 1, //info para datatables
-		// 	"iTotalRecords" => count($data), //enviamos el total de registros al datatable
-		// 	"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-		// 	"aaData" => $data
-		// );
-		// echo json_encode($results);
+		echo $venta->listar($fecha_inicio, $fecha_fin, $idsucursal);
 		break;
 
 	// case 'selectCliente':
@@ -597,42 +417,9 @@ switch ($_GET["op"]) {
 		$idsucursal = $_SESSION["idsucursal"];
 		require_once "../modelos/Producto.php";
 		$producto = new Producto();
-		$rspta = $producto->listarActivosVenta($idsucursal);
-		echo $rspta;
+		echo $producto->listarActivosVenta($idsucursal);
 
 		break;
-
-	/*case 'listarArticulos':
-
-		$idsucursal = $_REQUEST["idsucursal"];
-
-		require_once "../modelos/Producto.php";
-		$producto = new Producto();
-
-		$rspta = $producto->listarActivosVenta($idsucursal);
-		$data = array();
-
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = array(
-				"0" => '<button class="btn btn-success" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->contenedor . '\',\'' . $reg->cantidad_contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></button>',
-				"1"=>"<img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->precioB . "\",\"" . $reg->precioC . "\",\"" . $reg->precioD . "\" )' src='files/productos/".$reg->imagen."' height='35px' width='35px' >". '<span style="font-weight: bold;">'.$reg->nombre.'</span>'.' - '.'<span class="badge bg-green">'.$reg->cantidad_contenedor.' Und.</span>'.' - '.'<span style="font-size:10px">'.$reg->contenedor.'</span>',
-				//"2" => $reg->categoria,
-				//"2" => $reg->codigo,
-				"2" => $reg->stock,
-				"3" => $reg->precio_venta,
-				//"4" => "<img src='files/productos/" . $reg->imagen . "' height='50px' width='50px'>"
-
-			);
-		}
-		$results = array(
-			"sEcho" => 1, //info para datatables
-			"iTotalRecords" => count($data), //enviamos el total de registros al datatable
-			"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-			"aaData" => $data
-		);
-		echo json_encode($results);
-
-		break;*/
 
 	case 'selectComprobante':
 		require_once "../modelos/Comprobantes.php";
@@ -759,81 +546,6 @@ switch ($_GET["op"]) {
 
 		echo $rspta ? "Eliminado del carrito temporal" : "No se pudo eliminar o no existe.";
 		break;
-
-	// case 'guardarDatosTmp':
-	// 	$idusuario = $_SESSION['idusuario'];
-	// 	$token = $_SESSION['cotizacion_token'] ?? '';
-
-	// 	if (!$token) {
-	// 		echo json_encode(["status" => "error", "msg" => "No hay token de cotización"]);
-	// 		exit;
-	// 	}
-
-	// 	// Recibir valores de forma segura
-	// 	$idsucursal = $_POST['idsucursal'] ?? '';
-	// 	$idcliente = $_POST['idcliente'] ?? '';
-	// 	$tipo_comprobante = $_POST['tipo_comprobante'] ?? '';
-	// 	$serie_comprobante = $_POST['serie_comprobante'] ?? '';
-	// 	$num_comprobante = $_POST['num_comprobante'] ?? '';
-	// 	$titulo = $_POST['titulo'] ?? '';
-	// 	$saludo = $_POST['saludo'] ?? '';
-	// 	$nota = $_POST['nota'] ?? '';
-	// 	$igv = $_POST['igv'] ?? '0.00';
-	// 	$formapago = $_POST['formapago'] ?? '';
-	// 	$observacion = $_POST['observacion'] ?? '';
-	// 	$tiempo_pro = $_POST['tiempoproduccion'] ?? '';
-	// 	$total_venta = $_POST['total_venta'] ?? '0.00';
-
-	// 	if (empty($idsucursal) || empty($idcliente) || empty($tipo_comprobante)) {
-	// 		echo json_encode(["status" => "incompleto", "msg" => "Faltan campos clave"]);
-	// 		exit;
-	// 	}
-
-	// 	$sql_check = "SELECT idtmp FROM cotizacion_cab_tmp WHERE token='$token'";
-	// 	$rspta = ejecutarConsultaSimpleFila($sql_check);
-
-	// 	if ($rspta) {
-	// 		// Actualizar temporal existente
-	// 		$sql_update = "UPDATE cotizacion_cab_tmp SET
-    //         idsucursal='$idsucursal',
-    //         idcliente='$idcliente',
-    //         tipo_comprobante='$tipo_comprobante',
-    //         serie_comprobante='$serie_comprobante',
-    //         num_comprobante='$num_comprobante',
-    //         titulo='$titulo',
-    //         saludo='$saludo',
-    //         nota='$nota',
-    //         igv='$igv',
-    //         formapago='$formapago',
-    //         observacion='$observacion',
-    //         tiempoproduccion='$tiempo_pro',
-    //         total_venta='$total_venta'
-    //     WHERE token='$token'";
-	// 		ejecutarConsulta($sql_update);
-	// 	} else {
-	// 		// Insertar nuevo temporal
-	// 		$sql_insert = "INSERT INTO cotizacion_cab_tmp 
-    //         (idusuario, token, idsucursal, idcliente, tipo_comprobante, serie_comprobante, num_comprobante, titulo, saludo, nota, igv, formapago, observacion, tiempoproduccion, total_venta)
-    //     VALUES
-    //         ('$idusuario','$token','$idsucursal','$idcliente','$tipo_comprobante','$serie_comprobante','$num_comprobante','$titulo','$saludo','$nota','$igv','$formapago','$observacion','$tiempo_pro','$total_venta')";
-	// 		ejecutarConsulta($sql_insert);
-	// 	}
-
-	// 	echo json_encode(["status" => "ok"]);
-	// 	break;
-
-
-	// case 'obtenerDatosTmp':
-	// 	$token = $_SESSION['cotizacion_token'] ?? '';
-	// 	if (!$token) {
-	// 		echo json_encode([]);
-	// 		exit;
-	// 	}
-
-	// 	$sql = "SELECT * FROM cotizacion_cab_tmp WHERE token='$token' LIMIT 1";
-	// 	$rspta = ejecutarConsultaSimpleFila($sql);
-	// 	echo json_encode($rspta);
-	// 	break;
 
 	case 'cotizacionesCliente':
 		$idsucursal = $_SESSION['idsucursal'];

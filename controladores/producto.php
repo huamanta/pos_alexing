@@ -12,6 +12,7 @@ if (!isset($_SESSION['idusuario']) || empty($_SESSION['idusuario'])) {
 $producto = new Producto();
 
 $idproducto = isset($_POST["idproducto"]) ? limpiarCadena($_POST["idproducto"]) : "";
+$idproductoconfiguracion = isset($_POST["idproductoconfiguracion"]) ? limpiarCadena($_POST["idproductoconfiguracion"]) : "";
 $idinventario = isset($_POST["idinventario"]) ? limpiarCadena($_POST["idinventario"]) : "";
 $idserie = isset($_POST["idserie"]) ? limpiarCadena($_POST["idserie"]) : "";
 $idsucursal = isset($_POST["idsucursal"]) ? limpiarCadena($_POST["idsucursal"]) : "";
@@ -27,6 +28,7 @@ $nombre = isset($_POST["nombre"]) ? limpiarCadena($_POST["nombre"]) : "";
 $stock = isset($_POST["stock"]) ? limpiarCadena($_POST["stock"]) : "";
 $stockMinimo = isset($_POST["stockMinimo"]) ? limpiarCadena($_POST["stockMinimo"]) : "";
 $precio = isset($_POST["precio"]) ? limpiarCadena($_POST["precio"]) : "";
+$precio_credito = isset($_POST["precio_credito"]) ? limpiarCadena($_POST["precio_credito"]) : "";
 $preciocigv = isset($_POST["preciocigv"]) ? limpiarCadena($_POST["preciocigv"]) : "";
 $precioB = isset($_POST["precioB"]) ? limpiarCadena($_POST["precioB"]) : "";
 $precioC = isset($_POST["precioC"]) ? limpiarCadena($_POST["precioC"]) : "";
@@ -78,30 +80,30 @@ $productoTraslado = isset($_POST["idproducto3"]) ? limpiarCadena($_POST["idprodu
 $cantidadTrasladar = isset($_POST["cantidadT"]) ? limpiarCadena($_POST["cantidadT"]) : "";
 $tipo_producto = isset($_POST["tipo_producto"]) ? limpiarCadena($_POST["tipo_producto"]) : "Producto";
 
-function obtenerIdCategoriaVehiculo()
-{
-	$categoriaVehiculo = ejecutarConsultaSimpleFila("SELECT idcategoria FROM categoria WHERE UPPER(nombre)='VEHICULO' LIMIT 1");
+// function obtenerIdCategoriaVehiculo()
+// {
+// 	$categoriaVehiculo = ejecutarConsultaSimpleFila("SELECT idcategoria FROM categoria WHERE UPPER(nombre)='VEHICULO' LIMIT 1");
 
-	if (!empty($categoriaVehiculo) && isset($categoriaVehiculo['idcategoria'])) {
-		return $categoriaVehiculo['idcategoria'];
-	}
+// 	if (!empty($categoriaVehiculo) && isset($categoriaVehiculo['idcategoria'])) {
+// 		return $categoriaVehiculo['idcategoria'];
+// 	}
 
-	ejecutarConsulta("INSERT INTO categoria (nombre, condicion) VALUES ('VEHICULO', '1')");
-	$categoriaVehiculoNueva = ejecutarConsultaSimpleFila("SELECT idcategoria FROM categoria WHERE UPPER(nombre)='VEHICULO' ORDER BY idcategoria DESC LIMIT 1");
+// 	ejecutarConsulta("INSERT INTO categoria (nombre, condicion) VALUES ('VEHICULO', '1')");
+// 	$categoriaVehiculoNueva = ejecutarConsultaSimpleFila("SELECT idcategoria FROM categoria WHERE UPPER(nombre)='VEHICULO' ORDER BY idcategoria DESC LIMIT 1");
 
-	return isset($categoriaVehiculoNueva['idcategoria']) ? $categoriaVehiculoNueva['idcategoria'] : null;
-}
+// 	return isset($categoriaVehiculoNueva['idcategoria']) ? $categoriaVehiculoNueva['idcategoria'] : null;
+// }
 
 switch ($_GET["op"]) {
 
 	case 'guardaryeditar':
 		$idsucursal = $_SESSION['idsucursal'];
-		if (strtolower($tipo_producto) === 'vehiculo') {
-			$idcategoriaVehiculo = obtenerIdCategoriaVehiculo();
-			if (!empty($idcategoriaVehiculo)) {
-				$idcategoria = $idcategoriaVehiculo;
-			}
-		}
+		// if (strtolower($tipo_producto) === 'vehiculo') {
+		// 	$idcategoriaVehiculo = obtenerIdCategoriaVehiculo();
+		// 	if (!empty($idcategoriaVehiculo)) {
+		// 		$idcategoria = $idcategoriaVehiculo;
+		// 	}
+		// }
 
 		if (
 			!file_exists($_FILES['imagen']['tmp_name']) ||
@@ -166,10 +168,11 @@ switch ($_GET["op"]) {
 		}
 
 		if (empty($idproducto)) {
-			$rspta = $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $tipo_producto, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV);
-			echo $rspta;
+			echo $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $tipo_producto, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $precio_credito, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV);
+			
 		} else {
-			$rspta = $producto->editar(
+			echo $producto->editar(
+				$idproductoconfiguracion,
 				$idproducto,
 				$idinventario,
 				$idserie,
@@ -186,6 +189,7 @@ switch ($_GET["op"]) {
 				$stockMinimo,
 				$stockMaximo,
 				$precio,
+				$precio_credito,
 				$preciocigv,
 				$precioB,
 				$precioC,
@@ -220,7 +224,6 @@ switch ($_GET["op"]) {
 				$tipoigv,
 				$comisionV
 			);
-			echo $rspta;
 		}
 		break;
 
@@ -356,9 +359,8 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'mostrar':
-		$rspta = $producto->mostrar($idproducto);
-		//Codificar el resultado utilizando json
-		echo json_encode($rspta);
+		$idproducto = isset($_GET["idproducto"]) ? limpiarCadena($_GET["idproducto"]) : "";
+		echo $producto->mostrar($idproducto);
 		break;
 
 	case 'porcentaje':
@@ -447,8 +449,7 @@ switch ($_GET["op"]) {
 
 	case 'listar':
 		$idsucursal = $_SESSION['idsucursal'];
-		$rspta = $producto->listarPorSucursal($idsucursal);
-		echo $rspta;
+		echo $producto->listarPorSucursal($idsucursal);
 		break;
 
 	case 'eliminar':

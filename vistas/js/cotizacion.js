@@ -481,6 +481,8 @@ $("#formapago").change(function () {
   } else {
     $("#datosCredito").attr("hidden", true);
   }
+
+  aplicarPrecioSegunFormaPago();
 });
 
 function buscarProductoCod(e, codigo) {
@@ -502,12 +504,14 @@ function buscarProductoCod(e, codigo) {
               1,
               0,
               data.precio,
+              data.precio_credito,
               data.preciocigv,
               data.precioB,
               data.precioC,
               data.precioD,
               data.stock,
               data.unidadmedida,
+              data.idserie
             );
           }
           $("#idCodigoBarra").val("");
@@ -519,13 +523,13 @@ function buscarProductoCod(e, codigo) {
 
 function mostrar(idcotizacion) {
   $("#getCodeModal").modal("show");
-  $.post(
+  $.get(
     "controladores/cotizaciones.php?op=mostrar",
     {
       idcotizacion: idcotizacion,
     },
-    function (data, status) {
-      data = JSON.parse(data);
+    function (response, status) {
+      const data = response;
       $("#cliente").val(data.cliente);
       $("#tipo_comprobantem").val(data.idcomprobante_pago);
       $("#serie_comprobantem").val(data.serie_comprobante);
@@ -649,49 +653,57 @@ function generarNumCuotas(frecuencia, meses) {
 
 function mostrarEditar(idcotizacion) {
   mostrarform(true);
-  $.post(
+  $.get(
     "controladores/cotizaciones.php?op=mostrar",
     {
       idcotizacion: idcotizacion,
     },
-    function (data, status) {
-      data = JSON.parse(data);
+    function (response, status) {
+      const data = response;
 
-      $.post(
+      $.get(
         "controladores/cotizaciones.php?op=listarDetalleCotizacion",
         {
           idcotizacion: idcotizacion,
         },
-        function (detalleData, status) {
-          detalleData = JSON.parse(detalleData);
-          detalleData.forEach((element) => {
+        function (response, status) {
+          const dataDetalle = response || [];
+          dataDetalle.map((item, i) => {
             agregarDetalle(
-              element[0], // idpc
-              element[1], // idproducto
-              element[2], // producto
-              element[3], // cantidad
-              element[4], // descuento
-              element[5], // precio_venta
-              element[9], // preciocigv
-              element[6], // precioB
-              element[7], // precioC
-              element[8], // precioD
-              element[10], // stock
-              element[11], // proigv
-              element[13], // cantidad_contenedor
-              element[14], // contenedor
-              1, // idcategoria
-            );
+              item.idproducto_configuracion,
+              item.idproducto,
+              item.nombre,
+              item.cantidad,
+              item.descuento,
+              item.precio_venta,
+              item.precio_credito,
+              item.preciocigv,
+              item.precioB,
+              item.precioC,
+              item.precioD,
+              item.stock,
+              item.proigv,
+              item.cantidad_contenedor,
+              item.contenedor,
+              item.idcategoria,
+              item.idserie);
           });
-          detalles = detalleData.length;
+          detalles = dataDetalle.length;
 
           $("#listadoregistros").hide();
           $("#formularioregistros").show();
-          listarProductos.load();
-          listarArticulos2();
           $("#idcotizacion").val(data.idcotizacion);
           $("#nuevoVendedor").val(data.personal);
-          $("#idcliente").val(data.idcliente).trigger("change");
+          var option = new Option(
+            data.cliente + " - " + data.num_documento,
+            data.idcliente,
+            true,
+            true
+          );
+
+          $("#idcliente")
+            .append(option)
+            .trigger("change");
           $("#fecha_hora").val(data.fecha);
           $("#serie_comprobante").val(data.serie_comprobante);
           $("#num_comprobante").val(data.num_comprobante);
@@ -704,7 +716,7 @@ function mostrarEditar(idcotizacion) {
           $("#inicial").val(data.inicial).trigger("change");
           $("#input_frecuencia").val(data.frecuencia).trigger("change");
           $("#numeroMeses").val(data.meses).trigger("change");
-          $("#formapago").val(data.formapago);
+          $("#formapago").val(data.formapago).trigger("change");
           const fechaInicioEdicion = parseFecha(data.fecha_h || data.fecha);
           const fechaInicioEdicionISO = `${fechaInicioEdicion.getFullYear()}-${("0" + (fechaInicioEdicion.getMonth() + 1)).slice(-2)}-${("0" + fechaInicioEdicion.getDate()).slice(-2)}`;
           $("#fechaOperacion").val(fechaInicioEdicionISO);
@@ -895,6 +907,22 @@ function handleRowInput(element) {
   modificarSubtotales();
 }
 
+function aplicarPrecioSegunFormaPago() {
+  const usarCredito = $("#formapago").val() === "Si";
+
+  $(".filas").each(function () {
+    const $fila = $(this);
+    const precioNormal = parseFloat($fila.attr("data-precio-normal")) || 0;
+    const precioCredito =
+      parseFloat($fila.attr("data-precio-credito")) || precioNormal;
+    const precioSeleccionado = usarCredito ? precioCredito : precioNormal;
+
+    $fila.find('input[name="precio_venta[]"]').val(precioSeleccionado.toFixed(2));
+  });
+
+  modificarSubtotales();
+}
+
 function agregarDetalle(
   idpc,
   idproducto,
@@ -902,6 +930,7 @@ function agregarDetalle(
   cant,
   desc,
   precio_venta,
+  precio_credito,
   preciocigv,
   precioB,
   precioC,
@@ -911,7 +940,10 @@ function agregarDetalle(
   cantidad_contenedor,
   contenedor,
   idcategoria,
+  idserie
 ) {
+  console.log(precio_credito);
+
   if (articuloAdd.indexOf(idpc) != -1) {
     let cantInputs = document.getElementsByName("cantidad[]");
     let idpInputs = document.getElementsByName("idp[]");
@@ -931,24 +963,30 @@ function agregarDetalle(
     return false;
   }
 
+  const precioNormal = parseFloat(precio_venta) || 0;
+  const precioCredito = parseFloat(precio_credito) || precioNormal;
+  const precioActual =
+    $("#formapago").val() === "Si" ? precioCredito : precioNormal;
+
   let detail = contenedor
     ? contenedor + " x " + cantidad_contenedor + " Und."
     : "";
   let filaId = "fila" + cont;
 
   let fila = `
-    <tr class="filas custom-row" id="${filaId}">
+    <tr class="filas custom-row" id="${filaId}" data-precio-normal="${precioNormal}" data-precio-credito="${precioCredito}">
       <td>
         <input type="hidden" name="idtmp[]" value="">
         <input type="hidden" name="idproducto[]" value="${idproducto}">
         <input type="hidden" name="idp[]" value="${idpc}">
         <input type="hidden" name="contenedor[]" value="${contenedor}">
         <input type="hidden" name="cantidad_contenedor[]" value="${cantidad_contenedor}">
+        <input type="hidden" name="idserie[]" value="${idserie}">
         <input class="form-control" type="text" name="nombreProducto[]" value="${producto}" style="font-weight:bold; width:300px;" onfocus="this.select()" />
       </td>
       <td style="text-align:center; vertical-align:middle;"><span class="badge bg-green">${detail}</span></td>
       <td class="text-center align-middle">
-        <input class="form-control text-center" type="number" step="0.01" name="precio_venta[]" value="${precio_venta}" oninput="handleRowInput(this)" style="width:100px;">
+        <input class="form-control text-center" type="number" step="0.01" name="precio_venta[]" value="${precioActual.toFixed(2)}" oninput="handleRowInput(this)" style="width:100px;">
       </td>
       <td style="text-align:center; vertical-align:middle;">
         <input class="form-control" type="number" min="1" name="cantidad[]" value="${cantidad}" style="text-align:center; width:80px; font-weight:bold; background-color:transparent; color:blue;" oninput="handleRowInput(this)">
@@ -1062,25 +1100,6 @@ const listarConfiguracionCreditos = () => {
   });
 };
 
-// function listarArticulos() {
-//     var idsucursal = $("#idsucursal").val();
-//     tabla = $("#tblarticulos").dataTable({
-//         aProcessing: true,
-//         aServerSide: true,
-//         dom: "Bfrtip",
-//         buttons: [],
-//         ajax: {
-//             url: "controladores/cotizaciones.php?op=listarArticulos",
-//             data: { idsucursal: idsucursal },
-//             type: "get",
-//             dataType: "json",
-//             error: function (e) { console.log(e.responseText); },
-//         },
-//         bDestroy: true,
-//         iDisplayLength: 5,
-//         order: [[1, "asc"], [2, "asc"]]
-//     }).DataTable();
-// }
 
 function pintarProductos(data, permissions) {
   let html = "";
@@ -1117,6 +1136,7 @@ function pintarProductos(data, permissions) {
                         1,
                         0,
                         ${item.precio},
+                        ${item.precio_credito},
                         '${item.preciocigv}',
                         '${item.precioB}',
                         '${item.precioC}',
@@ -1125,14 +1145,15 @@ function pintarProductos(data, permissions) {
                         '${item.proigv}',
                         '${item.cantidad_contenedor}',
                         '${item.contenedor}',
-                        ${item.idcategoria}
+                        ${item.idcategoria},
+                        ${item.idserie}
                     )"
                     ${parseFloat(item.stock) <= 0 || item.estado_serie != "DISPONIBLE" ? "disabled" : ""}>
                     <i class="fas fa-shopping-cart"></i>
                 </button>
                 <td>${item.codigo || ""}</td>
                 <td style="text-align:left;">
-                    <strong>${item.nombre || ""}</strong><br>
+                    <strong>${item.nombre || ""} ${item.marca || ''} ${item.modelo || ''}</strong><br>
                     <small>
                         <strong>Motor:</strong> ${item.numero_motor || "-"} &nbsp;&nbsp;|&nbsp;&nbsp;
                         <strong>Serie:</strong> ${item.numero_serie || "-"}

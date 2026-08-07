@@ -1,10 +1,9 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
-require "../configuraciones/Conexion.php";
-require_once "../configuraciones/ConexionPdo.php";
-require_once "../core/FluentQuery.php";
-require_once "../core/FluentSave.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/../configuraciones/ConexionPdo.php";
 require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
 date_default_timezone_set('America/Lima');
 
 class Producto extends Helpers
@@ -30,6 +29,7 @@ class Producto extends Helpers
 		$stockMinimo,
 		$stockMaximo,
 		$precio,
+		$precio_credito,
 		$preciocigv,
 		$precioB,
 		$precioC,
@@ -106,10 +106,6 @@ class Producto extends Helpers
 					'margenp2' => $margenp2,
 					'margendist' => $margendist,
 					'utilprecio' => $utilprecio,
-					'utilprecioB' => $utilprecioB,
-					'utilprecioC' => $utilprecioC,
-					'utilprecioD' => $utilprecioD,
-					'utilprecioE' => $utilprecioE,
 					'fecha' => $fecha,
 					'descripcion' => $descripcion,
 					'imagen' => $imagen,
@@ -124,7 +120,6 @@ class Producto extends Helpers
 			// Sucursales
 			(new FluentSaver($this->pdo))
 				->table("inventario_producto")
-				->timestamps(false)
 				->data([
 					'idproducto' => $idproducto,
 					'idsucursal' => $idsucursal,
@@ -138,13 +133,13 @@ class Producto extends Helpers
 			// Configuración
 			(new FluentSaver($this->pdo))
 				->table("producto_configuracion")
-				->timestamps(false)
 				->data([
 					'idproducto' => $idproducto,
 					'codigo_extra' => $codigo,
 					'contenedor' => 'UNIDAD',
 					'cantidad_contenedor' => 1,
 					'precio_venta' => $precio,
+					'precio_credito' => $precio_credito,
 					'precio_promocion' => $precioB
 				])
 				->save();
@@ -182,7 +177,7 @@ class Producto extends Helpers
 
 			$this->pdo->commit();
 
-			return json_encode([
+			return Response::json([
 				'success' => true,
 				'message' => 'Producto registrado correctamente.'
 			]);
@@ -191,15 +186,13 @@ class Producto extends Helpers
 
 			$this->pdo->rollBack();
 
-			return json_encode([
-				'success' => false,
-				'message' => $e->getMessage()
-			]);
+			return Response::error($e->getMessage());
 		}
 	}
 
 	//Implementamos un método para editar registros
 	public function editar(
+		$idproductoconfiguracion,
 		$idproducto,
 		$idinventario,
 		$idserie,
@@ -216,6 +209,7 @@ class Producto extends Helpers
 		$stockMinimo,
 		$stockMaximo,
 		$precio,
+		$precio_credito,
 		$preciocigv,
 		$precioB,
 		$precioC,
@@ -252,7 +246,6 @@ class Producto extends Helpers
 	) {
 
 		try {
-
 			$this->pdo->beginTransaction();
 
 			/*
@@ -297,10 +290,6 @@ class Producto extends Helpers
 					'margenp2' => $margenp2,
 					'margendist' => $margendist,
 					'utilprecio' => $utilprecio,
-					'utilprecioB' => $utilprecioB,
-					'utilprecioC' => $utilprecioC,
-					'utilprecioD' => $utilprecioD,
-					'utilprecioE' => $utilprecioE,
 					'descripcion' => $descripcion,
 					'imagen' => $imagen,
 					'alerta_stock' => $alerta_stock,
@@ -323,7 +312,6 @@ class Producto extends Helpers
 			(new FluentSaver($this->pdo))
 				->table("inventario_producto")
 				->primaryKey("idinventario")
-				->timestamps(false)
 				->cast([
 					'stock' => 'int',
 					'stock_minimo' => 'int',
@@ -339,6 +327,16 @@ class Producto extends Helpers
 				->update();
 
 
+			(new FluentSaver($this->pdo))
+				->table("producto_configuracion")
+				->primaryKey('idproducto_configuracion')
+				->data([
+					'idproducto_configuracion' => $idproductoconfiguracion,
+					'precio_credito' => $precio_credito,
+				])
+				->update();
+
+
 			/*
 			|--------------------------------------------------------------------------
 			| 4. ACTUALIZAR PRIMERA SERIE
@@ -347,7 +345,6 @@ class Producto extends Helpers
 			(new FluentSaver($this->pdo))
 				->table("producto_serie")
 				->primaryKey("idserie")
-				->timestamps(false)
 				->nullable([
 					'numero_serie',
 					'placa',
@@ -374,7 +371,7 @@ class Producto extends Helpers
 			$this->pdo->commit();
 
 
-			return json_encode([
+			return Response::json([
 				"success" => true,
 				"message" => "Producto actualizado correctamente"
 			]);
@@ -383,12 +380,7 @@ class Producto extends Helpers
 		} catch (Exception $e) {
 
 			$this->pdo->rollBack();
-
-
-			return json_encode([
-				"success" => false,
-				"message" => $e->getMessage()
-			]);
+			return Response::error($e->getMessage());
 
 		}
 
@@ -503,75 +495,63 @@ class Producto extends Helpers
 	//Implementar un método para mostrar los datos de un registro a modificar
 	public function mostrar($idproducto)
 	{
-		$sql = "
-				SELECT 
-					p.*,
+		$data = (new DBQuery($this->pdo))
+			->select([
+				"p.*",
 
-					-- Inventario sucursal
-					ip.idinventario,
-					ip.idsucursal,
-					ip.stock,
-					ip.stock_minimo,
-					ip.stock_maximo,
-					ip.precio_compra,
+				// Inventario
+				"ip.idinventario",
+				"ip.idsucursal",
+				"ip.stock",
+				"ip.stock_minimo",
+				"ip.stock_maximo",
+				"ip.precio_compra",
 
-					-- Primera serie
-					ps.idserie,
-					ps.numero_serie,
-					ps.numero_motor,
-					ps.placa,
-					ps.color,
-					ps.permiso_circulacion,
-					ps.anio_fabricacion,
-					ps.tipo_vehiculo,
-					ps.clase_vehiculo,
-					ps.propietario_vehiculo,
-					ps.estado AS estado_serie,
+				// Serie
+				"ps.idserie",
+				"ps.numero_serie",
+				"ps.numero_motor",
+				"ps.placa",
+				"ps.color",
+				"ps.permiso_circulacion",
+				"ps.anio_fabricacion",
+				"ps.tipo_vehiculo",
+				"ps.clase_vehiculo",
+				"ps.propietario_vehiculo",
+				"ps.estado AS estado_serie",
 
+				// Precio FIFO
+				"COALESCE((
+					SELECT NULLIF(sf.precio_venta, 0)
+					FROM stock_fifo sf
+					WHERE sf.idproducto = p.idproducto
+					AND sf.cantidad_restante > 0
+					AND sf.estado = 1
+					ORDER BY sf.fecha_ingreso ASC
+					LIMIT 1
+				), p.precio) AS precio",
 
-					-- Precio FIFO
-					COALESCE((
-						SELECT NULLIF(sf.precio_venta,0)
-						FROM stock_fifo sf
-						WHERE sf.idproducto = p.idproducto
-						AND sf.cantidad_restante > 0
-						AND sf.estado = 1
-						ORDER BY sf.fecha_ingreso ASC
-						LIMIT 1
-					), p.precio) AS precio,
-
-
-					COALESCE((
-						SELECT NULLIF(sf.precio_compra,0)
-						FROM stock_fifo sf
-						WHERE sf.idproducto = p.idproducto
-						AND sf.cantidad_restante > 0
-						AND sf.estado = 1
-						ORDER BY sf.fecha_ingreso ASC
-						LIMIT 1
-					), ip.precio_compra) AS precio_compra
-
-
-				FROM producto p
-
-
-				LEFT JOIN inventario_producto ip
-					ON ip.idproducto = p.idproducto
-
-
-				LEFT JOIN producto_serie ps
-					ON ps.idproducto = p.idproducto
-
-
-				WHERE p.idproducto = '$idproducto'
-
-
-				ORDER BY ps.idserie ASC
-
-				LIMIT 1
-			";
-
-		return ejecutarConsultaSimpleFila($sql);
+				// Precio compra FIFO
+				"COALESCE((
+					SELECT NULLIF(sf.precio_compra,0)
+					FROM stock_fifo sf
+					WHERE sf.idproducto = p.idproducto
+					AND sf.cantidad_restante > 0
+					AND sf.estado = 1
+					ORDER BY sf.fecha_ingreso ASC
+					LIMIT 1
+				), ip.precio_compra) AS precio_compra",
+				'pg.idproducto_configuracion',
+				'pg.precio_credito'
+			])
+			->from("producto p")
+			->join('producto_configuracion pg', 'pg.idproducto = p.idproducto')
+			->leftJoin( "inventario_producto ip", "ip.idproducto = p.idproducto")
+			->leftJoin("producto_serie ps", "ps.idproducto = p.idproducto")
+			->where("p.idproducto", "=", $idproducto)
+			->orderBy("ps.idserie", "ASC")
+			->first();
+		return Response::json($data);
 	}
 
 	//Implementar un método para mostrar los datos de un registro a modificar
@@ -702,7 +682,29 @@ class Producto extends Helpers
 		$search = $_GET['search'] ?? '';
 
 		$paginator = (new DBQuery($this->pdo))
-			->select('a.idproducto,a.idcategoria,a.idunidad_medida,um.nombre as unidad, date_format(a.fecha,"%d/%m/%y") as fecha,c.nombre as categoria,r.nombre as rubro,a.registrosan,a.idmarca, a.idmodelo, a.codigo,a.nombre,ip.stock, ip.stock_minimo,a.precioB,a.precioC,a.precioD, ps.numero_serie,a.descripcion,a.imagen,a.condicion')
+			->select([
+				'a.idproducto',
+				'a.idcategoria',
+				'a.idunidad_medida',
+				'um.nombre as unidad',
+				'date_format(a.fecha,"%d/%m/%y") as fecha',
+				'c.nombre as categoria,r.nombre as rubro',
+				'a.registrosan,a.idmarca',
+				'a.idmodelo',
+				'a.codigo',
+				'a.nombre',
+				'ip.stock',
+				'ip.stock_minimo',
+				'a.precioB',
+				'a.precioC',
+				'a.precioD',
+				'ps.numero_serie',
+				'a.descripcion',
+				'a.imagen',
+				'a.condicion',
+				'mr.nombre AS marca',
+				'md.nombre AS modelo'
+			])
 			->from('producto a')
 			->join('inventario_producto ip', 'ip.idproducto = a.idproducto')
 			->join('producto_serie ps', 'ps.idproducto = a.idproducto')
@@ -710,8 +712,8 @@ class Producto extends Helpers
 			->join('unidad_medida um', 'a.idunidad_medida = um.idunidad_medida')
 			->join('rubro r', 'a.idrubro = r.idrubro')
 			->join('condicionventa cv', 'a.idcondicionventa = cv.idcondicionventa')
-			->leftJoin('marca m', 'a.idmarca = m.idmarca')
-			->leftJoin('modelo mo', 'a.idmodelo = mo.idmodelo')
+			->leftJoin('marca mr', 'a.idmarca = mr.idmarca')
+			->leftJoin('modelo md', 'a.idmodelo = md.idmodelo')
 			->where('c.nombre', '<>', 'SERVICIO')
 			->where('a.idsucursal', '=', $idsucursal);
 
@@ -725,7 +727,7 @@ class Producto extends Helpers
 			->orderBy('a.idproducto', 'DESC')
 			->paginate($page, $limit);
 
-		return json_encode($response);
+		return Response::json($response);
 	}
 
 	public function listarcatalogo($idsucursal, $idcategoria = 0)
@@ -942,184 +944,6 @@ class Producto extends Helpers
 	}
 
 
-
-	/*
-	public function listar2($idsucursal, $ids)
-	{
-
-		if ($ids == '0' and $idsucursal == '' || $idsucursal == 'Todos') {
-
-			$sql = "SELECT a.idproducto, a.idsucursal, a.idcategoria,s.nombre as almacen,a.idunidad_medida,date_format(a.fechac,'%d/%m/%y | %H:%i:%s %p') as fechac, a.precio, a.precio_compra, um.nombre as unidad,date_format(a.fecha,'%d/%m/%y') as fecha,c.nombre as categoria,r.nombre as rubro,cv.nombre as condicionventa,a.registrosan,a.idmarca,a.idmodelo, m.nombre as marca, mo.nombre as modelo, a.codigo,a.nombre,a.stock, a.stock_minimo, a.numserie,a.descripcion,a.imagen,a.condicion,DATEDIFF(a.fecha, now()) AS dias_transcurridos1 
-			FROM producto a 
-			INNER JOIN categoria c 
-			ON a.idcategoria=c.idcategoria 
-			INNER JOIN unidad_medida um 
-			ON a.idunidad_medida = um.idunidad_medida
-			INNER JOIN rubro r
-			ON a.idrubro = r.idrubro
-			INNER JOIN condicionventa cv 
-			ON a.idcondicionventa = cv.idcondicionventa 
-			INNER JOIN sucursal s
-			ON s.idsucursal = a.idsucursal
-			WHERE c.nombre != 'SERVICIO'
-					ORDER BY a.fechac DESC";
-		} else {
-
-			$sql = "SELECT a.idproducto, a.idsucursal, a.idcategoria,s.nombre as almacen,a.idunidad_medida, date_format(a.fechac,'%d/%m/%y | %H:%i:%s %p') as fechac, a.precio, a.precio_compra, um.nombre as unidad, date_format(a.fecha,'%d/%m/%y') as fecha,c.nombre as categoria,r.nombre as rubro,cv.nombre as condicionventa,a.registrosan,a.fabricante,a.codigo,a.nombre,a.stock, a.stock_minimo, a.numserie,a.descripcion,a.imagen,a.condicion,DATEDIFF(a.fecha, now()) AS dias_transcurridos1 
-			FROM producto a 
-			INNER JOIN categoria c 
-			ON a.idcategoria=c.idcategoria 
-			INNER JOIN unidad_medida um 
-			ON a.idunidad_medida = um.idunidad_medida
-			INNER JOIN rubro r
-			ON a.idrubro = r.idrubro
-			INNER JOIN condicionventa cv 
-			ON a.idcondicionventa = cv.idcondicionventa 
-			INNER JOIN sucursal s
-			ON s.idsucursal = a.idsucursal
-			WHERE a.idsucursal = '$idsucursal'
-			AND c.nombre != 'SERVICIO'
-					ORDER BY a.fechac DESC";
-		}
-
-
-		return ejecutarConsulta($sql);
-	}
-*/
-
-	// public function listarPaginado($idsucursal_filtro, $idsucursal_sesion, $stock_filtro, $start, $length, $search, $es_admin)
-	// {
-	// 	// 1. Determinar Sucursal
-	// 	$sucursal_final = (!empty($idsucursal_filtro) && $idsucursal_filtro != 'Todos' && $idsucursal_filtro != '0')
-	// 		? $idsucursal_filtro
-	// 		: $idsucursal_sesion;
-
-	// 	// 2. Construir Buscador Seguro (Evita errores de sintaxis)
-	// 	$searching = "";
-	// 	if (!empty($search)) {
-	// 		// Limpiamos caracteres raros
-	// 		$search_clean = preg_replace('/[^a-zA-Z0-9\s\-\.]/', '', trim($search));
-	// 		$palabras = explode(" ", $search_clean);
-	// 		$cond_search = array();
-	// 		foreach ($palabras as $p) {
-	// 			if (!empty($p)) {
-	// 				$cond_search[] = "(a.nombre LIKE '%$p%' OR a.codigo LIKE '%$p%' OR c.nombre LIKE '%$p%' OR m.nombre LIKE '%$p%' OR mo.nombre LIKE '%$p%')";
-	// 			}
-	// 		}
-	// 		if (!empty($cond_search)) {
-	// 			$searching = " AND " . implode(" AND ", $cond_search);
-	// 		}
-	// 	}
-
-	// 	// 3. Filtro de Stock
-	// 	$filtro_stock = ($stock_filtro > 0) ? " AND a.stock <= $stock_filtro " : "";
-
-	// 	// 4. SQL OPTIMIZADO Y COMPATIBLE
-	// 	// El cambio clave está en el LEFT JOIN stock_fifo
-	// 	$sql = "SELECT a.idproducto, a.idsucursal, a.idcategoria, s.nombre as almacen, a.idunidad_medida, 
-	//         DATE_FORMAT(a.fechac,'%d/%m/%y | %H:%i:%s %p') as fechac,
-	//         um.nombre as unidad, DATE_FORMAT(a.fecha,'%d/%m/%y') as fecha, c.nombre as categoria, 
-	//         r.nombre as rubro, cv.nombre as condicionventa, a.registrosan, a.codigo, 
-	//         a.nombre, a.stock, a.stock_minimo, a.numserie, a.descripcion, a.imagen, a.condicion,
-	//         a.precioB, a.precioC, a.precioD, a.precioE,
-	//         m.nombre as marca,
-	//         -- LÓGICA DE PRECIOS --
-	//         -- Si f.precio_venta existe (del FIFO), úsalo. Si no, usa a.precio --
-	//         COALESCE(NULLIF(f.precio_venta, 0), a.precio) as precio,
-	// 		COALESCE(NULLIF(f.precio_compra, 0), a.precio_compra) as precio_compra
-
-	//         FROM producto a 
-	//         INNER JOIN categoria c ON a.idcategoria = c.idcategoria 
-	//         LEFT JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
-	//         LEFT JOIN rubro r ON a.idrubro = r.idrubro 
-	//         LEFT JOIN condicionventa cv ON a.idcondicionventa = cv.idcondicionventa 
-	//         LEFT JOIN sucursal s ON s.idsucursal = a.idsucursal 
-	// 		LEFT JOIN marca m ON a.idmarca = m.idmarca
-	// 		LEFT JOIN modelo mo ON a.idmodelo = mo.idmodelo
-
-	//         -- JOIN FIFO CORREGIDO (Estándar SQL) --
-	//         -- Busca el registro FIFO más antiguo activo para este producto --
-	//         LEFT JOIN stock_fifo f ON f.idfifo = (
-	//             SELECT MIN(sf.idfifo)
-	//             FROM stock_fifo sf
-	//             WHERE sf.idproducto = a.idproducto
-	//             AND sf.estado = 1
-	//             AND sf.cantidad_restante > 0
-	//         )
-
-	//         WHERE c.nombre != 'SERVICIO' 
-	//         AND a.idsucursal = '$sucursal_final'
-	//         $filtro_stock
-	//         $searching
-
-	//         ORDER BY a.fechac DESC
-	//         LIMIT $start, $length";
-
-	// 	// Ejecutamos la consulta
-	// 	$result = ejecutarConsulta($sql);
-
-	// 	// Si falla la consulta (devuelve false), devolvemos un objeto vacío o manejamos el error
-	// 	// para evitar el 'Fatal error'
-	// 	if (!$result) {
-	// 		// Opción: Loguear error o retornar null. 
-	// 		// Si tienes acceso al objeto conexión ($conexion), podrías hacer: echo $conexion->error;
-	// 		return false;
-	// 	}
-
-	// 	return $result;
-	// }
-
-	// public function contarTotalPaginado($idsucursal_filtro, $idsucursal_sesion, $stock_filtro, $search)
-	// {
-	// 	// 1. Determinar la Sucursal Final
-	// 	$sucursal_final = (!empty($idsucursal_filtro) && $idsucursal_filtro != 'Todos' && $idsucursal_filtro != '0')
-	// 		? $idsucursal_filtro
-	// 		: $idsucursal_sesion;
-
-	// 	// 2. Construcción del Buscador (Optimizado y Seguro)
-	// 	$searching = "";
-	// 	if (!empty($search)) {
-	// 		// Limpiamos caracteres peligrosos para evitar errores SQL
-	// 		$search_clean = preg_replace('/[^a-zA-Z0-9\s\-\.\ñ\Ñ]/', '', trim($search));
-	// 		$palabras = explode(" ", $search_clean);
-
-	// 		$condiciones_busqueda = array();
-	// 		foreach ($palabras as $p) {
-	// 			if (!empty($p)) {
-	// 				// Buscamos en Nombre, Código, Categoría y Fabricante
-	// 				$condiciones_busqueda[] = "(a.nombre LIKE '%$p%' OR a.codigo LIKE '%$p%' OR c.nombre LIKE '%$p%' OR m.nombre LIKE '%$p%' OR mo.nombre LIKE '%$p%')";
-	// 			}
-	// 		}
-
-	// 		// Unimos todas las palabras con AND
-	// 		if (count($condiciones_busqueda) > 0) {
-	// 			$searching = " AND " . implode(" AND ", $condiciones_busqueda);
-	// 		}
-	// 	}
-
-	// 	// 3. Filtro de Stock
-	// 	$filtro_stock = ($stock_filtro > 0) ? " AND a.stock <= $stock_filtro " : "";
-
-	// 	// 4. Consulta SQL Optimizada
-	// 	// Nota: Se eliminó 'INNER JOIN sucursal s' porque no se usa para filtrar por nombre de sucursal en el conteo,
-	// 	// y el ID ya lo tenemos en 'a.idsucursal'. Esto acelera la respuesta.
-	// 	$sql = "SELECT COUNT(DISTINCT a.idproducto) as total
-	//         FROM producto a 
-	//         INNER JOIN categoria c ON a.idcategoria = c.idcategoria 
-	//         INNER JOIN usuario_sucursal us ON us.idsucursal = a.idsucursal
-	//         INNER JOIN usuario u ON u.idusuario = us.idusuario
-	// 		LEFT JOIN marca m ON a.idmarca = m.idmarca
-	// 		LEFT JOIN modelo mo ON a.idmodelo = mo.idmodelo
-	//         WHERE c.nombre != 'SERVICIO' 
-	//         AND u.idpersonal = '" . $_SESSION['idpersonal'] . "'
-	//         AND a.idsucursal = '$sucursal_final'
-	//         $filtro_stock
-	//         $searching";
-
-	// 	$result = ejecutarConsultaSimpleFila($sql);
-	// 	return $result['total'];
-	// }
-
 	public function listarPorSucursal($idsucursal)
 	{
 
@@ -1145,39 +969,24 @@ class Producto extends Helpers
 				'pg.idfifo_origen',
 				'pg.precio_promocion',
 				'pg.estado AS estado_config',
-
 				'ps.idserie',
 				'ps.numero_serie',
 				'ps.numero_motor',
 				'ps.placa',
 				'ps.color',
 				'ps.anio_fabricacion',
-				'ps.estado AS estado_serie'
+				'ps.estado AS estado_serie',
+				'mr.nombre AS marca',
+				'md.nombre AS modelo'
 			])
 			->from('producto p')
-			->join(
-				'categoria c',
-				'c.idcategoria = p.idcategoria'
-			)
-			->join(
-				'inventario_producto i',
-				'i.idproducto = p.idproducto
-            AND i.idsucursal = p.idsucursal'
-			)
-			->leftJoin(
-				'producto_configuracion pg',
-				'pg.idproducto = p.idproducto'
-			)
-			->join(
-				'unidad_medida um',
-				'um.idunidad_medida = p.idunidad_medida'
-			)
-			->leftJoin(
-				'producto_serie ps',
-				'ps.idproducto = p.idproducto
-            AND ps.idsucursal = p.idsucursal
-            AND ps.estado = "DISPONIBLE"'
-			)
+			->join('categoria c', 'c.idcategoria = p.idcategoria')
+			->join('inventario_producto i', 'i.idproducto = p.idproducto AND i.idsucursal = p.idsucursal')
+			->join('unidad_medida um', 'um.idunidad_medida = p.idunidad_medida')
+			->join('marca mr', 'mr.idmarca = p.idmarca')
+			->join('modelo md', 'md.idmodelo = p.idmodelo')
+			->leftJoin('producto_configuracion pg', 'pg.idproducto = p.idproducto')
+			->leftJoin('producto_serie ps', 'ps.idproducto = p.idproducto AND ps.idsucursal = p.idsucursal AND ps.estado = "DISPONIBLE"')
 			->where('p.condicion', '=', 1)
 			->where('p.idsucursal', '=', $idsucursal)
 			->where('c.nombre', '<>', 'SERVICIO')
@@ -1202,7 +1011,7 @@ class Producto extends Helpers
 			'eliminar' => Helpers::getUserPermissionAccion('Eliminar productos')
 		];
 
-		return json_encode($response);
+		return Response::json($response);
 	}
 
 	public function eliminar($idproducto)
@@ -1384,31 +1193,6 @@ class Producto extends Helpers
 	}
 
 
-
-
-	/*public function listarArticulosSearch($idsucursal, $search, $type) {
-		$searching = "";
-		if ($search) {
-			if ($type == 2) {
-				$searching = "AND pg.codigo_extra LIKE '%$search%'";
-			}
-			if ($type == 1) {
-				$searching = "AND p.nombre LIKE '%$search%'";
-			}
-		}
-
-		$sql = "SELECT p.*, pg.* 
-				FROM producto p 
-				INNER JOIN categoria c ON p.idcategoria = c.idcategoria
-				INNER JOIN producto_configuracion pg ON p.idproducto = pg.idproducto 
-				WHERE p.condicion = 1 
-				AND p.idsucursal = '$idsucursal' 
-				$searching
-				AND c.nombre != 'SERVICIO' LIMIT 20";
-		return ejecutarConsulta($sql);
-	}*/
-
-
 	//Implementar un método para listar los registros activos, su último precio y el stock (vamos a unir con el último registro de la tabla detalle_ingreso)
 	public function listarActivosVenta($idsucursal)
 	{
@@ -1432,6 +1216,7 @@ class Producto extends Helpers
 				'pg.cantidad_contenedor',
 				'pg.precio_venta',
 				'pg.idfifo_origen',
+				'pg.precio_credito',
 				'pg.precio_promocion',
 				'pg.estado AS estado_config',
 				'ps.idserie',
@@ -1440,30 +1225,18 @@ class Producto extends Helpers
 				'ps.placa',
 				'ps.color',
 				'ps.anio_fabricacion',
-				'ps.estado AS estado_serie'
+				'ps.estado AS estado_serie',
+				'mr.nombre AS marca',
+				'md.nombre AS modelo',
 			])
 			->from('producto p')
-			->join(
-				'categoria c',
-				'c.idcategoria = p.idcategoria'
-			)
-			->join(
-				'inventario_producto i',
-				'i.idproducto = p.idproducto
-            AND i.idsucursal = p.idsucursal'
-			)
-			->leftJoin(
-				'producto_configuracion pg',
-				'pg.idproducto = p.idproducto'
-			)
-			->join(
-				'unidad_medida um',
-				'um.idunidad_medida = p.idunidad_medida'
-			)
-			->leftJoin(
-				'producto_serie ps',
-				'ps.idproducto = p.idproducto'
-			)
+			->join('categoria c', 'c.idcategoria = p.idcategoria')
+			->join('inventario_producto i', 'i.idproducto = p.idproducto AND i.idsucursal = p.idsucursal')
+			->leftJoin('producto_configuracion pg', 'pg.idproducto = p.idproducto')
+			->join('unidad_medida um', 'um.idunidad_medida = p.idunidad_medida')
+			->join('marca mr', 'mr.idmarca = p.idmarca')
+			->join('modelo md', 'md.idmodelo = p.idmodelo')
+			->leftJoin('producto_serie ps', 'ps.idproducto = p.idproducto')
 			->where('p.condicion', '=', 1)
 			->where('p.idsucursal', '=', $idsucursal)
 			->where('c.nombre', '<>', 'SERVICIO')
@@ -1479,7 +1252,7 @@ class Producto extends Helpers
 			->orderBy('p.nombre')
 			->paginate((int) $page, (int) $limit);
 
-		return json_encode($response);
+		return Response::json($response);
 	}
 
 	public function listarActivosVenta2($idsucursal)

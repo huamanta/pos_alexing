@@ -189,28 +189,28 @@ function seleccionarCategoria(nombre, idcategoria) {
   $("#idcategoria").select2("");
 }
 
-function obtenerIdCategoriaVehiculoEnSelect() {
-  let idVehiculo = "";
-  $("#idcategoria option").each(function () {
-    const texto = (($(this).text() || "") + "").trim().toUpperCase();
-    if (texto === "VEHICULO") {
-      idVehiculo = $(this).val();
-      return false;
-    }
-  });
-  return idVehiculo;
-}
+// function obtenerIdCategoriaVehiculoEnSelect() {
+//   let idVehiculo = "";
+//   $("#idcategoria option").each(function () {
+//     const texto = (($(this).text() || "") + "").trim().toUpperCase();
+//     if (texto === "VEHICULO") {
+//       idVehiculo = $(this).val();
+//       return false;
+//     }
+//   });
+//   return idVehiculo;
+// }
 
-function sincronizarTipoProductoConCategoria() {
-  const idSeleccionado = ("" + $("#idcategoria").val() || "").trim();
-  const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
+// function sincronizarTipoProductoConCategoria() {
+//   const idSeleccionado = ("" + $("#idcategoria").val() || "").trim();
+//   const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
 
-  if (idVehiculo && idSeleccionado === idVehiculo) {
-    $("#tipo_producto").val("Vehiculo");
-  } else {
-    $("#tipo_producto").val("Producto");
-  }
-}
+//   if (idVehiculo && idSeleccionado === idVehiculo) {
+//     $("#tipo_producto").val("Vehiculo");
+//   } else {
+//     $("#tipo_producto").val("Producto");
+//   }
+// }
 //Función limpiar
 function limpiar() {
   $("#codigo").val("");
@@ -388,18 +388,18 @@ $("#controla_stock").change(function () {
 });
 
 function mostrar(idproducto) {
-  $.post(
+  $.get(
     "controladores/producto.php?op=mostrar",
     { idproducto: idproducto },
     function (response, status) {
-      const data = JSON.parse(response);
+      const data = response;
       
       // Abrir modal y llenar los campos
       $("#myModal").modal("show");
 
       $("#idsucursal").val(data.idsucursal).select2("");
       $("#idcategoria").val(data.idcategoria).select2("");
-      sincronizarTipoProductoConCategoria();
+      // sincronizarTipoProductoConCategoria();
       $("#idunidad_medida").val(data.idunidad_medida).select2("");
       $("#idrubro").val(data.idrubro).select2("");
       $("#idcondicionventa").val(data.idcondicionventa).select2("");
@@ -412,8 +412,8 @@ function mostrar(idproducto) {
       $("#stock").val(data.stock);
       $("#stockMinimo").val(data.stock_minimo);
       $("#precio").val(data.precio);
+      $("#precio_credito").val(data.precio_credito);
       $("#preciocigv").val(data.preciocigv);
-      $("#precioB").val(data.precioB);
       $("#precioC").val(data.precioC);
       $("#precioD").val(data.precioD);
       $("#precioE").val(data.precioE);
@@ -437,6 +437,7 @@ function mostrar(idproducto) {
       $("#idproducto").val(data.idproducto);
       $("#idinventario").val(data.idinventario);
       $("#idserie").val(data.idserie);
+      $("#idproductoconfiguracion").val(data.idproducto_configuracion);
       $("#nserie").val(data.numero_serie);
       $("#placa").val(data.placa || "");
       $("#color").val(data.color || "");
@@ -527,8 +528,8 @@ function pintarProductos(data, permissions) {
 
     html += `
             <tr>
-                <td>${item.codigo ?? ''}</td>
-                <td>${item.nombre ?? ''}</td>
+                <td>${item.codigo || '-'}</td>
+                <td>${item.nombre || '-'} ${item.marca || ''} ${item.modelo || ''}</td>
                 <td>${item.stock}</td>
                 <td>${item.stock_minimo}</td>
                 <td>${item.numero_serie || '-'}</td>
@@ -697,12 +698,12 @@ function guardaryeditar(e) {
   }
   var btnGuardar = $("#btnGuardarP");
 
-  if ($("#tipo_producto").val() === "Vehiculo") {
-    const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
-    if (idVehiculo) {
-      $("#idcategoria").val(idVehiculo).trigger("change");
-    }
-  }
+  // if ($("#tipo_producto").val() === "Vehiculo") {
+  //   const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
+  //   if (idVehiculo) {
+  //     $("#idcategoria").val(idVehiculo).trigger("change");
+  //   }
+  // }
 
   // Verificar si el botón ya está deshabilitado
   if (btnGuardar.prop("disabled")) {
@@ -720,13 +721,13 @@ function guardaryeditar(e) {
     data: formData,
     contentType: false,
     processData: false,
-    success: function (datos) {
-      const data = JSON.parse(datos);
+    success: function (response) {
+      const data = response;
       if (!data.success) {
         Swal.fire({ title: "Producto", icon: "error", text: data.message });
         return;
       }
-      Swal.fire({ title: "Cliente", icon: "success", text: data.message });
+      Swal.fire({ title: "Producto", icon: "success", text: data.message });
       $("#myModal").modal("hide");
       listarProductos.load();
       limpiarFormulario();
@@ -736,9 +737,9 @@ function guardaryeditar(e) {
       // Habilitar el botón nuevamente después de la respuesta del servidor
       btnGuardar.prop("disabled", false);
     },
-    error: function () {
+    error: function (error) {
       // Si ocurre un error, asegurarse de que el botón se habilite nuevamente
-      btnGuardar.prop("disabled", false);
+      Swal.fire({ title: "Producto", icon: "error", text: error?.responseJson?.message || 'No se pudo guardar producto'});
     },
   });
 }
@@ -850,20 +851,20 @@ function limpiarProducto() {
   $("#imagenactual").val("anonymous.png");
 }
 
-$(document).on("change", "#idcategoria", function () {
-  sincronizarTipoProductoConCategoria();
-});
+// $(document).on("change", "#idcategoria", function () {
+//   sincronizarTipoProductoConCategoria();
+// });
 
-$(document).on("change", "#tipo_producto", function () {
-  if ($(this).val() !== "Vehiculo") {
-    return;
-  }
+// $(document).on("change", "#tipo_producto", function () {
+//   if ($(this).val() !== "Vehiculo") {
+//     return;
+//   }
 
-  const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
-  if (idVehiculo) {
-    $("#idcategoria").val(idVehiculo).trigger("change");
-  }
-});
+//   const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
+//   if (idVehiculo) {
+//     $("#idcategoria").val(idVehiculo).trigger("change");
+//   }
+// });
 
 function trasladarProducto(e) {
   e.preventDefault(); //no se activara la accion predeterminada
@@ -884,7 +885,7 @@ function trasladarProducto(e) {
         text: datos,
       });
       $("#myModalTraslados").modal("hide");
-      listar();
+      listarProductos.load();
     },
   });
   limpiarTraslado();
@@ -909,7 +910,7 @@ function actualizarProductoEmpaquetado(e) {
         text: datos,
       });
       $("#myModalDesempaquetar").modal("hide");
-      listar();
+      listarProductos.load();
     },
   });
 
@@ -1524,7 +1525,7 @@ $("#saveCofigurtion").submit(function (e) {
         showConfirmButton: false,
       });
       listarDataCofig($("#idproductoconfig").val());
-      listar();
+      listarProductos.load();
       $("#ModalConfigProducto").modal("hide");
     },
     error: function (error) {
@@ -1863,7 +1864,7 @@ $("#formularioIngreso").submit(function (e) {
     success: function (datos) {
       var datos = JSON.parse(datos);
       if (datos.status == 1) {
-        listar();
+        listarProductos.load();
         Swal.fire({
           title: "Guardado",
           icon: "success",
@@ -1960,7 +1961,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Aplicar función a todos los márgenes
   actualizarMargen1("precio", "margenpubl");
-  actualizarMargen1("precioB", "margendes");
+  // actualizarMargen1("precioB", "margendes");
   actualizarMargen1("precioC", "margenp1");
   actualizarMargen1("precioD", "margenp2");
   actualizarMargen1("precioE", "margendist");
@@ -1993,9 +1994,6 @@ function calcularUtilidades() {
 
 // Llamar la función cada vez que los precios cambian
 document.getElementById("precio").addEventListener("input", calcularUtilidades);
-document
-  .getElementById("precioB")
-  .addEventListener("input", calcularUtilidades);
 document
   .getElementById("precioC")
   .addEventListener("input", calcularUtilidades);

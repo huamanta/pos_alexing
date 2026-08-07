@@ -23,8 +23,6 @@ class Cotizacion extends Helpers
         $idcliente,
         $idpersonal,
         $idtipo_comprobante,
-        $serie_comprobante,
-        $num_comprobante,
         $fecha_hora,
         $total_venta,
         $titulo,
@@ -44,7 +42,8 @@ class Cotizacion extends Helpers
         $inicial,
         $frecuencia,
         $meses,
-        $interes
+        $interes,
+        $idserie
     ) {
         try {
 
@@ -100,6 +99,7 @@ class Cotizacion extends Helpers
                     ->data([
                         'idcotizacion' => $idcotizacion,
                         'idproducto' => $idproducto[$i],
+                        'idserie' => $idserie[$i],
                         'cantidad' => $cantidad[$i],
                         'contenedor' => $contenedor[$i],
                         'cantidad_contenedor' => $cantidad_contenedor[$i],
@@ -129,8 +129,6 @@ class Cotizacion extends Helpers
         $idcliente,
         $idpersonal,
         $idtipo_comprobante,
-        $serie_comprobante,
-        $num_comprobante,
         $fecha_hora,
         $total_venta,
         $titulo,
@@ -150,7 +148,8 @@ class Cotizacion extends Helpers
         $inicial,
         $frecuencia,
         $meses,
-        $interes
+        $interes,
+        $isderie
     ) {
         try {
 
@@ -195,13 +194,14 @@ class Cotizacion extends Helpers
                 ->deleteWhere();
 
             // Registrar nuevo detalle
-            foreach ($idproducto as $i => $producto) {
+            foreach ($idp as $i => $producto) {
 
                 (new FluentSaver($this->pdo))
                     ->table("detalle_cotizacion")
                     ->data([
                         "idcotizacion" => $idcotizacion,
                         "idproducto" => $idproducto[$i],
+                        "idserie" => $idserie[$i],
                         "cantidad" => $cantidad[$i],
                         "contenedor" => $contenedor[$i],
                         "cantidad_contenedor" => $cantidad_contenedor[$i],
@@ -238,51 +238,52 @@ class Cotizacion extends Helpers
 
     //implementar un metodopara mostrar los datos de unregistro a modificar
     public function mostrar($idcotizacion)
-    {
-        $sql = "SELECT 
-        c.idcotizacion,
-        DATE(c.fecha_hora) as fecha,
-        c.idcliente,
-        p.nombre as cliente,
-        c.titulo,
-        c.nota,
-        c.igv,
-        u.idpersonal,
-        u.nombre as personal,
-        p.telefono,
-        c.idcomprobante_pago,
-        c.serie_comprobante,
-        c.num_comprobante,
-        c.formapago,
-        c.fecha_h,
-        -- TOTAL DESDE DETALLE
-        IFNULL(SUM(
-            (dc.cantidad * dc.precio_venta) - dc.descuento
-        ),0) as total_venta,
-        c.tiempo_pro,
-        c.inicial,
-        c.frecuencia,
-        c.meses,
-        c.interes,
-        c.observacion
+{
+    $data = (new DBQuery($this->pdo))
+        ->select([
+            "c.idcotizacion",
+            "DATE(c.fecha_hora) AS fecha",
+            "c.idcliente",
+            "p.nombre AS cliente",
+            "p.num_documento",
+            "c.titulo",
+            "c.nota",
+            "c.igv",
+            "u.idpersonal",
+            "u.nombre AS personal",
+            "p.telefono",
+            "c.idcomprobante_pago",
+            "c.serie_comprobante",
+            "c.num_comprobante",
+            "c.formapago",
+            "c.fecha_h",
+            "IFNULL(SUM((dc.cantidad * dc.precio_venta) - dc.descuento), 0) AS total_venta",
+            "c.tiempo_pro",
+            "c.inicial",
+            "c.frecuencia",
+            "c.meses",
+            "c.interes",
+            "c.observacion"
+        ])
+        ->from("cotizacion c")
+        ->join(
+            "persona p",
+            "c.idcliente = p.idpersona"
+        )
+        ->join(
+            "personal u",
+            "c.idPersonal = u.idpersonal"
+        )
+        ->leftJoin(
+            "detalle_cotizacion dc",
+            "c.idcotizacion = dc.idcotizacion"
+        )
+        ->where("c.idcotizacion", "=", $idcotizacion)
+        ->groupBy("c.idcotizacion")
+        ->first();
 
-    FROM cotizacion c
-
-    INNER JOIN persona p 
-        ON c.idcliente = p.idpersona
-
-    INNER JOIN personal u 
-        ON c.idPersonal = u.idpersonal
-
-    LEFT JOIN detalle_cotizacion dc
-        ON c.idcotizacion = dc.idcotizacion
-
-    WHERE c.idcotizacion = '$idcotizacion'
-
-    GROUP BY c.idcotizacion";
-
-        return ejecutarConsultaSimpleFila($sql);
-    }
+        return Response::json($data);
+}
 
     public function mostrardetalle($idcotizacion)
     {
@@ -346,27 +347,7 @@ class Cotizacion extends Helpers
             ->orderBy('c.idcotizacion', 'DESC')
             ->paginate($page, $limit);
 
-        return json_encode($response);
-
-        // if ($idsucursal == "Todos" || $idsucursal == '') {
-
-        //     $sql = " FROM cotizacion c 
-        // INNER JOIN  ON INNER JOIN  ON 
-        // WHERE c.condicion = 1 AND DATE(c.fecha_hora)>='$fecha_inicio' AND DATE(c.fecha_hora)<='$fecha_fin'
-        // ORDER BY c.idcotizacion DESC";
-
-        // } else {
-
-        //     $sql = "SELECT c.idcotizacion,date_format(c.fecha_h,'%d/%m/%y | %H:%i:%s %p') as fecha,c.idcliente,p.nombre as cliente,u.idpersonal,u.nombre 
-        // as personal, c.tipo_comprobante,c.serie_comprobante,c.num_comprobante,c.total_venta,c.estado FROM cotizacion c 
-        // INNER JOIN persona p ON c.idcliente=p.idpersona INNER JOIN personal u ON c.idPersonal=u.idpersonal 
-        // WHERE c.condicion = 1 AND DATE(c.fecha_hora)>='$fecha_inicio' AND DATE(c.fecha_hora)<='$fecha_fin' AND c.idsucursal = '$idsucursal'
-        // ORDER BY c.idcotizacion DESC";
-
-        // }
-
-
-        // return ejecutarConsulta($sql);
+        return Response::json($response);
     }
 
     public function listar2($idsucursal, $is_aprobated = false)
@@ -417,59 +398,56 @@ class Cotizacion extends Helpers
         return ejecutarConsulta($sql);
     }
 
-    public function ventadetalle($idcotizacion)
+    public function listarDetalleCotizacion($idcotizacion)
     {
-        $sql = "
-    SELECT
-        d.iddetalle_cotizacion,
-
-        p.*,
-
-        pg.idproducto_configuracion,
-        pg.precio_venta,
-        pg.contenedor,
-        pg.cantidad_contenedor,
-
-        i.stock,
-
-        ps.idserie,
-        ps.numero_serie,
-        ps.numero_motor,
-        ps.placa,
-        ps.color,
-        ps.anio_fabricacion,
-        ps.estado AS estado_serie,
-
-        um.nombre AS unidadmedida,
-
-        d.cantidad,
-        d.precio_venta,
-        d.descuento,
-
-        (d.cantidad*d.precio_venta-d.descuento) AS subtotal
-
-    FROM detalle_cotizacion d
-
-    INNER JOIN producto p
-        ON p.idproducto = d.idproducto
-    
-    INNER JOIN producto_configuracion pg
-        ON pg.idproducto = p.idproducto
-
-    INNER JOIN unidad_medida um
-        ON um.idunidad_medida = p.idunidad_medida
-
-    LEFT JOIN inventario_producto i
-        ON i.idproducto = p.idproducto
-
-    LEFT JOIN producto_serie ps
-        ON ps.idproducto = p.idproducto
-        AND ps.estado = 'DISPONIBLE'
-
-    WHERE d.idcotizacion = '$idcotizacion'
-    ";
-
-        return ejecutarConsulta($sql);
+        $data = (new DBQuery($this->pdo))
+            ->select([
+                "d.iddetalle_cotizacion",
+                "p.*",
+                "pg.idproducto_configuracion",
+                "pg.precio_venta",
+                "pg.precio_credito",
+                "pg.contenedor",
+                "pg.cantidad_contenedor",
+                "i.stock",
+                "ps.idserie",
+                "ps.numero_serie",
+                "ps.numero_motor",
+                "ps.placa",
+                "ps.color",
+                "ps.anio_fabricacion",
+                "ps.estado AS estado_serie",
+                "um.nombre AS unidadmedida",
+                "d.cantidad",
+                "d.precio_venta",
+                "d.descuento",
+                "(d.cantidad * d.precio_venta - d.descuento) AS subtotal"
+            ])
+            ->from("detalle_cotizacion d")
+            ->join(
+                "producto p",
+                "p.idproducto = d.idproducto"
+            )
+            ->join(
+                "producto_configuracion pg",
+                "pg.idproducto = p.idproducto"
+            )
+            ->join(
+                "unidad_medida um",
+                "um.idunidad_medida = p.idunidad_medida"
+            )
+            ->leftJoin(
+                "inventario_producto i",
+                "i.idproducto = p.idproducto"
+            )
+            ->leftJoin(
+                "producto_serie ps",
+                "ps.idproducto = p.idproducto
+             AND ps.estado = 'DISPONIBLE'"
+            )
+            ->where("d.idcotizacion", "=", $idcotizacion)
+            ->get();
+            return Response::json($data);
     }
 
     /*public function ventadetalle($idcotizacion)

@@ -556,6 +556,7 @@
               <input type="hidden" name="idproducto" id="idproducto">
               <input type="hidden" name="idinventario" id="idinventario">
               <input type="hidden" name="idserie" id="idserie">
+              <input type="hidden" name="idproductoconfiguracion" id="idproductoconfiguracion">
 
               <ul class="nav nav-tabs" id="tabsProductoVehiculo" role="tablist" style="margin-bottom: 10px;">
                 <li class="nav-item">
@@ -814,7 +815,7 @@
                     <div class="col-sm-4">
                       <div class="form-group">
                         <label class="control-label">P. Venta Crédito</label>
-                        <input type="number" step="any" class="form-control" name="precioB" id="precioB"
+                        <input type="number" step="any" class="form-control" name="precio_credito" id="precio_credito"
                           placeholder="0.00">
                       </div>
                     </div>
