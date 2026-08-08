@@ -4,8 +4,8 @@
         <div class="container-fluid">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
                 <div>
-                    <h1 class="mb-1"><i class="fas fa-tools text-primary"></i> �rdenes de Trabajo</h1>
-                    <p class="text-muted mb-0">Gesti�n integral de reparaciones, ensamblajes, costos y seguimiento de
+                    <h1 class="mb-1"><i class="fas fa-tools text-primary"></i> órdenes de Trabajo</h1>
+                    <p class="text-muted mb-0">Gestión integral de reparaciones, ensamblajes, costos y seguimiento de
                         motocicletas.</p>
                 </div>
                 <div class="d-flex align-items-center gap-2">
@@ -64,7 +64,7 @@
                             <div class="col-md-3">
                                 <div class="wizard-step active rounded-3 p-3" data-step="1">
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <span class="fw-bold">1. Informaci�n General</span>
+                                        <span class="fw-bold">1. Información General</span>
                                         <i class="fas fa-file-alt text-primary"></i>
                                     </div>
                                 </div>
@@ -72,7 +72,7 @@
                             <div class="col-md-2">
                                 <div class="wizard-step rounded-3 p-3" data-step="2">
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <span class="fw-bold">2. Mec�nicos</span>
+                                        <span class="fw-bold">2. Mecónicos</span>
                                         <i class="fas fa-users text-info"></i>
                                     </div>
                                 </div>
@@ -152,7 +152,7 @@
                                 <div class="col-lg-5">
                                     <div class="card border-0 shadow-sm h-100">
                                         <div class="card-header bg-light border-0">
-                                            <h3 class="card-title mb-0"><i class="fas fa-motorcycle me-2"></i> Veh�culo
+                                            <h3 class="card-title mb-0"><i class="fas fa-motorcycle me-2"></i> Vehóculo
                                             </h3>
                                         </div>
                                         <div class="card-body">
@@ -175,7 +175,8 @@
                                                 </p>
 
                                             </div>
-                                            <div class="rounded-4 border p-3 bg-light" id="panelProducto" style="display: none;">
+                                            <div class="rounded-4 border p-3 bg-light" id="panelProducto"
+                                                style="display: none;">
                                                 <div class="text-center mb-3">
                                                     <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/ width='320' height='220' viewBox='0 0 320 220'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230d6efd'/%3E%3Cstop offset='100%25' stop-color='%231b4de5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='320' height='220' rx='24' fill='%23f8fbff'/%3E%3Ccircle cx='100' cy='145' r='48' fill='%23e9f2ff'/%3E%3Ccircle cx='230' cy='145' r='48' fill='%23e9f2ff'/%3E%3Crect x='70' y='95' width='180' height='70' rx='28' fill='url(%23g)'/%3E%3Crect x='110' y='70' width='90' height='40' rx='16' fill='%230d6efd'/%3E%3Crect x='90' y='120' width='145' height='18' rx='9' fill='%23ffffff' opacity='0.8'/%3E%3C/svg%3E"
                                                         class="img-fluid rounded-3" alt="Vehiculo" id="imagenmuestra">
@@ -206,7 +207,7 @@
 
                                             <div class="alert alert-warning mt-3 mb-0" role="alert">
                                                 <i class="fas fa-info-circle me-2"></i> Si el tipo de orden es
-                                                Ensamblaje, el veh�culo se crear� al finalizar la orden.
+                                                Ensamblaje, el vehóculo se crearó al finalizar la orden.
                                             </div>
                                         </div>
                                     </div>
@@ -216,12 +217,13 @@
                                     <div class="card border-0 shadow-sm h-100">
                                         <div class="card-header bg-light border-0">
                                             <h3 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>
-                                                Informaci�n adicional</h3>
+                                                Información adicional</h3>
                                         </div>
                                         <div class="card-body">
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Cliente</label>
-                                                <select type="text" class="form-control" name="idcliente" id="idcliente"></select>
+                                                <select type="text" class="form-control" name="idcliente"
+                                                    id="idcliente"></select>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Fecha compromiso</label>
@@ -248,7 +250,7 @@
                             </div>
 
                             <div class="alert alert-info mt-4" role="alert">
-                                <i class="fas fa-lightbulb me-2"></i> Complete la informaci�n general antes de
+                                <i class="fas fa-lightbulb me-2"></i> Complete la información general antes de
                                 continuar.
                             </div>
                         </div>
@@ -259,17 +261,16 @@
                                     <div class="card border-0 shadow-sm h-100">
                                         <div
                                             class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
-                                            <h3 class="card-title mb-0"><i class="fas fa-users me-2"></i> Asignaci�n de
-                                                mec�nicos</h3>
-                                            <div class="d-flex flex-wrap gap-2 align-items-center">
-                                                <select class="form-select form-select-sm" style="min-width: 260px;"
+                                            <h3 class="card-title mb-0"><i class="fas fa-users me-2"></i> Asignación de
+                                                mecónicos</h3>
+                                            
+                                        </div>
+                                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                                                <select class="form-control" style="min-width: 260px;"
                                                     id="mechanicSelect">
                                                     <option value="">Seleccione un mecánico...</option>
                                                 </select>
-                                                <button type="button" class="btn btn-success" id="btnAddMechanic"><i
-                                                        class="fas fa-plus me-2"></i> Agregar seleccionado</button>
                                             </div>
-                                        </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table align-middle">
@@ -285,32 +286,7 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody id="mechanicsTableBody">
-                                                        <tr>
-                                                            <td><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='24' fill='%23e9f2ff'/%3E%3Ccircle cx='24' cy='20' r='10' fill='%230d6efd'/%3E%3Ccircle cx='24' cy='40' r='16' fill='%231b4de5'/%3E%3C/svg%3E"
-                                                                    alt="Mec�nico" class="rounded-circle" width="44">
-                                                            </td>
-                                                            <td>Juan P�rez</td>
-                                                            <td><span class="badge bg-info">Mec�nico Senior</span></td>
-                                                            <td>6</td>
-                                                            <td>S/. 40</td>
-                                                            <td><strong>S/. 240</strong></td>
-                                                            <td><button type="button"
-                                                                    class="btn btn-sm btn-outline-danger"><i
-                                                                        class="fas fa-trash"></i></button></td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td><img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 48 48'%3E%3Crect width='48' height='48' rx='24' fill='%23fef7e6'/%3E%3Ccircle cx='24' cy='20' r='10' fill='%23ffc107'/%3E%3Ccircle cx='24' cy='40' r='16' fill='%23e0a800'/%3E%3C/svg%3E"
-                                                                    alt="Mec�nico" class="rounded-circle" width="44">
-                                                            </td>
-                                                            <td>Marcos Rojas</td>
-                                                            <td><span class="badge bg-secondary">Ayudante</span></td>
-                                                            <td>4</td>
-                                                            <td>S/. 25</td>
-                                                            <td><strong>S/. 100</strong></td>
-                                                            <td><button type="button"
-                                                                    class="btn btn-sm btn-outline-danger"><i
-                                                                        class="fas fa-trash"></i></button></td>
-                                                        </tr>
+                                                       
                                                     </tbody>
                                                 </table>
                                             </div>
@@ -325,7 +301,7 @@
                                         </div>
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between mb-3">
-                                                <span>Cantidad de mec�nicos</span>
+                                                <span>Cantidad de mecónicos</span>
                                                 <strong id="mechanicsCount">2</strong>
                                             </div>
                                             <div class="d-flex justify-content-between mb-3">
@@ -337,7 +313,7 @@
                                                 <strong id="laborCost">S/. 340</strong>
                                             </div>
                                             <div class="border-top pt-3">
-                                                <div class="text-center text-muted small">Asignaci�n preparada para el
+                                                <div class="text-center text-muted small">Asignación preparada para el
                                                     taller.</div>
                                             </div>
                                         </div>
@@ -354,24 +330,14 @@
                                             class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
                                             <h3 class="card-title mb-0"><i class="fas fa-boxes me-2"></i> Repuestos y
                                                 materiales</h3>
-                                            <button type="button" class="btn btn-primary" id="btnAddProduct"><i
-                                                    class="fas fa-plus me-2"></i> Agregar Producto</button>
                                         </div>
                                         <div class="card-body">
                                             <div class="input-group mb-4">
-                                                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                                <input class="form-control form-control-lg" list="productosList"
-                                                    placeholder="Buscar repuesto o material..." name="repuestoBuscar">
-                                                <datalist id="productosList">
-                                                    <option value="Filtro de aceite"></option>
-                                                    <option value="Buj�a NGK"></option>
-                                                    <option value="LLanta 17"></option>
-                                                    <option value="Kit de frenos"></option>
-                                                </datalist>
+                                                <Select class="form-control" name="repuestoBuscar" id="repuestoBuscar"></Select>
                                             </div>
 
                                             <div class="alert alert-primary" role="alert">
-                                                <i class="fas fa-cog me-2"></i> Para �rdenes de ensamblaje, esta secci�n
+                                                <i class="fas fa-cog me-2"></i> Para órdenes de ensamblaje, esta sección
                                                 permite incluir todas las piezas necesarias para montar una motocicleta.
                                             </div>
 
@@ -379,7 +345,7 @@
                                                 <table class="table align-middle">
                                                     <thead class="table-light">
                                                         <tr>
-                                                            <th>C�digo</th>
+                                                            <th>Código</th>
                                                             <th>Producto</th>
                                                             <th>Stock</th>
                                                             <th>Cantidad</th>
@@ -525,7 +491,7 @@
                                     <div class="card border-0 shadow-sm h-100">
                                         <div class="card-header bg-light border-0">
                                             <h3 class="card-title mb-0"><i class="fas fa-chart-pie me-2"></i>
-                                                Distribuci�n de costos</h3>
+                                                Distribución de costos</h3>
                                         </div>
                                         <div class="card-body text-center">
                                             <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center border border-4 border-primary"
@@ -561,8 +527,8 @@
                                             <div class="row g-4">
                                                 <div class="col-md-6">
                                                     <div class="p-3 rounded-3 bg-light">
-                                                        <h6 class="fw-bold text-primary">Informaci�n de la orden</h6>
-                                                        <p class="mb-1"><strong>Tipo:</strong> Reparaci�n</p>
+                                                        <h6 class="fw-bold text-primary">Información de la orden</h6>
+                                                        <p class="mb-1"><strong>Tipo:</strong> Reparación</p>
                                                         <p class="mb-1"><strong>Sucursal:</strong> Principal</p>
                                                         <p class="mb-1"><strong>Estado:</strong> <span
                                                                 class="badge bg-warning">Pendiente</span></p>
@@ -571,7 +537,7 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="p-3 rounded-3 bg-light">
-                                                        <h6 class="fw-bold text-primary">Veh�culo</h6>
+                                                        <h6 class="fw-bold text-primary">Vehóculo</h6>
                                                         <p class="mb-1"><strong>Modelo:</strong> Honda XR150</p>
                                                         <p class="mb-1"><strong>Placa:</strong> ABC-123</p>
                                                         <p class="mb-1"><strong>Cliente:</strong> Carlos Mendoza</p>
@@ -581,10 +547,10 @@
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="p-3 rounded-3 bg-light">
-                                                        <h6 class="fw-bold text-primary">Mec�nicos asignados</h6>
+                                                        <h6 class="fw-bold text-primary">Mecónicos asignados</h6>
                                                         <ul class="mb-0 ps-3">
-                                                            <li>Juan P�rez � 6 h</li>
-                                                            <li>Marcos Rojas � 4 h</li>
+                                                            <li>Juan Pórez ó 6 h</li>
+                                                            <li>Marcos Rojas ó 4 h</li>
                                                         </ul>
                                                     </div>
                                                 </div>

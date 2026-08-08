@@ -45,6 +45,79 @@ $("#idcliente").select2({
     },
 });
 
+$("#mechanicSelect").select2({
+    with: '100%',
+    placeholder: "Buscar personal...",
+    allowClear: true,
+    minimumInputLength: 2,
+    ajax: {
+        url: "controladores/ordentrabajo.php?op=selectPersonal",
+        type: "POST",
+        dataType: "json",
+        delay: 250,
+        data: function (params) {
+            return {
+                search: params.term,
+                page: params.page || 1,
+                only_client: 1,
+            };
+        },
+        processResults: function (data, params) {
+            params.page = params.page || 1;
+            return {
+                results: data.data.map(function (item) {
+                    return {
+                        id: item.idpersonal,
+                        text: item.nombre + " - " + item.num_documento,
+                        data: item
+                    };
+                }),
+                pagination: {
+                    more: data.meta.current_page < data.meta.last_page,
+                },
+            };
+        },
+        cache: true,
+    },
+});
+
+$("#repuestoBuscar").select2({
+    width: "100%",
+    placeholder: "Buscar producto...",
+    allowClear: true,
+    minimumInputLength: 2,
+    ajax: {
+        url: "controladores/producto.php?op=listar",
+        type: "POST",
+        dataType: "json",
+        delay: 250,
+        data: function (params) {
+            return {
+                search: params.term,
+                page: params.page || 1,
+                only_client: 1,
+            };
+        },
+        processResults: function (data, params) {
+            params.page = params.page || 1;
+            return {
+                results: data.data.map(function (item) {
+                    return {
+                        id: item.idproducto,
+                        text: item.codigo + " - " + item.nombre,
+                        data: item
+                    };
+                }),
+                pagination: {
+                    more: data.meta.current_page < data.meta.last_page,
+                },
+            };
+        },
+        cache: true,
+    },
+});
+
+
 function populateMechanicSelect() {
     const select = $('#mechanicSelect');
     const personal = (window.ordenTrabajoPersonal || []).filter(Boolean);
@@ -69,14 +142,8 @@ function initDefaultDates() {
 }
 
 const orderState = {
-    mechanics: [
-        { id: 1, name: 'Juan Pérez', role: 'Mecánico Senior', hours: 6, rate: 40, subtotal: 240, photo: 'https://via.placeholder.com/44' },
-        { id: 2, name: 'Marcos Rojas', role: 'Ayudante', hours: 4, rate: 25, subtotal: 100, photo: 'https://via.placeholder.com/44' }
-    ],
-    parts: [
-        { codigo: 'RP-001', producto: 'Filtro de aceite', stock: 24, cantidad: 1, precio: 18, descuento: 0, subtotal: 18 },
-        { codigo: 'RP-004', producto: 'Kit de frenos', stock: 7, cantidad: 1, precio: 120, descuento: 5, subtotal: 114 }
-    ],
+    mechanics: [],
+    parts: [],
     costs: {
         repuestos: 132,
         manoObra: 340,
@@ -134,7 +201,7 @@ function renderMechanics() {
                 <td><img src="${m.photo}" alt="Mecánico" class="rounded-circle" width="44"></td>
                 <td>${m.name}</td>
                 <td><span class="badge bg-info">${m.role}</span></td>
-                <td>${m.hours}</td>
+                <td>${m.hours} Aprox</td>
                 <td>S/. ${m.rate}</td>
                 <td><strong>S/. ${m.subtotal}</strong></td>
                 <td><button type="button" class="btn btn-sm btn-outline-danger btn-delete-mechanic" data-id="${m.id}"><i class="fas fa-trash"></i></button></td>
@@ -171,30 +238,41 @@ function renderParts() {
 }
 
 function addMechanic() {
-    const selectedOption = $('#mechanicSelect option:selected');
-    const selectedId = selectedOption.val();
 
-    if (!selectedId) {
+    const selectedOption = $("#mechanicSelect").select2("data")[0];
+
+    if (!selectedOption) {
         showAlert('<i class="fas fa-user me-2"></i> Selecciona un mecánico del sistema antes de agregarlo.', 'warning');
         return;
     }
 
-    if (orderState.mechanics.some((mechanic) => String(mechanic.id) === String(selectedId))) {
+    const personal = selectedOption.data;
+
+    if (orderState.mechanics.some((mechanic) => mechanic.id == personal.idpersonal)) {
         showAlert('<i class="fas fa-info-circle me-2"></i> Ese mecánico ya está agregado.', 'info');
         return;
     }
 
-    const rate = Number(selectedOption.data('rate') || 30);
+    const salary = Number(personal.salario || 30);
+    const hourlyRate = salary / 30 / 8;
     const hours = 4;
 
     orderState.mechanics.push({
-        id: Number(selectedId),
-        name: selectedOption.data('name') || 'Mecánico',
-        role: selectedOption.data('role') || 'Personal',
+        id: personal.idpersonal,
+        name: personal.nombre,
+        role: personal.cargo,
+        document: personal.num_documento,
+        phone: personal.telefono,
+        email: personal.email,
+        percentage: personal.porcentaje,
+        salary: personal.salario,
         hours: hours,
-        rate: rate,
-        subtotal: Number((hours * rate).toFixed(2)),
-        photo: selectedOption.data('photo') || 'https://via.placeholder.com/44'
+        rate: hourlyRate,
+        subtotal: Number((hours * hourlyRate).toFixed(2)),
+        photo: personal.imagen
+            ? `files/personal/${personal.imagen}`
+            : "files/personal/user.png",
+        data: personal
     });
 
     renderMechanics();
@@ -203,14 +281,18 @@ function addMechanic() {
 }
 
 function addPart() {
+    const selectedOption = $("#repuestoBuscar").select2("data")[0];
+    const producto = selectedOption.data;
+    
     orderState.parts.push({
-        codigo: 'RP-0' + (orderState.parts.length + 1),
-        producto: 'Repuesto nuevo',
-        stock: 10,
+        idproducto: producto.idproducto,
+        codigo: producto.codigo,
+        producto: producto.nombre,
+        stock: producto.stock,
         cantidad: 1,
-        precio: 50,
+        precio: producto.precio,
         descuento: 0,
-        subtotal: 50
+        subtotal: producto.precio
     });
     renderParts();
     syncPayload();
@@ -278,8 +360,8 @@ renderParts();
 updateSummary();
 syncPayload();
 
-$('#btnAddMechanic').on('click', addMechanic);
-$('#btnAddProduct').on('click', addPart);
+$('#mechanicSelect').on('change', addMechanic);
+$('#repuestoBuscar').on('change', addPart);
 
 mechanicsTableBody.on('click', '.btn-delete-mechanic', function () {
     removeMechanic($(this).data('id'));
