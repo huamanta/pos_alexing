@@ -211,7 +211,9 @@ class SisVenta extends Helpers
             ]);
 
         } catch (Throwable $e) {
+            if ($this->pdo->inTransaction()) {
             $this->pdo->rollBack();
+        }
             return json_encode([
                 'success' => false,
                 'message' => $e->getMessage()

@@ -647,7 +647,6 @@ function verificarTipoPago() {
     $("#n4").hide();
     $("#fechadeposito").hide();
     $("#banco").hide();
-    $("#panel1").hide();
   } else if (
     $("#formapago").val() == "Efectivo" &&
     $("#tipopago").val() == "No"
@@ -663,7 +662,6 @@ function verificarTipoPago() {
     $("#banco").hide();
     $("#fechadeposito").hide();
     $("#banco").hide();
-    $("#panel1").hide();
   } else if (
     $("#formapago").val() == "Efectivo" &&
     $("#tipopago").val() == "Si"
@@ -732,8 +730,6 @@ function verificarTipoPago() {
     $("#n6").show();
     $("#fechadeposito").show();
     $("#banco").show();
-    
-    $("#panel1").hide();
   }
 }
 

@@ -130,7 +130,7 @@ class CuentasCobrar extends Helpers
             ])
             ->join('venta v', 'v.idventa = cc.idventa')
             ->where('cc.idcpc', '=', $idcpc)
-            ->lockForUpdate()
+            ->forUpdate()
             ->first();
 
         if (!$fila) {
@@ -571,7 +571,7 @@ class CuentasCobrar extends Helpers
             v.idsucursal,
             v.total_venta,
             v.interes,
-            v.tipo_comprobante,
+            pg.nombre AS tipo_comprobante,
             v.serie_comprobante,
             v.num_comprobante,
             cc.idcpc,
@@ -586,6 +586,7 @@ class CuentasCobrar extends Helpers
             DATE_FORMAT(cc.fechavencimiento,'%d/%m/%y') AS fechavencimiento,
             c.nombre
         FROM venta v
+        INNER JOIN comp_pago pg ON pg.idcomprobante_pago = v.idcomprobante_pago
         INNER JOIN cuentas_por_cobrar cc
             ON v.idventa = cc.idventa
         INNER JOIN persona c
