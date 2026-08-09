@@ -122,7 +122,7 @@
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Fecha</label>
-                                                <input type="date" class="form-control" name="fecha">
+                                                <input type="date" class="form-control" name="fecha" id="fecha_registro">
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Estado</label>
@@ -231,13 +231,11 @@
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Referencia</label>
-                                                <input type="text" class="form-control" name="referencia"
-                                                    value="OT-2026-015">
+                                                <input type="text" class="form-control" name="referencia"/>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Documento relacionado</label>
-                                                <input type="text" class="form-control" name="documentoRelacionado"
-                                                    value="Factura 001-1020">
+                                                <input type="text" class="form-control" name="documentoRelacionado"/>
                                             </div>
                                             <div class="mb-3">
                                                 <label class="form-label fw-bold">Observaciones internas</label>

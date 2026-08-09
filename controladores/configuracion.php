@@ -36,11 +36,12 @@ switch ($_GET['op']) {
     case 'actualizarConfiguracionCreditos':
         $idsucursal = $_SESSION['idsucursal'];
         $is_notificacion = !empty($_POST['is_notificacion']) ? 1 : 0;
+        $is_calculo_mes = !empty($_POST['is_calculo_mes']) ? 1 : 0;
         $interes_defecto = $_POST['interes_defecto'];
         $is_descuento_anticipado = !empty($_POST['is_descuento_anticipado']) ? 1 : 0;
         $valor_descuento_anticipado = $_POST['valor_descuento_anticipado'];
         $dias_anticipacion = $_POST['dias_anticipacion'];
-        $res = $configuracion->actualizarConfiguracionCreditos($idsucursal, $is_notificacion, $interes_defecto, $is_descuento_anticipado, $valor_descuento_anticipado, $dias_anticipacion);
+        $res = $configuracion->actualizarConfiguracionCreditos($idsucursal, $is_notificacion, $is_calculo_mes, $interes_defecto, $is_descuento_anticipado, $valor_descuento_anticipado, $dias_anticipacion);
         echo $res;
         break;
 
