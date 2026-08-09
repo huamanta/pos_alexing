@@ -63,7 +63,6 @@ class Cajachica extends Helpers
 					break;
 
 				case 'TRANSFERENCIA':
-					$transferencias += $valor['total'];
 					$tarjetas += $valor['total'];
 					break;
 
@@ -77,21 +76,17 @@ class Cajachica extends Helpers
 
 				case 'DEPOSITO':
 					$depositos += $valor['total'];
-					$tarjetas += $valor['total'];
 					break;
 
 				case 'TARJETA':
-					$depositos += $valor['total'];
 					$tarjetas += $valor['total'];
 					break;
 
 				case 'VISA':
-					$depositos += $valor['total'];
 					$tarjetas += $valor['total'];
 					break;
 
 				case 'MASTERCARD':
-					$depositos += $valor['total'];
 					$tarjetas += $valor['total'];
 					break;
 			}
@@ -126,12 +121,13 @@ class Cajachica extends Helpers
 		$movimientos = (new DBQuery($this->pdo))
 			->select("
             dcpc.formapago,
-            dcpc.banco,
+            b.nombre AS banco,
             dcpc.montopagado,
             dcpc.montotarjeta
         ")
 			->from("detalle_cuentas_por_cobrar dcpc")
 			->join("cajas c", "dcpc.idcaja = c.idcaja")
+			->leftJoin('bancos b', "b.idbanco = dcpc.idbanco")
 			->where("c.idsucursal", "=", $idsucursal)
 			->whereNull("dcpc.deleted_at")
 			->get();
@@ -163,7 +159,7 @@ class Cajachica extends Helpers
 				$banco = strtoupper(trim($item['banco'] ?? ''));
 
 				// Solo Transferencia y Depósito se agrupan por banco
-				if (in_array($formaPago, ['TRANSFERENCIA', 'DEPOSITO', 'DEPÓSITO']) && $banco !== '') {
+				if ($banco !== '') {
 					$key = $formaPago . '_' . $banco;
 					$nombreBanco = $banco;
 				} else {
@@ -199,45 +195,29 @@ class Cajachica extends Helpers
 	{
 		$ventas = (new DBQuery($this->pdo))
 			->select("
-            formapago,
-            banco,
-            totalrecibido AS montoPagado,
-            totaldeposito
-        ")
-			->from("venta")
-			->where("idsucursal", "=", $idsucursal)
-			->where("estado", "<>", "Anulado")
-			->whereNull("deleted_at")
+            	vp.metodo_pago AS formapago,
+				b.nombre AS banco,
+				vp.monto
+			")
+			->from("venta v")
+			->leftJoin("venta_pago vp", "vp.idventa = v.idventa")
+			->leftJoin("bancos b", "b.idbanco = vp.idbanco")
+			->where("v.idsucursal", "=", $idsucursal)
+			->where("v.estado", "<>", "Anulado")
+			->whereNull("v.deleted_at")
 			->get();
 
 		$resumen = [];
 
 		foreach ($ventas as $item) {
-
-			// EFECTIVO
-			if ((float) $item['montoPagado'] > 0) {
-
-				if (!isset($resumen['EFECTIVO'])) {
-					$resumen['EFECTIVO'] = [
-						'forma_pago' => 'EFECTIVO',
-						'banco' => '',
-						'cantidad' => 0,
-						'total' => 0
-					];
-				}
-
-				$resumen['EFECTIVO']['cantidad']++;
-				$resumen['EFECTIVO']['total'] += (float) $item['montoPagado'];
-			}
-
 			// Otros medios de pago
-			if ((float) $item['totaldeposito'] > 0) {
+			if ((float) $item['monto'] > 0) {
 
 				$formaPago = strtoupper(trim($item['formapago'] ?? ''));
 				$banco = strtoupper(trim($item['banco'] ?? ''));
 
 				// Solo Transferencia y Depósito se separan por banco
-				if (in_array($formaPago, ['TRANSFERENCIA', 'DEPOSITO', 'DEPÓSITO']) && $banco !== '') {
+				if ($banco !== '') {
 					$key = $formaPago . '_' . $banco;
 					$nombreBanco = $banco;
 				} else {
@@ -255,7 +235,7 @@ class Cajachica extends Helpers
 				}
 
 				$resumen[$key]['cantidad']++;
-				$resumen[$key]['total'] += (float) $item['totaldeposito'];
+				$resumen[$key]['total'] += (float) $item['monto'];
 			}
 		}
 

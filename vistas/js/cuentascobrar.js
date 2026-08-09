@@ -37,11 +37,6 @@ function init() {
         toggleBtnEstadoCuenta();
     });
 
-    // $("#idsucursal2").change(function (e) {
-    //     e.preventDefault();
-    //     listaCreditos.load();
-    //     listarSaldos();
-    // });
 
     $('#navCobros').addClass("treeview menu-open");
     $('#navCobrosActive').addClass("treeview active");
@@ -66,6 +61,22 @@ function init() {
 
         verEstadoCuentaCliente(idcliente, fecha_inicio, fecha_fin);
     });
+
+    listarBancos();
+}
+
+function listarBancos() {
+    $.get('controladores/consultas.php?op=listarBancos', function (response) {
+        const bancos = response || [];
+        let html = '<option value="">Seleccione...</option>';
+        html += bancos.map(banco => `
+                <option value="${banco.idbanco}">
+                    ${banco.nombre}
+                </option>
+            `).join("");
+        $("#banco").html(html);
+        $("#bancoAmortizar").html(html);
+    })
 }
 
 $("#idcliente").select2({
@@ -223,7 +234,7 @@ function pintarCreditos(data, permissions) {
 
         html += `
                 <tr>
-                    <td>${i+1}</td>
+                    <td>${i + 1}</td>
                     <td>${item.cliente}</td>
                     <td>${item.num_documento || ''}</td>
                     <td>${item.total_creditos || ''}</td>
@@ -1249,6 +1260,14 @@ function dscargarHistorial(idventa) {
         return;
     }
 }
+
+$("#formapagoAmortizar").change(function (e) {
+    if ($(this).val() != 'Efectivo') {
+        $("#panelTransferencia").show();
+    } else {
+        $("#panelTransferencia").hide();
+    }
+});
 
 async function amortizar(idventa) {
     const idcaja = await verificarCaja();

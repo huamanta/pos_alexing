@@ -114,37 +114,13 @@ switch ($_GET["op"]) {
 
 
 	case 'guardaryeditar':
-		// if (!empty($_POST["fecha"])) {
-		// 	$fechaInput = limpiarCadena($_POST["fecha"]);
-
-		// 	// Validar restricción de fecha según cargo
-		// 	if ($_SESSION['cargo'] !== 'Administrador') {
-		// 		$fechaSeleccionada = strtotime($fechaInput);
-		// 		$hoy = strtotime(date('Y-m-d'));
-		// 		$ayer = strtotime(date('Y-m-d', strtotime('-1 day')));
-
-		// 		// Verificar que la fecha esté dentro del rango permitido
-		// 		if ($fechaSeleccionada < $ayer || $fechaSeleccionada > $hoy) {
-		// 			echo json_encode([
-		// 				'status' => 'error',
-		// 				'mensaje' => 'No tienes permisos para usar esta fecha. Solo puedes registrar ventas de hoy o ayer.'
-		// 			]);
-		// 			exit;
-		// 		}
-		// 	}
-
-		// 	// Si pasa la validación, concatenamos la hora actual
-		// 	$fecha = $fechaInput . " " . date("H:i:s");
-		// } else {
-		// 	// Si no hay fecha en el POST, usamos fecha y hora actual
-		// 	$fecha = date("Y-m-d H:i:s");
-		// }
-
 		$idcaja = $_POST['idcaja'];
+		$idusuario = $_SESSION["idusuario"];
 		$idpersonal = $_SESSION["idpersonal"];
 		$fecha_pago = isset($_POST["fecha_pago"]) && is_array($_POST["fecha_pago"]) ? $_POST["fecha_pago"] : [];
 		if (empty($idventa)) {
 			$rspta = $sisVenta->insertar(
+				$idusuario,
 				$idsucursal,
 				$idcliente,
 				$idpersonal,

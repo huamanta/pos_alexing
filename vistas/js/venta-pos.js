@@ -9,6 +9,7 @@ var no_aplica = 1;
 let listarProductos = null;
 let listarDataVentas = null;
 let calculoMes = false;
+let bancos = [];
 
 function actualizarResumenVenta(total, subtotal, impuestoCalculado) {
   const totalFmt = (parseFloat(total) || 0).toFixed(2);
@@ -39,6 +40,12 @@ function actualizarFilaVaciaDetalles() {
       '<tr class="fila-vacia-detalles"><td colspan="7" class="text-center text-muted">No hay productos agregados</td></tr>',
     );
   }
+}
+
+function listarBancos() {
+  $.get('controladores/consultas.php?op=listarBancos', function (response) {
+    bancos = response || [];
+  })
 }
 
 const listarConfiguracionCreditos = () => {
@@ -170,65 +177,8 @@ function init() {
     $("#tipo_comprobante").html(html);
   });
 
-  /*
-
-  $("#tipo_comprobante").on("change", function () {
-    var tipo_comprobante = $(this).val();
-    var es_factura = tipo_comprobante === "Factura" ? "1" : "0";
-    var cliente_actual = $("#idcliente").val(); // Guardar cliente seleccionado
-
-    $.post(
-      "controladores/venta.php?op=selectCliente", {
-        tipo_documento: "",
-        es_factura: es_factura
-      },
-      function (r) {
-        $("#idcliente").html(r);
-
-        // Solo restaurar si había un cliente seleccionado
-        if (cliente_actual && cliente_actual !== "") {
-          $("#idcliente").val(cliente_actual);
-        }
-
-        $("#idcliente").select2();
-
-        if (es_factura === "1") {
-          $("#alerta-cliente").show();
-        } else {
-          $("#alerta-cliente").hide();
-        }
-      },
-    );
-  });
-
-  // Carga inicial (sin filtro y sin alerta)
-  $.post(
-    "controladores/venta.php?op=selectCliente", {
-      tipo_documento: "",
-      es_factura: "0"
-    },
-    function (r) {
-      $("#idcliente").html(r);
-      $("#idcliente").select2();
-    },
-  );*/
-
   verificarConceptoMovimiento();
   cargarSucursales();
-  // $("#fecha_inicio").change(listar);
-  // $("#fecha_fin").change(listar);
-  // $("#idsucursal2").change(function () {
-  //   listar.load();
-  //   // Update notifications with new sucursal
-  //   verificarNuevasNotificaciones();
-  //   cargarNotificacionesCXCNavbar();
-  //   // Limpiar y reiniciar completamente el carrito
-  //   limpiarCarrito();
-  // });
-  // $("#estado").change(listar);
-  // $("#idproducto").change(listar);
-
-  // $("#idsucursal").change(documentosSucursal);
 
   $("#navPos").addClass("treeview active");
   $("#navPos").addClass("menu-open");
@@ -612,7 +562,7 @@ function verificarTipoPago() {
     // $("#n1").hide();
     $("#f1").hide();
     $("#n5").hide();
-    $("#n6").hide();
+    // $("#n6").hide();
     $("#fechadeposito").hide();
     $("#banco").hide();
     $("#n0").hide();
@@ -633,7 +583,7 @@ function verificarTipoPago() {
     $("#n3").hide();
     $("#f1").hide();
     $("#n5").hide();
-    $("#n6").hide();
+    // $("#n6").hide();
     $("#fechadeposito").hide();
     $("#banco").hide();
     $("#fechadeposito").hide();
@@ -650,7 +600,7 @@ function verificarTipoPago() {
     $("#n4").show();
     $("#f1").hide();
     $("#n5").show();
-    $("#n6").hide();
+    // $("#n6").hide();
     $("#fechadeposito").hide();
     $("#banco").hide();
     $("#fechadeposito").hide();
@@ -660,7 +610,7 @@ function verificarTipoPago() {
     $("#formapago").val() == "Tarjeta" &&
     $("#tipopago").val() == "No"
   ) {
-    $("#n6").show();
+    // $("#n6").show();
     $("#f1").hide();
     $("#n5").hide();
     $("#fechadeposito").hide();
@@ -672,7 +622,7 @@ function verificarTipoPago() {
   ) {
     $("#f1").hide();
     $("#n5").hide();
-    $("#n6").hide();
+    // $("#n6").hide();
     $("#fechadeposito").hide();
     $("#banco").hide();
     $("#n0").show();
@@ -688,7 +638,7 @@ function verificarTipoPago() {
   ) {
     $("#f1").show();
     $("#n5").show();
-    $("#n6").show();
+    // $("#n6").show();
     $("#fechadeposito").show();
     $("#banco").show();
     $("#banco").hide();
@@ -703,7 +653,7 @@ function verificarTipoPago() {
     // $('#n1').show();
     $("#f1").show();
     $("#n5").show();
-    $("#n6").show();
+    // $("#n6").show();
     $("#fechadeposito").show();
     $("#banco").show();
   }
@@ -830,8 +780,11 @@ $("#tipopago").change(function () {
             <input type="text" class="form-control nroOperacion" name="nroOperacion_pago[]" placeholder="N° Operación">
           </div>
           <div class="col-md-2 bancoContainer" style="display:none;">
-            <input type="text" class="form-control bancoPago" name="banco_pago[]" placeholder="Banco">
-          </div>
+            <select class="form-control bancoPago"
+                                                                        name="banco_pago[]">
+                                                                        <option value="">Seleccione banco</option>
+                                                                    </select>
+                                                                    </div>
           <div class="col-md-3 fechaContainer" style="display:none;">
             <input type="date" class="form-control fechaDeposito" name="fecha_deposito_pago[]" placeholder="Fecha">
           </div>
@@ -1072,8 +1025,11 @@ function resetearPagos() {
             <input type="text" class="form-control nroOperacion" name="nroOperacion_pago[]" placeholder="N° Operación">
         </div>
         <div class="col-md-2 bancoContainer" style="display:none;">
-            <input type="text" class="form-control bancoPago" name="banco_pago[]" placeholder="Banco">
-        </div>
+            <select class="form-control bancoPago"
+                                                                        name="banco_pago[]">
+                                                                        <option value="">Seleccione banco</option>
+                                                                    </select>
+                                                                    </div>
         <div class="col-md-3 fechaContainer" style="display:none;">
             <input type="date" class="form-control fechaDeposito" name="fecha_deposito_pago[]" placeholder="Fecha">
         </div>
@@ -1150,14 +1106,35 @@ $(document).ready(function () {
   );
 
   $(document).on("change", ".metodoPago", function () {
+
     let metodo = $(this).val();
     let fila = $(this).closest(".pagoItem");
 
-    if (metodo === "Deposito" || metodo === "Transferencia") {
+    if (metodo != "Efectivo") {
+
+      const opcionesBancos = `
+            <option value="">Seleccione banco</option>
+            ${bancos.map(banco => `
+                <option value="${banco.idbanco}">
+                    ${banco.nombre}
+                </option>
+            `).join("")}
+        `;
+
+      // Cargar bancos en el select de ESTA fila
+      fila.find(".bancoPago").html(opcionesBancos);
+
+      // Mostrar banco y fecha
       fila.find(".bancoContainer, .fechaContainer").show();
+
     } else {
+
+      // Ocultar
       fila.find(".bancoContainer, .fechaContainer").hide();
-      fila.find(".bancoPago, .fechaDeposito").val("");
+
+      // Limpiar
+      fila.find(".bancoPago").val("");
+      fila.find(".fechaDeposito").val("");
     }
 
     recalcularPagos();
@@ -1195,8 +1172,11 @@ $(document).ready(function () {
                 <input type="text" class="form-control nroOperacion" name="nroOperacion_pago[]" placeholder="N° Operación">
             </div>
             <div class="col-md-2 bancoContainer" style="display:none;">
-                <input type="text" class="form-control bancoPago" name="banco_pago[]" placeholder="Banco">
-            </div>
+                <select class="form-control bancoPago"
+                                                                        name="banco_pago[]">
+                                                                        <option value="">Seleccione banco</option>
+                                                                    </select>
+                                                                     </div>
             <div class="col-md-3 fechaContainer" style="display:none;">
                 <input type="date" class="form-control fechaDeposito" name="fecha_deposito_pago[]" placeholder="Fecha">
             </div>
@@ -1466,7 +1446,7 @@ function limpiar() {
   $("#n4").hide();
   $("#f1").hide();
   $("#n5").hide();
-  $("#n6").hide();
+  // $("#n6").hide();
   $("#fechadeposito").hide();
   $("#banco").hide();
   $("#fechadeposito").hide();
@@ -2363,8 +2343,11 @@ function cancelarform() {
                 <input type="text" class="form-control nroOperacion" name="nroOperacion_pago[]" placeholder="N° Operación">
             </div>
             <div class="col-md-2 bancoContainer" style="display:none;">
-                <input type="text" class="form-control bancoPago" name="banco_pago[]" placeholder="Banco">
-            </div>
+                <select class="form-control bancoPago"
+                                                                        name="banco_pago[]">
+                                                                        <option value="">Seleccione banco</option>
+                                                                    </select>
+                                                                    </div>
             <div class="col-md-3 fechaContainer" style="display:none;">
                 <input type="date" class="form-control fechaDeposito" name="fecha_deposito_pago[]" placeholder="Fecha">
             </div>
@@ -2408,6 +2391,7 @@ async function mostrarform(flag) {
         listarArticulos2();
         verificarCaja();
         listarConfiguracionCreditos();
+        listarBancos();
       } else {
         $("#listadoregistros").hide();
         $("#formularioregistros").hide();
@@ -4064,7 +4048,10 @@ function generarComprobante(idventa) {
                       <input type="text" class="form-control nroOperacion" name="nroOperacion_pago[]" value="${pago.nroOperacion || ""}" placeholder="N° Operación">
                   </div>
                   <div class="col-md-2 bancoContainer" style="${pago.banco ? "" : "display:none;"}">
-                      <input type="text" class="form-control bancoPago" name="banco_pago[]" value="${pago.banco || ""}" placeholder="Banco">
+                    <select class="form-control bancoPago"
+                        name="banco_pago[]" value="${pago.banco || ""}">
+                        <option value="">Seleccione banco</option>
+                    </select>
                   </div>
                   <div class="col-md-3 fechaContainer" style="${pago.fechaDeposito ? "" : "display:none;"}">
                       <input type="date" class="form-control fechaDeposito" name="fecha_deposito_pago[]" value="${pago.fechaDeposito || ""}">

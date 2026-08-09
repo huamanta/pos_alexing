@@ -42,7 +42,6 @@ $query = mysqli_query($conexion, "
         v.montoPagado, 
         v.formaPago, 
         DATE_FORMAT(v.fechadeposito, '%d/%m/%y') as fechadeposito, 
-        v.banco, 
         v.numoperacion, 
         cp.nombre AS tipo_comprobante,
         v.serie_comprobante, 
@@ -106,8 +105,9 @@ $cuentasc = mysqli_fetch_assoc($query2);
 $pagos = [];
 
 $query_pagos = mysqli_query($conexion, "
-    SELECT metodo_pago, monto, nroOperacion, fechaDeposito, banco 
-    FROM venta_pago 
+    SELECT vp.metodo_pago, vp.monto, vp.nroOperacion, vp.fechaDeposito, vp.idbanco, b.nombre AS banco
+    FROM venta_pago vp
+    INNER JOIN bancos b ON b.idbanco = vp.idbanco
     WHERE idventa = '$idventa'
 ");
 

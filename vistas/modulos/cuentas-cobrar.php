@@ -782,9 +782,6 @@ date_default_timezone_set('America/Lima');
                 <label>Banco:</label>
                 <select id="banco" name="banco" class="form-control selectpicker" data-live-search="true">
                   <option value="">Seleccione...</option>
-                  <option value="BCP">BCP</option>
-                  <option value="INTERBANK">INTERBANK</option>
-                  <option value="BBVA">BBVA</option>
                 </select>
               </div>
             </div>
@@ -911,21 +908,21 @@ date_default_timezone_set('America/Lima');
           <div class="row">
             <div class="col-sm-4">
               <div class="form-group">
-                <label for="name" class="control-label">Condición de Pago::</label>
+                <label for="name" class="control-label">Condición de Pago:</label>
                 <select id="formapagoAmortizar" name="formapagoAmortizar" class="form-control selectpicker"
                   data-live-search="true" required>
-
-                  <option value="Efectivo">En Efectivo</option>
-
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Transferencia">Transferencia o Tarjeta</option>
+                  <option value="Yape">Yape</option>
+                  <option value="Plin">Plin</option>
+                  <option value="Deposito">Depósito</option>
                 </select>
               </div>
             </div>
             <div class="col-sm-4">
               <div class="form-group">
-                <label for="name" class="control-label">Monto a Pagar: <a style="float: right; color: blue"
-                    id="btn-seleccionar-cuotas"> Seleccionar cuotas</a></label>
-                <input type="text" class="form-control" id="montoPagarAmortizar" name="montoPagarAmortizar" required=""
-                  readonly>
+                <label for="name" class="control-label">Monto a Pagar: </label>
+                <input type="text" class="form-control" id="montoPagarAmortizar" name="montoPagarAmortizar" required="">
               </div>
             </div>
             <div class="col-sm-4">
@@ -933,6 +930,34 @@ date_default_timezone_set('America/Lima');
                 <label for="name" class="control-label">Monto Adeudado:</label>
                 <input class="form-control pull-right" type="text" name="montoAdeudadoAmortizar"
                   id="montoAdeudadoAmortizar" readonly="">
+              </div>
+            </div>
+          </div>
+          <div class="row" id="panelTransferencia" style="display: none;">
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label>Banco:</label>
+                <select id="bancoAmortizar" name="bancoAmortizar" class="form-control selectpicker" data-live-search="true">
+                  <option value="">Seleccione...</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label>Monto transferido:</label>
+                <input class="form-control" type="text" name="montoTransferenciaAmortizar" id="opAmortizar">
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label>Número de Operación (OP):</label>
+                <input class="form-control" type="text" name="opAmortizar" id="opAmortizar">
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label>Fecha de Pago:</label>
+                <input class="form-control" type="datetime-local" name="fechaPagoAmortizar" id="fechaPagoAmortizar" value="<?php echo date('Y-m-d H:i:s') ?>">
               </div>
             </div>
           </div>

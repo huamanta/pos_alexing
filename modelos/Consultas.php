@@ -1,18 +1,30 @@
 <?php
 //Inclu¨ªmos inicialmente la conexi¨®n a la base de datos
 require_once __DIR__ . "/../configuraciones/bootstrap.php";
-require_once  __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
+
 date_default_timezone_set('America/Lima');
 
 class Consultas extends Helpers
 {
 	//Implementamos nuestro constructor
 	public function __construct()
-    {
-        parent::__construct();
-    }
+	{
+		parent::__construct();
+	}
 
+
+	public function listarBancos()
+	{
+		$data = (new DBQuery($this->pdo))
+			->select('*')
+			->from('bancos')
+			->softDeletes()
+			->get();
+		return Response::json($data);
+	}
 	public function TotalUtilidadNetaPV($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal, $idproducto)
 	{
 		// Si idsucursal es un array, convertir a lista
