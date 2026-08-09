@@ -8,6 +8,7 @@ var impuesto = 0;
 var no_aplica = 1;
 let listarProductos = null;
 let listarDataVentas = null;
+let calculoMes = false;
 
 function actualizarResumenVenta(total, subtotal, impuestoCalculado) {
   const totalFmt = (parseFloat(total) || 0).toFixed(2);
@@ -39,6 +40,24 @@ function actualizarFilaVaciaDetalles() {
     );
   }
 }
+
+const listarConfiguracionCreditos = () => {
+  var idsucursal = $("#idsucursal").val();
+  $.ajax({
+    url: "controladores/configuracion.php?op=listarConfiguracion",
+    type: "get",
+    data: {
+      idsucursal: idsucursal,
+    },
+    dataType: "json",
+    success: function (s) {
+      const configuracion = s.data.configuracion;
+      calculoMes = configuracion.is_calculo_mes || false;
+      $("#inputInteres").val(configuracion.interes_defecto || 0);
+    },
+  });
+};
+
 
 // Función para limpiar y reiniciar completamente el carrito
 function limpiarCarrito() {
@@ -404,9 +423,14 @@ function calcularCuotasDesdeNumeroMeses() {
     return;
   }
 
+  let semanal = 1 / 4;
+  if (calculoMes) {
+    semanal = 7 / 30;
+  }
+
   const mesesPorCuota = {
     1: 1 / 30,
-    2: 1 / 4,
+    2: semanal,
     3: 1 / 2,
     4: 1,
     5: 2,
@@ -449,54 +473,6 @@ function cargarSucursales() {
   });
 }
 
-/** 
-document.addEventListener("DOMContentLoaded", function () {
-  // Petición AJAX para obtener el cargo del usuario
-  fetch("controladores/empleado.php?op=verificarAdmin") //
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Respuesta del servidor:", data); // Depuración en la consola
-
-      if (data.error) {
-        console.error("Error:", data.error);
-        return;
-      }
-
-      if (data.es_admin) {
-        // Mostrar márgenes
-        document.querySelectorAll('[id^="margen"]').forEach((elemento) => {
-          elemento.style.display = "table-cell";
-        });
-
-        // Mostrar solo elementos con id que comiencen con "util" para el administrador
-        document.querySelectorAll('[id^="util"]').forEach((elemento) => {
-          elemento.style.display = "table-cell";
-        });
-      } else {
-        // Ocultar márgenes
-        document.querySelectorAll('[id^="margen"]').forEach((elemento) => {
-          elemento.style.display = "none";
-        });
-
-        // Ocultar elementos con id que comiencen con "util" para los no administradores
-        document.querySelectorAll('[id^="util"]').forEach((elemento) => {
-          elemento.style.display = "none";
-        });
-      }
-    })
-    .catch((error) =>
-      console.error("Error obteniendo el cargo del usuario:", error),
-    );
-});
-*/
-
-// function cargarItemsAlSelect() {
-//   // Cargamos los items al select almacen
-//   $.post("controladores/venta.php?op=selectSucursal", function (r) {
-//     $("#idsucursal").html(r);
-//     $("#idsucursal").select2();
-//   });
-// }
 
 //Función limpiar
 function limpiarCliente() {
@@ -761,7 +737,6 @@ $("#tipopago").change(function () {
     document.getElementById("input_cuotas").selectedIndex = 0;
     document.getElementById("input_frecuencia").selectedIndex = 0;
     $("#numeroMeses").val("");
-    $("#inputInteres").val("0");
     $("#fechaOperacion").val(obtenerFechaHoyISO());
 
     $("#n0").show();
@@ -822,7 +797,6 @@ $("#tipopago").change(function () {
     document.getElementById("input_cuotas").selectedIndex = 0;
     document.getElementById("input_frecuencia").selectedIndex = 0;
     $("#numeroMeses").val("");
-    $("#inputInteres").val("0");
     var hoy = new Date();
     var yyyy = hoy.getFullYear();
     var mm = ("0" + (hoy.getMonth() + 1)).slice(-2);
@@ -1777,75 +1751,7 @@ listarProductos = new FluentPaginator({
   limitSelector: "#limitProductos",
   paginationId: "#paginationProductos",
 });
-/** 
-function listarArticulosSearch(search) {
-  var idsucursal = $("#idsucursal").val();
-  var type = window.localStorage.getItem("type_search");
 
-  $.ajax({
-    url: "controladores/venta.php?op=listarArticulosSearch",
-    data: { idsucursal: idsucursal, search: search, type: type },
-    type: "get",
-    dataType: "json",
-    success: function (data) {
-      console.log(data);
-
-      // Validamos que sea un array
-      if (!Array.isArray(data)) {
-        console.error("Respuesta inesperada del servidor:", data);
-        return;
-      }
-      if (data.length === 1 && type == 2) {
-        let producto = data[0];
-        $("#search_product").val("");
-
-        if (parseFloat(producto.stock_num) > 0) {
-          agregarDetalle(
-            producto.id,
-            producto.idproducto,
-            producto.nombre,
-            1,
-            0,
-            producto.precio_venta,
-            producto.preciocigv,
-            producto.precioB,
-            producto.precioC,
-            producto.precioD,
-            producto.stock_num,
-            producto.proigv,
-            producto.cantidad_contenedor,
-            producto.contenedor,
-            producto.idcategoria,
-          );
-        } else {
-          Swal.fire({
-            icon: "error",
-            title: "No hay suficiente stock",
-            showConfirmButton: false,
-            timer: 1500,
-            timerProgressBar: true,
-          });
-        }
-      }
-      var html = "";
-      data.forEach(function (item) {
-        html += `<tr class="odd">
-          <td>${item.stock}</td>
-          <td class="sorting_1">${item.product}</td>
-          <td class="sorting_2">${item.cat}</td>
-          <td class="sorting_3">${item.code}</td>
-          <td>${item.quantity}</td>
-          <td>${item.price}</td>
-        </tr>`;
-      });
-
-      $("#tbody_articulos").html(html);
-    },
-    error: function (e) {
-      console.log(e.responseText);
-    },
-  });
-}*/
 
 function selectTab(index) {
   if (index == 1) {
@@ -1857,34 +1763,6 @@ function selectTab(index) {
   }
 }
 
-// function listarArticulos() {
-//   var idsucursal = $("#idsucursal").val();
-//   tabla = $("#tblarticulos")
-//     .dataTable({
-//       aProcessing: true, //activamos el procedimiento del datatable
-//       aServerSide: true, //paginacion y filrado realizados por el server
-//       dom: "Bfrtip", //definimos los elementos del control de la tabla
-//       buttons: [],
-//       ajax: {
-//         url: "controladores/venta.php?op=listarArticulos",
-//         data: {
-//           idsucursal: idsucursal,
-//         },
-//         type: "get",
-//         dataType: "json",
-//         error: function (e) {
-//           console.log(e.responseText);
-//         },
-//       },
-//       bDestroy: true,
-//       iDisplayLength: 5, //paginacion
-//       order: [
-//         [1, "asc"],
-//         [2, "asc"],
-//       ], //ordenar (columna, orden)
-//     })
-//     .DataTable();
-// }
 
 function listarArticulos2() {
   var idsucursal = $("#idsucursal").val();
@@ -2001,82 +1879,6 @@ function listarArticulos2() {
     .DataTable();
 }
 
-//Función Listar
-// function listar() {
-//   let fecha_inicio = $("#fecha_inicio").val();
-//   let fecha_fin = $("#fecha_fin").val();
-//   var estado = $("#estado").val();
-//   let idsucursal2 = $("#idsucursal2").val();
-//   let idproducto = $("#idproducto").val();
-
-//   tabla = $("#tbllistado")
-//     .dataTable({
-//       //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-//       aProcessing: true, //Activamos el procesamiento del datatables
-//       aServerSide: true, //Paginación y filtrado realizados por el servidor
-//       processing: true,
-//       language: {
-//         processing: "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-//       },
-//       responsive: true,
-//       lengthChange: false,
-//       autoWidth: false,
-//       dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-//       lengthMenu: [
-//         [5, 10, 25, 50, 100, -1],
-//         [
-//           "5 filas",
-//           "10 filas",
-//           "25 filas",
-//           "50 filas",
-//           "100 filas",
-//           "Mostrar todo",
-//         ],
-//       ],
-//       buttons: [
-//         "pageLength",
-//         {
-//           extend: "excelHtml5",
-//           text: "<i class='fas fa-file-csv'></i>",
-//           titleAttr: "Exportar a Excel",
-//           // className: 'btn btn-success'
-//         },
-//         {
-//           extend: "pdf",
-//           text: "<i class='fas fa-file-pdf'></i>",
-//           titleAttr: "Exportar a PDF",
-//           // className: 'btn btn-danger'
-//         },
-//         {
-//           extend: "colvis",
-//           text: "<i class='fas fa-bars'></i>",
-//           titleAttr: "",
-//           // className: 'btn btn-danger'
-//         },
-//       ],
-//       ajax: {
-//         url: "controladores/venta.php?op=listar",
-//         data: {
-//           fecha_inicio: fecha_inicio,
-//           fecha_fin: fecha_fin,
-//           estado: estado,
-//           idsucursal2: idsucursal2,
-//           idproducto: idproducto,
-//         },
-//         type: "get",
-//         dataType: "json",
-//         error: function (e) {
-//           console.log(e.responseText);
-//         },
-//       },
-//       bDestroy: true,
-//       iDisplayLength: 5, //Paginación
-//       order: [
-//         [0, "desc"]
-//       ], //Ordenar (columna,orden)
-//     })
-//     .DataTable();
-// }
 
 function pintarVentas(data, permissions) {
   let html = "";
@@ -2605,6 +2407,7 @@ async function mostrarform(flag) {
         listarProductos.load();
         listarArticulos2();
         verificarCaja();
+        listarConfiguracionCreditos();
       } else {
         $("#listadoregistros").hide();
         $("#formularioregistros").hide();
@@ -2834,35 +2637,6 @@ function listarCajas() {
     },
   });
 }
-
-// $("#formularioappcaja").submit(function (e) {
-//   e.preventDefault();
-//   var $form = $(this); // guardamos una referencia al form
-//   var data = new FormData(this);
-
-//   $.ajax({
-//     url: "controladores/venta.php?op=aperturar_caja",
-//     type: "POST",
-//     data: data,
-//     contentType: false,
-//     processData: false,
-
-//     success: function (resp) {
-//       var json = JSON.parse(resp);
-//       if (json.success) {
-//         $form[0].reset();
-//         listarCajas();
-//         mostrarform(true);
-//         setNavbarPosVisible(true);
-//       } else {
-//         Swal.fire("Error", "No se pudo aperturar la caja.", "error");
-//       }
-//     },
-//     error: function () {
-//       Swal.fire("Error", "Fallo en la petición de apertura.", "error");
-//     },
-//   });
-// });
 
 function cerrarcaja() {
   var idcaja = $("#idcaja").val();
@@ -3100,6 +2874,7 @@ function handlePrecioChange(input, idpc) {
 
   const valorInput = input.value.trim();
   if (valorInput === "") return;
+
 
   const precioNuevo = parseFloat(valorInput);
   if (isNaN(precioNuevo) || precioNuevo <= 0) {
@@ -4400,7 +4175,7 @@ function mostrarE() {
           item.nombre,
           item.cantidad,
           item.descuento,
-          item.precio,
+          item.precio_venta,
           item.precio_credito,
           item.preciocigv,
           item.precioB,

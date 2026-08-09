@@ -35,6 +35,7 @@ function listarConfiguracion() {
             $("#valor_descuento_anticipado").val(configuracion.valor_descuento_anticipado);
             $("#dias_anticipacion").val(configuracion.dias_anticipacion);
             $("#is_send_sunat").prop("checked", configuracion.is_send_sunat == 1);
+            $("#is_calculo_mes").prop("checked", configuracion.is_calculo_mes == 1);
 
             const sucursal = data?.sucursal || {}
             $("#idsucursal").val(sucursal.idsucursal);

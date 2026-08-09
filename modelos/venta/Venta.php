@@ -88,7 +88,6 @@ class SisVenta extends Helpers
             //=========================
             // Forma de pago real
             //=========================
-
             $formapagoVenta = $formapago;
 
             if (!empty($_POST['metodo_pago'])) {
@@ -212,8 +211,8 @@ class SisVenta extends Helpers
 
         } catch (Throwable $e) {
             if ($this->pdo->inTransaction()) {
-            $this->pdo->rollBack();
-        }
+                $this->pdo->rollBack();
+            }
             return json_encode([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -283,57 +282,9 @@ class SisVenta extends Helpers
                 'estado' => 'VENDIDO'
             ])
             ->update();
-
-
+            
         return $resultado !== false;
     }
-
-
-    // private function generarNumeroComprobante(
-    //     int $idsucursal,
-    //     string $tipoComprobante
-    // ): array {
-
-    //     $row = (new DBQuery($this->pdo))
-
-    //         ->query("
-    //         SELECT
-    //             serie_comprobante,
-    //             num_comprobante
-    //         FROM venta
-    //         WHERE idsucursal = :idsucursal
-    //         AND tipo_comprobante = :tipo
-    //         ORDER BY idventa DESC
-    //         LIMIT 1
-    //         FOR UPDATE
-    //     ", [
-    //             'idsucursal' => $idsucursal,
-    //             'tipo' => $tipoComprobante
-    //         ])
-
-    //         ->first();
-
-    //     if (!$row) {
-
-    //         return [
-    //             'serie' => '001',
-    //             'numero' => '0000001'
-    //         ];
-    //     }
-
-    //     return [
-
-    //         'serie' => $row['serie_comprobante'],
-
-    //         'numero' => str_pad(
-    //             ((int) $row['num_comprobante']) + 1,
-    //             7,
-    //             '0',
-    //             STR_PAD_LEFT
-    //         )
-
-    //     ];
-    // }
 
 
     private function crearCredito(
@@ -350,110 +301,46 @@ class SisVenta extends Helpers
             $cantidadCuotas = 1;
         }
 
-
-        /*
-         * Interés total
-         */
-        $interesTotal = round(
-            $montoDeuda * ($interes / 100),
-            2
-        );
-
-
-        /*
-         * Capital e interés por cuota
-         */
-        $capitalCuotaBase = round(
-            $montoDeuda / $cantidadCuotas,
-            2
-        );
-
-
-        $interesCuotaBase = round(
-            $interesTotal / $cantidadCuotas,
-            2
-        );
-
-
+        $interesTotal = round($montoDeuda * ($interes / 100), 2);
+        $capitalCuotaBase = round($montoDeuda / $cantidadCuotas, 2);
+        $interesCuotaBase = round($interesTotal / $cantidadCuotas, 2);
         $capitalAcumulado = 0;
         $interesAcumulado = 0;
 
-
-
         foreach ($fechasPago as $index => $fechaVencimiento) {
 
-
-            /*
-             * Valores base
-             */
+            # Valores base
             $capitalCuota = $capitalCuotaBase;
             $interesCuota = $interesCuotaBase;
 
-
-
-            /*
-             * Ajuste última cuota
-             */
+            # Ajuste última cuota
             if ($index == ($cantidadCuotas - 1)) {
-
-
-                $capitalCuota = round(
-                    $montoDeuda - $capitalAcumulado,
-                    2
-                );
-
-
-                $interesCuota = round(
-                    $interesTotal - $interesAcumulado,
-                    2
-                );
+                $capitalCuota = round($montoDeuda - $capitalAcumulado, 2);
+                $interesCuota = round($interesTotal - $interesAcumulado, 2);
             }
 
-
-
-            $totalCuota = round(
-                $capitalCuota + $interesCuota,
-                2
-            );
-
-
+            $totalCuota = round($capitalCuota + $interesCuota, 2);
 
             $insert = (new FluentSaver($this->pdo))
                 ->table('cuentas_por_cobrar')
                 ->data([
-
                     'idventa' => $idventa,
-
                     'fecharegistro' => $fechaRegistro,
-
                     'deudatotal' => $totalCuota,
-
                     'deuda_base' => $capitalCuota,
-
                     'mora' => 0,
-
                     'mora_pagada' => 0,
-
                     'fechavencimiento' => $fechaVencimiento,
-
                     'abonototal' => 0,
-
                     'deuda' => $totalCuota,
-
                     'interes' => $interesCuota,
-
                     'estado_pago' => 1
-
                 ])
                 ->save();
 
-
-
             if (!$insert) {
-                return false;
+                throw new Exception('No se pudo guardar la cuota .');
             }
-
-
 
             $capitalAcumulado += $capitalCuota;
             $interesAcumulado += $interesCuota;
@@ -536,10 +423,7 @@ class SisVenta extends Helpers
             ->save();
 
         if (!$venta) {
-            throw new Exception(
-                "No se pudo registrar la venta"
-            );
-
+            throw new Exception("No se pudo registrar la venta");
         }
 
         return (int) $venta;
@@ -683,15 +567,12 @@ class SisVenta extends Helpers
                 ->first();
 
             if ($serie['estado'] != 'DISPONIBLE') {
-                throw new Exception(
-                    "El producto seleccionado ya no se ecnuentra disponible"
-                );
+                throw new Exception("El producto seleccionado ya no se ecnuentra disponible");
             }
 
 
             if ($serie && ($producto['tipo_producto'] == 'Vehiculo')) {
                 (new DBQuery($this->pdo))
-
                     ->query("
                         UPDATE producto_serie
                         SET estado='VENDIDO',
@@ -1040,55 +921,5 @@ class SisVenta extends Helpers
 
 
         return true;
-    }
-
-    private function registrarKardex(
-        int $idsucursal,
-        int $idproducto,
-        float $cantidad,
-        float $cantidad_contenedor,
-        float $precio,
-        string $motivo,
-        string $descripcion
-    ): bool {
-
-        // Obtener stock actual después del movimiento
-        $inventario = (new DBQuery($this->pdo))
-            ->query("
-            SELECT stock
-            FROM inventario_producto
-            WHERE idproducto = :idproducto
-            AND idsucursal = :idsucursal
-            LIMIT 1
-        ", [
-                'idproducto' => $idproducto,
-                'idsucursal' => $idsucursal
-            ])
-            ->first();
-
-
-        if (!$inventario) {
-            return false;
-        }
-
-
-        $resultado = (new FluentSaver($this->pdo))
-            ->table('kardex')
-            ->data([
-                'idsucursal' => $idsucursal,
-                'idproducto' => $idproducto,
-                'cantidad' => $cantidad,
-                'cantidad_contenedor' => $cantidad_contenedor,
-                'precio_unitario' => $precio,
-                'stock_actual' => $inventario['stock'],
-                'tipo_movimiento' => 1, // 1 = salida venta
-                'motivo' => $motivo,
-                'descripcion' => $descripcion,
-                'fecha_kardex' => date('Y-m-d H:i:s')
-            ])
-            ->save();
-
-
-        return $resultado !== false;
     }
 }

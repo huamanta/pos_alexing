@@ -6,6 +6,7 @@ var detalles = 0;
 var updateTimeout;
 let listarCotizaciones = null;
 let listarProductos = null;
+let calculoMes = false;
 $("#formularioregistros").hide();
 function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
@@ -23,9 +24,6 @@ function init() {
     $("#idsucursal").prop("disabled", true);
   });
 
-  //   $.post("controladores/venta.php?op=selectSucursal3", function (r) {
-  //     $("#idsucursal2").html(r);
-  //   });
 
   $("#navPosActive").addClass("treeview active");
   $("#navPos").addClass("treeview menu-open");
@@ -92,39 +90,6 @@ function nostock() {
   Swal.fire("Alerta", "Sin Stock", "info");
 }
 
-// function cargarDatosTemporales() {
-//   $.getJSON(
-//     "controladores/cotizaciones.php?op=obtenerDatosTmp",
-//     function (data) {
-//       if (!data || !data.idcliente) {
-//         console.warn("No se encontraron datos temporales.");
-//         return;
-//       }
-//       $("#idsucursal").val(data.idsucursal).trigger("change");
-//       esperarSelect("#idcliente", data.idcliente);
-//       esperarSelect("#tipo_comprobante", data.tipo_comprobante);
-//       esperarSelect("#formapago", data.formapago);
-//       esperarSelect("#nota", data.nota);
-//       $("#serie_comprobante").val(data.serie_comprobante);
-//       $("#num_comprobante").val(data.num_comprobante);
-//       $("#titulo").val(data.titulo);
-//       $("#saludo").val(data.saludo);
-//       $("#igv").val(data.igv);
-//       $("#observaciones").val(data.observacion);
-//       $("#tiempoproduccion").val(data.tiempoproduccion);
-//       $("#total_venta").val(data.total_venta);
-//     },
-//   );
-// }
-
-// function esperarSelect(selector, valor) {
-//   const $select = $(selector);
-//   if ($select.find("option[value='" + valor + "']").length > 0) {
-//     $select.val(valor).trigger("change");
-//   } else {
-//     setTimeout(() => esperarSelect(selector, valor), 100);
-//   }
-// }
 
 function toggleCard() {
   var card = document.getElementById("datosgenerales");
@@ -233,9 +198,14 @@ function calcularCuotasDesdeNumeroMeses() {
     return;
   }
 
+  let semanal = 1 / 4;
+  if(calculoMes){
+    semanal = 7 / 30;
+  }
+
   const mesesPorCuota = {
     1: 1 / 30,
-    2: 1 / 4,
+    2: semanal,
     3: 1 / 2,
     4: 1,
     5: 2,
@@ -601,6 +571,10 @@ function generarNumCuotas(frecuencia, meses) {
   meses = parseInt(meses) || 0;
 
   let cuotas = 0;
+  let semanal = meses * 4;
+  if(calculoMes){
+    semanal = Math.ceil((meses * 30) / 7);
+  }
 
   switch (parseInt(frecuencia)) {
     // DIARIO
@@ -610,7 +584,7 @@ function generarNumCuotas(frecuencia, meses) {
 
     // SEMANAL
     case 2:
-      cuotas = meses * 4;
+      cuotas = semanal;
       break;
 
     // QUINCENAL
@@ -850,59 +824,6 @@ listarCotizaciones = new FluentPaginator({
   }),
 });
 
-// function listar() {
-//     let fecha_inicio = $("#fecha_inicio").val();
-//     let fecha_fin = $("#fecha_fin").val();
-//     let idsucursal2 = $("#idsucursal2").val();
-//     tabla = $('#tbllistado').dataTable({
-//         "aProcessing": true,
-//         "aServerSide": true,
-//         "processing": true,
-//         "language": {
-//             "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />"
-//         },
-//         "responsive": true,
-//         "lengthChange": false,
-//         "autoWidth": false,
-//         dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-//         lengthMenu: [
-//             [5, 10, 25, 50, 100, -1],
-//             ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
-//         ],
-//         buttons: ['pageLength', {
-//             extend: 'excelHtml5',
-//             text: "<i class='fas fa-file-csv'></i>",
-//             titleAttr: 'Exportar a Excel'
-//         }, {
-//             extend: 'pdf',
-//             text: "<i class='fas fa-file-pdf'></i>",
-//             titleAttr: 'Exportar a PDF'
-//         }, {
-//             extend: 'colvis',
-//             text: "<i class='fas fa-bars'></i>",
-//             titleAttr: ''
-//         }],
-//         "ajax": {
-//             url: 'controladores/cotizaciones.php?op=listar',
-//             data: {
-//                 fecha_inicio: fecha_inicio,
-//                 fecha_fin: fecha_fin,
-//                 idsucursal2: idsucursal2
-//             },
-//             type: "get",
-//             dataType: "json",
-//             error: function (e) {
-//                 console.log(e.responseText);
-//             }
-//         },
-//         "bDestroy": true,
-//         "iDisplayLength": 5,
-//         "order": [
-//             [0, "desc"]
-//         ]
-//     }).DataTable();
-// }
-
 function handleRowInput(element) {
   modificarSubtotales();
 }
@@ -942,7 +863,6 @@ function agregarDetalle(
   idcategoria,
   idserie
 ) {
-  console.log(precio_credito);
 
   if (articuloAdd.indexOf(idpc) != -1) {
     let cantInputs = document.getElementsByName("cantidad[]");
@@ -1095,6 +1015,7 @@ const listarConfiguracionCreditos = () => {
     dataType: "json",
     success: function (s) {
       const configuracion = s.data.configuracion;
+      calculoMes = configuracion.is_calculo_mes || false;
       $("#inputInteres").val(configuracion.interes_defecto);
     },
   });

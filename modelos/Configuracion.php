@@ -240,6 +240,7 @@ class Configuracion extends Helpers
     public function actualizarConfiguracionCreditos(
         int $idsucursal,
         int $is_notificacion,
+        int $is_calculo_mes,
         float $interes_defecto,
         int $is_descuento_anticipado,
         float $valor_descuento_anticipado,
@@ -262,6 +263,7 @@ class Configuracion extends Helpers
                     ->data([
                         'idsucursal_configuracion' => $config['idsucursal_configuracion'],
                         'is_notificacion' => $is_notificacion,
+                        'is_calculo_mes' => $is_calculo_mes,
                         'interes_defecto' => $interes_defecto,
                         'is_descuento_anticipado' => $is_descuento_anticipado,
                         'valor_descuento_anticipado' => $valor_descuento_anticipado,
@@ -276,6 +278,7 @@ class Configuracion extends Helpers
                     ->data([
                         'idsucursal' => $idsucursal,
                         'is_notificacion' => $is_notificacion,
+                        'is_calculo_mes' => $is_calculo_mes,
                         'interes_defecto' => $interes_defecto,
                         'is_descuento_anticipado' => $is_descuento_anticipado,
                         'valor_descuento_anticipado' => $valor_descuento_anticipado,

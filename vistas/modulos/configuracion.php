@@ -217,11 +217,12 @@
                                     </a>
                                 </li>
                             <?php endif; ?>
-                            <?php if ($helpers->getUserPermisoModulo('Configuracion facturacion', 'Configuracion')): ?>
-                                <li id="itemMenuFacturacion">
-                                    <a href="#facturacion" data-toggle="tab" onclick="activarMenu('itemMenuFacturacion')">
-                                        <i class="fa fa-folder-open"></i>
-                                        Facturacion
+
+                            <?php if ($helpers->getUserPermisoModulo('Configuracion credito', 'Configuracion')): ?>
+                                <li id="itemMenuCredito">
+                                    <a href="#credito" data-toggle="tab" onclick="activarMenu('itemMenuCredito')">
+                                        <i class="fa fa-credit-card"></i>
+                                        Créditos
                                     </a>
                                 </li>
                             <?php endif; ?>
@@ -233,19 +234,20 @@
                                     </a>
                                 </li>
                             <?php endif; ?>
-                            <?php if ($helpers->getUserPermisoModulo('Configuracion credito', 'Configuracion')): ?>
-                                <li id="itemMenuCredito">
-                                    <a href="#credito" data-toggle="tab" onclick="activarMenu('itemMenuCredito')">
-                                        <i class="fa fa-credit-card"></i>
-                                        Créditos
-                                    </a>
-                                </li>
-                            <?php endif; ?>
                             <?php if ($helpers->getUserPermisoModulo('Configuracion refinanciamiento', 'Configuracion')): ?>
                                 <li id="itemMenuRef">
                                     <a href="#ref" data-toggle="tab" onclick="activarMenu('itemMenuRef')">
                                         <i class="fa fa-user"></i>
                                         Refinanciamiento
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+
+                            <?php if ($helpers->getUserPermisoModulo('Configuracion facturacion', 'Configuracion')): ?>
+                                <li id="itemMenuFacturacion">
+                                    <a href="#facturacion" data-toggle="tab" onclick="activarMenu('itemMenuFacturacion')">
+                                        <i class="fa fa-folder-open"></i>
+                                        Facturacion
                                     </a>
                                 </li>
                             <?php endif; ?>
@@ -697,25 +699,15 @@
 
                                     <form id="formConfiguracionCreditos">
                                         <div class="setting-body">
-
                                             <div class="setting-row">
-
                                                 <div class="row">
-
                                                     <div class="col-md-8">
-
                                                         <div class="setting-title">
-
                                                             Notificacions automaticas
-
                                                         </div>
 
                                                         <div class="setting-desc">
-                                                            El sistema enviara automáticamente notificaciones de una
-                                                            cuota
-                                                            se
-                                                            encuentre por vencer.
-
+                                                            El sistema enviará automáticamente notificaciones de una cuota que se encuentre por vencer.
                                                         </div>
 
                                                     </div>
@@ -726,6 +718,36 @@
 
                                                             <input type="checkbox" id="is_notificacion"
                                                                 name="is_notificacion">
+
+                                                            <span class="slider"></span>
+
+                                                        </label>
+
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
+
+                                            <div class="setting-row">
+                                                <div class="row">
+                                                    <div class="col-md-8">
+                                                        <div class="setting-title">
+                                                            Cálculo mes por 30 dias
+                                                        </div>
+
+                                                        <div class="setting-desc">
+                                                            El sistema calculará las cuotas y sus plazos considerando cada mes como un período de 30 días.
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div class="col-md-4 setting-value">
+
+                                                        <label class="switch">
+
+                                                            <input type="checkbox" id="is_calculo_mes"
+                                                                name="is_calculo_mes">
 
                                                             <span class="slider"></span>
 
