@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.3
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Aug 12, 2026 at 04:01 AM
--- Server version: 8.0.30
--- PHP Version: 8.2.28
+-- Host: 127.0.0.1
+-- Generation Time: Aug 12, 2026 at 10:30 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `sistema_blanco`
+-- Database: `sistema_farmacia`
 --
 
 -- --------------------------------------------------------
@@ -28,11 +28,11 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `accion_permiso` (
-  `idaccion_permiso` int NOT NULL,
-  `idsubpermiso` int NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `descripcion` text COLLATE utf8mb3_spanish_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `idaccion_permiso` int(11) NOT NULL,
+  `idsubpermiso` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `accion_permiso`
@@ -93,17 +93,17 @@ INSERT INTO `accion_permiso` (`idaccion_permiso`, `idsubpermiso`, `nombre`, `des
 --
 
 CREATE TABLE `ajuste_inventario` (
-  `id` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `fecha_ajuste` datetime NOT NULL,
-  `numero` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `serie` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `observacion` varchar(200) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `inventario_id` int NOT NULL,
-  `usuario_id` int NOT NULL,
-  `sucursal_id` int NOT NULL,
+  `numero` varchar(10) NOT NULL,
+  `serie` varchar(10) NOT NULL,
+  `observacion` varchar(200) NOT NULL,
+  `inventario_id` int(11) NOT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `sucursal_id` int(11) NOT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -112,8 +112,8 @@ CREATE TABLE `ajuste_inventario` (
 --
 
 CREATE TABLE `asistencias` (
-  `idasistencia` int NOT NULL,
-  `idpersonal` int NOT NULL,
+  `idasistencia` int(11) NOT NULL,
+  `idpersonal` int(11) NOT NULL,
   `fecha` date NOT NULL,
   `hora_entrada` time NOT NULL,
   `hora_salida` time NOT NULL,
@@ -121,9 +121,9 @@ CREATE TABLE `asistencias` (
   `tardanza` time DEFAULT NULL,
   `permiso` enum('si','no') DEFAULT 'no',
   `vacaciones` enum('si','no') DEFAULT 'no',
-  `estado_pago` tinyint(1) DEFAULT '0',
+  `estado_pago` tinyint(1) DEFAULT 0,
   `monto` decimal(10,2) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 ROW_FORMAT=DYNAMIC;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci ROW_FORMAT=DYNAMIC;
 
 --
 -- Dumping data for table `asistencias`
@@ -139,11 +139,11 @@ INSERT INTO `asistencias` (`idasistencia`, `idpersonal`, `fecha`, `hora_entrada`
 --
 
 CREATE TABLE `bancos` (
-  `idbanco` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idbanco` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
-  `nombre` varchar(155) COLLATE utf32_spanish_ci NOT NULL,
-  `descripcion` varchar(255) COLLATE utf32_spanish_ci NOT NULL,
+  `nombre` varchar(155) NOT NULL,
+  `descripcion` varchar(255) NOT NULL,
   `saldo` decimal(11,2) NOT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
@@ -164,12 +164,12 @@ INSERT INTO `bancos` (`idbanco`, `created_at`, `updated_at`, `nombre`, `descripc
 --
 
 CREATE TABLE `cajas` (
-  `idcaja` int NOT NULL,
-  `cretaed_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `nombre` varchar(100) COLLATE utf32_spanish_ci NOT NULL,
-  `numero` varchar(20) COLLATE utf32_spanish_ci NOT NULL,
-  `estado` varchar(1) COLLATE utf32_spanish_ci NOT NULL DEFAULT '1',
-  `idsucursal` int NOT NULL,
+  `idcaja` int(11) NOT NULL,
+  `cretaed_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `nombre` varchar(100) NOT NULL,
+  `numero` varchar(20) NOT NULL,
+  `estado` varchar(1) NOT NULL DEFAULT '1',
+  `idsucursal` int(11) NOT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
@@ -188,20 +188,20 @@ INSERT INTO `cajas` (`idcaja`, `cretaed_at`, `nombre`, `numero`, `estado`, `idsu
 --
 
 CREATE TABLE `caja_apertura` (
-  `aperturacajaid` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `aperturacajaid` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `fecha_apertura` datetime NOT NULL,
-  `efectivo_apertura` decimal(11,2) NOT NULL DEFAULT '0.00',
+  `efectivo_apertura` decimal(11,2) NOT NULL DEFAULT 0.00,
   `fecha_cierre` datetime DEFAULT NULL,
-  `efectivo_cierre` decimal(11,2) DEFAULT '0.00',
-  `efectivo_cierre_real` decimal(11,2) DEFAULT '0.00',
-  `estado` varchar(1) COLLATE utf8mb3_spanish_ci NOT NULL DEFAULT '1',
-  `idcaja` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idusuario` int NOT NULL,
-  `idusuario_cierre` int DEFAULT NULL,
+  `efectivo_cierre` decimal(11,2) DEFAULT 0.00,
+  `efectivo_cierre_real` decimal(11,2) DEFAULT 0.00,
+  `estado` varchar(1) NOT NULL DEFAULT '1',
+  `idcaja` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idusuario` int(11) NOT NULL,
+  `idusuario_cierre` int(11) DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `caja_apertura`
@@ -211,7 +211,7 @@ INSERT INTO `caja_apertura` (`aperturacajaid`, `created_at`, `fecha_apertura`, `
 (1, '2026-07-01 23:22:11', '2026-07-01 23:22:11', 100.00, '2026-07-08 20:53:11', 7942.09, 7942.09, '0', 1, 1, 1, 1, NULL),
 (2, '2026-07-08 20:53:32', '2026-07-08 20:53:32', 50.00, '2026-08-01 19:43:43', NULL, 65710.10, '0', 1, 1, 1, 1, NULL),
 (3, '2026-07-15 10:10:21', '2026-07-15 10:10:21', 100.00, NULL, NULL, NULL, '1', 2, 2, 1, NULL, NULL),
-(4, '2026-08-02 01:38:18', '2026-08-02 01:38:18', 100.00, NULL, 1447.55, NULL, '1', 1, 1, 1, NULL, NULL);
+(4, '2026-08-02 01:38:18', '2026-08-02 01:38:18', 100.00, NULL, 1757.55, NULL, '1', 1, 1, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -220,12 +220,12 @@ INSERT INTO `caja_apertura` (`aperturacajaid`, `created_at`, `fecha_apertura`, `
 --
 
 CREATE TABLE `catalogo_imagen` (
-  `idcatalogo_imagen` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `nombre_imagen` varchar(255) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `orden` int NOT NULL,
-  `fecha` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `idcatalogo_imagen` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `nombre_imagen` varchar(255) NOT NULL,
+  `orden` int(11) NOT NULL,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -234,10 +234,10 @@ CREATE TABLE `catalogo_imagen` (
 --
 
 CREATE TABLE `categoria` (
-  `idcategoria` int NOT NULL,
-  `nombre` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `condicion` tinyint(1) NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `idcategoria` int(11) NOT NULL,
+  `nombre` varchar(50) NOT NULL,
+  `condicion` tinyint(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `categoria`
@@ -255,41 +255,41 @@ INSERT INTO `categoria` (`idcategoria`, `nombre`, `condicion`) VALUES
 --
 
 CREATE TABLE `compra` (
-  `idcompra` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idproveedor` int NOT NULL,
-  `idpersonal` int NOT NULL,
-  `tipo_comprobante` varchar(20) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `serie_comprobante` varchar(7) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `num_comprobante` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `idcompra` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idproveedor` int(11) NOT NULL,
+  `idpersonal` int(11) NOT NULL,
+  `tipo_comprobante` varchar(20) NOT NULL,
+  `serie_comprobante` varchar(7) DEFAULT NULL,
+  `num_comprobante` varchar(10) NOT NULL,
   `fecha_hora` datetime NOT NULL,
   `impuesto` decimal(4,2) NOT NULL,
-  `tipo_igv` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT 'EXONERADA',
-  `monto_gravado` decimal(11,2) DEFAULT '0.00',
-  `monto_exonerado` decimal(11,2) DEFAULT '0.00',
-  `monto_igv` decimal(11,2) DEFAULT '0.00',
+  `tipo_igv` varchar(20) DEFAULT 'EXONERADA',
+  `monto_gravado` decimal(11,2) DEFAULT 0.00,
+  `monto_exonerado` decimal(11,2) DEFAULT 0.00,
+  `monto_igv` decimal(11,2) DEFAULT 0.00,
   `total_compra` decimal(11,2) NOT NULL,
-  `compracredito` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `compracredito` varchar(10) NOT NULL,
   `motoPagado` float NOT NULL,
   `totaldeposito` double NOT NULL,
   `totalrecibido` float NOT NULL,
-  `noperacion` varchar(20) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `noperacion` varchar(20) NOT NULL,
   `fecha_deposito` datetime DEFAULT NULL,
-  `estado` varchar(20) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `fecha_kardex` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `tipo_c` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `estadoC` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `documento_rel` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `formapago` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `lugar_entrega` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `motivo_compra` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `documento` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `nota` text COLLATE utf8mb3_spanish_ci,
-  `imagen` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `estado` varchar(20) NOT NULL,
+  `fecha_kardex` timestamp NOT NULL DEFAULT current_timestamp(),
+  `tipo_c` varchar(250) DEFAULT NULL,
+  `estadoC` varchar(50) DEFAULT NULL,
+  `documento_rel` varchar(20) DEFAULT NULL,
+  `formapago` varchar(250) DEFAULT NULL,
+  `lugar_entrega` varchar(250) DEFAULT NULL,
+  `motivo_compra` varchar(250) DEFAULT NULL,
+  `documento` varchar(250) DEFAULT NULL,
+  `nota` text DEFAULT NULL,
+  `imagen` varchar(50) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `compra`
@@ -328,7 +328,9 @@ INSERT INTO `compra` (`idcompra`, `idsucursal`, `idproveedor`, `idpersonal`, `ti
 (34, 1, 17, 1, 'Boleta', 'B001', '00554', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 20.00, 0.00, 20.00, 'No', 0, 0, 20, '', NULL, 'REGISTRADO', '2026-08-12 03:27:18', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:27:18', '2026-08-11 22:27:18', NULL),
 (35, 1, 17, 1, 'Boleta', 'B001', '00545', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 20.00, 0.00, 20.00, 'No', 0, 0, 20, '', NULL, 'REGISTRADO', '2026-08-12 03:29:20', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:29:20', '2026-08-11 22:29:20', NULL),
 (36, 1, 17, 1, 'Boleta', 'B001', '000763', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 20.00, 0.00, 20.00, 'No', 0, 0, 20, '', NULL, 'REGISTRADO', '2026-08-12 03:30:21', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:30:21', '2026-08-11 22:30:21', NULL),
-(37, 1, 17, 1, 'Boleta', 'B001', '00487', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 240.00, 0.00, 240.00, 'No', 0, 0, 240, '', NULL, 'REGISTRADO', '2026-08-12 03:32:58', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL);
+(37, 1, 17, 1, 'Boleta', 'B001', '00487', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 240.00, 0.00, 240.00, 'No', 0, 0, 240, '', NULL, 'REGISTRADO', '2026-08-12 03:32:58', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL),
+(40, 1, 17, 1, 'Boleta', 'B001', '000568', '2026-08-12 00:00:00', 0.00, 'EXONERADA', 0.00, 50.00, 0.00, 50.00, 'No', 0, 0, 50, '', NULL, 'REGISTRADO', '2026-08-12 18:29:11', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-12 13:29:11', '2026-08-12 13:29:11', NULL),
+(41, 1, 17, 1, 'Boleta', 'B001', '00055', '2026-08-12 00:00:00', 0.00, 'EXONERADA', 0.00, 25.00, 0.00, 25.00, 'No', 0, 0, 25, '', NULL, 'REGISTRADO', '2026-08-12 18:30:20', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-12 13:30:20', '2026-08-12 13:30:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -337,18 +339,18 @@ INSERT INTO `compra` (`idcompra`, `idsucursal`, `idproveedor`, `idpersonal`, `ti
 --
 
 CREATE TABLE `compra_pago` (
-  `idpago` int NOT NULL,
-  `idcompra` int NOT NULL,
-  `tipo_pago` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `idpago` int(11) NOT NULL,
+  `idcompra` int(11) NOT NULL,
+  `tipo_pago` varchar(50) NOT NULL,
   `monto` decimal(10,2) NOT NULL,
-  `nro_operacion` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `fecha_pago` datetime DEFAULT CURRENT_TIMESTAMP,
-  `banco` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `observacion` text COLLATE utf8mb3_spanish_ci,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `nro_operacion` varchar(50) DEFAULT NULL,
+  `fecha_pago` datetime DEFAULT current_timestamp(),
+  `banco` varchar(50) DEFAULT NULL,
+  `observacion` text DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `compra_pago`
@@ -370,7 +372,9 @@ INSERT INTO `compra_pago` (`idpago`, `idcompra`, `tipo_pago`, `monto`, `nro_oper
 (13, 34, 'Efectivo', 20.00, NULL, '2026-08-11 22:27:18', NULL, NULL, '2026-08-11 22:27:18', '2026-08-11 22:27:18', NULL),
 (14, 35, 'Efectivo', 20.00, NULL, '2026-08-11 22:29:20', NULL, NULL, '2026-08-11 22:29:20', '2026-08-11 22:29:20', NULL),
 (15, 36, 'Efectivo', 20.00, NULL, '2026-08-11 22:30:21', NULL, NULL, '2026-08-11 22:30:21', '2026-08-11 22:30:21', NULL),
-(16, 37, 'Efectivo', 240.00, NULL, '2026-08-11 22:32:58', NULL, NULL, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL);
+(16, 37, 'Efectivo', 240.00, NULL, '2026-08-11 22:32:58', NULL, NULL, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL),
+(17, 40, 'Efectivo', 50.00, NULL, '2026-08-12 13:29:11', NULL, NULL, '2026-08-12 13:29:11', '2026-08-12 13:29:11', NULL),
+(18, 41, 'Efectivo', 25.00, NULL, '2026-08-12 13:30:20', NULL, NULL, '2026-08-12 13:30:20', '2026-08-12 13:30:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -379,16 +383,16 @@ INSERT INTO `compra_pago` (`idpago`, `idcompra`, `tipo_pago`, `monto`, `nro_oper
 --
 
 CREATE TABLE `compromiso_pago` (
-  `idcompromiso_pago` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idcompromiso_pago` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
-  `idcpc` int NOT NULL,
+  `idcpc` int(11) NOT NULL,
   `fecha_compromiso` date NOT NULL,
-  `detalle` varchar(500) COLLATE utf32_spanish_ci DEFAULT NULL,
+  `detalle` varchar(500) DEFAULT NULL,
   `monto` double NOT NULL,
   `fecha_cumplimiento` datetime DEFAULT NULL,
-  `observacion` varchar(255) COLLATE utf32_spanish_ci NOT NULL,
-  `idusuario` int NOT NULL,
+  `observacion` varchar(255) NOT NULL,
+  `idusuario` int(11) NOT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
@@ -410,24 +414,24 @@ INSERT INTO `compromiso_pago` (`idcompromiso_pago`, `created_at`, `updated_at`, 
 --
 
 CREATE TABLE `comp_pago` (
-  `idcomprobante_pago` int NOT NULL,
+  `idcomprobante_pago` int(11) NOT NULL,
   `nombre` varchar(45) NOT NULL,
   `serie_comprobante` varchar(4) NOT NULL,
   `num_comprobante` varchar(7) NOT NULL,
-  `idempresa` int NOT NULL,
+  `idempresa` int(11) NOT NULL,
   `condicion` tinyint(1) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Dumping data for table `comp_pago`
 --
 
 INSERT INTO `comp_pago` (`idcomprobante_pago`, `nombre`, `serie_comprobante`, `num_comprobante`, `idempresa`, `condicion`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Nota de Venta', 'NV00', '39', 1, 1, '2026-08-06 10:11:42', '2026-08-11 22:36:06', NULL),
-(2, 'Factura', 'F001', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
+(1, 'Nota de Venta', 'NV00', '44', 1, 1, '2026-08-06 10:11:42', '2026-08-12 14:44:56', NULL),
+(2, 'Factura', 'F001', '1', 1, 1, '2026-08-06 10:11:42', '2026-08-12 14:45:13', NULL),
 (3, 'Boleta', 'B001', '1', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
 (4, 'Nota de Crédito', 'NC01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
 (5, 'Nota de Débito', 'ND01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
@@ -441,12 +445,12 @@ INSERT INTO `comp_pago` (`idcomprobante_pago`, `nombre`, `serie_comprobante`, `n
 --
 
 CREATE TABLE `concepto_ajuste` (
-  `id` int NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `tipo` enum('entrada','salida') COLLATE utf8mb3_spanish_ci NOT NULL,
-  `descripcion` text COLLATE utf8mb3_spanish_ci,
-  `estado` tinyint(1) DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `id` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `tipo` enum('entrada','salida') NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `estado` tinyint(1) DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -455,13 +459,13 @@ CREATE TABLE `concepto_ajuste` (
 --
 
 CREATE TABLE `concepto_movimiento` (
-  `idconcepto_movimiento` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `descripcion` varchar(255) COLLATE utf32_spanish_ci NOT NULL,
-  `tipo` varchar(100) COLLATE utf32_spanish_ci NOT NULL,
-  `estado` int NOT NULL DEFAULT '1',
-  `categoria_concepto` varchar(100) COLLATE utf32_spanish_ci DEFAULT NULL,
+  `idconcepto_movimiento` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `descripcion` varchar(255) NOT NULL,
+  `tipo` varchar(100) NOT NULL,
+  `estado` int(11) NOT NULL DEFAULT 1,
+  `categoria_concepto` varchar(100) DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
@@ -482,10 +486,10 @@ INSERT INTO `concepto_movimiento` (`idconcepto_movimiento`, `created_at`, `updat
 --
 
 CREATE TABLE `condicionventa` (
-  `idcondicionventa` int NOT NULL,
-  `nombre` varchar(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
+  `idcondicionventa` int(11) NOT NULL,
+  `nombre` varchar(255) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
   `condicion` tinyint(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `condicionventa`
@@ -501,9 +505,9 @@ INSERT INTO `condicionventa` (`idcondicionventa`, `nombre`, `condicion`) VALUES
 --
 
 CREATE TABLE `configuraciones` (
-  `clave` varchar(255) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `valor` text COLLATE utf8mb3_spanish_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `clave` varchar(255) NOT NULL,
+  `valor` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -512,35 +516,35 @@ CREATE TABLE `configuraciones` (
 --
 
 CREATE TABLE `cotizacion` (
-  `idcotizacion` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idcliente` int NOT NULL,
-  `idPersonal` int NOT NULL,
-  `idcomprobante_pago` int DEFAULT NULL,
-  `serie_comprobante` varchar(7) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `num_comprobante` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `idcotizacion` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idcliente` int(11) NOT NULL,
+  `idPersonal` int(11) NOT NULL,
+  `idcomprobante_pago` int(11) DEFAULT NULL,
+  `serie_comprobante` varchar(7) DEFAULT NULL,
+  `num_comprobante` varchar(10) NOT NULL,
   `fecha_hora` datetime NOT NULL,
   `total_venta` decimal(11,2) NOT NULL,
   `descuento` double DEFAULT NULL,
-  `condicion` tinyint NOT NULL DEFAULT '1',
-  `fecha_h` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `condicion` tinyint(4) NOT NULL DEFAULT 1,
+  `fecha_h` datetime NOT NULL DEFAULT current_timestamp(),
   `fecha_aprobacion` datetime DEFAULT NULL,
-  `titulo` varchar(150) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `nota` varchar(350) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `saludo` varchar(350) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `formapago` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `Inicial` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `frecuencia` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `meses` int DEFAULT NULL,
-  `interes` int DEFAULT NULL,
-  `tiempo_pro` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `igv` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `estado` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `observacion` text COLLATE utf8mb3_spanish_ci,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `titulo` varchar(150) DEFAULT NULL,
+  `nota` varchar(350) DEFAULT NULL,
+  `saludo` varchar(350) DEFAULT NULL,
+  `formapago` varchar(250) DEFAULT NULL,
+  `Inicial` varchar(20) DEFAULT NULL,
+  `frecuencia` varchar(20) DEFAULT NULL,
+  `meses` int(11) DEFAULT NULL,
+  `interes` int(11) DEFAULT NULL,
+  `tiempo_pro` varchar(250) DEFAULT NULL,
+  `igv` varchar(50) DEFAULT NULL,
+  `estado` varchar(50) DEFAULT NULL,
+  `observacion` text DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `cotizacion`
@@ -580,30 +584,30 @@ INSERT INTO `cotizacion` (`idcotizacion`, `idsucursal`, `idcliente`, `idPersonal
 --
 
 CREATE TABLE `cuentas_por_cobrar` (
-  `idcpc` int NOT NULL,
-  `idventa` int NOT NULL,
+  `idcpc` int(11) NOT NULL,
+  `idventa` int(11) NOT NULL,
   `fecharegistro` datetime NOT NULL,
   `deudatotal` double NOT NULL,
-  `deuda_base` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `mora` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `mora_pagada` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `deuda_base` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `mora` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `mora_pagada` decimal(12,2) NOT NULL DEFAULT 0.00,
   `fecha_update_mora` date DEFAULT NULL,
   `fechavencimiento` date NOT NULL,
   `deuda` double DEFAULT NULL,
   `interes` double DEFAULT NULL,
   `descuento` decimal(10,2) DEFAULT NULL,
   `abonototal` decimal(11,2) NOT NULL,
-  `condicion` tinyint NOT NULL DEFAULT '1',
-  `nota` varchar(1000) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `condicion` tinyint(4) NOT NULL DEFAULT 1,
+  `nota` varchar(1000) DEFAULT NULL,
   `fecha_hora` timestamp NULL DEFAULT NULL,
-  `estado_pago` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 = pendiente, 0 = pagado',
-  `idrefinanciamiento` int DEFAULT NULL,
-  `estado_plan` tinyint DEFAULT '1',
-  `idrefinanciamiento_origen` int DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `estado_pago` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1 = pendiente, 0 = pagado',
+  `idrefinanciamiento` int(11) DEFAULT NULL,
+  `estado_plan` tinyint(4) DEFAULT 1,
+  `idrefinanciamiento_origen` int(11) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `cuentas_por_cobrar`
@@ -696,18 +700,18 @@ INSERT INTO `cuentas_por_cobrar` (`idcpc`, `idventa`, `fecharegistro`, `deudatot
 --
 
 CREATE TABLE `cuentas_por_pagar` (
-  `idcpp` int NOT NULL,
-  `idcompra` int NOT NULL,
+  `idcpp` int(11) NOT NULL,
+  `idcompra` int(11) NOT NULL,
   `fecharegistro` datetime NOT NULL,
   `deudatotal` double NOT NULL,
   `fechavencimiento` date NOT NULL,
-  `abonototal` decimal(11,2) NOT NULL DEFAULT '0.00',
-  `condicion` tinyint NOT NULL DEFAULT '1',
-  `fecha_hora` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `abonototal` decimal(11,2) NOT NULL DEFAULT 0.00,
+  `condicion` tinyint(4) NOT NULL DEFAULT 1,
+  `fecha_hora` datetime NOT NULL DEFAULT current_timestamp(),
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `cuentas_por_pagar`
@@ -724,31 +728,31 @@ INSERT INTO `cuentas_por_pagar` (`idcpp`, `idcompra`, `fecharegistro`, `deudatot
 --
 
 CREATE TABLE `datos_negocio` (
-  `id_negocio` int NOT NULL,
-  `nombre` varchar(80) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-  `ndocumento` varchar(20) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `documento` varchar(20) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `direccion` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-  `telefono` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `email` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `logo` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `pais` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `ciudad` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `nombre_impuesto` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `id_negocio` int(11) NOT NULL,
+  `nombre` varchar(80) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `ndocumento` varchar(20) NOT NULL,
+  `documento` varchar(20) NOT NULL,
+  `direccion` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `telefono` varchar(50) NOT NULL,
+  `email` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `logo` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `pais` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `ciudad` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `nombre_impuesto` varchar(10) NOT NULL,
   `monto_impuesto` float(4,2) NOT NULL,
-  `moneda` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `simbolo` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `diasVencer` int DEFAULT NULL,
-  `validezcoti` char(3) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `usuario_sol` varchar(30) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `clave_sol` varchar(30) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `estado_certificado` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL DEFAULT 'BETA',
-  `ruta_certificado` varchar(100) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `clave_certificado` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `condicion` tinyint NOT NULL DEFAULT '1',
-  `client_id` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `client_secret` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `moneda` varchar(10) NOT NULL,
+  `simbolo` varchar(10) NOT NULL,
+  `diasVencer` int(11) DEFAULT NULL,
+  `validezcoti` char(3) DEFAULT NULL,
+  `usuario_sol` varchar(30) DEFAULT NULL,
+  `clave_sol` varchar(30) DEFAULT NULL,
+  `estado_certificado` varchar(10) NOT NULL DEFAULT 'BETA',
+  `ruta_certificado` varchar(100) DEFAULT NULL,
+  `clave_certificado` varchar(50) DEFAULT NULL,
+  `condicion` tinyint(4) NOT NULL DEFAULT 1,
+  `client_id` varchar(255) DEFAULT NULL,
+  `client_secret` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -757,15 +761,15 @@ CREATE TABLE `datos_negocio` (
 --
 
 CREATE TABLE `detalle_ajuste_inventario` (
-  `id` int NOT NULL,
-  `ajuste_inventario_id` int NOT NULL,
-  `producto_id` int NOT NULL,
+  `id` int(11) NOT NULL,
+  `ajuste_inventario_id` int(11) NOT NULL,
+  `producto_id` int(11) NOT NULL,
   `cantidad_ajustada` decimal(10,2) NOT NULL,
   `stock_anterior` decimal(10,2) NOT NULL,
   `stock_nuevo` decimal(10,2) NOT NULL,
-  `tipo_ajuste` int NOT NULL,
-  `concepto_ajuste_id` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `tipo_ajuste` int(11) NOT NULL,
+  `concepto_ajuste_id` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -774,23 +778,23 @@ CREATE TABLE `detalle_ajuste_inventario` (
 --
 
 CREATE TABLE `detalle_compra` (
-  `iddetalle_compra` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idcompra` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `producto_configuracion_id` int DEFAULT NULL,
+  `iddetalle_compra` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idcompra` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `producto_configuracion_id` int(11) DEFAULT NULL,
   `cantidad` decimal(11,2) NOT NULL,
   `precio_compra` decimal(20,8) NOT NULL,
   `precio_venta` decimal(20,8) NOT NULL,
-  `nlote` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `nlote` varchar(20) DEFAULT NULL,
   `fvencimiento` date DEFAULT NULL,
-  `tipo_c` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `nombre_producto` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `tipo_c` varchar(250) DEFAULT NULL,
+  `nombre_producto` varchar(250) DEFAULT NULL,
   `stock_lote` decimal(10,2) DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `detalle_compra`
@@ -828,7 +832,9 @@ INSERT INTO `detalle_compra` (`iddetalle_compra`, `idsucursal`, `idcompra`, `idp
 (33, 1, 34, 33, NULL, 1.00, 20.00000000, 34.00000000, '', NULL, 'Compra', 'ANILLOS PARA CB190 x undefined', 1.00, '2026-08-11 22:27:18', '2026-08-11 22:27:18', NULL),
 (34, 1, 35, 33, NULL, 1.00, 20.00000000, 34.00000000, '', NULL, 'Compra', 'ANILLOS PARA CB190 x undefined', 1.00, '2026-08-11 22:29:20', '2026-08-11 22:29:20', NULL),
 (35, 1, 36, 33, NULL, 1.00, 20.00000000, 34.00000000, '', NULL, 'Compra', 'ANILLOS PARA CB190 x undefined', 1.00, '2026-08-11 22:30:21', '2026-08-11 22:30:21', NULL),
-(36, 1, 37, 33, NULL, 12.00, 20.00000000, 34.00000000, '', NULL, 'Compra', 'ANILLOS PARA CB190 x undefined', 12.00, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL);
+(36, 1, 37, 33, NULL, 12.00, 20.00000000, 34.00000000, '', NULL, 'Compra', 'ANILLOS PARA CB190 x undefined', 12.00, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL),
+(39, 1, 40, 31, NULL, 10.00, 5.00000000, 10.00000000, 'FDG54UI', '2026-09-25', 'Compra', 'Camara para m300 x undefined', 10.00, '2026-08-12 13:29:11', '2026-08-12 13:29:11', NULL),
+(40, 1, 41, 31, NULL, 5.00, 5.00000000, 10.00000000, 'FDG54UI', '2026-09-25', 'Compra', 'Camara para m300 x undefined', 5.00, '2026-08-12 13:30:20', '2026-08-12 13:30:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -837,20 +843,20 @@ INSERT INTO `detalle_compra` (`iddetalle_compra`, `idsucursal`, `idcompra`, `idp
 --
 
 CREATE TABLE `detalle_cotizacion` (
-  `iddetalle_cotizacion` int NOT NULL,
-  `idcotizacion` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `idproducto_configuracion` int DEFAULT NULL,
-  `idserie` int DEFAULT NULL,
-  `cantidad` int NOT NULL,
-  `contenedor` varchar(100) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `cantidad_contenedor` int NOT NULL,
+  `iddetalle_cotizacion` int(11) NOT NULL,
+  `idcotizacion` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `idproducto_configuracion` int(11) DEFAULT NULL,
+  `idserie` int(11) DEFAULT NULL,
+  `cantidad` int(11) NOT NULL,
+  `contenedor` varchar(100) NOT NULL,
+  `cantidad_contenedor` int(11) NOT NULL,
   `precio_venta` decimal(11,2) NOT NULL,
   `descuento` decimal(11,2) NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `detalle_cotizacion`
@@ -893,21 +899,21 @@ INSERT INTO `detalle_cotizacion` (`iddetalle_cotizacion`, `idcotizacion`, `idpro
 --
 
 CREATE TABLE `detalle_cuentas_por_cobrar` (
-  `iddcpc` int NOT NULL,
-  `idcpc` int NOT NULL,
-  `idcaja` int NOT NULL,
-  `idpersonal` int NOT NULL,
+  `iddcpc` int(11) NOT NULL,
+  `idcpc` int(11) NOT NULL,
+  `idcaja` int(11) NOT NULL,
+  `idpersonal` int(11) NOT NULL,
   `montopagado` decimal(11,2) NOT NULL,
   `montotarjeta` decimal(11,2) NOT NULL,
-  `idbanco` int DEFAULT NULL,
-  `op` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `fechapago` datetime DEFAULT CURRENT_TIMESTAMP,
-  `formapago` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `observacion` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idbanco` int(11) DEFAULT NULL,
+  `op` varchar(250) DEFAULT NULL,
+  `fechapago` datetime DEFAULT current_timestamp(),
+  `formapago` varchar(50) NOT NULL,
+  `observacion` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `detalle_cuentas_por_cobrar`
@@ -972,18 +978,18 @@ INSERT INTO `detalle_cuentas_por_cobrar` (`iddcpc`, `idcpc`, `idcaja`, `idperson
 --
 
 CREATE TABLE `detalle_cuentas_por_pagar` (
-  `iddcpp` int NOT NULL,
-  `idcpp` int NOT NULL,
-  `idcaja` int NOT NULL,
-  `idpersonal` int NOT NULL,
+  `iddcpp` int(11) NOT NULL,
+  `idcpp` int(11) NOT NULL,
+  `idcaja` int(11) NOT NULL,
+  `idpersonal` int(11) NOT NULL,
   `montopagado` decimal(11,2) NOT NULL,
   `montotarjeta` decimal(11,2) NOT NULL,
-  `banco` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `op` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `fechapago` datetime DEFAULT CURRENT_TIMESTAMP,
-  `formapago` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `observacion` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `banco` varchar(250) DEFAULT NULL,
+  `op` varchar(250) DEFAULT NULL,
+  `fechapago` datetime DEFAULT current_timestamp(),
+  `formapago` varchar(50) NOT NULL,
+  `observacion` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -992,17 +998,17 @@ CREATE TABLE `detalle_cuentas_por_pagar` (
 --
 
 CREATE TABLE `detalle_guia` (
-  `iddetalle` int NOT NULL,
-  `idguia` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `codigo` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `nombre_producto` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `iddetalle` int(11) NOT NULL,
+  `idguia` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `codigo` varchar(50) DEFAULT NULL,
+  `nombre_producto` varchar(255) DEFAULT NULL,
   `cantidad` decimal(10,2) DEFAULT NULL,
-  `unidad` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `unidad` varchar(20) DEFAULT NULL,
   `peso` decimal(10,2) DEFAULT NULL,
-  `bultos` int DEFAULT NULL,
-  `lotes` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `bultos` int(11) DEFAULT NULL,
+  `lotes` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -1011,13 +1017,13 @@ CREATE TABLE `detalle_guia` (
 --
 
 CREATE TABLE `detalle_servicio` (
-  `iddetalle_servicio` int NOT NULL,
-  `idservicio` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `nombre` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `cantidad` int DEFAULT '1',
+  `iddetalle_servicio` int(11) NOT NULL,
+  `idservicio` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `nombre` varchar(255) DEFAULT NULL,
+  `cantidad` int(11) DEFAULT 1,
   `precio` decimal(11,2) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -1026,86 +1032,118 @@ CREATE TABLE `detalle_servicio` (
 --
 
 CREATE TABLE `detalle_venta` (
-  `iddetalle_venta` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idventa` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `idproducto_configuracion` int DEFAULT NULL,
-  `idserie` int DEFAULT NULL,
-  `nombre_producto` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `iddetalle_venta` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idventa` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `idproducto_configuracion` int(11) DEFAULT NULL,
+  `idserie` int(11) DEFAULT NULL,
+  `nombre_producto` varchar(250) DEFAULT NULL,
   `cantidad` decimal(11,2) NOT NULL,
-  `contenedor` varchar(100) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `contenedor` varchar(100) NOT NULL,
   `cantidad_contenedor` decimal(11,2) NOT NULL,
   `precio_venta` decimal(11,2) NOT NULL,
   `descuento` decimal(11,2) NOT NULL,
-  `tipo` varchar(150) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `check_precio` tinyint(1) DEFAULT '0',
-  `id_detalle_compra` int DEFAULT NULL,
-  `id_fifo` int DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idinventario_lote` int(11) DEFAULT NULL,
+  `tipo` varchar(150) NOT NULL,
+  `check_precio` tinyint(1) DEFAULT 0,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `detalle_venta`
 --
 
-INSERT INTO `detalle_venta` (`iddetalle_venta`, `idsucursal`, `idventa`, `idproducto`, `idproducto_configuracion`, `idserie`, `nombre_producto`, `cantidad`, `contenedor`, `cantidad_contenedor`, `precio_venta`, `descuento`, `tipo`, `check_precio`, `id_detalle_compra`, `id_fifo`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 1, 1, NULL, NULL, 'MOTOCICLETA LINEAL HONDA GL 125 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, 'venta', 0, NULL, 0, '2026-07-15 14:13:59', NULL, NULL),
-(2, 1, 2, 1, NULL, NULL, 'MOTOCICLETA LINEAL HONDA GL 125 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, 'venta', 0, NULL, 0, '2026-07-15 14:13:59', NULL, NULL),
-(14, 2, 23, 22, NULL, NULL, 'MOTO WAVE 110 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 4000.00, 0.00, 'venta', 0, NULL, 16, '2026-07-15 14:35:29', '2026-07-15 14:35:29', NULL),
-(32, 1, 49, 24, NULL, 18, 'MOTOCICLETA LINEAL HONDA GL 125', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-16 09:01:35', '2026-07-16 09:01:35', NULL),
-(36, 1, 53, 25, NULL, 19, 'MOTO NS 200 BAJAJ', 1.00, 'UNIDAD', 1.00, 11000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-16 09:15:31', '2026-07-16 09:15:31', NULL),
-(40, 1, 57, 26, NULL, 20, 'GL-125 REACH', 1.00, 'UNIDAD', 1.00, 6000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-16 22:18:01', '2026-07-16 22:18:01', NULL),
-(41, 1, 58, 27, NULL, 21, 'MOTO LINEAL NUEV', 1.00, 'UNIDAD', 1.00, 6000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-16 22:24:49', '2026-07-16 22:24:49', NULL),
-(42, 1, 59, 29, NULL, 23, 'MOTO WAVE 110', 1.00, 'UNIDAD', 1.00, 4000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-17 19:01:27', '2026-07-17 19:01:27', NULL),
-(43, 1, 60, 28, NULL, 22, 'MOTO XR190', 1.00, 'UNIDAD', 1.00, 9000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-17 19:04:45', '2026-07-17 19:04:45', NULL),
-(44, 1, 62, 32, NULL, 25, 'MOTO LINEAL HIUNDAT 200', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-27 17:42:54', '2026-07-27 17:42:54', NULL),
-(45, 1, 63, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:18:23', '2026-08-02 02:18:23', NULL),
-(46, 1, 64, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:27:49', '2026-08-02 02:27:49', NULL),
-(47, 1, 65, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:38:15', '2026-08-02 02:38:15', NULL),
-(48, 1, 70, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:45:29', '2026-08-02 02:45:29', NULL),
-(49, 1, 71, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:52:19', '2026-08-02 02:52:19', NULL),
-(50, 1, 72, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:55:16', '2026-08-02 02:55:16', NULL),
-(51, 1, 78, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 04:18:32', '2026-08-02 04:18:32', NULL),
-(52, 1, 79, 31, NULL, 24, 'Camara para m300', 2.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 04:40:07', '2026-08-02 04:40:07', NULL),
-(53, 1, 80, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 04:41:37', '2026-08-02 04:41:37', NULL),
-(54, 1, 81, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 08:21:15', '2026-08-02 08:21:15', NULL),
-(55, 1, 81, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 08:21:15', '2026-08-02 08:21:15', NULL),
-(56, 1, 84, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-06 15:48:26', '2026-08-06 15:48:26', NULL),
-(57, 1, 84, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 16.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-06 15:48:26', '2026-08-06 15:48:26', NULL),
-(58, 1, 85, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 07:45:36', '2026-08-09 07:45:36', NULL),
-(59, 1, 86, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 08:27:24', '2026-08-09 08:27:24', NULL),
-(60, 1, 87, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 08:29:55', '2026-08-09 08:29:55', NULL),
-(61, 1, 88, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 08:49:25', '2026-08-09 08:49:25', NULL),
-(62, 1, 89, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:09:01', '2026-08-09 09:09:01', NULL),
-(63, 1, 90, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:11:37', '2026-08-09 09:11:37', NULL),
-(64, 1, 91, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:12:24', '2026-08-09 09:12:24', NULL),
-(65, 1, 92, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:15:54', '2026-08-09 09:15:54', NULL),
-(66, 1, 93, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:32:21', '2026-08-09 09:32:21', NULL),
-(67, 1, 94, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:40:27', '2026-08-09 09:40:27', NULL),
-(68, 1, 95, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:41:31', '2026-08-09 09:41:31', NULL),
-(69, 1, 96, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:42:54', '2026-08-09 09:42:54', NULL),
-(70, 1, 97, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:48:00', '2026-08-09 09:48:00', NULL),
-(71, 1, 98, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:51:46', '2026-08-09 09:51:46', NULL),
-(72, 1, 99, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:52:49', '2026-08-09 09:52:49', NULL),
-(73, 1, 100, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 10:05:09', '2026-08-09 10:05:09', NULL),
-(74, 1, 101, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 10:05:30', '2026-08-09 10:05:30', NULL),
-(75, 1, 102, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 10:06:12', '2026-08-09 10:06:12', NULL),
-(76, 1, 103, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 10:21:31', '2026-08-09 10:21:31', NULL),
-(77, 1, 104, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 10:29:47', '2026-08-09 10:29:47', NULL),
-(78, 1, 105, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 12:18:26', '2026-08-09 12:18:26', NULL),
-(79, 1, 106, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 12:56:20', '2026-08-09 12:56:20', NULL),
-(80, 1, 107, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:05:22', '2026-08-11 21:05:22', NULL),
-(81, 1, 108, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:06:13', '2026-08-11 21:06:13', NULL),
-(84, 1, 111, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:30:03', '2026-08-11 21:30:03', NULL),
-(86, 1, 113, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:34:31', '2026-08-11 21:34:31', NULL),
-(87, 1, 114, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:35:42', '2026-08-11 21:35:42', NULL),
-(88, 1, 115, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:40:24', '2026-08-11 21:40:24', NULL),
-(89, 1, 116, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:54:05', '2026-08-11 21:54:05', NULL),
-(90, 1, 117, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 22:10:39', '2026-08-11 22:10:39', NULL),
-(91, 1, 118, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL);
+INSERT INTO `detalle_venta` (`iddetalle_venta`, `idsucursal`, `idventa`, `idproducto`, `idproducto_configuracion`, `idserie`, `nombre_producto`, `cantidad`, `contenedor`, `cantidad_contenedor`, `precio_venta`, `descuento`, `idinventario_lote`, `tipo`, `check_precio`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 1, 1, 1, NULL, NULL, 'MOTOCICLETA LINEAL HONDA GL 125 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, NULL, 'venta', 0, '2026-07-15 14:13:59', NULL, NULL),
+(2, 1, 2, 1, NULL, NULL, 'MOTOCICLETA LINEAL HONDA GL 125 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, NULL, 'venta', 0, '2026-07-15 14:13:59', NULL, NULL),
+(14, 2, 23, 22, NULL, NULL, 'MOTO WAVE 110 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 4000.00, 0.00, NULL, 'venta', 0, '2026-07-15 14:35:29', '2026-07-15 14:35:29', NULL),
+(32, 1, 49, 24, NULL, 18, 'MOTOCICLETA LINEAL HONDA GL 125', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, NULL, 'venta', 0, '2026-07-16 09:01:35', '2026-07-16 09:01:35', NULL),
+(36, 1, 53, 25, NULL, 19, 'MOTO NS 200 BAJAJ', 1.00, 'UNIDAD', 1.00, 11000.00, 0.00, NULL, 'venta', 0, '2026-07-16 09:15:31', '2026-07-16 09:15:31', NULL),
+(40, 1, 57, 26, NULL, 20, 'GL-125 REACH', 1.00, 'UNIDAD', 1.00, 6000.00, 0.00, NULL, 'venta', 0, '2026-07-16 22:18:01', '2026-07-16 22:18:01', NULL),
+(41, 1, 58, 27, NULL, 21, 'MOTO LINEAL NUEV', 1.00, 'UNIDAD', 1.00, 6000.00, 0.00, NULL, 'venta', 0, '2026-07-16 22:24:49', '2026-07-16 22:24:49', NULL),
+(42, 1, 59, 29, NULL, 23, 'MOTO WAVE 110', 1.00, 'UNIDAD', 1.00, 4000.00, 0.00, NULL, 'venta', 0, '2026-07-17 19:01:27', '2026-07-17 19:01:27', NULL),
+(43, 1, 60, 28, NULL, 22, 'MOTO XR190', 1.00, 'UNIDAD', 1.00, 9000.00, 0.00, NULL, 'venta', 0, '2026-07-17 19:04:45', '2026-07-17 19:04:45', NULL),
+(44, 1, 62, 32, NULL, 25, 'MOTO LINEAL HIUNDAT 200', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, NULL, 'venta', 0, '2026-07-27 17:42:54', '2026-07-27 17:42:54', NULL),
+(45, 1, 63, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:18:23', '2026-08-02 02:18:23', NULL),
+(46, 1, 64, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:27:49', '2026-08-02 02:27:49', NULL),
+(47, 1, 65, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:38:15', '2026-08-02 02:38:15', NULL),
+(48, 1, 70, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:45:29', '2026-08-02 02:45:29', NULL),
+(49, 1, 71, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:52:19', '2026-08-02 02:52:19', NULL),
+(50, 1, 72, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:55:16', '2026-08-02 02:55:16', NULL),
+(51, 1, 78, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 04:18:32', '2026-08-02 04:18:32', NULL),
+(52, 1, 79, 31, NULL, 24, 'Camara para m300', 2.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 04:40:07', '2026-08-02 04:40:07', NULL),
+(53, 1, 80, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 04:41:37', '2026-08-02 04:41:37', NULL),
+(54, 1, 81, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-02 08:21:15', '2026-08-02 08:21:15', NULL),
+(55, 1, 81, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 08:21:15', '2026-08-02 08:21:15', NULL),
+(56, 1, 84, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, NULL, 'venta', 0, '2026-08-06 15:48:26', '2026-08-06 15:48:26', NULL),
+(57, 1, 84, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 16.00, 0.00, NULL, 'venta', 0, '2026-08-06 15:48:26', '2026-08-06 15:48:26', NULL),
+(58, 1, 85, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, NULL, 'venta', 0, '2026-08-09 07:45:36', '2026-08-09 07:45:36', NULL),
+(59, 1, 86, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 08:27:24', '2026-08-09 08:27:24', NULL),
+(60, 1, 87, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 08:29:55', '2026-08-09 08:29:55', NULL),
+(61, 1, 88, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 08:49:25', '2026-08-09 08:49:25', NULL),
+(62, 1, 89, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:09:01', '2026-08-09 09:09:01', NULL),
+(63, 1, 90, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:11:37', '2026-08-09 09:11:37', NULL),
+(64, 1, 91, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:12:24', '2026-08-09 09:12:24', NULL),
+(65, 1, 92, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:15:54', '2026-08-09 09:15:54', NULL),
+(66, 1, 93, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:32:21', '2026-08-09 09:32:21', NULL),
+(67, 1, 94, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:40:27', '2026-08-09 09:40:27', NULL),
+(68, 1, 95, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:41:31', '2026-08-09 09:41:31', NULL),
+(69, 1, 96, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:42:54', '2026-08-09 09:42:54', NULL),
+(70, 1, 97, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:48:00', '2026-08-09 09:48:00', NULL),
+(71, 1, 98, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:51:46', '2026-08-09 09:51:46', NULL),
+(72, 1, 99, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:52:49', '2026-08-09 09:52:49', NULL),
+(73, 1, 100, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 10:05:09', '2026-08-09 10:05:09', NULL),
+(74, 1, 101, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 10:05:30', '2026-08-09 10:05:30', NULL),
+(75, 1, 102, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 10:06:12', '2026-08-09 10:06:12', NULL),
+(76, 1, 103, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 10:21:31', '2026-08-09 10:21:31', NULL),
+(77, 1, 104, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 10:29:47', '2026-08-09 10:29:47', NULL),
+(78, 1, 105, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, NULL, 'venta', 0, '2026-08-09 12:18:26', '2026-08-09 12:18:26', NULL),
+(79, 1, 106, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, NULL, 'venta', 0, '2026-08-09 12:56:20', '2026-08-09 12:56:20', NULL),
+(80, 1, 107, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:05:22', '2026-08-11 21:05:22', NULL),
+(81, 1, 108, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:06:13', '2026-08-11 21:06:13', NULL),
+(84, 1, 111, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:30:03', '2026-08-11 21:30:03', NULL),
+(86, 1, 113, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:34:31', '2026-08-11 21:34:31', NULL),
+(87, 1, 114, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:35:42', '2026-08-11 21:35:42', NULL),
+(88, 1, 115, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:40:24', '2026-08-11 21:40:24', NULL),
+(89, 1, 116, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:54:05', '2026-08-11 21:54:05', NULL),
+(90, 1, 117, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 22:10:39', '2026-08-11 22:10:39', NULL),
+(91, 1, 118, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL),
+(92, 1, 119, 31, 28, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:03:31', '2026-08-12 14:03:31', NULL),
+(95, 1, 122, 31, 29, 24, 'Camara para m300', 1.00, 'CAJA', 6.00, 60.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:11:53', '2026-08-12 14:11:53', NULL),
+(102, 2, 129, 34, 23, 27, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:27:58', '2026-08-12 14:27:58', NULL),
+(103, 2, 130, 34, 23, 27, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:28:23', '2026-08-12 14:28:23', NULL),
+(104, 1, 131, 31, 29, 24, 'Camara para m300', 1.00, 'CAJA', 6.00, 60.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
+(105, 1, 132, 31, 29, 24, 'Camara para m300', 1.00, 'CAJA', 6.00, 60.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `detalle_venta_lote`
+--
+
+CREATE TABLE `detalle_venta_lote` (
+  `iddetalle_venta_lote` int(11) NOT NULL,
+  `iddetalle_venta` int(11) NOT NULL,
+  `idinventario_lote` int(11) NOT NULL,
+  `codigo_lote` varchar(50) NOT NULL,
+  `fecha_vencimiento` date NOT NULL,
+  `cantidad` decimal(12,2) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
+
+--
+-- Dumping data for table `detalle_venta_lote`
+--
+
+INSERT INTO `detalle_venta_lote` (`iddetalle_venta_lote`, `iddetalle_venta`, `idinventario_lote`, `codigo_lote`, `fecha_vencimiento`, `cantidad`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 95, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:11:53', '2026-08-12 14:11:53', NULL),
+(2, 104, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
+(3, 105, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL);
 
 -- --------------------------------------------------------
 
@@ -1114,13 +1152,13 @@ INSERT INTO `detalle_venta` (`iddetalle_venta`, `idsucursal`, `idventa`, `idprod
 --
 
 CREATE TABLE `documentacion` (
-  `iddocumento` int NOT NULL,
-  `fecha_contrato` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `tipo` varchar(5) COLLATE utf32_spanish_ci NOT NULL,
-  `correlativo` int NOT NULL,
-  `estado` int NOT NULL DEFAULT '1',
-  `idventa` int DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `iddocumento` int(11) NOT NULL,
+  `fecha_contrato` datetime NOT NULL DEFAULT current_timestamp(),
+  `tipo` varchar(5) NOT NULL,
+  `correlativo` int(11) NOT NULL,
+  `estado` int(11) NOT NULL DEFAULT 1,
+  `idventa` int(11) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
@@ -1146,19 +1184,19 @@ INSERT INTO `documentacion` (`iddocumento`, `fecha_contrato`, `tipo`, `correlati
 --
 
 CREATE TABLE `empresas` (
-  `idempresa` int NOT NULL,
-  `ruc` varchar(11) COLLATE utf32_spanish_ci NOT NULL,
-  `razon_social` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `usuario_sol` varchar(50) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `clave_sol` varchar(100) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `ruta_certificado` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `clave_certificado` varchar(100) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `estado_certificado` varchar(20) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `client_id` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `client_secret` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `nombre_impuesto` varchar(10) COLLATE utf32_spanish_ci DEFAULT NULL,
+  `idempresa` int(11) NOT NULL,
+  `ruc` varchar(11) NOT NULL,
+  `razon_social` varchar(255) DEFAULT NULL,
+  `usuario_sol` varchar(50) DEFAULT NULL,
+  `clave_sol` varchar(100) DEFAULT NULL,
+  `ruta_certificado` varchar(255) DEFAULT NULL,
+  `clave_certificado` varchar(100) DEFAULT NULL,
+  `estado_certificado` varchar(20) DEFAULT NULL,
+  `client_id` varchar(255) DEFAULT NULL,
+  `client_secret` varchar(255) DEFAULT NULL,
+  `nombre_impuesto` varchar(10) DEFAULT NULL,
   `monto_impuesto` float DEFAULT NULL,
-  `estado` int NOT NULL DEFAULT '1'
+  `estado` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 --
@@ -1175,33 +1213,33 @@ INSERT INTO `empresas` (`idempresa`, `ruc`, `razon_social`, `usuario_sol`, `clav
 --
 
 CREATE TABLE `guia_remision` (
-  `idguia` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idcliente` int NOT NULL,
-  `idpersonal` int NOT NULL,
-  `serie_comprobante` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `num_comprobante` varchar(10) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `idguia` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idcliente` int(11) NOT NULL,
+  `idpersonal` int(11) NOT NULL,
+  `serie_comprobante` varchar(10) NOT NULL,
+  `num_comprobante` varchar(10) NOT NULL,
   `fecha_emision` datetime NOT NULL,
   `fecha_traslado` date NOT NULL,
-  `factura_ref` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `factura_ref` varchar(20) DEFAULT NULL,
   `fecha_factura_ref` date DEFAULT NULL,
-  `tipo_transporte` tinyint(1) DEFAULT '0',
-  `idtransportista` int DEFAULT NULL,
+  `tipo_transporte` tinyint(1) DEFAULT 0,
+  `idtransportista` int(11) DEFAULT NULL,
   `peso` decimal(10,2) DEFAULT NULL,
-  `estado` enum('Por Enviar','Aceptado','Nota Credito','Rechazado') COLLATE utf8mb3_spanish_ci DEFAULT 'Por Enviar',
-  `punto_partida` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `ubigeo_partida` varchar(6) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `punto_llegada` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `ubigeo_llegada` varchar(6) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `atencion` varchar(100) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `referencia` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `idtrabajador` int DEFAULT NULL,
-  `idmotivo` int DEFAULT NULL,
-  `ord_compra` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `ord_pedido` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `observacion` text COLLATE utf8mb3_spanish_ci,
-  `fecha_creacion` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `estado` enum('Por Enviar','Aceptado','Nota Credito','Rechazado') DEFAULT 'Por Enviar',
+  `punto_partida` varchar(255) DEFAULT NULL,
+  `ubigeo_partida` varchar(6) DEFAULT NULL,
+  `punto_llegada` varchar(255) DEFAULT NULL,
+  `ubigeo_llegada` varchar(6) DEFAULT NULL,
+  `atencion` varchar(100) DEFAULT NULL,
+  `referencia` varchar(50) DEFAULT NULL,
+  `idtrabajador` int(11) DEFAULT NULL,
+  `idmotivo` int(11) DEFAULT NULL,
+  `ord_compra` varchar(50) DEFAULT NULL,
+  `ord_pedido` varchar(50) DEFAULT NULL,
+  `observacion` text DEFAULT NULL,
+  `fecha_creacion` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -1210,17 +1248,17 @@ CREATE TABLE `guia_remision` (
 --
 
 CREATE TABLE `hero_images` (
-  `id` int NOT NULL,
-  `image_path` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `sort_order` int DEFAULT '0',
-  `fill_effect` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT 'none',
-  `title` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT '',
-  `subtitle` text COLLATE utf8mb3_spanish_ci,
-  `title_animation` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT 'none',
-  `subtitle_animation` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT 'none',
-  `font_title` varchar(100) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `font_subtitle` varchar(100) COLLATE utf8mb3_spanish_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `id` int(11) NOT NULL,
+  `image_path` varchar(255) DEFAULT NULL,
+  `sort_order` int(11) DEFAULT 0,
+  `fill_effect` varchar(255) DEFAULT 'none',
+  `title` varchar(255) DEFAULT '',
+  `subtitle` text DEFAULT NULL,
+  `title_animation` varchar(255) DEFAULT 'none',
+  `subtitle_animation` varchar(255) DEFAULT 'none',
+  `font_title` varchar(100) DEFAULT NULL,
+  `font_subtitle` varchar(100) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -1229,16 +1267,16 @@ CREATE TABLE `hero_images` (
 --
 
 CREATE TABLE `inventarios` (
-  `id` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `fecha_apertura` datetime NOT NULL,
-  `observacion_apertura` varchar(200) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `observacion_apertura` varchar(200) NOT NULL,
   `fecha_cierre` datetime DEFAULT NULL,
-  `observacion_cierre` varchar(200) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `usuario_id` int NOT NULL,
-  `sucursal_id` int NOT NULL,
+  `observacion_cierre` varchar(200) DEFAULT NULL,
+  `usuario_id` int(11) NOT NULL,
+  `sucursal_id` int(11) NOT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -1247,16 +1285,42 @@ CREATE TABLE `inventarios` (
 --
 
 CREATE TABLE `inventario_detalles` (
-  `id` int NOT NULL,
-  `inventario_id` int NOT NULL,
-  `producto_id` int NOT NULL,
+  `id` int(11) NOT NULL,
+  `inventario_id` int(11) NOT NULL,
+  `producto_id` int(11) NOT NULL,
   `cantidad` double NOT NULL,
   `cantidad_real` double NOT NULL,
   `diferencia` double NOT NULL,
-  `estado` int NOT NULL DEFAULT '0',
+  `estado` int(11) NOT NULL DEFAULT 0,
   `fecha_registro` datetime NOT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `inventario_lote`
+--
+
+CREATE TABLE `inventario_lote` (
+  `idinventario_lote` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `codigo_lote` varchar(50) NOT NULL,
+  `fecha_vencimiento` date NOT NULL,
+  `stock` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `stock_original` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
+
+--
+-- Dumping data for table `inventario_lote`
+--
+
+INSERT INTO `inventario_lote` (`idinventario_lote`, `idproducto`, `idsucursal`, `codigo_lote`, `fecha_vencimiento`, `stock`, `stock_original`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 31, 1, 'FDG54UI', '2026-09-25', 11.00, 15.00, '2026-08-12 13:29:11', '2026-08-12 14:45:13', NULL);
 
 -- --------------------------------------------------------
 
@@ -1265,13 +1329,13 @@ CREATE TABLE `inventario_detalles` (
 --
 
 CREATE TABLE `inventario_producto` (
-  `idinventario` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `stock` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `stock_minimo` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `stock_maximo` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `precio_compra` decimal(10,2) DEFAULT '0.00',
+  `idinventario` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `stock` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `stock_minimo` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `stock_maximo` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `precio_compra` decimal(10,2) DEFAULT 0.00,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
@@ -1302,10 +1366,10 @@ INSERT INTO `inventario_producto` (`idinventario`, `idproducto`, `idsucursal`, `
 (26, 27, 1, 0.00, 1.00, 10.00, 5000.00, NULL, '2026-07-16 22:24:49', NULL),
 (27, 28, 1, 0.00, 1.00, 1.00, 6000.00, '2026-07-16 23:03:41', '2026-07-17 19:04:45', NULL),
 (28, 29, 1, 0.00, 1.00, 10.00, 2500.00, '2026-07-16 23:03:41', '2026-07-17 19:01:27', NULL),
-(30, 31, 1, 0.00, 10.00, 100.00, 5.00, NULL, '2026-08-09 20:17:03', NULL),
+(30, 31, 1, 11.00, 10.00, 100.00, 5.00, NULL, '2026-08-12 14:45:13', NULL),
 (31, 32, 1, 1.00, 1.00, 1.00, 5000.00, NULL, '2026-07-27 17:42:54', NULL),
 (32, 33, 1, 59.00, 10.00, 100.00, 20.00, NULL, '2026-08-11 22:36:06', NULL),
-(33, 34, 2, 10.00, 10.00, 100.00, 5.00, '2026-08-02 09:05:09', '2026-08-02 09:05:09', NULL),
+(33, 34, 2, 8.00, 10.00, 100.00, 5.00, '2026-08-02 09:05:09', '2026-08-12 14:28:23', NULL),
 (34, 35, 2, 6.00, 10.00, 100.00, 20.00, '2026-08-02 09:12:06', '2026-08-02 09:12:06', NULL),
 (35, 36, 1, 1.00, 1.00, 1.00, 1000.00, NULL, NULL, NULL);
 
@@ -1316,11 +1380,11 @@ INSERT INTO `inventario_producto` (`idinventario`, `idproducto`, `idsucursal`, `
 --
 
 CREATE TABLE `inventario_seleccionados` (
-  `id` int NOT NULL,
-  `idinventario` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `cantidad` decimal(10,2) NOT NULL DEFAULT '0.00'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `id` int(11) NOT NULL,
+  `idinventario` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `cantidad` decimal(10,2) NOT NULL DEFAULT 0.00
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -1329,22 +1393,22 @@ CREATE TABLE `inventario_seleccionados` (
 --
 
 CREATE TABLE `kardex` (
-  `id` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `id` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
-  `idsucursal` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `idproducto_configuracion` int DEFAULT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `idproducto_configuracion` int(11) DEFAULT NULL,
   `cantidad` decimal(11,3) NOT NULL,
-  `cantidad_contenedor` decimal(11,2) NOT NULL DEFAULT '1.00',
+  `cantidad_contenedor` decimal(11,2) NOT NULL DEFAULT 1.00,
   `precio_unitario` double NOT NULL,
   `stock_actual` decimal(11,3) NOT NULL,
-  `tipo_movimiento` int NOT NULL,
-  `motivo` varchar(255) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `descripcion` varchar(500) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `fecha_kardex` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `tipo_movimiento` int(11) NOT NULL,
+  `motivo` varchar(255) NOT NULL,
+  `descripcion` varchar(500) DEFAULT NULL,
+  `fecha_kardex` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `kardex`
@@ -1433,7 +1497,15 @@ INSERT INTO `kardex` (`id`, `created_at`, `updated_at`, `idsucursal`, `idproduct
 (82, '2026-08-11 22:29:20', '2026-08-11 22:29:20', 1, 33, NULL, 1.000, 1.00, 20, 52.000, 1, 'Compra', NULL, '2026-08-12 03:29:20', NULL),
 (83, '2026-08-11 22:30:21', '2026-08-11 22:30:21', 1, 33, NULL, 1.000, 1.00, 20, 53.000, 1, 'Compra', NULL, '2026-08-12 03:30:21', NULL),
 (84, '2026-08-11 22:32:58', '2026-08-11 22:32:58', 1, 33, NULL, 12.000, 1.00, 20, 65.000, 1, 'Compra', NULL, '2026-08-12 03:32:58', NULL),
-(85, '2026-08-11 22:36:06', '2026-08-11 22:36:06', 1, 33, 37, 1.000, 6.00, 200, 59.000, 0, 'Salida por transferencia', 'Salida generada por la venta #118', '2026-08-12 03:36:06', NULL);
+(85, '2026-08-11 22:36:06', '2026-08-11 22:36:06', 1, 33, 37, 1.000, 6.00, 200, 59.000, 0, 'Salida por transferencia', 'Salida generada por la venta #118', '2026-08-12 03:36:06', NULL),
+(86, '2026-08-12 13:29:11', '2026-08-12 13:29:11', 1, 31, NULL, 10.000, 1.00, 5, 10.000, 1, 'Compra', NULL, '2026-08-12 18:29:11', NULL),
+(87, '2026-08-12 13:30:20', '2026-08-12 13:30:20', 1, 31, NULL, 5.000, 1.00, 5, 15.000, 1, 'Compra', NULL, '2026-08-12 18:30:20', NULL),
+(88, '2026-08-12 14:03:31', '2026-08-12 14:03:31', 1, 31, 28, 1.000, 1.00, 10, 14.000, 0, 'Salida por venta', 'Salida generada por la venta #119', '2026-08-12 19:03:31', NULL),
+(89, '2026-08-12 14:11:53', '2026-08-12 14:11:53', 1, 31, 29, 1.000, 6.00, 60, 13.000, 0, 'Salida por venta', 'Salida generada por la venta #122', '2026-08-12 19:11:53', NULL),
+(90, '2026-08-12 14:27:58', '2026-08-12 14:27:58', 2, 34, 23, 1.000, 1.00, 10, 9.000, 0, 'Salida por venta', 'Salida generada por la venta #129', '2026-08-12 19:27:58', NULL),
+(91, '2026-08-12 14:28:23', '2026-08-12 14:28:23', 2, 34, 23, 1.000, 1.00, 10, 8.000, 0, 'Salida por venta', 'Salida generada por la venta #130', '2026-08-12 19:28:23', NULL),
+(92, '2026-08-12 14:44:56', '2026-08-12 14:44:56', 1, 31, 29, 1.000, 6.00, 60, 12.000, 0, 'Salida por venta', 'Salida generada por la venta #131', '2026-08-12 19:44:56', NULL),
+(93, '2026-08-12 14:45:13', '2026-08-12 14:45:13', 1, 31, 29, 1.000, 6.00, 60, 11.000, 0, 'Salida por venta', 'Salida generada por la venta #132', '2026-08-12 19:45:13', NULL);
 
 -- --------------------------------------------------------
 
@@ -1442,14 +1514,14 @@ INSERT INTO `kardex` (`id`, `created_at`, `updated_at`, `idsucursal`, `idproduct
 --
 
 CREATE TABLE `login_historial` (
-  `idhistorial` int NOT NULL,
-  `idusuario` int NOT NULL,
-  `ip` varchar(45) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `user_agent` text COLLATE utf8mb3_spanish_ci,
+  `idhistorial` int(11) NOT NULL,
+  `idusuario` int(11) NOT NULL,
+  `ip` varchar(45) NOT NULL,
+  `user_agent` text DEFAULT NULL,
   `fecha` datetime NOT NULL,
   `exito` tinyint(1) NOT NULL,
   `logout` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `login_historial`
@@ -1506,7 +1578,8 @@ INSERT INTO `login_historial` (`idhistorial`, `idusuario`, `ip`, `user_agent`, `
 (48, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 12:58:20', 0, '2026-08-11 18:07:27'),
 (49, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:07:31', 0, '2026-08-11 18:09:53'),
 (50, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:09:57', 0, '2026-08-11 18:26:00'),
-(51, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:26:04', 1, NULL);
+(51, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:26:04', 1, NULL),
+(52, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-12 08:18:45', 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -1515,10 +1588,10 @@ INSERT INTO `login_historial` (`idhistorial`, `idusuario`, `ip`, `user_agent`, `
 --
 
 CREATE TABLE `marca` (
-  `idmarca` int NOT NULL,
-  `nombre` varchar(100) COLLATE utf32_spanish_ci NOT NULL,
-  `descripcion` varchar(500) COLLATE utf32_spanish_ci NOT NULL,
-  `estado` int NOT NULL DEFAULT '1'
+  `idmarca` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` varchar(500) NOT NULL,
+  `estado` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 --
@@ -1535,10 +1608,10 @@ INSERT INTO `marca` (`idmarca`, `nombre`, `descripcion`, `estado`) VALUES
 --
 
 CREATE TABLE `modelo` (
-  `idmodelo` int NOT NULL,
-  `nombre` varchar(100) COLLATE utf32_spanish_ci NOT NULL,
-  `descripcion` varchar(500) COLLATE utf32_spanish_ci NOT NULL,
-  `estado` int NOT NULL DEFAULT '1'
+  `idmodelo` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` varchar(500) NOT NULL,
+  `estado` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 --
@@ -1555,10 +1628,10 @@ INSERT INTO `modelo` (`idmodelo`, `nombre`, `descripcion`, `estado`) VALUES
 --
 
 CREATE TABLE `motivos_nota` (
-  `id` int NOT NULL,
-  `descripcion` varchar(255) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `condicion` tinyint(1) NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `id` int(11) NOT NULL,
+  `descripcion` varchar(255) NOT NULL,
+  `condicion` tinyint(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -1567,24 +1640,24 @@ CREATE TABLE `motivos_nota` (
 --
 
 CREATE TABLE `movimiento` (
-  `idmovimiento` int NOT NULL,
-  `idcaja` int NOT NULL,
-  `idbanco` int DEFAULT NULL,
+  `idmovimiento` int(11) NOT NULL,
+  `idcaja` int(11) NOT NULL,
+  `idbanco` int(11) DEFAULT NULL,
   `fecha` datetime DEFAULT NULL,
-  `tipo` varchar(25) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idpersonal` int DEFAULT NULL,
-  `idusuario` int NOT NULL,
+  `tipo` varchar(25) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idpersonal` int(11) DEFAULT NULL,
+  `idusuario` int(11) NOT NULL,
   `totalefectivo` decimal(11,2) NOT NULL,
-  `formapago` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `formapago` varchar(50) NOT NULL,
   `totaldeposito` decimal(10,2) NOT NULL,
-  `noperacion` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `descripcion` text COLLATE utf8mb3_spanish_ci NOT NULL,
-  `idconcepto_movimiento` int DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `noperacion` varchar(50) DEFAULT NULL,
+  `descripcion` text NOT NULL,
+  `idconcepto_movimiento` int(11) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `movimiento`
@@ -1610,10 +1683,10 @@ INSERT INTO `movimiento` (`idmovimiento`, `idcaja`, `idbanco`, `fecha`, `tipo`, 
 --
 
 CREATE TABLE `nombre_precios` (
-  `idnombre_p` int NOT NULL,
-  `descripcion` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `idnombre_p` int(11) NOT NULL,
+  `descripcion` varchar(255) DEFAULT NULL,
   `estado` tinyint(1) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `nombre_precios`
@@ -1629,23 +1702,23 @@ INSERT INTO `nombre_precios` (`idnombre_p`, `descripcion`, `estado`) VALUES
 --
 
 CREATE TABLE `notificaciones` (
-  `idnotificacion` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idtraslado` int DEFAULT NULL,
-  `mensaje` text COLLATE utf8mb3_spanish_ci NOT NULL,
-  `leido` tinyint(1) DEFAULT '0',
-  `fecha` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `idcliente` int DEFAULT NULL,
-  `idcpc` int DEFAULT NULL,
-  `telefono` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `canal` enum('SISTEMA','WHATSAPP') COLLATE utf8mb3_spanish_ci DEFAULT 'SISTEMA',
-  `estado` enum('PENDIENTE','ENVIADO','ERROR') COLLATE utf8mb3_spanish_ci DEFAULT 'PENDIENTE',
-  `respuesta_api` text COLLATE utf8mb3_spanish_ci,
+  `idnotificacion` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idtraslado` int(11) DEFAULT NULL,
+  `mensaje` text NOT NULL,
+  `leido` tinyint(1) DEFAULT 0,
+  `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
+  `idcliente` int(11) DEFAULT NULL,
+  `idcpc` int(11) DEFAULT NULL,
+  `telefono` varchar(20) DEFAULT NULL,
+  `canal` enum('SISTEMA','WHATSAPP') DEFAULT 'SISTEMA',
+  `estado` enum('PENDIENTE','ENVIADO','ERROR') DEFAULT 'PENDIENTE',
+  `respuesta_api` text DEFAULT NULL,
   `fecha_envio` datetime DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `notificaciones`
@@ -1669,20 +1742,20 @@ INSERT INTO `notificaciones` (`idnotificacion`, `idsucursal`, `idtraslado`, `men
 --
 
 CREATE TABLE `orden_trabajo` (
-  `idorden` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `numero` varchar(10) COLLATE utf32_spanish_ci NOT NULL,
-  `tipo` enum('MANTENIMIENTO','REPARACION','ENSAMBLAJE','DESARME','RESTAURACION') COLLATE utf32_spanish_ci NOT NULL,
-  `estado` enum('PENDIENTE','EN_PROCESO','FINALIZADO','CANCELADO') COLLATE utf32_spanish_ci NOT NULL DEFAULT 'PENDIENTE',
-  `fecha_inicio` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idorden` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `numero` varchar(10) NOT NULL,
+  `tipo` enum('MANTENIMIENTO','REPARACION','ENSAMBLAJE','DESARME','RESTAURACION') NOT NULL,
+  `estado` enum('PENDIENTE','EN_PROCESO','FINALIZADO','CANCELADO') NOT NULL DEFAULT 'PENDIENTE',
+  `fecha_inicio` datetime NOT NULL DEFAULT current_timestamp(),
   `fecha_fin` datetime DEFAULT NULL,
-  `observaciones` text COLLATE utf32_spanish_ci,
-  `costo_materiales` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `costo_servicios` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `costo_total` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `idusuario` int NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `observaciones` text DEFAULT NULL,
+  `costo_materiales` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `costo_servicios` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `costo_total` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `idusuario` int(11) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
@@ -1693,15 +1766,15 @@ CREATE TABLE `orden_trabajo` (
 --
 
 CREATE TABLE `orden_trabajo_detalle` (
-  `iddetalle` int NOT NULL,
-  `idorden` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `tipo` enum('MATERIAL','SERVICIO') COLLATE utf32_spanish_ci NOT NULL DEFAULT 'MATERIAL',
-  `cantidad` decimal(10,2) NOT NULL DEFAULT '1.00',
-  `precio_unitario` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `subtotal` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `observacion` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `iddetalle` int(11) NOT NULL,
+  `idorden` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `tipo` enum('MATERIAL','SERVICIO') NOT NULL DEFAULT 'MATERIAL',
+  `cantidad` decimal(10,2) NOT NULL DEFAULT 1.00,
+  `precio_unitario` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `subtotal` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `observacion` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
@@ -1713,13 +1786,13 @@ CREATE TABLE `orden_trabajo_detalle` (
 --
 
 CREATE TABLE `orden_trabajo_mecanico` (
-  `id` int NOT NULL,
-  `idorden` int NOT NULL,
-  `idpersonal` int NOT NULL,
-  `rol` enum('PRINCIPAL','AYUDANTE') COLLATE utf32_spanish_ci NOT NULL DEFAULT 'AYUDANTE',
+  `id` int(11) NOT NULL,
+  `idorden` int(11) NOT NULL,
+  `idpersonal` int(11) NOT NULL,
+  `rol` enum('PRINCIPAL','AYUDANTE') NOT NULL DEFAULT 'AYUDANTE',
   `fecha_inicio` datetime DEFAULT NULL,
   `fecha_fin` datetime DEFAULT NULL,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
@@ -1731,14 +1804,14 @@ CREATE TABLE `orden_trabajo_mecanico` (
 --
 
 CREATE TABLE `pagos_asistencia` (
-  `idpago` int NOT NULL,
-  `idasistencia` int NOT NULL,
-  `idpersonal` int NOT NULL,
+  `idpago` int(11) NOT NULL,
+  `idasistencia` int(11) NOT NULL,
+  `idpersonal` int(11) NOT NULL,
   `fecha` date NOT NULL,
   `monto_pago` decimal(10,2) NOT NULL,
-  `observacion` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `fecha_registro` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `observacion` varchar(255) DEFAULT NULL,
+  `fecha_registro` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -1747,9 +1820,9 @@ CREATE TABLE `pagos_asistencia` (
 --
 
 CREATE TABLE `permiso` (
-  `idpermiso` int NOT NULL,
-  `nombre` varchar(30) COLLATE utf8mb3_spanish_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `idpermiso` int(11) NOT NULL,
+  `nombre` varchar(30) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `permiso`
@@ -1779,28 +1852,28 @@ INSERT INTO `permiso` (`idpermiso`, `nombre`) VALUES
 --
 
 CREATE TABLE `persona` (
-  `idpersona` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idpersona` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
-  `tipo_persona` varchar(20) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `nombre` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish2_ci NOT NULL,
-  `tipo_documento` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `num_documento` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `direccion` varchar(70) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `telefono` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `email` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `tipo_persona` varchar(20) NOT NULL,
+  `nombre` varchar(100) CHARACTER SET utf8 COLLATE utf8_spanish2_ci NOT NULL,
+  `tipo_documento` varchar(20) DEFAULT NULL,
+  `num_documento` varchar(20) DEFAULT NULL,
+  `direccion` varchar(70) DEFAULT NULL,
+  `telefono` varchar(20) DEFAULT NULL,
+  `email` varchar(50) DEFAULT NULL,
   `fecha` date DEFAULT NULL,
-  `latitude` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `longitude` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `medida_derecha` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `medida_izquierda` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `latitude` varchar(20) DEFAULT NULL,
+  `longitude` varchar(20) DEFAULT NULL,
+  `medida_derecha` varchar(50) DEFAULT NULL,
+  `medida_izquierda` varchar(50) DEFAULT NULL,
   `fecha_registro` datetime DEFAULT NULL,
-  `isproveedor` tinyint(1) DEFAULT '0',
-  `dipc` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `addc` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `productoc` varchar(250) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `isproveedor` tinyint(1) DEFAULT 0,
+  `dipc` varchar(250) DEFAULT NULL,
+  `addc` varchar(250) DEFAULT NULL,
+  `productoc` varchar(250) DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `persona`
@@ -1834,22 +1907,22 @@ INSERT INTO `persona` (`idpersona`, `created_at`, `updated_at`, `tipo_persona`, 
 --
 
 CREATE TABLE `personal` (
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
-  `idpersonal` int NOT NULL,
-  `nombre` varchar(100) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `tipo_documento` varchar(20) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `num_documento` varchar(20) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `direccion` varchar(70) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `telefono` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `email` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `cargo` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `imagen` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci DEFAULT 'user.png',
+  `idpersonal` int(11) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `tipo_documento` varchar(20) NOT NULL,
+  `num_documento` varchar(20) NOT NULL,
+  `direccion` varchar(70) DEFAULT NULL,
+  `telefono` varchar(20) DEFAULT NULL,
+  `email` varchar(50) DEFAULT NULL,
+  `cargo` varchar(20) DEFAULT NULL,
+  `imagen` varchar(50) DEFAULT 'user.png',
   `porcentaje` decimal(11,2) DEFAULT NULL,
   `salario` decimal(11,2) DEFAULT NULL,
   `condicion` tinyint(1) NOT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `personal`
@@ -1868,20 +1941,20 @@ INSERT INTO `personal` (`created_at`, `updated_at`, `idpersonal`, `nombre`, `tip
 --
 
 CREATE TABLE `producto` (
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
-  `idproducto` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idcategoria` int DEFAULT NULL,
-  `idunidad_medida` int NOT NULL,
-  `idrubro` int DEFAULT NULL,
-  `idcondicionventa` int DEFAULT NULL,
-  `idmarca` int DEFAULT NULL,
-  `idmodelo` int DEFAULT NULL,
-  `tipo_producto` varchar(20) COLLATE utf8mb3_spanish_ci NOT NULL DEFAULT 'Vehiculo',
-  `registrosan` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `codigo` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `nombre` varchar(250) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idcategoria` int(11) DEFAULT NULL,
+  `idunidad_medida` int(11) NOT NULL,
+  `idrubro` int(11) DEFAULT NULL,
+  `idcondicionventa` int(11) DEFAULT NULL,
+  `idmarca` int(11) DEFAULT NULL,
+  `idmodelo` int(11) DEFAULT NULL,
+  `tipo_producto` varchar(20) NOT NULL DEFAULT 'Vehiculo',
+  `registrosan` varchar(50) DEFAULT NULL,
+  `codigo` varchar(50) DEFAULT NULL,
+  `nombre` varchar(250) NOT NULL,
   `precio` decimal(11,2) DEFAULT NULL,
   `precioB` decimal(11,2) DEFAULT NULL,
   `precioC` decimal(11,2) DEFAULT NULL,
@@ -1895,50 +1968,51 @@ CREATE TABLE `producto` (
   `utilprecio` decimal(11,2) DEFAULT NULL,
   `preciocigv` decimal(11,2) DEFAULT NULL,
   `fecha` date DEFAULT NULL,
-  `descripcion` varchar(256) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `imagen` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT 'anonymous.png',
-  `condicion` tinyint(1) NOT NULL DEFAULT '1',
-  `controla_stock` enum('Si','No') COLLATE utf8mb3_spanish_ci NOT NULL DEFAULT 'Si',
-  `requiere_serie` tinyint(1) NOT NULL DEFAULT '0',
-  `alerta_stock` enum('Si','No') COLLATE utf8mb3_spanish_ci NOT NULL DEFAULT 'Si',
-  `proigv` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `percha` varchar(100) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `descripcion` varchar(256) DEFAULT NULL,
+  `imagen` varchar(50) DEFAULT 'anonymous.png',
+  `condicion` tinyint(1) NOT NULL DEFAULT 1,
+  `controla_stock` enum('Si','No') NOT NULL DEFAULT 'Si',
+  `requiere_serie` tinyint(1) NOT NULL DEFAULT 0,
+  `alerta_stock` enum('Si','No') NOT NULL DEFAULT 'Si',
+  `is_venta_lote` tinyint(1) NOT NULL DEFAULT 0,
+  `proigv` varchar(50) DEFAULT NULL,
+  `percha` varchar(100) DEFAULT NULL,
   `comisionV` decimal(11,2) DEFAULT NULL,
-  `fechac` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `fechac` timestamp NULL DEFAULT current_timestamp(),
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `producto`
 --
 
-INSERT INTO `producto` (`created_at`, `updated_at`, `idproducto`, `idsucursal`, `idcategoria`, `idunidad_medida`, `idrubro`, `idcondicionventa`, `idmarca`, `idmodelo`, `tipo_producto`, `registrosan`, `codigo`, `nombre`, `precio`, `precioB`, `precioC`, `precioD`, `precioE`, `margenpubl`, `margendes`, `margenp1`, `margenp2`, `margendist`, `utilprecio`, `preciocigv`, `fecha`, `descripcion`, `imagen`, `condicion`, `controla_stock`, `requiere_serie`, `alerta_stock`, `proigv`, `percha`, `comisionV`, `fechac`, `deleted_at`) VALUES
-('2026-07-10 22:43:19', '2026-07-11 07:59:46', 1, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
-('2026-07-10 23:59:19', '2026-07-11 07:59:50', 4, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026002', 'NUEVA CAJAMARCA', 9000.00, 1.00, 0.00, 0.00, 0.00, 28.57, 32.86, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'Plato norteño', 'anonymous.png', 1, 'No', 0, 'No', 'No Gravada', NULL, 0.00, '2026-07-11 04:59:19', NULL),
-('2026-07-11 00:05:59', '2026-07-11 08:06:46', 5, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '1', '2026007', 'Moto CB 150 XR', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, 50.00, -99.98, -99.98, -99.98, 3000.00, 0.00, NULL, 'DFNDMGM', 'DFNDMGM', 1, 'No', 0, 'No', '', NULL, 1.00, '2026-07-11 05:05:59', NULL),
-('2026-07-11 00:06:34', '2026-07-11 08:08:48', 8, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
-('2026-07-11 22:06:38', '2026-07-11 22:06:38', 12, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
-('2026-07-12 00:25:12', '2026-07-12 00:25:12', 13, 2, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026002', 'NUEVA CAJAMARCA', 9000.00, 1.00, 0.00, 0.00, 0.00, 28.57, 32.86, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'Plato norteño', 'anonymous.png', 1, 'No', 0, 'No', 'No Gravada', NULL, 0.00, '2026-07-11 04:59:19', NULL),
-('2026-07-12 09:02:33', '2026-07-12 09:02:33', 14, 2, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
-('2026-07-12 23:37:03', '2026-07-12 23:37:03', 15, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '1', '2026007', 'Moto CB 150 XR', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, 50.00, -99.98, -99.98, -99.98, 3000.00, 0.00, NULL, 'DFNDMGM', 'DFNDMGM', 1, 'No', 0, 'No', '', NULL, 1.00, '2026-07-11 05:05:59', NULL),
-('2026-07-12 23:37:51', '2026-07-12 23:37:51', 16, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
-('2026-07-12 23:40:57', '2026-07-12 23:40:57', 17, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
-('2026-07-12 23:55:19', '2026-07-12 23:55:19', 18, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
-('2026-07-13 00:00:51', '2026-07-13 00:00:51', 19, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
-('2026-07-13 00:10:37', '2026-07-13 00:10:37', 22, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
-('2026-07-13 11:45:23', '2026-07-13 11:45:23', 23, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
-('2026-07-13 13:24:27', '2026-07-13 13:24:27', 24, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
-('2026-07-16 09:06:39', '2026-07-16 09:06:39', 25, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026009', 'MOTO NS 200 BAJAJ', 11000.00, 1.00, 0.00, 0.00, 0.00, 37.50, 43.75, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'JTDJ', 'anonymous.png', 1, 'No', 0, 'No', 'Gravada', NULL, 0.00, '2026-07-16 14:06:39', NULL),
-('2026-07-16 10:20:56', '2026-08-11 20:22:30', 26, 1, 1, 1, 1, 4, 1, 1, 'Vehiculo', '', '2026010', 'GL-125 REACH', 6000.00, 1.00, 0.00, 0.00, 0.00, 50.00, 50.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'No', 'No Gravada', NULL, 0.00, '2026-07-16 15:20:56', NULL),
-('2026-07-16 22:24:01', '2026-07-16 22:24:01', 27, 1, 1, 1, 1, 4, 1, 1, 'Vehiculo', '', '2026011', 'MOTO LINEAL NUEV', 6000.00, 1.00, 0.00, 0.00, 0.00, 20.00, 20.00, -100.00, -100.00, -100.00, 1000.00, 0.00, NULL, 'erg', 'anonymous.png', 1, 'No', 0, 'No', 'Gravada', NULL, 0.00, '2026-07-17 03:24:01', NULL),
-('2026-07-16 23:03:41', '2026-07-16 23:03:41', 28, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
-('2026-07-16 23:03:41', '2026-07-16 23:03:41', 29, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
-('2026-07-23 10:26:20', '2026-08-09 20:17:03', 31, 1, 3, 1, 2, 4, 1, 1, 'Producto', '', '2026012', 'Camara para m300', 10.00, 0.00, 1.00, 1.00, 1.00, 100.00, 100.00, -100.00, -100.00, -100.00, 5.00, 0.00, NULL, 'ergerh', 'anonymous.png', 1, 'Si', 0, 'Si', 'Gravada', NULL, 1.00, '2026-07-23 15:26:20', NULL),
-('2026-07-27 17:21:00', '2026-08-05 21:45:52', 32, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026013', 'MOTO LINEAL HIUNDAT 200', 7000.00, 1.00, 1.00, 1.00, 1.00, 40.00, 40.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'owejfpwjefpioew', '1785984353.webp', 1, 'No', 0, 'No', 'Gravada', NULL, 1.00, '2026-07-27 22:21:00', NULL),
-('2026-08-02 08:17:56', '2026-08-11 20:27:11', 33, 1, 3, 1, 2, 1, 1, 1, 'Producto', '', '2026014', 'ANILLOS PARA CB190', 34.00, 0.00, 1.00, 1.00, 1.00, 75.00, 75.00, -100.00, -100.00, -100.00, 15.00, 0.00, NULL, 'jtykyukyuk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 1.00, '2026-08-02 13:17:56', NULL),
-('2026-08-02 09:05:09', '2026-08-02 09:05:09', 34, 2, 3, 1, 2, 4, 1, 1, 'Producto', '', '2026012', 'Camara para m300', 10.00, 1.00, 1.00, 1.00, 1.00, 100.00, 100.00, -100.00, -100.00, -100.00, 5.00, 0.00, NULL, 'ergerh', 'anonymous.png', 1, 'Si', 0, 'Si', 'Gravada', NULL, 1.00, '2026-07-23 15:26:20', NULL),
-('2026-08-02 09:12:06', '2026-08-02 09:12:06', 35, 2, 3, 1, 2, 1, 1, 1, 'Producto', '', '2026014', 'ANILLOS PARA CB190', 35.00, 1.00, 1.00, 1.00, 1.00, 75.00, 75.00, -100.00, -100.00, -100.00, 15.00, 0.00, NULL, 'jtykyukyuk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 1.00, '2026-08-02 13:17:56', NULL),
-('2026-08-06 00:37:10', '2026-08-06 00:37:10', 36, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026015', 'UGIYYIYGGYI', 1000.00, 1.00, 0.00, 0.00, 0.00, 0.00, 70.00, -100.00, -100.00, -100.00, 0.00, 0.00, NULL, NULL, 'anonymous.png', 1, 'No', 0, 'No', 'No Gravada', NULL, 0.00, '2026-08-06 05:37:10', NULL);
+INSERT INTO `producto` (`created_at`, `updated_at`, `idproducto`, `idsucursal`, `idcategoria`, `idunidad_medida`, `idrubro`, `idcondicionventa`, `idmarca`, `idmodelo`, `tipo_producto`, `registrosan`, `codigo`, `nombre`, `precio`, `precioB`, `precioC`, `precioD`, `precioE`, `margenpubl`, `margendes`, `margenp1`, `margenp2`, `margendist`, `utilprecio`, `preciocigv`, `fecha`, `descripcion`, `imagen`, `condicion`, `controla_stock`, `requiere_serie`, `alerta_stock`, `is_venta_lote`, `proigv`, `percha`, `comisionV`, `fechac`, `deleted_at`) VALUES
+('2026-07-10 22:43:19', '2026-07-11 07:59:46', 1, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
+('2026-07-10 23:59:19', '2026-07-11 07:59:50', 4, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026002', 'NUEVA CAJAMARCA', 9000.00, 1.00, 0.00, 0.00, 0.00, 28.57, 32.86, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'Plato norteño', 'anonymous.png', 1, 'No', 0, 'No', 0, 'No Gravada', NULL, 0.00, '2026-07-11 04:59:19', NULL),
+('2026-07-11 00:05:59', '2026-07-11 08:06:46', 5, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '1', '2026007', 'Moto CB 150 XR', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, 50.00, -99.98, -99.98, -99.98, 3000.00, 0.00, NULL, 'DFNDMGM', 'DFNDMGM', 1, 'No', 0, 'No', 0, '', NULL, 1.00, '2026-07-11 05:05:59', NULL),
+('2026-07-11 00:06:34', '2026-07-11 08:08:48', 8, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
+('2026-07-11 22:06:38', '2026-07-11 22:06:38', 12, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
+('2026-07-12 00:25:12', '2026-07-12 00:25:12', 13, 2, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026002', 'NUEVA CAJAMARCA', 9000.00, 1.00, 0.00, 0.00, 0.00, 28.57, 32.86, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'Plato norteño', 'anonymous.png', 1, 'No', 0, 'No', 0, 'No Gravada', NULL, 0.00, '2026-07-11 04:59:19', NULL),
+('2026-07-12 09:02:33', '2026-07-12 09:02:33', 14, 2, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
+('2026-07-12 23:37:03', '2026-07-12 23:37:03', 15, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '1', '2026007', 'Moto CB 150 XR', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, 50.00, -99.98, -99.98, -99.98, 3000.00, 0.00, NULL, 'DFNDMGM', 'DFNDMGM', 1, 'No', 0, 'No', 0, '', NULL, 1.00, '2026-07-11 05:05:59', NULL),
+('2026-07-12 23:37:51', '2026-07-12 23:37:51', 16, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
+('2026-07-12 23:40:57', '2026-07-12 23:40:57', 17, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
+('2026-07-12 23:55:19', '2026-07-12 23:55:19', 18, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
+('2026-07-13 00:00:51', '2026-07-13 00:00:51', 19, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
+('2026-07-13 00:10:37', '2026-07-13 00:10:37', 22, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
+('2026-07-13 11:45:23', '2026-07-13 11:45:23', 23, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
+('2026-07-13 13:24:27', '2026-07-13 13:24:27', 24, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
+('2026-07-16 09:06:39', '2026-07-16 09:06:39', 25, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026009', 'MOTO NS 200 BAJAJ', 11000.00, 1.00, 0.00, 0.00, 0.00, 37.50, 43.75, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'JTDJ', 'anonymous.png', 1, 'No', 0, 'No', 0, 'Gravada', NULL, 0.00, '2026-07-16 14:06:39', NULL),
+('2026-07-16 10:20:56', '2026-08-11 20:22:30', 26, 1, 1, 1, 1, 4, 1, 1, 'Vehiculo', '', '2026010', 'GL-125 REACH', 6000.00, 1.00, 0.00, 0.00, 0.00, 50.00, 50.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'No', 0, 'No Gravada', NULL, 0.00, '2026-07-16 15:20:56', NULL),
+('2026-07-16 22:24:01', '2026-07-16 22:24:01', 27, 1, 1, 1, 1, 4, 1, 1, 'Vehiculo', '', '2026011', 'MOTO LINEAL NUEV', 6000.00, 1.00, 0.00, 0.00, 0.00, 20.00, 20.00, -100.00, -100.00, -100.00, 1000.00, 0.00, NULL, 'erg', 'anonymous.png', 1, 'No', 0, 'No', 0, 'Gravada', NULL, 0.00, '2026-07-17 03:24:01', NULL),
+('2026-07-16 23:03:41', '2026-07-16 23:03:41', 28, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
+('2026-07-16 23:03:41', '2026-07-16 23:03:41', 29, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
+('2026-07-23 10:26:20', '2026-08-09 20:17:03', 31, 1, 3, 1, 2, 4, 1, 1, 'Producto', '', '2026012', 'Camara para m300', 10.00, 0.00, 1.00, 1.00, 1.00, 100.00, 100.00, -100.00, -100.00, -100.00, 5.00, 0.00, NULL, 'ergerh', 'anonymous.png', 1, 'Si', 0, 'Si', 1, 'Gravada', NULL, 1.00, '2026-07-23 15:26:20', NULL),
+('2026-07-27 17:21:00', '2026-08-05 21:45:52', 32, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026013', 'MOTO LINEAL HIUNDAT 200', 7000.00, 1.00, 1.00, 1.00, 1.00, 40.00, 40.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'owejfpwjefpioew', '1785984353.webp', 1, 'No', 0, 'No', 0, 'Gravada', NULL, 1.00, '2026-07-27 22:21:00', NULL),
+('2026-08-02 08:17:56', '2026-08-11 20:27:11', 33, 1, 3, 1, 2, 1, 1, 1, 'Producto', '', '2026014', 'ANILLOS PARA CB190', 34.00, 0.00, 1.00, 1.00, 1.00, 75.00, 75.00, -100.00, -100.00, -100.00, 15.00, 0.00, NULL, 'jtykyukyuk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 1.00, '2026-08-02 13:17:56', NULL),
+('2026-08-02 09:05:09', '2026-08-02 09:05:09', 34, 2, 3, 1, 2, 4, 1, 1, 'Producto', '', '2026012', 'Camara para m300', 10.00, 1.00, 1.00, 1.00, 1.00, 100.00, 100.00, -100.00, -100.00, -100.00, 5.00, 0.00, NULL, 'ergerh', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'Gravada', NULL, 1.00, '2026-07-23 15:26:20', NULL),
+('2026-08-02 09:12:06', '2026-08-02 09:12:06', 35, 2, 3, 1, 2, 1, 1, 1, 'Producto', '', '2026014', 'ANILLOS PARA CB190', 35.00, 1.00, 1.00, 1.00, 1.00, 75.00, 75.00, -100.00, -100.00, -100.00, 15.00, 0.00, NULL, 'jtykyukyuk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 1.00, '2026-08-02 13:17:56', NULL),
+('2026-08-06 00:37:10', '2026-08-06 00:37:10', 36, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026015', 'UGIYYIYGGYI', 1000.00, 1.00, 0.00, 0.00, 0.00, 0.00, 70.00, -100.00, -100.00, -100.00, 0.00, 0.00, NULL, NULL, 'anonymous.png', 1, 'No', 0, 'No', 0, 'No Gravada', NULL, 0.00, '2026-08-06 05:37:10', NULL);
 
 -- --------------------------------------------------------
 
@@ -1947,20 +2021,20 @@ INSERT INTO `producto` (`created_at`, `updated_at`, `idproducto`, `idsucursal`, 
 --
 
 CREATE TABLE `producto_configuracion` (
-  `idproducto_configuracion` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idproducto_configuracion` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
-  `codigo_extra` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `contenedor` varchar(200) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `codigo_extra` varchar(50) NOT NULL,
+  `contenedor` varchar(200) NOT NULL,
   `cantidad_contenedor` decimal(11,2) NOT NULL,
   `precio_venta` decimal(11,2) DEFAULT NULL,
   `precio_credito` decimal(11,2) DEFAULT NULL,
-  `idfifo_origen` int DEFAULT '0',
+  `idfifo_origen` int(11) DEFAULT 0,
   `precio_promocion` decimal(11,2) DEFAULT NULL,
-  `estado` int NOT NULL DEFAULT '1',
-  `idproducto` int NOT NULL,
+  `estado` int(11) NOT NULL DEFAULT 1,
+  `idproducto` int(11) NOT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `producto_configuracion`
@@ -1998,16 +2072,16 @@ INSERT INTO `producto_configuracion` (`idproducto_configuracion`, `created_at`, 
 --
 
 CREATE TABLE `producto_configuracion_precios` (
-  `id` int NOT NULL,
-  `producto_configuracion_id` int NOT NULL,
+  `id` int(11) NOT NULL,
+  `producto_configuracion_id` int(11) NOT NULL,
   `precio` double NOT NULL,
-  `margen_utilidad` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `estado` int NOT NULL DEFAULT '1',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `margen_utilidad` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `estado` int(11) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `updated_at` datetime NOT NULL DEFAULT current_timestamp(),
   `deleted_at` datetime DEFAULT NULL,
-  `idnombre_p` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `idnombre_p` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `producto_configuracion_precios`
@@ -2023,20 +2097,20 @@ INSERT INTO `producto_configuracion_precios` (`id`, `producto_configuracion_id`,
 --
 
 CREATE TABLE `producto_serie` (
-  `idserie` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `numero_serie` varchar(150) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `numero_motor` varchar(150) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `placa` varchar(30) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `color` varchar(50) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `anio_fabricacion` smallint DEFAULT NULL,
-  `permiso_circulacion` varchar(150) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `tipo_vehiculo` varchar(100) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `clase_vehiculo` varchar(100) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `propietario_vehiculo` varchar(200) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `estado` enum('DISPONIBLE','RESERVADO','VENDIDO','ANULADO','TRASLADO','MANTENIMIENTO') COLLATE utf32_spanish_ci DEFAULT 'DISPONIBLE',
-  `observacion` text COLLATE utf32_spanish_ci,
+  `idserie` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `numero_serie` varchar(150) DEFAULT NULL,
+  `numero_motor` varchar(150) DEFAULT NULL,
+  `placa` varchar(30) DEFAULT NULL,
+  `color` varchar(50) DEFAULT NULL,
+  `anio_fabricacion` smallint(6) DEFAULT NULL,
+  `permiso_circulacion` varchar(150) DEFAULT NULL,
+  `tipo_vehiculo` varchar(100) DEFAULT NULL,
+  `clase_vehiculo` varchar(100) DEFAULT NULL,
+  `propietario_vehiculo` varchar(200) DEFAULT NULL,
+  `estado` enum('DISPONIBLE','RESERVADO','VENDIDO','ANULADO','TRASLADO','MANTENIMIENTO') DEFAULT 'DISPONIBLE',
+  `observacion` text DEFAULT NULL,
   `created_at` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
@@ -2081,11 +2155,11 @@ INSERT INTO `producto_serie` (`idserie`, `idproducto`, `idsucursal`, `numero_ser
 --
 
 CREATE TABLE `producto_variaciones` (
-  `id_variacion` int NOT NULL,
-  `idproducto` int DEFAULT NULL,
-  `color_nombre` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `imagen` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `id_variacion` int(11) NOT NULL,
+  `idproducto` int(11) DEFAULT NULL,
+  `color_nombre` varchar(255) DEFAULT NULL,
+  `imagen` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -2094,11 +2168,11 @@ CREATE TABLE `producto_variaciones` (
 --
 
 CREATE TABLE `recordatorio_envios` (
-  `id` int NOT NULL,
-  `idcpc` int NOT NULL,
-  `idcliente` int NOT NULL,
-  `fecha_envio` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `id` int(11) NOT NULL,
+  `idcpc` int(11) NOT NULL,
+  `idcliente` int(11) NOT NULL,
+  `fecha_envio` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `recordatorio_envios`
@@ -2147,15 +2221,15 @@ INSERT INTO `recordatorio_envios` (`id`, `idcpc`, `idcliente`, `fecha_envio`) VA
 --
 
 CREATE TABLE `recuperacion_documento` (
-  `iddocumento` int NOT NULL,
-  `idrecuperacion` int NOT NULL,
-  `tipo` enum('NOTIFICACION','CARTA_NOTARIAL','ACTA_VISITA','ACTA_ENTREGA','DENUNCIA','PODER','CONTRATO','FOTO','OTRO') COLLATE utf32_spanish_ci NOT NULL,
-  `descripcion` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `archivo` varchar(255) COLLATE utf32_spanish_ci NOT NULL,
-  `nombre_original` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `idusuario` int NOT NULL,
-  `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `iddocumento` int(11) NOT NULL,
+  `idrecuperacion` int(11) NOT NULL,
+  `tipo` enum('NOTIFICACION','CARTA_NOTARIAL','ACTA_VISITA','ACTA_ENTREGA','DENUNCIA','PODER','CONTRATO','FOTO','OTRO') NOT NULL,
+  `descripcion` varchar(255) DEFAULT NULL,
+  `archivo` varchar(255) NOT NULL,
+  `nombre_original` varchar(255) DEFAULT NULL,
+  `idusuario` int(11) NOT NULL,
+  `fecha_registro` datetime DEFAULT current_timestamp(),
+  `created_at` datetime DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
@@ -2176,21 +2250,21 @@ INSERT INTO `recuperacion_documento` (`iddocumento`, `idrecuperacion`, `tipo`, `
 --
 
 CREATE TABLE `recuperacion_vehiculo` (
-  `idrecuperacion` int NOT NULL,
-  `idventa` int NOT NULL,
-  `idpersona` int NOT NULL,
-  `idserie` int DEFAULT NULL,
-  `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP,
-  `dias_mora` int DEFAULT NULL,
+  `idrecuperacion` int(11) NOT NULL,
+  `idventa` int(11) NOT NULL,
+  `idpersona` int(11) NOT NULL,
+  `idserie` int(11) DEFAULT NULL,
+  `fecha_registro` datetime DEFAULT current_timestamp(),
+  `dias_mora` int(11) DEFAULT NULL,
   `deuda_vencida` decimal(10,2) DEFAULT NULL,
-  `nivel_riesgo` enum('BAJO','MEDIO','ALTO','CRITICO') COLLATE utf32_spanish_ci DEFAULT NULL,
-  `estado` enum('PENDIENTE','CONTACTADO','NEGOCIACION','VISITA_PROGRAMADA','RECUPERADO','CERRADO') COLLATE utf32_spanish_ci DEFAULT 'PENDIENTE',
-  `observacion` text COLLATE utf32_spanish_ci,
-  `idusuario` int DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `nivel_riesgo` enum('BAJO','MEDIO','ALTO','CRITICO') DEFAULT NULL,
+  `estado` enum('PENDIENTE','CONTACTADO','NEGOCIACION','VISITA_PROGRAMADA','RECUPERADO','CERRADO') DEFAULT 'PENDIENTE',
+  `observacion` text DEFAULT NULL,
+  `idusuario` int(11) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT current_timestamp(),
   `fecha_contacto` date DEFAULT NULL,
   `fecha_ultima_gestion` datetime DEFAULT NULL,
-  `resultado_gestion` text COLLATE utf32_spanish_ci,
+  `resultado_gestion` text DEFAULT NULL,
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
@@ -2210,18 +2284,18 @@ INSERT INTO `recuperacion_vehiculo` (`idrecuperacion`, `idventa`, `idpersona`, `
 --
 
 CREATE TABLE `refinanciamientos` (
-  `idrefinanciamiento` int NOT NULL,
-  `idventa` int NOT NULL,
+  `idrefinanciamiento` int(11) NOT NULL,
+  `idventa` int(11) NOT NULL,
   `fecha_inicio` datetime NOT NULL,
   `fecha_registro` datetime NOT NULL,
   `saldo_original` decimal(10,2) DEFAULT NULL,
   `interes` decimal(10,2) DEFAULT NULL,
   `inicial` decimal(10,2) NOT NULL,
   `total_refinanciado` decimal(10,2) NOT NULL,
-  `cuotas` int NOT NULL,
-  `frecuencia` int NOT NULL,
-  `observacion` text COLLATE utf32_spanish_ci,
-  `idusuario` int DEFAULT NULL
+  `cuotas` int(11) NOT NULL,
+  `frecuencia` int(11) NOT NULL,
+  `observacion` text DEFAULT NULL,
+  `idusuario` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 -- --------------------------------------------------------
@@ -2231,12 +2305,12 @@ CREATE TABLE `refinanciamientos` (
 --
 
 CREATE TABLE `resenas` (
-  `id_resena` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `calificacion` int NOT NULL,
-  `comentario` text COLLATE utf8mb3_spanish_ci,
-  `fecha` datetime DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `id_resena` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `calificacion` int(11) NOT NULL,
+  `comentario` text DEFAULT NULL,
+  `fecha` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -2245,16 +2319,16 @@ CREATE TABLE `resenas` (
 --
 
 CREATE TABLE `resumen_diario` (
-  `idresumen` int NOT NULL,
+  `idresumen` int(11) NOT NULL,
   `fecha_generacion` date NOT NULL,
   `fecha_envio` datetime NOT NULL,
-  `correlativo` int NOT NULL,
-  `ticket` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `nombre_xml` varchar(100) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `idsucursal` int NOT NULL,
-  `estado` varchar(20) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `respuesta_sunat` text COLLATE utf8mb3_spanish_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `correlativo` int(11) NOT NULL,
+  `ticket` varchar(50) DEFAULT NULL,
+  `nombre_xml` varchar(100) DEFAULT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `estado` varchar(20) NOT NULL,
+  `respuesta_sunat` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -2263,10 +2337,10 @@ CREATE TABLE `resumen_diario` (
 --
 
 CREATE TABLE `resumen_diario_detalle` (
-  `iddetalle` int NOT NULL,
-  `idresumen` int NOT NULL,
-  `idventa` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+  `iddetalle` int(11) NOT NULL,
+  `idresumen` int(11) NOT NULL,
+  `idventa` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 -- --------------------------------------------------------
 
@@ -2275,12 +2349,12 @@ CREATE TABLE `resumen_diario_detalle` (
 --
 
 CREATE TABLE `retenciones` (
-  `idretencion` int NOT NULL,
-  `motivo` varchar(500) COLLATE utf32_spanish_ci NOT NULL,
+  `idretencion` int(11) NOT NULL,
+  `motivo` varchar(500) NOT NULL,
   `fecha` datetime NOT NULL,
-  `idventa` int NOT NULL,
-  `estado` int NOT NULL DEFAULT '1',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idventa` int(11) NOT NULL,
+  `estado` int(11) NOT NULL DEFAULT 1,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
@@ -2300,10 +2374,10 @@ INSERT INTO `retenciones` (`idretencion`, `motivo`, `fecha`, `idventa`, `estado`
 --
 
 CREATE TABLE `rubro` (
-  `idrubro` int NOT NULL,
-  `nombre` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
+  `idrubro` int(11) NOT NULL,
+  `nombre` varchar(100) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
   `condicion` tinyint(1) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `rubro`
@@ -2320,13 +2394,13 @@ INSERT INTO `rubro` (`idrubro`, `nombre`, `condicion`) VALUES
 --
 
 CREATE TABLE `seguimiento_adjuntos` (
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
-  `idadjunto` int NOT NULL,
-  `idseguimiento` int NOT NULL,
-  `archivo` varchar(255) COLLATE utf32_spanish_ci NOT NULL,
-  `nombre_original` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP,
+  `idadjunto` int(11) NOT NULL,
+  `idseguimiento` int(11) NOT NULL,
+  `archivo` varchar(255) NOT NULL,
+  `nombre_original` varchar(255) DEFAULT NULL,
+  `fecha_registro` datetime DEFAULT current_timestamp(),
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
@@ -2346,24 +2420,24 @@ INSERT INTO `seguimiento_adjuntos` (`created_at`, `updated_at`, `idadjunto`, `id
 --
 
 CREATE TABLE `seguimiento_clientes` (
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
-  `idseguimiento` int NOT NULL,
-  `idventa` int DEFAULT NULL,
-  `idrecuperacion` int DEFAULT NULL,
-  `iddocumento` int DEFAULT NULL,
-  `idcpc` int DEFAULT NULL,
-  `idcliente` int DEFAULT NULL,
-  `idpersonal` int NOT NULL,
-  `tipo` enum('LLAMADA','VISITA','WHATSAPP','CORREO','COBRANZA','SUSTENTO','OTRO','REUNION') CHARACTER SET utf32 COLLATE utf32_spanish_ci NOT NULL,
-  `descripcion` text COLLATE utf32_spanish_ci,
-  `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP,
+  `idseguimiento` int(11) NOT NULL,
+  `idventa` int(11) DEFAULT NULL,
+  `idrecuperacion` int(11) DEFAULT NULL,
+  `iddocumento` int(11) DEFAULT NULL,
+  `idcpc` int(11) DEFAULT NULL,
+  `idcliente` int(11) DEFAULT NULL,
+  `idpersonal` int(11) NOT NULL,
+  `tipo` enum('LLAMADA','VISITA','WHATSAPP','CORREO','COBRANZA','SUSTENTO','OTRO','REUNION') NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `fecha_registro` datetime DEFAULT current_timestamp(),
   `fecha_proxima` datetime DEFAULT NULL,
   `fecha_final` datetime DEFAULT NULL,
-  `idusuario` int NOT NULL,
-  `estado` enum('PENDIENTE','REALIZADO','NO_RESPONDE','REPROGRAMADO') COLLATE utf32_spanish_ci DEFAULT 'REALIZADO',
-  `prioridad` varchar(20) COLLATE utf32_spanish_ci NOT NULL,
-  `direccion` varchar(200) COLLATE utf32_spanish_ci NOT NULL,
+  `idusuario` int(11) NOT NULL,
+  `estado` enum('PENDIENTE','REALIZADO','NO_RESPONDE','REPROGRAMADO') DEFAULT 'REALIZADO',
+  `prioridad` varchar(20) NOT NULL,
+  `direccion` varchar(200) NOT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
@@ -2388,22 +2462,22 @@ INSERT INTO `seguimiento_clientes` (`created_at`, `updated_at`, `idseguimiento`,
 --
 
 CREATE TABLE `servicio` (
-  `idservicio` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `tipo_comprobante` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-  `serie_comprobante` varchar(7) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci DEFAULT NULL,
-  `num_comprobante` varchar(10) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL,
-  `idcliente` int NOT NULL,
-  `equipo` varchar(100) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `idtecnico` int NOT NULL,
+  `idservicio` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `tipo_comprobante` varchar(20) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `serie_comprobante` varchar(7) CHARACTER SET utf8 COLLATE utf8_general_ci DEFAULT NULL,
+  `num_comprobante` varchar(10) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL,
+  `idcliente` int(11) NOT NULL,
+  `equipo` varchar(100) DEFAULT NULL,
+  `idtecnico` int(11) NOT NULL,
   `fecha_ingreso` datetime DEFAULT NULL,
   `fecha_reparacion` datetime DEFAULT NULL,
   `fecha_entrega` datetime DEFAULT NULL,
   `total` decimal(11,2) NOT NULL,
-  `descripcion_problema` text COLLATE utf8mb3_spanish_ci,
-  `descripcion_solucion` text COLLATE utf8mb3_spanish_ci,
-  `estado` enum('Recibido','En proceso','Terminado','Entregado') COLLATE utf8mb3_spanish_ci DEFAULT 'Recibido'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `descripcion_problema` text DEFAULT NULL,
+  `descripcion_solucion` text DEFAULT NULL,
+  `estado` enum('Recibido','En proceso','Terminado','Entregado') DEFAULT 'Recibido'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 -- --------------------------------------------------------
 
@@ -2412,19 +2486,19 @@ CREATE TABLE `servicio` (
 --
 
 CREATE TABLE `solicitud_credito` (
-  `idsolicitud` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `codigo` varchar(20) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `idcliente` int NOT NULL,
-  `idcotizacion` int NOT NULL,
-  `score` int DEFAULT '0',
-  `riesgo` enum('BAJO','MEDIO','ALTO','CRITICO') COLLATE utf32_spanish_ci DEFAULT 'MEDIO',
-  `estado` enum('BORRADOR','EN_PROCESO','OBSERVADO','PENDIENTE_DOCUMENTOS','APROBADO','RECHAZADO','ANULADO') COLLATE utf32_spanish_ci DEFAULT 'BORRADOR',
-  `paso_actual` int DEFAULT NULL,
-  `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP,
+  `idsolicitud` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
+  `codigo` varchar(20) DEFAULT NULL,
+  `idcliente` int(11) NOT NULL,
+  `idcotizacion` int(11) NOT NULL,
+  `score` int(11) DEFAULT 0,
+  `riesgo` enum('BAJO','MEDIO','ALTO','CRITICO') DEFAULT 'MEDIO',
+  `estado` enum('BORRADOR','EN_PROCESO','OBSERVADO','PENDIENTE_DOCUMENTOS','APROBADO','RECHAZADO','ANULADO') DEFAULT 'BORRADOR',
+  `paso_actual` int(11) DEFAULT NULL,
+  `fecha_registro` datetime DEFAULT current_timestamp(),
   `fecha_actualizacion` datetime DEFAULT NULL,
-  `idusuario` int NOT NULL,
+  `idusuario` int(11) NOT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
@@ -2446,13 +2520,13 @@ INSERT INTO `solicitud_credito` (`idsolicitud`, `idsucursal`, `created_at`, `cod
 --
 
 CREATE TABLE `solicitud_documento` (
-  `iddocumento` int NOT NULL,
-  `idsolicitud` int NOT NULL,
-  `tipo_documento` varchar(100) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `archivo` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `nombre_original` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `descripcion` varchar(200) COLLATE utf32_spanish_ci NOT NULL,
-  `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP
+  `iddocumento` int(11) NOT NULL,
+  `idsolicitud` int(11) NOT NULL,
+  `tipo_documento` varchar(100) DEFAULT NULL,
+  `archivo` varchar(255) DEFAULT NULL,
+  `nombre_original` varchar(255) DEFAULT NULL,
+  `descripcion` varchar(200) NOT NULL,
+  `fecha_registro` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 --
@@ -2471,16 +2545,16 @@ INSERT INTO `solicitud_documento` (`iddocumento`, `idsolicitud`, `tipo_documento
 --
 
 CREATE TABLE `solicitud_evaluacion` (
-  `idevaluacion` int NOT NULL,
-  `idsolicitud` int NOT NULL,
+  `idevaluacion` int(11) NOT NULL,
+  `idsolicitud` int(11) NOT NULL,
   `ingreso_mensual` decimal(12,2) DEFAULT NULL,
   `egreso_mensual` decimal(12,2) DEFAULT NULL,
   `capacidad_pago` decimal(12,2) DEFAULT NULL,
   `inicial_validada` decimal(12,2) DEFAULT NULL,
-  `score_manual` int DEFAULT NULL,
-  `observacion` text COLLATE utf32_spanish_ci,
-  `notas_comite` varchar(200) CHARACTER SET utf32 COLLATE utf32_spanish_ci DEFAULT NULL,
-  `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP
+  `score_manual` int(11) DEFAULT NULL,
+  `observacion` text DEFAULT NULL,
+  `notas_comite` varchar(200) DEFAULT NULL,
+  `fecha_registro` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 --
@@ -2501,14 +2575,14 @@ INSERT INTO `solicitud_evaluacion` (`idevaluacion`, `idsolicitud`, `ingreso_mens
 --
 
 CREATE TABLE `solicitud_workflow` (
-  `idworkflow` int NOT NULL,
-  `idsolicitud` int NOT NULL,
-  `idpaso` int NOT NULL,
-  `fecha_inicio` datetime DEFAULT CURRENT_TIMESTAMP,
+  `idworkflow` int(11) NOT NULL,
+  `idsolicitud` int(11) NOT NULL,
+  `idpaso` int(11) NOT NULL,
+  `fecha_inicio` datetime DEFAULT current_timestamp(),
   `fecha_fin` datetime DEFAULT NULL,
-  `estado` enum('PENDIENTE','EN_PROCESO','APROBADO','OBSERVADO','RECHAZADO') COLLATE utf32_spanish_ci DEFAULT 'PENDIENTE',
-  `observacion` text COLLATE utf32_spanish_ci,
-  `idusuario` int DEFAULT NULL
+  `estado` enum('PENDIENTE','EN_PROCESO','APROBADO','OBSERVADO','RECHAZADO') DEFAULT 'PENDIENTE',
+  `observacion` text DEFAULT NULL,
+  `idusuario` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 --
@@ -2545,36 +2619,14 @@ INSERT INTO `solicitud_workflow` (`idworkflow`, `idsolicitud`, `idpaso`, `fecha_
 -- --------------------------------------------------------
 
 --
--- Table structure for table `stock_fifo`
---
-
-CREATE TABLE `stock_fifo` (
-  `idfifo` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `producto_configuracion_id` int DEFAULT NULL,
-  `origen` enum('ALMACEN','COMPRA') NOT NULL,
-  `referencia_id` int DEFAULT NULL,
-  `cantidad_ingreso` decimal(11,2) NOT NULL,
-  `cantidad_restante` decimal(11,2) NOT NULL,
-  `precio_compra` decimal(11,2) NOT NULL,
-  `precio_venta` decimal(11,2) NOT NULL,
-  `fecha_ingreso` datetime NOT NULL,
-  `estado` tinyint DEFAULT '1',
-  `fvencimiento` date DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `subpermiso`
 --
 
 CREATE TABLE `subpermiso` (
-  `idsubpermiso` int NOT NULL,
-  `idpermiso` int NOT NULL,
-  `nombre` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `idsubpermiso` int(11) NOT NULL,
+  `idpermiso` int(11) NOT NULL,
+  `nombre` varchar(50) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `subpermiso`
@@ -2643,23 +2695,23 @@ INSERT INTO `subpermiso` (`idsubpermiso`, `idpermiso`, `nombre`) VALUES
 --
 
 CREATE TABLE `sucursal` (
-  `idsucursal` int NOT NULL,
-  `nombre` varchar(250) COLLATE utf8mb3_spanish2_ci NOT NULL,
-  `direccion` varchar(250) COLLATE utf8mb3_spanish2_ci NOT NULL,
-  `telefono` varchar(20) COLLATE utf8mb3_spanish2_ci NOT NULL,
-  `email` varchar(50) COLLATE utf8mb3_spanish2_ci DEFAULT NULL,
-  `departamento` varchar(60) COLLATE utf8mb3_spanish2_ci DEFAULT NULL,
-  `provincia` varchar(60) COLLATE utf8mb3_spanish2_ci DEFAULT NULL,
-  `distrito` varchar(60) COLLATE utf8mb3_spanish2_ci DEFAULT NULL,
-  `ubigeo` char(10) COLLATE utf8mb3_spanish2_ci DEFAULT NULL,
-  `moneda` varchar(10) COLLATE utf8mb3_spanish2_ci DEFAULT NULL,
-  `simbolo` varchar(10) COLLATE utf8mb3_spanish2_ci DEFAULT NULL,
-  `logo` varchar(100) COLLATE utf8mb3_spanish2_ci DEFAULT NULL,
-  `idempresa` int DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idsucursal` int(11) NOT NULL,
+  `nombre` varchar(250) NOT NULL,
+  `direccion` varchar(250) NOT NULL,
+  `telefono` varchar(20) NOT NULL,
+  `email` varchar(50) DEFAULT NULL,
+  `departamento` varchar(60) DEFAULT NULL,
+  `provincia` varchar(60) DEFAULT NULL,
+  `distrito` varchar(60) DEFAULT NULL,
+  `ubigeo` char(10) DEFAULT NULL,
+  `moneda` varchar(10) DEFAULT NULL,
+  `simbolo` varchar(10) DEFAULT NULL,
+  `logo` varchar(100) DEFAULT NULL,
+  `idempresa` int(11) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish2_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish2_ci;
 
 --
 -- Dumping data for table `sucursal`
@@ -2676,21 +2728,22 @@ INSERT INTO `sucursal` (`idsucursal`, `nombre`, `direccion`, `telefono`, `email`
 --
 
 CREATE TABLE `sucursal_configuracion` (
-  `idsucursal_configuracion` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `is_refinanciamiento` tinyint(1) NOT NULL DEFAULT '0',
-  `maximo_refinanciamientos` int NOT NULL DEFAULT '1',
-  `is_mora_credito` tinyint(1) DEFAULT '0',
+  `idsucursal_configuracion` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `is_refinanciamiento` tinyint(1) NOT NULL DEFAULT 0,
+  `maximo_refinanciamientos` int(11) NOT NULL DEFAULT 1,
+  `is_mora_credito` tinyint(1) DEFAULT 0,
   `valor_mora_credito` decimal(10,2) NOT NULL,
-  `is_notificacion` tinyint(1) DEFAULT '0',
-  `dias_gracia` int DEFAULT NULL,
+  `is_notificacion` tinyint(1) DEFAULT 0,
+  `dias_gracia` int(11) DEFAULT NULL,
   `interes_defecto` decimal(12,2) DEFAULT NULL,
-  `is_descuento_anticipado` tinyint(1) DEFAULT '0',
+  `is_descuento_anticipado` tinyint(1) DEFAULT 0,
   `valor_descuento_anticipado` decimal(10,2) DEFAULT NULL,
-  `dias_anticipacion` int DEFAULT '0',
-  `is_send_sunat` tinyint(1) DEFAULT '0',
-  `is_calculo_mes` tinyint(1) NOT NULL DEFAULT '0',
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `dias_anticipacion` int(11) DEFAULT 0,
+  `is_send_sunat` tinyint(1) DEFAULT 0,
+  `is_calculo_mes` tinyint(1) NOT NULL DEFAULT 0,
+  `is_venta_lotes` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
@@ -2699,9 +2752,9 @@ CREATE TABLE `sucursal_configuracion` (
 -- Dumping data for table `sucursal_configuracion`
 --
 
-INSERT INTO `sucursal_configuracion` (`idsucursal_configuracion`, `idsucursal`, `is_refinanciamiento`, `maximo_refinanciamientos`, `is_mora_credito`, `valor_mora_credito`, `is_notificacion`, `dias_gracia`, `interes_defecto`, `is_descuento_anticipado`, `valor_descuento_anticipado`, `dias_anticipacion`, `is_send_sunat`, `is_calculo_mes`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 1, 1, 1, 1.00, 1, 0, 10.00, 1, 1.00, 2, 0, 1, '2026-07-16 15:59:49', '2026-08-09 02:42:23', NULL),
-(2, 2, 0, 1, 0, 0.00, 0, 0, 10.00, 0, 1.00, 0, 0, 0, '2026-07-16 15:59:49', NULL, NULL);
+INSERT INTO `sucursal_configuracion` (`idsucursal_configuracion`, `idsucursal`, `is_refinanciamiento`, `maximo_refinanciamientos`, `is_mora_credito`, `valor_mora_credito`, `is_notificacion`, `dias_gracia`, `interes_defecto`, `is_descuento_anticipado`, `valor_descuento_anticipado`, `dias_anticipacion`, `is_send_sunat`, `is_calculo_mes`, `is_venta_lotes`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 1, 1, 1, 1, 1.00, 1, 0, 10.00, 1, 1.00, 2, 0, 1, 1, '2026-07-16 15:59:49', '2026-08-09 02:42:23', NULL),
+(2, 2, 0, 1, 0, 0.00, 0, 0, 10.00, 0, 1.00, 0, 0, 0, 0, '2026-07-16 15:59:49', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -2710,15 +2763,15 @@ INSERT INTO `sucursal_configuracion` (`idsucursal_configuracion`, `idsucursal`, 
 --
 
 CREATE TABLE `temp_detalle_venta` (
-  `token` varchar(100) COLLATE utf32_spanish_ci NOT NULL,
-  `idproducto` int NOT NULL,
-  `producto` int NOT NULL,
-  `nombre` varchar(255) COLLATE utf32_spanish_ci NOT NULL,
-  `contenedor` varchar(100) COLLATE utf32_spanish_ci NOT NULL,
-  `cantidad_contenedor` int NOT NULL,
+  `token` varchar(100) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `producto` int(11) NOT NULL,
+  `nombre` varchar(255) NOT NULL,
+  `contenedor` varchar(100) NOT NULL,
+  `cantidad_contenedor` int(11) NOT NULL,
   `cantidad` decimal(11,2) NOT NULL,
   `precio` double NOT NULL,
-  `id_fifo` int DEFAULT NULL
+  `id_fifo` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 -- --------------------------------------------------------
@@ -2728,10 +2781,10 @@ CREATE TABLE `temp_detalle_venta` (
 --
 
 CREATE TABLE `tipoacompanante` (
-  `idtipoacompanante` int NOT NULL,
-  `nombre` varchar(50) COLLATE utf32_spanish_ci NOT NULL,
-  `abeviacion` varchar(5) COLLATE utf32_spanish_ci DEFAULT NULL,
-  `estado` int NOT NULL DEFAULT '1'
+  `idtipoacompanante` int(11) NOT NULL,
+  `nombre` varchar(50) NOT NULL,
+  `abeviacion` varchar(5) DEFAULT NULL,
+  `estado` int(11) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 --
@@ -2755,21 +2808,21 @@ INSERT INTO `tipoacompanante` (`idtipoacompanante`, `nombre`, `abeviacion`, `est
 --
 
 CREATE TABLE `traslado` (
-  `idtraslado` int NOT NULL,
-  `idorigen` int NOT NULL,
-  `iddestino` int NOT NULL,
-  `idusuario` int NOT NULL,
+  `idtraslado` int(11) NOT NULL,
+  `idorigen` int(11) NOT NULL,
+  `iddestino` int(11) NOT NULL,
+  `idusuario` int(11) NOT NULL,
   `fecha` datetime DEFAULT NULL,
-  `correlativo` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `estado` enum('pendiente','en_transito','rechazado','recibido','cancelado') COLLATE utf8mb3_spanish_ci NOT NULL DEFAULT 'pendiente',
+  `correlativo` varchar(50) NOT NULL,
+  `estado` enum('pendiente','en_transito','rechazado','recibido','cancelado') NOT NULL DEFAULT 'pendiente',
   `fecha_aceptacion` datetime DEFAULT NULL,
-  `idusuario_acepta` int DEFAULT NULL,
-  `tipo` enum('solicitud','traslado') COLLATE utf8mb3_spanish_ci DEFAULT 'traslado',
-  `idsolicitud_origen` int DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idusuario_acepta` int(11) DEFAULT NULL,
+  `tipo` enum('solicitud','traslado') DEFAULT 'traslado',
+  `idsolicitud_origen` int(11) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `traslado`
@@ -2789,18 +2842,18 @@ INSERT INTO `traslado` (`idtraslado`, `idorigen`, `iddestino`, `idusuario`, `fec
 --
 
 CREATE TABLE `traslado_detalle` (
-  `iddetalle` int NOT NULL,
-  `idtraslado` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `idserie` int DEFAULT NULL,
+  `iddetalle` int(11) NOT NULL,
+  `idtraslado` int(11) NOT NULL,
+  `idproducto` int(11) NOT NULL,
+  `idserie` int(11) DEFAULT NULL,
   `cantidad_enviada` decimal(10,2) DEFAULT NULL,
   `cantidad_recibida` decimal(10,2) DEFAULT NULL,
-  `estado_detalle` enum('pendiente','aceptado','rechazado') COLLATE utf8mb3_spanish_ci DEFAULT 'pendiente',
-  `observacion` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `estado_detalle` enum('pendiente','aceptado','rechazado') DEFAULT 'pendiente',
+  `observacion` varchar(255) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `traslado_detalle`
@@ -2824,7 +2877,7 @@ INSERT INTO `traslado_detalle` (`iddetalle`, `idtraslado`, `idproducto`, `idseri
 CREATE TABLE `ubigeo_peru_departments` (
   `id` varchar(2) NOT NULL,
   `name` varchar(45) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Dumping data for table `ubigeo_peru_departments`
@@ -2868,7 +2921,7 @@ CREATE TABLE `ubigeo_peru_districts` (
   `name` varchar(45) DEFAULT NULL,
   `province_id` varchar(4) DEFAULT NULL,
   `department_id` varchar(2) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Dumping data for table `ubigeo_peru_districts`
@@ -4761,7 +4814,7 @@ CREATE TABLE `ubigeo_peru_provinces` (
   `id` varchar(4) NOT NULL,
   `name` varchar(45) NOT NULL,
   `department_id` varchar(2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Dumping data for table `ubigeo_peru_provinces`
@@ -4972,10 +5025,10 @@ INSERT INTO `ubigeo_peru_provinces` (`id`, `name`, `department_id`) VALUES
 --
 
 CREATE TABLE `unidad_medida` (
-  `idunidad_medida` int NOT NULL,
-  `nombre` varchar(150) COLLATE utf8mb3_spanish_ci NOT NULL,
-  `condicion` tinyint(1) NOT NULL DEFAULT '1'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `idunidad_medida` int(11) NOT NULL,
+  `nombre` varchar(150) NOT NULL,
+  `condicion` tinyint(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `unidad_medida`
@@ -4991,16 +5044,16 @@ INSERT INTO `unidad_medida` (`idunidad_medida`, `nombre`, `condicion`) VALUES
 --
 
 CREATE TABLE `usuario` (
-  `idusuario` int NOT NULL,
-  `idpersonal` int NOT NULL,
+  `idusuario` int(11) NOT NULL,
+  `idpersonal` int(11) NOT NULL,
   `login` varchar(20) NOT NULL,
   `clave` varchar(64) NOT NULL,
-  `superusuario` tinyint(1) NOT NULL DEFAULT '0',
-  `idsucursal` int DEFAULT NULL,
-  `condicion` tinyint(1) NOT NULL DEFAULT '1',
+  `superusuario` tinyint(1) NOT NULL DEFAULT 0,
+  `idsucursal` int(11) DEFAULT NULL,
+  `condicion` tinyint(1) NOT NULL DEFAULT 1,
   `reset_token` varchar(64) DEFAULT NULL,
   `reset_expira` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Dumping data for table `usuario`
@@ -5017,25 +5070,25 @@ INSERT INTO `usuario` (`idusuario`, `idpersonal`, `login`, `clave`, `superusuari
 --
 
 CREATE TABLE `usuario_accion` (
-  `idusuario` int NOT NULL,
-  `idaccion_permiso` int NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+  `idusuario` int(11) NOT NULL,
+  `idaccion_permiso` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `usuario_accion`
 --
 
 INSERT INTO `usuario_accion` (`idusuario`, `idaccion_permiso`) VALUES
-(2, 16),
 (1, 33),
-(2, 36),
 (1, 37),
-(2, 37),
-(2, 38),
 (1, 39),
 (1, 42),
-(2, 42),
 (1, 43),
+(2, 16),
+(2, 36),
+(2, 37),
+(2, 38),
+(2, 42),
 (2, 43),
 (2, 44),
 (2, 45),
@@ -5048,11 +5101,11 @@ INSERT INTO `usuario_accion` (`idusuario`, `idaccion_permiso`) VALUES
 --
 
 CREATE TABLE `usuario_permiso` (
-  `idusuario_permiso` int NOT NULL,
-  `idusuario` int NOT NULL,
-  `idpermiso` int DEFAULT NULL,
-  `idsubpermiso` int DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+  `idusuario_permiso` int(11) NOT NULL,
+  `idusuario` int(11) NOT NULL,
+  `idpermiso` int(11) DEFAULT NULL,
+  `idsubpermiso` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Dumping data for table `usuario_permiso`
@@ -5091,13 +5144,13 @@ INSERT INTO `usuario_permiso` (`idusuario_permiso`, `idusuario`, `idpermiso`, `i
 --
 
 CREATE TABLE `usuario_sucursal` (
-  `idusuario_sucursal` int NOT NULL,
-  `idusuario` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idusuario_sucursal` int(11) NOT NULL,
+  `idusuario` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `usuario_sucursal`
@@ -5115,13 +5168,13 @@ INSERT INTO `usuario_sucursal` (`idusuario_sucursal`, `idusuario`, `idsucursal`,
 --
 
 CREATE TABLE `venta` (
-  `idventa` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idcaja` int NOT NULL,
-  `idcliente` int NOT NULL,
-  `idpersonal` int NOT NULL,
-  `idmotivo_nota` int DEFAULT NULL,
-  `idcomprobante_pago` int NOT NULL,
+  `idventa` int(11) NOT NULL,
+  `idsucursal` int(11) NOT NULL,
+  `idcaja` int(11) NOT NULL,
+  `idcliente` int(11) NOT NULL,
+  `idpersonal` int(11) NOT NULL,
+  `idmotivo_nota` int(11) DEFAULT NULL,
+  `idcomprobante_pago` int(11) NOT NULL,
   `serie_comprobante` varchar(7) DEFAULT NULL,
   `num_comprobante` varchar(10) NOT NULL,
   `fecha_hora` datetime NOT NULL,
@@ -5129,8 +5182,8 @@ CREATE TABLE `venta` (
   `total_venta` decimal(11,2) NOT NULL,
   `ventacredito` varchar(20) NOT NULL,
   `interes` double DEFAULT NULL,
-  `frecuencia` int DEFAULT NULL,
-  `meses` int DEFAULT NULL,
+  `frecuencia` int(11) DEFAULT NULL,
+  `meses` int(11) DEFAULT NULL,
   `formapago` varchar(50) DEFAULT NULL,
   `numoperacion` varchar(100) DEFAULT NULL,
   `fechadeposito` datetime DEFAULT NULL,
@@ -5143,22 +5196,22 @@ CREATE TABLE `venta` (
   `documento_rel` varchar(20) DEFAULT NULL,
   `dov_Estado` varchar(15) DEFAULT NULL,
   `dov_Nombre` varchar(100) DEFAULT NULL,
-  `dov_IdEmpleado` int DEFAULT NULL,
-  `observacion` text,
-  `mensaje` text,
+  `dov_IdEmpleado` int(11) DEFAULT NULL,
+  `observacion` text DEFAULT NULL,
+  `mensaje` text DEFAULT NULL,
   `estado` varchar(20) NOT NULL,
-  `fecha_kardex` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `fecha_kardex` timestamp NOT NULL DEFAULT current_timestamp(),
   `montoPagado` decimal(11,2) DEFAULT NULL,
   `estadoS` varchar(50) NOT NULL DEFAULT 'TERMINADO',
-  `estado_venta` int NOT NULL DEFAULT '1',
+  `estado_venta` int(11) NOT NULL DEFAULT 1,
   `nota` varchar(1000) DEFAULT NULL,
-  `idgarante` int DEFAULT NULL,
-  `idtipoacompanante` int DEFAULT NULL,
-  `idacompanante` int DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idgarante` int(11) DEFAULT NULL,
+  `idtipoacompanante` int(11) DEFAULT NULL,
+  `idacompanante` int(11) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
 
 --
 -- Dumping data for table `venta`
@@ -5218,7 +5271,13 @@ INSERT INTO `venta` (`idventa`, `idsucursal`, `idcaja`, `idcliente`, `idpersonal
 (115, 1, 1, 1, 1, 0, 1, 'NV00', '000036', '2026-08-11 21:40:24', 0.00, 35.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-11 21:40:24', 0, 35, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 02:40:24', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-11 21:40:24', '2026-08-11 21:40:24', NULL),
 (116, 1, 1, 14, 1, 0, 1, 'NV00', '000037', '2026-08-11 21:54:05', 0.00, 35.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-11 21:54:05', 0, 35, 0, NULL, 0, NULL, '30', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 02:54:05', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-11 21:54:05', '2026-08-11 21:54:05', NULL),
 (117, 1, 1, 19, 1, 0, 1, 'NV00', '000038', '2026-08-11 22:10:39', 0.00, 200.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-11 22:10:39', 0, 200, 0, NULL, 0, NULL, '32', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 03:10:39', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-11 22:10:39', '2026-08-11 22:10:39', NULL),
-(118, 1, 1, 19, 1, 0, 1, 'NV00', '000039', '2026-08-11 22:36:06', 0.00, 200.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-11 22:36:06', 0, 200, 0, NULL, 0, NULL, '31', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 03:36:06', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL);
+(118, 1, 1, 19, 1, 0, 1, 'NV00', '000039', '2026-08-11 22:36:06', 0.00, 200.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-11 22:36:06', 0, 200, 0, NULL, 0, NULL, '31', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 03:36:06', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL),
+(119, 1, 1, 1, 1, 0, 1, 'NV00', '000040', '2026-08-12 14:03:31', 1.53, 10.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:03:31', 0, 130, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:03:31', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:03:31', '2026-08-12 14:03:31', NULL),
+(122, 1, 1, 1, 1, 0, 1, 'NV00', '000041', '2026-08-12 14:11:53', 9.15, 60.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:11:53', 0, 60, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:11:53', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:11:53', '2026-08-12 14:11:53', NULL),
+(129, 2, 2, 1, 1, 0, 1, 'NV00', '000042', '2026-08-12 14:27:58', 1.53, 10.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:27:58', 0, 10, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:27:58', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:27:58', '2026-08-12 14:27:58', NULL),
+(130, 2, 2, 1, 1, 0, 1, 'NV00', '000043', '2026-08-12 14:28:23', 1.53, 10.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:28:23', 0, 10, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:28:23', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:28:23', '2026-08-12 14:28:23', NULL),
+(131, 1, 1, 1, 1, 0, 1, 'NV00', '000044', '2026-08-12 14:44:56', 9.15, 60.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:44:56', 0, 60, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:44:56', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
+(132, 1, 1, 16, 1, 0, 2, 'F001', '000001', '2026-08-12 14:45:13', 9.15, 60.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:45:13', 0, 60, 0, NULL, 0, NULL, '', '', NULL, NULL, '', NULL, 'Por Enviar', '2026-08-12 19:45:13', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL);
 
 -- --------------------------------------------------------
 
@@ -5227,17 +5286,17 @@ INSERT INTO `venta` (`idventa`, `idsucursal`, `idcaja`, `idcliente`, `idpersonal
 --
 
 CREATE TABLE `venta_pago` (
-  `idventapago` int NOT NULL,
-  `idventa` int NOT NULL,
-  `metodo_pago` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL,
+  `idventapago` int(11) NOT NULL,
+  `idventa` int(11) NOT NULL,
+  `metodo_pago` varchar(50) NOT NULL,
   `monto` decimal(10,2) NOT NULL,
-  `nroOperacion` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `nroOperacion` varchar(50) DEFAULT NULL,
   `fechaDeposito` date DEFAULT NULL,
-  `idbanco` int DEFAULT NULL,
-  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `idbanco` int(11) DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT current_timestamp(),
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
 --
 -- Dumping data for table `venta_pago`
@@ -5291,7 +5350,13 @@ INSERT INTO `venta_pago` (`idventapago`, `idventa`, `metodo_pago`, `monto`, `nro
 (92, 115, 'Efectivo', 35.00, NULL, NULL, NULL, '2026-08-11 21:40:24', '2026-08-11 21:40:24', NULL),
 (93, 116, 'Efectivo', 35.00, NULL, NULL, NULL, '2026-08-11 21:54:05', '2026-08-11 21:54:05', NULL),
 (94, 117, 'Efectivo', 200.00, NULL, NULL, NULL, '2026-08-11 22:10:39', '2026-08-11 22:10:39', NULL),
-(95, 118, 'Efectivo', 200.00, NULL, NULL, NULL, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL);
+(95, 118, 'Efectivo', 200.00, NULL, NULL, NULL, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL),
+(96, 119, 'Efectivo', 130.00, NULL, NULL, NULL, '2026-08-12 14:03:31', '2026-08-12 14:03:31', NULL),
+(99, 122, 'Efectivo', 60.00, NULL, NULL, NULL, '2026-08-12 14:11:53', '2026-08-12 14:11:53', NULL),
+(106, 129, 'Efectivo', 10.00, NULL, NULL, NULL, '2026-08-12 14:27:58', '2026-08-12 14:27:58', NULL),
+(107, 130, 'Efectivo', 10.00, NULL, NULL, NULL, '2026-08-12 14:28:23', '2026-08-12 14:28:23', NULL),
+(108, 131, 'Efectivo', 60.00, NULL, NULL, NULL, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
+(109, 132, 'Efectivo', 60.00, NULL, NULL, NULL, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL);
 
 -- --------------------------------------------------------
 
@@ -5300,15 +5365,15 @@ INSERT INTO `venta_pago` (`idventapago`, `idventa`, `metodo_pago`, `monto`, `nro
 --
 
 CREATE TABLE `verificaciones_domiciliarias` (
-  `idverificacion` int NOT NULL,
-  `idsolicitud` int NOT NULL,
-  `idcliente` int NOT NULL,
-  `direccion_registrada` text COLLATE utf32_spanish_ci,
-  `resultado_verificacion` enum('CONFORME','NO_CONFORME','NO_UBICADO','PENDIENTE') COLLATE utf32_spanish_ci NOT NULL,
-  `comentarios` text COLLATE utf32_spanish_ci,
-  `fecha_verificacion` datetime DEFAULT CURRENT_TIMESTAMP,
-  `idusuario` int DEFAULT NULL,
-  `estado` tinyint DEFAULT '1'
+  `idverificacion` int(11) NOT NULL,
+  `idsolicitud` int(11) NOT NULL,
+  `idcliente` int(11) NOT NULL,
+  `direccion_registrada` text DEFAULT NULL,
+  `resultado_verificacion` enum('CONFORME','NO_CONFORME','NO_UBICADO','PENDIENTE') NOT NULL,
+  `comentarios` text DEFAULT NULL,
+  `fecha_verificacion` datetime DEFAULT current_timestamp(),
+  `idusuario` int(11) DEFAULT NULL,
+  `estado` tinyint(4) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 --
@@ -5329,12 +5394,12 @@ INSERT INTO `verificaciones_domiciliarias` (`idverificacion`, `idsolicitud`, `id
 --
 
 CREATE TABLE `workflow_paso` (
-  `idpaso` int NOT NULL,
-  `nombre` varchar(150) COLLATE utf32_spanish_ci NOT NULL,
-  `descripcion` text COLLATE utf32_spanish_ci,
-  `orden_paso` int NOT NULL,
-  `obligatorio` tinyint DEFAULT '1',
-  `activo` tinyint DEFAULT '1'
+  `idpaso` int(11) NOT NULL,
+  `nombre` varchar(150) NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `orden_paso` int(11) NOT NULL,
+  `obligatorio` tinyint(4) DEFAULT 1,
+  `activo` tinyint(4) DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 --
@@ -5560,7 +5625,16 @@ ALTER TABLE `detalle_venta`
   ADD KEY `fk_sucursal_detalle` (`idsucursal`),
   ADD KEY `idproducto` (`idproducto`),
   ADD KEY `fk_detalle_serie` (`idserie`),
-  ADD KEY `idproducto_configuracion` (`idproducto_configuracion`);
+  ADD KEY `idproducto_configuracion` (`idproducto_configuracion`),
+  ADD KEY `idinventario_lote` (`idinventario_lote`);
+
+--
+-- Indexes for table `detalle_venta_lote`
+--
+ALTER TABLE `detalle_venta_lote`
+  ADD PRIMARY KEY (`iddetalle_venta_lote`),
+  ADD KEY `idx_detalle_venta` (`iddetalle_venta`),
+  ADD KEY `idx_inventario_lote` (`idinventario_lote`);
 
 --
 -- Indexes for table `documentacion`
@@ -5597,6 +5671,14 @@ ALTER TABLE `inventario_detalles`
   ADD PRIMARY KEY (`id`),
   ADD KEY `producto_id` (`producto_id`),
   ADD KEY `inventario_id` (`inventario_id`);
+
+--
+-- Indexes for table `inventario_lote`
+--
+ALTER TABLE `inventario_lote`
+  ADD PRIMARY KEY (`idinventario_lote`),
+  ADD KEY `idproducto` (`idproducto`),
+  ADD KEY `idsucursal` (`idsucursal`);
 
 --
 -- Indexes for table `inventario_producto`
@@ -5888,15 +5970,6 @@ ALTER TABLE `solicitud_workflow`
   ADD KEY `idusuario` (`idusuario`);
 
 --
--- Indexes for table `stock_fifo`
---
-ALTER TABLE `stock_fifo`
-  ADD PRIMARY KEY (`idfifo`),
-  ADD KEY `idx_producto_config` (`producto_configuracion_id`),
-  ADD KEY `idx_fifo_busqueda` (`idproducto`,`idsucursal`,`cantidad_restante`,`estado`,`fecha_ingreso`),
-  ADD KEY `idx_calculo_fifo` (`idproducto`,`estado`,`cantidad_restante`,`idfifo`);
-
---
 -- Indexes for table `subpermiso`
 --
 ALTER TABLE `subpermiso`
@@ -6050,505 +6123,511 @@ ALTER TABLE `workflow_paso`
 -- AUTO_INCREMENT for table `accion_permiso`
 --
 ALTER TABLE `accion_permiso`
-  MODIFY `idaccion_permiso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `idaccion_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT for table `ajuste_inventario`
 --
 ALTER TABLE `ajuste_inventario`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `asistencias`
 --
 ALTER TABLE `asistencias`
-  MODIFY `idasistencia` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `idasistencia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `bancos`
 --
 ALTER TABLE `bancos`
-  MODIFY `idbanco` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idbanco` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `cajas`
 --
 ALTER TABLE `cajas`
-  MODIFY `idcaja` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `idcaja` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `caja_apertura`
 --
 ALTER TABLE `caja_apertura`
-  MODIFY `aperturacajaid` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `aperturacajaid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `catalogo_imagen`
 --
 ALTER TABLE `catalogo_imagen`
-  MODIFY `idcatalogo_imagen` int NOT NULL AUTO_INCREMENT;
+  MODIFY `idcatalogo_imagen` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `categoria`
 --
 ALTER TABLE `categoria`
-  MODIFY `idcategoria` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idcategoria` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `compra`
 --
 ALTER TABLE `compra`
-  MODIFY `idcompra` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `idcompra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `compra_pago`
 --
 ALTER TABLE `compra_pago`
-  MODIFY `idpago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `idpago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `compromiso_pago`
 --
 ALTER TABLE `compromiso_pago`
-  MODIFY `idcompromiso_pago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `idcompromiso_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `comp_pago`
 --
 ALTER TABLE `comp_pago`
-  MODIFY `idcomprobante_pago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `idcomprobante_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `concepto_ajuste`
 --
 ALTER TABLE `concepto_ajuste`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `concepto_movimiento`
 --
 ALTER TABLE `concepto_movimiento`
-  MODIFY `idconcepto_movimiento` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `idconcepto_movimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `condicionventa`
 --
 ALTER TABLE `condicionventa`
-  MODIFY `idcondicionventa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `idcondicionventa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `cotizacion`
 --
 ALTER TABLE `cotizacion`
-  MODIFY `idcotizacion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
+  MODIFY `idcotizacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `cuentas_por_cobrar`
 --
 ALTER TABLE `cuentas_por_cobrar`
-  MODIFY `idcpc` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=175;
+  MODIFY `idcpc` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=175;
 
 --
 -- AUTO_INCREMENT for table `cuentas_por_pagar`
 --
 ALTER TABLE `cuentas_por_pagar`
-  MODIFY `idcpp` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `idcpp` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `datos_negocio`
 --
 ALTER TABLE `datos_negocio`
-  MODIFY `id_negocio` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id_negocio` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `detalle_ajuste_inventario`
 --
 ALTER TABLE `detalle_ajuste_inventario`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `detalle_compra`
 --
 ALTER TABLE `detalle_compra`
-  MODIFY `iddetalle_compra` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `iddetalle_compra` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `detalle_cotizacion`
 --
 ALTER TABLE `detalle_cotizacion`
-  MODIFY `iddetalle_cotizacion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `iddetalle_cotizacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `detalle_cuentas_por_cobrar`
 --
 ALTER TABLE `detalle_cuentas_por_cobrar`
-  MODIFY `iddcpc` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=178;
+  MODIFY `iddcpc` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=178;
 
 --
 -- AUTO_INCREMENT for table `detalle_cuentas_por_pagar`
 --
 ALTER TABLE `detalle_cuentas_por_pagar`
-  MODIFY `iddcpp` int NOT NULL AUTO_INCREMENT;
+  MODIFY `iddcpp` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `detalle_guia`
 --
 ALTER TABLE `detalle_guia`
-  MODIFY `iddetalle` int NOT NULL AUTO_INCREMENT;
+  MODIFY `iddetalle` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `detalle_servicio`
 --
 ALTER TABLE `detalle_servicio`
-  MODIFY `iddetalle_servicio` int NOT NULL AUTO_INCREMENT;
+  MODIFY `iddetalle_servicio` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `detalle_venta`
 --
 ALTER TABLE `detalle_venta`
-  MODIFY `iddetalle_venta` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
+  MODIFY `iddetalle_venta` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
+
+--
+-- AUTO_INCREMENT for table `detalle_venta_lote`
+--
+ALTER TABLE `detalle_venta_lote`
+  MODIFY `iddetalle_venta_lote` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `documentacion`
 --
 ALTER TABLE `documentacion`
-  MODIFY `iddocumento` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `iddocumento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `empresas`
 --
 ALTER TABLE `empresas`
-  MODIFY `idempresa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `idempresa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `guia_remision`
 --
 ALTER TABLE `guia_remision`
-  MODIFY `idguia` int NOT NULL AUTO_INCREMENT;
+  MODIFY `idguia` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `inventarios`
 --
 ALTER TABLE `inventarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `inventario_detalles`
 --
 ALTER TABLE `inventario_detalles`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `inventario_lote`
+--
+ALTER TABLE `inventario_lote`
+  MODIFY `idinventario_lote` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `inventario_producto`
 --
 ALTER TABLE `inventario_producto`
-  MODIFY `idinventario` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `idinventario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
 -- AUTO_INCREMENT for table `inventario_seleccionados`
 --
 ALTER TABLE `inventario_seleccionados`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `kardex`
 --
 ALTER TABLE `kardex`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
 
 --
 -- AUTO_INCREMENT for table `login_historial`
 --
 ALTER TABLE `login_historial`
-  MODIFY `idhistorial` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `idhistorial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT for table `marca`
 --
 ALTER TABLE `marca`
-  MODIFY `idmarca` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `idmarca` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `modelo`
 --
 ALTER TABLE `modelo`
-  MODIFY `idmodelo` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `idmodelo` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `motivos_nota`
 --
 ALTER TABLE `motivos_nota`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `movimiento`
 --
 ALTER TABLE `movimiento`
-  MODIFY `idmovimiento` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+  MODIFY `idmovimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `nombre_precios`
 --
 ALTER TABLE `nombre_precios`
-  MODIFY `idnombre_p` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `idnombre_p` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `notificaciones`
 --
 ALTER TABLE `notificaciones`
-  MODIFY `idnotificacion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `idnotificacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `orden_trabajo`
 --
 ALTER TABLE `orden_trabajo`
-  MODIFY `idorden` int NOT NULL AUTO_INCREMENT;
+  MODIFY `idorden` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `orden_trabajo_detalle`
 --
 ALTER TABLE `orden_trabajo_detalle`
-  MODIFY `iddetalle` int NOT NULL AUTO_INCREMENT;
+  MODIFY `iddetalle` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `orden_trabajo_mecanico`
 --
 ALTER TABLE `orden_trabajo_mecanico`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `pagos_asistencia`
 --
 ALTER TABLE `pagos_asistencia`
-  MODIFY `idpago` int NOT NULL AUTO_INCREMENT;
+  MODIFY `idpago` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `permiso`
 --
 ALTER TABLE `permiso`
-  MODIFY `idpermiso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `idpermiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `persona`
 --
 ALTER TABLE `persona`
-  MODIFY `idpersona` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `idpersona` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `personal`
 --
 ALTER TABLE `personal`
-  MODIFY `idpersonal` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `idpersonal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `producto`
 --
 ALTER TABLE `producto`
-  MODIFY `idproducto` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `idproducto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `producto_configuracion`
 --
 ALTER TABLE `producto_configuracion`
-  MODIFY `idproducto_configuracion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `idproducto_configuracion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT for table `producto_configuracion_precios`
 --
 ALTER TABLE `producto_configuracion_precios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `producto_serie`
 --
 ALTER TABLE `producto_serie`
-  MODIFY `idserie` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
+  MODIFY `idserie` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=30;
 
 --
 -- AUTO_INCREMENT for table `recordatorio_envios`
 --
 ALTER TABLE `recordatorio_envios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT for table `recuperacion_documento`
 --
 ALTER TABLE `recuperacion_documento`
-  MODIFY `iddocumento` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `iddocumento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `recuperacion_vehiculo`
 --
 ALTER TABLE `recuperacion_vehiculo`
-  MODIFY `idrecuperacion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `idrecuperacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `refinanciamientos`
 --
 ALTER TABLE `refinanciamientos`
-  MODIFY `idrefinanciamiento` int NOT NULL AUTO_INCREMENT;
+  MODIFY `idrefinanciamiento` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `resenas`
 --
 ALTER TABLE `resenas`
-  MODIFY `id_resena` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id_resena` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `resumen_diario`
 --
 ALTER TABLE `resumen_diario`
-  MODIFY `idresumen` int NOT NULL AUTO_INCREMENT;
+  MODIFY `idresumen` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `resumen_diario_detalle`
 --
 ALTER TABLE `resumen_diario_detalle`
-  MODIFY `iddetalle` int NOT NULL AUTO_INCREMENT;
+  MODIFY `iddetalle` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `retenciones`
 --
 ALTER TABLE `retenciones`
-  MODIFY `idretencion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `idretencion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `rubro`
 --
 ALTER TABLE `rubro`
-  MODIFY `idrubro` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `idrubro` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `seguimiento_adjuntos`
 --
 ALTER TABLE `seguimiento_adjuntos`
-  MODIFY `idadjunto` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `idadjunto` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `seguimiento_clientes`
 --
 ALTER TABLE `seguimiento_clientes`
-  MODIFY `idseguimiento` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `idseguimiento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `servicio`
 --
 ALTER TABLE `servicio`
-  MODIFY `idservicio` int NOT NULL AUTO_INCREMENT;
+  MODIFY `idservicio` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `solicitud_credito`
 --
 ALTER TABLE `solicitud_credito`
-  MODIFY `idsolicitud` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `idsolicitud` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `solicitud_documento`
 --
 ALTER TABLE `solicitud_documento`
-  MODIFY `iddocumento` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `iddocumento` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `solicitud_evaluacion`
 --
 ALTER TABLE `solicitud_evaluacion`
-  MODIFY `idevaluacion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `idevaluacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `solicitud_workflow`
 --
 ALTER TABLE `solicitud_workflow`
-  MODIFY `idworkflow` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
-
---
--- AUTO_INCREMENT for table `stock_fifo`
---
-ALTER TABLE `stock_fifo`
-  MODIFY `idfifo` int NOT NULL AUTO_INCREMENT;
+  MODIFY `idworkflow` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `subpermiso`
 --
 ALTER TABLE `subpermiso`
-  MODIFY `idsubpermiso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `idsubpermiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT for table `sucursal`
 --
 ALTER TABLE `sucursal`
-  MODIFY `idsucursal` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `idsucursal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `sucursal_configuracion`
 --
 ALTER TABLE `sucursal_configuracion`
-  MODIFY `idsucursal_configuracion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `idsucursal_configuracion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `tipoacompanante`
 --
 ALTER TABLE `tipoacompanante`
-  MODIFY `idtipoacompanante` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `idtipoacompanante` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `traslado`
 --
 ALTER TABLE `traslado`
-  MODIFY `idtraslado` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `idtraslado` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `traslado_detalle`
 --
 ALTER TABLE `traslado_detalle`
-  MODIFY `iddetalle` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `iddetalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
 
 --
 -- AUTO_INCREMENT for table `unidad_medida`
 --
 ALTER TABLE `unidad_medida`
-  MODIFY `idunidad_medida` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `idunidad_medida` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `idusuario` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `idusuario` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `usuario_permiso`
 --
 ALTER TABLE `usuario_permiso`
-  MODIFY `idusuario_permiso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
+  MODIFY `idusuario_permiso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
 
 --
 -- AUTO_INCREMENT for table `usuario_sucursal`
 --
 ALTER TABLE `usuario_sucursal`
-  MODIFY `idusuario_sucursal` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `idusuario_sucursal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `venta`
 --
 ALTER TABLE `venta`
-  MODIFY `idventa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
+  MODIFY `idventa` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=133;
 
 --
 -- AUTO_INCREMENT for table `venta_pago`
 --
 ALTER TABLE `venta_pago`
-  MODIFY `idventapago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `idventapago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
 
 --
 -- AUTO_INCREMENT for table `verificaciones_domiciliarias`
 --
 ALTER TABLE `verificaciones_domiciliarias`
-  MODIFY `idverificacion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `idverificacion` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `workflow_paso`
 --
 ALTER TABLE `workflow_paso`
-  MODIFY `idpaso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `idpaso` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Constraints for dumped tables
@@ -6661,7 +6740,7 @@ ALTER TABLE `orden_trabajo_detalle`
 --
 ALTER TABLE `orden_trabajo_mecanico`
   ADD CONSTRAINT `orden_trabajo_mecanico_ibfk_1` FOREIGN KEY (`idorden`) REFERENCES `orden_trabajo` (`idorden`) ON DELETE CASCADE,
-  ADD CONSTRAINT `orden_trabajo_mecanico_ibfk_2` FOREIGN KEY (`idpersonal`) REFERENCES `usuario` (`idusuario`) ON DELETE RESTRICT;
+  ADD CONSTRAINT `orden_trabajo_mecanico_ibfk_2` FOREIGN KEY (`idpersonal`) REFERENCES `usuario` (`idusuario`);
 
 --
 -- Constraints for table `producto`
