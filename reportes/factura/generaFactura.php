@@ -125,30 +125,50 @@ if ($factura['estado'] == 'Nota Credito') {
 // ================== DETALLE ==================
 $query_productos = mysqli_query($conexion, "
     SELECT 
-    a.idproducto, 
-    pg.contenedor, 
-    a.nombre AS producto, 
-    d.nombre_producto AS dproducto, 
-    um.nombre AS unidadmedida, 
-    CASE WHEN pg.codigo_extra = 'SIN CODIGO' THEN '-' ELSE a.codigo END AS codigo, 
-    d.cantidad, 
-    d.precio_venta,
-    d.descuento as descuentodv,
-    a.precioB, a.precioC, a.precioD, a.preciocigv,
-    CASE 
-        WHEN d.check_precio = 1 THEN d.precio_venta 
-        ELSE (d.cantidad * d.precio_venta - d.descuento)
-    END AS subtotal,
-    ip.stock, 
-    a.proigv,
-    d.check_precio
-FROM detalle_venta d 
-LEFT JOIN producto a ON d.idproducto = a.idproducto 
-LEFT JOIN producto_configuracion pg ON pg.idproducto = a.idproducto
-LEFT JOIN inventario_producto ip ON ip.idproducto = a.idproducto
-LEFT JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida
-INNER JOIN venta v ON v.idventa = d.idventa
-WHERE d.idventa = '$idventa'
+        a.idproducto, 
+        pg.contenedor, 
+        a.nombre AS producto, 
+        d.nombre_producto AS dproducto, 
+        um.nombre AS unidadmedida, 
+        CASE 
+            WHEN pg.codigo_extra = 'SIN CODIGO' 
+                THEN '-' 
+            ELSE a.codigo 
+        END AS codigo, 
+        d.cantidad, 
+        d.precio_venta,
+        d.descuento AS descuentodv,
+        a.precioB, 
+        a.precioC, 
+        a.precioD, 
+        a.preciocigv,
+        CASE 
+            WHEN d.check_precio = 1 
+                THEN d.precio_venta 
+            ELSE (d.cantidad * d.precio_venta - d.descuento)
+        END AS subtotal,
+        ip.stock, 
+        a.proigv,
+        d.check_precio
+    FROM detalle_venta d 
+
+    LEFT JOIN producto a 
+        ON d.idproducto = a.idproducto 
+
+    LEFT JOIN producto_configuracion pg 
+        ON pg.idproducto_configuracion = d.idproducto_configuracion
+        AND pg.idproducto = a.idproducto
+
+    LEFT JOIN inventario_producto ip 
+        ON ip.idproducto = a.idproducto
+
+    LEFT JOIN unidad_medida um 
+        ON a.idunidad_medida = um.idunidad_medida
+
+    INNER JOIN venta v 
+        ON v.idventa = d.idventa
+
+    WHERE d.idventa = '$idventa'
 ");
 
 if (!$query_productos) {

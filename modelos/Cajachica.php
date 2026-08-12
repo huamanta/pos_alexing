@@ -321,30 +321,67 @@ class Cajachica extends Helpers
 	}
 
 	//Implementamos un método para insertar registros
-	public function insertar($tipo, $idcaja, $idsucursal, $idpersonal, $monto, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario)
+	public function insertar($tipo, $idsucursal, $idpersonal, $montoEfectivo, $descripcion, $formapago, $montoDeposito, $noperacion, $idconcepto_movimiento, $idusuario, $banco, $fechaDeposito)
 	{
 		try {
-			$fechaActual = date('Y-m-d H:i:s');
+			$caja = Helpers::cajaAperturada($idsucursal, $idusuario);
 			$save = (new FluentSaver($this->pdo))
 				->table('movimiento')
+				->nullable([
+					'idbanco',
+					'idpersonal',
+					'noperacion',
+					'totaldeposito',
+					'fecha',
+				])
 				->data([
 					'tipo' => $tipo,
-					'idcaja' => $idcaja,
+					'idcaja' => $caja['idcaja'],
 					'idsucursal' => $idsucursal,
-					'idpersonal' => $idpersonal,
+					'idpersonal' => $idpersonal ?? null,
 					'idusuario' => $idusuario,
-					'totalefectivo' => $monto,
+					'totalefectivo' => $montoEfectivo,
 					'descripcion' => $descripcion,
 					'formapago' => $formapago,
-					'totaldeposito' => $totaldeposito,
-					'noperacion' => $noperacion,
+					'idbanco' => $banco ?? null,
+					'totaldeposito' => $montoDeposito ?? null,
+					'noperacion' => $noperacion ?? null,
 					'idconcepto_movimiento' => $idconcepto_movimiento,
-					'fecha' => $fechaActual,
+					'fecha' => $fechaDeposito ?? null,
 				])
 				->save();
 
 			if (!$save) {
 				throw new Exception("Movimiento no se pudo guardar");
+			}
+
+			// sumar monto de tajeta si viene tarjeta 
+			if ($montoDeposito > 0 && !empty($banco)) {
+				if ($tipo == 'Egresos') {
+					$sumarBanco = Helpers::restarBanco($banco, $montoDeposito);
+				} else {
+					$sumarBanco = Helpers::incrementarBanco($banco, $montoDeposito);
+				}
+				if (!$sumarBanco) {
+					throw new Exception("Error al ingrmentar/restar saldo banco");
+				}
+			}
+
+			if ($montoEfectivo > 0) {
+				$caja = Helpers::cajaAperturada($idsucursal, $idusuario);
+
+				if (!$caja) {
+					throw new Exception("No existe una caja abierta para el usuario.");
+				}
+				if ($tipo == 'Egresos') {
+					$sumarCaja = Helpers::restarCajaApertura($caja['aperturacajaid'], $montoEfectivo);
+				} else {
+
+					$sumarCaja = Helpers::incrementarCajaApertura($caja['aperturacajaid'], $montoEfectivo);
+				}
+				if (!$sumarCaja) {
+					throw new Exception("Error al incrementar/restar el efectivo de la caja.");
+				}
 			}
 
 			return Response::json(['success' => true, 'message' => 'Movimiento registrado correctamente']);
@@ -775,7 +812,7 @@ class Cajachica extends Helpers
 
 		$query = (new DBQuery($this->pdo))
 			->select("
-            DATE_FORMAT(m.fecha, '%d/%m/%Y %h:%i %p') AS fecha,
+            DATE_FORMAT(m.created_at, '%d/%m/%Y %h:%i %p') AS fecha,
             m.descripcion,
             (m.totalefectivo + m.totaldeposito) AS monto,
             p.nombre AS trabajador
@@ -785,11 +822,11 @@ class Cajachica extends Helpers
 			->where("m.idconcepto_movimiento", "=", $id_adelanto);
 
 		if (!empty($desde) && !empty($hasta)) {
-			$query->whereBetween("DATE(m.fecha)", $desde, $hasta);
+			$query->whereBetween("DATE(m.created_at)", $desde, $hasta);
 		}
 
 		return $query
-			->orderBy("m.fecha", "ASC")
+			->orderBy("m.created_at", "ASC")
 			->get();
 	}
 

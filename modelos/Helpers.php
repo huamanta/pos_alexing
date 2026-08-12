@@ -231,7 +231,7 @@ class Helpers
             $data[] = $reg;
         }
 
-        return json_encode($data);
+        return $data;
     }
 
 
@@ -509,26 +509,6 @@ class Helpers
         return (int) ($empresa['idempresa'] ?? 0);
     }
 
-    // public function obtenerComprobanteSucursal(int $idtipo_comprobante, int $idsucursal): array
-    // {
-    //     $comprobante = (new DBQuery($this->pdo))
-    //         ->select("idcomprobante_pago, serie_comprobante, num_comprobante")
-    //         ->from("comp_pago")
-    //         ->where("idcomprobante_pago", "=", (int) $idtipo_comprobante)
-    //         ->where("idempresa", "=", $this->getEmpresa($idsucursal))
-    //         ->first() ?? [];
-
-    //     if ($comprobante) {
-    //         $numero = (int) $comprobante['num_comprobante'] + 1;
-    //         if ($numero > 99999) {
-    //             $numero = 1;
-    //         }
-
-    //         $comprobante['num_comprobante'] = str_pad($numero, 6, '0', STR_PAD_LEFT);
-    //     }
-
-    //     return $comprobante;
-    // }
 
     public function actualizarCorrelativo(int $idtipo_comprobante, int $idsucursal): array
     {

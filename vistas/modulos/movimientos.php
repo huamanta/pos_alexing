@@ -144,22 +144,15 @@
                         </div>
                     </div>
                     <div class="row">
-                        <!--div class="form-group col-lg-6">
-                            <label for="name" class="control-label">Almacen <span class="text-danger">*</span></label>
-                            <select id="idsucursal" name="idsucursal" class="form-control select2"
-                                data-live-search="true">
-                            </select>
-                        </div-->
                         <div class="form-group col-lg-6">
                             <label>Concepto movimiento <span class="text-danger">*</span></label>
                             <select id="idconcepto_movimiento" name="idconcepto_movimiento" class="form-control"
                                 data-live-search="true" required>
                             </select>
                         </div>
-                        <div class="form-group col-md-12">
-                            <label class="col-form-label">
-                                <i class="fas fa-users fs-6"></i>
-                                <span class="small">Personal</span>
+                        <div class="form-group col-md-6">
+                            <label>
+                                Personal
                             </label>
                             <select id="idpersonal" name="idpersonal" class="form-control select2"></select>
                         </div>
@@ -177,32 +170,38 @@
                                 <option value="Plin">Plin</option>
                             </select>
                         </div>
-
                         <div class="form-group col-lg-6">
-                            <label>Total Monto tarjeta </label>
+                            <label>Monto efectivo</label>
+                            <input type="number" step="any" class="form-control" id="montoPagar" name="montoPagar">
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-group">
+                                <label>Banco:</label>
+                                <select id="banco" name="banco" class="form-control selectpicker"
+                                    data-live-search="true">
+                                    <option value="">Seleccione...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group col-lg-6">
+                            <label>monto tarjeta </label>
                             <div class="input-group">
-                                <input
-                                    style="text-align:center;background-color:#E1FEFF ; border-color: #38F0F9; border-radius:10px;"
-                                    type="text" class="form-control" id="totaldeposito" name="totaldeposito"
-                                    placeholder="Monto recibido" value="0" readonly>
+                                <input type="text" class="form-control" id="totaldeposito" name="totaldeposito"
+                                    placeholder="Monto recibido" value="0">
                             </div>
 
                         </div>
-
                         <div class="form-group col-lg-6">
-
                             <label># operación</label>
                             <div class="input-group">
-                                <input
-                                    style="text-align:center;background-color:#E1FEFF ; border-color: #38F0F9; border-radius:10px;"
-                                    type="text" class="form-control" name="noperacion" id="noperacion" maxlength="7"
-                                    placeholder="Descuento" value="0" readonly>
+                                <input type="text" class="form-control" name="noperacion" id="noperacion" maxlength="7"
+                                    placeholder="Descuento" value="0">
                             </div>
-
                         </div>
                         <div class="form-group col-lg-6">
-                            <label class="col-form-label">Monto efectivo</label>
-                            <input type="number" step="any" class="form-control" id="montoPagar" name="montoPagar">
+                            <label class="col-form-label">Fecha depósito</label>
+                            <input type="datetime-local" step="any" class="form-control" id="fechaDeposito"
+                                name="fechaDeposito">
                         </div>
                         <div class="form-group col-12">
                             <label for="name" class="col-sm-2 control-label">Descripción <span

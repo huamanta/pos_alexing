@@ -507,67 +507,33 @@ class SisVenta extends Helpers
     ): void {
 
         foreach ($idp as $i => $idProductoConfig) {
+            $idProductoCongiguracion = (int) ($idp[$i] ?? 0);
             $idProducto = (int) ($idproducto[$i] ?? 0);
             $idSerie = (int) ($idserie[$i] ?? null);
-            $cant = floatval(
-                $cantidad[$i] ?? 0
-            );
-            $precio = floatval(
-                $precio_venta[$i] ?? 0
-            );
-            $desc = floatval(
-                $descuento[$i] ?? 0
-            );
-            $factor = floatval(
-                $cantidad_contenedor[$i] ?? 1
-            );
+            $cant = floatval($cantidad[$i] ?? 0);
+            $precio = floatval($precio_venta[$i] ?? 0);
+            $desc = floatval($descuento[$i] ?? 0);
+            $factor = floatval($cantidad_contenedor[$i] ?? 1);
             if ($factor <= 0) {
                 $factor = 1;
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Buscar configuración stock
-            |--------------------------------------------------------------------------
-            */
+            //Buscar configuración stock
             $producto = (new DBQuery($this->pdo))
                 ->from('producto p')
-                ->select([
-                    'p.controla_stock',
-                    'p.nombre',
-                    'p.idcategoria',
-                    'p.tipo_producto',
-                ])
-                ->where(
-                    'p.idproducto',
-                    '=',
-                    $idProducto
-                )
+                ->select(['p.controla_stock', 'p.nombre', 'p.idcategoria', 'p.tipo_producto'])
+                ->where('p.idproducto', '=', $idProducto)
                 ->first();
 
             if (!$producto) {
-                throw new Exception(
-                    "Producto no existe"
-                );
+                throw new Exception("Producto no existe");
             }
-            /*
-            |--------------------------------------------------------------------------
-            | Motos con serie
-            |--------------------------------------------------------------------------
-            */
 
+            //Motos con serie
             $serie = (new DBQuery($this->pdo))
                 ->from('producto_serie')
-                ->where(
-                    'idserie',
-                    '=',
-                    $idSerie
-                )
-                ->where(
-                    'idsucursal',
-                    '=',
-                    $idsucursal
-                )
+                ->where('idserie', '=', $idSerie)
+                ->where('idsucursal', '=', $idsucursal)
                 ->first();
 
             if ($serie['estado'] != 'DISPONIBLE') {
@@ -577,27 +543,21 @@ class SisVenta extends Helpers
 
             if ($serie && ($producto['tipo_producto'] == 'Vehiculo')) {
                 (new DBQuery($this->pdo))
-                    ->query("
-                        UPDATE producto_serie
-                        SET estado='VENDIDO',
-                            updated_at=NOW()
-                        WHERE idserie=:id
-                    ", [
-                        'id' => $idSerie
-                    ])
+                    ->query(
+                        "UPDATE producto_serie SET estado='VENDIDO', updated_at=NOW() WHERE idserie=:id",
+                        [
+                            'id' => $idSerie
+                        ]
+                    )
                     ->get();
-
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Detalle venta
-            |--------------------------------------------------------------------------
-            */
+            // Detalle venta
             $this->insertarDetalleVenta(
                 $idsucursal,
                 $idVenta,
                 $idProducto,
+                $idProductoCongiguracion,
                 $idSerie,
                 $nombre[$i],
                 $cant,
@@ -614,9 +574,11 @@ class SisVenta extends Helpers
 
     private function movimientoSalida(
         $rowProduct,
+        $idProductoCongiguracion,
         $idsucursal,
         $idserie,
         $cantidad,
+        $precioVenta,
         $motivo = ''
     ) {
         // 1. Cambiar estado de la serie
@@ -633,12 +595,7 @@ class SisVenta extends Helpers
         //     throw new Exception("La serie de producto no ha sido actualizado");
         // }
         // 2. Obtener inventario de la sucursal
-        $sql = "SELECT *
-            FROM inventario_producto
-            WHERE idproducto = :idproducto
-              AND idsucursal = :idsucursal
-            FOR UPDATE";
-
+        $sql = "SELECT * FROM inventario_producto WHERE idproducto = :idproducto AND idsucursal = :idsucursal FOR UPDATE";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             'idproducto' => $rowProduct['idproducto'],
@@ -655,30 +612,30 @@ class SisVenta extends Helpers
             throw new Exception("Stock insuficiente.");
         }
 
+        // Actualizar kardex si es necesario
+        $config = $this->pdo->prepare("
+            SELECT *
+            FROM producto_configuracion
+            WHERE idproducto_configuracion = :idproducto_configuracion
+        ");
+        $config->execute(['idproducto_configuracion' => $idProductoCongiguracion]);
+        $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
+
         // 3. Actualizar stock
+        $nuevoStock = $inventario['stock'] - ($cantidad * $rowConfiguracion['cantidad_contenedor']);
         $updateInventario = (new FluentSaver($this->pdo))
             ->table('inventario_producto')
             ->primaryKey('idinventario')
             ->data([
                 'idinventario' => $inventario['idinventario'],
-                'stock' => $inventario['stock'] - $cantidad
+                'stock' => $nuevoStock
             ])
             ->update();
 
         if (!$updateInventario) {
             throw new Exception("La serie de producto no ha sido actualizado");
         }
-        // Actualizar kardex si es necesario
-        $config = $this->pdo->prepare("
-            SELECT *
-            FROM producto_configuracion
-            WHERE idproducto = :idproducto
-        ");
-        $config->execute([
-            'idproducto' => $rowProduct['idproducto']
-        ]);
 
-        $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
         $salida = 0;
         if ($rowProduct['controla_stock'] === 'Si') {
             Helpers::updateKardexSucursal(
@@ -686,9 +643,9 @@ class SisVenta extends Helpers
                 $rowProduct['idproducto'],
                 $rowConfiguracion['idproducto_configuracion'],
                 $cantidad,
-                $cantidad * $rowConfiguracion['cantidad_contenedor'],
-                $rowProduct['precio'],
-                0,
+                $rowConfiguracion['cantidad_contenedor'],
+                $precioVenta,
+                $nuevoStock,
                 $salida,
                 'Salida por transferencia',
                 $motivo
@@ -705,6 +662,7 @@ class SisVenta extends Helpers
         int $idsucursal,
         int $idventa,
         int $idProducto,
+        int $idProductoCongiguracion,
         int $idSerie,
         string $nombreProducto,
         float $cantidad,
@@ -721,6 +679,7 @@ class SisVenta extends Helpers
                 'idsucursal' => $idsucursal,
                 'idventa' => $idventa,
                 'idproducto' => $idProducto,
+                'idproducto_configuracion' => $idProductoCongiguracion,
                 'idserie' => $idSerie,
                 'nombre_producto' => $nombreProducto,
                 'cantidad' => $cantidad,
@@ -747,9 +706,11 @@ class SisVenta extends Helpers
         $motivo = "Salida generada por la venta #{$idventa}";
         $this->movimientoSalida(
             $rowProduct,
+            $idProductoCongiguracion,
             $idsucursal,
             $idSerie,
             $cantidad,
+            $precioVenta,
             $motivo
         );
 

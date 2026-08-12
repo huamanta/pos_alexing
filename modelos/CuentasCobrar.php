@@ -461,10 +461,10 @@ class CuentasCobrar extends Helpers
 
     public function deudacliente($idventa)
     {
-        $sql = "SELECT v.idventa,v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal + cc.abonototal,2) as deudatotal, cc.deuda as deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
+        $sql = "SELECT v.idventa,cp.nombre AS tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, c.nombre,TRUNCATE(cc.deudatotal + cc.abonototal,2) as deudatotal, cc.deuda as deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
 				FROM venta v 
-				INNER JOIN cuentas_por_cobrar cc
-		        ON v.idventa = cc.idventa
+                INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
+				INNER JOIN cuentas_por_cobrar cc ON v.idventa = cc.idventa
 		        INNER JOIN persona c
 		        ON c.idpersona = v.idcliente
 		        WHERE cc.idventa = '$idventa'";
@@ -2442,8 +2442,8 @@ class CuentasCobrar extends Helpers
 
                 $documentacion = $this->obtenerDocumento($idventa);
 
-                if (!empty($documentacion)) {
-                    $iddocumento = $documentacion['iddocumento'];
+                if (!empty($documentacion['iddocumento'])) {
+                    $iddocumento = (int) $documentacion['iddocumento'];
                 }
             }
 
@@ -2459,30 +2459,24 @@ class CuentasCobrar extends Helpers
                     'fecha_final'
                 ])
                 ->cast([
-                    'idventa' => 'int',
-                    'iddocumento' => 'int',
-                    'idcpc' => 'int',
-                    'idrecuperacion' => 'int',
-                    'idcliente' => 'int',
                     'idpersonal' => 'int',
                     'idusuario' => 'int'
                 ])
                 ->data([
-                    'idventa' => $idventa,
+                    'idventa' => !empty($idventa) ? (int) $idventa : null,
                     'iddocumento' => $iddocumento,
-                    'idcpc' => $idcpc,
-                    'idrecuperacion' => $idrecuperacion,
-                    'idcliente' => $idcliente,
-                    'idpersonal' => $idpersonal,
+                    'idcpc' => !empty($idcpc) ? (int) $idcpc : null,
+                    'idrecuperacion' => !empty($idrecuperacion) ? (int) $idrecuperacion : null,
+                    'idcliente' => !empty($idcliente) ? (int) $idcliente : null,
+                    'idpersonal' => (int) $idpersonal,
                     'tipo' => $tipo_visita,
-                    'descripcion' => $descripcion,
+                    'descripcion' => !empty($descripcion) ? $descripcion : null,
                     'fecha_proxima' => $fecha_programada,
-                    'idusuario' => $idusuario,
+                    'idusuario' => (int) $idusuario,
                     'estado' => $estado,
                     'prioridad' => $prioridad,
-                    'direccion' => $direccion,
-                    'fecha_final' => $fecha_final
-
+                    'direccion' => !empty($direccion) ? $direccion : null,
+                    'fecha_final' => !empty($fecha_final) ? $fecha_final : null
                 ])
                 ->save();
 
@@ -2892,34 +2886,87 @@ class CuentasCobrar extends Helpers
         return json_encode($results);
     }
 
+    // public function mostrarSeguimiento($idseguimiento)
+    // {
+    //     $sql = "SELECT
+    //             s.*,
+    //             p.nombre as personal,
+    //             c.nombre as cliente
+    //         FROM seguimiento_clientes s
+    //         INNER JOIN personal p ON p.idpersonal = s.idpersonal
+    //         LEFT JOIN persona c ON c.idpersona = s.idcliente
+    //         WHERE s.idseguimiento = $idseguimiento";
+    //     $rspta = ejecutarConsultaSimpleFila($sql);
+    //     $credito = '';
+    //     $total_cuotas = '';
+    //     $numero_comprobante = '';
+    //     $serie_comprobante = '';
+    //     if ($rspta['idventa'] && $rspta['idcpc']) {
+    //         $data_credito = $this->obtenerCredito($rspta['idventa'], $rspta['idcpc']);
+    //         $credito = $data_credito['numero_cuota'];
+    //         $total_cuotas = $data_credito['total_cuotas'];
+    //         $numero_comprobante = $data_credito['num_comprobante'];
+    //         $serie_comprobante = $data_credito['serie_comprobante'];
+    //     }
+    //     $rspta['adjuntos'] = $this->dataArchivosAdjuntos($idseguimiento);
+    //     $rspta['numero_cuota'] = $credito;
+    //     $rspta['total_cuotas'] = $total_cuotas;
+    //     $rspta['numero_comprobante'] = $numero_comprobante;
+    //     $rspta['serie_comprobante'] = $serie_comprobante;
+    //     return json_encode($rspta);
+    // }
+
     public function mostrarSeguimiento($idseguimiento)
     {
-        $sql = "SELECT
-                s.*,
-                p.nombre as personal,
-                c.nombre as cliente
-            FROM seguimiento_clientes s
-            INNER JOIN personal p ON p.idpersonal = s.idpersonal
-            LEFT JOIN persona c ON c.idpersona = s.idcliente
-            WHERE s.idseguimiento = $idseguimiento";
-        $rspta = ejecutarConsultaSimpleFila($sql);
+        $rspta = (new DBQuery($this->pdo))
+            ->select([
+                's.*',
+                'p.nombre AS personal',
+                'c.nombre AS cliente'
+            ])
+            ->from('seguimiento_clientes s')
+            ->join(
+                'personal p',
+                'p.idpersonal = s.idpersonal'
+            )
+            ->leftJoin(
+                'persona c',
+                'c.idpersona = s.idcliente'
+            )
+            ->where('s.idseguimiento', '=', $idseguimiento)
+            ->first();
+
         $credito = '';
         $total_cuotas = '';
         $numero_comprobante = '';
         $serie_comprobante = '';
-        if ($rspta['idventa'] && $rspta['idcpc']) {
-            $data_credito = $this->obtenerCredito($rspta['idventa'], $rspta['idcpc']);
-            $credito = $data_credito['numero_cuota'];
-            $total_cuotas = $data_credito['total_cuotas'];
-            $numero_comprobante = $data_credito['num_comprobante'];
-            $serie_comprobante = $data_credito['serie_comprobante'];
+
+        if (!empty($rspta)) {
+
+            if (!empty($rspta['idventa']) && !empty($rspta['idcpc'])) {
+
+                $data_credito = $this->obtenerCredito(
+                    $rspta['idventa'],
+                    $rspta['idcpc']
+                );
+
+                if (!empty($data_credito)) {
+                    $credito = $data_credito['numero_cuota'];
+                    $total_cuotas = $data_credito['total_cuotas'];
+                    $numero_comprobante = $data_credito['num_comprobante'];
+                    $serie_comprobante = $data_credito['serie_comprobante'];
+                }
+            }
+
+            $rspta['adjuntos'] = $this->dataArchivosAdjuntos($idseguimiento);
+
+            $rspta['numero_cuota'] = $credito;
+            $rspta['total_cuotas'] = $total_cuotas;
+            $rspta['numero_comprobante'] = $numero_comprobante;
+            $rspta['serie_comprobante'] = $serie_comprobante;
         }
-        $rspta['adjuntos'] = $this->dataArchivosAdjuntos($idseguimiento);
-        $rspta['numero_cuota'] = $credito;
-        $rspta['total_cuotas'] = $total_cuotas;
-        $rspta['numero_comprobante'] = $numero_comprobante;
-        $rspta['serie_comprobante'] = $serie_comprobante;
-        return json_encode($rspta);
+
+        return Response::json($rspta);
     }
 
 

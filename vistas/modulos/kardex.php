@@ -73,8 +73,9 @@
                       <th>Movimiento</th>
                       <th>Tipo</th>
                       <th class="text-right">Cantidad</th>
+                      <th class="text-right">Cant. Contenedor</th>
                       <th class="text-right">Precio</th>
-                      <th class="text-right">Valor</th>
+                      <th class="text-right">Valorizado</th>
                       <th class="text-right">Stock Actual</th>
                       <th class="text-right">Stock Valorizado</th>
                     </tr>

@@ -379,12 +379,12 @@ function cancelarform() {
 }
 
 $("#controla_stock").change(function () {
-    if ($(this).val() == "Si") {
-        $("#stock").attr("readonly", "readonly");
-        $("#stock").val('0');
-    } else {
-        $("#stock").removeAttr("readonly", "readonly");
-    }
+  if ($(this).val() == "Si") {
+    $("#stock").attr("readonly", "readonly");
+    $("#stock").val('0');
+  } else {
+    $("#stock").removeAttr("readonly", "readonly");
+  }
 });
 
 function mostrar(idproducto) {
@@ -393,7 +393,7 @@ function mostrar(idproducto) {
     { idproducto: idproducto },
     function (response, status) {
       const data = response;
-      
+
       // Abrir modal y llenar los campos
       $("#myModal").modal("show");
 
@@ -502,7 +502,7 @@ function calcularPrecioIGV() {
 
 //Función Listar
 function pintarProductos(data, permissions) {
-  
+
   let html = "";
 
   if (data.length === 0) {
@@ -739,7 +739,7 @@ function guardaryeditar(e) {
     },
     error: function (error) {
       // Si ocurre un error, asegurarse de que el botón se habilite nuevamente
-      Swal.fire({ title: "Producto", icon: "error", text: error?.responseJson?.message || 'No se pudo guardar producto'});
+      Swal.fire({ title: "Producto", icon: "error", text: error?.responseJson?.message || 'No se pudo guardar producto' });
     },
   });
 }
@@ -1075,10 +1075,10 @@ $("#imagen").change(function () {
     });
   } else 
     */
-    if (imagen["size"] > 2000000) {
+  if (imagen["size"] > 2000000) {
     $(".nuevaImagen").val("");
 
-   Swal.fire({
+    Swal.fire({
       title: "Error al subir la imagen",
       text: "¡La imagen no debe pesar más de 2MB!",
       type: "error",
@@ -1103,8 +1103,6 @@ var costoCompraBase = 0; // Para calcular márgenes de utilidad reales
 var configuracionesState = [];
 
 function config(producto) {
-  console.log(producto);
-
   $("#ModalConfigProducto").modal("show");
   $("#p-producto").html(
     '<span class="badge bg-info" style="font-size:20px">' +
@@ -1129,12 +1127,10 @@ function config(producto) {
 
 function listarDataCofig(idproducto) {
   $.ajax({
-    url:
-      "controladores/producto.php?op=listCofiguration&idproducto=" + idproducto,
+    url: "controladores/producto.php?op=listCofiguration&idproducto=" + idproducto,
     type: "GET",
     success: function (response) {
       var response = JSON.parse(response);
-
       if (response.length > 0) {
         // Actualizamos las bases globales con lo que viene del FIFO
         costoCompraBase = parseFloat(response[0].costo_compra_unitario) || 0;
@@ -1149,16 +1145,13 @@ function listarDataCofig(idproducto) {
 
       configuracionesState = response.length
         ? response.map((item) => ({
-          id: item.id || 0,
+          id: item.idproducto_configuracion || 0,
           codigo_extra: item.codigo_extra || "",
           contenedor: item.contenedor || "",
           cantidad_contenedor: parseFloat(item.cantidad_contenedor) || 1,
-          precio_venta: item.precio_venta
-            ? parseFloat(item.precio_venta)
-            : null,
-          precio_venta_manual: item.precio_venta_manual
-            ? parseFloat(item.precio_venta_manual)
-            : null,
+          precio_venta: item.precio_venta ? parseFloat(item.precio_venta) : null,
+          precio_credito: item.precio_credito ? parseFloat(item.precio_credito) : null,
+          precio_promocion: item.precio_promocion ? parseFloat(item.precio_promocion) : null,
           precios: item.precios || [],
         }))
         : [];
@@ -1173,9 +1166,7 @@ function renderizarTabla() {
   var html = "";
   configuracionesState.forEach((item, idx) => {
     let cantidad = parseFloat(item.cantidad_contenedor) || 1;
-    let esUnidad =
-      cantidad === 1 ||
-      (item.contenedor && item.contenedor.toUpperCase().trim() === "UNIDAD");
+    let esUnidad = cantidad === 1 || (item.contenedor && item.contenedor.toUpperCase().trim() === "UNIDAD");
 
     // El precio sugerido se basa en el PRECIO DE VENTA del lote
     let precioCalculado = (precioVentaBase * cantidad).toFixed(2);
@@ -1187,11 +1178,18 @@ function renderizarTabla() {
             <td><input type="text" class="form-control" value="${item.contenedor}" onchange="actualizarConfig(${idx}, 'contenedor', this.value)"></td>
             <td><input type="number" class="form-control" value="${cantidad}" onchange="actualizarConfig(${idx}, 'cantidad_contenedor', this.value); renderizarTabla();"></td>
             <td>
-                <input type="number" class="form-control" value="${parseFloat(precioFinal).toFixed(2)}" onchange="actualizarConfig(${idx}, 'precio_venta_manual', this.value); renderizarTabla();">
-                <small class="text-muted">Auto: S/ ${precioCalculado}</small>
+                <input type="number" class="form-control" value="${parseFloat(item.precio_venta).toFixed(2)}" onchange="actualizarConfig(${idx}, 'precio_venta', this.value); renderizarTabla();">
+            </td>
+            <td>
+                <input type="number" class="form-control" value="${parseFloat(item.precio_credito).toFixed(2)}" onchange="actualizarConfig(${idx}, 'precio_credito', this.value); renderizarTabla();">
+            </td>
+            <td>
+                <input type="number" class="form-control" value="${parseFloat(item.precio_promocion).toFixed(2)}" onchange="actualizarConfig(${idx}, 'precio_promocion', this.value); renderizarTabla();">
             </td>
             <td class="text-center"><i class="fa fa-plus text-primary" onclick="configurarPrecios(${idx})" style="cursor:pointer"></i></td>
-            <td class="text-center"><i class="fa fa-trash text-danger" onclick="eliminarFila(${idx}, ${item.id})" style="cursor:pointer"></i></td>
+            <td class="text-center">
+            ${!esUnidad ? `<i class="fa fa-trash text-danger" onclick="eliminarFila(${idx}, ${item.id})" style="cursor:pointer"></i>` : ''}
+            </td>
         </tr>`;
   });
   $("#detalle").html(html);
@@ -1213,50 +1211,49 @@ function resetearPrecio(idx) {
 
 function actualizarConfig(index, campo, valor) {
   if (!configuracionesState[index]) return;
+  configuracionesState[index][campo] = valor;
+  // let cantidadContenedor = parseFloat(configuracionesState[index].cantidad_contenedor) || 1;
+  // let esUnidad =
+  //   cantidadContenedor === 1 ||
+  //   (configuracionesState[index].contenedor &&
+  //     configuracionesState[index].contenedor.toUpperCase().trim() === "UNIDAD");
 
-  let cantidadContenedor =
-    parseFloat(configuracionesState[index].cantidad_contenedor) || 1;
-  let esUnidad =
-    cantidadContenedor === 1 ||
-    (configuracionesState[index].contenedor &&
-      configuracionesState[index].contenedor.toUpperCase().trim() === "UNIDAD");
+  // if (campo === "cantidad_contenedor") {
+  //   let cantidad = parseFloat(valor) || 1;
+  //   if (cantidad <= 0) cantidad = 1;
+  //   configuracionesState[index][campo] = cantidad;
 
-  if (campo === "cantidad_contenedor") {
-    let cantidad = parseFloat(valor) || 1;
-    if (cantidad <= 0) cantidad = 1;
-    configuracionesState[index][campo] = cantidad;
+  //   // Solo resetear precio si no es UNIDAD
+  //   // let nuevaEsUnidad = cantidad === 1;
+  //   // if (!nuevaEsUnidad) {
+  //   //   delete configuracionesState[index].precio_venta_manual;
+  //   //   delete configuracionesState[index].precio_venta;
+  //   // }
+  // } else if (campo === "precio_venta") {
+  //   // UNIDAD no permite edición manual
+  //   if (esUnidad) {
+  //     Swal.fire({
+  //       icon: "warning",
+  //       title: "Precio bloqueado",
+  //       text: "El contenedor UNIDAD usa precio automático del lote FIFO",
+  //       timer: 2000,
+  //     });
+  //     return;
+  //   }
 
-    // Solo resetear precio si no es UNIDAD
-    let nuevaEsUnidad = cantidad === 1;
-    if (!nuevaEsUnidad) {
-      delete configuracionesState[index].precio_venta_manual;
-      delete configuracionesState[index].precio_venta;
-    }
-  } else if (campo === "precio_venta_manual") {
-    // UNIDAD no permite edición manual
-    if (esUnidad) {
-      Swal.fire({
-        icon: "warning",
-        title: "Precio bloqueado",
-        text: "El contenedor UNIDAD usa precio automático del lote FIFO",
-        timer: 2000,
-      });
-      return;
-    }
+  //   let valorNum = parseFloat(valor) || 0;
 
-    let valorNum = parseFloat(valor) || 0;
+  //   if (valorNum <= 0) {
+  //     delete configuracionesState[index].precio_venta_manual;
+  //     delete configuracionesState[index].precio_venta;
+  //     return;
+  //   }
 
-    if (valorNum <= 0) {
-      delete configuracionesState[index].precio_venta_manual;
-      delete configuracionesState[index].precio_venta;
-      return;
-    }
-
-    // Guardar precio manual para contenedores no-UNIDAD
-    configuracionesState[index].precio_venta_manual = valorNum;
-  } else {
-    configuracionesState[index][campo] = valor;
-  }
+  //   // Guardar precio manual para contenedores no-UNIDAD
+  //   configuracionesState[index].precio_venta_manual = valorNum;
+  // } else {
+  //   configuracionesState[index][campo] = valor;
+  // }
 }
 
 // Agrega una fila de precio

@@ -937,7 +937,8 @@ date_default_timezone_set('America/Lima');
             <div class="col-sm-4">
               <div class="form-group">
                 <label>Banco:</label>
-                <select id="bancoAmortizar" name="bancoAmortizar" class="form-control selectpicker" data-live-search="true">
+                <select id="bancoAmortizar" name="bancoAmortizar" class="form-control selectpicker"
+                  data-live-search="true">
                   <option value="">Seleccione...</option>
                 </select>
               </div>
@@ -957,7 +958,8 @@ date_default_timezone_set('America/Lima');
             <div class="col-sm-4">
               <div class="form-group">
                 <label>Fecha de Pago:</label>
-                <input class="form-control" type="datetime-local" name="fechaPagoAmortizar" id="fechaPagoAmortizar" value="<?php echo date('Y-m-d H:i:s') ?>">
+                <input class="form-control" type="datetime-local" name="fechaPagoAmortizar" id="fechaPagoAmortizar"
+                  value="<?php echo date('Y-m-d H:i:s') ?>">
               </div>
             </div>
           </div>
@@ -1150,7 +1152,9 @@ date_default_timezone_set('America/Lima');
                   <label>Tipo visita</label>
 
                   <select class="form-control" name="tipo_visita" id="tipo_visita">
-
+                    <option value="REUNION">
+                      REUNION
+                    </option>
                     <option value="VISITA">
                       VISITA
                     </option>

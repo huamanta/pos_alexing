@@ -396,8 +396,7 @@ switch ($_GET["op"]) {
 
 	case 'mostrarSeguimiento':
 		$idseguimiento = isset($_POST["idseguimiento"]) ? limpiarCadena($_POST["idseguimiento"]) : "";
-		$response = $cuentascobrar->mostrarSeguimiento($idseguimiento);
-		echo $response;
+		$cuentascobrar->mostrarSeguimiento($idseguimiento);
 		break;
 
 	case 'eliminarSeguimiento':

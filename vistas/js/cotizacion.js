@@ -199,7 +199,7 @@ function calcularCuotasDesdeNumeroMeses() {
   }
 
   let semanal = 1 / 4;
-  if(calculoMes){
+  if (calculoMes) {
     semanal = 7 / 30;
   }
 
@@ -572,7 +572,7 @@ function generarNumCuotas(frecuencia, meses) {
 
   let cuotas = 0;
   let semanal = meses * 4;
-  if(calculoMes){
+  if (calculoMes) {
     semanal = Math.ceil((meses * 30) / 7);
   }
 
@@ -845,7 +845,7 @@ function aplicarPrecioSegunFormaPago() {
 }
 
 function agregarDetalle(
-  idpc,
+  idproducto_configuracion,
   idproducto,
   producto,
   cant,
@@ -864,12 +864,18 @@ function agregarDetalle(
   idserie
 ) {
 
-  if (articuloAdd.indexOf(idpc) != -1) {
+  if (articuloAdd.indexOf(idproducto_configuracion) != -1) {
     let cantInputs = document.getElementsByName("cantidad[]");
     let idpInputs = document.getElementsByName("idp[]");
     for (var i = 0; i < cantInputs.length; i++) {
-      if (idpInputs[i].value == idpc) {
+      if (idpInputs[i].value == idproducto_configuracion) {
         let currentCant = parseFloat(cantInputs[i].value);
+        console.log(((currentCant + 1) * cantidad_contenedor));
+        
+        if (stock < ((currentCant + 1) * cantidad_contenedor)) {
+          Swal.fire("Alerta", "No hay suficiente stock!", "error");
+          return false;
+        }
         cantInputs[i].value = currentCant + 1;
         handleRowInput(cantInputs[i]);
         return;
@@ -878,19 +884,17 @@ function agregarDetalle(
   }
 
   let cantidad = cant;
-  if (idcategoria != 1 && stock < cant * cantidad_contenedor) {
+  console.log();
+
+  if (stock < cantidad * cantidad_contenedor) {
     Swal.fire("Alerta", "No hay suficiente stock!", "error");
     return false;
   }
 
   const precioNormal = parseFloat(precio_venta) || 0;
   const precioCredito = parseFloat(precio_credito) || precioNormal;
-  const precioActual =
-    $("#formapago").val() === "Si" ? precioCredito : precioNormal;
-
-  let detail = contenedor
-    ? contenedor + " x " + cantidad_contenedor + " Und."
-    : "";
+  const precioActual = $("#formapago").val() === "Si" ? precioCredito : precioNormal;
+  let detail = contenedor ? contenedor + " x " + cantidad_contenedor + " Und." : "";
   let filaId = "fila" + cont;
 
   let fila = `
@@ -898,7 +902,7 @@ function agregarDetalle(
       <td>
         <input type="hidden" name="idtmp[]" value="">
         <input type="hidden" name="idproducto[]" value="${idproducto}">
-        <input type="hidden" name="idp[]" value="${idpc}">
+        <input type="hidden" name="idp[]" value="${idproducto_configuracion}">
         <input type="hidden" name="contenedor[]" value="${contenedor}">
         <input type="hidden" name="cantidad_contenedor[]" value="${cantidad_contenedor}">
         <input type="hidden" name="idserie[]" value="${idserie}">
@@ -924,7 +928,7 @@ function agregarDetalle(
   $("#detalles").append(fila);
   modificarSubtotales();
 
-  articuloAdd += idpc + "-";
+  articuloAdd += idproducto_configuracion + "-";
   cont++;
   detalles++;
   evaluar();
@@ -1056,7 +1060,7 @@ function pintarProductos(data, permissions) {
                         '${item.nombre}',
                         1,
                         0,
-                        ${item.precio},
+                        ${item.precio_venta},
                         ${item.precio_credito},
                         '${item.preciocigv}',
                         '${item.precioB}',
@@ -1074,14 +1078,14 @@ function pintarProductos(data, permissions) {
                 </button>
                 <td>${item.codigo || ""}</td>
                 <td style="text-align:left;">
-                    <strong>${item.nombre || ""} ${item.marca || ''} ${item.modelo || ''}</strong><br>
+                    <strong>${item.nombre || ""} ${item.marca || ''} ${item.modelo || ''}</strong> </strong> <span class="badge bg-blue">${item.contenedor} x ${item.cantidad_contenedor}</span><br>
                     <small>
                         <strong>Motor:</strong> ${item.numero_motor || "-"} &nbsp;&nbsp;|&nbsp;&nbsp;
                         <strong>Serie:</strong> ${item.numero_serie || "-"}
                     </small>
                 </td>
                 <td>${item.stock}</td>
-                <td>S/ ${parseFloat(item.precio).toFixed(2)}</td>
+                <td>S/ ${parseFloat(item.precio_venta).toFixed(2)}</td>
                 <td>
                     ${item.color || "S/N"}
                 </td>
