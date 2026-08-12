@@ -201,7 +201,7 @@ class Cajas extends Helpers
         $sql = "SELECT m.*
             FROM movimiento m
             WHERE m.idcaja = '$idcaja'
-              AND m.fecha BETWEEN '$inicio' AND '$fin'
+              AND m.created_at BETWEEN '$inicio' AND '$fin'
             ORDER BY m.idmovimiento DESC";
 
         $rspta = ejecutarConsulta($sql);

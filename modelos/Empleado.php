@@ -2,14 +2,15 @@
 //Incluímos inicialmente la conexión a la base de datos
 require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
 class Empleado extends Helpers
 {
 
 	//Implementamos nuestro constructor
 	public function __construct()
-    {
-        parent::__construct();
-    }
+	{
+		parent::__construct();
+	}
 
 	//Implementamos un método para insertar registros
 	public function insertar($nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $cargo, $imagen, $porcentaje, $salario)
@@ -18,15 +19,15 @@ class Empleado extends Helpers
 			$this->pdo->beginTransaction();
 			$adjunto = (new FluentSaver($this->pdo))
 				->table('personal')
-                ->nullable([
-                    'direccion',
-                    'telefono',
-                    'email',
-                    'cargo',
-                    'imagen',
-                    'porcentaje',
-                    'salario'
-                ])
+				->nullable([
+					'direccion',
+					'telefono',
+					'email',
+					'cargo',
+					'imagen',
+					'porcentaje',
+					'salario'
+				])
 				->data([
 					'nombre' => $nombre,
 					'tipo_documento' => $tipo_documento,
@@ -72,15 +73,15 @@ class Empleado extends Helpers
 			$adjunto = (new FluentSaver($this->pdo))
 				->table('personal')
 				->primaryKey('idpersonal')
-                ->nullable([
-                    'direccion',
-                    'telefono',
-                    'email',
-                    'cargo',
-                    'imagen',
-                    'porcentaje',
-                    'salario'
-                ])
+				->nullable([
+					'direccion',
+					'telefono',
+					'email',
+					'cargo',
+					'imagen',
+					'porcentaje',
+					'salario'
+				])
 				->data([
 					'idpersonal' => $idpersonal,
 					'nombre' => $nombre,
@@ -176,28 +177,111 @@ class Empleado extends Helpers
 		return ejecutarConsulta($sql);
 	}
 
-	public function eventosCalendario($idpersonal)
+	// public function eventosCalendario($idpersonal)
+	// {
+
+	// 	$condition = "WHERE s.deleted_at IS NULL";
+	// 	if (!empty($idpersonal)) {
+	// 		$condition .= " AND s.idpersonal = '$idpersonal' ";
+	// 	}
+
+	// 	$sql = "SELECT
+	//             s.*,
+	//             p.nombre
+	//         FROM seguimiento_clientes s
+	//         INNER JOIN personal p
+	//             ON p.idpersonal = s.idpersonal
+	//         $condition";
+
+	// 	$res = ejecutarConsulta($sql);
+
+	// 	$data = array();
+
+	// 	while ($reg = $res->fetch_object()) {
+
+	// 		switch ($reg->tipo) {
+
+	// 			case 'VISITA':
+	// 				$color = '#ffc107';
+	// 				break;
+
+	// 			case 'LLAMADA':
+	// 				$color = '#17a2b8';
+	// 				break;
+
+	// 			case 'WHATSAPP':
+	// 				$color = '#28a745';
+	// 				break;
+
+	// 			case 'CORREO':
+	// 				$color = '#6f42c1';
+	// 				break;
+
+	// 			case 'COBRANZA':
+	// 				$color = '#dc3545';
+	// 				break;
+
+	// 			default:
+	// 				$color = '#6c757d';
+	// 				break;
+	// 		}
+
+	// 		$data[] = array(
+	// 			"id" => $reg->idseguimiento,
+	// 			"title" => $reg->tipo . " - " . $reg->nombre,
+	// 			"start" => $reg->fecha_proxima,
+	// 			"end" => !empty($reg->fecha_final)
+	// 				? $reg->fecha_final
+	// 				: $reg->fecha_proxima,
+	// 			"backgroundColor" => $color,
+	// 			"borderColor" => $color,
+	// 			"extendedProps" => array(
+	// 				"idseguimiento" => $reg->idseguimiento,
+	// 				"descripcion" => $reg->descripcion,
+	// 				"tipo" => $reg->tipo,
+	// 				"estado" => $reg->estado,
+	// 				"prioridad" => $reg->prioridad,
+	// 				"direccion" => $reg->direccion,
+	// 				"fecha_proxima" => $reg->fecha_proxima,
+	// 				"fecha_final" => $reg->fecha_final,
+	// 				"idventa" => $reg->idventa,
+	// 				"idcpc" => $reg->idcpc,
+	// 				"idcliente" => $reg->idcliente,
+	// 				"idpersonal" => $reg->idpersonal,
+	// 				"archivos" => $this->dataArchivosAdjuntos($reg->idseguimiento)
+	// 			)
+	// 		);
+	// 	}
+
+	// 	return json_encode($data);
+	// }
+
+
+	public function eventosCalendario($idusuario)
 	{
-		$condition = "WHERE s.deleted_at IS NULL";
-		if (!empty($idpersonal)) {
-			$condition .= " AND s.idpersonal = '$idpersonal' ";
+
+		$isAdmin = Helpers::esSuperusuario($idusuario);
+		$query = (new DBQuery($this->pdo))
+			->select([
+				's.*',
+				'p.nombre'
+			])
+			->from('seguimiento_clientes s')
+			->join('personal p','p.idpersonal = s.idpersonal')
+			->leftJoin('usuario u', 'u.idpersonal = p.idpersonal')
+			->whereNull('s.deleted_at');
+
+		if (!$isAdmin) {
+			$query->where('u.idusuario', '=', $idusuario);
 		}
 
-		$sql = "SELECT
-                s.*,
-                p.nombre
-            FROM seguimiento_clientes s
-            INNER JOIN personal p
-                ON p.idpersonal = s.idpersonal
-            $condition";
+		$registros = $query->get();
 
-		$res = ejecutarConsulta($sql);
+		$data = [];
 
-		$data = array();
+		foreach ($registros as $reg) {
 
-		while ($reg = $res->fetch_object()) {
-
-			switch ($reg->tipo) {
+			switch ($reg['tipo']) {
 
 				case 'VISITA':
 					$color = '#ffc107';
@@ -224,34 +308,38 @@ class Empleado extends Helpers
 					break;
 			}
 
-			$data[] = array(
-				"id" => $reg->idseguimiento,
-				"title" => $reg->tipo . " - " . $reg->nombre,
-				"start" => $reg->fecha_proxima,
-				"end" => !empty($reg->fecha_final)
-					? $reg->fecha_final
-					: $reg->fecha_proxima,
-				"backgroundColor" => $color,
-				"borderColor" => $color,
-				"extendedProps" => array(
-					"idseguimiento" => $reg->idseguimiento,
-					"descripcion" => $reg->descripcion,
-					"tipo" => $reg->tipo,
-					"estado" => $reg->estado,
-					"prioridad" => $reg->prioridad,
-					"direccion" => $reg->direccion,
-					"fecha_proxima" => $reg->fecha_proxima,
-					"fecha_final" => $reg->fecha_final,
-					"idventa" => $reg->idventa,
-					"idcpc" => $reg->idcpc,
-					"idcliente" => $reg->idcliente,
-					"idpersonal" => $reg->idpersonal,
-					"archivos" => $this->dataArchivosAdjuntos($reg->idseguimiento)
-				)
-			);
+			$data[] = [
+				'id' => $reg['idseguimiento'],
+				'title' => $reg['tipo'] . ' - ' . $reg['nombre'],
+				'start' => $reg['fecha_proxima'],
+				'end' => !empty($reg['fecha_final'])
+					? $reg['fecha_final']
+					: $reg['fecha_proxima'],
+
+				'backgroundColor' => $color,
+				'borderColor' => $color,
+
+				'extendedProps' => [
+					'idseguimiento' => $reg['idseguimiento'],
+					'descripcion' => $reg['descripcion'],
+					'tipo' => $reg['tipo'],
+					'estado' => $reg['estado'],
+					'prioridad' => $reg['prioridad'],
+					'direccion' => $reg['direccion'],
+					'fecha_proxima' => $reg['fecha_proxima'],
+					'fecha_final' => $reg['fecha_final'],
+					'idventa' => $reg['idventa'],
+					'idcpc' => $reg['idcpc'],
+					'idcliente' => $reg['idcliente'],
+					'idpersonal' => $reg['idpersonal'],
+					'archivos' => $this->dataArchivosAdjuntos(
+						$reg['idseguimiento']
+					)
+				]
+			];
 		}
 
-		return json_encode($data);
+		return Response::json($data);
 	}
 
 }

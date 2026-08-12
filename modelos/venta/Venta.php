@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/../Helpers.php";
+use Carbon\Carbon;
 class SisVenta extends Helpers
 {
 
@@ -9,6 +10,7 @@ class SisVenta extends Helpers
     }
 
     public function insertar(
+        $idusuario,
         $idsucursal,
         $idcliente,
         $idpersonal,
@@ -54,19 +56,13 @@ class SisVenta extends Helpers
         $idtipoacompanante,
         $idserie
     ) {
-        if (empty($_SESSION['idpersonal'])) {
-            throw new Exception('Sesión no válida.');
-        }
-
-
         $this->pdo->beginTransaction();
-
         try {
             $idcliente = Helpers::clienteDefault($idcliente);
             //=========================
             // Datos por defecto
             //=========================
-            $fechaActual = date('Y-m-d H:i:s');
+            $fechaActual = Carbon::now();
             $idmotivo = $idmotivo ?: 0;
             $porcentaje = $porcentaje ?: 0;
             $fechaDepostivo = $fechaDepostivo ?: $fechaActual;
@@ -145,7 +141,7 @@ class SisVenta extends Helpers
             //=========================
             // Pagos Mixtos
             //=========================
-            $this->guardarPagos($idVenta);
+            $this->guardarPagos($idVenta, $idsucursal, $idusuario);
 
             //=========================
             // Detalles
@@ -206,7 +202,7 @@ class SisVenta extends Helpers
                 'success' => true,
                 'id_venta' => $idVenta,
                 'enviar_sunat' => Helpers::verificarEnvioSunat($idsucursal),
-                'message' => 'Cotizacion registrado correctamente.'
+                'message' => 'Venta registrada correctamente.'
             ]);
 
         } catch (Throwable $e) {
@@ -246,10 +242,11 @@ class SisVenta extends Helpers
             /*
              * Insertar documento
              */
+            $fecha_kardex = Carbon::now();
             $resultado = (new FluentSaver($this->pdo))
                 ->table('documentacion')
                 ->data([
-                    'fecha_contrato' => date('Y-m-d H:i:s'),
+                    'fecha_contrato' => $fecha_kardex,
                     'tipo' => $tipo,
                     'correlativo' => $correlativo,
                     'estado' => 1,
@@ -282,7 +279,7 @@ class SisVenta extends Helpers
                 'estado' => 'VENDIDO'
             ])
             ->update();
-            
+
         return $resultado !== false;
     }
 
@@ -409,7 +406,6 @@ class SisVenta extends Helpers
                 'totalrecibido' => $totalrecibido,
                 'totaldeposito' => $totaldeposito,
                 'vuelto' => $vuelto,
-                'banco' => $banco,
                 'montoPagado' => $montoPagado,
                 'estado' => $estado,
                 'documento_rel' => $documento_rel,
@@ -430,13 +426,10 @@ class SisVenta extends Helpers
 
     }
 
-    private function guardarPagos(int $idVenta): void
+    private function guardarPagos(int $idVenta, int $idsucursal, int $idusuario): void
     {
         // Si no viene pagos mixtos no hacemos nada
-        if (
-            empty($_POST['metodo_pago']) ||
-            !is_array($_POST['metodo_pago'])
-        ) {
+        if (empty($_POST['metodo_pago']) || !is_array($_POST['metodo_pago'])) {
             return;
         }
 
@@ -447,10 +440,7 @@ class SisVenta extends Helpers
         $fechas = $_POST['fecha_deposito_pago'] ?? [];
 
         foreach ($metodos as $i => $metodo) {
-            if (
-                empty($metodo) ||
-                !isset($montos[$i])
-            ) {
+            if (empty($metodo) || !isset($montos[$i])) {
                 continue;
             }
 
@@ -459,26 +449,40 @@ class SisVenta extends Helpers
                 continue;
             }
 
+
             (new FluentSaver($this->pdo))
                 ->table('venta_pago')
                 ->data([
                     'idventa' => $idVenta,
                     'metodo_pago' => $metodo,
                     'monto' => $monto,
-                    'nroOperacion' =>
-                        !empty($operaciones[$i])
-                        ? $operaciones[$i]
-                        : null,
-                    'banco' =>
-                        !empty($bancos[$i])
-                        ? $bancos[$i]
-                        : null,
-                    'fechaDeposito' =>
-                        !empty($fechas[$i])
-                        ? $fechas[$i]
-                        : null
+                    'nroOperacion' => !empty($operaciones[$i]) ? $operaciones[$i] : null,
+                    'idbanco' => !empty($bancos[$i]) ? $bancos[$i] : null,
+                    'fechaDeposito' => !empty($fechas[$i]) ? $fechas[$i] : null
                 ])
                 ->save();
+
+            // sumar montos de bancos si llega banco 
+            if ($metodo != 'Efectivo' && $monto > 0 && !empty($bancos[$i])) {
+                $sumarBanco = Helpers::incrementarBanco($bancos[$i], $monto);
+                if (!$sumarBanco) {
+                    throw new Exception("Error al ingrmentar saldo banco");
+                }
+            }
+
+            // sumar caja aperturada 
+            if ($metodo === 'Efectivo' && $monto > 0) {
+                $caja = Helpers::cajaAperturada($idsucursal, $idusuario);
+
+                if (!$caja) {
+                    throw new Exception("No existe una caja abierta para el usuario.");
+                }
+
+                $sumarCaja = Helpers::incrementarCajaApertura($caja['aperturacajaid'], $monto);
+                if (!$sumarCaja) {
+                    throw new Exception("Error al incrementar el efectivo de la caja.");
+                }
+            }
         }
     }
 
@@ -503,67 +507,33 @@ class SisVenta extends Helpers
     ): void {
 
         foreach ($idp as $i => $idProductoConfig) {
+            $idProductoCongiguracion = (int) ($idp[$i] ?? 0);
             $idProducto = (int) ($idproducto[$i] ?? 0);
             $idSerie = (int) ($idserie[$i] ?? null);
-            $cant = floatval(
-                $cantidad[$i] ?? 0
-            );
-            $precio = floatval(
-                $precio_venta[$i] ?? 0
-            );
-            $desc = floatval(
-                $descuento[$i] ?? 0
-            );
-            $factor = floatval(
-                $cantidad_contenedor[$i] ?? 1
-            );
+            $cant = floatval($cantidad[$i] ?? 0);
+            $precio = floatval($precio_venta[$i] ?? 0);
+            $desc = floatval($descuento[$i] ?? 0);
+            $factor = floatval($cantidad_contenedor[$i] ?? 1);
             if ($factor <= 0) {
                 $factor = 1;
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Buscar configuración stock
-            |--------------------------------------------------------------------------
-            */
+            //Buscar configuración stock
             $producto = (new DBQuery($this->pdo))
                 ->from('producto p')
-                ->select([
-                    'p.controla_stock',
-                    'p.nombre',
-                    'p.idcategoria',
-                    'p.tipo_producto',
-                ])
-                ->where(
-                    'p.idproducto',
-                    '=',
-                    $idProducto
-                )
+                ->select(['p.controla_stock', 'p.nombre', 'p.idcategoria', 'p.tipo_producto'])
+                ->where('p.idproducto', '=', $idProducto)
                 ->first();
 
             if (!$producto) {
-                throw new Exception(
-                    "Producto no existe"
-                );
+                throw new Exception("Producto no existe");
             }
-            /*
-            |--------------------------------------------------------------------------
-            | Motos con serie
-            |--------------------------------------------------------------------------
-            */
 
+            //Motos con serie
             $serie = (new DBQuery($this->pdo))
                 ->from('producto_serie')
-                ->where(
-                    'idserie',
-                    '=',
-                    $idSerie
-                )
-                ->where(
-                    'idsucursal',
-                    '=',
-                    $idsucursal
-                )
+                ->where('idserie', '=', $idSerie)
+                ->where('idsucursal', '=', $idsucursal)
                 ->first();
 
             if ($serie['estado'] != 'DISPONIBLE') {
@@ -573,27 +543,21 @@ class SisVenta extends Helpers
 
             if ($serie && ($producto['tipo_producto'] == 'Vehiculo')) {
                 (new DBQuery($this->pdo))
-                    ->query("
-                        UPDATE producto_serie
-                        SET estado='VENDIDO',
-                            updated_at=NOW()
-                        WHERE idserie=:id
-                    ", [
-                        'id' => $idSerie
-                    ])
+                    ->query(
+                        "UPDATE producto_serie SET estado='VENDIDO', updated_at=NOW() WHERE idserie=:id",
+                        [
+                            'id' => $idSerie
+                        ]
+                    )
                     ->get();
-
             }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Detalle venta
-            |--------------------------------------------------------------------------
-            */
+            // Detalle venta
             $this->insertarDetalleVenta(
                 $idsucursal,
                 $idVenta,
                 $idProducto,
+                $idProductoCongiguracion,
                 $idSerie,
                 $nombre[$i],
                 $cant,
@@ -610,9 +574,11 @@ class SisVenta extends Helpers
 
     private function movimientoSalida(
         $rowProduct,
+        $idProductoCongiguracion,
         $idsucursal,
         $idserie,
         $cantidad,
+        $precioVenta,
         $motivo = ''
     ) {
         // 1. Cambiar estado de la serie
@@ -629,12 +595,7 @@ class SisVenta extends Helpers
         //     throw new Exception("La serie de producto no ha sido actualizado");
         // }
         // 2. Obtener inventario de la sucursal
-        $sql = "SELECT *
-            FROM inventario_producto
-            WHERE idproducto = :idproducto
-              AND idsucursal = :idsucursal
-            FOR UPDATE";
-
+        $sql = "SELECT * FROM inventario_producto WHERE idproducto = :idproducto AND idsucursal = :idsucursal FOR UPDATE";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             'idproducto' => $rowProduct['idproducto'],
@@ -651,30 +612,30 @@ class SisVenta extends Helpers
             throw new Exception("Stock insuficiente.");
         }
 
+        // Actualizar kardex si es necesario
+        $config = $this->pdo->prepare("
+            SELECT *
+            FROM producto_configuracion
+            WHERE idproducto_configuracion = :idproducto_configuracion
+        ");
+        $config->execute(['idproducto_configuracion' => $idProductoCongiguracion]);
+        $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
+
         // 3. Actualizar stock
+        $nuevoStock = $inventario['stock'] - ($cantidad * $rowConfiguracion['cantidad_contenedor']);
         $updateInventario = (new FluentSaver($this->pdo))
             ->table('inventario_producto')
             ->primaryKey('idinventario')
             ->data([
                 'idinventario' => $inventario['idinventario'],
-                'stock' => $inventario['stock'] - $cantidad
+                'stock' => $nuevoStock
             ])
             ->update();
 
         if (!$updateInventario) {
             throw new Exception("La serie de producto no ha sido actualizado");
         }
-        // Actualizar kardex si es necesario
-        $config = $this->pdo->prepare("
-            SELECT *
-            FROM producto_configuracion
-            WHERE idproducto = :idproducto
-        ");
-        $config->execute([
-            'idproducto' => $rowProduct['idproducto']
-        ]);
 
-        $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
         $salida = 0;
         if ($rowProduct['controla_stock'] === 'Si') {
             Helpers::updateKardexSucursal(
@@ -682,9 +643,9 @@ class SisVenta extends Helpers
                 $rowProduct['idproducto'],
                 $rowConfiguracion['idproducto_configuracion'],
                 $cantidad,
-                $cantidad * $rowConfiguracion['cantidad_contenedor'],
-                $rowProduct['precio'],
-                0,
+                $rowConfiguracion['cantidad_contenedor'],
+                $precioVenta,
+                $nuevoStock,
                 $salida,
                 'Salida por transferencia',
                 $motivo
@@ -701,6 +662,7 @@ class SisVenta extends Helpers
         int $idsucursal,
         int $idventa,
         int $idProducto,
+        int $idProductoCongiguracion,
         int $idSerie,
         string $nombreProducto,
         float $cantidad,
@@ -717,6 +679,7 @@ class SisVenta extends Helpers
                 'idsucursal' => $idsucursal,
                 'idventa' => $idventa,
                 'idproducto' => $idProducto,
+                'idproducto_configuracion' => $idProductoCongiguracion,
                 'idserie' => $idSerie,
                 'nombre_producto' => $nombreProducto,
                 'cantidad' => $cantidad,
@@ -743,183 +706,185 @@ class SisVenta extends Helpers
         $motivo = "Salida generada por la venta #{$idventa}";
         $this->movimientoSalida(
             $rowProduct,
+            $idProductoCongiguracion,
             $idsucursal,
             $idSerie,
             $cantidad,
+            $precioVenta,
             $motivo
         );
 
     }
 
 
-    private function procesarFIFO(
-        int $idventa,
-        int $idsucursal,
-        int $idproducto,
-        array $datosDetalle,
-        float $cantidadSolicitada,
-        float $precio
-    ): bool {
+    // private function procesarFIFO(
+    //     int $idventa,
+    //     int $idsucursal,
+    //     int $idproducto,
+    //     array $datosDetalle,
+    //     float $cantidadSolicitada,
+    //     float $precio
+    // ): bool {
 
-        $cantidadPendiente = $cantidadSolicitada;
+    //     $cantidadPendiente = $cantidadSolicitada;
 
-        /*
-         * Buscar lotes FIFO disponibles
-         */
-        $lotes = (new DBQuery($this->pdo))
-            ->query("
-            SELECT 
-                idfifo,
-                cantidad_restante
-            FROM stock_fifo
-            WHERE idproducto = :idproducto
-            AND idsucursal = :idsucursal
-            AND cantidad_restante > 0
-            AND estado = 1
-            ORDER BY fecha_ingreso ASC
-        ", [
-                'idproducto' => $idproducto,
-                'idsucursal' => $idsucursal
-            ])
-            ->get();
-
-
-        if (empty($lotes)) {
-            return false;
-        }
+    //     /*
+    //      * Buscar lotes FIFO disponibles
+    //      */
+    //     $lotes = (new DBQuery($this->pdo))
+    //         ->query("
+    //         SELECT 
+    //             idfifo,
+    //             cantidad_restante
+    //         FROM stock_fifo
+    //         WHERE idproducto = :idproducto
+    //         AND idsucursal = :idsucursal
+    //         AND cantidad_restante > 0
+    //         AND estado = 1
+    //         ORDER BY fecha_ingreso ASC
+    //     ", [
+    //             'idproducto' => $idproducto,
+    //             'idsucursal' => $idsucursal
+    //         ])
+    //         ->get();
 
 
-        $totalDescontado = 0;
+    //     if (empty($lotes)) {
+    //         return false;
+    //     }
 
 
-        foreach ($lotes as $lote) {
+    //     $totalDescontado = 0;
 
 
-            if ($cantidadPendiente <= 0) {
-                break;
-            }
+    //     foreach ($lotes as $lote) {
 
 
-            $disponible = floatval($lote['cantidad_restante']);
-
-            $cantidadTomar = min(
-                $cantidadPendiente,
-                $disponible
-            );
+    //         if ($cantidadPendiente <= 0) {
+    //             break;
+    //         }
 
 
-            /*
-             * Actualizar FIFO
-             */
-            $stmt = $this->pdo->prepare("
-            UPDATE stock_fifo
-            SET cantidad_restante = cantidad_restante - :cantidad
-            WHERE idfifo = :idfifo
-        ");
+    //         $disponible = floatval($lote['cantidad_restante']);
 
-            $stmt->execute([
-                'cantidad' => $cantidadTomar,
-                'idfifo' => $lote['idfifo']
-            ]);
+    //         $cantidadTomar = min(
+    //             $cantidadPendiente,
+    //             $disponible
+    //         );
 
 
+    //         /*
+    //          * Actualizar FIFO
+    //          */
+    //         $stmt = $this->pdo->prepare("
+    //         UPDATE stock_fifo
+    //         SET cantidad_restante = cantidad_restante - :cantidad
+    //         WHERE idfifo = :idfifo
+    //     ");
 
-            /*
-             * Insertar detalle venta
-             */
-
-            $detalle = $datosDetalle;
-
-            $detalle['id_fifo'] = $lote['idfifo'];
-
-            $detalle['cantidad'] = $cantidadTomar;
-
-
-            (new FluentSaver($this->pdo))
-                ->table('detalle_venta')
-                ->data($detalle)
-                ->save();
+    //         $stmt->execute([
+    //             'cantidad' => $cantidadTomar,
+    //             'idfifo' => $lote['idfifo']
+    //         ]);
 
 
 
-            $cantidadPendiente -= $cantidadTomar;
+    //         /*
+    //          * Insertar detalle venta
+    //          */
 
-            $totalDescontado += $cantidadTomar;
-        }
+    //         $detalle = $datosDetalle;
 
+    //         $detalle['id_fifo'] = $lote['idfifo'];
 
-
-        /*
-         * No hubo suficiente stock
-         */
-        if ($cantidadPendiente > 0) {
-            return false;
-        }
+    //         $detalle['cantidad'] = $cantidadTomar;
 
 
-
-        /*
-         * Actualizar inventario_producto
-         * (nuevo esquema)
-         */
-
-        $stmt = $this->pdo->prepare("
-        UPDATE inventario_producto
-        SET stock = stock - :cantidad
-        WHERE idproducto = :idproducto
-        AND idsucursal = :idsucursal
-    ");
-
-
-        $stmt->execute([
-            'cantidad' => $totalDescontado,
-            'idproducto' => $idproducto,
-            'idsucursal' => $idsucursal
-        ]);
+    //         (new FluentSaver($this->pdo))
+    //             ->table('detalle_venta')
+    //             ->data($detalle)
+    //             ->save();
 
 
 
+    //         $cantidadPendiente -= $cantidadTomar;
 
-        /*
-         * Obtener stock actual
-         */
-
-        $inventario = (new DBQuery($this->pdo))
-            ->query("
-            SELECT stock
-            FROM inventario_producto
-            WHERE idproducto = :idproducto
-            AND idsucursal = :idsucursal
-        ", [
-                'idproducto' => $idproducto,
-                'idsucursal' => $idsucursal
-            ])
-            ->first();
+    //         $totalDescontado += $cantidadTomar;
+    //     }
 
 
 
-        /*
-         * Kardex
-         */
-
-        (new FluentSaver($this->pdo))
-            ->table('kardex')
-            ->data([
-                'idsucursal' => $idsucursal,
-                'idproducto' => $idproducto,
-                'cantidad' => $totalDescontado,
-                'cantidad_contenedor' => $datosDetalle['cantidad_contenedor'],
-                'precio_unitario' => $precio,
-                'stock_actual' => $inventario['stock'] ?? 0,
-                'tipo_movimiento' => 1,
-                'motivo' => 'Venta',
-                'descripcion' => "Venta #" . $idventa,
-                'fecha_kardex' => date('Y-m-d H:i:s')
-            ])
-            ->save();
+    //     /*
+    //      * No hubo suficiente stock
+    //      */
+    //     if ($cantidadPendiente > 0) {
+    //         return false;
+    //     }
 
 
 
-        return true;
-    }
+    //     /*
+    //      * Actualizar inventario_producto
+    //      * (nuevo esquema)
+    //      */
+
+    //     $stmt = $this->pdo->prepare("
+    //     UPDATE inventario_producto
+    //     SET stock = stock - :cantidad
+    //     WHERE idproducto = :idproducto
+    //     AND idsucursal = :idsucursal
+    // ");
+
+
+    //     $stmt->execute([
+    //         'cantidad' => $totalDescontado,
+    //         'idproducto' => $idproducto,
+    //         'idsucursal' => $idsucursal
+    //     ]);
+
+
+
+
+    //     /*
+    //      * Obtener stock actual
+    //      */
+
+    //     $inventario = (new DBQuery($this->pdo))
+    //         ->query("
+    //         SELECT stock
+    //         FROM inventario_producto
+    //         WHERE idproducto = :idproducto
+    //         AND idsucursal = :idsucursal
+    //     ", [
+    //             'idproducto' => $idproducto,
+    //             'idsucursal' => $idsucursal
+    //         ])
+    //         ->first();
+
+
+
+    //     /*
+    //      * Kardex
+    //      */
+    //     $fecha_kardex = Carbon::now();
+    //     (new FluentSaver($this->pdo))
+    //         ->table('kardex')
+    //         ->data([
+    //             'idsucursal' => $idsucursal,
+    //             'idproducto' => $idproducto,
+    //             'cantidad' => $totalDescontado,
+    //             'cantidad_contenedor' => $datosDetalle['cantidad_contenedor'],
+    //             'precio_unitario' => $precio,
+    //             'stock_actual' => $inventario['stock'] ?? 0,
+    //             'tipo_movimiento' => 1,
+    //             'motivo' => 'Venta',
+    //             'descripcion' => "Venta #{$idventa}",
+    //             'fecha_kardex' => $fecha_kardex
+    //         ])
+    //         ->save();
+
+
+
+    //     return true;
+    // }
 }

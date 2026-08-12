@@ -26,7 +26,7 @@ function listarEventos(idpersonal) {
         // Clic en un día vacío
         dateClick: function (info) {
             $("#modalProgramarVisita").modal("show");
-            $("#formProgramarVisita")[0].reset();
+            // $("#formProgramarVisita")[0].reset();
             archivosSeleccionadosGeneral = [];
             $("#fecha_programada").val(info.dateStr + "T08:00");
             listarDatosExtra(null);
@@ -51,12 +51,8 @@ function listarEventos(idpersonal) {
                     $.post(
                         "controladores/cuentascobrar.php?op=mostrarSeguimiento",
                         { idseguimiento: e.extendedProps.idseguimiento },
-                        function (r) {
-
-                            let data = JSON.parse(r);
-
-                            verSeguimiento(data);
-
+                        function (response) {
+                            verSeguimiento(response);
                         }
                     );
 
@@ -92,26 +88,26 @@ function verEventos() {
 }
 
 function verSeguimiento(data) {
+    console.log(data.cliente);
+    $("#ver_cliente_general").html(data.cliente || '-');
+    $("#ver_tipo_general").html(data.tipo || '-');
+    $("#ver_estado_general").html(data.estado || '-');
+    $("#ver_responsable_general").html(data.personal || '-');
+    $("#ver_prioridad_general").html(data.prioridad || '-');
 
-    $("#ver_cliente").html(data.cliente || '-');
-    $("#ver_tipo").html(data.tipo || '-');
-    $("#ver_estado").html(data.estado || '-');
-    $("#ver_responsable").html(data.personal || '-');
-    $("#ver_prioridad").html(data.prioridad || '-');
-
-    $("#ver_cuota").html(
+    $("#ver_cuota_general").html(
         data.numero_cuota
             ? 'Cuota ' + data.numero_cuota + ' del comp.: ' + data.serie_comprobante + '-' + data.numero_comprobante
             : '-'
     );
 
-    $("#ver_fecha_programada").html(data.fecha_proxima || '-');
-    $("#ver_fecha_final").html(data.fecha_final || '-');
-    $("#ver_direccion").html(data.direccion || '-');
-    $("#ver_descripcion").html(data.descripcion || '-');
+    $("#ver_fecha_programada_general").html(data.fecha_proxima || '-');
+    $("#ver_fecha_final_general").html(data.fecha_final || '-');
+    $("#ver_direccion_general").html(data.direccion || '-');
+    $("#ver_descripcion_general").html(data.descripcion || '-');
 
     let htmlAdjuntos = '';
-    var adjuntos = JSON.parse(data.adjuntos);
+    const adjuntos = data.adjuntos;
     if (adjuntos && adjuntos.length > 0) {
 
         adjuntos.forEach(function (item) {
@@ -135,7 +131,7 @@ function verSeguimiento(data) {
         `;
     }
 
-    $("#ver_adjuntos").html(htmlAdjuntos);
+    $("#ver_adjuntos_general").html(htmlAdjuntos);
 
     $("#modalVerSeguimientoGeneral").modal("show");
 }

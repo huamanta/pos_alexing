@@ -459,10 +459,12 @@
               <table class="table">
                 <thead>
                   <tr>
-                    <th style="width: 30%;">Codigo de barras</th>
-                    <th style="width: 30%;">Cotenedor</th>
+                    <th style="width: 20%;">Codigo de barras</th>
+                    <th style="width: 20%;">Cotenedor</th>
                     <th style="width: 10%;">Unidades</th>
-                    <th style="width: 10%;">Precio</th>
+                    <th style="width: 10%;">P. Venta</th>
+                    <th style="width: 10%;">P. Crédito</th>
+                    <th style="width: 10%;">P. promoción</th>
                     <th style="width: 10%;">Mas precios</th>
                     <th style="width: 10%;">Acciones</th>
                   </tr>

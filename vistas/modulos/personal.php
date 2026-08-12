@@ -291,7 +291,9 @@
                   <label>Tipo visita</label>
 
                   <select class="form-control" name="tipo_visita" id="tipo_visita">
-
+                    <option value="REUNION">
+                      REUNION
+                    </option>
                     <option value="LLAMADA">
                       LLAMADA
                     </option>

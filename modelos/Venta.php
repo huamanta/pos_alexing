@@ -1231,8 +1231,7 @@ class Venta extends Helpers
                 v.vuelto,
                 vp.nroOperacion,
                 DATE(vp.fechaDeposito) AS fechaDeposito,
-                v.estado,
-                vp.banco
+                v.estado
             FROM venta v
             INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
             INNER JOIN persona p ON v.idcliente = p.idpersona
@@ -1356,7 +1355,7 @@ class Venta extends Helpers
                 COALESCE((SELECT SUM(vp.monto) FROM venta_pago vp WHERE vp.idventa = dv.idventa AND vp.metodo_pago = 'Efectivo'),0) AS total_efectivo,
                 COALESCE((SELECT SUM(vp.monto) FROM venta_pago vp WHERE vp.idventa = dv.idventa AND vp.metodo_pago != 'Efectivo'),0) AS total_otro_pago,
                 (SELECT GROUP_CONCAT(vp.nroOperacion SEPARATOR ' ') FROM venta_pago vp WHERE vp.idventa = dv.idventa) AS numoperacion,
-                (SELECT GROUP_CONCAT(vp.banco SEPARATOR ' ') FROM venta_pago vp WHERE vp.idventa = dv.idventa) AS banco,
+                (SELECT GROUP_CONCAT(vp.idbanco SEPARATOR ' ') FROM venta_pago vp WHERE vp.idventa = dv.idventa) AS banco,
                 (SELECT GROUP_CONCAT(vp.fechaDeposito SEPARATOR ' ') FROM venta_pago vp WHERE vp.idventa = dv.idventa) AS fechadeposito
             FROM detalle_venta dv
             INNER JOIN venta v ON v.idventa = dv.idventa

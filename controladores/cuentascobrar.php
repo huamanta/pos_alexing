@@ -232,20 +232,28 @@ switch ($_GET["op"]) {
 		$fecha_inicio = $_POST['fecha_inicio_amortizar'];
 		$fecha_fin = $_POST['fecha_fin_amortizar'];
 		$formapago = $_POST['formapagoAmortizar'];
-		$montopago = $_POST['montoPagarAmortizar'];
+		$montoEfectivo= $_POST['montoPagarAmortizar'];
 		$idcaja = $_POST['idcaja']; // Caja abierta actual
 		$idusuario = $_SESSION['idusuario'];
 		$idpersonal = $_SESSION['idpersonal'];
+		$banco = $_POST['bancoAmortizar'] ?? null;
+		$montoTransferencia = $_POST['montoTransferenciaAmortizar'] ?? null;
+		$numero_operacion = $_POST['opAmortizar'] ?? null;
+		$fechadeposito = $_POST['fechaPagoAmortizar'] ?? null;
 
 		if (!empty($idventa_amortizar)) {
 			$rspta = $cuentascobrar->amortizarDeudaVenta(
 				$idsucursal,
 				$idventa_amortizar,
 				$formapago,
-				$montopago,
+				$montoEfectivo,
 				$idcaja,
 				$idpersonal,
-				$idusuario
+				$idusuario,
+				$banco,
+				$montoTransferencia,
+				$numero_operacion,
+				$fechadeposito
 			);
 		} else {
 			$rspta = $cuentascobrar->amortizarDeuda(
@@ -388,8 +396,7 @@ switch ($_GET["op"]) {
 
 	case 'mostrarSeguimiento':
 		$idseguimiento = isset($_POST["idseguimiento"]) ? limpiarCadena($_POST["idseguimiento"]) : "";
-		$response = $cuentascobrar->mostrarSeguimiento($idseguimiento);
-		echo $response;
+		$cuentascobrar->mostrarSeguimiento($idseguimiento);
 		break;
 
 	case 'eliminarSeguimiento':

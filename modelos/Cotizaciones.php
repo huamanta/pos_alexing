@@ -99,6 +99,7 @@ class Cotizacion extends Helpers
                     ->data([
                         'idcotizacion' => $idcotizacion,
                         'idproducto' => $idproducto[$i],
+                        'idproducto_configuracion' => $idp[$i],
                         'idserie' => $idserie[$i],
                         'cantidad' => $cantidad[$i],
                         'contenedor' => $contenedor[$i],
@@ -238,52 +239,52 @@ class Cotizacion extends Helpers
 
     //implementar un metodopara mostrar los datos de unregistro a modificar
     public function mostrar($idcotizacion)
-{
-    $data = (new DBQuery($this->pdo))
-        ->select([
-            "c.idcotizacion",
-            "DATE(c.fecha_hora) AS fecha",
-            "c.idcliente",
-            "p.nombre AS cliente",
-            "p.num_documento",
-            "c.titulo",
-            "c.nota",
-            "c.igv",
-            "u.idpersonal",
-            "u.nombre AS personal",
-            "p.telefono",
-            "c.idcomprobante_pago",
-            "c.serie_comprobante",
-            "c.num_comprobante",
-            "c.formapago",
-            "c.fecha_h",
-            "IFNULL(SUM((dc.cantidad * dc.precio_venta) - dc.descuento), 0) AS total_venta",
-            "c.tiempo_pro",
-            "c.inicial",
-            "c.frecuencia",
-            "c.meses",
-            "c.interes",
-            "c.observacion"
-        ])
-        ->from("cotizacion c")
-        ->join(
-            "persona p",
-            "c.idcliente = p.idpersona"
-        )
-        ->join(
-            "personal u",
-            "c.idPersonal = u.idpersonal"
-        )
-        ->leftJoin(
-            "detalle_cotizacion dc",
-            "c.idcotizacion = dc.idcotizacion"
-        )
-        ->where("c.idcotizacion", "=", $idcotizacion)
-        ->groupBy("c.idcotizacion")
-        ->first();
+    {
+        $data = (new DBQuery($this->pdo))
+            ->select([
+                "c.idcotizacion",
+                "DATE(c.fecha_hora) AS fecha",
+                "c.idcliente",
+                "p.nombre AS cliente",
+                "p.num_documento",
+                "c.titulo",
+                "c.nota",
+                "c.igv",
+                "u.idpersonal",
+                "u.nombre AS personal",
+                "p.telefono",
+                "c.idcomprobante_pago",
+                "c.serie_comprobante",
+                "c.num_comprobante",
+                "c.formapago",
+                "c.fecha_h",
+                "IFNULL(SUM((dc.cantidad * dc.precio_venta) - dc.descuento), 0) AS total_venta",
+                "c.tiempo_pro",
+                "c.inicial",
+                "c.frecuencia",
+                "c.meses",
+                "c.interes",
+                "c.observacion"
+            ])
+            ->from("cotizacion c")
+            ->join(
+                "persona p",
+                "c.idcliente = p.idpersona"
+            )
+            ->join(
+                "personal u",
+                "c.idPersonal = u.idpersonal"
+            )
+            ->leftJoin(
+                "detalle_cotizacion dc",
+                "c.idcotizacion = dc.idcotizacion"
+            )
+            ->where("c.idcotizacion", "=", $idcotizacion)
+            ->groupBy("c.idcotizacion")
+            ->first();
 
         return Response::json($data);
-}
+    }
 
     public function mostrardetalle($idcotizacion)
     {
@@ -404,12 +405,15 @@ class Cotizacion extends Helpers
             ->select([
                 "d.iddetalle_cotizacion",
                 "p.*",
+
                 "pg.idproducto_configuracion",
-                "pg.precio_venta",
+                "pg.precio_venta AS precio_configuracion",
                 "pg.precio_credito",
                 "pg.contenedor",
                 "pg.cantidad_contenedor",
+
                 "i.stock",
+
                 "ps.idserie",
                 "ps.numero_serie",
                 "ps.numero_motor",
@@ -417,37 +421,58 @@ class Cotizacion extends Helpers
                 "ps.color",
                 "ps.anio_fabricacion",
                 "ps.estado AS estado_serie",
+
                 "um.nombre AS unidadmedida",
+
                 "d.cantidad",
                 "d.precio_venta",
                 "d.descuento",
+
                 "(d.cantidad * d.precio_venta - d.descuento) AS subtotal"
             ])
             ->from("detalle_cotizacion d")
+
+            // PRODUCTO
             ->join(
                 "producto p",
                 "p.idproducto = d.idproducto"
             )
+
+            // CONFIGURACIÓN EXACTA DE LA COTIZACIÓN
             ->join(
                 "producto_configuracion pg",
-                "pg.idproducto = p.idproducto"
+                "pg.idproducto_configuracion = d.idproducto_configuracion
+             AND pg.idproducto = p.idproducto"
             )
+
+            // UNIDAD DE MEDIDA
             ->join(
                 "unidad_medida um",
                 "um.idunidad_medida = p.idunidad_medida"
             )
+
+            // INVENTARIO
             ->leftJoin(
                 "inventario_producto i",
                 "i.idproducto = p.idproducto"
             )
+
+            // SERIE DISPONIBLE
             ->leftJoin(
                 "producto_serie ps",
                 "ps.idproducto = p.idproducto
              AND ps.estado = 'DISPONIBLE'"
             )
-            ->where("d.idcotizacion", "=", $idcotizacion)
+
+            ->where(
+                "d.idcotizacion",
+                "=",
+                $idcotizacion
+            )
+
             ->get();
-            return Response::json($data);
+
+        return Response::json($data);
     }
 
     /*public function ventadetalle($idcotizacion)

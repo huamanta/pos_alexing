@@ -1,18 +1,30 @@
 <?php
 //Inclu¨ªmos inicialmente la conexi¨®n a la base de datos
 require_once __DIR__ . "/../configuraciones/bootstrap.php";
-require_once  __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
+
 date_default_timezone_set('America/Lima');
 
 class Consultas extends Helpers
 {
 	//Implementamos nuestro constructor
 	public function __construct()
-    {
-        parent::__construct();
-    }
+	{
+		parent::__construct();
+	}
 
+
+	public function listarBancos()
+	{
+		$data = (new DBQuery($this->pdo))
+			->select('*')
+			->from('bancos')
+			->softDeletes()
+			->get();
+		return Response::json($data);
+	}
 	public function TotalUtilidadNetaPV($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal, $idproducto)
 	{
 		// Si idsucursal es un array, convertir a lista
@@ -1124,14 +1136,14 @@ class Consultas extends Helpers
 	public function ventasfechacliente($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
 	{
 		$sqlCliente = !empty($idcliente) ? "AND v.idcliente = '$idcliente'" : "";
-		$sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,u.nombre as personal, p.nombre as cliente,v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,v.total_venta,v.impuesto,v.ventacredito,v.estado 
+		$sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,u.nombre as personal, p.nombre as cliente, cp.nombre AS tipo_comprobante, v.serie_comprobante,v.num_comprobante,v.total_venta,v.impuesto,v.ventacredito,v.estado 
 		FROM venta v 
+		INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
 		INNER JOIN persona p ON v.idcliente=p.idpersona 
 		INNER JOIN personal u ON v.idpersonal=u.idpersonal 
 		WHERE DATE(v.fecha_hora)>='$fecha_inicio' 
 		AND DATE(v.fecha_hora)<='$fecha_fin' 
-		$sqlCliente
-		AND v.tipo_comprobante IN ('Factura','Boleta','Nota de Venta') 
+		$sqlCliente 
 		AND v.idsucursal = '$idsucursal'";
 
 		return ejecutarConsulta($sql);
