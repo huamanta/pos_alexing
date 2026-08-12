@@ -419,24 +419,17 @@ class SisCompra extends Helpers
                 $producto
             );
 
-            // $this->registrarFIFO(
-            //     $iddetalle,
-            //     $idsucursal,
-            //     $producto,
-            //     $fechaActual
-            // );
-
         }
 
     }
 
-    private function guardarDetalle(
+    /*private function guardarDetalle(
         $idcompra,
         $idsucursal,
         $tipo_c,
         array $producto
     ) {
-        return (new FluentSaver($this->pdo))
+        $detalle = (new FluentSaver($this->pdo))
             ->table("detalle_compra")
             ->nullable([
                 'fvencimiento'
@@ -455,6 +448,76 @@ class SisCompra extends Helpers
                 "stock_lote" => $producto["cantidad"]
             ])
             ->save();
+
+        if($producto["nlote"]){
+
+        }
+    }*/
+
+    private function guardarDetalle(
+        $idcompra,
+        $idsucursal,
+        $tipo_c,
+        array $producto
+    ) {
+        $detalle = (new FluentSaver($this->pdo))
+            ->table("detalle_compra")
+            ->nullable([
+                'fvencimiento'
+            ])
+            ->data([
+                "idsucursal" => $idsucursal,
+                "idcompra" => $idcompra,
+                "idproducto" => $producto["idproducto"],
+                "nombre_producto" => $producto["nombre_producto"],
+                "cantidad" => $producto["cantidad"],
+                "precio_compra" => $producto["precio_compra"],
+                "precio_venta" => $producto["precio_venta"],
+                "nlote" => $producto["nlote"],
+                "fvencimiento" => $producto["fvencimiento"],
+                "tipo_c" => $tipo_c,
+                "stock_lote" => $producto["cantidad"]
+            ])
+            ->save();
+
+        // Si la compra tiene lote
+        if (!empty($producto["nlote"])) {
+            // Buscar si ya existe el lote
+            $lote = (new DBQuery($this->pdo))
+                ->from("inventario_lote")
+                ->where("idproducto", "=", $producto["idproducto"])
+                ->where("idsucursal", "=", $idsucursal)
+                ->where("codigo_lote", "=", $producto["nlote"])
+                ->where("fecha_vencimiento", "=", $producto["fvencimiento"])
+                ->first();
+
+            if ($lote) {
+                // Ya existe → acumular stock
+                (new FluentSaver($this->pdo))
+                    ->table("inventario_lote")
+                    ->where("idinventario_lote", "=", $lote["idinventario_lote"])
+                    ->data([
+                        "stock" => $lote["stock"] + $producto["cantidad"],
+                        "stock_original" => $lote["stock_original"] + $producto["cantidad"],
+                        "updated_at" => date("Y-m-d H:i:s")
+                    ])
+                    ->update();
+
+            } else {
+                // No existe → crear lote
+                (new FluentSaver($this->pdo))
+                    ->table("inventario_lote")
+                    ->data([
+                        "idproducto" => $producto["idproducto"],
+                        "idsucursal" => $idsucursal,
+                        "codigo_lote" => $producto["nlote"],
+                        "fecha_vencimiento" => $producto["fvencimiento"],
+                        "stock" => $producto["cantidad"],
+                        "stock_original" => $producto["cantidad"]
+                    ])
+                    ->save();
+            }
+        }
     }
 
     private function actualizarStock(

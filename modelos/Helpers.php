@@ -646,4 +646,30 @@ class Helpers
         }
         return true;
     }
+
+    public function verificarVentaLotes($idsucursal): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT is_venta_lotes
+            FROM sucursal_configuracion
+            WHERE idsucursal = :idsucursal
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            ':idsucursal' => $idsucursal
+        ]);
+
+        $config = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$config) {
+            return [
+                'activo' => false
+            ];
+        }
+
+        return [
+            'activo' => (int) $config['is_venta_lotes'] === 1
+        ];
+    }
 }

@@ -231,6 +231,8 @@ $rutaLogo = realpath(__DIR__ . '/../../files/logos/' . $logo);
                 <th width="8%">CANT.</th>
                 <th width="8%">UM</th>
                 <th width="40%">DESCRIPCIÓN</th>
+                <th width="40%">LOTE</th>
+                <th width="40%">FECHA VC.</th>
                 <th width="12%">P.UNIT</th>
                 <th width="8%">DSCTO</th>
                 <th width="12%">IMPORTE</th>
@@ -256,6 +258,8 @@ $rutaLogo = realpath(__DIR__ . '/../../files/logos/' . $logo);
                     <td class="text-center"><?= round($row['cantidad'], 2) ?></td>
                     <td class="text-center"><?= $row['contenedor'] ?></td>
                     <td><?= nl2br(htmlspecialchars(wordwrap($row['dproducto'], 45, "\n", true))) ?></td>
+                    <td class="text-right"><?= buscarLotes($row['iddetalle_venta']) ?></td>
+                    <td class="text-right"><?= buscarVencimientos($row['iddetalle_venta']) ?></td>
                     <td class="text-right"><?= number_format($row['precio_venta'], 2, '.', '') ?></td>
                     <td class="text-right"><?= number_format($row['descuentodv'], 2, '.', '') ?></td>
                     <td class="text-right"><?= number_format($row['subtotal'], 2, '.', '') ?></td>

@@ -1,9 +1,5 @@
 <?php
 
-// if (empty($_SESSION['nombre'])) {
-//     echo 'Debe ingresar al sistema correctamente para visualizar el reporte';
-//     exit();
-// }
 require_once __DIR__ . '/../../configuraciones/bootstrap.php';
 include __DIR__ . "/../../configuraciones/Conexion.php";
 require_once __DIR__ . "/../../modelos/Helpers.php";
@@ -125,6 +121,7 @@ if ($factura['estado'] == 'Nota Credito') {
 // ================== DETALLE ==================
 $query_productos = mysqli_query($conexion, "
     SELECT 
+        d.iddetalle_venta,
         a.idproducto, 
         pg.contenedor, 
         a.nombre AS producto, 
@@ -176,6 +173,74 @@ if (!$query_productos) {
 }
 
 $result_detalle = mysqli_num_rows($query_productos);
+
+function buscarLotesData($iddetalle_venta): array
+{
+    global $conexion;
+
+    $iddetalle_venta = (int) $iddetalle_venta;
+
+    $sql = mysqli_query($conexion, "
+        SELECT
+            dvl.codigo_lote,
+            dvl.fecha_vencimiento
+        FROM detalle_venta_lote dvl
+        WHERE dvl.iddetalle_venta = $iddetalle_venta
+    ");
+
+    if (!$sql || mysqli_num_rows($sql) === 0) {
+        return [];
+    }
+
+    $lotes = [];
+
+    while ($row = mysqli_fetch_assoc($sql)) {
+        $lotes[] = $row;
+    }
+
+    return $lotes;
+}
+
+function buscarLotes($iddetalle_venta): string
+{
+    $lotes = buscarLotesData($iddetalle_venta);
+
+    if (empty($lotes)) {
+        return '';
+    }
+
+    $resultado = [];
+
+    foreach ($lotes as $lote) {
+        $resultado[] = $lote['codigo_lote'];
+    }
+
+    return implode(', ', $resultado);
+}
+
+function buscarVencimientos($iddetalle_venta): string
+{
+    $lotes = buscarLotesData($iddetalle_venta);
+
+    if (empty($lotes)) {
+        return '';
+    }
+
+    $resultado = [];
+
+    foreach ($lotes as $lote) {
+
+        if (!empty($lote['fecha_vencimiento'])) {
+
+            $resultado[] = date(
+                'd/m/Y',
+                strtotime($lote['fecha_vencimiento'])
+            );
+        }
+    }
+
+    return implode(', ', $resultado);
+}
 
 // ================== HTML ==================
 ob_start();
