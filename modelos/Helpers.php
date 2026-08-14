@@ -231,7 +231,7 @@ class Helpers
             $data[] = $reg;
         }
 
-        return json_encode($data);
+        return $data;
     }
 
 
@@ -486,7 +486,7 @@ class Helpers
     {
         $sucursal = $this->sucursalConfiguracion($idsucursal);
 
-        return (bool)($sucursal['is_send_sunat'] ?? false);
+        return (bool) ($sucursal['is_send_sunat'] ?? false);
     }
 
     public function dataSucursal(int $idsucursal)
@@ -509,26 +509,6 @@ class Helpers
         return (int) ($empresa['idempresa'] ?? 0);
     }
 
-    // public function obtenerComprobanteSucursal(int $idtipo_comprobante, int $idsucursal): array
-    // {
-    //     $comprobante = (new DBQuery($this->pdo))
-    //         ->select("idcomprobante_pago, serie_comprobante, num_comprobante")
-    //         ->from("comp_pago")
-    //         ->where("idcomprobante_pago", "=", (int) $idtipo_comprobante)
-    //         ->where("idempresa", "=", $this->getEmpresa($idsucursal))
-    //         ->first() ?? [];
-
-    //     if ($comprobante) {
-    //         $numero = (int) $comprobante['num_comprobante'] + 1;
-    //         if ($numero > 99999) {
-    //             $numero = 1;
-    //         }
-
-    //         $comprobante['num_comprobante'] = str_pad($numero, 6, '0', STR_PAD_LEFT);
-    //     }
-
-    //     return $comprobante;
-    // }
 
     public function actualizarCorrelativo(int $idtipo_comprobante, int $idsucursal): array
     {
@@ -598,5 +578,77 @@ class Helpers
         $comprobante['num_comprobante'] = str_pad($numero, 6, '0', STR_PAD_LEFT);
 
         return $comprobante;
+    }
+
+    public function incrementarBanco(int $idbanco, float $monto): bool
+    {
+        $sumarBanco = (new FluentSaver($this->pdo))
+            ->table('bancos')
+            ->primaryKey('idbanco')
+            ->data(['idbanco' => $idbanco])
+            ->increment('saldo', $monto);
+        if (!$sumarBanco) {
+            return false;
+        }
+        return true;
+    }
+
+    public function restarBanco(int $idbanco, float $monto): bool
+    {
+        $sumarBanco = (new FluentSaver($this->pdo))
+            ->table('bancos')
+            ->primaryKey('idbanco')
+            ->data(['idbanco' => $idbanco])
+            ->decrement('saldo', $monto);
+        if (!$sumarBanco) {
+            return false;
+        }
+        return true;
+    }
+
+
+    public function cajaAperturada(
+        int $idsucursal,
+        int $idusuario
+    ): ?array {
+        return (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('caja_apertura ca')
+            ->join(
+                'cajas c',
+                'c.idcaja = ca.idcaja'
+            )
+            ->where('ca.estado', '=', 1)
+            ->where('ca.idsucursal', '=', $idsucursal)
+            ->where('ca.idusuario', '=', $idusuario)
+            ->whereNull('ca.fecha_cierre')
+            ->limit(1)
+            ->first();
+    }
+
+    public function incrementarCajaApertura(int $aperturacajaid, float $monto): bool
+    {
+        $sumarCaja = (new FluentSaver($this->pdo))
+            ->table('caja_apertura')
+            ->primaryKey('aperturacajaid')
+            ->data(['aperturacajaid' => $aperturacajaid])
+            ->increment('efectivo_cierre', $monto);
+        if (!$sumarCaja) {
+            return false;
+        }
+        return true;
+    }
+
+    public function restarCajaApertura(int $aperturacajaid, float $monto): bool
+    {
+        $sumarCaja = (new FluentSaver($this->pdo))
+            ->table('caja_apertura')
+            ->primaryKey('aperturacajaid')
+            ->data(['aperturacajaid' => $aperturacajaid])
+            ->decrement('efectivo_cierre', $monto);
+        if (!$sumarCaja) {
+            return false;
+        }
+        return true;
     }
 }

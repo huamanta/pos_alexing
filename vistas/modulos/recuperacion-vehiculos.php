@@ -1339,6 +1339,9 @@
                                 <div class="form-group col-md-6">
                                     <label>Tipo visita</label>
                                     <select class="form-control" name="tipo_visita" id="tipo_visita">
+                                        <option value="REUNION">
+                                            REUNION
+                                        </option>
                                         <option value="VISITA">
                                             VISITA
                                         </option>

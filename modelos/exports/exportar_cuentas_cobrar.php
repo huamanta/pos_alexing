@@ -62,7 +62,7 @@ SELECT
     cc.deuda,
     v.idventa,
     v.idcliente,
-    CONCAT(v.tipo_comprobante, ' ', v.serie_comprobante, '-', v.num_comprobante) AS comprobante,
+    CONCAT(cp.nombre, ' ', v.serie_comprobante, '-', v.num_comprobante) AS comprobante,
     DATE(v.fecha_hora) AS fecha_venta,
     c.nombre AS cliente,
     c.num_documento AS documento,
@@ -78,6 +78,7 @@ SELECT
 FROM cuentas_por_cobrar cc
 INNER JOIN venta v ON v.idventa = cc.idventa
 INNER JOIN persona c ON c.idpersona = v.idcliente
+LEFT JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
 WHERE DATE(cc.fecharegistro) BETWEEN '$inicio' AND '$fin'
 $condicionSql
 ORDER BY cc.fechavencimiento ASC, cc.idcpc ASC";

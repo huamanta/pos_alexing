@@ -6,6 +6,7 @@ require_once "Helpers.php";
 require_once "../configuraciones/ConexionPdo.php";
 require_once "../core/FluentQuery.php";
 require_once "../core/FluentSave.php";
+use Carbon\Carbon;
 
 class CuentasCobrar extends Helpers
 {
@@ -53,7 +54,9 @@ class CuentasCobrar extends Helpers
                 $op,
                 $fechaPago,
                 $formapago,
-                $observacion
+                $observacion,
+                $idsucursal,
+                $idusuario
             );
 
             $resultado = $this->procesarPago(
@@ -150,7 +153,9 @@ class CuentasCobrar extends Helpers
         ?string $op,
         string $fechaPago,
         string $formapago,
-        ?string $observacion
+        ?string $observacion,
+        int $idsucursal,
+        int $idusuario
     ): int {
 
         $idDetalle = (new FluentSaver($this->pdo))
@@ -161,7 +166,7 @@ class CuentasCobrar extends Helpers
                 'idpersonal' => $idpersonal,
                 'montopagado' => $montopagado,
                 'montotarjeta' => $montoTarjeta,
-                'banco' => $banco,
+                'idbanco' => $banco,
                 'op' => $op,
                 'fechapago' => $fechaPago,
                 'formapago' => $formapago,
@@ -176,6 +181,27 @@ class CuentasCobrar extends Helpers
 
         if (!$idDetalle) {
             throw new Exception("No se pudo registrar el pago.");
+        }
+
+        // sumar monto de tajeta si viene tarjeta 
+        if ($montoTarjeta > 0 && !empty($banco)) {
+            $sumarBanco = Helpers::incrementarBanco($banco, $montoTarjeta);
+            if (!$sumarBanco) {
+                throw new Exception("Error al ingrmentar saldo banco");
+            }
+        }
+
+        if ($montopagado > 0) {
+            $caja = Helpers::cajaAperturada($idsucursal, $idusuario);
+
+            if (!$caja) {
+                throw new Exception("No existe una caja abierta para el usuario.");
+            }
+
+            $sumarCaja = Helpers::incrementarCajaApertura($caja['aperturacajaid'], $montopagado);
+            if (!$sumarCaja) {
+                throw new Exception("Error al incrementar el efectivo de la caja.");
+            }
         }
 
         return $idDetalle;
@@ -435,10 +461,10 @@ class CuentasCobrar extends Helpers
 
     public function deudacliente($idventa)
     {
-        $sql = "SELECT v.idventa,v.tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, v.tipo_comprobante, c.nombre,TRUNCATE(cc.deudatotal + cc.abonototal,2) as deudatotal, cc.deuda as deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
+        $sql = "SELECT v.idventa,cp.nombre AS tipo_comprobante,v.serie_comprobante,v.num_comprobante,cc.idcpc,date_format(cc.fecharegistro,'%d/%m/%y') as fecharegistro, c.nombre,TRUNCATE(cc.deudatotal + cc.abonototal,2) as deudatotal, cc.deuda as deuda, cc.abonototal,date_format(cc.fechavencimiento,'%d/%m/%y') as fechavencimiento 
 				FROM venta v 
-				INNER JOIN cuentas_por_cobrar cc
-		        ON v.idventa = cc.idventa
+                INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
+				INNER JOIN cuentas_por_cobrar cc ON v.idventa = cc.idventa
 		        INNER JOIN persona c
 		        ON c.idpersona = v.idcliente
 		        WHERE cc.idventa = '$idventa'";
@@ -558,9 +584,19 @@ class CuentasCobrar extends Helpers
     //Implementar un método para listar los registros
     public function listarDetalle($idcpc)
     {
-        $sql = "SELECT cc.iddcpc,cc.iddcpc,cc.montopagado,cc.montotarjeta,date_format(cc.fechapago,'%d/%m/%y | %H:%i:%s %p') as fechapago,cc.formapago,cc.banco,cc.op FROM detalle_cuentas_por_cobrar cc
-				WHERE cc.idcpc = '$idcpc'
-		        ORDER BY cc.iddcpc asc";
+        $sql = "SELECT 
+            cc.iddcpc,
+            cc.montopagado,
+            cc.montotarjeta,
+            date_format(cc.fechapago,'%d/%m/%y | %H:%i:%s %p') as fechapago,
+            cc.formapago,
+            b.nombre AS banco,
+            cc.op 
+            FROM detalle_cuentas_por_cobrar cc
+            LEFT JOIN bancos b ON b.idbanco = cc.idbanco
+            WHERE cc.idcpc = '$idcpc'
+            ORDER BY cc.iddcpc asc";
+
         return ejecutarConsulta($sql);
     }
 
@@ -1152,7 +1188,7 @@ class CuentasCobrar extends Helpers
         $sql = "
         SELECT
             cc.fecharegistro AS fecha,
-            CONCAT(v.tipo_comprobante,'-',v.serie_comprobante,'-',v.num_comprobante) AS documento,
+            CONCAT(cp.nombre,'-',v.serie_comprobante,'-',v.num_comprobante) AS documento,
 
             cc.deuda_base,
             IFNULL(cc.interes,0) AS interes,
@@ -1166,6 +1202,7 @@ class CuentasCobrar extends Helpers
         FROM cuentas_por_cobrar cc
         INNER JOIN venta v
             ON v.idventa = cc.idventa
+        INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
         WHERE cc.idcpc='$idcpc'
 
         UNION ALL
@@ -1909,107 +1946,90 @@ class CuentasCobrar extends Helpers
         unset($item);
 
         return json_encode($response);
-
-        // $result = $query->get();
-        // $data = [];
-        // $count = 1;
-
-
-        // foreach ($result as $row) {
-
-        //     $nombreCliente = addslashes($row["cliente"]);
-
-        //     $data[] = [
-        //         "0" => $count++,
-        //         "1" => $row["cliente"],
-        //         "2" => $row["total_creditos"],
-        //         "3" => Helpers::get_currency_symbol($row["deuda_total"]),
-        //         "4" => Helpers::get_currency_symbol($row["total_pagado"]),
-        //         "5" => Helpers::get_currency_symbol($row["saldo_pendiente"]),
-        //         "6" => "
-        // <button class='btn btn-sm btn-success'
-        //     onclick='verDetalleCliente({$row["idpersona"]}, " . json_encode($nombreCliente) . ")'>
-        //     <i class='fas fa-eye'></i> Ver Detalle
-        // </button>
-        // <button class='btn btn-info btn-sm'
-        //     onclick='verUbicacionCliente(
-        //         " . json_encode($row["latitude"]) . ",
-        //         " . json_encode($row["longitude"]) . ",
-        //         " . json_encode($row["direccion"]) . "
-        //     )'
-        //     title='Ver ubicación del cliente'>
-        //     <i class='fas fa-search-location'></i> Ubicación
-        // </button>
-        //             "
-        //     ];
-        // }
-
-        // return json_encode([
-        //     "sEcho" => 1,
-        //     "iTotalRecords" => count($data),
-        //     "iTotalDisplayRecords" => count($data),
-        //     "aaData" => $data
-        // ]);
     }
 
-    public function amortizarDeudaVenta($idsucursal, $idventa, $formapago, $montopago, $idcaja, $idpersonal, $idusuario)
-    {
-        ejecutarConsulta("START TRANSACTION");
-
+    public function amortizarDeudaVenta(
+        $idsucursal,
+        $idventa,
+        $formapago,
+        $montoEfectivo,
+        $idcaja,
+        $idpersonal,
+        $idusuario,
+        $banco,
+        $montoTransferencia,
+        $numero_operacion,
+        $fechadeposito
+    ) {
+        $this->pdo->beginTransaction();
         try {
 
-            if (empty($idsucursal)) {
-                throw new Exception('La sucursal no se ha encontrado');
-            }
-
-            $this->validarCaja($$idsucursal, $idusuario);
+            $this->validarCaja($idsucursal, $idusuario);
 
             $configDescuento = Helpers::verificarDecuentoPagoAnticipado($idsucursal);
 
-            $validacionMora = ejecutarConsultaSimpleFila("
-                    SELECT COUNT(*) AS total
-                    FROM cuentas_por_cobrar
-                    WHERE idventa = '$idventa'
-                    AND mora > 0
-                    AND estado_pago = 1
-                ");
+            // VALIDAR MORA
+            $validacionMora = (new DBQuery($this->pdo))
+                ->select('COUNT(*) AS total')
+                ->from('cuentas_por_cobrar')
+                ->where('idventa', '=', $idventa)
+                ->where('estado_pago', '=', 1)
+                ->whereRaw('fechavencimiento < CURDATE()')
+                ->whereRaw('(deuda_base + IFNULL(interes, 0) - IFNULL(descuento, 0)) > 0')
+                ->first();
 
-            if ($validacionMora['total'] > 0) {
+            $tieneMora = ($validacionMora['total'] ?? 0) > 0;
+
+            if ($tieneMora) {
                 throw new Exception('No se puede amortizar: la venta tiene mora pendiente');
             }
 
-            $sql = "SELECT
-                    cc.idcpc,
-                    cc.fechavencimiento,
-                    cc.fecharegistro
-                FROM cuentas_por_cobrar cc
-                WHERE cc.idventa = '$idventa'
-                AND cc.condicion = 1
-                AND cc.deuda > 0
-                ORDER BY cc.fechavencimiento ASC, cc.fecharegistro ASC";
+            // OBTENER CUOTAS PENDIENTES
+            $cuotas = (new DBQuery($this->pdo))
+                ->select('cc.idcpc, cc.fechavencimiento, cc.fecharegistro')
+                ->from('cuentas_por_cobrar cc')
+                ->where('cc.idventa', '=', $idventa)
+                ->where('cc.condicion', '=', 1)
+                ->where('cc.deuda', '>', 0)
+                ->orderBy('cc.fechavencimiento', 'ASC')
+                ->orderBy('cc.fecharegistro', 'ASC')
+                ->get();
 
-            $lista = ejecutarConsulta($sql);
+            if (empty($cuotas)) {
+                throw new Exception('No existen cuotas pendientes para amortizar.');
+            }
 
-            $pago = round((float) $montopago, 2);
+            // MONTOS
+            $montoEfectivoTotal = round((float) $montoEfectivo, 2);
+            $montoTransferenciaTotal = round((float) $montoTransferencia, 2);
+            $pagoTotal = round($montoEfectivoTotal + $montoTransferenciaTotal, 2);
+
+            if ($pagoTotal <= 0) {
+                throw new Exception('El monto a amortizar debe ser mayor a cero.');
+            }
+
+            $pagoRestante = $pagoTotal;
+
             $totalAmortizado = 0;
             $data = false;
 
-            while ($reg = $lista->fetch_object()) {
+            // Acumuladores para evitar diferencias de redondeo
+            $efectivoDistribuido = 0;
+            $transferenciaDistribuida = 0;
 
-                if ($pago <= 0) {
+            // RECORRER CUOTAS
+            foreach ($cuotas as $index => $reg) {
+
+                if ($pagoRestante <= 0) {
                     break;
                 }
 
-                $filaAct = ejecutarConsultaSimpleFila("
-                        SELECT
-                            deuda,
-                            interes,
-                            mora,
-                            abonototal,
-                            descuento
-                        FROM cuentas_por_cobrar
-                        WHERE idcpc = '$reg->idcpc'
-                    ");
+                // OBTENER CUOTA ACTUAL
+                $filaAct = (new DBQuery($this->pdo))
+                    ->select('deuda, interes, mora, abonototal, descuento')
+                    ->from('cuentas_por_cobrar')
+                    ->where('idcpc', '=', $reg['idcpc'])
+                    ->first();
 
                 if (!$filaAct) {
                     continue;
@@ -2023,155 +2043,221 @@ class CuentasCobrar extends Helpers
                     continue;
                 }
 
-                // ============================
                 // DESCUENTO POR PAGO ANTICIPADO
-                // ============================
                 $descuento = 0;
-
                 if ($configDescuento['activo']) {
-
-                    $hoy = new DateTime();
-                    $vencimiento = new DateTime($reg->fechavencimiento);
-
-                    $dias = $hoy->diff($vencimiento)->days;
-
-                    if (
-                        $vencimiento > $hoy &&
-                        $dias >= $configDescuento['dias_anticipacion']
-                    ) {
-                        $descuento = round(
-                            $deuda * ($configDescuento['valor'] / 100),
-                            2
-                        );
+                    $hoy = Carbon::today();
+                    $vencimiento = Carbon::parse($reg['fechavencimiento'])->startOfDay();
+                    $dias = $hoy->diffInDays($vencimiento);
+                    if ($vencimiento->isAfter($hoy) && $dias >= $configDescuento['dias_anticipacion']) {
+                        $descuento = round($deuda * ($configDescuento['valor'] / 100), 2);
                     }
                 }
 
-                // deuda que realmente debe pagar el cliente
+                // DEUDA REAL DE LA CUOTA
                 $deudaConDescuento = max(0, $deuda - $descuento);
 
-                // pago aplicado
-                $capital_pagado = min($pago, $deudaConDescuento);
+                // PAGO APLICADO A ESTA CUOTA
+                $capitalPagado = min($pagoRestante, $deudaConDescuento);
+                $capitalPagado = round($capitalPagado, 2);
 
-                // nueva deuda
-                $nuevaDeuda = round(
-                    $deuda - $descuento - $capital_pagado,
-                    2
-                );
+                if ($capitalPagado <= 0 && $descuento <= 0) {
+                    continue;
+                }
+
+                // NUEVA DEUDA
+                $nuevaDeuda = round($deuda - $descuento - $capitalPagado, 2);
 
                 if ($nuevaDeuda < 0) {
                     $nuevaDeuda = 0;
                 }
 
-                $pago -= $capital_pagado;
+                // DISTRIBUIR EFECTIVO / TRANSFERENCIA
 
-                // lo que realmente ingresó a caja
-                $montoPagadoTotal = $capital_pagado;
+                $esUltimaAplicacion = true;
 
-                if (
-                    $montoPagadoTotal <= 0 &&
-                    $descuento <= 0
-                ) {
-                    continue;
+                for ($j = $index + 1; $j < count($cuotas); $j++) {
+                    if (!empty($cuotas[$j]['idcpc'])) {
+                        $esUltimaAplicacion = false;
+                        break;
+                    }
                 }
 
-                // Registrar movimiento
-                ejecutarConsulta("
-                        INSERT INTO detalle_cuentas_por_cobrar
-                        (
-                            idcpc,
-                            idcaja,
-                            idpersonal,
-                            montopagado,
-                            montotarjeta,
-                            banco,
-                            op,
-                            fechapago,
-                            formapago,
-                            observacion
-                        )
-                        VALUES
-                        (
-                            '$reg->idcpc',
-                            '$idcaja',
-                            '$idpersonal',
-                            '$montoPagadoTotal',
-                            0,
-                            '',
-                            '',
-                            NOW(),
-                            '$formapago',
-                            'AMORTIZACION CREDITO'
-                        )
-                    ");
+                if ($pagoTotal > 0) {
+                    $efectivoCuota = round($capitalPagado * ($montoEfectivoTotal / $pagoTotal), 2);
+                    $transferenciaCuota = round($capitalPagado - $efectivoCuota, 2);
+                } else {
+                    $efectivoCuota = 0;
+                    $transferenciaCuota = 0;
+                }
 
-                $nuevoAbonoTotal = round(
-                    $abonototal + $montoPagadoTotal,
-                    2
-                );
+                // CORREGIR REDONDEOS EN LA ÚLTIMA APLICACIÓN
+                if ($esUltimaAplicacion) {
+                    $efectivoCuota = round($montoEfectivoTotal - $efectivoDistribuido, 2);
+                    $transferenciaCuota = round($montoTransferenciaTotal - $transferenciaDistribuida, 2);
 
-                $nuevoDescuento = round(
-                    $descuentoActual + $descuento,
-                    2
-                );
+                    // Nunca exceder el capital realmente pagado
+                    $totalMedios = round($efectivoCuota + $transferenciaCuota, 2);
 
-                ejecutarConsulta("
-                        UPDATE cuentas_por_cobrar
-                        SET
-                            deuda = '$nuevaDeuda',
-                            abonototal = '$nuevoAbonoTotal',
-                            descuento = '$nuevoDescuento'
-                        WHERE idcpc = '$reg->idcpc'
-                    ");
+                    if ($totalMedios > $capitalPagado) {
+                        $exceso = round($totalMedios - $capitalPagado, 2);
 
+                        if ($transferenciaCuota >= $exceso) {
+                            $transferenciaCuota = round($transferenciaCuota - $exceso, 2);
+                        } else {
+                            $efectivoCuota = round($efectivoCuota - $exceso, 2);
+                        }
+                    }
+                }
+
+                $efectivoCuota = max(0, $efectivoCuota);
+                $transferenciaCuota = max(0, $transferenciaCuota);
+                $efectivoDistribuido = round($efectivoDistribuido + $efectivoCuota, 2);
+                $transferenciaDistribuida = round($transferenciaDistribuida + $transferenciaCuota, 2);
+
+                // REGISTRAR PAGO
+                $guardarPago = (new FluentSaver($this->pdo))
+                    ->table('detalle_cuentas_por_cobrar')
+                    ->data([
+                        'idcpc' => $reg['idcpc'],
+                        'idcaja' => $idcaja,
+                        'idpersonal' => $idpersonal,
+                        'montopagado' => $efectivoCuota,
+                        'montotarjeta' => $transferenciaCuota,
+                        'idbanco' => !empty($banco) ? $banco : null,
+                        'op' => !empty($numero_operacion) ? $numero_operacion : null,
+                        'fechapago' => !empty($fechadeposito) ? $fechadeposito : null,
+                        'formapago' => $formapago,
+                        'observacion' => 'AMORTIZACION CREDITO'
+                    ])
+                    ->save();
+
+                if (!$guardarPago) {
+                    throw new Exception('No se pudo registrar el pago.');
+                }
+
+                // sumar monto de tajeta si viene tarjeta 
+                if ($transferenciaCuota > 0 && !empty($banco)) {
+                    $sumarBanco = Helpers::incrementarBanco($banco, $transferenciaCuota);
+                    if (!$sumarBanco) {
+                        throw new Exception("Error al ingrmentar saldo banco");
+                    }
+                }
+
+                if ($efectivoCuota > 0) {
+                    $caja = Helpers::cajaAperturada($idsucursal, $idusuario);
+
+                    if (!$caja) {
+                        throw new Exception("No existe una caja abierta para el usuario.");
+                    }
+
+                    $sumarCaja = Helpers::incrementarCajaApertura($caja['aperturacajaid'], $efectivoCuota);
+                    if (!$sumarCaja) {
+                        throw new Exception("Error al incrementar el efectivo de la caja.");
+                    }
+                }
+
+                // ACTUALIZAR ABONO
+                $nuevoAbonoTotal = round($abonototal + $capitalPagado, 2);
+                $nuevoDescuento = round($descuentoActual + $descuento, 2);
+
+                $actualizarCuota = (new FluentSaver($this->pdo))
+                    ->table('cuentas_por_cobrar')
+                    ->primaryKey('idcpc')
+                    ->data([
+                        'idcpc' => $reg['idcpc'],
+                        'deuda' => $nuevaDeuda,
+                        'abonototal' => $nuevoAbonoTotal,
+                        'descuento' => $nuevoDescuento
+                    ])
+                    ->update();
+
+                if (!$actualizarCuota) {
+                    throw new Exception(
+                        'No se pudo actualizar la cuota.'
+                    );
+                }
+
+                // MARCAR COMO PAGADA
                 if ($nuevaDeuda <= 0) {
+                    $estadoPago = (new FluentSaver($this->pdo))
+                        ->table('cuentas_por_cobrar')
+                        ->primaryKey('idcpc')
+                        ->data([
+                            'idcpc' => $reg['idcpc'],
+                            'estado_pago' => 0
+                        ])
+                        ->update();
 
-                    ejecutarConsulta("
-                            UPDATE cuentas_por_cobrar
-                            SET estado_pago = 0
-                            WHERE idcpc = '$reg->idcpc'
-                        ");
+                    if (!$estadoPago) {
+                        throw new Exception(
+                            'No se pudo actualizar el estado de la cuota.'
+                        );
+                    }
                 }
 
-                $totalAmortizado += ($montoPagadoTotal + $descuento);
+                // ACTUALIZAR RESTANTE
+                $pagoRestante = round($pagoRestante - $capitalPagado, 2);
+                $totalAmortizado = round($totalAmortizado + $capitalPagado + $descuento, 2);
+
                 $data = true;
             }
 
-            $pendientes = ejecutarConsultaSimpleFila("
-                    SELECT COUNT(*) AS total
-                    FROM cuentas_por_cobrar
-                    WHERE idventa = '$idventa'
-                    AND estado_pago = 1
-                    AND deuda > 0
-                ");
+            // VERIFICAR CUOTAS PENDIENTES
+            $pendientes = (new DBQuery($this->pdo))
+                ->select('COUNT(*) AS total')
+                ->from('cuentas_por_cobrar')
+                ->where('idventa', '=', $idventa)
+                ->where('estado_pago', '=', 1)
+                ->where('deuda', '>', 0)
+                ->first();
 
-            if ($pendientes['total'] == 0) {
+            if (($pendientes['total'] ?? 0) == 0) {
+                $documentacion = (new FluentSaver($this->pdo))
+                    ->table('documentacion')
+                    ->data([
+                        'estado' => 2
+                    ])
+                    ->where('idventa', '=', $idventa)
+                    ->where('tipo', '=', '1')
+                    ->update();
 
-                ejecutarConsulta("
-                        UPDATE documentacion
-                        SET estado = 2
-                        WHERE idventa = '$idventa'
-                        AND tipo = '1'
-                    ");
+                if (!$documentacion) {
+                    throw new Exception(
+                        'No se pudo actualizar el estado del documento.'
+                    );
+                }
             }
 
-            ejecutarConsulta("COMMIT");
+            // =====================================================
+            // COMMIT
+            // =====================================================
+            $this->pdo->commit();
 
             return [
                 'success' => $data,
+
                 'message' => $data
-                    ? 'Se amortizó correctamente S/ ' . number_format($totalAmortizado, 2)
+                    ? 'Se amortizó correctamente S/ ' .
+                    number_format(
+                        $totalAmortizado,
+                        2
+                    )
                     : 'No se realizó ninguna amortización',
-                'saldo_restante' => round($pago, 2)
+
+                'saldo_restante' => round(
+                    $pagoRestante,
+                    2
+                )
             ];
 
         } catch (Exception $e) {
 
-            ejecutarConsulta("ROLLBACK");
+            $this->pdo->rollBack();
 
             return [
                 'success' => false,
-                'message' => $e->getMessage(),
-                'saldo_restante' => $montopago
+                'message' => $e->getMessage()
             ];
         }
     }
@@ -2356,8 +2442,8 @@ class CuentasCobrar extends Helpers
 
                 $documentacion = $this->obtenerDocumento($idventa);
 
-                if (!empty($documentacion)) {
-                    $iddocumento = $documentacion['iddocumento'];
+                if (!empty($documentacion['iddocumento'])) {
+                    $iddocumento = (int) $documentacion['iddocumento'];
                 }
             }
 
@@ -2373,30 +2459,24 @@ class CuentasCobrar extends Helpers
                     'fecha_final'
                 ])
                 ->cast([
-                    'idventa' => 'int',
-                    'iddocumento' => 'int',
-                    'idcpc' => 'int',
-                    'idrecuperacion' => 'int',
-                    'idcliente' => 'int',
                     'idpersonal' => 'int',
                     'idusuario' => 'int'
                 ])
                 ->data([
-                    'idventa' => $idventa,
+                    'idventa' => !empty($idventa) ? (int) $idventa : null,
                     'iddocumento' => $iddocumento,
-                    'idcpc' => $idcpc,
-                    'idrecuperacion' => $idrecuperacion,
-                    'idcliente' => $idcliente,
-                    'idpersonal' => $idpersonal,
+                    'idcpc' => !empty($idcpc) ? (int) $idcpc : null,
+                    'idrecuperacion' => !empty($idrecuperacion) ? (int) $idrecuperacion : null,
+                    'idcliente' => !empty($idcliente) ? (int) $idcliente : null,
+                    'idpersonal' => (int) $idpersonal,
                     'tipo' => $tipo_visita,
-                    'descripcion' => $descripcion,
+                    'descripcion' => !empty($descripcion) ? $descripcion : null,
                     'fecha_proxima' => $fecha_programada,
-                    'idusuario' => $idusuario,
+                    'idusuario' => (int) $idusuario,
                     'estado' => $estado,
                     'prioridad' => $prioridad,
-                    'direccion' => $direccion,
-                    'fecha_final' => $fecha_final
-
+                    'direccion' => !empty($direccion) ? $direccion : null,
+                    'fecha_final' => !empty($fecha_final) ? $fecha_final : null
                 ])
                 ->save();
 
@@ -2477,8 +2557,6 @@ class CuentasCobrar extends Helpers
 
     public function editarVisita(
         $id,
-        $idcpc,
-        $idventa,
         $idcliente,
         $fecha_programada,
         $idpersonal,
@@ -2503,17 +2581,6 @@ class CuentasCobrar extends Helpers
 
             $this->pdo->beginTransaction();
 
-            $iddocumento = null;
-
-            if (!empty($idventa)) {
-
-                $documentacion = $this->obtenerDocumento($idventa);
-
-                if (!empty($documentacion)) {
-                    $iddocumento = $documentacion['iddocumento'];
-                }
-            }
-
             $update = (new FluentSaver($this->pdo))
                 ->table('seguimiento_clientes')
                 ->primaryKey('idseguimiento')
@@ -2528,18 +2595,12 @@ class CuentasCobrar extends Helpers
                     'fecha_proxima'
                 ])
                 ->cast([
-                    'idventa' => 'int',
-                    'iddocumento' => 'int',
-                    'idcpc' => 'int',
                     'idcliente' => 'int',
                     'idpersonal' => 'int',
                     'idusuario' => 'int'
                 ])
                 ->data([
                     'idseguimiento' => $id,
-                    'idventa' => $idventa,
-                    'iddocumento' => $iddocumento,
-                    'idcpc' => $idcpc,
                     'idcliente' => $idcliente,
                     'idpersonal' => $idpersonal,
                     'tipo' => $tipo_visita,
@@ -2680,8 +2741,8 @@ class CuentasCobrar extends Helpers
             $this->pdo->commit();
 
             return json_encode([
-                "status" => true,
-                "msg" => "Seguimiento actualizado correctamente"
+                "success" => true,
+                "message" => "Seguimiento actualizado correctamente"
             ]);
 
         } catch (Exception $e) {
@@ -2691,8 +2752,8 @@ class CuentasCobrar extends Helpers
             }
 
             return json_encode([
-                "status" => false,
-                "msg" => $e->getMessage()
+                "success" => false,
+                "message" => $e->getMessage()
             ]);
 
         }
@@ -2806,34 +2867,87 @@ class CuentasCobrar extends Helpers
         return json_encode($results);
     }
 
+    // public function mostrarSeguimiento($idseguimiento)
+    // {
+    //     $sql = "SELECT
+    //             s.*,
+    //             p.nombre as personal,
+    //             c.nombre as cliente
+    //         FROM seguimiento_clientes s
+    //         INNER JOIN personal p ON p.idpersonal = s.idpersonal
+    //         LEFT JOIN persona c ON c.idpersona = s.idcliente
+    //         WHERE s.idseguimiento = $idseguimiento";
+    //     $rspta = ejecutarConsultaSimpleFila($sql);
+    //     $credito = '';
+    //     $total_cuotas = '';
+    //     $numero_comprobante = '';
+    //     $serie_comprobante = '';
+    //     if ($rspta['idventa'] && $rspta['idcpc']) {
+    //         $data_credito = $this->obtenerCredito($rspta['idventa'], $rspta['idcpc']);
+    //         $credito = $data_credito['numero_cuota'];
+    //         $total_cuotas = $data_credito['total_cuotas'];
+    //         $numero_comprobante = $data_credito['num_comprobante'];
+    //         $serie_comprobante = $data_credito['serie_comprobante'];
+    //     }
+    //     $rspta['adjuntos'] = $this->dataArchivosAdjuntos($idseguimiento);
+    //     $rspta['numero_cuota'] = $credito;
+    //     $rspta['total_cuotas'] = $total_cuotas;
+    //     $rspta['numero_comprobante'] = $numero_comprobante;
+    //     $rspta['serie_comprobante'] = $serie_comprobante;
+    //     return json_encode($rspta);
+    // }
+
     public function mostrarSeguimiento($idseguimiento)
     {
-        $sql = "SELECT
-                s.*,
-                p.nombre as personal,
-                c.nombre as cliente
-            FROM seguimiento_clientes s
-            INNER JOIN personal p ON p.idpersonal = s.idpersonal
-            LEFT JOIN persona c ON c.idpersona = s.idcliente
-            WHERE s.idseguimiento = $idseguimiento";
-        $rspta = ejecutarConsultaSimpleFila($sql);
+        $rspta = (new DBQuery($this->pdo))
+            ->select([
+                's.*',
+                'p.nombre AS personal',
+                'c.nombre AS cliente'
+            ])
+            ->from('seguimiento_clientes s')
+            ->join(
+                'personal p',
+                'p.idpersonal = s.idpersonal'
+            )
+            ->leftJoin(
+                'persona c',
+                'c.idpersona = s.idcliente'
+            )
+            ->where('s.idseguimiento', '=', $idseguimiento)
+            ->first();
+
         $credito = '';
         $total_cuotas = '';
         $numero_comprobante = '';
         $serie_comprobante = '';
-        if ($rspta['idventa'] && $rspta['idcpc']) {
-            $data_credito = $this->obtenerCredito($rspta['idventa'], $rspta['idcpc']);
-            $credito = $data_credito['numero_cuota'];
-            $total_cuotas = $data_credito['total_cuotas'];
-            $numero_comprobante = $data_credito['num_comprobante'];
-            $serie_comprobante = $data_credito['serie_comprobante'];
+
+        if (!empty($rspta)) {
+
+            if (!empty($rspta['idventa']) && !empty($rspta['idcpc'])) {
+
+                $data_credito = $this->obtenerCredito(
+                    $rspta['idventa'],
+                    $rspta['idcpc']
+                );
+
+                if (!empty($data_credito)) {
+                    $credito = $data_credito['numero_cuota'];
+                    $total_cuotas = $data_credito['total_cuotas'];
+                    $numero_comprobante = $data_credito['num_comprobante'];
+                    $serie_comprobante = $data_credito['serie_comprobante'];
+                }
+            }
+
+            $rspta['adjuntos'] = $this->dataArchivosAdjuntos($idseguimiento);
+
+            $rspta['numero_cuota'] = $credito;
+            $rspta['total_cuotas'] = $total_cuotas;
+            $rspta['numero_comprobante'] = $numero_comprobante;
+            $rspta['serie_comprobante'] = $serie_comprobante;
         }
-        $rspta['adjuntos'] = $this->dataArchivosAdjuntos($idseguimiento);
-        $rspta['numero_cuota'] = $credito;
-        $rspta['total_cuotas'] = $total_cuotas;
-        $rspta['numero_comprobante'] = $numero_comprobante;
-        $rspta['serie_comprobante'] = $serie_comprobante;
-        return json_encode($rspta);
+
+        return Response::json($rspta);
     }
 
 

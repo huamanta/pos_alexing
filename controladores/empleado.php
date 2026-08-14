@@ -1,7 +1,9 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
-require_once "../modelos/Empleado.php";
+require_once __DIR__ . "/../modelos/Empleado.php";
+require_once __DIR__ . "/../modelos/Helpers.php";
 
+$helpers = new Helpers();
 $empleado = new Empleado();
 
 // Validar si el usuario tiene una sesión activa
@@ -125,6 +127,21 @@ switch ($_GET["op"]) {
 		$data = array();
 
 		while ($reg = $rspta->fetch_object()) {
+			$editar = '';
+			if ($helpers->getUserPermissionAccion('Editar personal')) {
+				$editar = '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idpersonal . ')"><i class="fas fa-edit"></i></button>';
+			}
+
+			$desactivar = "";
+			if ($helpers->getUserPermissionAccion('Activar/desactivar personal')) {
+				if ($reg->condicion) {
+					$desactivar = ' <button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idpersonal . ')"><i class="fas fa-times-circle"></i></button>';
+				} else {
+					$desactivar = ' <button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idpersonal . ')"><i class="fa fa-check"></i></button>';
+				}
+			}
+			;
+
 			$data[] = array(
 				"0" => $reg->nombre,
 				"1" => $reg->tipo_documento,
@@ -134,11 +151,7 @@ switch ($_GET["op"]) {
 				"5" => "<img src='files/personal/" . $reg->imagen . "' height='60px' width='60px' >",
 				"6" => ($reg->condicion) ? '<span class="badge bg-green">ACTIVADO</span>' :
 					'<span class="badge bg-red">DESACTIVADO</span>',
-				"7" => ($reg->condicion) ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idpersonal . ')"><i class="fas fa-edit"></i></button>' .
-					' <button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idpersonal . ')"><i class="fas fa-times-circle"></i></button>' .
-					' <button class="btn btn-primary btn-xs" onclick="verEventos(' . $reg->idpersonal . ', 1)"><i class="fas fa-calendar"></i></button>' :
-					'<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idpersonal . ')"><i class="fas fa-edit"></i></button>' .
-					' <button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idpersonal . ')"><i class="fa fa-check"></i></button>'
+				"7" => $editar . $desactivar
 			);
 		}
 		$results = array(
@@ -152,8 +165,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'eventosCalendario':
-		$idpersonal = isset($_GET["idpersonal"]) ? limpiarCadena($_GET["idpersonal"]) : "";
-		$rspta = $empleado->eventosCalendario($idpersonal);
-		echo $rspta;
+		$idusuario = $_SESSION["idusuario"];
+		$empleado->eventosCalendario($idusuario);
 		break;
 }

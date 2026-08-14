@@ -116,7 +116,7 @@ final class Pos extends Helpers
         v.estadoS,
         u.idpersonal,
         u.nombre as personal, 
-        v.tipo_comprobante,
+        cp.nombre AS tipo_comprobante,
         v.serie_comprobante,
         v.num_comprobante,
         (v.total_venta - v.descuento) as total_venta,
@@ -136,8 +136,8 @@ final class Pos extends Helpers
     INNER JOIN persona p ON v.idcliente = p.idpersona 
     INNER JOIN personal u ON v.idpersonal = u.idpersonal 
     INNER JOIN sucursal s ON s.idsucursal = v.idsucursal
-    WHERE v.tipo_comprobante IN ('Boleta', 'Factura', 'Nota de Venta') 
-        AND v.idcaja = '$idcaja' 
+    INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
+    WHERE v.idcaja = '$idcaja' 
         AND v.fecha_hora BETWEEN '$fecha_apertura' AND '$fecha_cierre'
     GROUP BY v.idventa
     ORDER BY v.idventa DESC

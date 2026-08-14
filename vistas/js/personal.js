@@ -318,9 +318,8 @@ function listarEventos(idpersonal, only_personal) {
 					$.post(
 						"controladores/cuentascobrar.php?op=mostrarSeguimiento",
 						{ idseguimiento: e.extendedProps.idseguimiento },
-						function (r) {
-							let data = JSON.parse(r);
-							verSeguimiento(data);
+						function (response) {
+							verSeguimiento(response);
 						}
 					);
 				}
@@ -457,18 +456,15 @@ $("#formProgramarVisita").submit(function (e) {
 		contentType: false,
 		processData: false,
 		success: function (r) {
-
-			var data = JSON.parse(r);
-
-			if (!data.status) {
-
-				Swal.fire('Error', data.msg, 'error');
+			const data = JSON.parse(r);
+			if (!data.success) {
+				Swal.fire('Error', data.message, 'error');
 				return;
 			}
 
 			$("#formProgramarVisita")[0].reset();
 
-			Swal.fire('Hecho', data.msg, 'success');
+			Swal.fire('Hecho', data.message, 'success');
 
 			$("#modalProgramarVisita").modal("hide");
 
@@ -618,7 +614,7 @@ function verSeguimiento(data) {
 	$("#ver_descripcion").html(data.descripcion || '-');
 
 	let htmlAdjuntos = '';
-	var adjuntos = JSON.parse(data.adjuntos);
+	var adjuntos = data.adjuntos;
 	if (adjuntos && adjuntos.length > 0) {
 
 		adjuntos.forEach(function (item) {

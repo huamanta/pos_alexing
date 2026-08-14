@@ -11,7 +11,7 @@ class Compra extends Helpers
     {
         parent::__construct();
     }
-    
+
     public function insertar(
         $idsucursal,
         $idproveedor,
@@ -212,39 +212,56 @@ class Compra extends Helpers
                 }
 
                 // E. Actualizar precio de venta en la tabla producto_configuracion
-                $sqlUpdatePrecioVentaConfig = "UPDATE producto_configuracion SET precio_venta = '{$precio_venta[$i]}' WHERE idproducto = '{$idproducto[$i]}'";
+                $sqlUpdatePrecioVentaConfig = "
+                        UPDATE producto_configuracion
+                        SET precio_venta = '{$precio_venta[$i]}'
+                        WHERE idproducto = '{$idproducto[$i]}'
+                        AND (
+                            cantidad_contenedor = 1.00
+                            OR UPPER(TRIM(contenedor)) = 'UNIDAD'
+                        )
+                        ORDER BY idproducto_configuracion ASC
+                        LIMIT 1
+                    ";
+                error_log("ID PRODUCTO: " . $idproducto[$i]);
+                error_log("PRECIO: " . $precio_venta[$i]);
+                error_log($sqlUpdatePrecioVentaConfig);
+
                 if (!ejecutarConsulta($sqlUpdatePrecioVentaConfig)) {
-                    throw new Exception("Error al actualizar el precio de venta en la configuración del producto: " . $nombre_producto[$i]);
+                    throw new Exception(
+                        "Error al actualizar el precio de venta en la configuración del producto: " .
+                        $nombre_producto[$i]
+                    );
                 }
 
                 // F. FIFO DE COMPRA (LOTE REAL)
-                $sqlFifoCompra = "INSERT INTO stock_fifo (
-                idsucursal,
-                idproducto,
-                origen,
-                referencia_id,
-                cantidad_ingreso,
-                cantidad_restante,
-                precio_compra,
-                precio_venta,
-                fecha_ingreso,
-                fvencimiento
-            ) VALUES (
-                '$idsucursal',
-                '{$idproducto[$i]}',
-                'COMPRA',
-                '$iddetalle_compra',
-                '{$cantidad[$i]}',
-                '{$cantidad[$i]}',
-                '{$precio_compra[$i]}',
-                '{$precio_venta[$i]}',
-                '$fechaActual',
-                '{$fvencimiento[$i]}'
-            )";
+            //     $sqlFifoCompra = "INSERT INTO stock_fifo (
+            //     idsucursal,
+            //     idproducto,
+            //     origen,
+            //     referencia_id,
+            //     cantidad_ingreso,
+            //     cantidad_restante,
+            //     precio_compra,
+            //     precio_venta,
+            //     fecha_ingreso,
+            //     fvencimiento
+            // ) VALUES (
+            //     '$idsucursal',
+            //     '{$idproducto[$i]}',
+            //     'COMPRA',
+            //     '$iddetalle_compra',
+            //     '{$cantidad[$i]}',
+            //     '{$cantidad[$i]}',
+            //     '{$precio_compra[$i]}',
+            //     '{$precio_venta[$i]}',
+            //     '$fechaActual',
+            //     '{$fvencimiento[$i]}'
+            // )";
 
-                if (!ejecutarConsulta($sqlFifoCompra)) {
-                    throw new Exception('Error al registrar FIFO de compra para: ' . $nombre_producto[$i]);
-                }
+            //     if (!ejecutarConsulta($sqlFifoCompra)) {
+            //         throw new Exception('Error al registrar FIFO de compra para: ' . $nombre_producto[$i]);
+            //     }
             }
 
             // 3. GESTIONAR CUENTAS POR PAGAR (SI ES CRÉDITO)

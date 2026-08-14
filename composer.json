@@ -6,6 +6,7 @@
         "textalk/websocket": "^1.5",
         "vlucas/phpdotenv": "^5.6",
         "luecano/numero-a-letras": "^3.0",
-        "greenter/lite": "^5.3"
+        "greenter/lite": "^5.3",
+        "nesbot/carbon": "^3.13"
     }
 }

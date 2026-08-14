@@ -4,6 +4,7 @@ require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
 require_once __DIR__ . "/../core/FluentQuery.php";
 require_once __DIR__ . '/../core/Response.php';
+use Carbon\Carbon;
 
 class Cajachica extends Helpers
 {
@@ -13,27 +14,429 @@ class Cajachica extends Helpers
 		parent::__construct();
 	}
 
-	public function resumenBancos($idsucursal)
+	public function resumenBancos(int $idsucursal, int $idusuario)
 	{
-		$cuentas = $this->resumenBancosCuentasCobrar($idsucursal);
-		$ventas = $this->resumenBancosVentas($idsucursal);
+		$esSuperusuario = Helpers::esSuperusuario($idusuario);
+		$cajaApertura = Helpers::cajaAperturada($idsucursal, $idusuario);
+
+		if (!$esSuperusuario && !$cajaApertura) {
+
+			return Response::json([
+				'apertura_caja' => null,
+				'resumen' => [
+					'total' => 0,
+					'efectivo' => 0,
+					'transferencias' => 0,
+					'depositos' => 0,
+					'tarjetas' => 0,
+					'operaciones' => 0,
+					'promedio' => 0,
+					'promedio_str' => Helpers::get_currency_symbol(0),
+					'total_str' => Helpers::get_currency_symbol(0),
+					'efectivo_str' => Helpers::get_currency_symbol(0),
+					'transferencias_str' => Helpers::get_currency_symbol(0),
+					'depositos_str' => Helpers::get_currency_symbol(0),
+					'tarjetas_str' => Helpers::get_currency_symbol(0)
+				],
+				'cuentasxcobrar' => [],
+				'ventas' => [],
+				'ingresos' => [],
+				'totales' => [
+					'cuentasxcobrar' => 0,
+					'ventas' => 0
+				]
+			]);
+		}
+
+		$cuentas = $this->resumenBancosCuentasCobrar($idsucursal, $cajaApertura);
+		$ventas = $this->resumenBancosVentas($idsucursal, $cajaApertura);
+		$ingresos = $this->resumenIngresos($idsucursal, $cajaApertura);
+		$egresos = $this->resumenEgresos($idsucursal, $cajaApertura);
 		return Response::json([
-			'resumen' => $this->calcularResumen($cuentas, $ventas),
+			'apertura_caja' => $cajaApertura,
+			'resumen' => $this->calcularResumen($cuentas, $ventas, $ingresos, $egresos),
 			'cuentasxcobrar' => $cuentas,
 			'ventas' => $ventas,
-
+			'ingresos' => $ingresos,
+			'egresos' => $egresos,
 			'totales' => [
 				'cuentasxcobrar' => array_sum(array_column($cuentas, 'total')),
-				'ventas' => array_sum(array_column($ventas, 'total'))
+				'ventas' => array_sum(array_column($ventas, 'total')),
+				'ingresos' => array_sum(array_column($ingresos, 'total'))
 			]
 		]);
 	}
 
-	private function calcularResumen(array $cuentas, array $ventas): array
+
+	public function resumenIngresos(
+		int $idsucursal,
+		?array $cajaApertura
+	) {
+		$query = (new DBQuery($this->pdo))
+			->select('m.*, b.nombre AS banco')
+			->from('movimiento m')
+			->join("cajas c", "m.idcaja = c.idcaja")
+			->leftJoin("bancos b", "b.idbanco = m.idbanco")
+			->where('m.idsucursal', '=', $idsucursal)
+			->where('m.tipo', '=', Constants::INGRESOS);
+		if ($cajaApertura !== null) {
+			$fechaCierre = !empty($cajaApertura['fecha_cierre']) ? $cajaApertura['fecha_cierre'] : Carbon::now();
+			$query->where('m.idcaja', '=', $cajaApertura['idcaja'])
+				->whereBetween('m.fecha', $cajaApertura['fecha_apertura'], $fechaCierre);
+		}
+		$movimientos = $query->get();
+
+		foreach ($movimientos as $item) {
+
+			if ((float) $item['totalefectivo'] > 0) {
+
+				if (!isset($resumen['EFECTIVO'])) {
+					$resumen['EFECTIVO'] = [
+						'forma_pago' => 'EFECTIVO',
+						'banco' => '',
+						'cantidad' => 0,
+						'total' => 0
+					];
+				}
+
+				$resumen['EFECTIVO']['cantidad']++;
+				$resumen['EFECTIVO']['total'] += (float) $item['totalefectivo'];
+			}
+
+			if ((float) $item['totaldeposito'] > 0) {
+				$formaPago = strtoupper(trim($item['formapago'] ?? ''));
+				$banco = strtoupper(trim($item['banco'] ?? ''));
+
+				if ($banco !== '') {
+					$key = $formaPago . '_' . $banco;
+					$nombreBanco = $banco;
+				} else {
+					$key = $formaPago;
+					$nombreBanco = '';
+				}
+
+				if (!isset($resumen[$key])) {
+					$resumen[$key] = [
+						'forma_pago' => $formaPago,
+						'banco' => $nombreBanco,
+						'cantidad' => 0,
+						'total' => 0
+					];
+				}
+
+				$resumen[$key]['cantidad']++;
+				$resumen[$key]['total'] +=
+					(float) $item['totaldeposito'];
+			}
+		}
+
+		foreach ($resumen as &$item) {
+			$item['total'] = round($item['total'], 2);
+			$item['total_str'] =
+				Helpers::get_currency_symbol($item['total']);
+		}
+
+		unset($item);
+
+		return array_values($resumen);
+
+	}
+
+	public function resumenEgresos(
+		int $idsucursal,
+		?array $cajaApertura
+	) {
+		$query = (new DBQuery($this->pdo))
+			->select('m.*, b.nombre AS banco')
+			->from('movimiento m')
+			->join("cajas c", "m.idcaja = c.idcaja")
+			->leftJoin("bancos b", "b.idbanco = m.idbanco")
+			->where('m.idsucursal', '=', $idsucursal)
+			->where('m.tipo', '=', Constants::EGRESOS);
+		if ($cajaApertura !== null) {
+			$fechaCierre = !empty($cajaApertura['fecha_cierre']) ? $cajaApertura['fecha_cierre'] : Carbon::now();
+			$query->where('m.idcaja', '=', $cajaApertura['idcaja'])
+				->whereBetween('m.fecha', $cajaApertura['fecha_apertura'], $fechaCierre);
+		}
+		$movimientos = $query->get();
+
+		foreach ($movimientos as $item) {
+
+			if ((float) $item['totalefectivo'] > 0) {
+
+				if (!isset($resumen['EFECTIVO'])) {
+					$resumen['EFECTIVO'] = [
+						'forma_pago' => 'EFECTIVO',
+						'banco' => '',
+						'cantidad' => 0,
+						'total' => 0
+					];
+				}
+
+				$resumen['EFECTIVO']['cantidad']++;
+				$resumen['EFECTIVO']['total'] += (float) $item['totalefectivo'];
+			}
+
+			if ((float) $item['totaldeposito'] > 0) {
+				$formaPago = strtoupper(trim($item['formapago'] ?? ''));
+				$banco = strtoupper(trim($item['banco'] ?? ''));
+
+				if ($banco !== '') {
+					$key = $formaPago . '_' . $banco;
+					$nombreBanco = $banco;
+				} else {
+					$key = $formaPago;
+					$nombreBanco = '';
+				}
+
+				if (!isset($resumen[$key])) {
+					$resumen[$key] = [
+						'forma_pago' => $formaPago,
+						'banco' => $nombreBanco,
+						'cantidad' => 0,
+						'total' => 0
+					];
+				}
+
+				$resumen[$key]['cantidad']++;
+				$resumen[$key]['total'] +=
+					(float) $item['totaldeposito'];
+			}
+		}
+
+		foreach ($resumen as &$item) {
+			$item['total'] = round($item['total'], 2);
+			$item['total_str'] =
+				Helpers::get_currency_symbol($item['total']);
+		}
+
+		unset($item);
+
+		return array_values($resumen);
+
+	}
+
+
+	public function resumenBancosCuentasCobrar(
+		int $idsucursal,
+		?array $cajaApertura
+	) {
+		$query = (new DBQuery($this->pdo))
+			->select("
+            dcpc.formapago,
+            b.nombre AS banco,
+            dcpc.montopagado,
+            dcpc.montotarjeta
+        ")
+			->from("detalle_cuentas_por_cobrar dcpc")
+			->join(
+				"cajas c",
+				"dcpc.idcaja = c.idcaja"
+			)
+			->leftJoin(
+				"bancos b",
+				"b.idbanco = dcpc.idbanco"
+			)
+			->where(
+				"c.idsucursal",
+				"=",
+				$idsucursal
+			)
+			->whereNull("dcpc.deleted_at");
+
+		// Usuario normal → SOLO SU CAJA
+		if ($cajaApertura !== null) {
+
+			$fechaCierre = !empty($cajaApertura['fecha_cierre'])
+				? $cajaApertura['fecha_cierre']
+				: Carbon::now();
+
+			$query
+				->where(
+					'dcpc.idcaja',
+					'=',
+					$cajaApertura['idcaja']
+				)
+				->whereBetween(
+					'dcpc.fechapago',
+					$cajaApertura['fecha_apertura'],
+					$fechaCierre
+				);
+		}
+
+		$movimientos = $query->get();
+
+		$resumen = [];
+
+		foreach ($movimientos as $item) {
+
+			if ((float) $item['montopagado'] > 0) {
+
+				if (!isset($resumen['EFECTIVO'])) {
+					$resumen['EFECTIVO'] = [
+						'forma_pago' => 'EFECTIVO',
+						'banco' => '',
+						'cantidad' => 0,
+						'total' => 0
+					];
+				}
+
+				$resumen['EFECTIVO']['cantidad']++;
+				$resumen['EFECTIVO']['total'] +=
+					(float) $item['montopagado'];
+			}
+
+			if ((float) $item['montotarjeta'] > 0) {
+
+				$formaPago = strtoupper(
+					trim($item['formapago'] ?? '')
+				);
+
+				$banco = strtoupper(
+					trim($item['banco'] ?? '')
+				);
+
+				if ($banco !== '') {
+					$key = $formaPago . '_' . $banco;
+					$nombreBanco = $banco;
+				} else {
+					$key = $formaPago;
+					$nombreBanco = '';
+				}
+
+				if (!isset($resumen[$key])) {
+					$resumen[$key] = [
+						'forma_pago' => $formaPago,
+						'banco' => $nombreBanco,
+						'cantidad' => 0,
+						'total' => 0
+					];
+				}
+
+				$resumen[$key]['cantidad']++;
+				$resumen[$key]['total'] +=
+					(float) $item['montotarjeta'];
+			}
+		}
+
+		foreach ($resumen as &$item) {
+			$item['total'] = round($item['total'], 2);
+			$item['total_str'] =
+				Helpers::get_currency_symbol($item['total']);
+		}
+
+		unset($item);
+
+		return array_values($resumen);
+	}
+
+	public function resumenBancosVentas(
+		int $idsucursal,
+		?array $cajaApertura
+	) {
+		$query = (new DBQuery($this->pdo))
+			->select("
+            vp.metodo_pago AS formapago,
+            b.nombre AS banco,
+            vp.monto
+        ")
+			->from("venta v")
+			->leftJoin(
+				"venta_pago vp",
+				"vp.idventa = v.idventa"
+			)
+			->leftJoin(
+				"bancos b",
+				"b.idbanco = vp.idbanco"
+			)
+			->where(
+				"v.idsucursal",
+				"=",
+				$idsucursal
+			)
+			->where(
+				"v.estado",
+				"<>",
+				"Anulado"
+			)
+			->whereNull("v.deleted_at");
+
+		// Usuario normal → SOLO SU CAJA
+		if ($cajaApertura !== null) {
+
+			$fechaCierre = !empty($cajaApertura['fecha_cierre'])
+				? $cajaApertura['fecha_cierre']
+				: Carbon::now();
+
+			$query
+				->where(
+					'v.idcaja',
+					'=',
+					$cajaApertura['idcaja']
+				)
+				->whereBetween(
+					'v.fecha_hora',
+					$cajaApertura['fecha_apertura'],
+					$fechaCierre
+				);
+		}
+
+		$ventas = $query->get();
+
+		$resumen = [];
+
+		foreach ($ventas as $item) {
+
+			if ((float) $item['monto'] <= 0) {
+				continue;
+			}
+
+			$formaPago = strtoupper(
+				trim($item['formapago'] ?? '')
+			);
+
+			$banco = strtoupper(
+				trim($item['banco'] ?? '')
+			);
+
+			if ($banco !== '') {
+				$key = $formaPago . '_' . $banco;
+				$nombreBanco = $banco;
+			} else {
+				$key = $formaPago;
+				$nombreBanco = '';
+			}
+
+			if (!isset($resumen[$key])) {
+				$resumen[$key] = [
+					'forma_pago' => $formaPago,
+					'banco' => $nombreBanco,
+					'cantidad' => 0,
+					'total' => 0
+				];
+			}
+
+			$resumen[$key]['cantidad']++;
+			$resumen[$key]['total'] +=
+				(float) $item['monto'];
+		}
+
+		foreach ($resumen as &$item) {
+			$item['total'] = round($item['total'], 2);
+			$item['total_str'] =
+				Helpers::get_currency_symbol($item['total']);
+		}
+
+		unset($item);
+
+		return array_values($resumen);
+	}
+
+	private function calcularResumen(array $cuentas, array $ventas, array $ingresos, array $egresos): array
 	{
 		$datos = [];
 
-		foreach (array_merge($cuentas, $ventas) as $item) {
+		foreach (array_merge($cuentas, $ventas, $ingresos, $egresos) as $item) {
 
 			$forma = strtoupper(trim($item['forma_pago']));
 			$forma = str_replace('Ó', 'O', $forma);
@@ -63,7 +466,6 @@ class Cajachica extends Helpers
 					break;
 
 				case 'TRANSFERENCIA':
-					$transferencias += $valor['total'];
 					$tarjetas += $valor['total'];
 					break;
 
@@ -77,21 +479,17 @@ class Cajachica extends Helpers
 
 				case 'DEPOSITO':
 					$depositos += $valor['total'];
-					$tarjetas += $valor['total'];
 					break;
 
 				case 'TARJETA':
-					$depositos += $valor['total'];
 					$tarjetas += $valor['total'];
 					break;
 
 				case 'VISA':
-					$depositos += $valor['total'];
 					$tarjetas += $valor['total'];
 					break;
 
 				case 'MASTERCARD':
-					$depositos += $valor['total'];
 					$tarjetas += $valor['total'];
 					break;
 			}
@@ -121,168 +519,78 @@ class Cajachica extends Helpers
 		];
 	}
 
-	public function resumenBancosCuentasCobrar($idsucursal)
+	public function resumenComprobantes($idsucursal, $idusuario)
 	{
-		$movimientos = (new DBQuery($this->pdo))
-			->select("
-            dcpc.formapago,
-            dcpc.banco,
-            dcpc.montopagado,
-            dcpc.montotarjeta
-        ")
-			->from("detalle_cuentas_por_cobrar dcpc")
-			->join("cajas c", "dcpc.idcaja = c.idcaja")
-			->where("c.idsucursal", "=", $idsucursal)
-			->whereNull("dcpc.deleted_at")
-			->get();
+		$esSuperusuario = Helpers::esSuperusuario($idusuario);
+		$cajaApertura = Helpers::cajaAperturada($idsucursal, $idusuario);
 
-		$resumen = [];
-
-		foreach ($movimientos as $item) {
-
-			// EFECTIVO
-			if ((float) $item['montopagado'] > 0) {
-
-				if (!isset($resumen['EFECTIVO'])) {
-					$resumen['EFECTIVO'] = [
-						'forma_pago' => 'EFECTIVO',
-						'banco' => '',
+		if (!$esSuperusuario && $cajaApertura === null) {
+			return Response::json([
+				'resumen' => [
+					'contado' => [
 						'cantidad' => 0,
-						'total' => 0
-					];
-				}
-
-				$resumen['EFECTIVO']['cantidad']++;
-				$resumen['EFECTIVO']['total'] += (float) $item['montopagado'];
-			}
-
-			// Otros medios de pago
-			if ((float) $item['montotarjeta'] > 0) {
-
-				$formaPago = strtoupper(trim($item['formapago']));
-				$banco = strtoupper(trim($item['banco'] ?? ''));
-
-				// Solo Transferencia y Depósito se agrupan por banco
-				if (in_array($formaPago, ['TRANSFERENCIA', 'DEPOSITO', 'DEPÓSITO']) && $banco !== '') {
-					$key = $formaPago . '_' . $banco;
-					$nombreBanco = $banco;
-				} else {
-					$key = $formaPago;
-					$nombreBanco = '';
-				}
-
-				if (!isset($resumen[$key])) {
-					$resumen[$key] = [
-						'forma_pago' => $formaPago,
-						'banco' => $nombreBanco,
+						'total' => 0,
+						'total_str' => Helpers::get_currency_symbol(0)
+					],
+					'credito' => [
 						'cantidad' => 0,
-						'total' => 0
-					];
-				}
-
-				$resumen[$key]['cantidad']++;
-				$resumen[$key]['total'] += (float) $item['montotarjeta'];
-			}
+						'total' => 0,
+						'total_str' => Helpers::get_currency_symbol(0)
+					],
+					'comprobantes' => [
+						'cantidad' => 0,
+						'total' => 0,
+						'total_str' => Helpers::get_currency_symbol(0)
+					]
+				],
+				'comprobantes' => []
+			]);
 		}
 
-		foreach ($resumen as &$item) {
-			$item['total'] = round($item['total'], 2);
-			$item['total_str'] = Helpers::get_currency_symbol($item['total']);
-		}
-
-		unset($item);
-
-		return array_values($resumen);
-	}
-
-	public function resumenBancosVentas($idsucursal)
-	{
-		$ventas = (new DBQuery($this->pdo))
-			->select("
-            formapago,
-            banco,
-            totalrecibido AS montoPagado,
-            totaldeposito
-        ")
-			->from("venta")
-			->where("idsucursal", "=", $idsucursal)
-			->where("estado", "<>", "Anulado")
-			->whereNull("deleted_at")
-			->get();
-
-		$resumen = [];
-
-		foreach ($ventas as $item) {
-
-			// EFECTIVO
-			if ((float) $item['montoPagado'] > 0) {
-
-				if (!isset($resumen['EFECTIVO'])) {
-					$resumen['EFECTIVO'] = [
-						'forma_pago' => 'EFECTIVO',
-						'banco' => '',
-						'cantidad' => 0,
-						'total' => 0
-					];
-				}
-
-				$resumen['EFECTIVO']['cantidad']++;
-				$resumen['EFECTIVO']['total'] += (float) $item['montoPagado'];
-			}
-
-			// Otros medios de pago
-			if ((float) $item['totaldeposito'] > 0) {
-
-				$formaPago = strtoupper(trim($item['formapago'] ?? ''));
-				$banco = strtoupper(trim($item['banco'] ?? ''));
-
-				// Solo Transferencia y Depósito se separan por banco
-				if (in_array($formaPago, ['TRANSFERENCIA', 'DEPOSITO', 'DEPÓSITO']) && $banco !== '') {
-					$key = $formaPago . '_' . $banco;
-					$nombreBanco = $banco;
-				} else {
-					$key = $formaPago;
-					$nombreBanco = '';
-				}
-
-				if (!isset($resumen[$key])) {
-					$resumen[$key] = [
-						'forma_pago' => $formaPago,
-						'banco' => $nombreBanco,
-						'cantidad' => 0,
-						'total' => 0
-					];
-				}
-
-				$resumen[$key]['cantidad']++;
-				$resumen[$key]['total'] += (float) $item['totaldeposito'];
-			}
-		}
-
-		foreach ($resumen as &$item) {
-			$item['total'] = round($item['total'], 2);
-			$item['total_str'] = Helpers::get_currency_symbol($item['total']);
-		}
-
-		unset($item);
-
-		return array_values($resumen);
-	}
-
-	public function resumenComprobantes($idsucursal)
-	{
-		$comprobantes = (new DBQuery($this->pdo))
-			->select("
-            cp.nombre AS tipo_comprobante,
-            v.ventacredito,
-            COUNT(*) AS cantidad,
-            SUM(v.total_venta) AS total
-        ")
+		$query = (new DBQuery($this->pdo))
+			->select([
+				'cp.nombre AS tipo_comprobante',
+				'v.ventacredito',
+				'COUNT(*) AS cantidad',
+				'SUM(v.total_venta) AS total'
+			])
 			->from("venta v")
-			->join("comp_pago cp", "cp.idcomprobante_pago = v.idcomprobante_pago")
-			->where("v.idsucursal", "=", $idsucursal)
-			->where("v.estado", "<>", "Anulado")
-			->whereNull("v.deleted_at")
+			->join(
+				"comp_pago cp",
+				"cp.idcomprobante_pago = v.idcomprobante_pago"
+			)
+			->where(
+				"v.idsucursal",
+				"=",
+				$idsucursal
+			)
+			->where(
+				"v.estado",
+				"<>",
+				"Anulado"
+			)
+			->whereNull("v.deleted_at");
+
+		if ($cajaApertura !== null) {
+
+			$fechaCierre = !empty($cajaApertura['fecha_cierre'])
+				? $cajaApertura['fecha_cierre']
+				: Carbon::now();
+
+			$query
+				->where(
+					'v.idcaja',
+					'=',
+					$cajaApertura['idcaja']
+				)
+				->whereBetween(
+					'v.fecha_hora',
+					$cajaApertura['fecha_apertura'],
+					$fechaCierre
+				);
+		}
+
+		$comprobantes = $query
 			->groupBy("cp.nombre, v.ventacredito")
 			->orderBy("cp.nombre", "ASC")
 			->orderBy("v.ventacredito", "ASC")
@@ -293,10 +601,12 @@ class Cajachica extends Helpers
 				'cantidad' => 0,
 				'total' => 0
 			],
+
 			'credito' => [
 				'cantidad' => 0,
 				'total' => 0
 			],
+
 			'comprobantes' => [
 				'cantidad' => 0,
 				'total' => 0
@@ -306,65 +616,154 @@ class Cajachica extends Helpers
 		foreach ($comprobantes as &$item) {
 
 			$item['cantidad'] = (int) $item['cantidad'];
-			$item['total'] = round($item['total'], 2);
-			$item['total_str'] = Helpers::get_currency_symbol($item['total']);
 
-			$resumen['comprobantes']['cantidad'] += $item['cantidad'];
-			$resumen['comprobantes']['total'] += $item['total'];
+			$item['total'] = round(
+				(float) $item['total'],
+				2
+			);
 
-			if (strtoupper(trim($item['ventacredito'])) === 'SI') {
+			$item['total_str'] =
+				Helpers::get_currency_symbol(
+					$item['total']
+				);
 
-				$resumen['credito']['cantidad'] += $item['cantidad'];
-				$resumen['credito']['total'] += $item['total'];
+			$resumen['comprobantes']['cantidad'] +=
+				$item['cantidad'];
+
+			$resumen['comprobantes']['total'] +=
+				$item['total'];
+
+
+			if (
+				strtoupper(
+					trim($item['ventacredito'] ?? '')
+				) === 'SI'
+			) {
+
+				$resumen['credito']['cantidad'] +=
+					$item['cantidad'];
+
+				$resumen['credito']['total'] +=
+					$item['total'];
 
 			} else {
 
-				$resumen['contado']['cantidad'] += $item['cantidad'];
-				$resumen['contado']['total'] += $item['total'];
+				$resumen['contado']['cantidad'] +=
+					$item['cantidad'];
+
+				$resumen['contado']['total'] +=
+					$item['total'];
 			}
 		}
 
 		unset($item);
 
-		$resumen['contado']['total'] = round($resumen['contado']['total'], 2);
-		$resumen['credito']['total'] = round($resumen['credito']['total'], 2);
-		$resumen['comprobantes']['total'] = round($resumen['comprobantes']['total'], 2);
+		$resumen['contado']['total'] =
+			round(
+				$resumen['contado']['total'],
+				2
+			);
 
-		$resumen['contado']['total_str'] = Helpers::get_currency_symbol($resumen['contado']['total']);
-		$resumen['credito']['total_str'] = Helpers::get_currency_symbol($resumen['credito']['total']);
-		$resumen['comprobantes']['total_str'] = Helpers::get_currency_symbol($resumen['comprobantes']['total']);
+		$resumen['credito']['total'] =
+			round(
+				$resumen['credito']['total'],
+				2
+			);
+
+		$resumen['comprobantes']['total'] =
+			round(
+				$resumen['comprobantes']['total'],
+				2
+			);
+
+		$resumen['contado']['total_str'] =
+			Helpers::get_currency_symbol(
+				$resumen['contado']['total']
+			);
+
+		$resumen['credito']['total_str'] =
+			Helpers::get_currency_symbol(
+				$resumen['credito']['total']
+			);
+
+		$resumen['comprobantes']['total_str'] =
+			Helpers::get_currency_symbol(
+				$resumen['comprobantes']['total']
+			);
 
 		return Response::json([
+			'apertura_caja' => $cajaApertura,
+
 			'resumen' => $resumen,
-			'comprobantes' => array_values($comprobantes)
+
+			'comprobantes' => array_values(
+				$comprobantes
+			)
 		]);
 	}
 
 	//Implementamos un método para insertar registros
-	public function insertar($tipo, $idcaja, $idsucursal, $idpersonal, $monto, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario)
+	public function insertar($tipo, $idsucursal, $idpersonal, $montoEfectivo, $descripcion, $formapago, $montoDeposito, $noperacion, $idconcepto_movimiento, $idusuario, $banco, $fechaDeposito)
 	{
 		try {
-			$fechaActual = date('Y-m-d H:i:s');
+			$caja = Helpers::cajaAperturada($idsucursal, $idusuario);
 			$save = (new FluentSaver($this->pdo))
 				->table('movimiento')
+				->nullable([
+					'idbanco',
+					'idpersonal',
+					'noperacion',
+					'totaldeposito',
+					'fecha',
+				])
 				->data([
 					'tipo' => $tipo,
-					'idcaja' => $idcaja,
+					'idcaja' => $caja['idcaja'],
 					'idsucursal' => $idsucursal,
-					'idpersonal' => $idpersonal,
+					'idpersonal' => $idpersonal ?? null,
 					'idusuario' => $idusuario,
-					'totalefectivo' => $monto,
+					'totalefectivo' => $montoEfectivo,
 					'descripcion' => $descripcion,
 					'formapago' => $formapago,
-					'totaldeposito' => $totaldeposito,
-					'noperacion' => $noperacion,
+					'idbanco' => $banco ?? null,
+					'totaldeposito' => $montoDeposito ?? null,
+					'noperacion' => $noperacion ?? null,
 					'idconcepto_movimiento' => $idconcepto_movimiento,
-					'fecha' => $fechaActual,
+					'fecha' => $fechaDeposito ?? null,
 				])
 				->save();
 
 			if (!$save) {
 				throw new Exception("Movimiento no se pudo guardar");
+			}
+
+			// sumar monto de tajeta si viene tarjeta 
+			if ($montoDeposito > 0 && !empty($banco)) {
+				if ($tipo == 'Egresos') {
+					$sumarBanco = Helpers::restarBanco($banco, $montoDeposito);
+				} else {
+					$sumarBanco = Helpers::incrementarBanco($banco, $montoDeposito);
+				}
+				if (!$sumarBanco) {
+					throw new Exception("Error al ingrmentar/restar saldo banco");
+				}
+			}
+
+			if ($montoEfectivo > 0) {
+				$caja = Helpers::cajaAperturada($idsucursal, $idusuario);
+
+				if (!$caja) {
+					throw new Exception("No existe una caja abierta para el usuario.");
+				}
+				if ($tipo == 'Egresos') {
+					$sumarCaja = Helpers::restarCajaApertura($caja['aperturacajaid'], $montoEfectivo);
+				} else {
+
+					$sumarCaja = Helpers::incrementarCajaApertura($caja['aperturacajaid'], $montoEfectivo);
+				}
+				if (!$sumarCaja) {
+					throw new Exception("Error al incrementar/restar el efectivo de la caja.");
+				}
 			}
 
 			return Response::json(['success' => true, 'message' => 'Movimiento registrado correctamente']);
@@ -795,7 +1194,7 @@ class Cajachica extends Helpers
 
 		$query = (new DBQuery($this->pdo))
 			->select("
-            DATE_FORMAT(m.fecha, '%d/%m/%Y %h:%i %p') AS fecha,
+            DATE_FORMAT(m.created_at, '%d/%m/%Y %h:%i %p') AS fecha,
             m.descripcion,
             (m.totalefectivo + m.totaldeposito) AS monto,
             p.nombre AS trabajador
@@ -805,11 +1204,11 @@ class Cajachica extends Helpers
 			->where("m.idconcepto_movimiento", "=", $id_adelanto);
 
 		if (!empty($desde) && !empty($hasta)) {
-			$query->whereBetween("DATE(m.fecha)", $desde, $hasta);
+			$query->whereBetween("DATE(m.created_at)", $desde, $hasta);
 		}
 
 		return $query
-			->orderBy("m.fecha", "ASC")
+			->orderBy("m.created_at", "ASC")
 			->get();
 	}
 

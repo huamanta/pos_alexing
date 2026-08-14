@@ -37,11 +37,6 @@ function init() {
         toggleBtnEstadoCuenta();
     });
 
-    // $("#idsucursal2").change(function (e) {
-    //     e.preventDefault();
-    //     listaCreditos.load();
-    //     listarSaldos();
-    // });
 
     $('#navCobros').addClass("treeview menu-open");
     $('#navCobrosActive').addClass("treeview active");
@@ -66,6 +61,22 @@ function init() {
 
         verEstadoCuentaCliente(idcliente, fecha_inicio, fecha_fin);
     });
+
+    listarBancos();
+}
+
+function listarBancos() {
+    $.get('controladores/consultas.php?op=listarBancos', function (response) {
+        const bancos = response || [];
+        let html = '<option value="">Seleccione...</option>';
+        html += bancos.map(banco => `
+                <option value="${banco.idbanco}">
+                    ${banco.nombre}
+                </option>
+            `).join("");
+        $("#banco").html(html);
+        $("#bancoAmortizar").html(html);
+    })
 }
 
 $("#idcliente").select2({
@@ -223,7 +234,7 @@ function pintarCreditos(data, permissions) {
 
         html += `
                 <tr>
-                    <td>${i+1}</td>
+                    <td>${i + 1}</td>
                     <td>${item.cliente}</td>
                     <td>${item.num_documento || ''}</td>
                     <td>${item.total_creditos || ''}</td>
@@ -265,86 +276,6 @@ listaCreditos = new FluentPaginator({
         idcliente: $("#idcliente").val() || ""
     })
 });
-
-// function listar() {
-
-//     var fecha_inicio = $("#fecha_inicio").val();
-//     var fecha_fin = $("#fecha_fin").val();
-//     var idcliente = $("#idcliente").val();
-//     var idsucursal = $("#idsucursal2").val();
-//     // Verificar si fecha de inicio es mayor que fecha de fin
-//     var fechaInicio = new Date(fecha_inicio);
-//     var fechaFin = new Date(fecha_fin);
-
-//     if (fechaInicio > fechaFin) {
-//         // Establecer fecha de fin en la fecha actual
-//         var hoy = new Date();
-//         var dd = String(hoy.getDate()).padStart(2, '0');
-//         var mm = String(hoy.getMonth() + 1).padStart(2, '0');
-//         var yyyy = hoy.getFullYear();
-
-//         fecha_fin = yyyy + '-' + mm + '-' + dd;
-//         $("#fecha_fin").val(fecha_fin);
-//     }
-
-//     $('#vistaListaClientes').show();
-//     $('#vistaCreditosCliente').hide();
-//     $('#panelSuperiorCxC').show();
-
-//     tabla = $('#tbllistadocuentasxcobrar').dataTable(
-//         {
-//             //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-//             "aProcessing": true,//Activamos el procesamiento del datatables
-//             "aServerSide": true,//Paginación y filtrado realizados por el servidor
-//             "processing": true,
-//             "language":
-//             {
-//                 "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-//             },
-//             "responsive": true, "lengthChange": false, "autoWidth": false,
-//             dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-//             lengthMenu: [
-//                 [5, 10, 25, 50, 100, -1],
-//                 ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
-//             ],
-//             buttons: [
-//                 {
-//                     extend: 'pageLength',
-//                     orientation: 'landscape',
-//                     pageSize: 'LEGAL'
-//                 },
-//                 {
-//                     extend: 'pdfHtml5',
-//                     orientation: 'landscape',
-//                     title: 'Lista de documentos pendientes por cobrar',
-//                     pageSize: 'LEGAL'
-//                 },
-//                 {
-//                     extend: 'copy',
-//                     orientation: 'landscape',
-//                     pageSize: 'LEGAL'
-//                 },
-//                 {
-//                     extend: 'excel',
-//                     orientation: 'landscape',
-//                     title: 'Lista de documentos pendientes por cobrar',
-//                     pageSize: 'LEGAL'
-//                 }],
-//             "ajax":
-//             {
-//                 url: 'controladores/cuentascobrar.php?op=listaCreditos',
-//                 data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, idcliente: idcliente, idsucursal: idsucursal },
-//                 type: "get",
-//                 dataType: "json",
-//                 error: function (e) {
-//                     console.log(e.responseText);
-//                 }
-
-//             },
-//             "bDestroy": true,
-//             "iDisplayLength": 10,//Paginación
-//         }).DataTable();
-// }
 
 
 function listarSaldos() {
@@ -1249,6 +1180,14 @@ function dscargarHistorial(idventa) {
         return;
     }
 }
+
+$("#formapagoAmortizar").change(function (e) {
+    if ($(this).val() != 'Efectivo') {
+        $("#panelTransferencia").show();
+    } else {
+        $("#panelTransferencia").hide();
+    }
+});
 
 async function amortizar(idventa) {
     const idcaja = await verificarCaja();

@@ -47,7 +47,7 @@ if (isset($rutaActual)) {
   <link rel="stylesheet" href="./files/dist/css/neon.css?v=<?= time() ?>">
   <link rel="stylesheet" href="./files/dist/css/tailpanel.css">
   <link rel="stylesheet" href="./files/css/pos.css">
-  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet">
+ <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/skeleton.min.css">
   <!-- jQuery -->
   <script src="./files/plugins/jquery/jquery.min.js"></script>
   <!-- Bootstrap 4 -->

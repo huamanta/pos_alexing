@@ -80,15 +80,52 @@ if (empty($_GET["id"])) {
 			$configuracion = mysqli_fetch_assoc($query_config);
 		}
 
-		$query_productos = mysqli_query($conexion, "SELECT a.idproducto, a.nombre AS producto, pg.contenedor as unidadmedida, a.idunidad_medida, 
-				CASE WHEN a.codigo = 'SIN CODIGO' THEN '-' ELSE a.codigo END as codigo, d.cantidad_contenedor,d.cantidad, d.precio_venta, d.descuento, (d.cantidad*d.precio_venta-d.descuento) AS subtotal, ip.stock, a.imagen, a.proigv 
-				FROM detalle_cotizacion d 
-				INNER JOIN producto_configuracion pg ON d.idproducto=pg.idproducto 
-				INNER JOIN producto a ON pg.idproducto=a.idproducto 
-				INNER JOIN producto_serie ps ON ps.idproducto=a.idproducto 
-				INNER JOIN inventario_producto ip ON ip.idproducto=a.idproducto 
-				INNER JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida 
-				WHERE d.idcotizacion='$idventa'");
+		$query_productos = mysqli_query($conexion, "
+    SELECT 
+        a.idproducto, 
+        a.nombre AS producto, 
+        pg.contenedor AS unidadmedida, 
+        a.idunidad_medida, 
+
+        CASE 
+            WHEN a.codigo = 'SIN CODIGO' 
+                THEN '-' 
+            ELSE a.codigo 
+        END AS codigo, 
+
+        d.cantidad_contenedor,
+        d.cantidad, 
+        d.precio_venta, 
+        d.descuento, 
+
+        (
+            d.cantidad * d.precio_venta - d.descuento
+        ) AS subtotal, 
+
+        ip.stock, 
+        a.imagen, 
+        a.proigv 
+
+    FROM detalle_cotizacion d 
+
+    INNER JOIN producto a 
+        ON d.idproducto = a.idproducto 
+
+    INNER JOIN producto_configuracion pg 
+        ON pg.idproducto_configuracion = d.idproducto_configuracion
+        AND pg.idproducto = a.idproducto
+
+    INNER JOIN producto_serie ps 
+        ON ps.idproducto = a.idproducto 
+
+    INNER JOIN inventario_producto ip 
+        ON ip.idproducto = a.idproducto 
+
+    INNER JOIN unidad_medida um 
+        ON a.idunidad_medida = um.idunidad_medida 
+
+    WHERE d.idcotizacion = '$idventa'
+");
 		$result_detalle = mysqli_num_rows($query_productos);
 
 		ob_start();

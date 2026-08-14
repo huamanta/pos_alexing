@@ -16,6 +16,21 @@ function init() {
     $("#myModal").on("submit", function (e) {
         guardaryeditar(e);
     });
+
+    listarBancos();
+}
+
+function listarBancos() {
+    $.get('controladores/consultas.php?op=listarBancos', function (response) {
+        const bancos = response || [];
+        let html = '<option value="">Seleccione...</option>';
+        html += bancos.map(banco => `
+                <option value="${banco.idbanco}">
+                    ${banco.nombre}
+                </option>
+            `).join("");
+        $("#banco").html(html);
+    })
 }
 
 $("#fecha_inicio, #fecha_fin").change(function () {
@@ -271,9 +286,9 @@ function pintarMovimientos(data, permissions) {
 
         html += `
             <tr>
-                <td>${item.fecha ?? ''}</td>
+                <td>${item.created_at ?? ''}</td>
                 <td>${item.descripcion ?? ''}</td>
-                <td>${item.tipo === 'egresos'
+                <td>${item.tipo === 'Egresos'
                 ? '<span class="badge bg-danger">EGRESO</span>'
                 : '<span class="badge bg-success">INGRESO</span>'
             }</td>

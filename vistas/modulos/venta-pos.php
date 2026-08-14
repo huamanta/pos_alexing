@@ -1013,8 +1013,15 @@ date_default_timezone_set('America/Lima');
                                                                 </div>
                                                                 <div class="col-md-2 bancoContainer"
                                                                     style="display:none;">
-                                                                    <input type="text" class="form-control bancoPago"
-                                                                        name="banco_pago[]" placeholder="Banco">
+                                                                    <select class="form-control bancoPago"
+                                                                        name="banco_pago[]">
+                                                                        <option value="">Seleccione banco</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-md-2">
+                                                                    <input type="text" class="form-control nroOperacion"
+                                                                        name="nroOperacion_pago[]"
+                                                                        placeholder="N° Operación">
                                                                 </div>
                                                                 <div class="col-md-3 fechaContainer"
                                                                     style="display:none;">
@@ -1022,11 +1029,6 @@ date_default_timezone_set('America/Lima');
                                                                         class="form-control fechaDeposito"
                                                                         name="fecha_deposito_pago[]"
                                                                         placeholder="Fecha">
-                                                                </div>
-                                                                <div class="col-md-2">
-                                                                    <input type="text" class="form-control nroOperacion"
-                                                                        name="nroOperacion_pago[]"
-                                                                        placeholder="N° Operación">
                                                                 </div>
                                                                 <div class="col-md-2">
                                                                     <button type="button"
@@ -1187,7 +1189,7 @@ date_default_timezone_set('America/Lima');
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="row col-md-12 mt-4" style="display: none;" id="n6">
+                                                <!--div class="row col-md-12 mt-4" style="display: none;" id="n6">
                                                     <div class="col-lg-2">
                                                         <label style="font-size: 11px;"># de Operación:</label>
                                                         <div class="input-group">
@@ -1216,7 +1218,7 @@ date_default_timezone_set('America/Lima');
                                                             <option value="OTRO">OTRO</option>
                                                         </select>
                                                     </div>
-                                                </div>
+                                                </div-->
                                                 <div class="row col-md-12 mt-4" id="panel1" style="display: none;">
                                                     <table class="table" style="width:100%;">
                                                         <thead

@@ -556,6 +556,7 @@ class SisCompra extends Helpers
         (new FluentSaver($this->pdo))
             ->table("producto_configuracion")
             ->where("idproducto", "=", $producto["idproducto"])
+            ->where("cantidad_contenedor", "=", 1.00)
             ->data([
                 "precio_venta" => $producto["precio_venta"]
             ])

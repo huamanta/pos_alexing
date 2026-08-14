@@ -14,13 +14,14 @@ $idmovimiento = isset($_POST["idmovimiento"]) ? limpiarCadena($_POST["idmovimien
 
 $opcionEI = isset($_POST["opcionEI"]) ? limpiarCadena($_POST["opcionEI"]) : "";
 $idsucursal = isset($_POST["idsucursal"]) ? limpiarCadena($_POST["idsucursal"]) : "";
-$idcaja = isset($_POST['idcaja']) && $_POST['idcaja'] !== '' ? limpiarCadena($_POST['idcaja']) : (isset($_SESSION['idcaja']) && $_SESSION['idcaja'] !== '' ? limpiarCadena($_SESSION['idcaja']) : 0);
 $idpersonal = isset($_POST["idpersonal"]) ? limpiarCadena($_POST["idpersonal"]) : "";
 $idpersonal2 = isset($_POST["idpersonal2"]) ? limpiarCadena($_POST["idpersonal2"]) : "";
 $montoPagar = isset($_POST["montoPagar"]) ? limpiarCadena($_POST["montoPagar"]) : "";
 $formapago = isset($_POST["formapago"]) ? limpiarCadena($_POST["formapago"]) : "";
 $totaldeposito = isset($_POST["totaldeposito"]) ? limpiarCadena($_POST["totaldeposito"]) : "";
 $noperacion = isset($_POST["noperacion"]) ? limpiarCadena($_POST["noperacion"]) : "";
+$banco = isset($_POST["banco"]) ? limpiarCadena($_POST["banco"]) : "";
+$fechaDeposito = isset($_POST["fechaDeposito"]) ? limpiarCadena($_POST["fechaDeposito"]) : "";
 $descripcion = isset($_POST["descripcion"]) ? limpiarCadena($_POST["descripcion"]) : "";
 $idconcepto_movimiento = isset($_POST["idconcepto_movimiento"]) ? limpiarCadena($_POST["idconcepto_movimiento"]) : "";
 $idasistencia = isset($_POST["idasistenciaEI"]) ? limpiarCadena($_POST["idasistenciaEI"]) : "";
@@ -30,22 +31,24 @@ switch ($_GET["op"]) {
 
 	case "resumenBancos":
 		$idsucursal = $_SESSION['idsucursal'];
-		$cajachica->resumenBancos($idsucursal);
+		$idusuario = $_SESSION['idusuario'];
+		$cajachica->resumenBancos($idsucursal, $idusuario);
 		break;
 
 
 	case "resumenComprobantes":
 		$idsucursal = $_SESSION['idsucursal'];
-		$cajachica->resumenComprobantes($idsucursal);
+		$idusuario = $_SESSION['idusuario'];
+		$cajachica->resumenComprobantes($idsucursal, $idusuario);
 		break;
 
 	case 'guardaryeditar':
 		$idusuario = $_SESSION['idusuario'];
 		$idsucursal = $_SESSION['idsucursal'];
 		if (empty($idmovimiento)) {
-			$cajachica->insertar($opcionEI, $idcaja, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario);
+			$cajachica->insertar($opcionEI, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario, $banco, $fechaDeposito);
 		} else {
-			$cajachica->editar($idmovimiento, $opcionEI, $idcaja, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario);
+			$cajachica->editar($idmovimiento, $opcionEI, $idcaja, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario,);
 		}
 
 		break;

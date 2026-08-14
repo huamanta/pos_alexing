@@ -546,7 +546,7 @@ class Producto extends Helpers
 			])
 			->from("producto p")
 			->join('producto_configuracion pg', 'pg.idproducto = p.idproducto')
-			->leftJoin( "inventario_producto ip", "ip.idproducto = p.idproducto")
+			->leftJoin("inventario_producto ip", "ip.idproducto = p.idproducto")
 			->leftJoin("producto_serie ps", "ps.idproducto = p.idproducto")
 			->where("p.idproducto", "=", $idproducto)
 			->orderBy("ps.idserie", "ASC")
@@ -961,14 +961,6 @@ class Producto extends Helpers
 				'i.stock_minimo',
 				'i.stock_maximo',
 				'i.precio_compra',
-				'pg.idproducto_configuracion',
-				'pg.codigo_extra',
-				'pg.contenedor',
-				'pg.cantidad_contenedor',
-				'pg.precio_venta',
-				'pg.idfifo_origen',
-				'pg.precio_promocion',
-				'pg.estado AS estado_config',
 				'ps.idserie',
 				'ps.numero_serie',
 				'ps.numero_motor',
@@ -985,7 +977,6 @@ class Producto extends Helpers
 			->join('unidad_medida um', 'um.idunidad_medida = p.idunidad_medida')
 			->join('marca mr', 'mr.idmarca = p.idmarca')
 			->join('modelo md', 'md.idmodelo = p.idmodelo')
-			->leftJoin('producto_configuracion pg', 'pg.idproducto = p.idproducto')
 			->leftJoin('producto_serie ps', 'ps.idproducto = p.idproducto AND ps.idsucursal = p.idsucursal AND ps.estado = "DISPONIBLE"')
 			->where('p.condicion', '=', 1)
 			->where('p.idsucursal', '=', $idsucursal)
@@ -1241,6 +1232,7 @@ class Producto extends Helpers
 			->where('p.idsucursal', '=', $idsucursal)
 			->where('c.nombre', '<>', 'SERVICIO')
 			->softDeletes('p.deleted_at')
+			->softDeletes('pg.deleted_at')
 			->search($search, [
 				'p.codigo',
 				'pg.codigo_extra',
@@ -1358,160 +1350,329 @@ class Producto extends Helpers
 		return $data;
 	}
 
+	// public function saveCofigurationFromJson($jsonData, $idproducto)
+	// {
+	// 	global $conexion;
+
+	// 	$configuraciones = json_decode($jsonData, true);
+	// 	if (!$configuraciones) {
+	// 		return ['status' => false, 'msg' => 'JSON inválido'];
+	// 	}
+
+	// 	$conexion->begin_transaction();
+
+	// 	try {
+	// 		// Obtener precio base del lote FIFO activo
+	// 		$sqlFifo = "SELECT precio_venta, precio_compra, idfifo
+	//                 FROM stock_fifo 
+	//                 WHERE idproducto = '$idproducto' 
+	//                   AND cantidad_restante > 0 
+	//                   AND estado = 1
+	//                 ORDER BY fecha_ingreso ASC 
+	//                 LIMIT 1";
+	// 		$fifo = ejecutarConsultaSimpleFila($sqlFifo);
+	// 		$precioBaseUnitario = $fifo ? floatval($fifo['precio_compra']) : 0;
+	// 		$idLoteActual = $fifo ? intval($fifo['idfifo']) : 0;
+
+	// 		// Paso 0: Marcar todos como eliminados (soft delete)
+	// 		$softDelete = "UPDATE producto_configuracion SET deleted_at = NOW() WHERE idproducto = $idproducto";
+	// 		ejecutarConsulta($softDelete);
+
+	// 		// Paso 1: Recorremos configuraciones
+	// 		foreach ($configuraciones as $config) {
+	// 			$id = isset($config['id']) ? intval($config['id']) : 0;
+	// 			$codigo_extra = isset($config['codigo_extra']) ? limpiarCadena($config['codigo_extra']) : '';
+	// 			$contenedor = isset($config['contenedor']) ? limpiarCadena($config['contenedor']) : '';
+	// 			$cantidad_contenedor = isset($config['cantidad_contenedor']) ? floatval($config['cantidad_contenedor']) : 1;
+
+	// 			// ← BLINDAJE: Validar cantidad
+	// 			if ($cantidad_contenedor <= 0) {
+	// 				$cantidad_contenedor = 1;
+	// 			}
+
+	// 			// ============================================================
+	// 			// NUEVA LÓGICA: Solo UNIDAD se actualiza automáticamente
+	// 			// ============================================================
+	// 			$esUnidad = ($cantidad_contenedor == 1 || strtoupper(trim($contenedor)) === 'UNIDAD');
+	// 			$precio_venta = 0;
+
+	// 			if ($esUnidad) {
+	// 				// UNIDAD siempre usa precio automático del lote FIFO
+	// 				$precio_venta = $precioBaseUnitario;
+	// 			} else {
+	// 				// Otros contenedores mantienen precio manual
+	// 				if (isset($config['precio_venta_manual']) && floatval($config['precio_venta_manual']) > 0) {
+	// 					$precio_venta = floatval($config['precio_venta_manual']);
+	// 				} else if (isset($config['precio_venta']) && floatval($config['precio_venta']) > 0) {
+	// 					$precio_venta = floatval($config['precio_venta']);
+	// 				} else {
+	// 					// Si no hay precio manual, calcular automático la primera vez
+	// 					$precio_venta = round($precioBaseUnitario * $cantidad_contenedor, 2);
+	// 				}
+	// 			}
+
+	// 			// ← BLINDAJE: Asegurar precio mínimo
+	// 			if ($precio_venta <= 0 && $precioBaseUnitario > 0) {
+	// 				$precio_venta = round($precioBaseUnitario * $cantidad_contenedor, 2);
+	// 			}
+
+	// 			if ($id === 0) {
+	// 				// INSERT
+	// 				$sql = "INSERT INTO producto_configuracion 
+	//                 (codigo_extra, contenedor, cantidad_contenedor, precio_venta, idfifo_origen, idproducto, deleted_at) 
+	//                 VALUES ('$codigo_extra', '$contenedor', '$cantidad_contenedor', '$precio_venta', '$idLoteActual', '$idproducto', NULL)";
+	// 				$producto_configuracion_id = ejecutarConsulta_retornarID($sql);
+	// 			} else {
+	// 				// UPDATE
+	// 				$sql = "UPDATE producto_configuracion SET 
+	//                 codigo_extra = '$codigo_extra', 
+	//                 contenedor = '$contenedor', 
+	//                 cantidad_contenedor = $cantidad_contenedor, 
+	//                 precio_venta = '$precio_venta',
+	//                 idfifo_origen = '$idLoteActual',
+	//                 idproducto = '$idproducto', 
+	//                 deleted_at = NULL 
+	//             WHERE id = $id";
+	// 				ejecutarConsulta($sql);
+	// 				$producto_configuracion_id = $id;
+	// 			}
+
+	// 			// Actualizar producto base solo si es UNIDAD
+	// 			if ($esUnidad) {
+	// 				$updateProducto = "UPDATE producto 
+	//                                SET codigo = '$codigo_extra' 
+	//                                WHERE idproducto = $idproducto";
+	// 				ejecutarConsulta($updateProducto);
+	// 			}
+
+	// 			// Manejo de precios adicionales
+	// 			if (isset($config['precios']) && is_array($config['precios'])) {
+	// 				$marcarInactivos = "UPDATE producto_configuracion_precios 
+	//                     SET estado = 0 
+	//                     WHERE producto_configuracion_id = $producto_configuracion_id";
+	// 				ejecutarConsulta($marcarInactivos);
+
+	// 				foreach ($config['precios'] as $precio) {
+	// 					$idnombre_p = limpiarCadena($precio['idnombre_p']);
+	// 					$precio_valor = floatval($precio['precio']);
+
+	// 					$checkSql = "SELECT id FROM producto_configuracion_precios 
+	//                  WHERE producto_configuracion_id = $producto_configuracion_id 
+	//                  AND idnombre_p = '$idnombre_p' LIMIT 1";
+	// 					$existe = ejecutarConsultaSimpleFila($checkSql);
+
+	// 					$margen = isset($precio['margen_utilidad']) ? floatval($precio['margen_utilidad']) : 0;
+
+	// 					if ($existe && isset($existe['id'])) {
+	// 						$updatePrecio = "UPDATE producto_configuracion_precios 
+	//                         SET precio = '$precio_valor', 
+	//                             margen_utilidad = '$margen', 
+	//                             estado = 1 
+	//                         WHERE id = {$existe['id']}";
+	// 						ejecutarConsulta($updatePrecio);
+	// 					} else {
+	// 						$insertPrecio = "INSERT INTO producto_configuracion_precios 
+	//                         (producto_configuracion_id, idnombre_p, precio, margen_utilidad, estado) 
+	//                         VALUES ($producto_configuracion_id, '$idnombre_p', '$precio_valor', '$margen', 1)";
+	// 						ejecutarConsulta($insertPrecio);
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+
+	// 		$conexion->commit();
+	// 		return ['status' => true, 'msg' => 'Configuraciones guardadas correctamente'];
+	// 	} catch (Exception $e) {
+	// 		$conexion->rollback();
+	// 		return ['status' => false, 'msg' => 'Error al guardar configuraciones: ' . $e->getMessage()];
+	// 	}
+	// }
+
+
 	public function saveCofigurationFromJson($jsonData, $idproducto)
 	{
-		global $conexion;
-
 		$configuraciones = json_decode($jsonData, true);
-		if (!$configuraciones) {
-			return ['status' => false, 'msg' => 'JSON inválido'];
+
+		if (!is_array($configuraciones)) {
+			return [
+				'status' => false,
+				'msg' => 'JSON inválido'
+			];
 		}
 
-		$conexion->begin_transaction();
-
 		try {
-			// Obtener precio base del lote FIFO activo
-			$sqlFifo = "SELECT precio_venta, precio_compra, idfifo
-                    FROM stock_fifo 
-                    WHERE idproducto = '$idproducto' 
-                      AND cantidad_restante > 0 
-                      AND estado = 1
-                    ORDER BY fecha_ingreso ASC 
-                    LIMIT 1";
-			$fifo = ejecutarConsultaSimpleFila($sqlFifo);
-			$precioBaseUnitario = $fifo ? floatval($fifo['precio_compra']) : 0;
-			$idLoteActual = $fifo ? intval($fifo['idfifo']) : 0;
 
-			// Paso 0: Marcar todos como eliminados (soft delete)
-			$softDelete = "UPDATE producto_configuracion SET deleted_at = NOW() WHERE idproducto = $idproducto";
-			ejecutarConsulta($softDelete);
+			$this->pdo->beginTransaction();
 
-			// Paso 1: Recorremos configuraciones
+			// Marcar configuraciones anteriores como eliminadas.
+			(new FluentSaver($this->pdo))
+				->table('producto_configuracion')
+				->data([
+					'deleted_at' => date('Y-m-d H:i:s')
+				])
+				->where('idproducto', '=', $idproducto)
+				->update();
+
+			// Recorrer configuraciones.
 			foreach ($configuraciones as $config) {
-				$id = isset($config['id']) ? intval($config['id']) : 0;
-				$codigo_extra = isset($config['codigo_extra']) ? limpiarCadena($config['codigo_extra']) : '';
-				$contenedor = isset($config['contenedor']) ? limpiarCadena($config['contenedor']) : '';
-				$cantidad_contenedor = isset($config['cantidad_contenedor']) ? floatval($config['cantidad_contenedor']) : 1;
+				$id = $config['id'];
+				$codigo_extra = isset($config['codigo_extra']) ? trim($config['codigo_extra']) : '';
+				$contenedor = isset($config['contenedor']) ? trim($config['contenedor']) : '';
+				$cantidad_contenedor = isset($config['cantidad_contenedor']) ? (float) $config['cantidad_contenedor'] : 1;
 
-				// ← BLINDAJE: Validar cantidad
+				// Blindaje de cantidad
 				if ($cantidad_contenedor <= 0) {
 					$cantidad_contenedor = 1;
 				}
 
-				// ============================================================
-				// NUEVA LÓGICA: Solo UNIDAD se actualiza automáticamente
-				// ============================================================
-				$esUnidad = ($cantidad_contenedor == 1 || strtoupper(trim($contenedor)) === 'UNIDAD');
-				$precio_venta = 0;
+				// UNIDAD
+				$esUnidad = $cantidad_contenedor == 1 || strtoupper($contenedor) === 'UNIDAD';
+
+				// Precio enviado
+				$precio_venta = isset($config['precio_venta']) ? (float) $config['precio_venta'] : 0;
+
+				if ((int) $id === 0) {
+					$producto_configuracion_id = (new FluentSaver($this->pdo))
+						->table('producto_configuracion')
+						->data([
+							'codigo_extra' => $codigo_extra,
+							'contenedor' => $contenedor,
+							'cantidad_contenedor' => $cantidad_contenedor,
+							'precio_venta' => $precio_venta,
+							'precio_credito' => $config['precio_credito'],
+							'precio_promocion' => $config['precio_promocion'],
+							'idproducto' => $idproducto,
+						])
+						->save();
+
+				} else {
+					$producto_configuracion_id = (new FluentSaver($this->pdo))
+						->table('producto_configuracion')
+						->primaryKey('idproducto_configuracion')
+						->data([
+							'idproducto_configuracion' => $id,
+							'codigo_extra' => $codigo_extra,
+							'contenedor' => $contenedor,
+							'cantidad_contenedor' => $cantidad_contenedor,
+							'precio_venta' => $precio_venta,
+							'precio_credito' => $config['precio_credito'],
+							'precio_promocion' => $config['precio_promocion'],
+							'idproducto' => $idproducto,
+							'deleted_at' => null
+						])
+						->update();
+				}
+
+				if (!$producto_configuracion_id) {
+					throw new Exception('No se pudo guardar la configuración del producto');
+				}
 
 				if ($esUnidad) {
-					// UNIDAD siempre usa precio automático del lote FIFO
-					$precio_venta = $precioBaseUnitario;
-				} else {
-					// Otros contenedores mantienen precio manual
-					if (isset($config['precio_venta_manual']) && floatval($config['precio_venta_manual']) > 0) {
-						$precio_venta = floatval($config['precio_venta_manual']);
-					} else if (isset($config['precio_venta']) && floatval($config['precio_venta']) > 0) {
-						$precio_venta = floatval($config['precio_venta']);
-					} else {
-						// Si no hay precio manual, calcular automático la primera vez
-						$precio_venta = round($precioBaseUnitario * $cantidad_contenedor, 2);
-					}
+					(new FluentSaver($this->pdo))
+						->table('producto')
+						->primaryKey('idproducto')
+						->data([
+							'idproducto' => $idproducto,
+							'codigo' => $codigo_extra,
+							'precio' => $precio_venta
+						])
+						->update();
 				}
 
-				// ← BLINDAJE: Asegurar precio mínimo
-				if ($precio_venta <= 0 && $precioBaseUnitario > 0) {
-					$precio_venta = round($precioBaseUnitario * $cantidad_contenedor, 2);
-				}
-
-				if ($id === 0) {
-					// INSERT
-					$sql = "INSERT INTO producto_configuracion 
-                    (codigo_extra, contenedor, cantidad_contenedor, precio_venta, idfifo_origen, idproducto, deleted_at) 
-                    VALUES ('$codigo_extra', '$contenedor', '$cantidad_contenedor', '$precio_venta', '$idLoteActual', '$idproducto', NULL)";
-					$producto_configuracion_id = ejecutarConsulta_retornarID($sql);
-				} else {
-					// UPDATE
-					$sql = "UPDATE producto_configuracion SET 
-                    codigo_extra = '$codigo_extra', 
-                    contenedor = '$contenedor', 
-                    cantidad_contenedor = $cantidad_contenedor, 
-                    precio_venta = '$precio_venta',
-                    idfifo_origen = '$idLoteActual',
-                    idproducto = '$idproducto', 
-                    deleted_at = NULL 
-                WHERE id = $id";
-					ejecutarConsulta($sql);
-					$producto_configuracion_id = $id;
-				}
-
-				// Actualizar producto base solo si es UNIDAD
-				if ($esUnidad) {
-					$updateProducto = "UPDATE producto 
-                                   SET codigo = '$codigo_extra' 
-                                   WHERE idproducto = $idproducto";
-					ejecutarConsulta($updateProducto);
-				}
-
-				// Manejo de precios adicionales
 				if (isset($config['precios']) && is_array($config['precios'])) {
-					$marcarInactivos = "UPDATE producto_configuracion_precios 
-                        SET estado = 0 
-                        WHERE producto_configuracion_id = $producto_configuracion_id";
-					ejecutarConsulta($marcarInactivos);
+
+					(new FluentSaver($this->pdo))
+						->table('producto_configuracion_precios')
+						->primaryKey('producto_configuracion_id')
+						->data([
+							'producto_configuracion_id' => $producto_configuracion_id,
+							'estado' => 0
+						])
+						->update();
 
 					foreach ($config['precios'] as $precio) {
-						$idnombre_p = limpiarCadena($precio['idnombre_p']);
-						$precio_valor = floatval($precio['precio']);
+						$idnombre_p = isset($precio['idnombre_p']) ? trim($precio['idnombre_p']) : '';
+						$precio_valor = isset($precio['precio']) ? (float) $precio['precio'] : 0;
+						$margen = isset($precio['margen_utilidad']) ? (float) $precio['margen_utilidad'] : 0;
+						if ($idnombre_p === '') {
+							continue;
+						}
 
-						$checkSql = "SELECT id FROM producto_configuracion_precios 
-                     WHERE producto_configuracion_id = $producto_configuracion_id 
-                     AND idnombre_p = '$idnombre_p' LIMIT 1";
-						$existe = ejecutarConsultaSimpleFila($checkSql);
+						// Buscar precio existente.
+						$existe = (new DBQuery($this->pdo))
+							->select(['id'])
+							->from('producto_configuracion_precios')
+							->where('producto_configuracion_id', '=', $producto_configuracion_id)
+							->where('idnombre_p', '=', $idnombre_p)
+							->first();
 
-						$margen = isset($precio['margen_utilidad']) ? floatval($precio['margen_utilidad']) : 0;
+						if (!empty($existe)) {
 
-						if ($existe && isset($existe['id'])) {
-							$updatePrecio = "UPDATE producto_configuracion_precios 
-                            SET precio = '$precio_valor', 
-                                margen_utilidad = '$margen', 
-                                estado = 1 
-                            WHERE id = {$existe['id']}";
-							ejecutarConsulta($updatePrecio);
+							(new FluentSaver($this->pdo))
+								->table('producto_configuracion_precios')
+								->primaryKey('id')
+								->data([
+									'id' => $existe['id'],
+									'precio' => $precio_valor,
+									'margen_utilidad' => $margen,
+									'estado' => 1
+								])
+								->update();
+
 						} else {
-							$insertPrecio = "INSERT INTO producto_configuracion_precios 
-                            (producto_configuracion_id, idnombre_p, precio, margen_utilidad, estado) 
-                            VALUES ($producto_configuracion_id, '$idnombre_p', '$precio_valor', '$margen', 1)";
-							ejecutarConsulta($insertPrecio);
+
+							(new FluentSaver($this->pdo))
+								->table('producto_configuracion_precios')
+								->data([
+									'producto_configuracion_id' => $producto_configuracion_id,
+									'idnombre_p' => $idnombre_p,
+									'precio' => $precio_valor,
+									'margen_utilidad' => $margen,
+									'estado' => 1
+								])
+								->save();
 						}
 					}
 				}
 			}
 
-			$conexion->commit();
-			return ['status' => true, 'msg' => 'Configuraciones guardadas correctamente'];
-		} catch (Exception $e) {
-			$conexion->rollback();
-			return ['status' => false, 'msg' => 'Error al guardar configuraciones: ' . $e->getMessage()];
+			$this->pdo->commit();
+
+			return [
+				'status' => true,
+				'msg' => 'Configuraciones guardadas correctamente'
+			];
+
+		} catch (Throwable $e) {
+
+			if ($this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+
+			return [
+				'status' => false,
+				'msg' => 'Error al guardar configuraciones: ' .
+					$e->getMessage()
+			];
 		}
 	}
 
 	public function listCofiguration($idproducto)
 	{
 		// 1. Obtenemos los datos del lote FIFO activo (Costo y Venta)
-		$sqlFifo = "SELECT precio_venta, precio_compra, idfifo
-	                FROM stock_fifo 
-	                WHERE idproducto = '$idproducto' 
-	                  AND cantidad_restante > 0 
-	                  AND estado = 1
-	                ORDER BY fecha_ingreso ASC 
-	                LIMIT 1";
-		$fifo = ejecutarConsultaSimpleFila($sqlFifo);
+		// $sqlFifo = "SELECT precio_venta, precio_compra, idfifo
+		//             FROM stock_fifo 
+		//             WHERE idproducto = '$idproducto' 
+		//               AND cantidad_restante > 0 
+		//               AND estado = 1
+		//             ORDER BY fecha_ingreso ASC 
+		//             LIMIT 1";
+		// $fifo = ejecutarConsultaSimpleFila($sqlFifo);
 
 		// Definimos las bases unitarias
-		$costoCompraUnitario = $fifo ? floatval($fifo['precio_compra']) : 0;
-		$precioVentaUnitario = $fifo ? floatval($fifo['precio_venta']) : 0;
-		$idLoteActual = $fifo ? intval($fifo['idfifo']) : 0;
+		// $costoCompraUnitario = $fifo ? floatval($fifo['precio_compra']) : 0;
+		// $precioVentaUnitario = $fifo ? floatval($fifo['precio_venta']) : 0;
+		// $idLoteActual = $fifo ? intval($fifo['idfifo']) : 0;
 
 		// 2. Obtenemos las configuraciones del producto
 		$sql = "SELECT pc.* FROM producto_configuracion pc
@@ -1529,37 +1690,37 @@ class Producto extends Helpers
 			}
 
 			// Pasamos ambos valores al frontend para que el JS sepa distinguir
-			$reg->costo_compra_unitario = $costoCompraUnitario;
-			$reg->precio_venta_unitario = $precioVentaUnitario;
+			//$reg->costo_compra_unitario = $costoCompraUnitario;
+			//$reg->precio_venta_unitario = $precioVentaUnitario;
 			// Para la tabla del modal, el "precio_base" sigue siendo el de venta
-			$reg->precio_base_unitario = $precioVentaUnitario;
+			//$reg->precio_base_unitario = $precioVentaUnitario;
 
-			$idLoteGuardado = isset($reg->idfifo_origen) ? intval($reg->idfifo_origen) : 0;
-			$precioGuardado = floatval($reg->precio_venta);
-			$precioAutomatico = round($precioVentaUnitario * $cantidadContenedor, 2);
+			// $idLoteGuardado = isset($reg->idfifo_origen) ? intval($reg->idfifo_origen) : 0;
+			// $precioGuardado = floatval($reg->precio_venta);
+			// $precioAutomatico = round($precioVentaUnitario * $cantidadContenedor, 2);
 
-			$esUnidad = ($cantidadContenedor == 1 || strtoupper(trim($reg->contenedor)) === 'UNIDAD');
+			// $esUnidad = ($cantidadContenedor == 1 || strtoupper(trim($reg->contenedor)) === 'UNIDAD');
 
-			if ($esUnidad) {
-				if ($idLoteGuardado != $idLoteActual && $idLoteActual > 0) {
-					$reg->precio_venta = $precioVentaUnitario;
-					$reg->cambio_lote = true;
-					ejecutarConsulta("UPDATE producto_configuracion SET precio_venta = '$precioVentaUnitario', idfifo_origen = '$idLoteActual' WHERE id = {$reg->id}");
-				} else {
-					$reg->precio_venta = $precioVentaUnitario;
-				}
-			} else {
-				$reg->precio_venta = $precioGuardado > 0 ? $precioGuardado : $precioAutomatico;
-				if ($precioGuardado > 0) {
-					$reg->precio_venta_manual = $precioGuardado;
-				}
-				if ($idLoteGuardado != $idLoteActual && $idLoteActual > 0) {
-					ejecutarConsulta("UPDATE producto_configuracion SET idfifo_origen = '$idLoteActual' WHERE id = {$reg->id}");
-				}
-			}
+			// if ($esUnidad) {
+			// 	if ($idLoteGuardado != $idLoteActual && $idLoteActual > 0) {
+			// 		$reg->precio_venta = $precioVentaUnitario;
+			// 		$reg->cambio_lote = true;
+			// 		ejecutarConsulta("UPDATE producto_configuracion SET precio_venta = '$precioVentaUnitario', idfifo_origen = '$idLoteActual' WHERE id = {$reg->id}");
+			// 	} else {
+			// 		$reg->precio_venta = $precioVentaUnitario;
+			// 	}
+			// } else {
+			// 	$reg->precio_venta = $precioGuardado > 0 ? $precioGuardado : $precioAutomatico;
+			// 	if ($precioGuardado > 0) {
+			// 		$reg->precio_venta_manual = $precioGuardado;
+			// 	}
+			// 	if ($idLoteGuardado != $idLoteActual && $idLoteActual > 0) {
+			// 		ejecutarConsulta("UPDATE producto_configuracion SET idfifo_origen = '$idLoteActual' WHERE id = {$reg->id}");
+			// 	}
+			// }
 
 			// 3. Obtenemos los precios adicionales de esta configuración
-			$idconfig = $reg->id;
+			$idconfig = $reg->idproducto_configuracion;
 			$sqlPrecios = "SELECT id, idnombre_p, precio, margen_utilidad
 	                       FROM producto_configuracion_precios
 	                       WHERE producto_configuracion_id = '$idconfig' AND estado = 1";

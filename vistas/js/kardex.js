@@ -112,14 +112,17 @@ function pintarProductos(data, permissions) {
                 <td>${item.motivo}</td>
                 <td>${item.tipo_movimiento == 1 ? '<span class="badge badge-neon neon-green">Entrada</span>' : '<span class="badge badge-neon neon-red">Salida</span>'}</td>
                 <td>
-                    ${item.cantidad || 0} Und.
+                    ${item.cantidad || 0}
                 </td>
                 <td>
-                    ${item.precio_unitario || "S/N"}
+                    ${item.cantidad_contenedor || 0} Und.
                 </td>
-                <td>${(item.cantidad / item.cantidad_contenedor) * item.precio_unitario}</td>
-                <td>${item.cantidad_contenedor == 1 ? item.stock_actual : item.stock_actual - item.stock_actual / item.cantidad_contenedor}</td>
-                <td>${(item.stock_actual / item.cantidad_contenedor) * item.precio_unitario}</td>
+                <td>
+                    S/ ${item.precio_unitario || "S/N"}
+                </td>
+                <td>S/ ${item.cantidad *  item.precio_unitario}</td>
+                <td>${item.stock_actual}</td>
+                <td>S/ ${item.stock_actual* item.precio_unitario}</td>
 
             </tr>
         `;

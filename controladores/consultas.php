@@ -2,10 +2,12 @@
 ob_start();
 
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
-require_once "../modelos/Consultas.php";
+require_once __DIR__ . "/../modelos/Consultas.php";
 $consulta = new Consultas();
 $idsucursal = $_SESSION['idsucursal'];
 switch ($_GET["op"]) {
+	case 'listarBancos':
+		echo $consulta->listarBancos();
 
 	case 'totalutilidadnetapv':
 		$fecha_inicio = $_REQUEST["fecha_inicio"];

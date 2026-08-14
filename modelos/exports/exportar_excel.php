@@ -316,7 +316,7 @@ foreach ($trabajadores as $tIndex => $t) {
             WHERE idpersonal='{$t['id']}' 
             AND descripcion LIKE '%Adelanto%'
             AND tipo='Egresos'
-            AND DATE(fecha) BETWEEN '{$weekStart->format('Y-m-d')}' AND '{$weekEnd->format('Y-m-d')}'
+            AND DATE(created_at) BETWEEN '{$weekStart->format('Y-m-d')}' AND '{$weekEnd->format('Y-m-d')}'
             ORDER BY fecha
             ";
 
