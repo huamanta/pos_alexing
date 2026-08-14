@@ -2557,8 +2557,6 @@ class CuentasCobrar extends Helpers
 
     public function editarVisita(
         $id,
-        $idcpc,
-        $idventa,
         $idcliente,
         $fecha_programada,
         $idpersonal,
@@ -2583,17 +2581,6 @@ class CuentasCobrar extends Helpers
 
             $this->pdo->beginTransaction();
 
-            $iddocumento = null;
-
-            if (!empty($idventa)) {
-
-                $documentacion = $this->obtenerDocumento($idventa);
-
-                if (!empty($documentacion)) {
-                    $iddocumento = $documentacion['iddocumento'];
-                }
-            }
-
             $update = (new FluentSaver($this->pdo))
                 ->table('seguimiento_clientes')
                 ->primaryKey('idseguimiento')
@@ -2608,18 +2595,12 @@ class CuentasCobrar extends Helpers
                     'fecha_proxima'
                 ])
                 ->cast([
-                    'idventa' => 'int',
-                    'iddocumento' => 'int',
-                    'idcpc' => 'int',
                     'idcliente' => 'int',
                     'idpersonal' => 'int',
                     'idusuario' => 'int'
                 ])
                 ->data([
                     'idseguimiento' => $id,
-                    'idventa' => $idventa,
-                    'iddocumento' => $iddocumento,
-                    'idcpc' => $idcpc,
                     'idcliente' => $idcliente,
                     'idpersonal' => $idpersonal,
                     'tipo' => $tipo_visita,
@@ -2760,8 +2741,8 @@ class CuentasCobrar extends Helpers
             $this->pdo->commit();
 
             return json_encode([
-                "status" => true,
-                "msg" => "Seguimiento actualizado correctamente"
+                "success" => true,
+                "message" => "Seguimiento actualizado correctamente"
             ]);
 
         } catch (Exception $e) {
@@ -2771,8 +2752,8 @@ class CuentasCobrar extends Helpers
             }
 
             return json_encode([
-                "status" => false,
-                "msg" => $e->getMessage()
+                "success" => false,
+                "message" => $e->getMessage()
             ]);
 
         }

@@ -456,10 +456,7 @@ $("#formProgramarVisita").submit(function (e) {
 		contentType: false,
 		processData: false,
 		success: function (r) {
-
 			const data = JSON.parse(r);
-			console.log(data);
-			
 			if (!data.success) {
 				Swal.fire('Error', data.message, 'error');
 				return;

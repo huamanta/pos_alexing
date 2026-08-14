@@ -51,6 +51,9 @@ files/productos/*
 !files/productos/.gitkeep
 !files/productos/anonymous.png
 
+files/recuperacion/*
+!files/recuperacion/.gitkeep
+
 files/solicitudes/*
 !files/solicitudes/.gitkeep
 

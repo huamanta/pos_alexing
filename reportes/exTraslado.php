@@ -1,10 +1,5 @@
 <?php
-ob_start();
-if (strlen(session_id()) < 1) session_start();
-
-if (!isset($_SESSION["nombre"])) {
-    echo 'Debe ingresar al sistema correctamente para visualizar el reporte';
-} else {
+    require_once __DIR__ . '/../configuraciones/bootstrap.php';
     require_once "../modelos/Traslado.php";
     require_once "../modelos/Negocio.php";
     require_once "../modelos/Categoria.php";
@@ -18,7 +13,7 @@ if (!isset($_SESSION["nombre"])) {
 
     // Datos de la empresa
     $negocio = new Negocio();
-    $rsptan = $negocio->listar();
+    $rsptan = $negocio->listar($resultSucursal['idsucursal']);
     $regn = $rsptan->fetch_object();
     $empresa = $resultSucursal['razon_social'] ?? '-';
     $documento = $resultSucursal['tipo_documento'] ?? 'RUC';
@@ -131,6 +126,5 @@ if (!isset($_SESSION["nombre"])) {
 </body>
 </html>
 <?php
-}
 ob_end_flush();
 ?>

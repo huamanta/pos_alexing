@@ -607,12 +607,17 @@ class Helpers
     }
 
 
-    public function cajaAperturada(int $idsucursal, int $idusuario): array
-    {
+    public function cajaAperturada(
+        int $idsucursal,
+        int $idusuario
+    ): ?array {
         return (new DBQuery($this->pdo))
             ->select('*')
             ->from('caja_apertura ca')
-            ->join('cajas c', 'c.idcaja = ca.idcaja')
+            ->join(
+                'cajas c',
+                'c.idcaja = ca.idcaja'
+            )
             ->where('ca.estado', '=', 1)
             ->where('ca.idsucursal', '=', $idsucursal)
             ->where('ca.idusuario', '=', $idusuario)

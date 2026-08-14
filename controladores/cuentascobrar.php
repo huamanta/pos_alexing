@@ -373,7 +373,7 @@ switch ($_GET["op"]) {
 		$fecha_final = isset($_POST["fecha_final"]) ? limpiarCadena($_POST["fecha_final"]) : "";
 		$idusuario = $_SESSION['idusuario'];
 		if ($id) {
-			$rspta = $cuentascobrar->editarVisita($id, $idcpc, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final);
+			$rspta = $cuentascobrar->editarVisita($id, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final);
 			echo $rspta;
 		} else {
 			$rspta = $cuentascobrar->guardarVisita($idcpc, $idrecuperacion, $idventa, $idcliente, $fecha_programada, $idpersonal, $tipo_visita, $prioridad, $estado, $direccion, $descripcion, $idusuario, $fecha_final);
