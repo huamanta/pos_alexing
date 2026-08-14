@@ -7,4 +7,5 @@ class Constants {
     const RECUPERACION_CRITICA = 90;
     const RECUPERACION_ALTO = 60;
     const RECUPERACION_MEDIA = 30;
+    const GUIA_REMISION = 'Guia de Remisión';
 }

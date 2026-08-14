@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Aug 12, 2026 at 10:30 PM
+-- Generation Time: Aug 14, 2026 at 06:29 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -436,7 +436,8 @@ INSERT INTO `comp_pago` (`idcomprobante_pago`, `nombre`, `serie_comprobante`, `n
 (4, 'Nota de Crédito', 'NC01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
 (5, 'Nota de Débito', 'ND01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
 (6, 'Cotización', 'COT0', '26', 1, 1, '2026-08-06 10:11:42', '2026-08-11 22:03:05', NULL),
-(7, 'Orden de Compra', 'OC01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL);
+(7, 'Orden de Compra', 'OC01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
+(8, 'Guia de Remisión', 'T001', '0', 1, 1, '2026-08-13 09:46:10', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -1010,6 +1011,13 @@ CREATE TABLE `detalle_guia` (
   `lotes` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
 
+--
+-- Dumping data for table `detalle_guia`
+--
+
+INSERT INTO `detalle_guia` (`iddetalle`, `idguia`, `idproducto`, `codigo`, `nombre_producto`, `cantidad`, `unidad`, `peso`, `bultos`, `lotes`) VALUES
+(1, 1, 28, '', '', 1.00, '', 0.00, 0, '[{\"idinventario_lote\":1,\"codigo_lote\":\"FDG54UI\",\"fecha_vencimiento\":\"2026-09-25\",\"cantidad\":\"1.00\"},{\"idinventario_lote\":1,\"codigo_lote\":\"FDG54UI\",\"fecha_vencimiento\":\"2026-09-25\",\"cantidad\":\"1.00\"}]');
+
 -- --------------------------------------------------------
 
 --
@@ -1142,8 +1150,8 @@ CREATE TABLE `detalle_venta_lote` (
 
 INSERT INTO `detalle_venta_lote` (`iddetalle_venta_lote`, `iddetalle_venta`, `idinventario_lote`, `codigo_lote`, `fecha_vencimiento`, `cantidad`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (1, 95, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:11:53', '2026-08-12 14:11:53', NULL),
-(2, 104, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
-(3, 105, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL);
+(2, 43, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
+(3, 43, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL);
 
 -- --------------------------------------------------------
 
@@ -1227,6 +1235,8 @@ CREATE TABLE `guia_remision` (
   `idtransportista` int(11) DEFAULT NULL,
   `peso` decimal(10,2) DEFAULT NULL,
   `estado` enum('Por Enviar','Aceptado','Nota Credito','Rechazado') DEFAULT 'Por Enviar',
+  `estado_sunat` datetime DEFAULT NULL,
+  `resumen_sunat` varchar(225) NOT NULL,
   `punto_partida` varchar(255) DEFAULT NULL,
   `ubigeo_partida` varchar(6) DEFAULT NULL,
   `punto_llegada` varchar(255) DEFAULT NULL,
@@ -1240,6 +1250,13 @@ CREATE TABLE `guia_remision` (
   `observacion` text DEFAULT NULL,
   `fecha_creacion` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_spanish_ci;
+
+--
+-- Dumping data for table `guia_remision`
+--
+
+INSERT INTO `guia_remision` (`idguia`, `idsucursal`, `idcliente`, `idpersonal`, `serie_comprobante`, `num_comprobante`, `fecha_emision`, `fecha_traslado`, `factura_ref`, `fecha_factura_ref`, `tipo_transporte`, `idtransportista`, `peso`, `estado`, `estado_sunat`, `resumen_sunat`, `punto_partida`, `ubigeo_partida`, `punto_llegada`, `ubigeo_llegada`, `atencion`, `referencia`, `idtrabajador`, `idmotivo`, `ord_compra`, `ord_pedido`, `observacion`, `fecha_creacion`) VALUES
+(1, 1, 1, 1, 'T001', '000001', '2026-08-14 00:00:00', '2026-08-14', 'B001-0000009', '2026-07-17', 1, 5, 0.00, 'Por Enviar', NULL, '', 'Amazonas - Chachapoyas - Asunción', '010102', 'Áncash - Aija - Coris', '020202', 'luilui', 'uiluil', 3, 1, '54978', '555885', '', '2026-08-14 10:06:47');
 
 -- --------------------------------------------------------
 
@@ -1579,7 +1596,9 @@ INSERT INTO `login_historial` (`idhistorial`, `idusuario`, `ip`, `user_agent`, `
 (49, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:07:31', 0, '2026-08-11 18:09:53'),
 (50, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:09:57', 0, '2026-08-11 18:26:00'),
 (51, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:26:04', 1, NULL),
-(52, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-12 08:18:45', 1, NULL);
+(52, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-12 08:18:45', 1, NULL),
+(53, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-13 04:05:38', 1, NULL),
+(54, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-14 04:31:28', 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -1932,7 +1951,8 @@ INSERT INTO `personal` (`created_at`, `updated_at`, `idpersonal`, `nombre`, `tip
 ('2026-07-10 22:17:51', '2026-07-11 03:19:41', 1, 'Alis Huamanta', 'DNI', '71845256', NULL, NULL, NULL, 'Administrador', NULL, 0.00, NULL, 1, NULL),
 ('2026-07-11 03:18:25', '2026-08-06 05:18:33', 2, 'Juan Diego Rodriguez Dias', 'DNI', '75485625', 'Ir. Lorenzo Morales c1, Tarapoto 22202, Peru', '956585656', 'wwgwg@gmail.com', 'Vendedor', 'user.png', 0.00, 1500.00, 1, NULL),
 ('2026-08-06 05:20:35', '2026-08-06 05:25:02', 3, 'Ricardo Rodriguez Diaz', 'DNI', '71545856', 'Ir. Lorenzo Morales c1, Tarapoto 22202, Peru', '956856625', 'alexhe406@gmail.com', 'Vendedor', '1785993902.webp', 0.00, 1500.00, 1, NULL),
-('2026-08-06 05:40:08', '2026-08-06 05:40:08', 4, 'asfasgs', 'DNI', '85475452', 'Plaza de Nueva cajamarca Pl. Mayor 453, Tarapoto 22202, Peru', '993598356', 'dhrr44@gmail.com', 'Tecnico', 'user.png', 0.00, 1800.00, 1, NULL);
+('2026-08-06 05:40:08', '2026-08-06 05:40:08', 4, 'asfasgs', 'DNI', '85475452', 'Plaza de Nueva cajamarca Pl. Mayor 453, Tarapoto 22202, Peru', '993598356', 'dhrr44@gmail.com', 'Tecnico', 'user.png', 0.00, 1800.00, 1, NULL),
+('2026-08-13 18:20:25', '2026-08-13 18:20:25', 5, 'Julio Jaramillo Diaz', 'DNI', '72545685', 'Plaza de Armas de Tarapoto, Pl. Mayor 453, Tarapoto 22202, Peru', '968458125', 'alexhe406@gmail.com', 'Transportista', 'user.png', 0.00, 1600.00, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -6189,7 +6209,7 @@ ALTER TABLE `compromiso_pago`
 -- AUTO_INCREMENT for table `comp_pago`
 --
 ALTER TABLE `comp_pago`
-  MODIFY `idcomprobante_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `idcomprobante_pago` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `concepto_ajuste`
@@ -6267,7 +6287,7 @@ ALTER TABLE `detalle_cuentas_por_pagar`
 -- AUTO_INCREMENT for table `detalle_guia`
 --
 ALTER TABLE `detalle_guia`
-  MODIFY `iddetalle` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `iddetalle` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `detalle_servicio`
@@ -6303,7 +6323,7 @@ ALTER TABLE `empresas`
 -- AUTO_INCREMENT for table `guia_remision`
 --
 ALTER TABLE `guia_remision`
-  MODIFY `idguia` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `idguia` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `inventarios`
@@ -6345,7 +6365,7 @@ ALTER TABLE `kardex`
 -- AUTO_INCREMENT for table `login_historial`
 --
 ALTER TABLE `login_historial`
-  MODIFY `idhistorial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
+  MODIFY `idhistorial` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
 
 --
 -- AUTO_INCREMENT for table `marca`
@@ -6423,7 +6443,7 @@ ALTER TABLE `persona`
 -- AUTO_INCREMENT for table `personal`
 --
 ALTER TABLE `personal`
-  MODIFY `idpersonal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `idpersonal` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `producto`
@@ -6709,10 +6729,23 @@ ALTER TABLE `detalle_venta`
   ADD CONSTRAINT `fk_detalle_serie` FOREIGN KEY (`idserie`) REFERENCES `producto_serie` (`idserie`);
 
 --
+-- Constraints for table `detalle_venta_lote`
+--
+ALTER TABLE `detalle_venta_lote`
+  ADD CONSTRAINT `detalle_venta_lote_ibfk_1` FOREIGN KEY (`iddetalle_venta`) REFERENCES `detalle_venta` (`iddetalle_venta`),
+  ADD CONSTRAINT `detalle_venta_lote_ibfk_2` FOREIGN KEY (`idinventario_lote`) REFERENCES `inventario_lote` (`idinventario_lote`);
+
+--
 -- Constraints for table `documentacion`
 --
 ALTER TABLE `documentacion`
   ADD CONSTRAINT `documentacion_ibfk_1` FOREIGN KEY (`idventa`) REFERENCES `venta` (`idventa`);
+
+--
+-- Constraints for table `inventario_lote`
+--
+ALTER TABLE `inventario_lote`
+  ADD CONSTRAINT `inventario_lote_ibfk_1` FOREIGN KEY (`idsucursal`) REFERENCES `sucursal` (`idsucursal`);
 
 --
 -- Constraints for table `inventario_producto`

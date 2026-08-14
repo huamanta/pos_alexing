@@ -130,7 +130,7 @@ date_default_timezone_set('America/Lima');
                     <div class="row">
                       <div class="col-md-3">
                         <label>N° Serie:</label>
-                        <select name="serie_comprobante" id="serie_comprobante" class="form-control select2"></select>
+                        <input name="serie_comprobante" id="serie_comprobante" class="form-control select2" readonly/>
                       </div>
                       <div class="col-md-3">
                         <label>N° Número:</label>

@@ -175,8 +175,8 @@ switch ($_GET["op"]) {
         "5" => ($reg->estado == 'Anulado') ? '<button class="btn btn-danger btn-xs" disabled><i class="fa fa-ban"></i></button>' : '<button class="btn btn-danger btn-xs" onclick="anular(' . $reg->idguia . ')"><i class="fa fa-ban"></i></button>' .
           ' <a target="_blank" href="' . $url . $reg->idguia . '"> <button class="btn btn-info btn-xs"><i class="fa fa-file-text"></i></button></a> ' .
           '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idguia . ')"><i class="fa fa-edit"></i></button>',
-        "6" => ($reg->estado_sunat == '1') ? '<button class="btn btn-success btn-xs" onclick="baja_sunat(' . $reg->idguia . ')">Dar de baja</button>' : (($reg->estado_sunat == '3' || $reg->estado == 'Anulado') ? '' : '<button class="btn btn-warning btn-xs" onclick="send_sunat(' . $reg->idguia . ')">Enviar a Sunat</button>'),
-        "7" => ($reg->estado_sunat == '1') ? '<a target="_blank" href="../public/FACT_WebService/files/produccion/' . $reg->ruc . '/GRE/' . $reg->serie . '-' . $reg->numero . '.xml"> <i class="fa fa-download"></i></a>' : '',
+        "6" => ($reg->estado_sunat == null) ? '<button class="btn btn-success btn-xs" onclick="baja_sunat(' . $reg->idguia . ')">Dar de baja</button>' : (($reg->estado_sunat == '3' || $reg->estado == 'Anulado') ? '' : '<button class="btn btn-warning btn-xs" onclick="send_sunat(' . $reg->idguia . ')">Enviar a Sunat</button>'),
+        "7" => ($reg->estado_sunat != null) ? '<a target="_blank" href="../public/FACT_WebService/files/produccion/' . $reg->ruc . '/GRE/' . $reg->serie . '-' . $reg->numero . '.xml"> <i class="fa fa-download"></i></a>' : '',
         "8" => $reg->resumen_sunat,
       );
     }
@@ -200,11 +200,7 @@ switch ($_GET["op"]) {
     break;
 
   case 'selectCliente':
-    $rspta = $persona->listarC();
-    echo '<option value="">Seleccione</option>';
-    while ($reg = $rspta->fetch_object()) {
-      echo '<option value=' . $reg->idpersona . '>' . $reg->nombre . '</option>';
-    }
+    echo $persona->listarC();
     break;
 
   case 'selectTransportista':
@@ -216,36 +212,27 @@ switch ($_GET["op"]) {
     break;
 
   case 'selectPersonal':
-    $rspta = $persona->listarPersonal();
-    echo '<option value="">Seleccione</option>';
-    while ($reg = $rspta->fetch_object()) {
-      echo '<option value=' . $reg->idpersona . '>' . $reg->nombre . '</option>';
-    }
-    break;
+    echo $persona->listarPersonal();
 
   case 'selectMotivo':
     require_once "../modelos/Consultas.php";
     $consulta = new Consultas();
-    $rspta = $consulta->listarMotivosTraslado();
-    echo '<option value="">Seleccione</option>';
-    while ($reg = $rspta->fetch_object()) {
-      echo '<option value=' . $reg->idmotivo . '>' . $reg->descripcion . '</option>';
-    }
+    echo $consulta->listarMotivosTraslado();
     break;
 
   case 'selectComprobante':
-    $rspta = $comprobante->select_comprobantes_guia();
-    echo '<option value="">Seleccione</option>';
-    while ($reg = $rspta->fetch_object()) {
-      echo '<option value=' . $reg->idcomprobante . '>' . $reg->nombre . '</option>';
-    }
+    $idsucursal = $_SESSION['idsucursal'];
+    echo $comprobante->selectComprobantesGuia($idsucursal);
     break;
 
   case 'get_numeracion':
-    $idsucursal = $_POST["idsucursal"];
-    $serie = $_POST["serie"];
-    $rspta = $comprobante->get_numeracion_guia($idsucursal, $serie);
-    echo json_encode($rspta);
+    require_once "../modelos/Comprobantes.php";
+		$comprobantes = new Comprobantes();
+		$idsucursal = $_SESSION["idsucursal"];
+    $tipo = Constants::GUIA_REMISION;
+    $comp_pago = $comprobante->selectCoprobante($idsucursal, $tipo);
+		$idtipo_comprobante = $comp_pago['idcomprobante_pago'];
+    $comprobantes->mostrarSerieTicket($idsucursal, $idtipo_comprobante);
     break;
 
   case "listarArticulos":
@@ -275,17 +262,11 @@ switch ($_GET["op"]) {
   case 'getComprobante':
     require_once "../modelos/Venta.php";
     $venta = new Venta();
-    $idventa = $_POST["idventa"];
-    $rspta = $venta->getVentaData($idventa);
-    $detalles = $venta->getVentaDetalles($idventa);
-    $data = array(
-      'cabecera' => $rspta,
-      'detalles' => $detalles->fetch_all(MYSQLI_ASSOC)
-    );
-    echo json_encode($data);
+    $idventa = $_GET["idventa"];
+    echo $venta->getVentaData($idventa);
     break;
 
-  case 'getSeries':
+ /* case 'getSeries':
     $idsucursal = $_POST["idsucursal"];
     $rspta = $comprobante->getSeries($idsucursal);
     while ($reg = $rspta->fetch_object()) {
@@ -299,7 +280,7 @@ switch ($_GET["op"]) {
     while ($reg = $rspta->fetch_object()) {
       echo '<option value=' . $reg->serie_comprobante . '>' . $reg->serie_comprobante . '</option>';
     }
-    break;
+    break;*/
 
   case 'selectDepartamento':
     $rspta = $guia->getDepartamentos();

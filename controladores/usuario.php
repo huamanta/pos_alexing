@@ -544,8 +544,8 @@ switch ($_GET["op"]) {
 			$nombre_impuesto,
 			$monto_impuesto,
 			$estado,
-			['Nota de Venta', 'Factura', 'Boleta', 'Nota de Crédito', 'Nota de Débito', 'Cotización', 'Orden de Compra'],
-			['NV001', 'F001', 'B001', 'NC01', 'ND01', 'COT01', 'OC01'],
+			['Nota de Venta', 'Factura', 'Boleta', 'Nota de Crédito', 'Nota de Débito', 'Cotización', 'Orden de Compra', 'Guia de Remisión'],
+			['NV001', 'F001', 'B001', 'NC01', 'ND01', 'COT01', 'OC01', 'T001'],
 			[0, 0, 0, 0, 0, 0, 0]
 		);
 		if (intval($res_empresa['code']) === 200) {

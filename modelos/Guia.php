@@ -118,7 +118,7 @@ class Guia
     // ================== LISTAR ==================
     public function listar($idsucursal, $fecha_inicio, $fecha_fin, $estado) {
         $sql = "SELECT g.idguia, g.serie_comprobante AS serie, g.num_comprobante AS numero,
-                       g.fecha_emision, g.factura_ref, g.estado, g.atencion,
+                       g.fecha_emision, g.factura_ref, g.estado, g.atencion, g.estado_sunat, g.resumen_sunat,
                        p.nombre AS cliente
                 FROM guia_remision g
                 INNER JOIN persona p ON g.idcliente=p.idpersona

@@ -3056,4 +3056,24 @@ class Consultas extends Helpers
 		$sql = "select p.*, um.nombre as unidadmedida, c.nombre as categoria from producto p INNER JOIN unidad_medida um ON p.idunidad_medida = um.idunidad_medida INNER JOIN categoria c ON p.idcategoria = c.idcategoria where idsucursal = '$idsucursal' and fecha between curdate() and date_add(curdate(), interval (SELECT diasVencer from datos_negocio) day)";
 		return ejecutarConsulta($sql);
 	}
+
+	public function listarMotivosTraslado(){
+		$motivosGuia = [
+				['id' => '01', 'nombre' => 'Venta'],
+				['id' => '02', 'nombre' => 'Venta sujeta a confirmación del comprador'],
+				['id' => '03', 'nombre' => 'Compra'],
+				['id' => '04', 'nombre' => 'Consignación'],
+				['id' => '05', 'nombre' => 'Devolución'],
+				['id' => '06', 'nombre' => 'Traslado entre establecimientos de la misma empresa'],
+				['id' => '07', 'nombre' => 'Traslado de bienes para transformación'],
+				['id' => '08', 'nombre' => 'Recojo de bienes'],
+				['id' => '09', 'nombre' => 'Traslado por emisor itinerante de comprobantes de pago'],
+				['id' => '13', 'nombre' => 'Venta con entrega a terceros'],
+				['id' => '14', 'nombre' => 'Otras no incluidas en los puntos anteriores'],
+				['id' => '18', 'nombre' => 'Traslado de bienes para manipulación'],
+				['id' => '19', 'nombre' => 'Traslado de mercancía extranjera'],
+			];
+
+		return Response::json($motivosGuia);
+	}
 }
