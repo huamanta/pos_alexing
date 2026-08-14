@@ -157,7 +157,7 @@ class Guia
 
     public function mostrarCabecera($idguia)
     {
-        $sql = "SELECT g.idguia, s.nombre AS sucursal, p.nombre AS cliente, p.num_documento, p.direccion, 
+        $sql = "SELECT g.idguia, g.idsucursal, s.nombre AS sucursal, p.nombre AS cliente, p.num_documento, p.direccion, 
         tr.nombre AS transportista, tr.num_documento AS num_documento_trans, pe.nombre AS personal, 
         g.serie_comprobante, g.num_comprobante, g.fecha_emision, g.fecha_traslado, g.punto_partida, g.punto_llegada, g.estado
         FROM guia_remision g 

@@ -127,7 +127,7 @@ switch ($_GET["op"]) {
 
   case 'baja_sunat':
     $idguia = $_POST['idguia'];
-    $url = 'http://' . $_SERVER['HTTP_HOST'] . '/test/public/FACT_WebService/Facturacion/baja_guia.php';
+    $url = 'http://' .  $_SERVER['HTTP_HOST'] . '/public/FACT_WebService/Facturacion/baja_guia.php';
     $postData = ['idguia' => $idguia, 'motivo' => 'Error en los datos'];
 
     $ch = curl_init();
@@ -165,7 +165,7 @@ switch ($_GET["op"]) {
     $data = array();
 
     while ($reg = $rspta->fetch_object()) {
-      $url = '../reportes/exGuia.php?id=';
+      $url = 'reportes/exGuia.php?id=';
       $data[] = array(
         "0" => $reg->idguia,
         "1" => $reg->serie . '-' . $reg->numero,
