@@ -5,6 +5,8 @@ require_once __DIR__ . "/../configuraciones/ConexionPdo.php";
 require_once __DIR__ . "/../core/FluentQuery.php";
 require_once __DIR__ . "/../core/FluentSave.php";
 require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
+use Carbon\Carbon;
 
 class Traslado extends Helpers
 {
@@ -22,6 +24,38 @@ class Traslado extends Helpers
      * - transacción (START/COMMIT/ROLLBACK)
      * Devuelve un string con el mensaje (éxito o error).
      */
+
+    public function obtenerInventario(int $idproducto, int $idsucursal): array
+    {
+        return (new DBQuery($this->pdo))
+            ->select('i.*,  p.precio, p.codigo, p.nombre, p.tipo_producto, p.controla_stock')
+            ->from('inventario_producto i')
+            ->join('producto p', 'p.idproducto=i.idproducto')
+            ->where('i.idproducto', '=', $idproducto)
+            ->where('i.idsucursal', '=', $idsucursal)
+            ->forUpdate()
+            ->first();
+    }
+
+    public function obtenerTraslado(int $idtraslado): array
+    {
+        return (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('traslado')
+            ->where('idtraslado', '=', $idtraslado)
+            ->forUpdate()
+            ->first();
+    }
+
+    public function obtenerConfiguracion($idproducto): array
+    {
+        return (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('producto_configuracion')
+            ->where('idproducto', '=', $idproducto)
+            ->first();
+    }
+
     public function insertar($idorigen, $iddestino, $fecha, $productos_json, $idusuario)
     {
         try {
@@ -40,14 +74,7 @@ class Traslado extends Helpers
             foreach ($productos as $p) {
                 $idproducto = intval($p["idproducto"]);
                 $cantidad = floatval($p["cantidad"]);
-                $sql = "SELECT i.*,  p.precio FROM inventario_producto i INNER JOIN producto p ON p.idproducto=i.idproducto 
-                WHERE i.idproducto=:idproducto AND i.idsucursal=:idsucursal FOR UPDATE";
-                $stmt = $this->pdo->prepare($sql);
-                $stmt->execute([
-                    'idproducto' => $idproducto,
-                    'idsucursal' => $idorigen
-                ]);
-                $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                $row = self::obtenerInventario($idproducto, $idorigen);
                 if (!$row) {
                     throw new Exception("Producto {$idproducto} no existe en almacén origen.");
                 }
@@ -130,37 +157,22 @@ class Traslado extends Helpers
     ) {
 
         // Buscar si el producto ya existe en el almacén destino
-        $stmt = $this->pdo->prepare("
-            SELECT idproducto
-            FROM producto
-            WHERE codigo = :codigo
-            AND idsucursal = :idsucursal
-            LIMIT 1
-        ");
+        $producto = (new DBQuery($this->pdo))
+            ->select('idproducto')
+            ->from('producto')
+            ->where('codigo', '=', $rowProduct['codigo'])
+            ->where('idsucursal', '=', $iddestino)
+            ->first();
 
-        $stmt->execute([
-            'codigo' => $rowProduct['codigo'],
-            'idsucursal' => $iddestino
-        ]);
-
-        $idproductoDestino = $stmt->fetchColumn();
-        // ============================================
         // SI NO EXISTE EL PRODUCTO
-        // ============================================
-        if (!$idproductoDestino) {
+        if (!$producto) {
 
             // Obtener la serie original
-            $stmt = $this->pdo->prepare("
-                SELECT *
-                FROM producto_serie
-                WHERE idserie = :idserie
-            ");
-
-            $stmt->execute([
-                'idserie' => $idserie
-            ]);
-
-            $serie = $stmt->fetch(PDO::FETCH_ASSOC);
+            $serie = (new DBQuery($this->pdo))
+                ->select('*')
+                ->from('producto_serie')
+                ->where('idserie', '=', $idserie)
+                ->first();
 
             if (!$serie) {
                 throw new Exception("No se encontró la serie.");
@@ -187,19 +199,7 @@ class Traslado extends Helpers
             }
 
             // Inventario origen
-            $stmt = $this->pdo->prepare("
-                SELECT *
-                FROM inventario_producto
-                WHERE idproducto = :idproducto
-                AND idsucursal = :idsucursal
-            ");
-
-            $stmt->execute([
-                'idproducto' => $rowProduct['idproducto'],
-                'idsucursal' => $rowProduct['idsucursal']
-            ]);
-
-            $inventarioOrigen = $stmt->fetch(PDO::FETCH_ASSOC);
+            $inventarioOrigen = self::obtenerInventario($rowProduct['idproducto'], $rowProduct['idsucursal']);
 
             if (!$inventarioOrigen) {
                 throw new Exception("No existe inventario del producto origen.");
@@ -219,17 +219,7 @@ class Traslado extends Helpers
                 ->save();
 
             // Configuración
-            $config = $this->pdo->prepare("
-                SELECT *
-                FROM producto_configuracion
-                WHERE idproducto = :idproducto
-            ");
-
-            $config->execute([
-                'idproducto' => $rowProduct['idproducto']
-            ]);
-
-            $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
+            $rowConfiguracion = self::obtenerConfiguracion($rowProduct['idproducto']);
 
             if (!$rowConfiguracion) {
                 throw new Exception("No existe configuración del producto.");
@@ -258,54 +248,22 @@ class Traslado extends Helpers
             $stockActual = $cantidad;
 
         } else {
-
-            // ============================================
             // EL PRODUCTO YA EXISTE
-            // ============================================
-
             $nuevoProducto = $rowProduct;
-
+            $idproductoDestino = $producto['idproducto'];
             // Actualizar stock
-            $stmt = $this->pdo->prepare("
-                UPDATE inventario_producto
-                SET stock = stock + :cantidad
-                WHERE idproducto = :idproducto
-                AND idsucursal = :idsucursal
-            ");
-
-            $stmt->execute([
-                'cantidad' => $cantidad,
-                'idproducto' => $idproductoDestino,
-                'idsucursal' => $iddestino
-            ]);
+            $inventarioP = self::obtenerInventario($idproductoDestino, $iddestino);
+            $saveConfig = (new FluentSaver($this->pdo))
+                ->table('inventario_producto')
+                ->primaryKey('idinventario')
+                ->data(['idinventario' => $inventarioP['idinventario']])
+                ->increment('stock', $cantidad);
 
             // Obtener el stock actualizado
-            $stmt2 = $this->pdo->prepare("
-                SELECT stock
-                FROM inventario_producto
-                WHERE idproducto = :idproducto
-                AND idsucursal = :idsucursal
-            ");
-
-            $stmt2->execute([
-                'idproducto' => $idproductoDestino,
-                'idsucursal' => $iddestino
-            ]);
-
-            $stockActual = $stmt2->fetchColumn();
-
+            $inventario = self::obtenerInventario((int) $idproductoDestino, $iddestino);
+            $stockActual = $inventario['stock'];
             // Obtener configuración
-            $config = $this->pdo->prepare("
-                SELECT *
-                FROM producto_configuracion
-                WHERE idproducto = :idproducto
-            ");
-
-            $config->execute([
-                'idproducto' => $idproductoDestino
-            ]);
-
-            $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
+            $rowConfiguracion = self::obtenerConfiguracion($idproductoDestino);
 
             if (!$rowConfiguracion) {
                 throw new Exception("No existe configuración del producto destino.");
@@ -665,17 +623,9 @@ class Traslado extends Helpers
 
             $this->pdo->beginTransaction();
 
-            $fecha = date('Y-m-d H:i:s');
+            $fecha = Carbon::now();
             // obtenemos la solicitud
-            $sqlSolicitud = "SELECT * FROM traslado 
-            WHERE idtraslado = :idtraslado 
-            FOR UPDATE";
-
-            $stmtSolicitud = $this->pdo->prepare($sqlSolicitud);
-            $stmtSolicitud->execute([
-                'idtraslado' => $idtraslado
-            ]);
-            $rowSolicitud = $stmtSolicitud->fetch(PDO::FETCH_ASSOC);
+            $rowSolicitud = self::obtenerTraslado($idtraslado);
 
             if (!$rowSolicitud) {
                 throw new Exception("La solicitud no existe.");
@@ -693,16 +643,7 @@ class Traslado extends Helpers
                 if ($p["estado"] === 'aceptado') {
                     $idproducto = intval($p["idproducto"]);
                     $cantidad = floatval($p["cantidad"]);
-
-                    $sql = "SELECT i.*,  p.precio FROM inventario_producto i 
-                    INNER JOIN producto p ON p.idproducto=i.idproducto 
-                    WHERE i.idproducto=:idproducto AND i.idsucursal=:idsucursal FOR UPDATE";
-                    $stmt = $this->pdo->prepare($sql);
-                    $stmt->execute([
-                        'idproducto' => $idproducto,
-                        'idsucursal' => $idProveedor
-                    ]);
-                    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+                    $row = self::obtenerInventario($idproducto, $idProveedor);
 
                     if (!$row) {
                         throw new Exception("Producto {$idproducto} no existe en almacén origen.");
@@ -727,7 +668,7 @@ class Traslado extends Helpers
                         'estado' => 'en_transito',
                         'idusuario' => $idusuario,
                         'tipo' => 'traslado',
-                        'idtraslado_origen' => $rowSolicitud['idtraslado']
+                        'idsolicitud_origen' => $rowSolicitud['idtraslado']
                     ])
                     ->save();
                 if (!$traslado) {
@@ -795,7 +736,7 @@ class Traslado extends Helpers
                 $mensaje = "Solicitud procesada. Todos los productos fueron rechazados.";
             }
 
-            return json_encode([
+            return Response::json([
                 'success' => true,
                 'message' => $mensaje
             ]);
@@ -803,7 +744,7 @@ class Traslado extends Helpers
             if (isset($this->pdo) && $this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
-            return json_encode(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
+            return Response::error($e->getMessage());
         }
 
     }
@@ -819,17 +760,8 @@ class Traslado extends Helpers
 
             $this->pdo->beginTransaction();
 
-            $fecha = date('Y-m-d H:i:s');
-            // obtenemos la solicitud
-            $sqlSolicitud = "SELECT * FROM traslado 
-            WHERE idtraslado = :idtraslado 
-            FOR UPDATE";
-
-            $stmtSolicitud = $this->pdo->prepare($sqlSolicitud);
-            $stmtSolicitud->execute([
-                'idtraslado' => $idtraslado
-            ]);
-            $rowSolicitud = $stmtSolicitud->fetch(PDO::FETCH_ASSOC);
+            $fecha = Carbon::now();
+            $rowSolicitud = self::obtenerTraslado($idtraslado);
 
             if (!$rowSolicitud) {
                 throw new Exception("La solicitud no existe.");
@@ -864,20 +796,8 @@ class Traslado extends Helpers
                         'observacion' => $p["observacion"]
                     ])
                     ->update();
-                $sqlProduct = "SELECT 
-                    p.*, 
-                    ip.stock
-                FROM producto p
-                INNER JOIN inventario_producto ip 
-                    ON ip.idproducto = p.idproducto
-                WHERE p.idproducto = :idproducto 
-                AND p.idsucursal = :idsucursal";
-                $stmtProduct = $this->pdo->prepare($sqlProduct);
-                $stmtProduct->execute([
-                    'idproducto' => $p['idproducto'],
-                    'idsucursal' => $idSolicitante
-                ]);
-                $rowProduct = $stmtProduct->fetch(PDO::FETCH_ASSOC);
+
+                $rowProduct = self::obtenerInventario($p['idproducto'], $idSolicitante);
                 if (!$rowProduct) {
                     throw new Exception("No se encontró información del producto {$p['idproducto']} en origen.");
                 }
@@ -896,7 +816,7 @@ class Traslado extends Helpers
 
             $this->pdo->commit();
 
-            return json_encode([
+            return Response::json([
                 'success' => true,
                 'message' => "Traslado recibido correctamente."
             ]);
@@ -904,7 +824,7 @@ class Traslado extends Helpers
             if (isset($this->pdo) && $this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
-            return json_encode(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
+            return Response::error($e->getMessage());
         }
 
     }

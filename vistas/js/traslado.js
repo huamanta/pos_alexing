@@ -928,7 +928,7 @@ function aprobarSolicitud() {
   }).then((result) => {
     if (result.isConfirmed) {
       $.post(url, { idtraslado: idtraslado, productos: JSON.stringify(productos) }, function (response) {
-        const data = JSON.parse(response);
+        const data = response;
         if (data.success != true) {
           Swal.fire({ title: "Traslado", icon: "error", text: data.message });
           return;
@@ -937,11 +937,13 @@ function aprobarSolicitud() {
         $("#modalAprobarSolicitud").modal("hide");
         paginatorSolicitudes.load();
       },
-      ).fail(() => {
+      ).fail((error) => {
+        console.log(error);
+        
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: "Ocurrió un problema al procesar la solicitud.",
+          text: error.responseJSON.message || "Ocurrió un problema al procesar la solicitud.",
           confirmButtonColor: "#d33",
         });
       });
