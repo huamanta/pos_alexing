@@ -2,6 +2,7 @@
 //Incluímos inicialmente la conexión a la base de datos
 require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
 date_default_timezone_set('America/Lima');
 Class Usuario extends Helpers
 {
@@ -262,8 +263,46 @@ public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $pe
 	//Función para verificar el acceso al sistema
 	public function verificar($login,$clave)
     {
-    	$sql="SELECT a.idusuario, a.idpersonal,c.imagen,c.nombre as nombre,c.cargo,a.login,a.idsucursal FROM usuario a INNER JOIN personal c ON a.idpersonal=c.idpersonal WHERE a.login='$login' AND a.clave='$clave' AND a.condicion='1'"; 
-    	return ejecutarConsulta($sql);
+        try {   
+            $data = (new DBQuery($this->pdo))
+                ->select([
+                    'u.idusuario', 'u.idpersonal','c.imagen','c.nombre as nombre','c.cargo','u.login'
+                ])
+                ->from('usuario a')
+                ->join('personal c', 'a.idpersonal=c.idpersonal')
+                ->where('a.login', '=', $login)
+                ->where('a.clave', '=', $clave)
+                ->where('a.condicion', '=', 1)
+                ->first();
+            
+            // Datos de IP y user agent
+            $ip = self::getClientIP();
+            $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Desconocido';
+
+            if(!$data){
+                self::registrarHistorial(0, $ip, $user_agent, 0);
+                throw new Exception('Usuario u contraseña incorrectos');
+            }
+
+            // Login exitoso
+            $_SESSION['idusuario'] = $fetch->idusuario;
+            $_SESSION['idpersonal'] = $fetch->idpersonal;
+            $_SESSION['imagen'] = $fetch->imagen;
+            $_SESSION['nombre'] = $fetch->nombre;
+            $_SESSION['login'] = $fetch->login;
+            $_SESSION['cargo'] = $fetch->cargo;
+            $_SESSION["iniciarSesion"] = "ok";
+
+            // Registrar historial de login exitoso
+            $usuario->registrarHistorial($fetch->idusuario, $ip, $user_agent, 1);
+            return Response::json([
+                'success' => true,
+                'message' => 'Las credenciales han sido validadas'
+            ]);
+
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
     }
 
     public function listarsubpermisos($idusuario)
@@ -327,6 +366,73 @@ public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $pe
         WHERE idsucursal='$idsucursal'";
         return ejecutarConsultaSimpleFila($sql);
     }
+
+    private function getClientIP(): string
+    {
+        $ip = '';
+
+        $isProduction = env('APP_ENV', 'local') === 'production';
+        $checkExternalIP = env('APP_EXTERNAL_IP_CHECK', false);
+
+        $headers = [
+            'HTTP_CLIENT_IP',
+            'HTTP_X_FORWARDED_FOR',
+            'HTTP_X_FORWARDED',
+            'HTTP_X_CLUSTER_CLIENT_IP',
+            'HTTP_FORWARDED_FOR',
+            'HTTP_FORWARDED',
+            'REMOTE_ADDR'
+        ];
+
+        foreach ($headers as $header) {
+
+            if (!empty($_SERVER[$header])) {
+
+                $ips = explode(',', $_SERVER[$header]);
+
+                foreach ($ips as $i) {
+
+                    $i = trim($i);
+
+                    if (filter_var($i, FILTER_VALIDATE_IP)) {
+                        $ip = $i;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+
+        // Resolver IP pública solo si está habilitado
+        if (
+            $isProduction &&
+            $checkExternalIP &&
+            ($ip === '127.0.0.1' || $ip === '::1' || $ip === '')
+        ) {
+
+            try {
+
+                $externalIp = file_get_contents('https://api.ipify.org');
+
+                if (filter_var($externalIp, FILTER_VALIDATE_IP)) {
+                    $ip = $externalIp;
+                }
+
+            } catch (Exception $e) {
+                $ip = '0.0.0.0';
+            }
+        }
+
+
+        // Ambiente local
+        if (!$isProduction && ($ip === '' || $ip === '::1')) {
+            $ip = '127.0.0.1';
+        }
+
+
+        return $ip;
+    }
+
 }
 
 ?>

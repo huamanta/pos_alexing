@@ -1,75 +1,9 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
-require_once "../modelos/Usuario.php";
+require_once __DIR__ . "/../modelos/Usuario.php";
 require_once __DIR__ . "/email.php";
 
 $usuario = new Usuario();
-function getClientIP(): string
-{
-	$ip = '';
-
-	$isProduction = env('APP_ENV', 'local') === 'production';
-	$checkExternalIP = env('APP_EXTERNAL_IP_CHECK', false);
-
-	$headers = [
-		'HTTP_CLIENT_IP',
-		'HTTP_X_FORWARDED_FOR',
-		'HTTP_X_FORWARDED',
-		'HTTP_X_CLUSTER_CLIENT_IP',
-		'HTTP_FORWARDED_FOR',
-		'HTTP_FORWARDED',
-		'REMOTE_ADDR'
-	];
-
-	foreach ($headers as $header) {
-
-		if (!empty($_SERVER[$header])) {
-
-			$ips = explode(',', $_SERVER[$header]);
-
-			foreach ($ips as $i) {
-
-				$i = trim($i);
-
-				if (filter_var($i, FILTER_VALIDATE_IP)) {
-					$ip = $i;
-					break 2;
-				}
-			}
-		}
-	}
-
-
-	// Resolver IP pública solo si está habilitado
-	if (
-		$isProduction &&
-		$checkExternalIP &&
-		($ip === '127.0.0.1' || $ip === '::1' || $ip === '')
-	) {
-
-		try {
-
-			$externalIp = file_get_contents('https://api.ipify.org');
-
-			if (filter_var($externalIp, FILTER_VALIDATE_IP)) {
-				$ip = $externalIp;
-			}
-
-		} catch (Exception $e) {
-			$ip = '0.0.0.0';
-		}
-	}
-
-
-	// Ambiente local
-	if (!$isProduction && ($ip === '' || $ip === '::1')) {
-		$ip = '127.0.0.1';
-	}
-
-
-	return $ip;
-}
-
 
 $idusuario = isset($_POST["idusuario"]) ? limpiarCadena($_POST["idusuario"]) : "";
 $idpersonal = isset($_POST["idpersonal"]) ? limpiarCadena($_POST["idpersonal"]) : "";
@@ -304,49 +238,9 @@ switch ($_GET["op"]) {
 	case 'verificar':
 		$logina = $_POST['logina'];
 		$clavea = $_POST['clavea'];
-
 		// Hash SHA256 en la contraseña
 		$clavehash = hash("SHA256", $clavea);
-
-		$rspta = $usuario->verificar($logina, $clavehash);
-		$fetch = $rspta->fetch_object();
-
-		// Datos de IP y user agent
-		$ip = getClientIP();
-
-		$user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Desconocido';
-
-		if (isset($fetch)) {
-			// Login exitoso
-			$_SESSION['idusuario'] = $fetch->idusuario;
-			$_SESSION['idpersonal'] = $fetch->idpersonal;
-			$_SESSION['imagen'] = $fetch->imagen;
-			$_SESSION['nombre'] = $fetch->nombre;
-			$_SESSION['login'] = $fetch->login;
-			$_SESSION['cargo'] = $fetch->cargo;
-			$_SESSION["iniciarSesion"] = "ok";
-
-			require_once "../modelos/Negocio.php";
-			$negocioModel = new Negocio();
-			$datosNegocio = $negocioModel->mostrarNombreNegocio();
-
-			// Verificamos si trajo datos y si existe la columna 'nombre'
-			// Nota: ejecutarConsultaSimpleFila suele devolver un Array asociativo
-			if ($datosNegocio && !empty($datosNegocio['nombre'])) {
-				$_SESSION['nombre_negocio'] = $datosNegocio['nombre'];
-			} else {
-				// Fallback por si la tabla datos_negocio está vacía
-				$_SESSION['nombre_negocio'] = 'Mi Empresa';
-			}
-			// Registrar historial de login exitoso
-			$usuario->registrarHistorial($fetch->idusuario, $ip, $user_agent, 1);
-
-		} else {
-			// Login fallido
-			$usuario->registrarHistorial(0, $ip, $user_agent, 0);
-		}
-
-		echo json_encode($fetch);
+		echo $usuario->verificar($logina, $clavehash);
 		break;
 
 
