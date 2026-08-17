@@ -268,11 +268,11 @@ public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $pe
                 ->select([
                     'u.idusuario', 'u.idpersonal','c.imagen','c.nombre as nombre','c.cargo','u.login'
                 ])
-                ->from('usuario a')
-                ->join('personal c', 'a.idpersonal=c.idpersonal')
-                ->where('a.login', '=', $login)
-                ->where('a.clave', '=', $clave)
-                ->where('a.condicion', '=', 1)
+                ->from('usuario u')
+                ->join('personal c', 'u.idpersonal=c.idpersonal')
+                ->where('u.login', '=', $login)
+                ->where('u.clave', '=', $clave)
+                ->where('u.condicion', '=', 1)
                 ->first();
             
             // Datos de IP y user agent
@@ -285,19 +285,20 @@ public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $pe
             }
 
             // Login exitoso
-            $_SESSION['idusuario'] = $fetch->idusuario;
-            $_SESSION['idpersonal'] = $fetch->idpersonal;
-            $_SESSION['imagen'] = $fetch->imagen;
-            $_SESSION['nombre'] = $fetch->nombre;
-            $_SESSION['login'] = $fetch->login;
-            $_SESSION['cargo'] = $fetch->cargo;
+            $_SESSION['idusuario'] = $data['idusuario'];
+            $_SESSION['idpersonal'] = $data['idpersonal'];
+            $_SESSION['imagen'] = $data['imagen'];
+            $_SESSION['nombre'] = $data['nombre'];
+            $_SESSION['login'] = $data['login'];
+            $_SESSION['cargo'] = $data['cargo'];
             $_SESSION["iniciarSesion"] = "ok";
 
             // Registrar historial de login exitoso
-            $usuario->registrarHistorial($fetch->idusuario, $ip, $user_agent, 1);
+            self::registrarHistorial($data['idusuario'], $ip, $user_agent, 1);
             return Response::json([
                 'success' => true,
-                'message' => 'Las credenciales han sido validadas'
+                'message' => 'Las credenciales han sido validadas',
+                'data' => $data
             ]);
 
         } catch (\Throwable $th) {

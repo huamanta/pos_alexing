@@ -23,9 +23,7 @@ $("#frmAcceso").on('submit', function(e) {
 
             try {
 
-                const data = typeof response === "string"
-                    ? JSON.parse(response)
-                    : response;
+                const data = response;
 
                 if (!data.success) {
                     $('#n1').slideDown();
@@ -39,7 +37,7 @@ $("#frmAcceso").on('submit', function(e) {
                     return;
                 }
 
-                mostrarMensajeBienvenida(usuario.nombre, tiempoServidor);
+                mostrarMensajeBienvenida(data.data.nombre, tiempoServidor);
             } catch (err) {
                 console.error("Error procesando respuesta:", err);
                 console.error("Respuesta recibida:", response);
@@ -93,7 +91,7 @@ function mostrarMensajeBienvenida(nombre, tiempoServidor) {
                         </div>
                     </div>
 
-                    <h3 class="loading-title"></h3>
+                    <h3 class="loading-title">Bienvenido ${nombre}</h3>
                     <p class="loading-text">Sincronizando sus preferencias...</p>
                     
                     <div class="progress-bar-wrapper">
