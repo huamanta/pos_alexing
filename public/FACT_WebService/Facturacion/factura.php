@@ -1,1036 +1,1024 @@
 <?php
+
 header("Content-type: text/html; charset=utf8");
+
 require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/src/Util.php';
+require_once __DIR__ . '/../../../configuraciones/ConexionPdo.php';
+require_once __DIR__ . '/../../../core/FluentQuery.php';
+
 use Greenter\Model\Client\Client;
-
 use Greenter\Model\Company\Address;
-
 use Greenter\Model\Company\Company;
-
 use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
-
-use Greenter\Model\Sale\Cuota;
-
 use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
-
+use Greenter\Model\Sale\Cuota;
 use Greenter\Model\Sale\Invoice;
-
 use Greenter\Model\Sale\SaleDetail;
-
 use Greenter\Model\Sale\Legend;
-
-use Greenter\Ws\Services\SunatEndpoints;
 
 date_default_timezone_set('America/Lima');
 
-$idVenta = $_GET['idventa'];
-$codColab = $_GET['codColab'];
-$ruta =1;
+$pdo = Conexion::conectar();
 
-$util = Util::getInstance();
-$conexion = $util->abrirConexion();  
-mysqli_set_charset($conexion, "utf8"); // ✅ Fuerza UTF-8 desde la BD
+$idVenta = $_GET['idventa'] ?? null;
+$codColab = $_GET['codColab'] ?? null;
 
-// 🔧 Función global para limpiar cadenas para SUNAT
-function cleanStringSunat($string) {
-    if ($string === null) return '';
-    // Elimina caracteres de control no imprimibles
-    $string = preg_replace('/[^\P{C}\n\t]/u', '', $string);
-    // Asegura UTF-8 válido
-    $string = mb_convert_encoding($string, 'UTF-8', 'UTF-8');
-    return trim($string);
-} 
-if ($conexion)
-{
-
-    $resultado = mysqli_query($conexion,"SELECT v.idventa, v.idsucursal, v.serie_comprobante as serieDOC, v.num_comprobante as numDoc,
-    c.num_documento as numDocClie,c.nombre as clien,c.direccion as direcClien, 
-    v.fecha_hora as fechaVen,cast((v.total_venta) as DECIMAL(11,2)) as importe, v.impuesto as igv, v.ventacredito
-    from venta v
-    inner join persona c on c.idpersona=v.idcliente
-    WHERE v.idventa='".$idVenta."'");
-    
-    $resultadoexonerada = mysqli_query($conexion,"SELECT cast(sum((dv.precio_venta*dv.cantidad)-(dv.descuento*dv.cantidad)) as DECIMAL(11,2)) as importe
-    from detalle_venta dv
-    INNER JOIN producto p
-    ON dv.idproducto = p.idproducto
-    INNER JOIN producto_configuracion pg
-    ON p.idproducto = pg.idproducto
-    WHERE dv.idventa='".$idVenta."' and p.proigv='No Gravada'");
-    
-   // echo ( $idVenta );
-  $IdDOV='';
-  $mm = "";
- /// echo $resultado;
-      if ($resultado) {  
-          foreach ($resultado as $column) {
-            $IdDOV=$column['idventa'];
-            $numeroDOC=$column['numDoc'];
-            $serieDOC=$column['serieDOC'];
-            $clienNumero=$column['numDocClie'];
-            $clien=utf8_encode($column['clien']);
-            $direClie=utf8_encode($column['direcClien']);
-            $fechaVenta=$column['fechaVen'];
-            $importe=$column['importe'];
-            $igv=$column['igv'];
-            $ventacredito=$column['ventacredito'];
-            $idalmacen=$column['idsucursal'];
-        }   
-    }
-    $importeNograbada = 0 ;
-    if ($resultadoexonerada) {  
-          foreach ($resultadoexonerada as $column) {
-            $importeNograbada=$column['importe'];
-        }   
-    }
-        $total = $importe;
-        $importe = ($importe - $importeNograbada) / 1.18;
-        $importeGeneralVentas = ($total - $importeNograbada) - $importe ;
-
-$fg = new FuncionesGlobales();
-
-$tdClie='6'; // TIPO CLIENTE 6
-
-    // Cliente
-
-    $client = new Client();
-
-    $client->setTipoDoc($tdClie)
-
-    ->setNumDoc($clienNumero)
-
-    ->setRznSocial(utf8_decode($clien));
-
-    $almacen = mysqli_query($conexion,"SELECT * from sucursal where idsucursal = '".$idalmacen."'");
-            
-    if ($almacen) {  
-      foreach ($almacen as $column) {
-        $Ubigeo=$column['ubigeo'];
-        $Distrito=utf8_encode($column['distrito']);
-        $Provincia=utf8_encode($column['provincia']);
-        $Departamento=utf8_encode($column['departamento']);
-        $Direccion=utf8_encode($column['direccion']);
-        }   
-    }
-    
-    $companyAdress = new Address();
-    $companyAdress->setUbigueo($Ubigeo)
-        ->setDistrito($Distrito)
-        ->setProvincia($Provincia)
-        ->setDepartamento($Departamento)
-        ->setUrbanizacion('-')
-        ->setCodLocal('0000')
-        ->setDireccion($Direccion);
-
-    $empresadatos = mysqli_query($conexion,"SELECT * from datos_negocio");
-            
-    if ($empresadatos) {  
-      foreach ($empresadatos as $column) {
-        $ruc=$column['documento'];
-        $razonSocial=$column['nombre'];
-        $NombreComercial=$column['nombre'];
-        $estadocertificado=$column['estado_certificado'];
-        }   
-    }
-    
-    $company = new Company();
-    $company->setRuc($ruc)
-    ->setNombreComercial($NombreComercial)
-    ->setRazonSocial($razonSocial)
-    ->setAddress($companyAdress);
-
-    $resultado2 = mysqli_query($conexion,"SELECT p.idproducto as COD, p.nombre as nombreProd, p.proigv as proigv,
-    CASE WHEN p.proigv = 'No Gravada' THEN dv.precio_venta-dv.descuento ELSE (dv.precio_venta-dv.descuento)/1.18 END as valorUnitario,
-    CAST((dv.precio_venta-dv.descuento) AS DECIMAL(11,2)) AS precioUnitario,
-    CAST(dv.cantidad AS DECIMAL(11,3)) as cantidad,
-    CASE WHEN p.proigv = 'No Gravada' THEN cast((dv.precio_venta-dv.descuento)*dv.cantidad as DECIMAL(11,2)) ELSE cast((dv.precio_venta-(dv.descuento))/ 1.18*dv.cantidad as DECIMAL(11,2)) END as importe,
-    CASE WHEN p.proigv = 'No Gravada' THEN '0' ELSE CAST(((dv.precio_venta-dv.descuento)-((dv.precio_venta-(dv.descuento))/ 1.18))*dv.cantidad AS DECIMAL(11,2)) END as Igv, (dv.descuento*dv.cantidad) as descuento
-
-    FROM detalle_venta dv 
-
-    INNER JOIN producto_configuracion pg
-    
-    ON dv.idproducto = pg.id
-    
-    INNER JOIN producto p
-    
-    ON pg.idproducto = p.idproducto
-
-    WHERE dv.idventa='".$idVenta."'");
-
-    $i=0;
-
-    $invoicbper=0;
-
-    foreach ($resultado2 as $column)
-{
-    //echo($column['cantidad']);
-    if ($column['nombreProd'] == "BOLSA") {
-        $item = new SaleDetail();
-        $item->setCodProducto($column['COD'])
-            ->setUnidad('NIU')
-            ->setCantidad($column['cantidad'])
-            ->setDescripcion(mb_convert_encoding($column['nombreProd'], 'UTF-8', 'auto')) // Usamos mb_convert_encoding
-            ->setMtoValorUnitario($column['valorUnitario']) // Sin IGV
-            ->setMtoPrecioUnitario($column['precioUnitario']) // Incluye IGV
-            ->setMtoValorVenta($column['importe'])
-            ->setTipAfeIgv('10')
-            ->setMtoBaseIgv($column['importe'])
-            ->setPorcentajeIgv(18)
-            ->setIgv($column['Igv'])
-            ->setIcbper($column['cantidad'] * $column['precioUnitario']) // (cantidad)*(factor ICBPER)
-            ->setFactorIcbper($column['precioUnitario'])
-            ->setTotalImpuestos(($column['cantidad'] * $column['precioUnitario']) + $column['Igv']);
-
-        $arrayItem[$i] = $item;
-
-        $invoicbper = $column['cantidad'] * 0.30;
-    }
-    else {
-        if ($column['proigv'] == "Gravada") {
-            $tipoafecto = "10";
-            $igv = "18";
-            $totalImpuestos = $column['Igv'];
-            $setIgv = $column['Igv'];
-        } else if ($column['proigv'] == "No Gravada") {
-            $tipoafecto = "20";
-            $igv = "0";
-            $totalImpuestos = "0";
-            $setIgv = "0";
-        }
-
-        $item = new SaleDetail();
-        $item->setCodProducto($column['COD'])
-            ->setUnidad('NIU')
-            ->setCantidad($column['cantidad'])
-            ->setDescripcion(mb_convert_encoding($column['nombreProd'], 'UTF-8', 'auto')) // Usamos mb_convert_encoding
-            ->setMtoBaseIgv($column['importe'])
-            ->setPorcentajeIgv($igv)
-            ->setIgv($setIgv)
-            ->setTipAfeIgv($tipoafecto)
-            ->setTotalImpuestos($totalImpuestos)
-            ->setMtoValorVenta($column['importe'])
-            ->setMtoValorUnitario($column['valorUnitario'])
-            ->setMtoPrecioUnitario($column['precioUnitario']);
-
-        $arrayItem[$i] = $item;
-    }
-
-    $i++;
+if (!$idVenta) {
+    die('No se recibió el id de venta.');
 }
 
-    // Venta
-    if($ventacredito=="Si"){
-        $deuda=mysqli_query($conexion,"SELECT * FROM cuentas_por_cobrar WHERE idventa='".$idVenta."'");
+$util = Util::getInstance();
 
-        if($deuda){
-
-            foreach ($deuda as $column){
-
-                $saldo=$column["deudatotal"]-$column["abonototal"];
-
-                $item = new Cuota();
-
-                    $item->setMonto($column["deudatotal"]-$column["abonototal"])
-                    ->setFechaPago(new DateTime($column["fechavencimiento"].'-05:00'));
-        
-                $arrayCuota[$i] = $item;
-
-            }
-
-        }
+function cleanStringSunat($string)
+{
+    if ($string === null) {
+        return '';
     }
-    $importevalorventa = $importe + $importeNograbada;
-    $invoice = new Invoice();
-    
-    $invoice
+
+    $string = preg_replace('/[^\P{C}\n\t]/u', '', $string);
+
+    return trim(mb_convert_encoding($string, 'UTF-8', 'UTF-8'));
+}
+
+function money($value)
+{
+    return round((float) $value, 2);
+}
+
+$venta = (new DBQuery($pdo))
+    ->select([
+        'v.idventa',
+        'v.idsucursal',
+        'v.serie_comprobante as serieDOC',
+        'v.num_comprobante as numDoc',
+        'c.num_documento as numDocClie',
+        'c.nombre as clien',
+        'c.direccion as direcClien',
+        'v.fecha_hora as fechaVen',
+        'CAST(v.total_venta AS DECIMAL(11,2)) as importe',
+        'CAST(v.impuesto AS DECIMAL(11,2)) as igv',
+        'v.ventacredito'
+    ])
+    ->from('venta v')
+    ->join('persona c', 'c.idpersona = v.idcliente')
+    ->where('v.idventa', '=', $idVenta)
+    ->first();
+
+if (!$venta) {
+    die('No se encontró la venta.');
+}
+
+$IdDOV = $venta['idventa'];
+$numeroDOC = $venta['numDoc'];
+$serieDOC = $venta['serieDOC'];
+$clienNumero = $venta['numDocClie'];
+$clien = cleanStringSunat($venta['clien']);
+$fechaVenta = $venta['fechaVen'];
+$totalBD = money($venta['importe']);
+$ventacredito = $venta['ventacredito'];
+$idalmacen = $venta['idsucursal'];
+
+$client = new Client();
+
+$client
+    ->setTipoDoc('6')
+    ->setNumDoc($clienNumero)
+    ->setRznSocial($clien);
+
+$sucursal = (new DBQuery($pdo))
+    ->select('*')
+    ->from('sucursal s')
+    ->join('empresas e', 's.idempresa = e.idempresa')
+    ->where('s.idsucursal', '=', $idalmacen)
+    ->first();
+
+if (!$sucursal) {
+    die('No se encontró la sucursal.');
+}
+
+$companyAddress = new Address();
+
+$companyAddress
+    ->setUbigueo($sucursal['ubigeo'])
+    ->setDistrito(cleanStringSunat($sucursal['distrito']))
+    ->setProvincia(cleanStringSunat($sucursal['provincia']))
+    ->setDepartamento(cleanStringSunat($sucursal['departamento']))
+    ->setUrbanizacion('-')
+    ->setCodLocal('0000')
+    ->setDireccion(cleanStringSunat($sucursal['direccion']));
+
+$company = new Company();
+
+$company
+    ->setRuc($sucursal['ruc'])
+    ->setNombreComercial(cleanStringSunat($sucursal['nombre']))
+    ->setRazonSocial(cleanStringSunat($sucursal['razon_social']))
+    ->setAddress($companyAddress);
+
+$detalles = (new DBQuery($pdo))
+    ->select([
+        'p.idproducto as COD',
+        'p.nombre as nombreProd',
+        'p.proigv as proigv',
+        'CAST((dv.precio_venta - dv.descuento) AS DECIMAL(11,2)) AS precioUnitario',
+        'CAST(dv.cantidad AS DECIMAL(11,3)) AS cantidad',
+
+        'CASE
+            WHEN p.proigv = "No Gravada"
+                THEN CAST(
+                    (dv.precio_venta - dv.descuento)
+                    AS DECIMAL(11,6)
+                )
+            ELSE
+                CAST(
+                    (dv.precio_venta - dv.descuento) / 1.18
+                    AS DECIMAL(11,6)
+                )
+        END AS valorUnitario',
+
+        'CASE
+            WHEN p.proigv = "No Gravada"
+                THEN CAST(
+                    (dv.precio_venta - dv.descuento) * dv.cantidad
+                    AS DECIMAL(11,2)
+                )
+            ELSE
+                CAST(
+                    ((dv.precio_venta - dv.descuento) / 1.18)
+                    * dv.cantidad
+                    AS DECIMAL(11,2)
+                )
+        END AS importe',
+
+        'CASE
+            WHEN p.proigv = "No Gravada"
+                THEN CAST(0 AS DECIMAL(11,2))
+            ELSE
+                CAST(
+                    (
+                        (dv.precio_venta - dv.descuento)
+                        -
+                        ((dv.precio_venta - dv.descuento) / 1.18)
+                    ) * dv.cantidad
+                    AS DECIMAL(11,2)
+                )
+        END AS Igv'
+    ])
+    ->from('detalle_venta dv')
+    ->join('producto p', 'p.idproducto = dv.idproducto')
+    ->join('producto_configuracion pg', 'pg.idproducto = p.idproducto')
+    ->where('dv.idventa', '=', $idVenta)
+    ->get();
+
+if (!$detalles) {
+    die('La venta no tiene detalles.');
+}
+
+$arrayItem = [];
+
+$totalGravado = 0;
+$totalExonerado = 0;
+$totalIGV = 0;
+$totalICBPER = 0;
+
+foreach ($detalles as $detalle) {
+
+    $codigo = $detalle['COD'];
+    $nombre = cleanStringSunat($detalle['nombreProd']);
+    $tipo = trim($detalle['proigv']);
+
+    $cantidad = (float) $detalle['cantidad'];
+    $precioUnitario = money($detalle['precioUnitario']);
+    $valorUnitario = (float) $detalle['valorUnitario'];
+    $importe = money($detalle['importe']);
+    $igv = money($detalle['Igv']);
+
+    if ($tipo === 'Gravada') {
+
+        $icbper = 0;
+        $factorIcbper = 0;
+
+        if (strtoupper($nombre) === 'BOLSA') {
+            $factorIcbper = 0.30;
+            $icbper = money($cantidad * $factorIcbper);
+            $totalICBPER += $icbper;
+        }
+
+        $totalGravado += $importe;
+        $totalIGV += $igv;
+
+        $item = new SaleDetail();
+
+        $item
+            ->setCodProducto($codigo)
+            ->setUnidad('NIU')
+            ->setCantidad($cantidad)
+            ->setDescripcion($nombre)
+            ->setMtoValorUnitario($valorUnitario)
+            ->setMtoPrecioUnitario($precioUnitario)
+            ->setMtoValorVenta($importe)
+            ->setMtoBaseIgv($importe)
+            ->setPorcentajeIgv(18)
+            ->setIgv($igv)
+            ->setTipAfeIgv('10')
+            ->setTotalImpuestos(
+                money($igv + $icbper)
+            );
+
+        if ($icbper > 0) {
+            $item
+                ->setIcbper($icbper)
+                ->setFactorIcbper($factorIcbper);
+        }
+
+        $arrayItem[] = $item;
+
+    } elseif ($tipo === 'No Gravada') {
+
+        $totalExonerado += $importe;
+
+        $item = new SaleDetail();
+
+        $item
+            ->setCodProducto($codigo)
+            ->setUnidad('NIU')
+            ->setCantidad($cantidad)
+            ->setDescripcion($nombre)
+            ->setMtoValorUnitario($valorUnitario)
+            ->setMtoPrecioUnitario($precioUnitario)
+            ->setMtoValorVenta($importe)
+            ->setMtoBaseIgv($importe)
+            ->setPorcentajeIgv(0)
+            ->setIgv(0)
+            ->setTipAfeIgv('20')
+            ->setTotalImpuestos(0);
+
+        $arrayItem[] = $item;
+
+    } else {
+
+        die(
+            "Tipo de afectación no soportado. " .
+            "Producto: {$codigo}, proigv: {$tipo}"
+        );
+    }
+}
+
+$totalGravado = money($totalGravado);
+$totalExonerado = money($totalExonerado);
+$totalIGV = money($totalIGV);
+$totalICBPER = money($totalICBPER);
+
+$valorVenta = money(
+    $totalGravado + $totalExonerado
+);
+
+$totalImpuestos = money(
+    $totalIGV + $totalICBPER
+);
+
+$totalFactura = money(
+    $valorVenta + $totalImpuestos
+);
+
+$arrayCuota = [];
+$saldo = 0;
+
+if ($ventacredito === 'Si') {
+
+    $creditos = (new DBQuery($pdo))
+        ->select('*')
+        ->from('cuentas_por_cobrar')
+        ->where('idventa', '=', $idVenta)
+        ->get();
+
+    foreach ($creditos as $credito) {
+
+        $monto = money(
+            $credito['deudatotal'] -
+            $credito['abonototal']
+        );
+
+        $saldo += $monto;
+
+        $cuota = new Cuota();
+
+        $cuota
+            ->setMonto($monto)
+            ->setFechaPago(
+                new DateTime(
+                    $credito['fechavencimiento'] . ' 00:00:00'
+                )
+            );
+
+        $arrayCuota[] = $cuota;
+    }
+
+    $saldo = money($saldo);
+}
+
+$invoice = new Invoice();
+
+$invoice
     ->setUblVersion('2.1')
     ->setTipoOperacion('0101')
     ->setTipoDoc('01')
     ->setSerie($serieDOC)
     ->setCorrelativo($numeroDOC)
-    ->setFechaEmision(new DateTime($fechaVenta));
-    if($ventacredito=="No"){
-
-        $invoice->setFormaPago(new FormaPagoContado());
-
-    }else if($ventacredito=="Si"){
-
-        $invoice->setFormaPago(new FormaPagoCredito($saldo));
-
-        $invoice->setCuotas(
-            $arrayCuota
-        );
-    }
-    $invoice->setTipoMoneda('PEN')
+    ->setFechaEmision(new DateTime($fechaVenta))
+    ->setTipoMoneda('PEN')
     ->setClient($client)
-    ->setMtoOperExoneradas($importeNograbada)
-    ->setMtoOperGravadas($importe)
-    ->setMtoIGV($importeGeneralVentas)
-    ->setIcbper($invoicbper)
-    ->setTotalImpuestos($importeGeneralVentas)
-    ->setValorVenta($importevalorventa)
-    ->setSubTotal($total)
-    ->setMtoImpVenta($total)
-    ->setCompany($company);
-   // echo("exonerada "+$importeNograbada+" --- Gravada"+$importe);
+    ->setCompany($company)
+    ->setMtoOperGravadas($totalGravado)
+    ->setMtoOperExoneradas($totalExonerado)
+    ->setMtoIGV($totalIGV)
+    ->setIcbper($totalICBPER)
+    ->setTotalImpuestos($totalImpuestos)
+    ->setValorVenta($valorVenta)
+    ->setSubTotal($totalFactura)
+    ->setMtoImpVenta($totalFactura);
 
-    mysqli_close($conexion);
-$manuel = $fg->numletras($total);
-    $legend = new Legend();
-    //$legend->setCode('1000')->setValue("UNO CON 00/100 SOLES");
+if ($ventacredito === 'No') {
 
-    $legend->setCode('1000')->setValue($manuel);
-
-
-    $invoice->setDetails($arrayItem);
-    
-    $invoice->setLegends([$legend]);
-
-
-        // Envio a SUNAT.
-
-   if  ($estadocertificado=="BETA"){
-        $see = $util->getSee(SunatEndpoints::FE_BETA);
-    }elseif($estadocertificado=="PRODUCCION"){
-        $see = $util->getSee(SunatEndpoints::FE_PRODUCCION);
-    }
-
-    $res = $see->send($invoice);
-    $util->writeXml($invoice, $see->getFactory()->getLastXml());
-
-    if ($res->isSuccess()) {
-        $cdr = null;
-        $cdrZip = null;
-        if (method_exists($res, 'getCdrResponse')) {
-            $cdr = $res->getCdrResponse();
-        }
-        if (method_exists($res, 'getCdrZip')) {
-            $cdrZip = $res->getCdrZip();
-        }
-        if ($cdr !== null) {
-            $util->writeCdr($invoice, $cdrZip);
-            $util->showResponse($invoice, $cdr, $IdDOV, 'DocVenta', $codColab);
-            $code = (int)$cdr->getCode();
-
-            if ($code === 0) {
-                echo 'ESTADO: ACEPTADA'.PHP_EOL;
-                if (method_exists($cdr, 'getNotes') && count($cdr->getNotes()) > 0) {
-                    echo 'OBSERVACIONES:'.PHP_EOL;
-                    var_dump($cdr->getNotes());
-                }
-            } else if ($code >= 2000 && $code <= 3999) {
-                echo 'ESTADO: RECHAZADA'.PHP_EOL;
-            } else {
-                echo 'Excepción';
-            }
-
-            echo $cdr->getDescription().PHP_EOL;
-        } else {
-            echo 'No se recibió respuesta de CDR desde SUNAT.';
-        }
-    } else {
-        echo $util->getErrorResponse($res->getError());
-    }
+    $invoice->setFormaPago(
+        new FormaPagoContado()
+    );
 
 } else {
-    echo 'error al conectar';
+
+    $invoice
+        ->setFormaPago(
+            new FormaPagoCredito($saldo)
+        )
+        ->setCuotas($arrayCuota);
 }
 
-class FuncionesGlobales{
+$fg = new FuncionesGlobales();
+
+$legend = new Legend();
+
+$legend
+    ->setCode('1000')
+    ->setValue(
+        $fg->numletras($totalFactura)
+    );
+
+$invoice
+    ->setDetails($arrayItem)
+    ->setLegends([$legend]);
+
+$see = $util->getSee($idalmacen);
+
+$res = $see->send($invoice);
+
+$xml = $see->getFactory()->getLastXml();
+
+$util->writeXml(
+    $invoice,
+    $xml
+);
+
+if (!$res->isSuccess()) {
+
+    echo $util->getErrorResponse(
+        $res->getError()
+    );
+
+    exit;
+}
+
+$cdr = method_exists($res, 'getCdrResponse')
+    ? $res->getCdrResponse()
+    : null;
+
+$cdrZip = method_exists($res, 'getCdrZip')
+    ? $res->getCdrZip()
+    : null;
+
+if (!$cdr) {
+    echo 'No se recibió respuesta de CDR desde SUNAT.';
+    exit;
+}
+
+$util->writeCdr(
+    $invoice,
+    $cdrZip
+);
+
+$util->showResponse(
+    $invoice,
+    $cdr,
+    $IdDOV,
+    'DocVenta',
+    $codColab
+);
+
+$code = (int) $cdr->getCode();
+
+if ($code === 0) {
+
+    echo 'ESTADO: ACEPTADA' . PHP_EOL;
+
+    if (
+        method_exists($cdr, 'getNotes') &&
+        count($cdr->getNotes()) > 0
+    ) {
+        echo 'OBSERVACIONES:' . PHP_EOL;
+        var_dump($cdr->getNotes());
+    }
+
+} elseif ($code >= 2000 && $code <= 3999) {
+
+    echo 'ESTADO: RECHAZADA' . PHP_EOL;
+
+} else {
+
+    echo 'Excepción' . PHP_EOL;
+}
+
+echo $cdr->getDescription() . PHP_EOL;
+
+class FuncionesGlobales
+{
     function IndiceDocumentVenta($Num)
     {
-        $newNum='';
-        if (($Num/100)>=1) {
-            return 'F'.$Num;
-        }
-        elseif (($Num/10)>=1) {
-            $newNum='F0'.$Num;
+        $newNum = '';
+        if (($Num / 100) >= 1) {
+            return 'F' . $Num;
+        } elseif (($Num / 10) >= 1) {
+            $newNum = 'F0' . $Num;
             return $newNum;
-        }
-        else{
-            $newNum='F00'.$Num;
+        } else {
+            $newNum = 'F00' . $Num;
             return $newNum;
         }
     }
 
-     function numletras($numero)
+    function numletras($numero)
     {
-        $tempnum = explode('.',$numero);
+        $tempnum = explode('.', $numero);
 
-        if ($tempnum[0] !== ""){
+        if ($tempnum[0] !== "") {
             $numf = self::milmillon($tempnum[0]);
             /*if ($numf == "UNO")
             {
                 $numf = substr($numf, 0, -1);
             }*/
-        if ($numf == "") 
-            { 
-                $numf = "CERO"; 
+            if ($numf == "") {
+                $numf = "CERO";
             }
 
-            $TextEnd = $numf.' CON ';
-        //$TextEnd .= $_nommoneda.' CON ';
+            $TextEnd = $numf . ' CON ';
+            //$TextEnd .= $_nommoneda.' CON ';
         }
-        if ($tempnum[0] == "" || $tempnum[0] >= 100)
-        {
-            $tempnum[0] = "0" ;
+        if ($tempnum[0] == "" || $tempnum[0] >= 100) {
+            $tempnum[0] = "0";
         }
         if (empty($tempnum[1])) //empty: Determina si una variable es considerada vac�a. Una variable se considera vac�a si no existe o si su valor es igual a FALSE. empty() no genera una advertencia si la variable no existe.
         {
             $TextEnd .= "00/100 SOLES";
-        }
-    else if(substr($tempnum[1], 0, -1)!="0" && $tempnum[1] <= "9")
-    {
-        $TextEnd .= $tempnum[1] ;
+        } else if (substr($tempnum[1], 0, -1) != "0" && $tempnum[1] <= "9") {
+            $TextEnd .= $tempnum[1];
             $TextEnd .= "0/100 SOLES";
-    }
-        else
-        {
-            $TextEnd .= $tempnum[1] ;
+        } else {
+            $TextEnd .= $tempnum[1];
             $TextEnd .= "/100 SOLES";
         }
 
         return $TextEnd;
     }
 
-    function unidad($numuero){ 
-        switch ($numuero) 
+    function unidad($numuero)
+    {
+        switch ($numuero) {
 
-        { 
-
-            case 9: 
-            {
-                $numu = "NUEVE"; 
-                break; 
+            case 9: {
+                $numu = "NUEVE";
+                break;
             }
-            case 8: 
+            case 8: {
 
-            { 
+                $numu = "OCHO";
 
-                $numu = "OCHO"; 
+                break;
 
-                break; 
+            }
 
-            } 
+            case 7: {
 
-            case 7: 
+                $numu = "SIETE";
 
-            { 
+                break;
 
-                $numu = "SIETE"; 
+            }
 
-                break; 
+            case 6: {
 
-            } 
+                $numu = "SEIS";
 
-            case 6: 
+                break;
 
-            { 
+            }
 
-                $numu = "SEIS"; 
+            case 5: {
 
-                break; 
+                $numu = "CINCO";
 
-            } 
+                break;
 
-            case 5: 
+            }
 
-            { 
+            case 4: {
 
-                $numu = "CINCO"; 
+                $numu = "CUATRO";
 
-                break; 
+                break;
 
-            } 
+            }
 
-            case 4: 
+            case 3: {
 
-            { 
+                $numu = "TRES";
 
-                $numu = "CUATRO"; 
+                break;
 
-                break; 
+            }
 
-            } 
+            case 2: {
 
-            case 3: 
+                $numu = "DOS";
 
-            { 
+                break;
 
-                $numu = "TRES"; 
+            }
 
-                break; 
+            case 1: {
 
-            } 
+                $numu = "UNO";
 
-            case 2: 
+                break;
 
-            { 
+            }
 
-                $numu = "DOS"; 
+            case 0: {
 
-                break; 
+                $numu = "";
 
-            } 
+                break;
 
-            case 1: 
+            }
 
-            {
+        }
 
-                $numu = "UNO"; 
+        return $numu;
 
-                break; 
+    }
 
-            } 
 
-            case 0: 
 
-            { 
+    function decena($numdero)
+    {
 
-                $numu = ""; 
 
-                break; 
 
-            } 
+        if ($numdero >= 90 && $numdero <= 99) {
 
-        } 
+            $numd = "NOVENTA ";
 
-        return $numu; 
+            if ($numdero > 90)
 
-    } 
+                $numd = $numd . "Y " . (self::unidad($numdero - 90));
 
+        } else if ($numdero >= 80 && $numdero <= 89) {
 
+            $numd = "OCHENTA ";
 
-    function decena($numdero){ 
+            if ($numdero > 80)
 
+                $numd = $numd . "Y " . (self::unidad($numdero - 80));
 
+        } else if ($numdero >= 70 && $numdero <= 79) {
 
-        if ($numdero >= 90 && $numdero <= 99) 
+            $numd = "SETENTA ";
 
-        { 
+            if ($numdero > 70)
 
-            $numd = "NOVENTA "; 
+                $numd = $numd . "Y " . (self::unidad($numdero - 70));
 
-            if ($numdero > 90) 
+        } else if ($numdero >= 60 && $numdero <= 69) {
 
-                $numd = $numd."Y ".(self::unidad($numdero - 90)); 
+            $numd = "SESENTA ";
 
-        } 
+            if ($numdero > 60)
 
-        else if ($numdero >= 80 && $numdero <= 89) 
+                $numd = $numd . "Y " . (self::unidad($numdero - 60));
 
-        { 
+        } else if ($numdero >= 50 && $numdero <= 59) {
 
-            $numd = "OCHENTA "; 
+            $numd = "CINCUENTA ";
 
-            if ($numdero > 80) 
+            if ($numdero > 50)
 
-                $numd = $numd."Y ".(self::unidad($numdero - 80)); 
+                $numd = $numd . "Y " . (self::unidad($numdero - 50));
 
-        } 
+        } else if ($numdero >= 40 && $numdero <= 49) {
 
-        else if ($numdero >= 70 && $numdero <= 79) 
+            $numd = "CUARENTA ";
 
-        { 
+            if ($numdero > 40)
 
-            $numd = "SETENTA "; 
+                $numd = $numd . "Y " . (self::unidad($numdero - 40));
 
-            if ($numdero > 70) 
+        } else if ($numdero >= 30 && $numdero <= 39) {
 
-                $numd = $numd."Y ".(self::unidad($numdero - 70)); 
+            $numd = "TREINTA ";
 
-        } 
+            if ($numdero > 30)
 
-        else if ($numdero >= 60 && $numdero <= 69) 
+                $numd = $numd . "Y " . (self::unidad($numdero - 30));
 
-        { 
+        } else if ($numdero >= 20 && $numdero <= 29) {
 
-            $numd = "SESENTA "; 
+            if ($numdero == 20)
 
-            if ($numdero > 60) 
+                $numd = "VEINTE ";
+            else
 
-                $numd = $numd."Y ".(self::unidad($numdero - 60)); 
+                $numd = "VEINTI" . (self::unidad($numdero - 20));
 
-        } 
+        } else if ($numdero >= 10 && $numdero <= 19) {
 
-        else if ($numdero >= 50 && $numdero <= 59) 
+            switch ($numdero) {
 
-        { 
+                case 10: {
 
-            $numd = "CINCUENTA "; 
+                    $numd = "DIEZ ";
 
-            if ($numdero > 50) 
+                    break;
 
-                $numd = $numd."Y ".(self::unidad($numdero - 50)); 
+                }
 
-        } 
+                case 11: {
 
-        else if ($numdero >= 40 && $numdero <= 49) 
+                    $numd = "ONCE ";
 
-        { 
+                    break;
 
-            $numd = "CUARENTA "; 
+                }
 
-            if ($numdero > 40) 
+                case 12: {
 
-                $numd = $numd."Y ".(self::unidad($numdero - 40)); 
+                    $numd = "DOCE ";
 
-        } 
+                    break;
 
-        else if ($numdero >= 30 && $numdero <= 39) 
+                }
 
-        { 
+                case 13: {
 
-            $numd = "TREINTA "; 
+                    $numd = "TRECE ";
 
-            if ($numdero > 30) 
+                    break;
 
-                $numd = $numd."Y ".(self::unidad($numdero - 30)); 
+                }
 
-        } 
+                case 14: {
 
-        else if ($numdero >= 20 && $numdero <= 29) 
+                    $numd = "CATORCE ";
 
-        { 
+                    break;
 
-            if ($numdero == 20) 
+                }
 
-                $numd = "VEINTE "; 
+                case 15: {
 
-            else 
+                    $numd = "QUINCE ";
 
-                $numd = "VEINTI".(self::unidad($numdero - 20)); 
+                    break;
 
-        } 
+                }
 
-        else if ($numdero >= 10 && $numdero <= 19) 
+                case 16: {
 
-        { 
+                    $numd = "DIECISEIS ";
 
-            switch ($numdero){ 
+                    break;
 
-                case 10: 
+                }
 
-                { 
+                case 17: {
 
-                    $numd = "DIEZ "; 
+                    $numd = "DIECISIETE ";
 
-                    break; 
+                    break;
 
-                } 
+                }
 
-                case 11: 
+                case 18: {
 
-                { 
+                    $numd = "DIECIOCHO ";
 
-                    $numd = "ONCE "; 
+                    break;
 
-                    break; 
+                }
 
-                } 
+                case 19: {
 
-                case 12: 
+                    $numd = "DIECINUEVE ";
 
-                { 
+                    break;
 
-                    $numd = "DOCE "; 
+                }
 
-                    break; 
+            }
 
-                } 
+        } else
 
-                case 13: 
+            $numd = self::unidad($numdero);
 
-                { 
+        return $numd;
 
-                    $numd = "TRECE "; 
+    }
 
-                    break; 
 
-                } 
 
-                case 14: 
+    function centena($numc)
+    {
 
-                { 
+        if ($numc >= 100) {
 
-                    $numd = "CATORCE "; 
+            if ($numc >= 900 && $numc <= 999) {
 
-                    break; 
+                $numce = "NOVECIENTOS ";
 
-                } 
+                if ($numc > 900)
 
-                case 15: 
+                    $numce = $numce . (self::decena($numc - 900));
 
-                { 
+            } else if ($numc >= 800 && $numc <= 899) {
 
-                    $numd = "QUINCE "; 
+                $numce = "OCHOCIENTOS ";
 
-                    break; 
+                if ($numc > 800)
 
-                } 
+                    $numce = $numce . (self::decena($numc - 800));
 
-                case 16: 
+            } else if ($numc >= 700 && $numc <= 799) {
 
-                { 
+                $numce = "SETECIENTOS ";
 
-                    $numd = "DIECISEIS "; 
+                if ($numc > 700)
 
-                    break; 
+                    $numce = $numce . (self::decena($numc - 700));
 
-                } 
+            } else if ($numc >= 600 && $numc <= 699) {
 
-                case 17: 
+                $numce = "SEISCIENTOS ";
 
-                { 
+                if ($numc > 600)
 
-                    $numd = "DIECISIETE "; 
+                    $numce = $numce . (self::decena($numc - 600));
 
-                    break; 
+            } else if ($numc >= 500 && $numc <= 599) {
 
-                } 
+                $numce = "QUINIENTOS ";
 
-                case 18: 
+                if ($numc > 500)
 
-                { 
+                    $numce = $numce . (self::decena($numc - 500));
 
-                    $numd = "DIECIOCHO "; 
+            } else if ($numc >= 400 && $numc <= 499) {
 
-                    break; 
+                $numce = "CUATROCIENTOS ";
 
-                } 
+                if ($numc > 400)
 
-                case 19: 
+                    $numce = $numce . (self::decena($numc - 400));
 
-                { 
+            } else if ($numc >= 300 && $numc <= 399) {
 
-                    $numd = "DIECINUEVE "; 
+                $numce = "TRESCIENTOS ";
 
-                    break; 
+                if ($numc > 300)
 
-                } 
+                    $numce = $numce . (self::decena($numc - 300));
 
-            } 
+            } else if ($numc >= 200 && $numc <= 299) {
 
-        } 
+                $numce = "DOSCIENTOS ";
 
-        else 
+                if ($numc > 200)
 
-            $numd = self::unidad($numdero); 
+                    $numce = $numce . (self::decena($numc - 200));
 
-        return $numd; 
+            } else if ($numc >= 100 && $numc <= 199) {
 
-    } 
+                if ($numc == 100)
 
+                    $numce = "CIEN ";
+                else
 
+                    $numce = "CIENTO " . (self::decena($numc - 100));
 
-    function centena($numc){ 
+            }
 
-        if ($numc >= 100) 
+        } else
 
-        { 
+            $numce = self::decena($numc);
 
-            if ($numc >= 900 && $numc <= 999) 
 
-            { 
 
-                $numce = "NOVECIENTOS "; 
+        return $numce;
 
-                if ($numc > 900) 
+    }
 
-                    $numce = $numce.(self::decena($numc - 900)); 
 
-            } 
 
-            else if ($numc >= 800 && $numc <= 899) 
+    function miles($nummero)
+    {
 
-            { 
+        if ($nummero >= 1000 && $nummero < 2000) {
 
-                $numce = "OCHOCIENTOS "; 
+            $numm = "MIL " . (self::centena($nummero % 1000));
 
-                if ($numc > 800) 
+        }
 
-                    $numce = $numce.(self::decena($numc - 800)); 
+        if ($nummero >= 2000 && $nummero < 10000) {
 
-            } 
+            $numm = self::unidad(Floor($nummero / 1000)) . " MIL " . (self::centena($nummero % 1000));
 
-            else if ($numc >= 700 && $numc <= 799) 
+        }
 
-            { 
+        if ($nummero < 1000)
 
-                $numce = "SETECIENTOS "; 
+            $numm = self::centena($nummero);
 
-                if ($numc > 700) 
 
-                    $numce = $numce.(self::decena($numc - 700)); 
 
-            } 
+        return $numm;
 
-            else if ($numc >= 600 && $numc <= 699) 
+    }
 
-            { 
 
-                $numce = "SEISCIENTOS "; 
 
-                if ($numc > 600) 
+    function decmiles($numdmero)
+    {
 
-                    $numce = $numce.(self::decena($numc - 600)); 
+        if ($numdmero == 10000)
 
-            } 
+            $numde = "DIEZ MIL";
 
-            else if ($numc >= 500 && $numc <= 599) 
+        if ($numdmero > 10000 && $numdmero < 20000) {
 
-            { 
+            $numde = self::decena(Floor($numdmero / 1000)) . "MIL " . (self::centena($numdmero % 1000));
 
-                $numce = "QUINIENTOS "; 
+        }
 
-                if ($numc > 500) 
+        if ($numdmero >= 20000 && $numdmero < 100000) {
 
-                    $numce = $numce.(self::decena($numc - 500)); 
+            $numde = self::decena(Floor($numdmero / 1000)) . " MIL " . (self::miles($numdmero % 1000));
 
-            } 
+        }
 
-            else if ($numc >= 400 && $numc <= 499) 
+        if ($numdmero < 10000)
 
-            { 
+            $numde = self::miles($numdmero);
 
-                $numce = "CUATROCIENTOS "; 
 
-                if ($numc > 400) 
 
-                    $numce = $numce.(self::decena($numc - 400)); 
+        return $numde;
 
-            } 
+    }
 
-            else if ($numc >= 300 && $numc <= 399) 
 
-            { 
 
-                $numce = "TRESCIENTOS "; 
+    function cienmiles($numcmero)
+    {
 
-                if ($numc > 300) 
+        if ($numcmero == 100000)
 
-                    $numce = $numce.(self::decena($numc - 300)); 
+            $num_letracm = "CIEN MIL";
 
-            } 
+        if ($numcmero >= 100000 && $numcmero < 1000000) {
 
-            else if ($numc >= 200 && $numc <= 299) 
+            $num_letracm = self::centena(Floor($numcmero / 1000)) . " MIL " . (self::centena($numcmero % 1000));
 
-            { 
+        }
 
-                $numce = "DOSCIENTOS "; 
+        if ($numcmero < 100000)
 
-                if ($numc > 200) 
+            $num_letracm = self::decmiles($numcmero);
 
-                    $numce = $numce.(self::decena($numc - 200)); 
+        return $num_letracm;
 
-            } 
+    }
 
-            else if ($numc >= 100 && $numc <= 199) 
 
-            { 
 
-                if ($numc == 100) 
+    function millon($nummiero)
+    {
 
-                    $numce = "CIEN "; 
+        if ($nummiero >= 1000000 && $nummiero < 2000000) {
 
-                else 
+            $num_letramm = "UN MILLON " . (self::cienmiles($nummiero % 1000000));
 
-                    $numce = "CIENTO ".(self::decena($numc - 100)); 
+        }
 
-            } 
+        if ($nummiero >= 2000000 && $nummiero < 10000000) {
 
-        } 
+            $num_letramm = self::unidad(Floor($nummiero / 1000000)) . " MILLONES " . (self::cienmiles($nummiero % 1000000));
 
-        else 
+        }
 
-            $numce = self::decena($numc); 
+        if ($nummiero < 1000000)
 
+            $num_letramm = self::cienmiles($nummiero);
 
 
-        return $numce; 
 
-    } 
+        return $num_letramm;
 
+    }
 
 
-    function miles($nummero){ 
 
-        if ($nummero >= 1000 && $nummero < 2000){ 
+    function decmillon($numerodm)
+    {
 
-            $numm = "MIL ".(self::centena($nummero%1000)); 
+        if ($numerodm == 10000000)
 
-        } 
+            $num_letradmm = "DIEZ MILLONES";
 
-        if ($nummero >= 2000 && $nummero <10000){ 
+        if ($numerodm > 10000000 && $numerodm < 20000000) {
 
-            $numm = self::unidad(Floor($nummero/1000))." MIL ".(self::centena($nummero%1000)); 
+            $num_letradmm = self::decena(Floor($numerodm / 1000000)) . "MILLONES " . (self::cienmiles($numerodm % 1000000));
 
-        } 
+        }
 
-        if ($nummero < 1000) 
+        if ($numerodm >= 20000000 && $numerodm < 100000000) {
 
-            $numm = self::centena($nummero); 
+            $num_letradmm = self::decena(Floor($numerodm / 1000000)) . " MILLONES " . (self::millon($numerodm % 1000000));
 
+        }
 
+        if ($numerodm < 10000000)
 
-        return $numm; 
+            $num_letradmm = self::millon($numerodm);
 
-    } 
 
 
+        return $num_letradmm;
 
-    function decmiles($numdmero){ 
+    }
 
-        if ($numdmero == 10000) 
 
-            $numde = "DIEZ MIL"; 
 
-        if ($numdmero > 10000 && $numdmero <20000){ 
+    function cienmillon($numcmeros)
+    {
 
-            $numde = self::decena(Floor($numdmero/1000))."MIL ".(self::centena($numdmero%1000)); 
+        if ($numcmeros == 100000000)
 
-        } 
+            $num_letracms = "CIEN MILLONES";
 
-        if ($numdmero >= 20000 && $numdmero <100000){ 
+        if ($numcmeros >= 100000000 && $numcmeros < 1000000000) {
 
-            $numde = self::decena(Floor($numdmero/1000))." MIL ".(self::miles($numdmero%1000)); 
+            $num_letracms = self::centena(Floor($numcmeros / 1000000)) . " MILLONES " . (self::millon($numcmeros % 1000000));
 
-        } 
+        }
 
-        if ($numdmero < 10000) 
+        if ($numcmeros < 100000000)
 
-            $numde = self::miles($numdmero); 
+            $num_letracms = self::decmillon($numcmeros);
 
+        return $num_letracms;
 
+    }
 
-        return $numde; 
 
-    } 
 
+    function milmillon($nummierod)
+    {
 
+        if ($nummierod >= 1000000000 && $nummierod < 2000000000) {
 
-    function cienmiles($numcmero){ 
+            $num_letrammd = "MIL " . (self::cienmillon($nummierod % 1000000000));
 
-        if ($numcmero == 100000) 
+        }
 
-            $num_letracm = "CIEN MIL"; 
+        if ($nummierod >= 2000000000 && $nummierod < 10000000000) {
 
-        if ($numcmero >= 100000 && $numcmero <1000000){ 
+            $num_letrammd = self::unidad(Floor($nummierod / 1000000000)) . " MIL " . (self::cienmillon($nummierod % 1000000000));
 
-            $num_letracm = self::centena(Floor($numcmero/1000))." MIL ".(self::centena($numcmero%1000)); 
+        }
 
-        } 
+        if ($nummierod < 1000000000)
 
-        if ($numcmero < 100000) 
+            $num_letrammd = self::cienmillon($nummierod);
 
-            $num_letracm = self::decmiles($numcmero); 
 
-        return $num_letracm; 
 
-    } 
-
-
-
-    function millon($nummiero){ 
-
-        if ($nummiero >= 1000000 && $nummiero <2000000){ 
-
-            $num_letramm = "UN MILLON ".(self::cienmiles($nummiero%1000000)); 
-
-        } 
-
-        if ($nummiero >= 2000000 && $nummiero <10000000){ 
-
-            $num_letramm = self::unidad(Floor($nummiero/1000000))." MILLONES ".(self::cienmiles($nummiero%1000000)); 
-
-        } 
-
-        if ($nummiero < 1000000) 
-
-            $num_letramm = self::cienmiles($nummiero); 
-
-
-
-        return $num_letramm; 
-
-    } 
-
-
-
-    function decmillon($numerodm){ 
-
-        if ($numerodm == 10000000) 
-
-            $num_letradmm = "DIEZ MILLONES"; 
-
-        if ($numerodm > 10000000 && $numerodm <20000000){ 
-
-            $num_letradmm = self::decena(Floor($numerodm/1000000))."MILLONES ".(self::cienmiles($numerodm%1000000)); 
-
-        } 
-
-        if ($numerodm >= 20000000 && $numerodm <100000000){ 
-
-            $num_letradmm = self::decena(Floor($numerodm/1000000))." MILLONES ".(self::millon($numerodm%1000000)); 
-
-        } 
-
-        if ($numerodm < 10000000) 
-
-            $num_letradmm = self::millon($numerodm); 
-
-
-
-        return $num_letradmm; 
-
-    } 
-
-
-
-    function cienmillon($numcmeros){ 
-
-        if ($numcmeros == 100000000) 
-
-            $num_letracms = "CIEN MILLONES"; 
-
-        if ($numcmeros >= 100000000 && $numcmeros <1000000000){ 
-
-            $num_letracms = self::centena(Floor($numcmeros/1000000))." MILLONES ".(self::millon($numcmeros%1000000)); 
-
-        } 
-
-        if ($numcmeros < 100000000) 
-
-            $num_letracms = self::decmillon($numcmeros); 
-
-        return $num_letracms; 
-
-    } 
-
-
-
-    function milmillon($nummierod){ 
-
-        if ($nummierod >= 1000000000 && $nummierod <2000000000){ 
-
-            $num_letrammd = "MIL ".(self::cienmillon($nummierod%1000000000)); 
-
-        } 
-
-        if ($nummierod >= 2000000000 && $nummierod <10000000000){ 
-
-            $num_letrammd = self::unidad(Floor($nummierod/1000000000))." MIL ".(self::cienmillon($nummierod%1000000000)); 
-
-        } 
-
-        if ($nummierod < 1000000000) 
-
-            $num_letrammd = self::cienmillon($nummierod); 
-
-
-
-        return $num_letrammd; 
+        return $num_letrammd;
 
     }
 

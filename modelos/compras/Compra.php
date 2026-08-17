@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . "/../Helpers.php";
+use Carbon\Carbon;
+
 class SisCompra extends Helpers
 {
     public function __construct()
@@ -387,11 +389,11 @@ class SisCompra extends Helpers
         array $productos
     ) {
 
-        $fechaActual = date('Y-m-d H:i:s');
+        $fechaActual = Carbon::now();
 
         foreach ($productos as $producto) {
 
-            $iddetalle = $this->guardarDetalle(
+            self::guardarDetalle(
                 $idcompra,
                 $idsucursal,
                 $tipo_c,
@@ -460,7 +462,8 @@ class SisCompra extends Helpers
         $tipo_c,
         array $producto
     ) {
-        $detalle = (new FluentSaver($this->pdo))
+        $flag = true;
+        (new FluentSaver($this->pdo))
             ->table("detalle_compra")
             ->nullable([
                 'fvencimiento'
@@ -518,6 +521,7 @@ class SisCompra extends Helpers
                     ->save();
             }
         }
+        return $flag;
     }
 
     private function actualizarStock(

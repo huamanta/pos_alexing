@@ -34,14 +34,20 @@ date_default_timezone_set('America/Lima');
       <div class="row">
         <div class="col-12">
           <div class="card">
-            <div class="card-header">
+            <!--div class="card-header">
               <button type="button" class="btn btn-primary btn-sm shadow-sm" id="btnNuevo" onclick="mostrarform(true)">
                 <i class="fas fa-plus"></i> Nueva Guía
               </button>
-            </div>
+            </div-->
             <!-- /.card-header -->
             <div class="card-body" id="listadoregistros">
               <div class="row">
+                <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12 mt-4">
+                  <button type="button" class="btn btn-primary" id="btnNuevo"
+                    onclick="mostrarform(true)">
+                    <i class="fas fa-plus"></i> Nueva Guía
+                  </button>
+                </div>
                 <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
                   <label>Fecha Inicio:</label>
                   <div class="input-group">
@@ -51,7 +57,7 @@ date_default_timezone_set('America/Lima');
                       </span>
                     </div>
                     <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio"
-                      value="<?php echo date("Y-m-d"); ?>">
+                      value="<?php echo date("Y-m-01"); ?>">
                   </div>
                 </div>
                 <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
@@ -66,7 +72,7 @@ date_default_timezone_set('America/Lima');
                       value="<?php echo date("Y-m-d"); ?>">
                   </div>
                 </div>
-                <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
+                <!--div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
                   <label>Almacén:</label>
                   <div class="input-group">
                     <div class="input-group-prepend">
@@ -77,7 +83,7 @@ date_default_timezone_set('America/Lima');
                     <select id="idsucursal2" name="idsucursal2" class="form-control">
                     </select>
                   </div>
-                </div>
+                </div-->
                 <div class="form-group col-lg-3 col-md-3 col-sm-4 col-xs-12">
                   <label>Estado:</label>
                   <div class="input-group">
@@ -98,11 +104,11 @@ date_default_timezone_set('America/Lima');
                   <th>Fecha</th>
                   <th>Cliente</th>
                   <th>Estado</th>
-                  <th>Opciones</th>
                   <th width="70px;">Sunat</th>
                   <th style="text-align: center;"><i class="fa fa-download" aria-hidden="true"
                       title="Descargar XML"></i></th>
                   <th width="180px;">RESPUESTA SUNAT</th>
+                  <th>Opciones</th>
                 </thead>
                 <tbody>
                 </tbody>
@@ -130,7 +136,7 @@ date_default_timezone_set('America/Lima');
                     <div class="row">
                       <div class="col-md-3">
                         <label>N° Serie:</label>
-                        <input name="serie_comprobante" id="serie_comprobante" class="form-control select2" readonly/>
+                        <input name="serie_comprobante" id="serie_comprobante" class="form-control select2" readonly />
                       </div>
                       <div class="col-md-3">
                         <label>N° Número:</label>
@@ -201,6 +207,7 @@ date_default_timezone_set('America/Lima');
                       <div class="col-md-2">
                         <label>Motivos:</label>
                         <select name="idmotivo" id="idmotivo" class="form-control select2"></select>
+                        <input type="text" class="form-control" id="motivo_traslado_otro" name="motivo_traslado_otro" />
                       </div>
                       <div class="col-md-2">
                         <label>Orden de Compra:</label>
@@ -215,16 +222,19 @@ date_default_timezone_set('America/Lima');
                         <input type="text" class="form-control" name="punto_partida" id="punto_partida">
                       </div>
                       <div class="form-group col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                          <label>Departamento (Partida):</label>
-                          <select id="departamento_partida" name="departamento_partida" class="form-control select2" required></select>
+                        <label>Departamento (Partida):</label>
+                        <select id="departamento_partida" name="departamento_partida" class="form-control select2"
+                          required></select>
                       </div>
                       <div class="form-group col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                          <label>Provincia (Partida):</label>
-                          <select id="provincia_partida" name="provincia_partida" class="form-control select2" required></select>
+                        <label>Provincia (Partida):</label>
+                        <select id="provincia_partida" name="provincia_partida" class="form-control select2"
+                          required></select>
                       </div>
                       <div class="form-group col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                          <label>Distrito (Partida):</label>
-                          <select id="distrito_partida" name="distrito_partida" class="form-control select2" required></select>
+                        <label>Distrito (Partida):</label>
+                        <select id="distrito_partida" name="distrito_partida" class="form-control select2"
+                          required></select>
                       </div>
                       <input type="hidden" class="form-control" name="ubigeo_partida" id="ubigeo_partida">
                       <div class="col-md-12">
@@ -232,16 +242,19 @@ date_default_timezone_set('America/Lima');
                         <input type="text" class="form-control" name="punto_llegada" id="punto_llegada">
                       </div>
                       <div class="form-group col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                          <label>Departamento (Llegada):</label>
-                          <select id="departamento_llegada" name="departamento_llegada" class="form-control select2" required></select>
+                        <label>Departamento (Llegada):</label>
+                        <select id="departamento_llegada" name="departamento_llegada" class="form-control select2"
+                          required></select>
                       </div>
                       <div class="form-group col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                          <label>Provincia (Llegada):</label>
-                          <select id="provincia_llegada" name="provincia_llegada" class="form-control select2" required></select>
+                        <label>Provincia (Llegada):</label>
+                        <select id="provincia_llegada" name="provincia_llegada" class="form-control select2"
+                          required></select>
                       </div>
                       <div class="form-group col-lg-4 col-md-4 col-sm-4 col-xs-12">
-                          <label>Distrito (Llegada):</label>
-                          <select id="distrito_llegada" name="distrito_llegada" class="form-control select2" required></select>
+                        <label>Distrito (Llegada):</label>
+                        <select id="distrito_llegada" name="distrito_llegada" class="form-control select2"
+                          required></select>
                       </div>
                       <input type="hidden" class="form-control" name="ubigeo_llegada" id="ubigeo_llegada">
                       <div class="col-md-12">
@@ -269,13 +282,12 @@ date_default_timezone_set('America/Lima');
                   </table>
                 </div>
 
-                <div class="col-12 text-center mt-3">
-                  <button class="btn btn-success btn-lg" type="submit" id="btnGuardar">
-                    <i class="fas fa-save"></i> Guardar
-                  </button>
-
+                <div class="col-12 text-right mt-3">
                   <button class="btn btn-danger btn-lg" onclick="cancelarform()" type="button">
                     <i class="fas fa-times"></i> Cancelar
+                  </button>
+                  <button class="btn btn-success btn-lg" type="submit" id="btnGuardar">
+                    <i class="fas fa-save"></i> Guardar
                   </button>
                 </div>
               </form>
@@ -299,19 +311,33 @@ date_default_timezone_set('America/Lima');
         </button>
       </div>
       <div class="modal-body">
-        <table id="tabla_productos_modal" class="table table-striped">
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Producto</th>
-              <th>Stock</th>
-              <th>Unidad</th>
-              <th>Agregar</th>
-            </tr>
-          </thead>
-          <tbody>
-          </tbody>
-        </table>
+        <div class="row">
+          <div class="col-md-6"></div>
+          <div class="col-md-6">
+            <input type="text" class="form-control" id="searchProductos">
+          </div>
+          <div class="col-md-12 mt-2">
+            <div class="table-responsive">
+              <table id="tabla_productos_modal" class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Producto</th>
+                    <th>Stock</th>
+                    <th>Unidad</th>
+                    <th>Agregar</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody_productos">
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-6"></div>
+          <div class="col-md-6">
+            <div id="paginationProductos"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>

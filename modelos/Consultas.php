@@ -3057,22 +3057,26 @@ class Consultas extends Helpers
 		return ejecutarConsulta($sql);
 	}
 
-	public function listarMotivosTraslado(){
+	public function listarMotivosTraslado()
+	{
 		$motivosGuia = [
-				['id' => '01', 'nombre' => 'Venta'],
-				['id' => '02', 'nombre' => 'Venta sujeta a confirmación del comprador'],
-				['id' => '03', 'nombre' => 'Compra'],
-				['id' => '04', 'nombre' => 'Consignación'],
-				['id' => '05', 'nombre' => 'Devolución'],
-				['id' => '06', 'nombre' => 'Traslado entre establecimientos de la misma empresa'],
-				['id' => '07', 'nombre' => 'Traslado de bienes para transformación'],
-				['id' => '08', 'nombre' => 'Recojo de bienes'],
-				['id' => '09', 'nombre' => 'Traslado por emisor itinerante de comprobantes de pago'],
-				['id' => '13', 'nombre' => 'Venta con entrega a terceros'],
-				['id' => '14', 'nombre' => 'Otras no incluidas en los puntos anteriores'],
-				['id' => '18', 'nombre' => 'Traslado de bienes para manipulación'],
-				['id' => '19', 'nombre' => 'Traslado de mercancía extranjera'],
-			];
+			['id' => '01', 'nombre' => 'Venta'],
+			['id' => '02', 'nombre' => 'Compra'],
+			['id' => '03', 'nombre' => 'Venta con entrega a terceros'],
+			['id' => '04', 'nombre' => 'Traslado entre establecimientos de la misma empresa'],
+			['id' => '05', 'nombre' => 'Consignacion'],
+			['id' => '06', 'nombre' => 'Devolucion'],
+			['id' => '07', 'nombre' => 'Recojo de bienes transformados'],
+			['id' => '08', 'nombre' => 'Importacion'],
+			['id' => '09', 'nombre' => 'Exportacion'],
+			['id' => '13', 'nombre' => 'Otros'],
+			['id' => '14', 'nombre' => 'Venta sujeta a confirmacion del comprador'],
+			['id' => '17', 'nombre' => 'Traslado de bienes para transformacion'],
+			['id' => '18', 'nombre' => 'Traslado emisor itinerante CP'],
+			['id' => '19', 'nombre' => 'Traslado a zona primaria'],
+			['id' => '10', 'nombre' => 'Traslado zona secundaria'],
+			['id' => '11', 'nombre' => 'Otro motivo de traslado']
+		];
 
 		return Response::json($motivosGuia);
 	}

@@ -2,6 +2,7 @@ var tabla;
 var tablaDetalles; // New global variable for tabla_detalles
 var cont = 0;
 var detalles = 0;
+let listarArticulos = null;
 
 $("#navPos").addClass("treeview active");
 $("#navPos").addClass("menu-open");
@@ -18,6 +19,8 @@ function init() {
     guardaryeditar(e);
   });
 
+  // Aplicar estado inicial
+  validarMotivoOtro();
 }
 
 $.post("controladores/venta.php?op=selectSucursal3", function (r) {
@@ -109,6 +112,7 @@ $("#idcomprobante").change(function () {
     "controladores/guia.php?op=getComprobante",
     { idventa: idventa },
     function (response) {
+      console.log(response);
 
       const data = response;
 
@@ -157,137 +161,23 @@ $("#idcomprobante").change(function () {
       // ==============================
       data.detalles.forEach(function (detalle) {
 
-        // --------------------------------
-        // FORMATEAR LOTES
-        // --------------------------------
-        let lotesHtml = "";
+        agregarDetalle({
+          idproducto: detalle.idproducto,
+          idproducto_configuracion: detalle.idproducto_configuracion,
+          idserie: detalle.idserie,
 
-        if (Array.isArray(detalle.lotes) && detalle.lotes.length > 0) {
+          codigo: detalle.codigo,
+          nombre_producto: detalle.nombre_producto,
 
-          lotesHtml = detalle.lotes
-            .map(function (lote) {
+          cantidad: detalle.cantidad,
+          unidad: detalle.unidad,
 
-              const vencimiento = lote.fecha_vencimiento
-                ? lote.fecha_vencimiento.split("-").reverse().join("/")
-                : "";
+          peso: detalle.peso,
+          bultos: detalle.bultos,
 
-              return `
-                  <span class="badge badge-info">
-                    ${lote.codigo_lote}
-                  </span>
-              `;
-            })
-            .join("");
+          lotes: detalle.lotes || []
+        });
 
-        } else {
-
-          lotesHtml = `
-            <span class="text-muted">
-              Sin lote
-            </span>
-          `;
-        }
-
-        // --------------------------------
-        // HTML DE LA FILA
-        // --------------------------------
-        const fila = `
-          <tr
-            class="filas"
-            id="fila${cont}"
-          >
-
-            <!-- N° -->
-            <td class="text-center">
-              ${cont + 1}
-            </td>
-
-            <!-- PRODUCTO -->
-            <td>
-              <input
-                type="hidden"
-                name="idproducto[]"
-                value="${detalle.idproducto}"
-              >
-
-              <strong>
-                ${detalle.codigo}
-              </strong>
-            </td>
-
-            <!-- DESCRIPCIÓN -->
-            <td>
-              ${detalle.nombre_producto}
-            </td>
-
-            <!-- CANTIDAD -->
-            <td>
-              <input
-                class="form-control"
-                type="number"
-                name="cantidad[]"
-                value="${detalle.cantidad}"
-              >
-            </td>
-
-            <!-- UNIDAD -->
-            <td class="text-center">
-              ${detalle.unidad}
-            </td>
-
-            <!-- PESO -->
-            <td>
-              <input
-                class="form-control"
-                type="number"
-                name="peso_det[]"
-                value="${detalle.peso || 0}"
-              >
-            </td>
-
-            <!-- BULTOS -->
-            <td>
-              <input
-                class="form-control"
-                type="number"
-                name="bultos[]"
-                value="${detalle.bultos || 0}"
-              >
-            </td>
-
-            <!-- LOTES -->
-            <td>
-              <div class="lotes-container">
-                ${lotesHtml}
-              </div>
-
-              <!-- JSON COMPLETO DE LOS LOTES -->
-              <input
-                type="hidden"
-                name="lotes[]"
-                value='${JSON.stringify(detalle.lotes || [])}'
-              >
-            </td>
-
-            <!-- ACCIONES -->
-            <td class="text-center">
-              <button
-                type="button"
-                class="btn btn-danger btn-sm"
-                onclick="eliminarDetalle(${cont})"
-                title="Eliminar producto"
-              >
-                <i class="fa fa-trash"></i>
-              </button>
-            </td>
-
-          </tr>
-        `;
-
-        $("#tabla_detalles tbody").append(fila);
-
-        cont++;
-        detalles++;
       });
 
     },
@@ -319,13 +209,23 @@ function listarMotivos() {
   });
 }
 
+function validarMotivoOtro() {
+  if ($("#idmotivo").val() === "13") {
+    $("#motivo_traslado_otro").show().focus();
+  } else {
+    $("#motivo_traslado_otro").hide().val("");
+  }
+}
+
+$("#idmotivo").on("change", validarMotivoOtro);
+
 $("#idcliente").select2({
   placeholder: "Buscar cliente...",
   allowClear: true,
   minimumInputLength: 2,
   ajax: {
     url: "controladores/guia.php?op=selectCliente",
-    type: "POST",
+    type: "GET",
     dataType: "json",
     delay: 250,
     data: function (params) {
@@ -360,14 +260,13 @@ $("#idcomprobante").select2({
   minimumInputLength: 2,
   ajax: {
     url: "controladores/guia.php?op=selectComprobante",
-    type: "POST",
+    type: "GET",
     dataType: "json",
     delay: 250,
     data: function (params) {
       return {
         search: params.term,
-        page: params.page || 1,
-        only_client: 1,
+        page: params.page || 1
       };
     },
     processResults: function (data, params) {
@@ -394,14 +293,13 @@ $("#idtransportista").select2({
   minimumInputLength: 2,
   ajax: {
     url: "controladores/guia.php?op=selectTransportista",
-    type: "POST",
+    type: "GET",
     dataType: "json",
     delay: 250,
     data: function (params) {
       return {
         search: params.term,
-        page: params.page || 1,
-        only_client: 1,
+        page: params.page || 1
       };
     },
     processResults: function (data, params) {
@@ -428,14 +326,13 @@ $("#idtrabajador").select2({
   minimumInputLength: 2,
   ajax: {
     url: "controladores/guia.php?op=selectPersonal",
-    type: "POST",
+    type: "GET",
     dataType: "json",
     delay: 250,
     data: function (params) {
       return {
         search: params.term,
-        page: params.page || 1,
-        only_client: 1,
+        page: params.page || 1
       };
     },
     processResults: function (data, params) {
@@ -480,6 +377,7 @@ function mostrarform(flag) {
     $("#formularioregistros").show();
     $("#btnGuardar").prop("disabled", false);
     $("#btnagregar").show();
+    $("#btnNuevo").hide();
     get_numeracion();
     listarMotivos();
     var now = new Date();
@@ -492,6 +390,7 @@ function mostrarform(flag) {
     $("#listadoregistros").show();
     $("#formularioregistros").hide();
     $("#btnagregar").show();
+    $("#btnNuevo").show();
   }
 }
 
@@ -541,81 +440,94 @@ function guardaryeditar(e) {
     data: formData,
     contentType: false,
     processData: false,
-
-    success: function (datos) {
+    success: function (response) {
+      $("#btnGuardar").prop("disabled", false);
+      if (!response.success) {
+        Swal.fire({
+          icon: 'error',
+          title: response.message,
+          showConfirmButton: false,
+          timer: 1500
+        });
+        return;
+      }
       Swal.fire({
         icon: 'success',
-        title: datos,
+        title: response.message,
         showConfirmButton: false,
         timer: 1500
       });
       mostrarform(false);
       listar();
+      limpiar();
+    },
+    error: function (error) {
+      $("#btnGuardar").prop("disabled", false);
+      Swal.fire({
+        icon: 'error',
+        title: error.responseJSON.message || 'Error al guardar los datos',
+        showConfirmButton: false,
+        timer: 1500
+      });
     }
   });
-  limpiar();
 }
 
 function mostrar(idguia) {
-  $.post("controladores/guia.php?op=mostrar", { idguia: idguia }, function (data, status) {
-    data = JSON.parse(data);
+  $.get("controladores/guia.php?op=mostrar", { idguia: idguia }, function (response, status) {
+    const data = response;
+    const guia = data.guia;
     mostrarform(true);
 
-    $("#idguia").val(data.idguia);
-    $("#idsucursal").val(data.idsucursal);
-    $("#idcliente").val(data.idcliente);
+    $("#idguia").val(guia.idguia);
+    $("#idsucursal").val(guia.idsucursal);
+    $("#idcliente").val(guia.idcliente);
     $("#idcliente").select2();
-    $("#serie_comprobante").val(data.serie_comprobante);
-    $("#serie_comprobante").select2();
-    $("#num_comprobante").val(data.num_comprobante);
-    $("#fecha_emision").val(data.fecha_emision);
-    $("#fecha_traslado").val(data.fecha_traslado);
-    $("#factura_ref").val(data.factura_ref);
-    $("#fecha_factura_ref").val(data.fecha_factura_ref);
-    $("#tipo_transporte").val(data.tipo_transporte);
+    $("#serie_comprobante").val(guia.serie_comprobante);
+    $("#num_comprobante").val(guia.num_comprobante);
+    $("#fecha_emision").val(guia.fecha_emision);
+    $("#fecha_traslado").val(guia.fecha_traslado);
+    $("#factura_ref").val(guia.factura_ref);
+    $("#fecha_factura_ref").val(guia.fecha_factura_ref);
+    $("#tipo_transporte").val(guia.tipo_transporte);
     $("#tipo_transporte").select2();
-    $("#idtransportista").val(data.idtransportista);
+    $("#idtransportista").val(guia.idtransportista);
     $("#idtransportista").select2();
-    $("#peso").val(data.peso);
-    $("#punto_partida").val(data.punto_partida);
-    $("#ubigeo_partida").val(data.ubigeo_partida);
-    $("#punto_llegada").val(data.punto_llegada);
-    $("#ubigeo_llegada").val(data.ubigeo_llegada);
-    $("#atencion").val(data.atencion);
-    $("#referencia").val(data.referencia);
-    $("#idtrabajador").val(data.idtrabajador);
+    $("#peso").val(guia.peso);
+    $("#punto_partida").val(guia.punto_partida);
+    $("#ubigeo_partida").val(guia.ubigeo_partida);
+    $("#punto_llegada").val(guia.punto_llegada);
+    $("#ubigeo_llegada").val(guia.ubigeo_llegada);
+    $("#atencion").val(guia.atencion);
+    $("#referencia").val(guia.referencia);
+    $("#idtrabajador").val(guia.idtrabajador);
     $("#idtrabajador").select2();
-    $("#idmotivo").val(data.idmotivo);
+    $("#idmotivo").val(guia.idmotivo);
     $("#idmotivo").select2();
-    $("#ord_compra").val(data.ord_compra);
-    $("#ord_pedido").val(data.ord_pedido);
-    $("#observacion").val(data.observacion);
+    $("#ord_compra").val(guia.ord_compra);
+    $("#ord_pedido").val(guia.ord_pedido);
+    $("#observacion").val(guia.observacion);
 
     // Detalle
-    $.post("controladores/guia.php?op=listarDetalles", { idguia: idguia }, function (r) {
-      r = JSON.parse(r);
-      cont = 0;
-      detalles = 0;
-      r.forEach(function (detalle) {
-        var rowNode = tablaDetalles.row.add([
-          (cont + 1), // Item
-          '<input type="hidden" name="idproducto[]" value="' + detalle.idproducto + '">' +
-          '<input type="hidden" name="codigo[]" value="' + detalle.codigo + '"><div class="text-center">' + detalle.codigo + '</div>', // Código
-          '<input type="hidden" name="nombre_producto[]" value="' + detalle.nombre_producto + '"><div class="text-left">' + detalle.nombre_producto + '</div>', // Artículo
-          '<input class="form-control" type="number" name="cantidad[]" value="' + detalle.cantidad + '">', // Cantidad
-          '<input type="hidden" name="unidad[]" value="' + detalle.unidad + '"><div class="text-center">' + detalle.unidad + '</div>', // Unidad
-          '<input class="form-control" type="number" name="peso_det[]" value="' + detalle.peso + '">', // Peso
-          '<input class="form-control" type="number" name="bultos[]" value="' + detalle.bultos + '">', // Bultos
-          '<input class="form-control" type="text" name="lotes[]" value="' + detalle.lotes + '">', // Lotes
-          '<button type="button" class="btn btn-danger" onclick="eliminarDetalle(' + cont + ')"><i class="fa fa-trash"></i></button>' // Quitar
-        ]).draw(false).node(); // Add the row and get the DOM node
+    data.detalles.forEach(function (detalle) {
 
-        $(rowNode).attr('id', 'fila' + cont); // Assign a unique ID to the row's DOM node
+      agregarDetalle({
+        idproducto: detalle.idproducto,
+        idproducto_configuracion: detalle.idproducto_configuracion,
+        idserie: detalle.idserie,
 
-        cont++;
-        detalles++;
+        codigo: detalle.codigo,
+        nombre_producto: detalle.nombre_producto,
+
+        cantidad: detalle.cantidad,
+        unidad: detalle.unidad,
+
+        peso: detalle.peso,
+        bultos: detalle.bultos,
+
+        lotes: detalle.lotes || []
       });
-      tablaDetalles.draw(); // Redraw the table after all rows are added
+
     });
   });
 }
@@ -686,84 +598,351 @@ function baja_sunat(idguia) {
   })
 }
 
+listarArticulos = new FluentPaginator({
+  url: "controladores/guia.php?op=listarArticulos",
+  renderTabla: pintarProductos,
+  tableBody: "#tbody_productos",
+  searchSelector: "#searchProductos",
+  limitSelector: "#limitProductos",
+  paginationId: "#paginationProductos",
+});
+
+function pintarProductos(data, permissions) {
+  let html = "";
+
+  if (data.length === 0) {
+    html = `
+            <tr>
+                <td colspan="10" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+    $("#tbody_productos").html(html);
+    return;
+  }
+
+  data.forEach((item) => {
+    let btnActivarDesactivar = permissions.desactivar
+      ? item.condicion === 1
+        ? `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>`
+        : `<button class="btn btn-info btn-xs" onclick="activar(${item.idproducto})"><i class="fas fa-check"></i></button>`
+      : "";
+
+    html += `
+            <tr>
+                <td>
+                <button type="button"
+                    class="btn btn-success"
+                    onclick='agregarDetalle({
+                        idproducto: ${item.idproducto},
+                        idproducto_configuracion: ${item.idproducto_configuracion || "null"},
+                        idserie: ${item.idserie || "null"},
+
+                        codigo: ${JSON.stringify(item.codigo || "")},
+                        nombre_producto: ${JSON.stringify(item.nombre || "")},
+
+                        cantidad: 1,
+                        unidad: ${JSON.stringify(item.unidad || "NIU")},
+
+                        peso: 0,
+                        bultos: 0,
+
+                        lotes: []
+                    })'
+                    ${parseFloat(item.stock) <= 0 || item.estado_serie != "DISPONIBLE" ? "disabled" : ""}>
+                    <i class="fas fa-shopping-cart"></i>
+                </button>
+                <td>${item.codigo || ""}</td>
+                <td style="text-align:left;">
+                    <strong>${item.nombre || ""} ${item.marca || ''} ${item.modelo || ''}</strong> </strong> <span class="badge bg-blue">${item.contenedor} x ${item.cantidad_contenedor}</span><br>
+                    <small>
+                        <strong>Motor:</strong> ${item.numero_motor || "-"} &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <strong>Serie:</strong> ${item.numero_serie || "-"}
+                    </small>
+                </td>
+                <td>${item.stock}</td>
+                <td>S/ ${parseFloat(item.precio_venta).toFixed(2)}</td>
+                <td>
+                    ${item.color || "S/N"}
+                </td>
+
+            </tr>
+        `;
+  });
+
+  $("#tabla_productos_modal").html(html);
+}
+
 function abrirModalProductos() {
   $('#modalProductos').modal('show');
-  let idsucursal = $("#idsucursal").val();
-  console.log("idsucursal for listarArticulos:", idsucursal);
-  tabla = $('#tabla_productos_modal').dataTable({
-    "aProcessing": true,
-    "aServerSide": true,
-    "processing": true,
-    "language": {
-      "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-    },
-    "responsive": true, "lengthChange": false, "autoWidth": false,
-    dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-    lengthMenu: [
-      [5, 10, 25, 50, 100, -1],
-      ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
-    ],
-    buttons: ['pageLength',
-      {
-        extend: 'excelHtml5',
-        text: "<i class='fas fa-file-csv'></i>",
-        titleAttr: 'Exportar a Excel',
-      },
-      {
-        extend: 'pdf',
-        text: "<i class='fas fa-file-pdf'></i>",
-        titleAttr: 'Exportar a PDF',
-      },
-      {
-        extend: 'colvis',
-        text: "<i class='fas fa-bars'></i>",
-        titleAttr: '',
-      }],
-    "ajax": {
-      url: 'controladores/guia.php?op=listarArticulos',
-      data: { idsucursal: idsucursal },
-      type: "post",
-      dataType: "json",
-      error: function (e) {
-        console.log(e.responseText);
-      }
-    },
-    "bDestroy": true,
-    "iDisplayLength": 5,
-    "order": [[0, "desc"]]
-  }).DataTable();
+  // let idsucursal = $("#idsucursal").val();
+  listarArticulos.load();
 }
 
-function agregarDetalle(idproducto, codigo, nombre, unidad) {
-  var cantidad = 1;
-  var peso = 1;
-  var bultos = 1;
-  var lotes = "";
+// function agregarDetalle(idproducto, codigo, nombre, unidad) {
+//   var cantidad = 1;
+//   var peso = 1;
+//   var bultos = 1;
+//   var lotes = "";
 
-  if (idproducto != "") {
-    var rowNode = tablaDetalles.row.add([
-      (cont + 1), // Item
-      '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
-      '<input type="hidden" name="codigo[]" value="' + codigo + '"><div class="text-center">' + codigo + '</div>', // Código
-      '<input type="hidden" name="nombre_producto[]" value="' + nombre + '"><div class="text-left">' + nombre + '</div>', // Artículo
-      '<input class="form-control" type="number" name="cantidad[]" value="' + cantidad + '">', // Cantidad
-      '<input type="hidden" name="unidad[]" value="' + unidad + '"><div class="text-center">' + unidad + '</div>', // Unidad
-      '<input class="form-control" type="number" name="peso_det[]" value="' + peso + '">', // Peso
-      '<input class="form-control" type="number" name="bultos[]" value="' + bultos + '">', // Bultos
-      '<input class="form-control" type="text" name="lotes[]" value="' + lotes + '">', // Lotes
-      '<button type="button" class="btn btn-danger" onclick="eliminarDetalle(' + cont + ')"><i class="fa fa-trash"></i></button>' // Quitar
-    ]).draw(false).node(); // Add the row and get the DOM node
+//   if (idproducto != "") {
+//     var rowNode = tablaDetalles.row.add([
+//       (cont + 1), // Item
+//       '<input type="hidden" name="idproducto[]" value="' + idproducto + '">' +
+//       '<input type="hidden" name="codigo[]" value="' + codigo + '"><div class="text-center">' + codigo + '</div>', // Código
+//       '<input type="hidden" name="nombre_producto[]" value="' + nombre + '"><div class="text-left">' + nombre + '</div>', // Artículo
+//       '<input class="form-control" type="number" name="cantidad[]" value="' + cantidad + '">', // Cantidad
+//       '<input type="hidden" name="unidad[]" value="' + unidad + '"><div class="text-center">' + unidad + '</div>', // Unidad
+//       '<input class="form-control" type="number" name="peso_det[]" value="' + peso + '">', // Peso
+//       '<input class="form-control" type="number" name="bultos[]" value="' + bultos + '">', // Bultos
+//       '<input class="form-control" type="text" name="lotes[]" value="' + lotes + '">', // Lotes
+//       '<button type="button" class="btn btn-danger" onclick="eliminarDetalle(' + cont + ')"><i class="fa fa-trash"></i></button>' // Quitar
+//     ]).draw(false).node(); // Add the row and get the DOM node
 
-    // Assign a unique ID to the row's DOM node
-    $(rowNode).attr('id', 'fila' + cont);
+//     // Assign a unique ID to the row's DOM node
+//     $(rowNode).attr('id', 'fila' + cont);
 
-    cont++;
-    detalles++;
-  } else {
-    alert("Error al ingresar el detalle, revisar los datos del artículo");
+//     cont++;
+//     detalles++;
+//   } else {
+//     alert("Error al ingresar el detalle, revisar los datos del artículo");
+//   }
+// }
+
+function agregarDetalle(detalle) {
+
+  if (!detalle || !detalle.idproducto) {
+    alert("Error: datos del producto incompletos.");
+    return;
   }
-}
 
+  // ----------------------------------------
+  // NORMALIZAR DATOS
+  // ----------------------------------------
+
+  const item = {
+    idproducto: detalle.idproducto,
+    idproducto_configuracion: detalle.idproducto_configuracion || "",
+    idserie: detalle.idserie || "",
+
+    codigo: detalle.codigo || "",
+    nombre_producto: detalle.nombre_producto || detalle.nombre || "",
+
+    cantidad: parseFloat(detalle.cantidad) || 1,
+    unidad: detalle.unidad || "NIU",
+
+    peso: parseFloat(detalle.peso) || 0,
+    bultos: parseInt(detalle.bultos) || 0,
+
+    lotes: Array.isArray(detalle.lotes)
+      ? detalle.lotes
+      : []
+  };
+
+  // ----------------------------------------
+  // EVITAR PRODUCTO DUPLICADO
+  // ----------------------------------------
+
+  let existe = false;
+
+  $("#tabla_detalles tbody tr").each(function () {
+
+    const id = $(this)
+      .find('input[name="idproducto[]"]')
+      .val();
+
+    if (String(id) === String(item.idproducto)) {
+      existe = true;
+      return false;
+    }
+  });
+
+  if (existe) {
+    Swal.fire('Guia de remisión', 'El producto ya fue agregado a la guía.', 'warning');
+    return;
+  }
+
+  // ----------------------------------------
+  // HTML DE LOTES
+  // ----------------------------------------
+
+  let lotesHtml = "";
+
+  if (item.lotes.length > 0) {
+
+    lotesHtml = item.lotes.map(function (lote) {
+
+      return `
+                <span class="badge badge-info mr-1">
+                    ${lote.codigo_lote || ""}
+                </span>
+            `;
+
+    }).join("");
+
+  } else {
+
+    lotesHtml = `
+            <span class="text-muted">
+                Sin lote
+            </span>
+        `;
+  }
+
+  // ----------------------------------------
+  // CREAR FILA
+  // ----------------------------------------
+
+  const fila = `
+        <tr
+            class="filas"
+            id="fila${cont}"
+        >
+
+            <!-- ITEM -->
+            <td class="text-center">
+                ${cont + 1}
+            </td>
+
+            <!-- PRODUCTO -->
+            <td>
+
+                <input
+                    type="hidden"
+                    name="idproducto[]"
+                    value="${item.idproducto}"
+                >
+
+                <input
+                    type="hidden"
+                    name="idproducto_configuracion[]"
+                    value="${item.idproducto_configuracion}"
+                >
+
+                <input
+                    type="hidden"
+                    name="idserie[]"
+                    value="${item.idserie}"
+                >
+
+                <input
+                    type="hidden"
+                    name="codigo[]"
+                    value="${item.codigo}"
+                >
+
+                <strong>
+                    ${item.codigo}
+                </strong>
+
+            </td>
+
+            <!-- DESCRIPCIÓN -->
+            <td>
+
+                <input
+                    type="hidden"
+                    name="nombre_producto[]"
+                    value="${item.nombre_producto}"
+                >
+
+                ${item.nombre_producto}
+
+            </td>
+
+            <!-- CANTIDAD -->
+            <td>
+
+                <input
+                    class="form-control"
+                    type="number"
+                    name="cantidad[]"
+                    min="0.001"
+                    step="0.001"
+                    value="${item.cantidad}"
+                >
+
+            </td>
+
+            <!-- UNIDAD -->
+            <td class="text-center">
+
+                <input
+                    type="hidden"
+                    name="unidad[]"
+                    value="${item.unidad}"
+                >
+
+                ${item.unidad}
+
+            </td>
+
+            <!-- PESO -->
+            <td>
+
+                <input
+                    class="form-control"
+                    type="number"
+                    name="peso_det[]"
+                    min="0"
+                    step="0.001"
+                    value="${item.peso}"
+                >
+
+            </td>
+
+            <!-- BULTOS -->
+            <td>
+
+                <input
+                    class="form-control"
+                    type="number"
+                    name="bultos[]"
+                    min="0"
+                    step="1"
+                    value="${item.bultos}"
+                >
+
+            </td>
+
+            <!-- LOTES -->
+            <td>
+
+                <div class="lotes-container">
+                    ${lotesHtml}
+                </div>
+
+                <input
+                    type="hidden"
+                    name="lotes[]"
+                    value='${JSON.stringify(item.lotes)}'
+                >
+
+            </td>
+
+            <!-- ACCIONES -->
+            <td class="text-center">
+
+                <button
+                    type="button"
+                    class="btn btn-danger btn-sm"
+                    onclick="eliminarDetalle(${cont})"
+                >
+                    <i class="fa fa-trash"></i>
+                </button>
+
+            </td>
+
+        </tr>
+    `;
+
+  $("#tabla_detalles tbody").append(fila);
+
+  cont++;
+  detalles++;
+}
 function eliminarDetalle(indice) {
   tablaDetalles.row($('#fila' + indice)).remove().draw(false);
   detalles--;
