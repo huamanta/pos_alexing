@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 17, 2026 at 04:16 AM
+-- Generation Time: Aug 18, 2026 at 05:31 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.28
 
@@ -211,7 +211,7 @@ INSERT INTO `caja_apertura` (`aperturacajaid`, `created_at`, `fecha_apertura`, `
 (1, '2026-07-01 23:22:11', '2026-07-01 23:22:11', 100.00, '2026-07-08 20:53:11', 7942.09, 7942.09, '0', 1, 1, 1, 1, NULL),
 (2, '2026-07-08 20:53:32', '2026-07-08 20:53:32', 50.00, '2026-08-01 19:43:43', NULL, 65710.10, '0', 1, 1, 1, 1, NULL),
 (3, '2026-07-15 10:10:21', '2026-07-15 10:10:21', 100.00, NULL, NULL, NULL, '1', 2, 2, 1, NULL, NULL),
-(4, '2026-08-02 01:38:18', '2026-08-02 01:38:18', 100.00, NULL, 1757.55, NULL, '1', 1, 1, 1, NULL, NULL);
+(4, '2026-08-02 01:38:18', '2026-08-02 01:38:18', 100.00, NULL, 1859.55, NULL, '1', 1, 1, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -430,9 +430,9 @@ CREATE TABLE `comp_pago` (
 --
 
 INSERT INTO `comp_pago` (`idcomprobante_pago`, `nombre`, `serie_comprobante`, `num_comprobante`, `idempresa`, `condicion`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Nota de Venta', 'NV00', '44', 1, 1, '2026-08-06 10:11:42', '2026-08-12 14:44:56', NULL),
-(2, 'Factura', 'F001', '1', 1, 1, '2026-08-06 10:11:42', '2026-08-12 14:45:13', NULL),
-(3, 'Boleta', 'B001', '1', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
+(1, 'Nota de Venta', 'NV00', '45', 1, 1, '2026-08-06 10:11:42', '2026-08-18 00:29:25', NULL),
+(2, 'Factura', 'F001', '2', 1, 1, '2026-08-06 10:11:42', '2026-08-18 00:25:19', NULL),
+(3, 'Boleta', 'B001', '2', 1, 1, '2026-08-06 10:11:42', '2026-08-18 00:20:01', NULL),
 (4, 'Nota de Crédito', 'NC01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
 (5, 'Nota de Débito', 'ND01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
 (6, 'Cotización', 'COT0', '26', 1, 1, '2026-08-06 10:11:42', '2026-08-11 22:03:05', NULL),
@@ -1132,7 +1132,10 @@ INSERT INTO `detalle_venta` (`iddetalle_venta`, `idsucursal`, `idventa`, `idprod
 (102, 2, 129, 34, 23, 27, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:27:58', '2026-08-12 14:27:58', NULL),
 (103, 2, 130, 34, 23, 27, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:28:23', '2026-08-12 14:28:23', NULL),
 (104, 1, 131, 31, 29, 24, 'Camara para m300', 1.00, 'CAJA', 6.00, 60.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
-(105, 1, 132, 31, 29, 24, 'Camara para m300', 1.00, 'CAJA', 6.00, 60.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL);
+(105, 1, 132, 31, 29, 24, 'Camara para m300', 1.00, 'CAJA', 6.00, 60.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL),
+(106, 1, 133, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 34.00, 0.00, NULL, 'venta', 0, '2026-08-18 00:20:01', '2026-08-18 00:20:01', NULL),
+(107, 1, 134, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 34.00, 0.00, NULL, 'venta', 0, '2026-08-18 00:25:19', '2026-08-18 00:25:19', NULL),
+(108, 1, 135, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 34.00, 0.00, NULL, 'venta', 0, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL);
 
 -- --------------------------------------------------------
 
@@ -1402,7 +1405,7 @@ INSERT INTO `inventario_producto` (`idinventario`, `idproducto`, `idsucursal`, `
 (28, 29, 1, 0.00, 1.00, 10.00, 2500.00, '2026-07-16 23:03:41', '2026-07-17 19:01:27', NULL),
 (30, 31, 1, 11.00, 10.00, 100.00, 5.00, NULL, '2026-08-12 14:45:13', NULL),
 (31, 32, 1, 1.00, 1.00, 1.00, 5000.00, NULL, '2026-07-27 17:42:54', NULL),
-(32, 33, 1, 59.00, 10.00, 100.00, 20.00, NULL, '2026-08-11 22:36:06', NULL),
+(32, 33, 1, 56.00, 10.00, 100.00, 20.00, NULL, '2026-08-18 00:29:25', NULL),
 (33, 34, 2, 8.00, 10.00, 100.00, 5.00, '2026-08-02 09:05:09', '2026-08-12 14:28:23', NULL),
 (34, 35, 2, 6.00, 10.00, 100.00, 20.00, '2026-08-02 09:12:06', '2026-08-02 09:12:06', NULL),
 (35, 36, 1, 1.00, 1.00, 1.00, 1000.00, NULL, NULL, NULL);
@@ -1539,7 +1542,10 @@ INSERT INTO `kardex` (`id`, `created_at`, `updated_at`, `idsucursal`, `idproduct
 (90, '2026-08-12 14:27:58', '2026-08-12 14:27:58', 2, 34, 23, 1.000, 1.00, 10, 9.000, 0, 'Salida por venta', 'Salida generada por la venta #129', '2026-08-12 19:27:58', NULL),
 (91, '2026-08-12 14:28:23', '2026-08-12 14:28:23', 2, 34, 23, 1.000, 1.00, 10, 8.000, 0, 'Salida por venta', 'Salida generada por la venta #130', '2026-08-12 19:28:23', NULL),
 (92, '2026-08-12 14:44:56', '2026-08-12 14:44:56', 1, 31, 29, 1.000, 6.00, 60, 12.000, 0, 'Salida por venta', 'Salida generada por la venta #131', '2026-08-12 19:44:56', NULL),
-(93, '2026-08-12 14:45:13', '2026-08-12 14:45:13', 1, 31, 29, 1.000, 6.00, 60, 11.000, 0, 'Salida por venta', 'Salida generada por la venta #132', '2026-08-12 19:45:13', NULL);
+(93, '2026-08-12 14:45:13', '2026-08-12 14:45:13', 1, 31, 29, 1.000, 6.00, 60, 11.000, 0, 'Salida por venta', 'Salida generada por la venta #132', '2026-08-12 19:45:13', NULL),
+(94, '2026-08-18 00:20:01', '2026-08-18 00:20:01', 1, 33, 36, 1.000, 1.00, 34, 58.000, 0, 'Salida por venta', 'Salida generada por la venta #133', '2026-08-18 05:20:01', NULL),
+(95, '2026-08-18 00:25:19', '2026-08-18 00:25:19', 1, 33, 36, 1.000, 1.00, 34, 57.000, 0, 'Salida por venta', 'Salida generada por la venta #134', '2026-08-18 05:25:19', NULL),
+(96, '2026-08-18 00:29:25', '2026-08-18 00:29:25', 1, 33, 36, 1.000, 1.00, 34, 56.000, 0, 'Salida por venta', 'Salida generada por la venta #135', '2026-08-18 05:29:25', NULL);
 
 -- --------------------------------------------------------
 
@@ -1615,7 +1621,21 @@ INSERT INTO `login_historial` (`idhistorial`, `idusuario`, `ip`, `user_agent`, `
 (51, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:26:04', 1, NULL),
 (52, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-12 08:18:45', 1, NULL),
 (53, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-13 04:05:38', 1, NULL),
-(54, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-14 04:31:28', 1, NULL);
+(54, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-14 04:31:28', 0, '2026-08-17 19:06:31'),
+(55, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:06:35', 0, '2026-08-17 19:20:12'),
+(56, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:20:14', 0, '2026-08-17 19:20:27'),
+(57, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:20:35', 0, '2026-08-17 19:24:16'),
+(58, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:24:24', 0, '2026-08-17 19:24:32'),
+(59, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:24:34', 0, '2026-08-17 19:25:52'),
+(60, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:25:59', 0, '2026-08-17 19:27:33'),
+(61, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:27:35', 0, '2026-08-17 19:32:08'),
+(62, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:32:14', 0, '2026-08-17 19:32:23'),
+(63, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:32:25', 0, '2026-08-17 23:43:03'),
+(64, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 18:43:06', 0, '2026-08-17 23:43:14'),
+(65, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 18:43:24', 0, '2026-08-17 23:44:35'),
+(66, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 18:44:38', 0, '2026-08-17 23:44:49'),
+(67, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 18:44:56', 0, '2026-08-17 23:53:35'),
+(68, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 18:53:37', 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -1928,9 +1948,9 @@ INSERT INTO `persona` (`idpersona`, `created_at`, `updated_at`, `tipo_persona`, 
 (10, '2026-07-10 01:36:46', '2026-07-10 06:07:30', 'Cliente', 'Alis Huamanta Edquen', 'DNI', '71845256', 'Plaza de Armas de Tarapoto, Pl. Mayor 453, Tarapoto 22202, Peru', NULL, NULL, NULL, '-6.487595468705555', '-76.3601303100586', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
 (11, '2026-07-10 01:36:53', '2026-07-10 01:36:53', 'Cliente', 'ALIS HUAMANTA EDQUEN', 'DNI', '71845256', 'Ir. Lorenzo Morales c1, Tarapoto 22202, Peru', '956856625', 'alexhe406@gmail.com', NULL, '-6.480185084346602', '-76.3749584665141', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
 (12, '2026-07-10 01:37:02', '2026-07-10 01:37:02', 'Cliente', 'ALIS HUAMANTA EDQUEN', 'DNI', '71845256', 'Ir. Lorenzo Morales c1, Tarapoto 22202, Peru', '956856625', 'alexhe406@gmail.com', NULL, '-6.480185084346602', '-76.3749584665141', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
-(13, '2026-07-10 01:38:07', '2026-07-10 01:50:41', 'Cliente', 'FLOR EEDITH MARRUFO VASQUEZ', 'DNI', '71845223', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
-(14, '2026-07-10 01:39:18', '2026-07-10 06:06:59', 'Cliente', 'FLORR EDITH MARRUFO VASQUEZ', 'DNI', '71845223', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
-(15, '2026-07-14 15:17:45', '2026-07-14 22:17:45', 'Cliente', 'FLORR EDITH MARRUFO VASQUEZ', 'DNI', '71845223', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
+(13, '2026-07-10 01:38:07', '2026-07-10 01:50:41', 'Cliente', 'FLOR EEDITH MARRUFO VASQUEZ', 'DNI', '20718452231', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
+(14, '2026-07-10 01:39:18', '2026-07-10 06:06:59', 'Cliente', 'FLORR EDITH MARRUFO VASQUEZ', 'DNI', '20718452231', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
+(15, '2026-07-14 15:17:45', '2026-07-14 22:17:45', 'Cliente', 'FLORR EDITH MARRUFO VASQUEZ', 'DNI', '20718452231', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
 (16, '2026-07-14 15:18:02', '2026-07-24 00:11:49', 'Cliente', 'Alis Huamanta Edquen', 'DNI', '10718452568', 'Plaza de Armas de Tarapoto, Pl. Mayor 453, Tarapoto 22202, Peru', '999', NULL, NULL, '-6.487595468705555', '-76.3601303100586', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
 (17, '2026-07-23 15:44:23', '2026-07-23 16:09:55', 'Proveedor', 'HUAMANTA EDQUEN ALIS SAC', 'RUC', '10718452568', 'Plaza de Nueva cajamarca Pl. Mayor 453, Tarapoto 22202, Peru', '956856625', 'alexhe406@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
 (18, '2026-07-23 16:15:01', '2026-07-27 23:28:36', 'Proveedor', 'COCA COLA COMPANY', 'RUC', '20232565895', 'Plaza de Nueva cajamarca Pl. Mayor 453, Tarapoto 22202, Peru', '933216752', 'wegerg@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
@@ -5089,16 +5109,20 @@ CREATE TABLE `usuario` (
   `idsucursal` int DEFAULT NULL,
   `condicion` tinyint(1) NOT NULL DEFAULT '1',
   `reset_token` varchar(64) DEFAULT NULL,
-  `reset_expira` datetime DEFAULT NULL
+  `reset_expira` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
 -- Dumping data for table `usuario`
 --
 
-INSERT INTO `usuario` (`idusuario`, `idpersonal`, `login`, `clave`, `superusuario`, `idsucursal`, `condicion`, `reset_token`, `reset_expira`) VALUES
-(1, 1, 'admin', '7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358', 1, NULL, 1, NULL, NULL),
-(2, 2, 'juan', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 0, NULL, 1, NULL, NULL);
+INSERT INTO `usuario` (`idusuario`, `idpersonal`, `login`, `clave`, `superusuario`, `idsucursal`, `condicion`, `reset_token`, `reset_expira`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 1, 'admin', '7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358', 1, NULL, 1, NULL, NULL, '2026-08-17 20:15:31', NULL, NULL),
+(2, 2, 'juan', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 0, NULL, 1, NULL, NULL, '2026-08-17 20:15:31', NULL, NULL),
+(4, 3, 'ricardo', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 0, NULL, 1, NULL, NULL, '2026-08-17 20:21:01', '2026-08-17 23:35:23', NULL);
 
 -- --------------------------------------------------------
 
@@ -5107,29 +5131,38 @@ INSERT INTO `usuario` (`idusuario`, `idpersonal`, `login`, `clave`, `superusuari
 --
 
 CREATE TABLE `usuario_accion` (
+  `idusuario_accion` int NOT NULL,
   `idusuario` int NOT NULL,
-  `idaccion_permiso` int NOT NULL
+  `idaccion_permiso` int NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
 
 --
 -- Dumping data for table `usuario_accion`
 --
 
-INSERT INTO `usuario_accion` (`idusuario`, `idaccion_permiso`) VALUES
-(2, 16),
-(1, 33),
-(2, 36),
-(1, 37),
-(2, 37),
-(2, 38),
-(1, 39),
-(1, 42),
-(2, 42),
-(1, 43),
-(2, 43),
-(2, 44),
-(2, 45),
-(2, 46);
+INSERT INTO `usuario_accion` (`idusuario_accion`, `idusuario`, `idaccion_permiso`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 1, 33, '2026-08-17 20:18:31', NULL, NULL),
+(2, 1, 37, '2026-08-17 20:18:31', NULL, NULL),
+(3, 1, 39, '2026-08-17 20:18:31', NULL, NULL),
+(4, 1, 42, '2026-08-17 20:18:31', NULL, NULL),
+(5, 1, 43, '2026-08-17 20:18:31', NULL, NULL),
+(6, 2, 16, '2026-08-17 20:18:31', NULL, NULL),
+(7, 2, 36, '2026-08-17 20:18:31', NULL, NULL),
+(8, 2, 37, '2026-08-17 20:18:31', NULL, NULL),
+(9, 2, 38, '2026-08-17 20:18:31', NULL, NULL),
+(10, 2, 42, '2026-08-17 20:18:31', NULL, NULL),
+(11, 2, 43, '2026-08-17 20:18:31', NULL, NULL),
+(12, 2, 44, '2026-08-17 20:18:31', NULL, NULL),
+(13, 2, 45, '2026-08-17 20:18:31', NULL, NULL),
+(14, 2, 46, '2026-08-17 20:18:31', NULL, NULL),
+(15, 4, 42, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL),
+(16, 4, 43, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL),
+(17, 4, 44, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL),
+(18, 4, 45, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL),
+(19, 4, 46, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL);
 
 -- --------------------------------------------------------
 
@@ -5141,38 +5174,46 @@ CREATE TABLE `usuario_permiso` (
   `idusuario_permiso` int NOT NULL,
   `idusuario` int NOT NULL,
   `idpermiso` int DEFAULT NULL,
-  `idsubpermiso` int DEFAULT NULL
+  `idsubpermiso` int DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
 -- Dumping data for table `usuario_permiso`
 --
 
-INSERT INTO `usuario_permiso` (`idusuario_permiso`, `idusuario`, `idpermiso`, `idsubpermiso`) VALUES
-(71, 1, 1, NULL),
-(72, 1, 2, NULL),
-(73, 1, 3, NULL),
-(74, 1, 4, NULL),
-(75, 1, 1, 1),
-(76, 1, 1, 2),
-(77, 1, 1, 5),
-(78, 1, 2, 7),
-(79, 1, 3, 49),
-(80, 1, 4, 12),
-(81, 1, 13, 35),
-(82, 1, 13, 36),
-(83, 1, 13, 37),
-(84, 1, 13, 50),
-(85, 1, 13, 51),
-(93, 2, 1, NULL),
-(94, 2, 2, NULL),
-(95, 2, 3, NULL),
-(96, 2, 12, NULL),
-(97, 2, 1, 1),
-(98, 2, 1, 2),
-(99, 2, 2, 8),
-(100, 2, 3, 49),
-(101, 2, 12, 32);
+INSERT INTO `usuario_permiso` (`idusuario_permiso`, `idusuario`, `idpermiso`, `idsubpermiso`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(71, 1, 1, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(72, 1, 2, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(73, 1, 3, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(74, 1, 4, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(75, 1, 1, 1, '2026-08-17 20:17:04', NULL, NULL),
+(76, 1, 1, 2, '2026-08-17 20:17:04', NULL, NULL),
+(77, 1, 1, 5, '2026-08-17 20:17:04', NULL, NULL),
+(78, 1, 2, 7, '2026-08-17 20:17:04', NULL, NULL),
+(79, 1, 3, 49, '2026-08-17 20:17:04', NULL, NULL),
+(80, 1, 4, 12, '2026-08-17 20:17:04', NULL, NULL),
+(81, 1, 13, 35, '2026-08-17 20:17:04', NULL, NULL),
+(82, 1, 13, 36, '2026-08-17 20:17:04', NULL, NULL),
+(83, 1, 13, 37, '2026-08-17 20:17:04', NULL, NULL),
+(84, 1, 13, 50, '2026-08-17 20:17:04', NULL, NULL),
+(85, 1, 13, 51, '2026-08-17 20:17:04', NULL, NULL),
+(93, 2, 1, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(94, 2, 2, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(95, 2, 3, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(96, 2, 12, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(97, 2, 1, 1, '2026-08-17 20:17:04', NULL, NULL),
+(98, 2, 1, 2, '2026-08-17 20:17:04', NULL, NULL),
+(99, 2, 2, 8, '2026-08-17 20:17:04', NULL, NULL),
+(100, 2, 3, 49, '2026-08-17 20:17:04', NULL, NULL),
+(101, 2, 12, 32, '2026-08-17 20:17:04', NULL, NULL),
+(115, 4, 6, NULL, '2026-08-17 20:21:01', '2026-08-17 23:23:24', NULL),
+(116, 4, 6, 25, '2026-08-17 20:21:01', '2026-08-17 23:23:24', NULL),
+(117, 4, 6, 26, '2026-08-17 20:21:01', '2026-08-17 23:23:24', NULL),
+(118, 4, 3, NULL, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL),
+(119, 4, 3, 49, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL);
 
 -- --------------------------------------------------------
 
@@ -5196,7 +5237,9 @@ CREATE TABLE `usuario_sucursal` (
 INSERT INTO `usuario_sucursal` (`idusuario_sucursal`, `idusuario`, `idsucursal`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (12, 1, 1, '2026-07-16 21:49:03', NULL, NULL),
 (13, 1, 2, '2026-07-16 21:49:03', NULL, NULL),
-(15, 2, 1, '2026-08-11 17:16:15', NULL, NULL);
+(15, 2, 1, '2026-08-11 17:16:15', NULL, NULL),
+(18, 4, 1, '2026-08-17 20:21:01', '2026-08-17 20:21:01', NULL),
+(19, 4, 2, '2026-08-17 20:21:01', '2026-08-17 20:21:01', NULL);
 
 -- --------------------------------------------------------
 
@@ -5314,7 +5357,10 @@ INSERT INTO `venta` (`idventa`, `idsucursal`, `idcaja`, `idcliente`, `idpersonal
 (129, 2, 2, 1, 1, 0, 1, 'NV00', '000042', '2026-08-12 14:27:58', 1.53, 10.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:27:58', 0, 10, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:27:58', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:27:58', '2026-08-12 14:27:58', NULL),
 (130, 2, 2, 1, 1, 0, 1, 'NV00', '000043', '2026-08-12 14:28:23', 1.53, 10.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:28:23', 0, 10, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:28:23', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:28:23', '2026-08-12 14:28:23', NULL),
 (131, 1, 1, 1, 1, 0, 1, 'NV00', '000044', '2026-08-12 14:44:56', 9.15, 60.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:44:56', 0, 60, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:44:56', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
-(132, 1, 1, 16, 1, 0, 2, 'F001', '000001', '2026-08-12 14:45:13', 9.15, 60.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:45:13', 0, 60, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-01-F001-000001', 1, '', NULL, 'Aceptado', '2026-08-12 19:45:13', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL);
+(132, 1, 1, 16, 1, 0, 2, 'F001', '000001', '2026-08-12 14:45:13', 9.15, 60.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:45:13', 0, 60, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-01-F001-000001', 1, '', NULL, 'Aceptado', '2026-08-12 19:45:13', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL),
+(133, 1, 1, 15, 1, 0, 3, 'B001', '000002', '2026-08-18 00:20:01', 0.00, 34.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-18 00:20:01', 0, 34, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-03-B001-000002', 1, '', NULL, 'Aceptado', '2026-08-18 05:20:01', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-18 00:20:01', '2026-08-18 00:20:01', NULL),
+(134, 1, 1, 14, 1, 0, 2, 'F001', '000002', '2026-08-18 00:25:19', 0.00, 34.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-18 00:25:19', 0, 34, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-01-F001-000002', 1, '', NULL, 'Aceptado', '2026-08-18 05:25:19', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-18 00:25:19', '2026-08-18 00:25:19', NULL),
+(135, 1, 1, 1, 1, 0, 1, 'NV00', '000045', '2026-08-18 00:29:25', 0.00, 34.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-18 00:29:25', 0, 34, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-18 05:29:25', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL);
 
 -- --------------------------------------------------------
 
@@ -5393,7 +5439,10 @@ INSERT INTO `venta_pago` (`idventapago`, `idventa`, `metodo_pago`, `monto`, `nro
 (106, 129, 'Efectivo', 10.00, NULL, NULL, NULL, '2026-08-12 14:27:58', '2026-08-12 14:27:58', NULL),
 (107, 130, 'Efectivo', 10.00, NULL, NULL, NULL, '2026-08-12 14:28:23', '2026-08-12 14:28:23', NULL),
 (108, 131, 'Efectivo', 60.00, NULL, NULL, NULL, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
-(109, 132, 'Efectivo', 60.00, NULL, NULL, NULL, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL);
+(109, 132, 'Efectivo', 60.00, NULL, NULL, NULL, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL),
+(110, 133, 'Efectivo', 34.00, NULL, NULL, NULL, '2026-08-18 00:20:01', '2026-08-18 00:20:01', NULL),
+(111, 134, 'Efectivo', 34.00, NULL, NULL, NULL, '2026-08-18 00:25:19', '2026-08-18 00:25:19', NULL),
+(112, 135, 'Efectivo', 34.00, NULL, NULL, NULL, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL);
 
 -- --------------------------------------------------------
 
@@ -6093,9 +6142,10 @@ ALTER TABLE `usuario`
 -- Indexes for table `usuario_accion`
 --
 ALTER TABLE `usuario_accion`
-  ADD PRIMARY KEY (`idusuario`,`idaccion_permiso`),
+  ADD PRIMARY KEY (`idusuario_accion`),
   ADD KEY `idaccion_permiso` (`idaccion_permiso`),
-  ADD KEY `idx_usuario_accion_sucursal` (`idusuario`);
+  ADD KEY `idx_usuario_accion_sucursal` (`idusuario`),
+  ADD KEY `idaccion_permiso_2` (`idaccion_permiso`);
 
 --
 -- Indexes for table `usuario_permiso`
@@ -6318,7 +6368,7 @@ ALTER TABLE `detalle_servicio`
 -- AUTO_INCREMENT for table `detalle_venta`
 --
 ALTER TABLE `detalle_venta`
-  MODIFY `iddetalle_venta` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=106;
+  MODIFY `iddetalle_venta` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
 
 --
 -- AUTO_INCREMENT for table `detalle_venta_lote`
@@ -6378,13 +6428,13 @@ ALTER TABLE `inventario_seleccionados`
 -- AUTO_INCREMENT for table `kardex`
 --
 ALTER TABLE `kardex`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=94;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- AUTO_INCREMENT for table `login_historial`
 --
 ALTER TABLE `login_historial`
-  MODIFY `idhistorial` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `idhistorial` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- AUTO_INCREMENT for table `marca`
@@ -6630,31 +6680,37 @@ ALTER TABLE `unidad_medida`
 -- AUTO_INCREMENT for table `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `idusuario` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `idusuario` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `usuario_accion`
+--
+ALTER TABLE `usuario_accion`
+  MODIFY `idusuario_accion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `usuario_permiso`
 --
 ALTER TABLE `usuario_permiso`
-  MODIFY `idusuario_permiso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
+  MODIFY `idusuario_permiso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
 
 --
 -- AUTO_INCREMENT for table `usuario_sucursal`
 --
 ALTER TABLE `usuario_sucursal`
-  MODIFY `idusuario_sucursal` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `idusuario_sucursal` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `venta`
 --
 ALTER TABLE `venta`
-  MODIFY `idventa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=133;
+  MODIFY `idventa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=136;
 
 --
 -- AUTO_INCREMENT for table `venta_pago`
 --
 ALTER TABLE `venta_pago`
-  MODIFY `idventapago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
+  MODIFY `idventapago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
 
 --
 -- AUTO_INCREMENT for table `verificaciones_domiciliarias`

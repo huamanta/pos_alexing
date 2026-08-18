@@ -3,24 +3,24 @@
 $rutaActual = $_GET['ruta'] ?? null;
 
 if (
-    empty($rutaActual) &&
-    isset($_SESSION["iniciarSesion"]) &&
-    $_SESSION["iniciarSesion"] == "ok"
+  empty($rutaActual) &&
+  isset($_SESSION["iniciarSesion"]) &&
+  $_SESSION["iniciarSesion"] == "ok"
 ) {
-    header("Location: " . $_SERVER['PHP_SELF'] . "?ruta=inicio");
-    exit();
+  header("Location: " . $_SERVER['PHP_SELF'] . "?ruta=inicio");
+  exit();
 }
 if (isset($rutaActual)) {
 
-    if ($rutaActual == "salir") {
-        include "modulos/salir.php";
-        exit;
-    }
+  if ($rutaActual == "salir") {
+    include "modulos/salir.php";
+    exit;
+  }
 
-    if ($rutaActual == "salirsucursal") {
-        include "modulos/salirsucursal.php";
-        exit;
-    }
+  if ($rutaActual == "salirsucursal") {
+    include "modulos/salirsucursal.php";
+    exit;
+  }
 
 }
 ?>
@@ -44,7 +44,7 @@ if (isset($rutaActual)) {
   <!-- Theme style -->
   <link rel="stylesheet" href="./files/dist/css/adminlte.min.css">
   <link href="./files/css/tailwind.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="./files/dist/css/neon.css?v=<?= time() ?>">
+  <link rel="stylesheet" href="./files/dist/css/neon.css">
   <link rel="stylesheet" href="./files/dist/css/tailpanel.css">
   <link rel="stylesheet" href="./files/css/pos.css">
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.17/index.global.min.css" rel="stylesheet">
@@ -102,8 +102,8 @@ if (isset($rutaActual)) {
   <script src="./files/dist/js/jquery.PrintArea.js"></script>
   <script src="./files/plugins/toastr/toastr.min.js"></script>
 
-<script src="./files/plugins/fullcalendar/main.min.js"></script>
-<script src="./vistas/js/pagination.js"></script>
+  <script src="./files/plugins/fullcalendar/main.min.js"></script>
+  <script src="./vistas/js/pagination.js"></script>
   <script>
     $(document).ready(function () {
       $('[data-toggle="tooltip"]').tooltip();

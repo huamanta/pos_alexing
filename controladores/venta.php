@@ -1643,7 +1643,7 @@ switch ($_GET["op"]) {
 		$producto = new Producto();
 		$rspta = $producto->selectProductosVenta();
 
-		echo '<option value="Todos">Todos</option>';  // ← ESTA ES LA LÍNEA NECESARIA
+		echo '<option value="">Todos</option>';  // ← ESTA ES LA LÍNEA NECESARIA
 
 		while ($reg = $rspta->fetch_object()) {
 			echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';

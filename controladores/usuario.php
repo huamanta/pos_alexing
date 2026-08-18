@@ -34,22 +34,18 @@ switch ($_GET["op"]) {
 		}
 
 		if (empty($idusuario)) {
-			$rspta = $usuario->insertar($idpersonal, $login, $clavehash, $idsucursal, $permisos, $subpermisos, $acciones);
-			echo $rspta ? "Usuario registrado" : "No se pudieron registrar todos los datos del usuario";
+			$usuario->insertar($idpersonal, $login, $clavehash, $idsucursal, $permisos, $subpermisos, $acciones);
 		} else {
-			$rspta = $usuario->editar($idusuario, $idpersonal, $login, $clavehash, $idsucursal, $permisos, $subpermisos, $acciones);
-			echo $rspta ? "Usuario actualizado" : "No se pudieron actualizar todos los datos del usuario";
+			$usuario->editar($idusuario, $idpersonal, $login, $clavehash, $idsucursal, $permisos, $subpermisos, $acciones);
 		}
 		break;
 
 	case 'desactivar':
-		$rspta = $usuario->desactivar($idusuario);
-		echo $rspta ? "Usuario Desactivado" : "Usuario no se puede desactivar";
+		$usuario->desactivar($idusuario);
 		break;
 
 	case 'activar':
-		$rspta = $usuario->activar($idusuario);
-		echo $rspta ? "Usuario activado" : "Usuario no se puede activar";
+		$usuario->activar($idusuario);
 		break;
 
 	case 'verificarLogin':
@@ -62,9 +58,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'mostrar':
-		$rspta = $usuario->mostrar($idusuario);
-		//Codificar el resultado utilizando json
-		echo json_encode($rspta);
+		$usuario->mostrar($idusuario);
 		break;
 
 	case 'listar':
@@ -267,8 +261,7 @@ switch ($_GET["op"]) {
 
 	case 'listarSucursalesUsuario':
 		$idusuario = $_GET['idusuario'];
-		$rspta = $usuario->listarSucursalesUsuario($idusuario);
-		echo json_encode($rspta);
+		$usuario->listarSucursalesUsuario($idusuario);
 		break;
 
 	case 'recuperar':
@@ -303,7 +296,7 @@ switch ($_GET["op"]) {
 	    ");
 
 		// link real
-		$link = APP_URL . "/index.php?ruta=reset&token=" . $token;
+		$link = env('APP_URL') . "/index.php?ruta=reset&token=" . $token;
 
 
 		// HTML del correo

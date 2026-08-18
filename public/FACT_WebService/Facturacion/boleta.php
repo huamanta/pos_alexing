@@ -1,360 +1,696 @@
 <?php
+
 header("Content-type: text/html; charset=utf8");
-require_once __DIR__ . '/../../../configuraciones/bootstrap.php';
-require __DIR__ . '/src/Util.php';
+
+require_once __DIR__ . '/../../../vendor/autoload.php';
+require_once __DIR__ . '/src/Util.php';
+require_once __DIR__ . '/../../../configuraciones/ConexionPdo.php';
+require_once __DIR__ . '/../../../core/FluentQuery.php';
 
 use Greenter\Model\Client\Client;
-
 use Greenter\Model\Company\Address;
-
 use Greenter\Model\Company\Company;
-
 use Greenter\Model\Sale\FormaPagos\FormaPagoContado;
-
-use Greenter\Model\Sale\Cuota;
-
 use Greenter\Model\Sale\FormaPagos\FormaPagoCredito;
-
+use Greenter\Model\Sale\Cuota;
 use Greenter\Model\Sale\Invoice;
-
 use Greenter\Model\Sale\SaleDetail;
-
 use Greenter\Model\Sale\Legend;
-
-use Greenter\Model\Sale\Charge;
 
 date_default_timezone_set('America/Lima');
 
-$idVenta = $_GET['idventa'];
-$codColab = $_GET['codColab'];
-$ruta = 1;
+$pdo = Conexion::conectar();
+
+$idVenta = $_GET['idventa'] ?? null;
+$codColab = $_GET['codColab'] ?? null;
+
+if (!$idVenta) {
+    die('No se recibió el id de venta.');
+}
 
 $util = Util::getInstance();
-$conexion = $util->abrirConexion();
-if ($conexion) {
 
-    $resultado = mysqli_query($conexion, "SELECT v.idventa, v.idsucursal, v.serie_comprobante as serieDOC, v.num_comprobante as numDoc,
-    c.num_documento as numDocClie,c.nombre as clien,c.direccion as direcClien, 
-    v.fecha_hora as fechaVen,cast((v.total_venta) as DECIMAL(11,2)) as importe, v.impuesto as igv, v.ventacredito
-    from venta v
-    inner join persona c on c.idpersona=v.idcliente
-    WHERE v.idventa='" . $idVenta . "'");
-
-    $column = mysqli_fetch_assoc($resultado);
-    // echo ( $idVenta );
-    $IdDOV = '';
-    $mm = "";
-    /// echo $resultado;
-    $IdDOV = $column['idventa'];
-    $numeroDOC = $column['numDoc'];
-    $serieDOC = $column['serieDOC'];
-    $clienNumero = $column['numDocClie'];
-    $clien = $column['clien'];
-    $direClie = $column['direcClien'];
-    $fechaVenta = $column['fechaVen'];
-    $importe = $column['importe'];
-    $igv = $column['igv'];
-    $ventacredito = $column['ventacredito'];
-    $idsucursal = $column['idsucursal'];
-
-
-    $resultadoexonerada = mysqli_query($conexion, "SELECT cast(sum((dv.precio_venta*dv.cantidad)-(dv.descuento*dv.cantidad)) as DECIMAL(11,2)) as importe
-    from detalle_venta dv
-    INNER JOIN producto p
-    ON dv.idproducto = p.idproducto
-    INNER JOIN producto_configuracion pg
-    ON p.idproducto = pg.idproducto
-    WHERE dv.idventa='" . $idVenta . "' and p.proigv='No Gravada'");
-    $importeNograbada = 0;
-    if ($resultadoexonerada) {
-        foreach ($resultadoexonerada as $column) {
-            $importeNograbada = $column['importe'];
-        }
+/**
+ * Limpieza de textos para SUNAT
+ */
+function cleanStringSunat($string)
+{
+    if ($string === null) {
+        return '';
     }
-    $total = $importe;
-    $importe = ($importe - $importeNograbada) / 1.18;
-    $importeGeneralVentas = ($total - $importeNograbada) - $importe;
 
-    // ECHO $total;
-    $fg = new FuncionesGlobales();
+    $string = preg_replace('/[^\P{C}\n\t]/u', '', $string);
 
-    if (strlen($clienNumero) == 8) {
-        $tdClie = '1';
+    return trim(
+        mb_convert_encoding($string, 'UTF-8', 'UTF-8')
+    );
+}
+
+/**
+ * Redondeo monetario
+ */
+function money($value)
+{
+    return round((float) $value, 2);
+}
+
+
+/* ============================================================
+   DATOS DE LA VENTA
+   ============================================================ */
+
+$venta = (new DBQuery($pdo))
+    ->select([
+        'v.idventa',
+        'v.idsucursal',
+        'v.serie_comprobante as serieDOC',
+        'v.num_comprobante as numDoc',
+        'c.num_documento as numDocClie',
+        'c.nombre as clien',
+        'c.direccion as direcClien',
+        'v.fecha_hora as fechaVen',
+        'CAST(v.total_venta AS DECIMAL(11,2)) as importe',
+        'CAST(v.impuesto AS DECIMAL(11,2)) as igv',
+        'v.ventacredito'
+    ])
+    ->from('venta v')
+    ->join('persona c', 'c.idpersona = v.idcliente')
+    ->where('v.idventa', '=', $idVenta)
+    ->first();
+
+if (!$venta) {
+    die('No se encontró la venta.');
+}
+
+$IdDOV = $venta['idventa'];
+$numeroDOC = $venta['numDoc'];
+$serieDOC = $venta['serieDOC'];
+$clienNumero = $venta['numDocClie'];
+$clien = cleanStringSunat($venta['clien']);
+$fechaVenta = $venta['fechaVen'];
+$totalBD = money($venta['importe']);
+$ventacredito = $venta['ventacredito'];
+$idalmacen = $venta['idsucursal'];
+
+
+/* ============================================================
+   CLIENTE
+   ============================================================ */
+
+$client = new Client();
+
+$client
+    ->setTipoDoc('6')
+    ->setNumDoc($clienNumero)
+    ->setRznSocial($clien);
+
+
+/* ============================================================
+   EMPRESA / SUCURSAL
+   ============================================================ */
+
+$sucursal = (new DBQuery($pdo))
+    ->select('*')
+    ->from('sucursal s')
+    ->join('empresas e', 's.idempresa = e.idempresa')
+    ->where('s.idsucursal', '=', $idalmacen)
+    ->first();
+
+if (!$sucursal) {
+    die('No se encontró la sucursal.');
+}
+
+$companyAddress = new Address();
+
+$companyAddress
+    ->setUbigueo($sucursal['ubigeo'])
+    ->setDistrito(cleanStringSunat($sucursal['distrito']))
+    ->setProvincia(cleanStringSunat($sucursal['provincia']))
+    ->setDepartamento(cleanStringSunat($sucursal['departamento']))
+    ->setUrbanizacion('-')
+    ->setCodLocal('0000')
+    ->setDireccion(cleanStringSunat($sucursal['direccion']));
+
+$company = new Company();
+
+$company
+    ->setRuc($sucursal['ruc'])
+    ->setNombreComercial(cleanStringSunat($sucursal['nombre']))
+    ->setRazonSocial(cleanStringSunat($sucursal['razon_social']))
+    ->setAddress($companyAddress);
+
+
+/* ============================================================
+   DETALLES
+   ============================================================ */
+
+$detalles = (new DBQuery($pdo))
+    ->select([
+        'p.idproducto as COD',
+        'p.nombre as nombreProd',
+        'p.proigv as proigv',
+
+        'CAST(
+            (dv.precio_venta - dv.descuento)
+            AS DECIMAL(11,2)
+        ) AS precioUnitario',
+
+        'CAST(
+            dv.cantidad
+            AS DECIMAL(11,3)
+        ) AS cantidad',
+        'CASE
+            WHEN p.proigv = "No Gravada"
+                THEN CAST(
+                    (dv.precio_venta - dv.descuento)
+                    AS DECIMAL(11,6)
+                )
+            ELSE
+                CAST(
+                    (dv.precio_venta - dv.descuento) / 1.18
+                    AS DECIMAL(11,6)
+                )
+        END AS valorUnitario',
+        'CASE
+            WHEN p.proigv = "No Gravada"
+                THEN CAST(
+                    (dv.precio_venta - dv.descuento) * dv.cantidad
+                    AS DECIMAL(11,2)
+                )
+            ELSE
+                CAST(
+                    (
+                        (dv.precio_venta - dv.descuento) / 1.18
+                    ) * dv.cantidad
+                    AS DECIMAL(11,2)
+                )
+        END AS importe',
+        'CASE
+            WHEN p.proigv = "No Gravada"
+                THEN CAST(0 AS DECIMAL(11,2))
+            ELSE
+                CAST(
+                    (
+                        (dv.precio_venta - dv.descuento)
+                        -
+                        (
+                            (dv.precio_venta - dv.descuento) / 1.18
+                        )
+                    ) * dv.cantidad
+                    AS DECIMAL(11,2)
+                )
+        END AS Igv'
+    ])
+    ->from('detalle_venta dv')
+    ->join(
+        'producto p',
+        'p.idproducto = dv.idproducto'
+    )
+    ->join(
+        'producto_configuracion pg',
+        'pg.idproducto = p.idproducto'
+    )
+    ->where('dv.idventa', '=', $idVenta)
+    ->get();
+
+if (!$detalles) {
+    die('La venta no tiene detalles.');
+}
+
+
+/* ============================================================
+   TOTALES
+   ============================================================ */
+
+$arrayItem = [];
+
+$totalGravado = 0;
+$totalExonerado = 0;
+$totalIGV = 0;
+$totalICBPER = 0;
+
+
+/* ============================================================
+   PROCESAR DETALLES
+   ============================================================ */
+
+foreach ($detalles as $detalle) {
+
+    $codigo = $detalle['COD'];
+
+    $nombre = cleanStringSunat(
+        $detalle['nombreProd']
+    );
+
+    $tipo = trim(
+        $detalle['proigv']
+    );
+
+    $cantidad = (float) $detalle['cantidad'];
+
+    $precioUnitario = money(
+        $detalle['precioUnitario']
+    );
+
+    $valorUnitario = (float) $detalle['valorUnitario'];
+
+    $importe = money(
+        $detalle['importe']
+    );
+
+    $igv = money(
+        $detalle['Igv']
+    );
+
+
+    /* ========================================================
+       GRAVADA
+       ======================================================== */
+
+    if ($tipo === 'Gravada') {
+
+        $icbper = 0;
+        $factorIcbper = 0;
+
+        /*
+         * ICBPER
+         *
+         * Se mantiene la misma lógica de tu factura:
+         * si el producto se llama BOLSA se agrega S/ 0.30
+         */
+        if (strtoupper($nombre) === 'BOLSA') {
+
+            $factorIcbper = 0.30;
+
+            $icbper = money(
+                $cantidad * $factorIcbper
+            );
+
+            $totalICBPER += $icbper;
+        }
+
+
+        $totalGravado += $importe;
+
+        $totalIGV += $igv;
+
+
+        $item = new SaleDetail();
+
+        $item
+            ->setCodProducto($codigo)
+            ->setUnidad('NIU')
+            ->setCantidad($cantidad)
+            ->setDescripcion($nombre)
+            ->setMtoValorUnitario($valorUnitario)
+            ->setMtoPrecioUnitario($precioUnitario)
+            ->setMtoValorVenta($importe)
+            ->setMtoBaseIgv($importe)
+            ->setPorcentajeIgv(18)
+            ->setIgv($igv)
+            ->setTipAfeIgv('10')
+            ->setTotalImpuestos(
+                money(
+                    $igv + $icbper
+                )
+            );
+
+
+        if ($icbper > 0) {
+
+            $item
+                ->setIcbper($icbper)
+                ->setFactorIcbper(
+                    $factorIcbper
+                );
+        }
+
+
+        $arrayItem[] = $item;
+
+
+        /* ========================================================
+           NO GRAVADA / EXONERADA
+           ======================================================== */
+
+    } elseif ($tipo === 'No Gravada') {
+
+        /*
+         * IMPORTANTE:
+         *
+         * Aquí NO se divide entre 1.18.
+         *
+         * El precio ingresado es directamente
+         * el valor unitario.
+         */
+
+        $totalExonerado += $importe;
+
+
+        $item = new SaleDetail();
+
+        $item
+            ->setCodProducto($codigo)
+            ->setUnidad('NIU')
+            ->setCantidad($cantidad)
+            ->setDescripcion($nombre)
+
+            // Precio completo, sin dividir entre 1.18
+            ->setMtoValorUnitario($valorUnitario)
+
+            ->setMtoPrecioUnitario($precioUnitario)
+
+            // Importe completo
+            ->setMtoValorVenta($importe)
+
+            ->setMtoBaseIgv($importe)
+
+            // No genera IGV
+            ->setPorcentajeIgv(0)
+            ->setIgv(0)
+
+            // Código SUNAT para exonerada
+            ->setTipAfeIgv('20')
+
+            ->setTotalImpuestos(0);
+
+
+        $arrayItem[] = $item;
+
+
+        /* ========================================================
+           TIPO NO SOPORTADO
+           ======================================================== */
+
     } else {
-        $tdClie = '4';
-    }
 
-    // Cliente
-
-    $client = new Client();
-
-    $client->setTipoDoc($tdClie)
-
-        ->setNumDoc($clienNumero)
-
-        ->setRznSocial($clien);
-
-    $sqlSucursal = mysqli_query($conexion, 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $idsucursal);
-    $sucursal = mysqli_fetch_assoc($sqlSucursal);
-    $Ubigeo = $sucursal['ubigeo'];
-    $Distrito = $sucursal['distrito'];
-    $Provincia = $sucursal['provincia'];
-    $Departamento = $sucursal['departamento'];
-    $Direccion = $sucursal['direccion'];
-    $ruc = $sucursal['ruc'];
-    $razonSocial = $sucursal['razon_social'];
-    $NombreComercial = $sucursal['nombre'];
-    $estadocertificado = $sucursal['estado_certificado'];
-
-    $companyAdress = new Address();
-    $companyAdress->setUbigueo($Ubigeo)
-        ->setDistrito($Distrito)
-        ->setProvincia($Provincia)
-        ->setDepartamento($Departamento)
-        ->setUrbanizacion('-')
-        ->setCodLocal('0000')
-        ->setDireccion($Direccion);
-
-
-    $company = new Company();
-    $company->setRuc($ruc)
-        ->setNombreComercial($NombreComercial)
-        ->setRazonSocial($razonSocial)
-        ->setAddress($companyAdress);
-
-    $resultado2 = mysqli_query($conexion, "SELECT p.idproducto as COD, p.nombre as nombreProd, p.proigv as proigv,
-    CASE WHEN p.proigv = 'No Gravada' THEN dv.precio_venta-dv.descuento ELSE CAST((dv.precio_venta-dv.descuento)/1.18 AS DECIMAL(11,2)) END as valorUnitario,
-    CAST((dv.precio_venta-dv.descuento) AS DECIMAL(11,2)) AS precioUnitario,
-    CAST(dv.cantidad AS DECIMAL(11,3)) as cantidad,
-    CASE WHEN p.proigv = 'No Gravada' THEN cast((dv.precio_venta-dv.descuento)*dv.cantidad as DECIMAL(11,2)) ELSE cast((dv.precio_venta-(dv.descuento))/ 1.18*dv.cantidad as DECIMAL(11,2)) END as importe,
-    CASE WHEN p.proigv = 'No Gravada' THEN '0' ELSE CAST(((dv.precio_venta-dv.descuento)-((dv.precio_venta-(dv.descuento))/ 1.18))*dv.cantidad AS DECIMAL(11,2)) END as Igv, (dv.descuento*dv.cantidad) as descuento
-
-    FROM detalle_venta dv
-    
-    INNER JOIN producto p
-    
-    ON dv.idproducto = p.idproducto
-    
-    INNER JOIN producto_configuracion pg
-    
-    ON p.idproducto = pg.idproducto
-
-    WHERE dv.idventa='" . $idVenta . "'");
-
-    $i = 0;
-
-    $invoicbper = 0;
-    $arrayItem = [];
-    foreach ($resultado2 as $column) {
-        //echo($column['cantidad']);
-        if ($column['nombreProd'] == "BOLSA") {
-            $item = new SaleDetail();
-            $item->setCodProducto($column['COD'])
-                ->setUnidad('NIU')
-                ->setCantidad($column['cantidad'])
-                ->setDescripcion($column['nombreProd'])
-                ->setMtoValorUnitario($column['valorUnitario'])
-                ->setMtoPrecioUnitario($column['precioUnitario'])
-                ->setMtoValorVenta($column['importe'])
-                ->setTipAfeIgv('10')
-                ->setMtoBaseIgv($column['importe'])
-                ->setPorcentajeIgv(18)
-                ->setIgv($column['Igv'])
-                ->setIcbper($column['cantidad'] * $column['precioUnitario']) // (cantidad)*(factor ICBPER)
-                ->setFactorIcbper($column['precioUnitario'])
-                ->setTotalImpuestos(($column['cantidad'] * $column['precioUnitario']) + $column['Igv']);
-
-            $arrayItem[$i] = $item;
-
-            $invoicbper = $column['cantidad'] * 0.30;
-
-        } else {
-
-            if ($column['proigv'] == "Gravada") {
-
-                $tipoafecto = "10";
-                $igv = "18";
-                $totalImpuestos = $column['Igv'];
-                $setIgv = $column['Igv'];
-
-            } else if ($column['proigv'] == "No Gravada") {
-
-                $tipoafecto = "20";
-                $igv = "0";
-                $totalImpuestos = "0";
-                $setIgv = "0";
-
-            }
-
-            $item = new SaleDetail();
-            $item->setCodProducto($column['COD'])
-                ->setUnidad('NIU')
-                ->setCantidad($column['cantidad'])
-                ->setDescripcion($column['nombreProd'])
-
-                // SIN IGV
-                ->setMtoValorUnitario($column['valorUnitario'])
-
-                // CON IGV
-                ->setMtoPrecioUnitario($column['precioUnitario'])
-
-                // SIN IGV TOTAL LINEA
-                ->setMtoValorVenta($column['importe'])
-
-                ->setMtoBaseIgv($column['importe'])
-                ->setPorcentajeIgv($igv)
-                ->setIgv($setIgv)
-                ->setTipAfeIgv($tipoafecto)
-                ->setTotalImpuestos($totalImpuestos);
-
-            $arrayItem[$i] = $item;
-        }
-
-        $i++;
-
-    }
-    // Venta
-    if ($ventacredito == "Si") {
-        $deuda = mysqli_query($conexion, "SELECT * FROM cuentas_por_cobrar WHERE idventa='" . $idVenta . "'");
-
-        if ($deuda) {
-
-            foreach ($deuda as $column) {
-
-                $saldo = $column["deudatotal"] - $column["abonototal"];
-
-                $item = new Cuota();
-
-                $item->setMonto($column["deudatotal"] - $column["abonototal"])
-                    ->setFechaPago(new DateTime($column["fechavencimiento"] . '-05:00'));
-
-                $arrayCuota[$i] = $item;
-
-            }
-
-        }
-    }
-    $importevalorventa = $importe + $importeNograbada;
-    $invoice = new Invoice();
-
-    $invoice
-        ->setUblVersion('2.1')
-        ->setTipoOperacion('0101')
-        ->setTipoDoc('03')
-        ->setSerie($serieDOC)
-        ->setCorrelativo($numeroDOC)
-        ->setFechaEmision(new DateTime($fechaVenta));
-    if ($ventacredito == "No") {
-
-        $invoice->setFormaPago(new FormaPagoContado());
-
-    } else if ($ventacredito == "Si") {
-
-        $invoice->setFormaPago(new FormaPagoCredito($saldo));
-
-        $invoice->setCuotas(
-            $arrayCuota
+        die(
+            "Tipo de afectación no soportado. " .
+            "Producto: {$codigo}, proigv: {$tipo}"
         );
     }
-    $invoice->setTipoMoneda('PEN')
-        ->setClient($client)
-        ->setMtoOperExoneradas($importeNograbada)
-        ->setMtoOperGravadas($importe)
-        ->setMtoIGV($importeGeneralVentas)
-        ->setIcbper($invoicbper)
-        ->setTotalImpuestos($importeGeneralVentas)
-        ->setValorVenta($importevalorventa)
-        ->setSubTotal($total)
-        /*->setDescuentos([
-            (new Charge())
-                ->setCodTipo('02') // Catalog. 53
-                ->setMontoBase($descuento)
-                ->setFactor(1)
-                ->setMonto($descuento)
-        ])*/
-        ->setMtoImpVenta($total)
-        ->setCompany($company);
-    // echo("exonerada "+$importeNograbada+" --- Gravada"+$importe);
-
-    mysqli_close($conexion);
-    $manuel = $fg->numletras($total);
-    $legend = new Legend();
-    //$legend->setCode('1000')->setValue("UNO CON 00/100 SOLES");
-
-    $legend->setCode('1000')->setValue($manuel);
+}
 
 
-    if (empty($arrayItem)) {
-        $fallbackItem = new SaleDetail();
-        $fallbackItem->setCodProducto('GEN')
-            ->setUnidad('NIU')
-            ->setCantidad(1)
-            ->setDescripcion('VENTA')
-            ->setMtoBaseIgv($importe)
-            ->setPorcentajeIgv($importeNograbada > 0 ? 0 : 18)
-            ->setIgv($importeNograbada > 0 ? 0 : $importeGeneralVentas)
-            ->setTipAfeIgv($importeNograbada > 0 ? '20' : '10')
-            ->setTotalImpuestos($importeNograbada > 0 ? 0 : $importeGeneralVentas)
-            ->setMtoValorVenta($importe)
-            ->setMtoValorUnitario($importe)
-            ->setMtoPrecioUnitario($total);
-        $arrayItem = [$fallbackItem];
+/* ============================================================
+   REDONDEAR TOTALES
+   ============================================================ */
+
+$totalGravado = money(
+    $totalGravado
+);
+
+$totalExonerado = money(
+    $totalExonerado
+);
+
+$totalIGV = money(
+    $totalIGV
+);
+
+$totalICBPER = money(
+    $totalICBPER
+);
+
+
+/* ============================================================
+   VALOR DE VENTA
+   ============================================================ */
+
+$valorVenta = money(
+    $totalGravado +
+    $totalExonerado
+);
+
+
+/* ============================================================
+   TOTAL IMPUESTOS
+   ============================================================ */
+
+$totalImpuestos = money(
+    $totalIGV +
+    $totalICBPER
+);
+
+
+/* ============================================================
+   TOTAL FACTURA
+   ============================================================ */
+
+$totalFactura = money(
+    $valorVenta +
+    $totalImpuestos
+);
+
+
+/* ============================================================
+   CRÉDITO
+   ============================================================ */
+
+$arrayCuota = [];
+
+$saldo = 0;
+
+if ($ventacredito === 'Si') {
+
+    $creditos = (new DBQuery($pdo))
+        ->select('*')
+        ->from('cuentas_por_cobrar')
+        ->where('idventa', '=', $idVenta)
+        ->get();
+
+
+    foreach ($creditos as $credito) {
+
+        $monto = money(
+            $credito['deudatotal'] -
+            $credito['abonototal']
+        );
+
+        $saldo += $monto;
+
+
+        $cuota = new Cuota();
+
+        $cuota
+            ->setMonto($monto)
+            ->setFechaPago(
+                new DateTime(
+                    $credito['fechavencimiento'] .
+                    ' 00:00:00'
+                )
+            );
+
+
+        $arrayCuota[] = $cuota;
     }
 
-    $invoice->setDetails($arrayItem);
 
-    $invoice->setLegends([$legend]);
-
-
-    // Envio a SUNAT.
-    $see = $util->getSee($idsucursal);
-    $res = $see->send($invoice);
-    $util->writeXml($invoice, $see->getFactory()->getLastXml());
-
-    if ($res->isSuccess()) {
-        $cdr = null;
-        $cdrZip = null;
-        if (method_exists($res, 'getCdrResponse')) {
-            $cdr = $res->getCdrResponse();
-        }
-        if (method_exists($res, 'getCdrZip')) {
-            $cdrZip = $res->getCdrZip();
-        }
-        if ($cdr !== null) {
-            $ll = $util->writeCdr($invoice, $cdrZip);
-            $util->showResponse($invoice, $cdr, $IdDOV, 'DocVenta', $codColab);
-            $code = (int) $cdr->getCode();
-
-            if ($code === 0) {
-                echo 'ESTADO:' . PHP_EOL;
-                if (method_exists($cdr, 'getNotes') && count($cdr->getNotes()) > 0) {
-                    echo 'OBSERVACIONES:' . PHP_EOL;
-                    var_dump($cdr->getNotes());
-                }
-            } else if ($code >= 2000 && $code <= 3999) {
-                echo 'ESTADO: RECHAZADA' . PHP_EOL;
-            } else {
-                echo 'Excepción';
-            }
-
-            echo $cdr->getDescription() . PHP_EOL;
-        } else {
-            echo 'No se recibió respuesta de CDR desde SUNAT.';
-            echo $util->getErrorResponse($res->getError());
-        }
-
-    } else {
-
-        echo $util->getErrorResponse($res->getError());
-
-    }
+    $saldo = money(
+        $saldo
+    );
+}
 
 
-    //echo "</br>Conexión Finalizada";
+/* ============================================================
+   FACTURA
+   ============================================================ */
+
+$invoice = new Invoice();
+
+$invoice = new Invoice();
+
+$invoice
+    ->setUblVersion('2.1')
+    ->setTipoOperacion('0101')
+    ->setTipoDoc('03') // BOLETA DE VENTA
+    ->setSerie($serieDOC)
+    ->setCorrelativo($numeroDOC)
+    ->setFechaEmision(new DateTime($fechaVenta))
+    ->setTipoMoneda('PEN')
+    ->setClient($client)
+    ->setCompany($company)
+    ->setMtoOperGravadas($totalGravado)
+    ->setMtoOperExoneradas($totalExonerado)
+    ->setMtoIGV($totalIGV)
+    ->setIcbper($totalICBPER)
+    ->setTotalImpuestos($totalImpuestos)
+    ->setValorVenta($valorVenta)
+    ->setSubTotal($totalFactura)
+    ->setMtoImpVenta($totalFactura);
+
+
+/* ============================================================
+   FORMA DE PAGO
+   ============================================================ */
+
+if ($ventacredito === 'No') {
+    $invoice->setFormaPago(new FormaPagoContado());
 
 } else {
-    echo 'error al conectar';
+    $invoice
+        ->setFormaPago(new FormaPagoCredito($saldo))
+        ->setCuotas($arrayCuota);
 }
+
+
+/* ============================================================
+   LEYENDA
+   ============================================================ */
+
+$fg = new FuncionesGlobales();
+
+$legend = new Legend();
+
+$legend
+    ->setCode('1000')
+    ->setValue($fg->numletras($totalFactura));
+
+
+/* ============================================================
+   DETALLES Y LEYENDA
+   ============================================================ */
+
+$invoice
+    ->setDetails($arrayItem)
+    ->setLegends([$legend]);
+
+
+/* ============================================================
+   ENVIAR A SUNAT
+   ============================================================ */
+
+$see = $util->getSee($idalmacen);
+
+$res = $see->send(
+    $invoice
+);
+
+
+/* ============================================================
+   XML
+   ============================================================ */
+
+$xml = $see
+    ->getFactory()
+    ->getLastXml();
+
+$util->writeXml(
+    $invoice,
+    $xml
+);
+
+
+/* ============================================================
+   RESPUESTA SUNAT
+   ============================================================ */
+
+if (!$res->isSuccess()) {
+
+    echo $util->getErrorResponse(
+        $res->getError()
+    );
+
+    exit;
+}
+
+
+/* ============================================================
+   CDR
+   ============================================================ */
+
+$cdr = method_exists(
+    $res,
+    'getCdrResponse'
+)
+    ? $res->getCdrResponse()
+    : null;
+
+$cdrZip = method_exists(
+    $res,
+    'getCdrZip'
+)
+    ? $res->getCdrZip()
+    : null;
+
+
+if (!$cdr) {
+
+    echo 'No se recibió respuesta de CDR desde SUNAT.';
+
+    exit;
+}
+
+
+/* ============================================================
+   GUARDAR CDR
+   ============================================================ */
+
+$util->writeCdr(
+    $invoice,
+    $cdrZip
+);
+
+
+/* ============================================================
+   MOSTRAR RESPUESTA
+   ============================================================ */
+
+$util->showResponse(
+    $invoice,
+    $cdr,
+    $IdDOV,
+    'DocVenta',
+    $codColab
+);
+
+
+/* ============================================================
+   ESTADO
+   ============================================================ */
+
+$code = (int) $cdr->getCode();
+
+if ($code === 0) {
+
+    echo 'ESTADO: ACEPTADA' . PHP_EOL;
+
+
+    if (
+        method_exists(
+            $cdr,
+            'getNotes'
+        ) &&
+        count(
+            $cdr->getNotes()
+        ) > 0
+    ) {
+
+        echo 'OBSERVACIONES:' . PHP_EOL;
+
+        var_dump(
+            $cdr->getNotes()
+        );
+    }
+
+
+} elseif (
+    $code >= 2000 &&
+    $code <= 3999
+) {
+
+    echo 'ESTADO: RECHAZADA' . PHP_EOL;
+
+} else {
+
+    echo 'Excepción' . PHP_EOL;
+}
+
+
+echo $cdr->getDescription() . PHP_EOL;
+
+
+//echo "</br>Conexión Finalizada";
 
 class FuncionesGlobales
 {

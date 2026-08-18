@@ -1,42 +1,61 @@
 <!-- Contenido -->
 <div class="content-wrapper">
-    <section class="content">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="box">
-                    <div class="box-header with-border">
-                        <br>
-                        <h1 class="box-title">
-                            <button class="btn btn-success" data-toggle="modal" data-target="#modalFormulario">
-                                <i class="fa fa-plus-circle"></i> Agregar
-                            </button>
-                        </h1>
-                    </div>
-
-                    <div class="panel-body table-responsive" id="listadoregistros">
-                        <table id="tblListado" class="table table-striped table-bordered table-condensed table-hover">
-                            <thead>
-                                <th>Opciones</th>
-                                <th>Nombre</th>
-                            </thead>
-                            <tbody></tbody>
-                            <tfoot>
-                                <th>Opciones</th>
-                                <th>Nombre</th>
-                            </tfoot>
-                        </table>
-                    </div>
-
-                </div>
-            </div>
+  <!-- Content Header (Page header) -->
+  <section class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1>Permisos</h1>
         </div>
-    </section>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">Home</a></li>
+            <li class="breadcrumb-item active">Permisos</li>
+          </ol>
+        </div>
+      </div>
+    </div><!-- /.container-fluid -->
+  </section>
+  <section class="content">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header with-border">
+              <br>
+              <h1 class="box-title">
+                <button class="btn btn-success" data-toggle="modal" data-target="#modalFormulario">
+                  <i class="fa fa-plus-circle"></i> Agregar
+                </button>
+              </h1>
+            </div>
+
+            <div class="card-body table-responsive" id="listadoregistros">
+              <table id="tblListado" class="table table-striped table-bordered table-condensed table-hover">
+                <thead>
+                  <th>Opciones</th>
+                  <th>Nombre</th>
+                </thead>
+                <tbody></tbody>
+                <tfoot>
+                  <th>Opciones</th>
+                  <th>Nombre</th>
+                </tfoot>
+              </table>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
 
 
 <!-- Modal Formulario -->
-<div class="modal fade" id="modalFormulario" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+<div class="modal fade" id="modalFormulario" tabindex="-1" role="dialog" aria-labelledby="modalLabel"
+  aria-hidden="true">
   <div class="modal-dialog">
     <form id="formulario" method="POST">
       <div class="modal-content">
@@ -63,7 +82,8 @@
                 <input type="text" id="nombre_subpermiso" class="form-control" placeholder="Nombre del subpermiso">
               </div>
               <div class="col-md-3">
-                <button class="btn btn-success" type="button" onclick="registrarSubpermiso($('#idpermiso_sub').val())">Registrar</button>
+                <button class="btn btn-success" type="button"
+                  onclick="registrarSubpermiso($('#idpermiso_sub').val())">Registrar</button>
               </div>
             </div>
 
@@ -84,14 +104,16 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" type="submit" id="btnGuardar"><i class="fa fa-save"></i> Guardar</button>
-          <button class="btn btn-danger" type="button" data-dismiss="modal"><i class="fa fa-times-circle"></i> Cancelar</button>
+          <button class="btn btn-danger" type="button" data-dismiss="modal"><i class="fa fa-times-circle"></i>
+            Cancelar</button>
         </div>
       </div>
     </form>
   </div>
 </div>
 
-<div class="modal fade" id="modalAcciones" tabindex="-1" role="dialog" aria-labelledby="modalAccionesLabel" aria-hidden="true">
+<div class="modal fade" id="modalAcciones" tabindex="-1" role="dialog" aria-labelledby="modalAccionesLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
