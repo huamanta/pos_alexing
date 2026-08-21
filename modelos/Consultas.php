@@ -1966,18 +1966,24 @@ class Consultas extends Helpers
 
 
 
-	public function totalcomprahoy($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
+	public function totalcomprahoy($idsucursal, $fecha_inicio, $fecha_fin)
 	{
-		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
-			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE estado != 'Anulado' AND tipo_c='Compra' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != 0 and $idsucursal == "") {
-			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE estado != 'Anulado' AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == 0 and $idsucursal != "") {
-			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE estado != 'Anulado' AND tipo_c='Compra' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else {
-			$sql = "SELECT IFNULL(SUM(total_compra),0) as total_compra FROM compra WHERE estado != 'Anulado' AND tipo_c='Compra' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
+		$query = (new DBQuery($this->pdo))
+			->select('IFNULL(SUM(total_compra), 0) AS total_compra')
+			->from('compra')
+			->where('estado', '!=', 'Anulado')
+			->where('tipo_c', '=', 'Compra')
+			->where('idsucursal', '=', $idsucursal);
+
+		if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+			$query->whereBetween('DATE(fecha_hora)', $fecha_inicio, $fecha_fin);
 		}
-		return ejecutarConsultaSimpleFila($sql);
+
+		$response = $query->first();
+
+		$response['total_compra_str'] = Helpers::get_currency_symbol($response['total_compra'] ?? 0);
+
+		return Response::json($response);
 	}
 
 	public function totalcomprahoyC($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
@@ -2051,46 +2057,67 @@ class Consultas extends Helpers
 	}
 
 
-	public function totalventahoy($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
+	public function totalventahoy($idsucursal, $fecha_inicio, $fecha_fin)
 	{
-		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
-			$sql = "SELECT IFNULL(SUM(total_venta-descuento),0) as total_venta FROM venta WHERE ventacredito = 'No' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != 0 and $idsucursal == "") {
-			$sql = "SELECT IFNULL(SUM(total_venta-descuento),0) as total_venta FROM venta WHERE ventacredito = 'No' AND idpersonal = '$idvendedor' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == 0 and $idsucursal != "") {
-			$sql = "SELECT IFNULL(SUM(total_venta-descuento),0) as total_venta FROM venta WHERE ventacredito = 'No' AND idsucursal = '$idsucursal' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else {
-			$sql = "SELECT IFNULL(SUM(total_venta-descuento),0) as total_venta FROM venta WHERE ventacredito = 'No' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
+
+		$query = (new DBQuery($this->pdo))
+			->select('IFNULL(SUM(total_venta-descuento),0) as total_venta')
+			->from('venta')
+			->where('estado', '!=', 'Anulado')
+			->where('ventacredito', '=', 'No')
+			->where('idsucursal', '=', $idsucursal);
+		
+
+		if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+			$query->whereBetween('DATE(fecha_hora)', $fecha_inicio, $fecha_fin);
 		}
-		return ejecutarConsultaSimpleFila($sql);
+
+		$response = $query->first();
+
+		$response['total_venta_str'] = Helpers::get_currency_symbol($response['total_venta'] ?? 0);
+
+		return Response::json($response);
 	}
 
-	public function totalcuentasporcobrar($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
+	public function totalcuentasporcobrar($idsucursal, $fecha_inicio, $fecha_fin)
 	{
-		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
-			$sql = "SELECT IFNULL(SUM(deudatotal),0) as totaldeuda FROM cuentas_por_cobrar where condicion=1 AND DATE(fecharegistro)>='$fecha_inicio' AND DATE(fecharegistro)<='$fecha_fin'";
-		} else if ($idvendedor != 0 and $idsucursal == "") {
-			$sql = "SELECT IFNULL(SUM(deudatotal),0) as totaldeuda FROM cuentas_por_cobrar cc INNER JOIN venta v ON cc.idventa=v.idventa where cc.condicion=1 AND v.idpersonal = '$idvendedor' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
-		} else if ($idvendedor == 0 and $idsucursal != "") {
-			$sql = "SELECT IFNULL(SUM(cc.deudatotal),0) as totaldeuda FROM cuentas_por_cobrar cc INNER JOIN venta v ON cc.idventa=v.idventa where cc.condicion=1 AND v.idsucursal = '$idsucursal' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
-		} else {
-			$sql = "SELECT IFNULL(SUM(cc.deudatotal),0) as totaldeuda FROM cuentas_por_cobrar cc INNER JOIN venta v ON cc.idventa=v.idventa where condicion=1 AND v.idpersonal = '$idvendedor' AND v.idsucursal = '$idsucursal' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
+		$query = (new DBQuery($this->pdo))
+			->select('IFNULL(SUM(cc.deudatotal),0) as totaldeuda')
+			->from('cuentas_por_cobrar cc')
+			->join('venta v', 'v.idventa=cc.idventa')
+			->where('cc.condicion', '=', 1)
+			->whereNull('cc.idrefinanciamiento_origen')
+			->where('v.idsucursal', '=', $idsucursal);
+		
+		if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+			$query->whereBetween('DATE(fecharegistro)', $fecha_inicio, $fecha_fin);
 		}
-		return ejecutarConsultaSimpleFila($sql);
+
+		$response = $query->first();
+
+		$response['totaldeuda_str'] = Helpers::get_currency_symbol($response['totaldeuda'] ?? 0);
+
+		return Response::json($response);
 	}
 
-	public function totalcuentasporpagar($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
+	public function totalcuentasporpagar($idsucursal, $fecha_inicio, $fecha_fin)
 	{
-		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
-			$sql = "SELECT IFNULL(SUM(deudatotal),0) as totaldeuda FROM cuentas_por_pagar where condicion=1 AND DATE(fecharegistro)>='$fecha_inicio' AND DATE(fecharegistro)<='$fecha_fin'";
-		} else if ($idvendedor != 0 and $idsucursal == "") {
-			$sql = "SELECT IFNULL(SUM(deudatotal),0) as totaldeuda FROM cuentas_por_pagar cc INNER JOIN compra v ON cc.idcompra=v.idcompra where cc.condicion=1 AND v.idpersonal = '$idvendedor' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
-		} else if ($idvendedor == 0 and $idsucursal != "") {
-			$sql = "SELECT IFNULL(SUM(cc.deudatotal),0) as totaldeuda FROM cuentas_por_pagar cc INNER JOIN compra v ON cc.idcompra=v.idcompra where cc.condicion=1 AND v.idsucursal = '$idsucursal' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
-		} else {
-			$sql = "SELECT IFNULL(SUM(cc.deudatotal),0) as totaldeuda FROM cuentas_por_pagar cc INNER JOIN compra v ON cc.idcompra=v.idcompra where condicion=1 AND v.idpersonal = '$idvendedor' AND v.idsucursal = '$idsucursal' AND DATE(cc.fecharegistro)>='$fecha_inicio' AND DATE(cc.fecharegistro)<='$fecha_fin'";
+		$query = (new DBQuery($this->pdo))
+			->select('IFNULL(SUM(deudatotal),0) as totaldeuda')
+			->from('cuentas_por_pagar cp')
+			->join('compra c', 'c.idcompra = cp.idcompra')
+			->where('cp.condicion', '=', 1)
+			->where('c.idsucursal', '=', $idsucursal);
+		
+		if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+			$query->whereBetween('DATE(fecharegistro)', $fecha_inicio, $fecha_fin);
 		}
-		return ejecutarConsultaSimpleFila($sql);
+
+		$response = $query->first();
+
+		$response['totaldeuda_str'] = Helpers::get_currency_symbol($response['totaldeuda'] ?? 0);
+
+		return Response::json($response);
 	}
 
 	public function totalabonospagados($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
@@ -2217,143 +2244,279 @@ class Consultas extends Helpers
 
 
 
-	public function totalventachoy($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal)
+	public function totalventachoy($idsucursal, $fecha_inicio, $fecha_fin)
 	{
-		if ($idvendedor == 0 || $idvendedor == null and $idsucursal == "" || $idsucursal == null) {
-			$sql = "SELECT IFNULL(SUM(total_venta),0) as total_venta FROM venta WHERE ventacredito = 'Si' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor == 0 and $idsucursal != "") {
-			$sql = "SELECT IFNULL(SUM(total_venta),0) as total_venta FROM venta WHERE ventacredito = 'Si' AND idsucursal = '$idsucursal' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else if ($idvendedor != 0 and $idsucursal == "") {
-			$sql = "SELECT IFNULL(SUM(total_venta),0) as total_venta FROM venta WHERE ventacredito = 'Si' AND idpersonal = '$idvendedor' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
-		} else {
-			$sql = "SELECT IFNULL(SUM(total_venta),0) as total_venta FROM venta WHERE ventacredito = 'Si' AND idpersonal = '$idvendedor' AND idsucursal = '$idsucursal' AND estado IN ('Aceptado', 'Por Enviar', 'Activado') AND DATE(fecha_hora)>='$fecha_inicio' AND DATE(fecha_hora)<='$fecha_fin'";
+		$query = (new DBQuery($this->pdo))
+			->select('IFNULL(SUM(total_venta),0) as total_venta')
+			->from('venta')
+			->where('estado', '!=', 'Anulado')
+			->where('ventacredito', '=', 'Si')
+			->where('idsucursal', '=', $idsucursal);
+		
+
+		if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+			$query->whereBetween('DATE(fecha_hora)', $fecha_inicio, $fecha_fin);
 		}
-		return ejecutarConsultaSimpleFila($sql);
+
+		$response = $query->first();
+
+		$response['total_venta_str'] = Helpers::get_currency_symbol($response['total_venta'] ?? 0);
+
+		return Response::json($response);
 	}
 
 	public function totalcategorias()
 	{
-		$sql = "SELECT COUNT(*) totalca FROM categoria WHERE condicion=1";
-		return ejecutarConsultaSimpleFila($sql);
+		$data = (new DBQuery($this->pdo))
+			->select("COUNT(*) totalca")
+			->from('categoria')
+			->where('condicion', '=', 1)
+			->first();
+		return Response::json($data);
 	}
 
 	public function totalproductos($idsucursal)
 	{
-		$sql = "SELECT COUNT(*) totalpro FROM producto WHERE idsucursal='$idsucursal' AND condicion=1";
-		return ejecutarConsultaSimpleFila($sql);
+		$data = (new DBQuery($this->pdo))
+			->select("COUNT(*) totalpro")
+			->from('producto')
+			->where('condicion', '=', 1)
+			->where('idsucursal', '=', $idsucursal)
+			->first();
+		return Response::json($data);
 	}
 
 	public function totalusuariosr()
 	{
-		$sql = "SELECT IFNULL(count(idpersonal),0) as idpersonal FROM personal";
-		return ejecutarConsultaSimpleFila($sql);
+		$data = (new DBQuery($this->pdo))
+			->select("IFNULL(count(idpersonal),0) as total")
+			->from('personal')
+			->first();
+		return Response::json($data);
 	}
 
 	public function totalproveedoresr()
 	{
-		$sql = "SELECT IFNULL(count(idpersona),0) as idpersona FROM persona WHERE tipo_persona='Proveedor'";
-		return ejecutarConsultaSimpleFila($sql);
+		$data = (new DBQuery($this->pdo))
+			->select("IFNULL(count(idpersona),0) as total")
+			->from('persona')
+			->where('tipo_persona', '=', 'Proveedor')
+			->first();
+		return Response::json($data);
 	}
 
-	public function comprasultimos_10dias($idsucursal)
+	public function totalCompras($idsucursal, $fecha_inicio, $fecha_fin)
 	{
-		if ($idsucursal == "Todos" || $idsucursal == null) {
-			$sql = "SELECT CONCAT(DAY(fecha_hora),'-',DATE_FORMAT(fecha_hora,'%M')) as fecha,SUM(total_compra) as total FROM compra WHERE tipo_c = 'Compra' AND estado != 'Anulado' GROUP by fecha_hora ORDER BY fecha_hora DESC limit 0,10";
-		} else {
-			$sql = "SELECT CONCAT(DAY(fecha_hora),'-',DATE_FORMAT(fecha_hora,'%M')) as fecha,SUM(total_compra) as total FROM compra WHERE tipo_c = 'Compra' AND estado != 'Anulado' AND idsucursal = '$idsucursal' GROUP by fecha_hora ORDER BY fecha_hora DESC limit 0,10";
+		$query = (new DBQuery($this->pdo))
+			->select("YEAR(fecha_hora) AS anio, MONTH(fecha_hora) AS mes, SUM(total_compra) AS total")
+			->from('compra')
+			->where('tipo_c', '=', 'Compra')
+			->where('estado', '!=', 'Anulado')
+			->where('idsucursal', '=', $idsucursal)
+			->groupBy('anio')
+			->groupBy('mes')
+			->orderBy('anio', 'DESC')
+			->orderBy('mes', 'DESC')
+			->limit(10);
+
+		if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+			$query->whereBetween('DATE(fecha_hora)', $fecha_inicio, $fecha_fin);
 		}
-		return ejecutarConsulta($sql);
-	}
 
-	public function ventasultimos_12meses($idsucursal)
-	{
-		//Date format -> convertir fecha y hora en un formato de mes
-		if ($idsucursal == "Todos" || $idsucursal == null) {
-			$sql = "SELECT DATE_FORMAT(fecha_hora,'%M') as fecha,SUM(total_venta) as total FROM venta WHERE estado IN('Aceptado','Activado') GROUP by MONTH(fecha_hora) ORDER BY fecha_hora DESC limit 0,12";
-		} else {
-			$sql = "SELECT DATE_FORMAT(fecha_hora,'%M') as fecha,SUM(total_venta) as total FROM venta WHERE idsucursal = '$idsucursal' AND estado IN('Aceptado','Activado') GROUP by MONTH(fecha_hora) ORDER BY fecha_hora DESC limit 0,12";
+		$response = $query->get();
+
+		$meses = Constants::MESES;
+
+		foreach ($response as &$item) {
+			$item['fecha'] = $item['anio'] . '-' . ($meses[(int) $item['mes']] ?? '');
+			unset($item['anio'], $item['mes']);
+			$item['total_str'] = Helpers::get_currency_symbol($item['total'] ?? 0);
 		}
-		return ejecutarConsulta($sql);
+
+		return Response::json($response);
 	}
 
-	public function utilidadUltimos12Meses($idvendedor, $idsucursal)
+	public function totalVentas($idsucursal, $fecha_inicio, $fecha_fin)
 	{
-		// Forzar meses en español
-		ejecutarConsulta("SET lc_time_names = 'es_ES'");
+		$query = (new DBQuery($this->pdo))
+			->select("YEAR(fecha_hora) AS anio, MONTH(fecha_hora) AS mes, SUM(total_venta) AS total")
+			->from('venta')
+			->where('idsucursal', '=', $idsucursal)
+			->whereIn('estado', ['Aceptado', 'Activado'])
+			->groupBy('anio')
+			->groupBy('mes')
+			->orderBy('anio', 'DESC')
+			->orderBy('mes', 'DESC')
+			->limit(12);
 
-		$filtroVendedor = (!empty($idvendedor) && $idvendedor !== "Todos") ? "AND v.idPersonal = " . intval($idvendedor) : "";
-		$filtroSucursal = (!empty($idsucursal) && $idsucursal !== "Todos") ? "AND dv.idsucursal = " . intval($idsucursal) : "";
+		if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+			$query->whereBetween('DATE(fecha_hora)', $fecha_inicio, $fecha_fin);
+		}
 
-		$sql = "
-        SELECT DATE_FORMAT(m.mes, '%M') AS mes,
-               IFNULL(SUM((dv.cantidad * dv.precio_venta) - ((dv.cantidad * dv.cantidad_contenedor) * p.precio_compra)), 0) AS total_utilidad
-        FROM (
-            SELECT DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL seq MONTH), '%Y-%m-01') AS mes
-            FROM (
-                SELECT 0 AS seq UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
-                UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
-                UNION ALL SELECT 8 UNION ALL SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
-            ) AS seqs
-        ) AS m
-        LEFT JOIN venta v
-            ON DATE_FORMAT(v.fecha_hora, '%Y-%m-01') = m.mes
-            AND v.ventacredito = 'No' 
-            AND v.estado IN ('Aceptado','Por Enviar','Activado')
-            $filtroVendedor
-        LEFT JOIN detalle_venta dv
-            ON dv.idventa = v.idventa
-            $filtroSucursal
-        LEFT JOIN producto_configuracion pg ON pg.id = dv.idproducto
-        LEFT JOIN producto p ON p.idproducto = pg.idproducto
-        GROUP BY m.mes
-        ORDER BY m.mes ASC
-    ";
+		$response = $query->get();
 
-		return ejecutarConsulta($sql);
+		$meses = Constants::MESES;
+
+		foreach ($response as &$item) {
+			$item['fecha'] = $item['anio'] . '-' . ($meses[(int) $item['mes']] ?? '');
+			unset($item['anio'], $item['mes']);
+			$item['total_str'] = Helpers::get_currency_symbol($item['total'] ?? 0);
+		}
+
+		return Response::json($response);
+	}
+
+	public function utilidadUltimos12Meses($idsucursal)
+	{
+		$query = (new DBQuery($this->pdo))
+			->select("
+				YEAR(meses.mes) AS anio,
+				MONTH(meses.mes) AS numero_mes,
+				IFNULL(
+					SUM(
+						((dv.cantidad * dv.cantidad_contenedor) * dv.precio_venta) -
+						((dv.cantidad * dv.cantidad_contenedor) * ip.precio_compra)
+					),
+					0
+				) AS total_utilidad
+			")
+			->from("
+				(
+					SELECT DATE_FORMAT(
+						DATE_SUB(
+							DATE_FORMAT(CURDATE(), '%Y-%m-01'),
+							INTERVAL n MONTH
+						),
+						'%Y-%m-01'
+					) AS mes
+					FROM (
+						SELECT 0 AS n
+						UNION ALL SELECT 1
+						UNION ALL SELECT 2
+						UNION ALL SELECT 3
+						UNION ALL SELECT 4
+						UNION ALL SELECT 5
+						UNION ALL SELECT 6
+						UNION ALL SELECT 7
+						UNION ALL SELECT 8
+						UNION ALL SELECT 9
+						UNION ALL SELECT 10
+						UNION ALL SELECT 11
+					) meses
+				) meses
+			")
+			->leftJoin(
+				'venta v',
+				"DATE_FORMAT(v.fecha_hora, '%Y-%m-01') = meses.mes
+				AND v.ventacredito = 'No'
+				AND v.estado IN ('Aceptado', 'Por Enviar', 'Activado')"
+			)
+			->leftJoin(
+				'detalle_venta dv',
+				'dv.idventa = v.idventa'
+			)
+			->leftJoin(
+				'inventario_producto ip',
+				'ip.idproducto = dv.idproducto
+				AND ip.idsucursal = ' . (int) $idsucursal
+			)
+			->groupBy('anio')
+			->groupBy('numero_mes')
+			->orderBy('anio', 'ASC')
+			->orderBy('numero_mes', 'ASC');
+
+		$response = $query->get();
+
+		$meses = Constants::MESES;
+
+		$labels = [];
+		$data = [];
+
+		foreach ($response as $row) {
+			$labels[] = $meses[(int) $row['numero_mes']];
+			$data[] = (float) $row['total_utilidad'];
+		}
+
+		return Response::json([
+			'labels' => $labels,
+			'data' => $data
+		]);
 	}
 
 
 	public function IngresosEgresosMesesDelAnio()
 	{
-		ejecutarConsulta("SET lc_time_names = 'es_ES'");
+		$query = (new DBQuery($this->pdo))
+			->select("
+				YEAR(mes) AS anio,
+				MONTH(mes) AS numero_mes,
+				COALESCE(SUM(CASE WHEN m.tipo = 'Ingresos' THEN m.totalefectivo ELSE 0 END), 0) AS ingresos,
+				COALESCE(SUM(CASE WHEN m.tipo = 'Egresos' THEN m.totalefectivo ELSE 0 END), 0) AS egresos
+			")
+			->from("
+				(
+					SELECT DATE_FORMAT(
+						DATE_SUB(
+							DATE_FORMAT(CURDATE(), '%Y-%m-01'),
+							INTERVAL n MONTH
+						),
+						'%Y-%m-01'
+					) AS mes
+					FROM (
+						SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL
+						SELECT 3 UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL
+						SELECT 6 UNION ALL SELECT 7 UNION ALL SELECT 8 UNION ALL
+						SELECT 9 UNION ALL SELECT 10 UNION ALL SELECT 11
+					) meses
+				) meses
+			")
+			->leftJoin(
+				'movimiento m',
+				"DATE_FORMAT(m.fecha, '%Y-%m-01') = meses.mes"
+			)
+			->groupBy('anio')
+			->groupBy('numero_mes')
+			->orderBy('anio', 'ASC')
+			->orderBy('numero_mes', 'ASC');
 
-		$sql = "
-	        SELECT 
-	            DATE_FORMAT(mes, '%M') AS mes,
-	            IFNULL(SUM(CASE WHEN m.tipo = 'Ingresos' THEN m.monto END), 0) AS ingresos,
-	            IFNULL(SUM(CASE WHEN m.tipo = 'Egresos' THEN m.monto END), 0) AS egresos
-	        FROM (
-	            SELECT DATE_FORMAT(DATE_ADD(MAKEDATE(YEAR(CURDATE()), 1), INTERVAL n MONTH), '%Y-%m-01') AS mes
-	            FROM (
-	                SELECT 0 AS n UNION SELECT 1 UNION SELECT 2 UNION SELECT 3 UNION SELECT 4 
-	                UNION SELECT 5 UNION SELECT 6 UNION SELECT 7 UNION SELECT 8 UNION SELECT 9 
-	                UNION SELECT 10 UNION SELECT 11
-	            ) AS nums
-	            WHERE DATE_ADD(MAKEDATE(YEAR(CURDATE()), 1), INTERVAL n MONTH) <= LAST_DAY(CURDATE())
-	        ) AS meses
-	        LEFT JOIN movimiento m 
-	            ON DATE_FORMAT(m.fecha, '%Y-%m-01') = meses.mes
-	        GROUP BY mes
-	        ORDER BY mes ASC
-	    ";
+		$rspta = $query->get();
 
-		return ejecutarConsulta($sql);
+		$meses = Constants::MESES;
+
+		$labels = [];
+		$ingresos = [];
+		$egresos = [];
+
+		foreach ($rspta as $reg) {
+			$labels[] = $meses[(int) $reg['numero_mes']];
+			$ingresos[] = (float) $reg['ingresos'];
+			$egresos[] = (float) $reg['egresos'];
+		}
+
+		return Response::json([
+			'labels' => $labels,
+			'ingresos' => $ingresos,
+			'egresos' => $egresos
+		]);
 	}
 
 
 
 	public function productosmasvendidos()
 	{
-		//Date format -> convertir fecha y hora en un formato de mes
-		$sql = "SELECT dv.idproducto,p.nombre as nombre,  SUM(dv.cantidad) AS cantidad
-			FROM venta v
-			INNER JOIN detalle_venta dv ON v.idventa = dv.idventa
-			INNER JOIN producto_configuracion pg on dv.idproducto=pg.id
-			INNER JOIN producto p on pg.idproducto = p.idproducto
-			GROUP BY dv.idproducto, p.nombre
-			ORDER BY SUM(dv.cantidad) DESC
-			LIMIT 6";
-		return ejecutarConsulta($sql);
+		$data = (new DBQuery($this->pdo))
+			->select('dv.idproducto, p.nombre, SUM(dv.cantidad) AS cantidad')
+			->from('venta v')
+			->join('detalle_venta dv', 'dv.idventa', '=', 'v.idventa')
+			->join('producto_configuracion pg', 'pg.idproducto', '=', 'dv.idproducto')
+			->join('producto p', 'p.idproducto', '=', 'pg.idproducto')
+			->groupBy('dv.idproducto')
+			->groupBy('p.nombre')
+			->orderBy('cantidad', 'DESC')
+			->limit(6)
+			->get();
+
+		return Response::json($data);
 	}
 
 	public function stockproductosmasbajos()

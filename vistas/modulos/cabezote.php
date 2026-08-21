@@ -93,6 +93,87 @@
 .navbar-icon-link:hover {
     color: #334155;
 }
+
+.stock-alert-dropdown {
+    width: 360px;
+    overflow: hidden;
+}
+
+.stock-alert-list {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.stock-alert-item {
+    border-bottom: 1px solid #f1f1f1;
+    transition: background-color .15s ease;
+}
+
+.stock-alert-item:hover {
+    background-color: #fafafa;
+}
+
+.stock-alert-item:last-child {
+    border-bottom: 0;
+}
+
+.stock-product-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 10px;
+    background: #fff0f0;
+    color: #ffc107;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stock-product-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #343a40;
+}
+
+.stock-value {
+    font-size: 16px;
+    line-height: 16px;
+}
+
+.stock-alert-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.stock-alert-list::-webkit-scrollbar-thumb {
+    background: #d6d6d6;
+    border-radius: 10px;
+}
+
+.min-width-0 {
+    min-width: 0;
+}
+
+.bg-danger-light {
+    background: rgba(220, 53, 69, 0.10);
+}
+
+.cxc-alert-item {
+    transition: all 0.15s ease;
+}
+
+.cxc-alert-item:hover {
+    background: #f8f9fa;
+}
+
+.cxc-alert-item + .cxc-alert-item {
+    border-top: 1px solid #f0f0f0;
+}
+
+.cxcAlertCount {
+    min-width: 24px;
+    padding: 4px 7px;
+    font-size: 11px;
+}
 </style>
 <?php
 require_once __DIR__ . '/../../modelos/Helpers.php';
@@ -346,34 +427,119 @@ setInterval(verificarNuevasNotificaciones, 5000);
 
 // Notificaciones Cuentas por Cobrar
 function cargarNotificacionesCXCNavbar() {
-    let sucursal = currentSucursal;
-    if (!sucursal || sucursal === "") return;
 
-    $.getJSON("controladores/cuentascobrar.php?op=obtener_notificaciones&idsucursal=" + sucursal, function(data) {
-        let cuotas = data.filter(n => !n.tipo || n.tipo.trim() === "");
-        let total = cuotas.length;
+    $.getJSON(
+    "controladores/cuentascobrar.php?op=obtener_notificaciones",
+    function(data) {
+        console.log(data);
+        const cuotas = data.filter(n => !n.tipo || n.tipo.trim() === "");
+        const total = cuotas.length;
         let html = "";
         let ids = [];
 
         if (total === 0) {
             $(".cxcAlertCount").hide();
-            html = `<span class="dropdown-item text-muted">No hay cuentas vencidas</span>`;
+
+            html = `
+                <div class="text-center py-4">
+                    <div class="mb-2">
+                        <i class="fas fa-check-circle text-success" style="font-size: 32px;"></i>
+                    </div>
+                    <div class="font-weight-bold text-dark">
+                        Todo está al día
+                    </div>
+                    <small class="text-muted">
+                        No hay cuentas vencidas
+                    </small>
+                </div>
+            `;
         } else {
-            $(".cxcAlertCount").text(total).show();
+            $(".cxcAlertCount")
+                .text(total)
+                .show();
+
             cuotas.forEach(n => {
                 ids.push(n.idnotificacion);
-                html +=
-                    `<a href="#" class="dropdown-item"><i class="fas fa-exclamation-triangle text-danger mr-2"></i> ${n.mensaje} <span class="float-right text-muted text-sm">${n.fecha}</span></a><div class="dropdown-divider"></div>`;
+
+                html += `
+                    <a href="cuentas-cobrar" class="d-flex align-items-start p-3 rounded-lg text-decoration-none cxc-alert-item">
+                        <div class="mr-3">
+                            <div class="d-flex align-items-center justify-content-center bg-danger-light text-danger rounded-circle"
+                                 style="width: 38px; height: 38px;">
+                                <i class="fas fa-exclamation"></i>
+                            </div>
+                        </div>
+
+                        <div class="flex-grow-1" style="min-width: 0;">
+                            <div class="font-weight-bold text-dark mb-1">
+                                ${n.mensaje}
+                            </div>
+
+                            <div class="d-flex align-items-center">
+                                <small class="text-danger mr-2">
+                                    <i class="far fa-clock mr-1"></i>
+                                    Vencida
+                                </small>
+
+                                <small class="text-muted">
+                                    ${n.fecha}
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="ml-2 text-muted">
+                            <i class="fas fa-chevron-right"></i>
+                        </div>
+                    </a>
+                `;
             });
         }
+
         $(".cxcAlertList").html(html);
         $(".cxcAlertLink").data("ids", ids.join(","));
-    });
+    }
+);
 }
 
-$(document).on("change", "#idsucursal2", function() {
-    cargarNotificacionesCXCNavbar();
-});
+function obtenerProductosStockBajo() {
+
+    $.get("controladores/producto.php?op=listarStockBajoAlert", function (response) {
+        let productos = response;
+        let cantidadBaja = productos.length; // La cantidad de productos con stock bajo (0, 1, 2 o 3)
+
+        // Actualizar el contador de productos en el navbar
+        $('#stockAlertCount').text(cantidadBaja); // Actualiza el contador
+        $('#stockAlertCount2').text(cantidadBaja); // Actualiza el contador
+
+        const stockAlertTableBody = document.getElementById('stockAlertTableBody');
+
+        stockAlertTableBody.innerHTML = productos.map(producto => `
+            <div class="stock-alert-item px-3 py-2">
+                <div class="d-flex align-items-center">
+                    <div class="stock-product-icon mr-3">
+                        <i class="fas fa-box"></i>
+                    </div>
+
+                    <div class="flex-grow-1 min-width-0">
+                        <div class="stock-product-name text-truncate">
+                            ${producto.nombre}
+                        </div>
+                        <small class="text-muted">
+                            ${producto.categoria || 'Sin categoría'}
+                        </small>
+                    </div>
+
+                    <div class="text-right ml-3">
+                        <div class="stock-value text-warning font-weight-bold">
+                            ${producto.stock}
+                        </div>
+                        <small class="text-muted">stock</small>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    });
+}
 
 $(document).on("click", ".cxcAlertLink", function() {
     let ids = $(this).data("ids");
@@ -381,19 +547,13 @@ $(document).on("click", ".cxcAlertLink", function() {
     $.post("controladores/cuentascobrar.php?op=marcar_leida", {
         ids: ids
     }, function() {
-        $(".cxcAlertCount").hide();
+        //$(".cxcAlertCount").hide();
     });
 });
 
 $(document).ready(function() {
-    let esperaSucursal = setInterval(function() {
-        let sucursal = currentSucursal;
-        if (sucursal && sucursal !== "") {
-            cargarNotificacionesCXCNavbar();
-            clearInterval(esperaSucursal);
-        }
-    }, 300);
-    setInterval(cargarNotificacionesCXCNavbar, 3600000);
+    cargarNotificacionesCXCNavbar();
+    obtenerProductosStockBajo();
 });
 
 function notificacionToast(tipo, mensaje) {
@@ -456,36 +616,59 @@ function notificacionToast(tipo, mensaje) {
                 <i class="fas fa-file-invoice-dollar fa-lg"></i>
                 <span class="badge badge-danger navbar-badge-custom cxcAlertCount" style="display:none;">0</span>
             </a>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-lg mt-2">
-                <span class="dropdown-header font-weight-bold bg-light rounded-top py-3">Cuentas por Cobrar</span>
-                <div class="dropdown-item p-3">
-                    <div class="cxcAlertList" style="max-height:300px; overflow-y:auto;"></div>
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow border-0 rounded-lg mt-2 p-0">
+                <div class="px-3 py-3 border-bottom bg-light rounded-top">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="font-weight-bold text-dark">
+                                <i class="fas fa-file-invoice-dollar text-primary mr-2"></i>
+                                Cuentas por Cobrar
+                            </div>
+                            <small class="text-muted">Pagos pendientes de atención</small>
+                        </div>
+                        <span class="badge badge-danger cxcAlertCount rounded-pill"></span>
+                    </div>
                 </div>
-                <div class="dropdown-divider m-0"></div>
-                <a href="cuentas-cobrar" class="dropdown-item dropdown-footer text-primary font-weight-bold py-3">
-                    Ver todas las cuentas <i class="fas fa-arrow-right ml-1"></i></a>
+
+                <div class="cxcAlertList p-2" style="max-height: 320px; overflow-y: auto;"></div>
+
+                <div class="border-top">
+                    <a href="cuentas-cobrar" class="dropdown-item text-center text-primary font-weight-bold py-3">
+                        Ver todas las cuentas
+                        <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
             </div>
         </li>
 
         <li class="nav-item dropdown mr-2" id="stockbajito">
             <a class="nav-link position-relative text-secondary" data-toggle="dropdown" href="#" id="stockAlertLink">
                 <i class="fas fa-bell fa-lg"></i>
-                <span class="badge badge-danger badge-notify" id="stockAlertCount">0</span>
+                <span class="badge badge-warning badge-notify navbar-badge-custom" id="stockAlertCount">0</span>
             </a>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-lg mt-2">
-                <div class="dropdown-header font-weight-bold text-danger bg-light rounded-top py-3">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> Stock Bajo
+            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-lg mt-2 p-0 stock-alert-dropdown">
+                <div class="px-3 py-3 border-bottom bg-light rounded-top">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <div class="font-weight-bold text-dark">
+                                <i class="fas fa-box-open text-warning mr-2"></i>
+                                Stock bajo
+                            </div>
+                            <small class="text-muted">Productos que requieren reposición</small>
+                        </div>
+                        <span class="badge badge-warning badge-pill" id="stockAlertCount2">0</span>
+                    </div>
                 </div>
-                <div id="stockAlertTable" class="dropdown-item p-0">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead class="bg-white text-muted">
-                            <tr>
-                                <th class="pl-3 border-0">Producto</th>
-                                <th class="text-center border-0">Stock</th>
-                            </tr>
-                        </thead>
-                        <tbody id="stockAlertTableBody"></tbody>
-                    </table>
+
+                <div id="stockAlertTable" class="stock-alert-list">
+                    <div id="stockAlertTableBody"></div>
+                </div>
+
+                <div class="px-3 py-2 border-top bg-light rounded-bottom text-center">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Revisa el inventario para realizar la reposición
+                    </small>
                 </div>
             </div>
         </li>

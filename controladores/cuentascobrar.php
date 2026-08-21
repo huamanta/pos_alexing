@@ -294,7 +294,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'obtener_notificaciones':
-		$idsucursal = isset($_GET["idsucursal"]) ? intval($_GET["idsucursal"]) : 0;
+		$idsucursal = $_SESSION['idsucursal'];
 		$notificaciones = $cuentascobrar->generarNotificaciones($idsucursal);
 		echo json_encode($notificaciones);
 		break;
