@@ -439,7 +439,7 @@ $helpers = new Helpers();
             <a href="caja-chica" class="nav-link" id="navCajaChica">
               <i class="nav-icon fas fa-hand-holding-usd"></i>
               <p>
-                Caja chica
+                Resumen caja
               </p>
             </a>
           </li>

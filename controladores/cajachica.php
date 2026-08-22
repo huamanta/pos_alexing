@@ -31,13 +31,15 @@ switch ($_GET["op"]) {
 
 	case "resumenBancos":
 		$idsucursal = $_SESSION['idsucursal'];
-		$cajachica->resumenBancos($idsucursal);
+		$idusuario = $_SESSION['idusuario'];
+		$cajachica->resumenBancos($idsucursal, $idusuario);
 		break;
 
 
 	case "resumenComprobantes":
 		$idsucursal = $_SESSION['idsucursal'];
-		$cajachica->resumenComprobantes($idsucursal);
+		$idusuario = $_SESSION['idusuario'];
+		$cajachica->resumenComprobantes($idsucursal, $idusuario);
 		break;
 
 	case 'guardaryeditar':

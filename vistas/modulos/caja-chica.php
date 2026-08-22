@@ -5,12 +5,12 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1>Caja Chica</h1>
+                    <h1>Resumen caja</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="#">Home</a></li>
-                        <li class="breadcrumb-item active">Caja Chica</li>
+                        <li class="breadcrumb-item active">Resumen caja</li>
                     </ol>
                 </div>
             </div>
@@ -36,19 +36,339 @@
 
                 .container {
                     max-width: 1400px;
-                    margin: 25px auto;
-                    padding: 15px;
+                    margin: 0px auto;
+                }
+
+                .caja-status {
+                    display: flex;
+                    align-items: center;
+                    padding: 25px;
+                    gap: 20px;
+                }
+
+                .caja-status-icon {
+                    width: 65px;
+                    height: 65px;
+                    border-radius: 50%;
+                    background: #dc3545;
+                    color: #fff;
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    font-size: 28px;
+                }
+
+                .caja-status-content h3 {
+                    margin: 0;
+                    font-size: 22px;
+                    font-weight: 600;
+                    color: #dc3545;
+                }
+
+                .caja-status-content p {
+                    margin: 5px 0 0;
+                    color: #777;
+                    font-size: 15px;
+                }
+
+                /* Cuando la caja está abierta */
+                .caja-abierta .caja-status-icon {
+                    background: #28a745;
+                }
+
+                .caja-abierta .caja-status-content h3 {
+                    color: #28a745;
+                }
+
+                .caja-info-panel {
+                    background: #ffffff;
+                    border-radius: 16px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.08);
+                    margin-bottom: 25px;
+                    border: 1px solid #edf0f2;
+                }
+
+
+                /* HEADER */
+
+                .caja-info-header {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 20px 25px;
+
+                    background: linear-gradient(135deg,
+                            #ffffff 0%,
+                            #f8fafc 100%);
+
+                    border-bottom: 1px solid #edf0f2;
+                }
+
+
+                .caja-info-title {
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                }
+
+
+                .caja-info-icon {
+                    width: 52px;
+                    height: 52px;
+
+                    border-radius: 12px;
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    background: #e8f1ff;
+                    color: #0d6efd;
+
+                    font-size: 23px;
+                }
+
+
+                .caja-info-title h3 {
+                    margin: 0;
+
+                    font-size: 20px;
+                    font-weight: 700;
+
+                    color: #212529;
+                }
+
+
+                .caja-info-title span {
+                    display: block;
+
+                    margin-top: 3px;
+
+                    font-size: 13px;
+
+                    color: #8a94a6;
+                }
+
+
+                /* ESTADO */
+
+                .caja-estado-abierta {
+
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+
+                    padding: 8px 14px;
+
+                    border-radius: 20px;
+
+                    background: #eaf8ef;
+
+                    color: #198754;
+
+                    font-size: 12px;
+                    font-weight: 700;
+
+                    letter-spacing: .3px;
+                }
+
+
+                .caja-estado-punto {
+
+                    width: 8px;
+                    height: 8px;
+
+                    border-radius: 50%;
+
+                    background: #28a745;
+
+                    box-shadow: 0 0 0 4px rgba(40, 167, 69, .12);
+                }
+
+
+                /* BODY */
+
+                .caja-info-body {
+
+                    display: grid;
+
+                    grid-template-columns:
+                        repeat(4, 1fr);
+
+                    gap: 0;
+
+                    padding: 10px 0;
+                }
+
+
+                /* DATO */
+
+                .caja-dato {
+
+                    display: flex;
+
+                    align-items: center;
+
+                    gap: 14px;
+
+                    padding: 18px 24px;
+
+                    border-right: 1px solid #edf0f2;
+                }
+
+
+                .caja-dato:last-child {
+                    border-right: none;
+                }
+
+
+                /* ICONOS */
+
+                .caja-dato-icon {
+
+                    width: 45px;
+                    height: 45px;
+
+                    min-width: 45px;
+
+                    border-radius: 11px;
+
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    font-size: 18px;
+                }
+
+
+                .caja-icon-blue {
+                    background: #e8f1ff;
+                    color: #0d6efd;
+                }
+
+
+                .caja-icon-purple {
+                    background: #f0eafa;
+                    color: #6f42c1;
+                }
+
+
+                .caja-icon-green {
+                    background: #e8f7ee;
+                    color: #198754;
+                }
+
+
+                .caja-icon-orange {
+                    background: #fff0e3;
+                    color: #fd7e14;
+                }
+
+
+                /* TEXTO */
+
+                .caja-dato-content {
+                    min-width: 0;
+                }
+
+
+                .caja-dato-label {
+
+                    display: block;
+
+                    font-size: 11px;
+
+                    font-weight: 700;
+
+                    color: #8a94a6;
+
+                    letter-spacing: .5px;
+
+                    margin-bottom: 4px;
+                }
+
+
+                .caja-dato-content strong {
+
+                    display: block;
+
+                    font-size: 16px;
+
+                    color: #212529;
+
+                    white-space: nowrap;
+
+                    overflow: hidden;
+
+                    text-overflow: ellipsis;
+                }
+
+
+                .caja-dato-content .estado-texto {
+                    color: #198754;
+                }
+
+
+                /* MONTO */
+
+                .caja-monto .caja-dato-content strong {
+
+                    color: #198754;
+
+                    font-size: 18px;
+                }
+
+
+                /* =========================================================
+   RESPONSIVE
+========================================================= */
+
+                @media (max-width: 1100px) {
+
+                    .caja-info-body {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+
+                    .caja-dato:nth-child(2) {
+                        border-right: none;
+                    }
+
+                    .caja-dato:nth-child(-n+2) {
+                        border-bottom: 1px solid #edf0f2;
+                    }
+                }
+
+
+                @media (max-width: 650px) {
+
+                    .caja-info-header {
+                        align-items: flex-start;
+                        flex-direction: column;
+                        gap: 15px;
+                    }
+
+                    .caja-info-body {
+                        grid-template-columns: 1fr;
+                    }
+
+                    .caja-dato {
+                        border-right: none;
+                        border-bottom: 1px solid #edf0f2;
+                    }
+
+                    .caja-dato:last-child {
+                        border-bottom: none;
+                    }
+
                 }
 
                 .header {
                     display: flex;
                     justify-content: space-between;
-                    align-items: center;
                     margin-bottom: 20px;
-                }
-
-                .header h2 {
-                    font-size: 30px;
                 }
 
                 .filters {
@@ -89,8 +409,8 @@
                 }
 
                 .icon {
-                    width: 60px;
-                    height: 60px;
+                    width: 50px;
+                    height: 50px;
                     border-radius: 50%;
                     display: flex;
                     justify-content: center;
@@ -267,18 +587,164 @@
             </style>
 
             <div class="container">
+                <!-- ESTADO DE CAJA -->
+                <div id="estadoCaja" class="box mb-4" style="display:none;">
+                    <div class="box-body">
+                        <div class="caja-status">
+                            <div class="caja-status-icon">
+                                <i class="fa-solid fa-lock"></i>
+                            </div>
 
-                <div class="header">
+                            <div class="caja-status-content">
+                                <h3 id="estadoCajaTitulo">
+                                    Caja no abierta
+                                </h3>
+
+                                <p id="estadoCajaMensaje">
+                                    No tienes una caja abierta actualmente.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INFORMACIÓN DE LA CAJA -->
+                <div id="informacionCaja" style="display:none;">
+
+                    <div class="caja-info-panel">
+
+                        <!-- HEADER -->
+                        <div class="caja-info-header">
+
+                            <div class="caja-info-title">
+
+                                <div class="caja-info-icon">
+                                    <i class="fa-solid fa-cash-register"></i>
+                                </div>
+
+                                <div>
+                                    <h3>Información de la caja</h3>
+                                    <span>Detalle de la apertura actual</span>
+                                </div>
+
+                            </div>
+
+                            <div class="caja-estado-abierta">
+                                <span class="caja-estado-punto"></span>
+                                CAJA ABIERTA
+                            </div>
+
+                        </div>
 
 
-                    <div class="filters">
+                        <!-- DATOS -->
+                        <div class="caja-info-body">
 
-                        <input type="date">
+                            <!-- CAJA -->
+                            <div class="caja-dato">
 
-                        <input type="date">
+                                <div class="caja-dato-icon caja-icon-blue">
+                                    <i class="fa-solid fa-store"></i>
+                                </div>
+
+                                <div class="caja-dato-content">
+
+                                    <span class="caja-dato-label">
+                                        CAJA
+                                    </span>
+
+                                    <strong id="cajaNombre">
+                                        -
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- APERTURA -->
+                            <div class="caja-dato">
+
+                                <div class="caja-dato-icon caja-icon-purple">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                </div>
+
+                                <div class="caja-dato-content">
+
+                                    <span class="caja-dato-label">
+                                        FECHA DE APERTURA
+                                    </span>
+
+                                    <strong id="cajaAperturaFecha">
+                                        -
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                            <!-- MONTO INICIAL -->
+                            <div class="caja-dato caja-monto">
+
+                                <div class="caja-dato-icon caja-icon-orange">
+                                    <i class="fa-solid fa-money-bill-wave"></i>
+                                </div>
+
+                                <div class="caja-dato-content">
+
+                                    <span class="caja-dato-label">
+                                        MONTO INICIAL
+                                    </span>
+
+                                    <strong id="cajaMontoInicial">
+                                        S/ 0.00
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- MONTO INICIAL -->
+                            <div class="caja-dato caja-monto">
+
+                                <div class="caja-dato-icon caja-icon-blue">
+                                    <i class="fa-solid fa-money-bill-wave"></i>
+                                </div>
+
+                                <div class="caja-dato-content">
+
+                                    <span class="caja-dato-label">
+                                        MONTO CIERRE
+                                    </span>
+
+                                    <strong id="cajaMontoCierre">
+                                        S/ 0.00
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </div>
 
                     </div>
 
+                </div>
+                <div class="header">
+                    <div class="filters">
+                        <input type="date">
+                        <input type="date">
+                    </div>
+
+                    <div>
+                        <button class="btn btn-primary" id="btnDescargar"><i class="fa fa-download"></i>
+                            Descargar</button>
+                        <button class="btn btn-info" data-toggle="modal" data-target="#modalResumenCaja"><i
+                                class="fa fa-hand-holding-usd"></i> Caja chica</button>
+                        <button class="btn btn-danger" id="btnCerrarCaja"><i class="fa fa-close"></i> Cerar
+                            caja</button>
+                    </div>
                 </div>
 
                 <div class="cards">
@@ -592,6 +1058,256 @@
             </div>
         </div>
     </section>
+    <!-- MODAL RESUMEN DE CAJA CHICA -->
+    <div class="modal fade" id="modalResumenCaja" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <!-- HEADER -->
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="fa-solid fa-cash-register mr-2"></i>
+                        Resumen de Caja Chica
+                    </h5>
+
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+
+                <!-- BODY -->
+                <div class="modal-body">
+
+                    <!-- RESUMEN -->
+                    <div class="row">
+
+
+                        <!-- INGRESOS -->
+                        <div class="col-md-6">
+                            <div class="small-box bg-success">
+                                <div class="inner">
+                                    <h3 id="resumenIngresos">
+                                        S/ 0.00
+                                    </h3>
+                                    <p>Total ingresos</p>
+
+                                    <div class="icon">
+                                        <i class="fa-solid fa-arrow-trend-up"></i>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+
+                        <!-- EGRESOS -->
+                        <div class="col-md-6">
+                            <div class="small-box bg-danger">
+                                <div class="inner">
+                                    <h3 id="resumenEgresos">
+                                        S/ 0.00
+                                    </h3>
+                                    <p>Total egresos</p>
+
+                                <div class="icon">
+                                    <i class="fa-solid fa-arrow-trend-down"></i>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <!-- OPERACIONES -->
+                    <div class="row mb-4">
+
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-success">
+                                    <i class="fa-solid fa-arrow-down"></i>
+                                </span>
+
+                                <div class="info-box-content">
+                                    <span class="info-box-text">
+                                        Operaciones de ingreso
+                                    </span>
+
+                                    <span class="info-box-number" id="cantidadIngresos">
+                                        0
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-danger">
+                                    <i class="fa-solid fa-arrow-up"></i>
+                                </span>
+
+                                <div class="info-box-content">
+                                    <span class="info-box-text">
+                                        Operaciones de egreso
+                                    </span>
+
+                                    <span class="info-box-number" id="cantidadEgresos">
+                                        0
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4">
+                            <div class="info-box">
+                                <span class="info-box-icon bg-info">
+                                    <i class="fa-solid fa-list-check"></i>
+                                </span>
+
+                                <div class="info-box-content">
+                                    <span class="info-box-text">
+                                        Total operaciones
+                                    </span>
+
+                                    <span class="info-box-number" id="cantidadOperaciones">
+                                        0
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <!-- DETALLE -->
+                    <div class="row">
+
+                        <!-- INGRESOS -->
+                        <div class="col-md-6">
+
+                            <div class="card card-success">
+
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fa-solid fa-arrow-trend-up mr-2"></i>
+                                        Ingresos
+                                    </h3>
+                                </div>
+
+                                <div class="card-body p-0">
+
+                                    <table class="table table-hover mb-0">
+
+                                        <thead>
+                                            <tr>
+                                                <th>Forma pago</th>
+                                                <th>Banco</th>
+                                                <th>Cantidad</th>
+                                                <th class="text-right">
+                                                    Monto
+                                                </th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody id="tablaIngresosCaja">
+
+                                        </tbody>
+
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="3">
+                                                    INGRESOS
+                                                </th>
+
+                                                <th class="text-right text-success" id="totalTablaIngresos">
+                                                    S/ 0.00
+                                                </th>
+                                            </tr>
+                                        </tfoot>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- EGRESOS -->
+                        <div class="col-md-6">
+
+                            <div class="card card-danger">
+
+                                <div class="card-header">
+                                    <h3 class="card-title">
+                                        <i class="fa-solid fa-arrow-trend-down mr-2"></i>
+                                        Egresos
+                                    </h3>
+                                </div>
+
+                                <div class="card-body p-0">
+
+                                    <table class="table table-hover mb-0">
+
+                                        <thead>
+                                            <tr>
+                                                <th>Forma pago</th>
+                                                <th>Banco</th>
+                                                <th>Cantidad</th>
+                                                <th class="text-right">
+                                                    Monto
+                                                </th>
+                                            </tr>
+                                        </thead>
+
+                                        <tbody id="tablaEgresosCaja">
+
+                                        </tbody>
+
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="3">
+                                                    TOTAL
+                                                </th>
+
+                                                <th class="text-right text-danger" id="totalTablaEgresos">
+                                                    S/ 0.00
+                                                </th>
+                                            </tr>
+                                        </tfoot>
+
+                                    </table>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- FOOTER -->
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+
+                        <i class="fa-solid fa-xmark mr-1"></i>
+                        Cerrar
+
+                    </button>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
 </div>
+
+
 
 <script src="vistas/js/caja-chica.js"></script>
