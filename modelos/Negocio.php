@@ -80,8 +80,6 @@ class Negocio extends Helpers
 		->join('empresas e', 's.idempresa = e.idempresa')
 		->where('s.idsucursal', '=', $idsucursal)
 		->first();
-		$sql = "SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = $idsucursal";
-		return ejecutarConsulta($sql);
 	}
 
 }

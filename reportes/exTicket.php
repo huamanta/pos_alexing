@@ -13,42 +13,45 @@ $cc = new CuentasCobrar();
 $negocio = new Negocio();
 $V = new EnLetras();
 
-$reg = $venta->ventacabecera($_GET["id"])->fetch_object();
-$regn = $negocio->listar($reg->idsucursal)->fetch_object();
+$ventaData = $venta->ventacabecera($_GET["id"]);
+$sucursal = $negocio->listar($ventaData['idsucursal']);
 
-$formaPago = ($reg->ventacredito == "Si") ? "CRÉDITO" : "CONTADO";
+$formaPago = ($ventaData['ventacredito'] == "Si") ? "CRÉDITO" : "CONTADO";
 
 // ===== DETALLE =====
-$rsptad = $venta->ventadetalle($_GET["id"]);
+$detalles = $venta->ventadetalle($_GET["id"]);
 
 $subtotal = 0;
 $exonerado = 0;
 $gravado = 0;
 $detalle = [];
 
-while ($d = $rsptad->fetch_object()) {
-    $linea = $d->subtotal;
+foreach ($detalles as $d) {
+
+    $linea = $d['subtotal'];
     $subtotal += $linea;
 
-    if ($d->proigv == "No Gravada")
+    if ($d['proigv'] == "No Gravada") {
         $exonerado += $linea;
-    else
+    } else {
         $gravado += $linea;
+    }
+
 
     $detalle[] = $d;
 }
 
 // ===== IGV =====
-$igv = $reg->impuesto;
+$igv = $ventaData['impuesto'];
 
-$total = $reg->total_venta;
+$total = $ventaData['total_venta'];
 
 // ===== CREDITO =====
 $total_abono = 0;
 $total_deuda = 0;
-$inicial = $reg->totalrecibido;
+$inicial = $ventaData['totalrecibido'];
 
-if ($reg->ventacredito == "Si") {
+if ($ventaData['ventacredito'] == "Si") {
     $rs = $cc->mostrarDeuda($_GET["id"]);
     while ($c = $rs->fetch_object()) {
         $total_deuda += $c->deudatotal;
@@ -62,10 +65,9 @@ $total_letras = $V->ValorEnLetras($total, "SOLES");
 
 $sqlSucursal = 'SELECT * FROM sucursal s 
 INNER JOIN empresas e ON s.idempresa = e.idempresa 
-WHERE s.idsucursal = ' . $reg->idsucursal;
+WHERE s.idsucursal = ' . $ventaData['idsucursal'];
 
-$resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
-$currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
+$currency = $helpers->getCurrencyCode($ventaData['idsucursal']);
 ?>
 
 <html>
@@ -130,30 +132,31 @@ $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
 
         <!-- EMPRESA -->
         <div class="center">
-            <img src="../files/logos/<?php echo !empty($regn->logo) ? $regn->logo : 'default.png'; ?>" width="80">
+            <img src="../files/logos/<?php echo !empty($sucursal['logo']) ? $sucursal['logo'] : 'default.png'; ?>"
+                width="80">
             <br>
-            <h1 class="bold"><?php echo $regn->razon_social; ?></h1>
-            <span class="bold">sucursal: <?php echo $regn->nombre; ?></span><br>
-            RUC: <?php echo $regn->ruc; ?><br>
-            <?php echo $regn->direccion; ?><br>
-            Tel: <?php echo $regn->telefono; ?>
+            <h1 class="bold"><?php echo $sucursal['razon_social']; ?></h1>
+            <span class="bold">sucursal: <?php echo $sucursal['nombre']; ?></span><br>
+            RUC: <?php echo $sucursal['ruc']; ?><br>
+            <?php echo $sucursal['direccion']; ?><br>
+            Tel: <?php echo $sucursal['telefono']; ?>
         </div>
 
         <div class="line"></div>
 
         <!-- COMPROBANTE -->
         <div class="center bold">
-            <?php echo strtoupper($reg->tipo_comprobante); ?> ELECTRÓNICA<br>
-            <?php echo $reg->serie_comprobante . "-" . $reg->num_comprobante; ?>
+            <?php echo strtoupper($ventaData['tipo_comprobante']); ?> ELECTRÓNICA<br>
+            <?php echo $ventaData['serie_comprobante'] . "-" . $ventaData['num_comprobante']; ?>
         </div>
 
         <div class="line"></div>
 
         <!-- CLIENTE -->
         <div class="small">
-            Cliente: <?php echo $reg->cliente; ?><br>
-            Doc: <?php echo $reg->num_documento; ?><br>
-            Fecha: <?php echo $reg->fecha_kardex; ?><br>
+            Cliente: <?php echo $ventaData['cliente']; ?><br>
+            Doc: <?php echo $ventaData['num_documento']; ?><br>
+            Fecha: <?php echo $ventaData['fecha_kardex']; ?><br>
             Pago: <?php echo $formaPago; ?>
         </div>
 
@@ -169,9 +172,9 @@ $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
 
             <?php foreach ($detalle as $d) { ?>
                 <tr>
-                    <td><?php echo number_format($d->cantidad, 2); ?></td>
-                    <td><?php echo substr($d->dproducto, 0, 16); ?></td>
-                    <td class="right"><?php echo $helpers->monedaFormt($d->subtotal, $currency); ?></td>
+                    <td><?php echo number_format($d['cantidad'], 2); ?></td>
+                    <td><?php echo substr($d['dproducto'], 0, 16); ?></td>
+                    <td class="right"><?php echo $helpers->monedaFormt($d['subtotal'], $currency); ?></td>
                 </tr>
             <?php } ?>
         </table>
@@ -194,13 +197,13 @@ $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
             <?php } ?>
 
             <tr>
-                <td><?php echo $resultSucursal['nombre_impuesto']; ?>(<?php echo $resultSucursal['monto_impuesto']; ?>%):
+                <td><?php echo $sucursal['nombre_impuesto']; ?>(<?php echo $sucursal['monto_impuesto']; ?>%):
                 </td>
                 <td class="right"><?php echo $helpers->monedaFormt($igv, $currency); ?></td>
             </tr>
             <tr>
                 <td>SUBTOTAL:</td>
-                <td class="right"><?php echo $helpers->monedaFormt($total-$igv, $currency); ?></td>
+                <td class="right"><?php echo $helpers->monedaFormt($total - $igv, $currency); ?></td>
             </tr>
 
             <tr class="bold">
@@ -218,7 +221,7 @@ $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
         </div>
 
         <!-- CREDITO -->
-        <?php if ($reg->ventacredito == "Si") { ?>
+        <?php if ($ventaData['ventacredito'] == "Si") { ?>
             <div class="line"></div>
             <table>
                 <tr>
@@ -236,7 +239,7 @@ $currency = $helpers->getCurrencyCode($resultSucursal['idsucursal'] ?? 0);
 
         <div class="center small">
             Gracias por su compra<br>
-            Vendedor: <?php echo $reg->personal; ?>
+            Vendedor: <?php echo $ventaData['personal']; ?>
         </div>
 
     </div>

@@ -24,7 +24,8 @@ $web = 'www.cobefar.com.pe';
 
 <head>
     <meta charset="UTF-8">
-    <title><?= $factura['tipo_comprobante'] ?> <?= $factura['serie_comprobante'] ?>-<?= $factura['num_comprobante'] ?></title>
+    <title><?= $factura['tipo_comprobante'] ?> <?= $factura['serie_comprobante'] ?>-<?= $factura['num_comprobante'] ?>
+    </title>
 
     <style>
         @page {
@@ -364,15 +365,15 @@ $web = 'www.cobefar.com.pe';
         }
 
         .anulada {
-    position: fixed;
-    top: 80;
-    left: 80;
-    width: 80%;
-    height: 80%;
-    object-fit: contain;
-    z-index: 999999;
-    pointer-events: none;
-}
+            position: fixed;
+            top: 80;
+            left: 80;
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            z-index: 999999;
+            pointer-events: none;
+        }
     </style>
 </head>
 
@@ -393,9 +394,12 @@ $web = 'www.cobefar.com.pe';
             <!-- DATOS FISCALES -->
             <td class="fiscal-area">
                 <div class="line"><span class="label">Dom. Fiscal:</span> <?= $direccion ?></div>
-                <div class="line"><span class="label">Almacén:</span> Av. Nicolás Arriola N°2955-2963, 2do. Piso Urb. Mercurio - San Luis - Lima - Lima</div>
-                <div class="line"><span class="label">Almacén:</span> Jr. Antonio Miroquezada N° 806 Int. 303 Lima - Lima - Lima</div>
-                <div class="line"><span class="label">Almacén:</span> Jr. Antonio Miroquezada N° 806 Int. 502 Lima - Lima - Lima</div>
+                <div class="line"><span class="label">Almacén:</span> Av. Nicolás Arriola N°2955-2963, 2do. Piso Urb.
+                    Mercurio - San Luis - Lima - Lima</div>
+                <div class="line"><span class="label">Almacén:</span> Jr. Antonio Miroquezada N° 806 Int. 303 Lima -
+                    Lima - Lima</div>
+                <div class="line"><span class="label">Almacén:</span> Jr. Antonio Miroquezada N° 806 Int. 502 Lima -
+                    Lima - Lima</div>
                 <div class="line"><span class="label">Teléfono:</span> <?= $telefono ?></div>
                 <div class="line"><span class="label">Email:</span> <?= $email ?></div>
             </td>
@@ -405,7 +409,8 @@ $web = 'www.cobefar.com.pe';
                 <div class="ruc-box">
                     <div class="ruc">R.U.C. <?= $configuracion['ruc'] ?></div>
                     <div class="doc-title"><?= strtoupper($factura['tipo_comprobante']) ?> ELECTRÓNICA</div>
-                    <div class="doc-num">N° <?= $factura['serie_comprobante'] ?>-<?= $factura['num_comprobante'] ?></div>
+                    <div class="doc-num">N° <?= $factura['serie_comprobante'] ?>-<?= $factura['num_comprobante'] ?>
+                    </div>
                 </div>
             </td>
         </tr>
@@ -439,7 +444,7 @@ $web = 'www.cobefar.com.pe';
             <td class="info-derecha">
                 <div class="row"><span class="label">FECHA DE EMISIÓN:</span> <?= $factura['fecha'] ?></div>
                 <div class="row"><span class="label">MONEDA:</span> Soles</div>
-                <div class="row"><span class="label">ALMACÉN:</span> <?= $factura['almacen'] ?></div>
+                <div class="row"><span class="label">ALMACÉN:</span> <?= $configuracion['nombre'] ?></div>
             </td>
         </tr>
     </table>
@@ -448,7 +453,9 @@ $web = 'www.cobefar.com.pe';
     <table class="puntos-section">
         <tr>
             <td class="puntos-left">
-                <div><span class="label">Punto de partida :</span> <?= $configuracion['direccion'] ?? 'AV. MARISCAL ELOY URETA N° 45-65 URB. EL PINO San Luis Lima Lima' ?></div>
+                <div><span class="label">Punto de partida :</span>
+                    <?= $configuracion['direccion'] ?? 'AV. MARISCAL ELOY URETA N° 45-65 URB. EL PINO San Luis Lima Lima' ?>
+                </div>
             </td>
             <td class="puntos-right">
                 <div><span class="label">Fecha Entrega :</span></div>
@@ -510,8 +517,7 @@ $web = 'www.cobefar.com.pe';
             $opgratuita = 0;
             $anticipo = 0;
             $descGlobales = 0;
-
-            while ($row = mysqli_fetch_assoc($query_productos)) {
+            foreach ($detalles as $row) {
                 $precio_total = $row['subtotal'];
                 if ($row['proigv'] == 'No Gravada') {
                     $exonerado += $precio_total;
@@ -522,15 +528,15 @@ $web = 'www.cobefar.com.pe';
                 } else {
                     $opgrav += $precio_total;
                 }
-                $descuento += $row['descuentodv'];
+                $descuento += $row['descuento'];
 
                 // Cálculo del V.Venta Neto (precio unitario menos descuento unitario)
                 $cant = max($row['cantidad'], 1);
-                $dsctoUnit = $row['descuentodv'] / $cant;
+                $dsctoUnit = $row['descuento'] / $cant;
                 $vVentaNeto = $row['precio_venta'] - $dsctoUnit;
 
                 // Porcentaje descuento
-                $dsctoPct = ($row['precio_venta'] * $cant) > 0 ? ($row['descuentodv'] / ($row['precio_venta'] * $cant)) * 100 : 0;
+                $dsctoPct = ($row['precio_venta'] * $cant) > 0 ? ($row['descuento'] / ($row['precio_venta'] * $cant)) * 100 : 0;
                 ?>
                 <tr>
                     <td class="text-center"><?= round($row['cantidad'], 2) ?></td>
@@ -538,15 +544,15 @@ $web = 'www.cobefar.com.pe';
                     <td class="text-center"><?= $row['contenedor'] ?? '' ?></td>
                     <td class="text-center"><?= buscarLotes($row['iddetalle_venta']) ?></td>
                     <td class="text-center"><?= buscarVencimientos($row['iddetalle_venta']) ?></td>
-                    <td class="text-right"><?= number_format($row['precio_venta'], 2, '.', '') ?></td>
-                    <td class="text-right"><?= number_format($dsctoPct, 2) ?></td>
-                    <td class="text-right"><?= number_format($vVentaNeto, 2, '.', '') ?></td>
-                    <td class="text-right"><?= number_format($row['subtotal'], 2, '.', '') ?></td>
+                    <td class="text-right"><?= $helpers->get_currency_symbol($row['precio_venta']) ?></td>
+                    <td class="text-right"><?= $helpers->get_currency_symbol($dsctoPct) ?></td>
+                    <td class="text-right"><?= $helpers->get_currency_symbol($vVentaNeto) ?></td>
+                    <td class="text-right"><?= $helpers->get_currency_symbol($row['subtotal']) ?></td>
                 </tr>
             <?php } ?>
         </tbody>
     </table>
-<!-- ========== LINEA PUNTEADA SEPARADORA ========== -->
+    <!-- ========== LINEA PUNTEADA SEPARADORA ========== -->
     <hr class="dotted-line">
     <!-- ========== IMPORTE EN LETRAS ========== -->
     <div class="son-section">
@@ -578,43 +584,35 @@ $web = 'www.cobefar.com.pe';
                 <table class="totales-tabla">
                     <tr>
                         <td class="etiqueta">Op.Gravada</td>
-                        <td class="simbolo">S/</td>
-                        <td class="monto"><?= number_format($opgrav, 2) ?></td>
+                        <td class="monto"><?= $helpers->get_currency_symbol($opgrav) ?></td>
                     </tr>
                     <tr>
                         <td class="etiqueta">Anticipo</td>
-                        <td class="simbolo">S/</td>
-                        <td class="monto"><?= number_format($anticipo, 2) ?></td>
+                        <td class="monto"><?= $helpers->get_currency_symbol($anticipo) ?></td>
                     </tr>
                     <tr>
                         <td class="etiqueta">Desc. Globales</td>
-                        <td class="simbolo">S/</td>
-                        <td class="monto"><?= number_format($descGlobales, 2) ?></td>
+                        <td class="monto"><?= $helpers->get_currency_symbol($descGlobales) ?></td>
                     </tr>
                     <tr>
                         <td class="etiqueta">I.G.V <?= $iva ?>%</td>
-                        <td class="simbolo">S/</td>
-                        <td class="monto"><?= number_format($igv, 2) ?></td>
+                        <td class="monto"><?= $helpers->get_currency_symbol($igv) ?></td>
                     </tr>
                     <tr>
                         <td class="etiqueta">Op.Inafecta</td>
-                        <td class="simbolo">S/</td>
-                        <td class="monto"><?= number_format($opinafecta, 2) ?></td>
+                        <td class="monto"><?= $helpers->get_currency_symbol($opinafecta) ?></td>
                     </tr>
                     <tr>
                         <td class="etiqueta">Op.Exonerada</td>
-                        <td class="simbolo">S/</td>
-                        <td class="monto"><?= number_format($exonerado, 2) ?></td>
+                        <td class="monto"><?= $helpers->get_currency_symbol($exonerado) ?></td>
                     </tr>
                     <tr>
                         <td class="etiqueta">Op.Gratuita</td>
-                        <td class="simbolo">S/</td>
-                        <td class="monto"><?= number_format($opgratuita, 2) ?></td>
+                        <td class="monto"><?= $helpers->get_currency_symbol($opgratuita) ?></td>
                     </tr>
                     <tr class="importe-total">
                         <td class="etiqueta"><strong>Importe Total</strong></td>
-                        <td class="simbolo"><strong>S/</strong></td>
-                        <td class="monto"><strong><?= number_format($total, 2) ?></strong></td>
+                        <td class="monto"><strong><?= $helpers->get_currency_symbol($total) ?></strong></td>
                     </tr>
                 </table>
             </td>
@@ -628,7 +626,7 @@ $web = 'www.cobefar.com.pe';
             <?php
             $totalPagado = 0;
             foreach ($pagos as $pago) {
-                echo $pago['metodo_pago'] . ': S/ ' . number_format($pago['monto'], 2, '.', '');
+                echo $pago['metodo_pago'] . ': ' . $helpers->get_currency_symbol($pago['monto']);
                 if (!empty($pago['banco']))
                     echo ' | Banco: ' . $pago['banco'];
                 if (!empty($pago['nroOperacion']))
@@ -638,13 +636,14 @@ $web = 'www.cobefar.com.pe';
             }
             ?>
             <br>
-            <strong>Total Pagado:</strong> S/ <?= number_format($totalPagado, 2) ?> &nbsp;&nbsp;
-            <strong>Saldo:</strong> S/ <?= number_format($total - $totalPagado, 2) ?>
+            <strong>Total Pagado:</strong> <?= $helpers->get_currency_symbol($totalPagado) ?> &nbsp;&nbsp;
+            <strong>Saldo:</strong> <?= $helpers->get_currency_symbol($total - $totalPagado) ?>
         </div>
     <?php endif; ?>
 
     <!-- ========== PIE ========== -->
-    <div style="margin-top:8px; padding:6px 10px; border:1px solid #000; border-radius:6px; text-align:center; font-size:8.5px;">
+    <div
+        style="margin-top:8px; padding:6px 10px; border:1px solid #000; border-radius:6px; text-align:center; font-size:8.5px;">
         <strong>Representación impresa de la <?= strtoupper($factura['tipo_comprobante']) ?> ELECTRÓNICA</strong><br>
         Autorizado mediante SEE - Del Contribuyente.
     </div>
