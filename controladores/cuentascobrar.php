@@ -8,10 +8,6 @@ $cuentascobrar = new CuentasCobrar();
 $negocio = new Negocio();
 $contratos = new Contratos();
 
-// Obtener nombre del negocio
-$infoNegocio = $negocio->mostrarNombreNegocio();
-$nombreNegocio = $infoNegocio ? $infoNegocio['nombre'] : 'Su negocio';
-
 $idcpc = isset($_POST["idcpc"]) ? limpiarCadena($_POST["idcpc"]) : "";
 $idventa = isset($_POST["idventa"]) ? limpiarCadena($_POST["idventa"]) : "";
 $montopagado = isset($_POST["montoPagar"]) ? limpiarCadena($_POST["montoPagar"]) : "";

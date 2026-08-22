@@ -434,11 +434,7 @@ switch ($_GET["op"]) {
 	case 'selectCotizaciones':
 		$idsucursal = $_SESSION['idsucursal'];
 		$is_aprobated = $_POST['is_aprobated'] ?? false; // Valor predeterminado si no se proporciona
-		$rspta = $venta->listar2($idsucursal, $is_aprobated);
-
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value="' . $reg->idcotizacion . '">' . $reg->serie_comprobante . '-' . $reg->num_comprobante . ': ' . $reg->cliente . '</option>';
-		}
+		$venta->selectCotizaciones($idsucursal, $is_aprobated);
 		break;
 
 	case 'buscarProducto':
@@ -550,11 +546,7 @@ switch ($_GET["op"]) {
 		$idsucursal = $_SESSION['idsucursal'];
 		$idcliente = $_GET["idcliente"];
 		$is_aprobated = $_GET["is_aprobated"] ?? false;
-		$rspta = $venta->cotizacionesCliente($idsucursal, $idcliente, $is_aprobated);
-		echo '<option value="">Seleccione una cotización</option>';
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idcotizacion . '>' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</option>';
-		}
+		$venta->cotizacionesCliente($idsucursal, $idcliente, $is_aprobated);
 		break;
 
 

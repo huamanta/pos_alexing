@@ -286,8 +286,7 @@ switch ($_GET["op"]) {
 		$fecha_inicio = $_REQUEST["fecha_inicio"];
 		$fecha_fin = $_REQUEST["fecha_fin"];
 		$idsucursal = $_SESSION["idsucursal"];
-		$rspta = $compra->listar($fecha_inicio, $fecha_fin, $idsucursal);
-		echo $rspta;
+		$compra->listar($fecha_inicio, $fecha_fin, $idsucursal);
 		break;
 
 	case 'listar2':
@@ -386,169 +385,38 @@ switch ($_GET["op"]) {
 			echo '<option value=' . $reg->idcompra . '>' . $reg->serie_comprobante . '-' . $reg->num_comprobante . '</option>';
 		}
 		break;
-
-	//el lisyado de todos los proveedores lo vamos a mostrar en la vista ingreso
+		
 	case 'selectProveedor':
 		require_once "../modelos/Persona.php";
 		$persona = new Persona();
-		$rspta = $persona->listarp();
-		echo $rspta;
-		// echo '<option value="Todos">Todos</options>';
-		// while ($reg = $rspta->fetch_object()) {
-		// 	echo '<option value=' . $reg->idpersona . '>' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
-		// }
+		$persona->listarp();
 		break;
 
 	case 'listarArticulos':
-		// try {
 		$idsucursal = $_SESSION["idsucursal"];
-
-		// if ($idsucursal <= 0) {
-		//     echo json_encode([
-		//         "draw" => 1,
-		//         "recordsTotal" => 0,
-		//         "recordsFiltered" => 0,
-		//         "data" => []
-		//     ]);
-		//     break;
-		// }
-
-		// // Parámetros de DataTables
-		// $buscar = isset($_REQUEST['search']['value']) ? trim($_REQUEST['search']['value']) : '';
-		// $inicio = isset($_REQUEST['start']) ? intval($_REQUEST['start']) : 0;
-		// $limite = isset($_REQUEST['length']) ? intval($_REQUEST['length']) : 5;
-		// $draw = isset($_REQUEST['draw']) ? intval($_REQUEST['draw']) : 1;
-
-		// if ($limite > 100) $limite = 100;
-
 		require_once "../modelos/Producto.php";
 		$producto = new Producto();
-
-		// // ═══════════════════════════════════════════════════════════════
-		// // CACHE del total - MULTI USUARIO Y SUCURSAL COMPATIBLE
-		// // ═══════════════════════════════════════════════════════════════
-		// if (session_status() == PHP_SESSION_NONE) {
-		//     session_start();
-		// }
-
-		// // Clave única por sucursal (compartida entre usuarios de la misma sucursal)
-		// $cacheKey = "total_prod_suc_" . $idsucursal;
-		// $cacheTimeout = 300; // 5 minutos
-
-		// if (empty($buscar)) {
-		//     // Sin búsqueda - usar cache
-		//     if (isset($_SESSION[$cacheKey]) && 
-		//         isset($_SESSION[$cacheKey.'_time']) && 
-		//         (time() - $_SESSION[$cacheKey.'_time']) < $cacheTimeout) {
-
-		//         // Usar cache
-		//         $totalRegistros = $_SESSION[$cacheKey];
-		//         $totalFiltrados = $totalRegistros;
-
-		//     } else {
-		//         // Cache expirado o no existe - contar y guardar
-		//         $totalRegistros = $producto->contarActivos($idsucursal, '');
-		//         $_SESSION[$cacheKey] = $totalRegistros;
-		//         $_SESSION[$cacheKey.'_time'] = time();
-		//         $totalFiltrados = $totalRegistros;
-		//     }
-
-		// } else {
-		//     // Con búsqueda - obtener total de cache y contar filtrados
-		//     if (!isset($_SESSION[$cacheKey]) || 
-		//         !isset($_SESSION[$cacheKey.'_time']) ||
-		//         (time() - $_SESSION[$cacheKey.'_time']) >= $cacheTimeout) {
-
-		//         $totalRegistros = $producto->contarActivos($idsucursal, '');
-		//         $_SESSION[$cacheKey] = $totalRegistros;
-		//         $_SESSION[$cacheKey.'_time'] = time();
-		//     } else {
-		//         $totalRegistros = $_SESSION[$cacheKey];
-		//     }
-
-		//     // Solo contar los filtrados
-		//     $totalFiltrados = $producto->contarActivos($idsucursal, $buscar);
-		// }
-
 		// Obtener registros paginados
-		$rspta = $producto->listarActivos($idsucursal);
-		echo $rspta;
-		//     $data = array();
-		//     while ($reg = $rspta->fetch_object()) {
-		//         $nombre = htmlspecialchars($reg->nombre, ENT_QUOTES, 'UTF-8');
-		//         $unidadmedida = htmlspecialchars($reg->unidadmedida, ENT_QUOTES, 'UTF-8');
-		//         $categoria = htmlspecialchars($reg->categoria, ENT_QUOTES, 'UTF-8');
-		//         $precio = number_format($reg->precio, 2, '.', '');
-		//         $precio_compra = number_format($reg->precio_compra, 2, '.', '');
-
-		//         $data[] = array(
-		//             "0" => $nombre . ' - ' . $unidadmedida . ' - <span class="badge bg-red">' . $categoria . '</span>',
-		//             "1" => htmlspecialchars($reg->codigo, ENT_QUOTES, 'UTF-8'),
-		//             "2" => $reg->stock,
-		//             "3" => '<input style="text-align:center" type="number" min="0" step="0.01" class="form-control form-control-sm cantidad-input" id="cantidaC_' . $reg->idproducto . '" data-id="' . $reg->idproducto . '" data-nombre="' . $nombre . '" data-precio="' . $precio . '" data-precio-compra="' . $precio_compra . '" data-unidad="' . $unidadmedida . '">',
-		//             "4" => '<button type="button" class="btn btn-warning btn-agregar" data-id="' . $reg->idproducto . '"><span class="fa fa-plus"></span></button>'
-		//         );
-		//     }
-
-		//     $results = array(
-		//         "draw" => $draw,
-		//         "recordsTotal" => intval($totalRegistros),
-		//         "recordsFiltered" => intval($totalFiltrados),
-		//         "data" => $data
-		//     );
-
-		//     echo json_encode($results);
-
-		// } catch (Exception $e) {
-		//     echo json_encode([
-		//         "draw" => 1,
-		//         "recordsTotal" => 0,
-		//         "recordsFiltered" => 0,
-		//         "data" => [],
-		//         "error" => "Error al cargar productos"
-		//     ]);
-		// }
-		break;
-
-	// Agregar este case para limpiar cache cuando se modifiquen productos
-	case 'limpiarCacheProductos':
-		if (session_status() == PHP_SESSION_NONE) {
-			session_start();
-		}
-
-		$idsucursal = isset($_REQUEST["idsucursal"]) ? intval($_REQUEST["idsucursal"]) : 0;
-
-		if ($idsucursal > 0) {
-			$cacheKey = "total_prod_suc_" . $idsucursal;
-			unset($_SESSION[$cacheKey]);
-			unset($_SESSION[$cacheKey . '_time']);
-		}
-
-		echo json_encode(["success" => true]);
+		$producto->listarActivos($idsucursal);
+		
 		break;
 
 	case 'exportar_excel':
 		$compra = new Compra();
 
-		$fecha_inicio = $_GET["fecha_inicio"];
-		$fecha_fin = $_GET["fecha_fin"];
-		$idsucursal = $_GET["idsucursal"] ?? '';
+		$fecha_inicio = $_GET["fecha_inicio"] ?? '';
+		$fecha_fin = $_GET["fecha_fin"] ?? '';
+		$idsucursal = $_SESSION["idsucursal"];
 
-		$compra->exportarExcel($fecha_inicio, $fecha_fin, '', $idsucursal, '');
+		$compra->exportarExcel($fecha_inicio, $fecha_fin, $idsucursal);
 		break;
 
 	case 'mostrarEditar':
-		$rspta = $compra->mostrarEditar($_POST["idcompra"]);
-		echo json_encode($rspta);
+		$compra->mostrarEditar($_POST["idcompra"]);
 		break;
 
 	case 'listarDetalleEdicion':
-		$rspta = $compra->listarDetalleEdicion($_POST["idcompra"]);
-		$data = array();
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = $reg;
-		}
-		echo json_encode($data);
+		$compra->listarDetalleEdicion($_GET["idcompra"]);
 		break;
 
 	case 'limpiar_tmp':

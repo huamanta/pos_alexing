@@ -351,45 +351,67 @@ class Cotizacion extends Helpers
         return Response::json($response);
     }
 
-    public function listar2($idsucursal, $is_aprobated = false)
+    public function selectCotizaciones($idsucursal, $is_aprobated = false)
     {
+        $search = trim($_GET['search'] ?? '');
 
-        $sql = "SELECT
-            c.idcotizacion,
-            DATE(c.fecha_hora) AS fecha,
-            c.idcliente,
-            p.nombre AS cliente,
-            u.idpersonal,
-            u.nombre AS personal,
-            c.idcomprobante_pago,
-            cp.nombre AS tipo_comprobante,
-            c.serie_comprobante,
-            c.num_comprobante,
-            c.total_venta,
-            c.formapago,
-            c.estado
-        FROM cotizacion c
-        INNER JOIN persona p ON c.idcliente = p.idpersona
-        INNER JOIN personal u ON c.idPersonal = u.idpersonal
-        INNER JOIN comp_pago cp ON c.idcomprobante_pago = cp.idcomprobante_pago
-        WHERE c.idsucursal = '$idsucursal'
-        AND c.condicion = 1
-        AND DATE_ADD(c.fecha_hora, INTERVAL c.nota DAY) >= CURDATE()
-        AND (
+        $query = (new DBQuery($this->pdo))
+            ->select("
+                c.idcotizacion,
+                DATE(c.fecha_hora) AS fecha,
+                c.idcliente,
+                p.nombre AS cliente,
+                u.idpersonal,
+                u.nombre AS personal,
+                c.idcomprobante_pago,
+                cp.nombre AS tipo_comprobante,
+                c.serie_comprobante,
+                c.num_comprobante,
+                c.total_venta,
+                c.formapago,
+                c.estado
+            ")
+            ->from('cotizacion c')
+            ->join('persona p', 'p.idpersona = c.idcliente')
+            ->join('personal u', 'u.idpersonal = c.idPersonal')
+            ->join('comp_pago cp', 'cp.idcomprobante_pago = c.idcomprobante_pago')
+            ->where('c.idsucursal', '=', $idsucursal)
+            ->where('c.condicion', '=', 1)
+            ->whereRaw('DATE_ADD(c.fecha_hora, INTERVAL c.nota DAY) >= CURDATE()')
+            ->whereRaw("
             (
-                c.formapago = 'Si'
-                AND c.estado = 'APROBADO'
-                AND c.fecha_aprobacion IS NOT NULL
+                (
+                    c.formapago = 'Si'
+                    AND c.estado = 'APROBADO'
+                    AND c.fecha_aprobacion IS NOT NULL
+                )
+                OR
+                (
+                    c.formapago = 'No'
+                    AND c.estado = 'EN ESPERA'
+                )
             )
-            OR
-            (
-                c.formapago = 'No'
-                AND c.estado = 'EN ESPERA'
-            )
-        )
-        ORDER BY c.idcotizacion DESC";
+        ");
 
-        return ejecutarConsulta($sql);
+        if (trim($search) !== '') {
+            $search = trim($search);
+
+            $query->whereRaw(
+                "(c.num_comprobante LIKE ? OR p.nombre LIKE ? OR c.serie_comprobante LIKE ?)",
+                [
+                    "%{$search}%",
+                    "%{$search}%",
+                    "%{$search}%"
+                ]
+            );
+        }
+
+        $response = $query
+            ->orderBy('c.idcotizacion', 'DESC')
+            ->limit(20)
+            ->get();
+
+        return Response::json($response);
     }
 
 
@@ -641,24 +663,28 @@ class Cotizacion extends Helpers
 
     public function cotizacionesCliente($idsucursal, $idcliente, $is_aprobated = false)
     {
-        $sql = "SELECT
+        $query = (new DBQuery($this->pdo))
+            ->select("
                 idcotizacion,
                 serie_comprobante,
                 num_comprobante
-            FROM cotizacion
-            WHERE idsucursal = '$idsucursal' AND idcliente = '$idcliente'
-            AND DATE_ADD(fecha_hora, INTERVAL nota DAY) >= CURDATE()";
+            ")
+            ->from('cotizacion')
+            ->where('idsucursal', '=', $idsucursal)
+            ->where('idcliente', '=', $idcliente)
+            ->whereRaw('DATE_ADD(fecha_hora, INTERVAL nota DAY) >= CURDATE()');
 
         if ($is_aprobated) {
-            $sql .= " AND fecha_aprobacion IS NOT NULL";
+            $query->whereNotNull('fecha_aprobacion');
         } else {
-            $sql .= " AND fecha_aprobacion IS NULL";
+            $query->whereNull('fecha_aprobacion');
         }
 
-        return ejecutarConsulta($sql);
+        $response = $query->get();
+        return Response::json($response);
     }
 
-    public function listarDataCotizacion($idcotizacion) : array
+    public function listarDataCotizacion($idcotizacion): array
     {
         $query = (new DBQuery($this->pdo))
             ->select('v.idcotizacion,
@@ -704,7 +730,7 @@ class Cotizacion extends Helpers
         return $query->first();
     }
 
-    public function listarDataDetalleCotizacion($idcotizacion) : array
+    public function listarDataDetalleCotizacion($idcotizacion): array
     {
         $query = (new DBQuery($this->pdo))
             ->select('a.idproducto, 

@@ -1,14 +1,14 @@
 var tabla;
 var sucursalActual;
 let listarArticulos = null;
-let listarVentas = null;
+let listarCompras = null;
 function init() {
     $("#body").addClass("sidebar-collapse sidebar-mini");
     mostrar_impuesto();
 
     mostrarform(false);
 
-    listarVentas.load();
+    listarCompras.load();
 
     $("#formulario").on("submit", function (e) {
         guardaryeditar(e);
@@ -22,89 +22,6 @@ function init() {
         guardarProveedor(e);
     });
 
-    // $.post("controladores/venta.php?op=selectSucursal", function (r) {
-    //     $("#idsucursal").html(r);
-    //     $('#idsucursal').select2('');
-
-    //     // 1. Guardamos la sucursal inicial (la que viene por defecto)
-    //     sucursalActual = $("#idsucursal").val();
-
-    //     // 2. Cargamos los artículos de esa sucursal inicial
-    //     listarArticulos();
-
-    //     // 3. EVENTO ESPECIAL DE SELECT2: "select2:selecting"
-    //     // Este evento ocurre ANTES de que el valor cambie visualmente
-    //     $('#idsucursal').on('select2:selecting', function (e) {
-
-    //         // Verificamos si hay filas agregadas en la compra (detalles > 0)
-    //         // Nota: Asegúrate de que la variable 'detalles' esté definida globalmente en tu archivo
-    //         if (typeof detalles !== 'undefined' && detalles > 0) {
-
-    //             // DETENEMOS el cambio automático del select
-    //             e.preventDefault();
-
-    //             // Guardamos el ID de la sucursal que el usuario INTENTÓ seleccionar
-    //             var nuevaSucursal = e.params.args.data.id;
-
-    //             Swal.fire({
-    //                 title: '¿Cambiar de Sucursal?',
-    //                 text: "Tienes productos agregados en el carrito. Si cambias de sucursal, se limpiará toda la compra actual. ¿Deseas continuar?",
-    //                 icon: 'warning',
-    //                 showCancelButton: true,
-    //                 confirmButtonColor: '#3085d6',
-    //                 cancelButtonColor: '#d33',
-    //                 confirmButtonText: 'Sí, cambiar y limpiar',
-    //                 cancelButtonText: 'Cancelar'
-    //             }).then((result) => {
-    //                 if (result.isConfirmed) {
-    //                     // SI EL USUARIO DICE QUE SÍ:
-
-    //                     // 1. Limpiamos formulario y variables (Tu función limpiar)
-    //                     limpiar();
-
-    //                     // 2. Forzamos el cambio de valor manualmente (porque lo bloqueamos antes)
-    //                     $("#idsucursal").val(nuevaSucursal).trigger('change.select2');
-
-    //                     // 3. Actualizamos la variable de control
-    //                     sucursalActual = nuevaSucursal;
-
-    //                     // 4. Recargamos la tabla de artículos con la nueva sucursal
-    //                     listarArticulos();
-
-    //                     Swal.fire('¡Cambiado!', 'Ahora estás comprando en la nueva sucursal.', 'success');
-    //                 }
-    //                 // Si dice que NO, no hacemos nada, y el select se queda como estaba gracias al e.preventDefault()
-    //             });
-
-    //         } else {
-    //             // SI NO HAY DETALLES (Carrito vacío):
-    //             // Dejamos que el cambio ocurra, pero necesitamos actualizar la tabla
-    //             // Usamos un pequeño timeout para asegurar que el valor ya cambió
-    //             setTimeout(function () {
-    //                 sucursalActual = $("#idsucursal").val();
-    //                 listarArticulos();
-    //             }, 100);
-    //         }
-    //     });
-    // });
-
-    //cargamos los items al select almacen
-    // $.post("controladores/venta.php?op=selectSucursal3", function (r) {
-    //     $("#idsucursal2").html(r);
-    //     $("#idsucursal2").select2("");
-    // });
-
-    //Cargamos los items al select proveedor
-    // $.post("controladores/compra.php?op=selectProveedor", function (r) {
-    //     const response = JSON.parse(r);
-
-    //     $("#idproveedor").html(r);
-    //     $('#idproveedor').select2({
-    //         placeholder: 'Seleccionar Proveedor ...',
-    //         allowClear: true
-    //     }).val(null).trigger('change');
-    // });
-
     $.post("controladores/venta.php?op=selectSucursal", function (r) {
         $("#idsucursal").html(r);
         $('#idsucursal').select2('');
@@ -114,10 +31,11 @@ function init() {
     $('#navCompras').addClass("treeview menu-open");
     $('#navCompra').addClass("active");
 
-    // $("#fecha_inicio").change(listar);
-    // $("#fecha_fin").change(listar);
-    // $("#idsucursal2").change(listar);
 }
+
+$("#fecha_inicio, #fecha_fin").change(function () {
+    listarCompras.load();
+});
 
 $("#idproveedor").select2({
     placeholder: "Buscar proveedor...",
@@ -153,7 +71,7 @@ $("#idproveedor").select2({
 });
 
 
-listarVentas = new FluentPaginator({
+listarCompras = new FluentPaginator({
     url: "controladores/compra.php?op=listar",
     renderTabla: pintarCompras,
     tableBody: "#tbodyCompras",
@@ -212,12 +130,11 @@ function pintarCompras(data, permissions) {
                 <td>${item.proveedor || ''}</td>
                 <td>${item.personal || ''}</td>
                 <td>${item.tipo_c}</td>
-                <td>S/ ${parseFloat(item.precio).toFixed(2)}</td>
                 <td>${numero}</td>
                 <td>${item.gravadas}</td>
                 <td>${item.exoneradas}</td>
                 <td>${item.igv}</td>
-                <td>${item.total_compra}</td>
+                <td>${parseFloat(item.total_compra).toFixed(2)}</td>
                 <td>${estado}</td>
                 <td>
                 <button class="btn btn-warning btn-xs" onclick="mostrar(${item.idcompra})"><i class="fa fa-eye"></i></button>
@@ -571,7 +488,7 @@ function guardarImagen(e) {
 
     limpiarImagen();
 
-    listarVentas.load();
+    listarCompras.load();
 
 }
 
@@ -614,7 +531,7 @@ function guardaryeditar(e) {
                 text: response.message
             });
             mostrarform(false);
-            listarVentas.load();
+            listarCompras.load();
             limpiar();
         },
         error: function (error) {
@@ -838,159 +755,6 @@ function pintarProductos(data, permissions) {
 
 }
 
-
-
-// function listarArticulos(){
-//     var idsucursal = $("#idsucursal").val();
-
-//     // Destruir tabla si existe
-//     if ($.fn.DataTable.isDataTable('#tblarticulos')) {
-//         $('#tblarticulos').DataTable().destroy();
-//     }
-
-//     tabla = $('#tblarticulos').DataTable({
-//         "processing": true,
-//         "serverSide": true,
-//         "pageLength": 5,
-//         "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
-//         "order": [[0, "asc"]],
-//         "searchDelay": 500,
-//         "dom": 'frtip',
-//         "language": {
-//             "processing": "Procesando...",
-//             "search": "Buscar:",
-//             "lengthMenu": "Mostrar _MENU_ registros",
-//             "info": "Mostrando _START_ a _END_ de _TOTAL_ registros",
-//             "infoEmpty": "No hay registros disponibles",
-//             "infoFiltered": "(filtrado de _MAX_ registros)",
-//             "zeroRecords": "No se encontraron resultados",
-//             "emptyTable": "No hay productos disponibles",
-//             "loadingRecords": "Cargando...",
-//             "paginate": {
-//                 "first": "Primero",
-//                 "last": "Último",
-//                 "next": "Siguiente",
-//                 "previous": "Anterior"
-//             }
-//         },
-//         "ajax": {
-//             "url": 'controladores/compra.php?op=listarArticulos',
-//             "data": function(d) {
-//                 d.idsucursal = idsucursal;
-//             },
-//             "type": "GET",
-//             "dataType": "json",
-//             "error": function(xhr, error, thrown){
-//                 console.error('Error al cargar productos:', error);
-//                 Swal.fire({
-//                     title: 'Error',
-//                     text: 'No se pudieron cargar los productos. Intenta recargar la página.',
-//                     icon: 'error',
-//                     confirmButtonText: 'Aceptar'
-//                 });
-//             }
-//         },
-//     });
-
-//     // Delegación de eventos para botones dinámicos
-//     $('#tblarticulos tbody').off('click', '.btn-agregar');
-//     $('#tblarticulos tbody').on('click', '.btn-agregar', function(){
-//         var id = $(this).data('id');
-//         var input = $('#cantidaC_' + id);
-//         var cantidad = parseFloat(input.val()) || 0;
-
-//         if (cantidad <= 0) {
-//             Swal.fire({
-//                 title: 'Cantidad inválida',
-//                 text: 'Por favor ingrese una cantidad válida',
-//                 icon: 'warning',
-//                 confirmButtonText: 'Aceptar'
-//             });
-//             input.focus();
-//             return;
-//         }
-
-//         // Solo llamar a tu función agregarDetalle existente
-//         agregarDetalle(
-//             id,
-//             input.data('nombre'),
-//             input.data('precio'),
-//             input.data('precio-compra'),
-//             input.data('unidad'),
-//             cantidad
-//         );
-
-//         // Limpiar input
-//         input.val('');
-//     });
-
-//     // Enter para agregar
-//     $('#tblarticulos tbody').off('keypress', '.cantidad-input');
-//     $('#tblarticulos tbody').on('keypress', '.cantidad-input', function(e){
-//         if (e.which === 13) {
-//             e.preventDefault();
-//             $(this).closest('tr').find('.btn-agregar').click();
-//         }
-//     });
-// }
-
-//Función Listar
-// function listar() {
-
-//     let fecha_inicio = $("#fecha_inicio").val();
-//     let fecha_fin = $("#fecha_fin").val();
-
-//     tabla = $('#tbllistado').dataTable(
-//         {
-//             //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-//             "aProcessing": true,//Activamos el procesamiento del datatables
-//             "aServerSide": true,//Paginación y filtrado realizados por el servidor
-//             "processing": true,
-//             "language":
-//             {
-//                 "processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-//             },
-//             "responsive": true, "lengthChange": false, "autoWidth": false,
-//             dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-//             lengthMenu: [
-//                 [5, 10, 25, 50, 100, -1],
-//                 ['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
-//             ],
-//             buttons: ['pageLength',
-//                 {
-//                     extend: 'excelHtml5',
-//                     text: "<i class='fas fa-file-csv'></i>",
-//                     titleAttr: 'Exportar a Excel',
-//                     // className: 'btn btn-success'
-//                 },
-//                 {
-//                     extend: 'pdf',
-//                     text: "<i class='fas fa-file-pdf'></i>",
-//                     titleAttr: 'Exportar a PDF',
-//                     // className: 'btn btn-danger'
-//                 },
-//                 {
-//                     extend: 'colvis',
-//                     text: "<i class='fas fa-bars'></i>",
-//                     titleAttr: '',
-//                     // className: 'btn btn-danger'
-//                 }],
-//             "ajax":
-//             {
-//                 url: 'controladores/compra.php?op=listar',
-//                 data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, idsucursal2: 1 },
-//                 type: "get",
-//                 dataType: "json",
-//                 error: function (e) {
-//                     console.log(e.responseText);
-//                 }
-//             },
-//             "bDestroy": true,
-//             "iDisplayLength": 5,//Paginación
-//             "order": [[0, "desc"]]//Ordenar (columna,orden)
-//         }).DataTable();
-// }
-
 function agregarDetalle(idproducto, producto, precioVenta, precioCompra, unidadmedida, cantidad) {
     if (event) {
         event.preventDefault();
@@ -1087,16 +851,6 @@ function agregarDetalle(idproducto, producto, precioVenta, precioCompra, unidadm
     var nlote = '';
     var fvencimiento = '';
 
-    // agregarDetalleTmp(
-    //     idproducto,
-    //     producto,
-    //     cantidad,
-    //     precioCompra,
-    //     precioVenta,
-    //     unidadmedida,
-    //     nlote,
-    //     fvencimiento
-    // );
 }
 
 function datosCambiados(inputElement) {
@@ -1150,31 +904,6 @@ function agregarDetalleTmp(idproducto, producto, cantidad, precioCompra, precioV
     });
 }
 
-// function listarDetalleTmp() {
-//     $.post("controladores/compra.php?op=listar_tmp", {
-//         idsucursal: $("#idsucursal").val()
-//     }, function (data) {
-
-//         data = JSON.parse(data);
-
-//         if (data.length === 0) return;
-
-//         data.forEach(function (p) {
-//             pintarDetalle(
-//                 p.idproducto,
-//                 p.nombre_producto,
-//                 p.precio_venta,
-//                 p.precio_compra,
-//                 p.unidadmedida,
-//                 p.cantidad,
-//                 p.nlote,
-//                 p.fvencimiento
-//             );
-//         });
-//         modificarSubtotales();
-//         actualizarMontoPagoDefault();
-//     });
-// }
 
 function pintarDetalle(idproducto, producto, precioVenta, precioCompra, unidadmedida, cantidad, nlote, fvencimiento) {
 
@@ -1886,40 +1615,37 @@ function mostrarEditar(idcompra) {
         cancelButtonText: 'Cancelar'
     }).then((result) => {
         if (result.isConfirmed) {
-            // 1. PRIMERO: Limpiar la tabla temporal
-            limpiarDetalleTemporal(function () {
 
-                // 2. SEGUNDO: Cargar los datos de la compra
-                $.post("controladores/compra.php?op=mostrarEditar", { idcompra: idcompra }, function (data, status) {
-                    data = JSON.parse(data);
+            // 2. SEGUNDO: Cargar los datos de la compra
+            $.post("controladores/compra.php?op=mostrarEditar", { idcompra: idcompra }, function (response, status) {
+                data = response;
 
-                    // 3. TERCERO: Mostrar formulario SIN cargar detalles automáticamente
-                    mostrarFormularioEdicion();
+                // 3. TERCERO: Mostrar formulario SIN cargar detalles automáticamente
+                mostrarFormularioEdicion();
 
-                    // 4. CUARTO: Cargar datos de la cabecera
-                    $("#idcompra").val(data.idcompra);
-                    $("#idsucursal").val(data.idsucursal).trigger('change');
-                    $("#idproveedor").val(data.idproveedor).trigger('change');
-                    $("#tipo_comprobante").val(data.tipo_comprobante);
-                    $("#serie_comprobante").val(data.serie_comprobante);
-                    $("#num_comprobante").val(data.num_comprobante);
-                    $("#fecha").val(data.fecha);
-                    $("#tipo_igv").val(data.tipo_igv);
-                    $("#formapago").val(data.formapago);
+                // 4. CUARTO: Cargar datos de la cabecera
+                $("#idcompra").val(data.idcompra);
+                $("#idsucursal").val(data.idsucursal).trigger('change');
+                $("#idproveedor").val(data.idproveedor).trigger('change');
+                $("#tipo_comprobante").val(data.tipo_comprobante);
+                $("#serie_comprobante").val(data.serie_comprobante);
+                $("#num_comprobante").val(data.num_comprobante);
+                $("#fecha").val(data.fecha);
+                $("#tipo_igv").val(data.tipo_igv);
+                $("#formapago").val(data.formapago);
 
-                    // 5. QUINTO: Cargar detalles de la compra a la tabla temporal
-                    cargarDetallesParaEdicion(data.idcompra, data.idsucursal);
+                // 5. QUINTO: Cargar detalles de la compra a la tabla temporal
+                cargarDetallesParaEdicion(data.idcompra, data.idsucursal);
 
-                    // 6. SEXTO: Cambiar el botón
-                    $("#btnGuardar").html('<i class="fas fa-sync-alt"></i> Actualizar Compra');
-                    $("#btnGuardar").show();
+                // 6. SEXTO: Cambiar el botón
+                $("#btnGuardar").html('<i class="fas fa-sync-alt"></i> Actualizar Compra');
+                $("#btnGuardar").show();
 
-                    Swal.fire(
-                        'Modo Edición',
-                        'Puedes modificar los precios, cantidades o eliminar productos.',
-                        'info'
-                    );
-                });
+                Swal.fire(
+                    'Modo Edición',
+                    'Puedes modificar los precios, cantidades o eliminar productos.',
+                    'info'
+                );
             });
         }
     });
@@ -1953,70 +1679,28 @@ function mostrarFormularioEdicion() {
     listarArticulos.load();
 }
 
-// function cargarDetallesParaEdicion(idcompra, idsucursal) {
-//     $.post("controladores/compra.php?op=listarDetalleEdicion", { idcompra: idcompra }, function (data) {
-//         let detalles = JSON.parse(data);
+function cargarDetallesParaEdicion(idcompra, idsucursal) {
+    $.get("controladores/compra.php?op=listarDetalleEdicion", { idcompra: idcompra }, function (response) {
+        let detalles = response;
+        if (detalles.length === 0) return;
+        let promesas = [];
+        detalles.forEach(function (detalle) {
+            agregarDetalle(
+                detalle.idproducto,
+                detalle.nombre_producto,
+                detalle.precio_venta,
+                detalle.precio_compra,
+                detalle.idunidad_medida,
+                detalle.cantidad,
+                detalle.nlote,
+                detalle.fvencimiento
+            );
+        });
 
-//         if (detalles.length === 0) return;
-
-//         let promesas = [];
-
-//         detalles.forEach(function (detalle) {
-
-//             // Totalmente vendido → bloqueado
-//             if (parseFloat(detalle.fifo_restante) <= 0) {
-//                 pintarDetalleBloqueado(
-//                     detalle.idproducto,
-//                     detalle.nombre_producto,
-//                     detalle.precio_venta,
-//                     detalle.precio_compra,
-//                     detalle.idunidad_medida,
-//                     detalle.cantidad,
-//                     detalle.nlote,
-//                     detalle.fvencimiento
-//                 );
-//                 return;
-//             }
-
-//             // Parcialmente vendido o sin ventas → editable pero con cantidad mínima
-//             let promesa = $.post("controladores/compra.php?op=agregar_tmp", {
-//                 idsucursal: idsucursal,
-//                 idproducto: detalle.idproducto,
-//                 nombreProducto: detalle.nombre_producto,
-//                 cantidad: detalle.cantidad,
-//                 precio_compra: detalle.precio_compra,
-//                 precio_venta: detalle.precio_venta,
-//                 unidadmedida: detalle.idunidad_medida,
-//                 nlote: detalle.nlote || '',
-//                 fvencimiento: detalle.fvencimiento || ''
-//             });
-
-//             promesas.push({ promesa: promesa, cantidad_vendida: parseFloat(detalle.cantidad_vendida) });
-//         });
-
-//         if (promesas.length === 0) {
-//             modificarSubtotales();
-//             actualizarMontoPagoDefault();
-//             return;
-//         }
-
-//         let soloPromesas = promesas.map(p => p.promesa);
-
-//         $.when.apply($, soloPromesas).done(function () {
-//             setTimeout(function () {
-//                 // Guardar cantidad_vendida por producto para usarla al pintar
-//                 window._cantidadVendida = {};
-//                 detalles.forEach(function (d) {
-//                     window._cantidadVendida[d.idproducto] = parseFloat(d.cantidad_vendida);
-//                 });
-//                 listarDetalleTmp();
-//             }, 300);
-//         });
-
-//     }).fail(function (error) {
-//         Swal.fire('Error', 'No se pudieron cargar los detalles de la compra', 'error');
-//     });
-// }
+    }).fail(function (error) {
+        Swal.fire('Error', 'No se pudieron cargar los detalles de la compra', 'error');
+    });
+}
 
 function pintarDetalleBloqueado(idproducto, producto, precioVenta, precioCompra, unidadmedida, cantidad, nlote, fvencimiento) {
     precioCompra = parseFloat(precioCompra);
@@ -2047,33 +1731,6 @@ function pintarDetalleBloqueado(idproducto, producto, precioVenta, precioCompra,
     articuloAdd += idproducto + "-"; // Evita que se agregue de nuevo desde el buscador
     cont++;
     detalles++;
-}
-function limpiarDetalleTemporal(callback) {
-    let idsucursal = $("#idsucursal").val();
-
-    // Si no hay sucursal seleccionada, solo ejecutar callback
-    if (!idsucursal) {
-        if (callback) callback();
-        return;
-    }
-
-    $.post("controladores/compra.php?op=limpiar_tmp", {
-        idsucursal: idsucursal
-    }, function (r) {
-        console.log("Temporal limpiado:", r);
-
-        // Limpiar también la tabla visual
-        $('#detalles tbody').empty();
-        articuloAdd = "";
-        cont = 0;
-        detalles = 0;
-
-        // Ejecutar callback cuando termine
-        if (callback) callback();
-    }).fail(function (error) {
-        console.error("Error al limpiar temporal:", error);
-        if (callback) callback(); // Ejecutar callback aunque falle
-    });
 }
 
 init();

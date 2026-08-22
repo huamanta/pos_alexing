@@ -306,7 +306,7 @@ if (session_status() === PHP_SESSION_NONE) {
                   <select id="idsucursal2" name="idsucursal2" class="form-control"></select>
                 </div-->
 
-                <div class="form-group col-lg-3 col-md-3 col-sm-6">
+                <!--div class="form-group col-lg-3 col-md-3 col-sm-6">
                   <label class="small text-uppercase font-weight-bold text-muted">Vendedor</label>
                   <div class="input-group">
                     <select id="idcliente" name="idcliente" class="form-control select2" required></select>
@@ -317,7 +317,7 @@ if (session_status() === PHP_SESSION_NONE) {
                       </button>
                     </div>
                   </div>
-                </div>
+                </div-->
               </div>
             </div>
           </div>

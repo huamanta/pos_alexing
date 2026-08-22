@@ -112,18 +112,6 @@ function init() {
     guardaryeditarmovimiento(e);
   });
 
-  //cargamos los items al select comprobantes
-  $.post(
-    "controladores/cotizaciones.php?op=selectCotizaciones",
-    {
-      is_aprobated: 1,
-    },
-    function (c) {
-      $("#comprobanteReferencia").html(c);
-      $("#comprobanteReferencia").select2("");
-    },
-  );
-
   $.post("controladores/usuario.php?op=selectEmpleado", function (r) {
     $("#idpersonal").html(r);
     $("#idpersonal").select2("");
@@ -1420,16 +1408,6 @@ function limpiar() {
 
   $("#observaciones").val("");
 
-  $("#comprobanteReferencia").val("");
-
-  $("#comprobanteReferencia")
-    .select2({
-      placeholder: "Seleccionar Comprobante ...",
-      allowClear: true,
-    })
-    .val(null)
-    .trigger("change");
-
   $("#totalrecibido").val(0);
   $("#totaldeposito").val(0);
   $("#vuelto").val(0);
@@ -1669,8 +1647,6 @@ function pintarProductos(data, permissions) {
   }
 
   data.forEach((item) => {
-    console.log(item);
-    
     let btnActivarDesactivar = permissions.desactivar
       ? item.condicion === 1
         ? `<button class="btn btn-danger btn-xs" onclick="desactivar(${item.idproducto})"><i class="fas fa-times-circle"></i></button>`
@@ -2368,6 +2344,71 @@ function cancelarform2() {
   mostrarform(false);
 }
 
+$("#comprobanteReferencia").select2({
+  placeholder: "Buscar cotización...",
+  allowClear: true,
+  minimumInputLength: 1,
+  ajax: {
+    url: "controladores/cotizaciones.php?op=selectCotizaciones",
+    type: "POST",
+    dataType: "json",
+    delay: 300,
+    data: function (params) {
+      return {
+        is_aprobated: 1,
+        search: params.term || ""
+      };
+    },
+    processResults: function (response) {
+      return {
+        results: response.map(function (item) {
+          return {
+            id: item.idcotizacion,
+            text: `${item.tipo_comprobante} ${item.serie_comprobante}-${item.num_comprobante}`,
+            cliente: item.cliente,
+            fecha: item.fecha,
+            total: item.total_venta
+          };
+        })
+      };
+    },
+    cache: true
+  },
+  templateResult: function (item) {
+    if (!item.id) {
+      return item.text;
+    }
+
+    return $(`
+            <div class="py-1">
+                <div class="d-flex justify-content-between align-items-center">
+                    <strong class="text-primary">
+                        ${item.text}
+                    </strong>
+                    <small class="text-muted">
+                        ${item.fecha || ""}
+                    </small>
+                </div>
+
+                <div class="text-dark mt-1">
+                    <i class="fas fa-user mr-1 text-muted"></i>
+                    ${item.cliente || "Sin cliente"}
+                </div>
+
+                ${item.total ? `
+                    <small class="text-success">
+                        <i class="fas fa-money-bill-wave mr-1"></i>
+                        S/ ${parseFloat(item.total).toFixed(2)}
+                    </small>
+                ` : ""}
+            </div>
+        `);
+  },
+  templateSelection: function (item) {
+    return item.text || "Buscar cotización...";
+  }
+});
+
 //Función mostrar formulario
 async function mostrarform(flag) {
   limpiar();
@@ -3032,803 +3073,803 @@ function aplicarPrecioSegunPago() {
 }
 
 function obtenerStockComprometido(idproducto) {
-    let total = 0;
+  let total = 0;
 
-    const filas = document.querySelectorAll(
-        "#detalles tbody tr.filas"
+  const filas = document.querySelectorAll(
+    "#detalles tbody tr.filas"
+  );
+
+  filas.forEach(function (fila) {
+
+    const inputIdProducto = fila.querySelector(
+      'input[name="idproducto[]"]'
     );
 
-    filas.forEach(function (fila) {
+    const inputCantidad = fila.querySelector(
+      'input[name="cantidad[]"]'
+    );
 
-        const inputIdProducto = fila.querySelector(
-            'input[name="idproducto[]"]'
-        );
+    const inputCantidadContenedor = fila.querySelector(
+      'input[name="cantidad_contenedor[]"]'
+    );
 
-        const inputCantidad = fila.querySelector(
-            'input[name="cantidad[]"]'
-        );
+    if (!inputIdProducto || !inputCantidad) {
+      return;
+    }
 
-        const inputCantidadContenedor = fila.querySelector(
-            'input[name="cantidad_contenedor[]"]'
-        );
+    // Solo sumar configuraciones del mismo producto
+    if (
+      parseInt(inputIdProducto.value) ===
+      parseInt(idproducto)
+    ) {
 
-        if (!inputIdProducto || !inputCantidad) {
-            return;
-        }
+      const cantidad =
+        Number(inputCantidad.value) || 0;
 
-        // Solo sumar configuraciones del mismo producto
-        if (
-            parseInt(inputIdProducto.value) ===
-            parseInt(idproducto)
-        ) {
+      const cantidadContenedor =
+        inputCantidadContenedor
+          ? Number(inputCantidadContenedor.value) || 1
+          : 1;
 
-            const cantidad =
-                Number(inputCantidad.value) || 0;
+      // Cantidad real de unidades consumidas
+      total += cantidad * cantidadContenedor;
+    }
+  });
 
-            const cantidadContenedor =
-                inputCantidadContenedor
-                    ? Number(inputCantidadContenedor.value) || 1
-                    : 1;
-
-            // Cantidad real de unidades consumidas
-            total += cantidad * cantidadContenedor;
-        }
-    });
-
-    return total;
+  return total;
 }
 
 
 function agregarDetalle(
-    idproducto_configuracion,
-    idproducto,
-    producto,
-    cant,
-    desc,
-    precio_venta,
-    precio_credito,
-    preciocigv,
-    precioB,
-    precioC,
-    precioD,
-    stock,
-    proigv,
-    cantidad_contenedor,
-    contenedor,
-    idcategoria,
-    idserie,
-    controla_stock = "",
-    unidadmedida = "",
-    id_detalle_compra_lote = "",
-    fabricante = "",
-    modelo = "",
-    color = ""
+  idproducto_configuracion,
+  idproducto,
+  producto,
+  cant,
+  desc,
+  precio_venta,
+  precio_credito,
+  preciocigv,
+  precioB,
+  precioC,
+  precioD,
+  stock,
+  proigv,
+  cantidad_contenedor,
+  contenedor,
+  idcategoria,
+  idserie,
+  controla_stock = "",
+  unidadmedida = "",
+  id_detalle_compra_lote = "",
+  fabricante = "",
+  modelo = "",
+  color = ""
 ) {
 
-    // =========================================================
-    // VALIDACIÓN PRECIO
-    // =========================================================
+  // =========================================================
+  // VALIDACIÓN PRECIO
+  // =========================================================
 
-    if (precio_venta == 0) {
+  if (precio_venta == 0) {
 
-        Swal.fire({
-            title: "Alerta",
-            text: "El precio de venta no puede ser 0. Por favor, modifica el precio.",
-            icon: "warning",
-            showCancelButton: false,
-            confirmButtonText: "Entendido",
-            confirmButtonColor: "#3085d6",
-            background: "#f8f9fa",
-            position: "center",
-            customClass: {
-                popup: "swal-custom-popup",
-                title: "swal-title",
-                content: "swal-content",
-            },
-            willClose: () => {
-                const popup =
-                    document.querySelector(".swal2-popup");
+    Swal.fire({
+      title: "Alerta",
+      text: "El precio de venta no puede ser 0. Por favor, modifica el precio.",
+      icon: "warning",
+      showCancelButton: false,
+      confirmButtonText: "Entendido",
+      confirmButtonColor: "#3085d6",
+      background: "#f8f9fa",
+      position: "center",
+      customClass: {
+        popup: "swal-custom-popup",
+        title: "swal-title",
+        content: "swal-content",
+      },
+      willClose: () => {
+        const popup =
+          document.querySelector(".swal2-popup");
 
-                if (popup) {
-                    popup.classList.add("fade-out");
-                }
-            },
-        });
+        if (popup) {
+          popup.classList.add("fade-out");
+        }
+      },
+    });
+  }
+
+
+  // =========================================================
+  // PRECIOS
+  // =========================================================
+
+  if ($("#tipo_comprobante").val() != "Nota de Venta") {
+
+    precio_venta = precio_venta;
+
+    if (precioB != "") {
+      precioB =
+        (precioB * 1.18).toFixed(2);
+    }
+
+    if (precioC != "") {
+      precioC =
+        (precioC * 1.18).toFixed(2);
+    }
+
+    if (precioD != "") {
+      precioD =
+        (precioD * 1.18).toFixed(2);
+    }
+
+  } else {
+
+    precio_venta = precio_venta;
+  }
+
+
+  const precioNormal =
+    parseFloat(precio_venta) || 0;
+
+  const precioCredito =
+    parseFloat(precio_credito) ||
+    precioNormal;
+
+  const usarCredito =
+    $("#tipopago").val() === "Si";
+
+  const precioSeleccionado =
+    usarCredito
+      ? precioCredito
+      : precioNormal;
+
+
+  // =========================================================
+  // DATOS NUMÉRICOS
+  // =========================================================
+
+  const cantidadNueva =
+    Number(cant) || 1;
+
+  const cantidadContenedorNueva =
+    Number(cantidad_contenedor) || 1;
+
+  const stockReal =
+    Number(stock) || 0;
+
+
+  // =========================================================
+  // ¿YA EXISTE ESTA CONFIGURACIÓN?
+  // =========================================================
+
+  const existeProducto = articuloAdd
+    .split("-")
+    .filter(Boolean)
+    .includes(
+      String(idproducto_configuracion)
+    );
+
+
+  // =========================================================
+  // VALIDACIÓN DE STOCK
+  //
+  // IMPORTANTE:
+  // Se valida por idproducto.
+  //
+  // Ejemplo:
+  //
+  // Configuración 1: caja x 12
+  // cantidad = 3
+  // consume = 36
+  //
+  // Configuración 2: unidad x 1
+  // cantidad = 20
+  // consume = 20
+  //
+  // Total consumido = 56
+  // =========================================================
+
+  if (
+    idcategoria != 1 &&
+    controla_stock == "Si"
+  ) {
+
+    // Stock que ya está comprometido
+    // en TODAS las configuraciones
+    // del mismo producto.
+    const stockComprometido =
+      obtenerStockComprometido(idproducto);
+
+
+    // Lo que se intenta agregar ahora
+    const stockNuevo =
+      cantidadNueva *
+      cantidadContenedorNueva;
+
+
+    // Total que quedaría comprometido
+    const stockTotal =
+      stockComprometido +
+      stockNuevo;
+
+
+    console.log(
+      "========== VALIDACIÓN STOCK =========="
+    );
+
+    console.log(
+      "ID Producto:",
+      idproducto
+    );
+
+    console.log(
+      "ID Configuración:",
+      idproducto_configuracion
+    );
+
+    console.log(
+      "Stock real:",
+      stockReal
+    );
+
+    console.log(
+      "Stock comprometido:",
+      stockComprometido
+    );
+
+    console.log(
+      "Cantidad nueva:",
+      cantidadNueva
+    );
+
+    console.log(
+      "Cantidad contenedor:",
+      cantidadContenedorNueva
+    );
+
+    console.log(
+      "Stock nuevo:",
+      stockNuevo
+    );
+
+    console.log(
+      "Stock total:",
+      stockTotal
+    );
+
+    console.log(
+      "======================================"
+    );
+
+
+    // =====================================================
+    // VALIDAR
+    // =====================================================
+
+    if (stockTotal > stockReal) {
+
+      const disponible =
+        Math.max(
+          stockReal -
+          stockComprometido,
+          0
+        );
+
+
+      Swal.fire(
+        "Stock insuficiente",
+        "Stock disponible: " +
+        disponible +
+        " unidades.<br>" +
+        "Está intentando agregar: " +
+        stockNuevo +
+        " unidades.<br>" +
+        "Stock total solicitado: " +
+        stockTotal +
+        " unidades.",
+        "error"
+      );
+
+      return false;
+    }
+  }
+
+
+  // =========================================================
+  // SI YA EXISTE LA MISMA CONFIGURACIÓN
+  // =========================================================
+
+  if (existeProducto) {
+
+    const inputsCantidad =
+      document.getElementsByName(
+        "cantidad[]"
+      );
+
+    // IMPORTANTE:
+    // idp[] = idproducto_configuracion
+    const inputsIdConfiguracion =
+      document.getElementsByName(
+        "idp[]"
+      );
+
+
+    for (
+      let i = 0;
+      i < inputsCantidad.length;
+      i++
+    ) {
+
+      if (
+        parseInt(
+          inputsIdConfiguracion[i].value
+        ) ===
+        parseInt(
+          idproducto_configuracion
+        )
+      ) {
+
+        const cantidadActual =
+          Number(
+            inputsCantidad[i].value
+          ) || 0;
+
+
+        const nuevaCantidad =
+          cantidadActual +
+          cantidadNueva;
+
+
+        // Actualizar cantidad
+        inputsCantidad[i].value =
+          nuevaCantidad;
+
+
+        modificarSubtotales();
+
+        return true;
+      }
+    }
+  }
+
+
+  // =========================================================
+  // NUEVA CONFIGURACIÓN
+  // =========================================================
+
+  else {
+
+    var cantidad =
+      cantidadNueva;
+
+
+    // =====================================================
+    // DETALLE DE CONFIGURACIÓN
+    // =====================================================
+
+    var detail = "";
+
+    if (
+      cantidad_contenedor != undefined &&
+      unidadmedida != undefined
+    ) {
+
+      detail =
+        unidadmedida +
+        ' <span style="color:#d9534f;font-weight:bold;padding:0 3px;">x</span> ' +
+        cantidad_contenedor;
     }
 
 
-    // =========================================================
-    // PRECIOS
-    // =========================================================
+    var descuento =
+      desc;
 
-    if ($("#tipo_comprobante").val() != "Nota de Venta") {
 
-        precio_venta = precio_venta;
+    var cad = "";
 
-        if (precioB != "") {
-            precioB =
-                (precioB * 1.18).toFixed(2);
-        }
+    var select = "";
 
-        if (precioC != "") {
-            precioC =
-                (precioC * 1.18).toFixed(2);
-        }
 
-        if (precioD != "") {
-            precioD =
-                (precioD * 1.18).toFixed(2);
-        }
+    // =====================================================
+    // INPUT PRECIO
+    // =====================================================
+
+    var precioInput =
+      "<input " +
+      'class="form-control form-control-sm" style="width:80px" ' +
+      'type="number" step="0.01" ' +
+      "oninput=\"handlePrecioChange(this, '" +
+      idproducto_configuracion +
+      "')\" " +
+      'name="precio_venta[]" ' +
+      'id="precio-' +
+      idproducto_configuracion +
+      '" ' +
+      'value="' +
+      precioSeleccionado.toFixed(2) +
+      '" ' +
+      'data-previo="' +
+      precioSeleccionado.toFixed(2) +
+      '" ' +
+      'data-precio-base="' +
+      precioSeleccionado.toFixed(2) +
+      '">';
+
+
+    // =====================================================
+    // BOTÓN VER PRECIOS
+    // =====================================================
+
+    var btnVerPrecios =
+      "<i " +
+      'class="fas fa-eye" ' +
+      'onclick="verPreciosItem(' +
+      idproducto_configuracion +
+      ')" ' +
+      'style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); cursor:pointer; font-size: 0.8em; color: #6c757d;" ' +
+      'title="Mostrar precios">' +
+      "</i>";
+
+
+    // =====================================================
+    // PRECIOS B/C/D
+    // =====================================================
+
+    if (
+      precioB != "0.00" ||
+      precioC != "0.00" ||
+      precioD != "0.00"
+    ) {
+
+      cad =
+        '<option value="' +
+        precio_venta +
+        '">' +
+        precio_venta +
+        "</option>";
+
+
+      if (precioB != "0.00") {
+
+        cad =
+          cad +
+          '<option value="' +
+          precioB +
+          '">' +
+          precioB +
+          "</option>";
+      }
+
+
+      if (precioC != "0.00") {
+
+        cad =
+          cad +
+          '<option value="' +
+          precioC +
+          '">' +
+          precioC +
+          "</option>";
+      }
+
+
+      if (precioD != "0.00") {
+
+        cad =
+          cad +
+          '<option value="' +
+          precioD +
+          '">' +
+          precioD +
+          "</option>";
+      }
+
+
+      select =
+        '<input class="form-control" style="text-align:center; width: 80px;" type="number" step="0.01" oninput="modificarSubtotales()" name="precio_venta[]" id="precio_venta[]" value="' +
+        precio_venta +
+        '">';
 
     } else {
 
-        precio_venta = precio_venta;
+      select =
+        '<input class="form-control" style="text-align:center; width: 80px;" type="number" step="0.01" oninput="modificarSubtotales()" name="precio_venta[]" id="precio_venta[]" value="' +
+        precio_venta +
+        '">';
     }
 
 
-    const precioNormal =
-        parseFloat(precio_venta) || 0;
-
-    const precioCredito =
-        parseFloat(precio_credito) ||
-        precioNormal;
-
-    const usarCredito =
-        $("#tipopago").val() === "Si";
-
-    const precioSeleccionado =
-        usarCredito
-            ? precioCredito
-            : precioNormal;
-
-
-    // =========================================================
-    // DATOS NUMÉRICOS
-    // =========================================================
-
-    const cantidadNueva =
-        Number(cant) || 1;
-
-    const cantidadContenedorNueva =
-        Number(cantidad_contenedor) || 1;
-
-    const stockReal =
-        Number(stock) || 0;
-
-
-    // =========================================================
-    // ¿YA EXISTE ESTA CONFIGURACIÓN?
-    // =========================================================
-
-    const existeProducto = articuloAdd
-        .split("-")
-        .filter(Boolean)
-        .includes(
-            String(idproducto_configuracion)
-        );
-
-
-    // =========================================================
-    // VALIDACIÓN DE STOCK
-    //
-    // IMPORTANTE:
-    // Se valida por idproducto.
-    //
-    // Ejemplo:
-    //
-    // Configuración 1: caja x 12
-    // cantidad = 3
-    // consume = 36
-    //
-    // Configuración 2: unidad x 1
-    // cantidad = 20
-    // consume = 20
-    //
-    // Total consumido = 56
-    // =========================================================
+    // =====================================================
+    // CREAR FILA
+    // =====================================================
 
     if (
-        idcategoria != 1 &&
-        controla_stock == "Si"
+      idproducto_configuracion !== ""
     ) {
 
-        // Stock que ya está comprometido
-        // en TODAS las configuraciones
-        // del mismo producto.
-        const stockComprometido =
-            obtenerStockComprometido(idproducto);
+      contador =
+        contador + 1;
 
 
-        // Lo que se intenta agregar ahora
-        const stockNuevo =
-            cantidadNueva *
-            cantidadContenedorNueva;
+      var fila =
+        '<tr class="filas custom-row" id="fila' +
+        cont +
+        '" data-precio-normal="' +
+        precioNormal.toFixed(2) +
+        '" data-precio-credito="' +
+        precioCredito.toFixed(2) +
+        '" style="margin-bottom:-10px;border-radius:10px;box-shadow:0 0 5px rgba(0,0,0,0.3);">' +
 
 
-        // Total que quedaría comprometido
-        const stockTotal =
-            stockComprometido +
-            stockNuevo;
+        // =================================================
+        // PRODUCTO
+        // =================================================
+
+        '<td style="text-align:center;vertical-align:middle;">' +
+
+        '<input type="hidden" name="contenedor[]" value="' +
+        contenedor +
+        '">' +
+
+        '<input type="hidden" name="cantidad_contenedor[]" value="' +
+        cantidad_contenedor +
+        '">' +
+
+        // ID CONFIGURACIÓN
+        '<input type="hidden" name="idp[]" value="' +
+        idproducto_configuracion +
+        '">' +
+
+        '<input type="hidden" name="check_precio[]" id="check_precio_' +
+        idproducto_configuracion +
+        '" value="0">' +
+
+        // ID PRODUCTO
+        '<input type="hidden" name="idproducto[]" value="' +
+        idproducto +
+        '">' +
+
+        '<input type="hidden" name="idserie[]" value="' +
+        idserie +
+        '">' +
+
+        '<input type="hidden" name="idcategoria[]" value="' +
+        idcategoria +
+        '">' +
+
+        '<input type="hidden" name="id_detalle_compra_lote[]" value="' +
+        id_detalle_compra_lote +
+        '">' +
 
 
-        console.log(
-            "========== VALIDACIÓN STOCK =========="
-        );
+        '<div style="display:flex;align-items:center;justify-content:center;gap:5px;">' +
 
-        console.log(
-            "ID Producto:",
-            idproducto
-        );
-
-        console.log(
-            "ID Configuración:",
-            idproducto_configuracion
-        );
-
-        console.log(
-            "Stock real:",
-            stockReal
-        );
-
-        console.log(
-            "Stock comprometido:",
-            stockComprometido
-        );
-
-        console.log(
-            "Cantidad nueva:",
-            cantidadNueva
-        );
-
-        console.log(
-            "Cantidad contenedor:",
-            cantidadContenedorNueva
-        );
-
-        console.log(
-            "Stock nuevo:",
-            stockNuevo
-        );
-
-        console.log(
-            "Stock total:",
-            stockTotal
-        );
-
-        console.log(
-            "======================================"
-        );
+        (
+          modoEditar
+            ? ""
+            : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' +
+            cont +
+            ')"></i>'
+        ) +
 
 
-        // =====================================================
-        // VALIDAR
-        // =====================================================
+        '<textarea class="form-control nombre-producto" ' +
+        'name="nombreProducto[]" rows="1" ' +
+        'oninput="autoResize(this)" onfocus="this.select()" ' +
+        'style="font-weight:bold;width:300px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:1.2;">' +
 
-        if (stockTotal > stockReal) {
+        producto +
 
-            const disponible =
-                Math.max(
-                    stockReal -
-                    stockComprometido,
-                    0
-                );
+        (
+          fabricante ||
+            modelo ||
+            color
+            ? " " +
+            (
+              fabricante
+                ? fabricante + " "
+                : ""
+            ) +
+            (
+              modelo
+                ? modelo + " "
+                : ""
+            ) +
+            (
+              color
+                ? color
+                : ""
+            )
+            : ""
+        ) +
+
+        "</textarea>" +
+
+        "</div>" +
+
+        "</td>" +
 
 
-            Swal.fire(
-                "Stock insuficiente",
-                "Stock disponible: " +
-                    disponible +
-                    " unidades.<br>" +
-                    "Está intentando agregar: " +
-                    stockNuevo +
-                    " unidades.<br>" +
-                    "Stock total solicitado: " +
-                    stockTotal +
-                    " unidades.",
-                "error"
-            );
+        // =================================================
+        // CONFIGURACIÓN
+        // =================================================
 
-            return false;
-        }
+        '<td style="text-align:center;vertical-align:middle;">' +
+
+        '<span class="badge bg-green" style="white-space:nowrap;font-size:11px;">' +
+
+        detail +
+
+        "</span>" +
+
+        "</td>" +
+
+
+        // =================================================
+        // PRECIO
+        // =================================================
+
+        '<td class="text-center align-middle">' +
+
+        '<div style="position:relative;display:inline-block;">' +
+
+        precioInput +
+
+        btnVerPrecios +
+
+        "</div>" +
+
+        "</td>" +
+
+
+        // =================================================
+        // CHECK PRECIO
+        // =================================================
+
+        '<td style="text-align:center;vertical-align:middle;">' +
+
+        '<div style="display:flex; justify-content:center; align-items:center; width:100%;">' +
+
+        '<input type="checkbox" ' +
+        'id="chkPrecioSegunCantidad-' +
+        idproducto_configuracion +
+        '" ' +
+        'onchange="toggleCheckPrecio(' +
+        idproducto_configuracion +
+        ', this)">' +
+
+        "</div>" +
+
+        "</td>" +
+
+
+        // =================================================
+        // CANTIDAD
+        // =================================================
+
+        '<td style="text-align:center;vertical-align:middle;">' +
+
+        '<input class="form-control" ' +
+        'style="text-align:center;width:80px;background-color:transparent;color:blue;font-weight:bold;" ' +
+        'type="number" step="0.001" min="0" ' +
+
+        'oninput="validarCantidad(this,' +
+        stock +
+        "," +
+        cantidad_contenedor +
+        ", '" +
+        controla_stock +
+        "');modificarSubtotales()\" " +
+
+        'name="cantidad[]" value="' +
+        cantidad +
+        '">' +
+
+        "</td>" +
+
+
+        // =================================================
+        // DESCUENTO
+        // =================================================
+
+        '<td style="text-align:center;vertical-align:middle;">' +
+
+        '<input class="form-control" ' +
+        'style="text-align:center;width:70px;background-color:#fff3cd;font-weight:bold;" ' +
+        'type="number" step="0.01" ' +
+
+        'oninput="modificarSubtotales(' +
+        cont +
+        ')" ' +
+
+        'name="descuento[]" value="' +
+        descuento +
+        '">' +
+
+        "</td>" +
+
+
+        // =================================================
+        // STOCK
+        // =================================================
+
+        '<td style="display:none;text-align:center;vertical-align:middle;">' +
+
+        '<input type="hidden" name="stock[]" value="' +
+        stock +
+        '">' +
+
+        '<span class="btn btn-warning" style="font-size:12px;font-weight:bold;">' +
+
+        stock +
+
+        "</span>" +
+
+        "</td>" +
+
+
+        // =================================================
+        // SUBTOTAL
+        // =================================================
+
+        '<td style="text-align:center;vertical-align:middle;width:100px;">' +
+
+        'S/. <span id="subtotal' +
+        cont +
+        '" name="subtotal" style="font-size:14px;font-weight:bold;"></span>' +
+
+        "</td>" +
+
+
+        // =================================================
+        // IGV
+        // =================================================
+
+        '<td style="display:none;">' +
+
+        '<span id="proigv' +
+        cont +
+        '" name="proigv">' +
+
+        proigv +
+
+        "</span>" +
+
+        "</td>" +
+
+        "</tr>";
+
+
+      // =====================================================
+      // AGREGAR FILA
+      // =====================================================
+
+      cont++;
+
+      detalles =
+        detalles + 1;
+
+      articuloAdd +=
+        idproducto_configuracion + "-";
+
+
+      $("#detalles tbody").append(
+        fila
+      );
+
+
+      actualizarFilaVaciaDetalles();
+
+      modificarSubtotales();
+
+      evaluar();
+
+    } else {
+
+      alert(
+        "Error al ingresar el detalle, revisar los datos del artículo"
+      );
     }
-
-
-    // =========================================================
-    // SI YA EXISTE LA MISMA CONFIGURACIÓN
-    // =========================================================
-
-    if (existeProducto) {
-
-        const inputsCantidad =
-            document.getElementsByName(
-                "cantidad[]"
-            );
-
-        // IMPORTANTE:
-        // idp[] = idproducto_configuracion
-        const inputsIdConfiguracion =
-            document.getElementsByName(
-                "idp[]"
-            );
-
-
-        for (
-            let i = 0;
-            i < inputsCantidad.length;
-            i++
-        ) {
-
-            if (
-                parseInt(
-                    inputsIdConfiguracion[i].value
-                ) ===
-                parseInt(
-                    idproducto_configuracion
-                )
-            ) {
-
-                const cantidadActual =
-                    Number(
-                        inputsCantidad[i].value
-                    ) || 0;
-
-
-                const nuevaCantidad =
-                    cantidadActual +
-                    cantidadNueva;
-
-
-                // Actualizar cantidad
-                inputsCantidad[i].value =
-                    nuevaCantidad;
-
-
-                modificarSubtotales();
-
-                return true;
-            }
-        }
-    }
-
-
-    // =========================================================
-    // NUEVA CONFIGURACIÓN
-    // =========================================================
-
-    else {
-
-        var cantidad =
-            cantidadNueva;
-
-
-        // =====================================================
-        // DETALLE DE CONFIGURACIÓN
-        // =====================================================
-
-        var detail = "";
-
-        if (
-            cantidad_contenedor != undefined &&
-            unidadmedida != undefined
-        ) {
-
-            detail =
-                unidadmedida +
-                ' <span style="color:#d9534f;font-weight:bold;padding:0 3px;">x</span> ' +
-                cantidad_contenedor;
-        }
-
-
-        var descuento =
-            desc;
-
-
-        var cad = "";
-
-        var select = "";
-
-
-        // =====================================================
-        // INPUT PRECIO
-        // =====================================================
-
-        var precioInput =
-            "<input " +
-            'class="form-control form-control-sm" style="width:80px" ' +
-            'type="number" step="0.01" ' +
-            "oninput=\"handlePrecioChange(this, '" +
-            idproducto_configuracion +
-            "')\" " +
-            'name="precio_venta[]" ' +
-            'id="precio-' +
-            idproducto_configuracion +
-            '" ' +
-            'value="' +
-            precioSeleccionado.toFixed(2) +
-            '" ' +
-            'data-previo="' +
-            precioSeleccionado.toFixed(2) +
-            '" ' +
-            'data-precio-base="' +
-            precioSeleccionado.toFixed(2) +
-            '">';
-
-
-        // =====================================================
-        // BOTÓN VER PRECIOS
-        // =====================================================
-
-        var btnVerPrecios =
-            "<i " +
-            'class="fas fa-eye" ' +
-            'onclick="verPreciosItem(' +
-            idproducto_configuracion +
-            ')" ' +
-            'style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); cursor:pointer; font-size: 0.8em; color: #6c757d;" ' +
-            'title="Mostrar precios">' +
-            "</i>";
-
-
-        // =====================================================
-        // PRECIOS B/C/D
-        // =====================================================
-
-        if (
-            precioB != "0.00" ||
-            precioC != "0.00" ||
-            precioD != "0.00"
-        ) {
-
-            cad =
-                '<option value="' +
-                precio_venta +
-                '">' +
-                precio_venta +
-                "</option>";
-
-
-            if (precioB != "0.00") {
-
-                cad =
-                    cad +
-                    '<option value="' +
-                    precioB +
-                    '">' +
-                    precioB +
-                    "</option>";
-            }
-
-
-            if (precioC != "0.00") {
-
-                cad =
-                    cad +
-                    '<option value="' +
-                    precioC +
-                    '">' +
-                    precioC +
-                    "</option>";
-            }
-
-
-            if (precioD != "0.00") {
-
-                cad =
-                    cad +
-                    '<option value="' +
-                    precioD +
-                    '">' +
-                    precioD +
-                    "</option>";
-            }
-
-
-            select =
-                '<input class="form-control" style="text-align:center; width: 80px;" type="number" step="0.01" oninput="modificarSubtotales()" name="precio_venta[]" id="precio_venta[]" value="' +
-                precio_venta +
-                '">';
-
-        } else {
-
-            select =
-                '<input class="form-control" style="text-align:center; width: 80px;" type="number" step="0.01" oninput="modificarSubtotales()" name="precio_venta[]" id="precio_venta[]" value="' +
-                precio_venta +
-                '">';
-        }
-
-
-        // =====================================================
-        // CREAR FILA
-        // =====================================================
-
-        if (
-            idproducto_configuracion !== ""
-        ) {
-
-            contador =
-                contador + 1;
-
-
-            var fila =
-                '<tr class="filas custom-row" id="fila' +
-                cont +
-                '" data-precio-normal="' +
-                precioNormal.toFixed(2) +
-                '" data-precio-credito="' +
-                precioCredito.toFixed(2) +
-                '" style="margin-bottom:-10px;border-radius:10px;box-shadow:0 0 5px rgba(0,0,0,0.3);">' +
-
-
-                // =================================================
-                // PRODUCTO
-                // =================================================
-
-                '<td style="text-align:center;vertical-align:middle;">' +
-
-                '<input type="hidden" name="contenedor[]" value="' +
-                contenedor +
-                '">' +
-
-                '<input type="hidden" name="cantidad_contenedor[]" value="' +
-                cantidad_contenedor +
-                '">' +
-
-                // ID CONFIGURACIÓN
-                '<input type="hidden" name="idp[]" value="' +
-                idproducto_configuracion +
-                '">' +
-
-                '<input type="hidden" name="check_precio[]" id="check_precio_' +
-                idproducto_configuracion +
-                '" value="0">' +
-
-                // ID PRODUCTO
-                '<input type="hidden" name="idproducto[]" value="' +
-                idproducto +
-                '">' +
-
-                '<input type="hidden" name="idserie[]" value="' +
-                idserie +
-                '">' +
-
-                '<input type="hidden" name="idcategoria[]" value="' +
-                idcategoria +
-                '">' +
-
-                '<input type="hidden" name="id_detalle_compra_lote[]" value="' +
-                id_detalle_compra_lote +
-                '">' +
-
-
-                '<div style="display:flex;align-items:center;justify-content:center;gap:5px;">' +
-
-                (
-                    modoEditar
-                        ? ""
-                        : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' +
-                          cont +
-                          ')"></i>'
-                ) +
-
-
-                '<textarea class="form-control nombre-producto" ' +
-                'name="nombreProducto[]" rows="1" ' +
-                'oninput="autoResize(this)" onfocus="this.select()" ' +
-                'style="font-weight:bold;width:300px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:1.2;">' +
-
-                producto +
-
-                (
-                    fabricante ||
-                    modelo ||
-                    color
-                        ? " " +
-                          (
-                              fabricante
-                                  ? fabricante + " "
-                                  : ""
-                          ) +
-                          (
-                              modelo
-                                  ? modelo + " "
-                                  : ""
-                          ) +
-                          (
-                              color
-                                  ? color
-                                  : ""
-                          )
-                        : ""
-                ) +
-
-                "</textarea>" +
-
-                "</div>" +
-
-                "</td>" +
-
-
-                // =================================================
-                // CONFIGURACIÓN
-                // =================================================
-
-                '<td style="text-align:center;vertical-align:middle;">' +
-
-                '<span class="badge bg-green" style="white-space:nowrap;font-size:11px;">' +
-
-                detail +
-
-                "</span>" +
-
-                "</td>" +
-
-
-                // =================================================
-                // PRECIO
-                // =================================================
-
-                '<td class="text-center align-middle">' +
-
-                '<div style="position:relative;display:inline-block;">' +
-
-                precioInput +
-
-                btnVerPrecios +
-
-                "</div>" +
-
-                "</td>" +
-
-
-                // =================================================
-                // CHECK PRECIO
-                // =================================================
-
-                '<td style="text-align:center;vertical-align:middle;">' +
-
-                '<div style="display:flex; justify-content:center; align-items:center; width:100%;">' +
-
-                '<input type="checkbox" ' +
-                'id="chkPrecioSegunCantidad-' +
-                idproducto_configuracion +
-                '" ' +
-                'onchange="toggleCheckPrecio(' +
-                idproducto_configuracion +
-                ', this)">' +
-
-                "</div>" +
-
-                "</td>" +
-
-
-                // =================================================
-                // CANTIDAD
-                // =================================================
-
-                '<td style="text-align:center;vertical-align:middle;">' +
-
-                '<input class="form-control" ' +
-                'style="text-align:center;width:80px;background-color:transparent;color:blue;font-weight:bold;" ' +
-                'type="number" step="0.001" min="0" ' +
-
-                'oninput="validarCantidad(this,' +
-                stock +
-                "," +
-                cantidad_contenedor +
-                ", '" +
-                controla_stock +
-                "');modificarSubtotales()\" " +
-
-                'name="cantidad[]" value="' +
-                cantidad +
-                '">' +
-
-                "</td>" +
-
-
-                // =================================================
-                // DESCUENTO
-                // =================================================
-
-                '<td style="text-align:center;vertical-align:middle;">' +
-
-                '<input class="form-control" ' +
-                'style="text-align:center;width:70px;background-color:#fff3cd;font-weight:bold;" ' +
-                'type="number" step="0.01" ' +
-
-                'oninput="modificarSubtotales(' +
-                cont +
-                ')" ' +
-
-                'name="descuento[]" value="' +
-                descuento +
-                '">' +
-
-                "</td>" +
-
-
-                // =================================================
-                // STOCK
-                // =================================================
-
-                '<td style="display:none;text-align:center;vertical-align:middle;">' +
-
-                '<input type="hidden" name="stock[]" value="' +
-                stock +
-                '">' +
-
-                '<span class="btn btn-warning" style="font-size:12px;font-weight:bold;">' +
-
-                stock +
-
-                "</span>" +
-
-                "</td>" +
-
-
-                // =================================================
-                // SUBTOTAL
-                // =================================================
-
-                '<td style="text-align:center;vertical-align:middle;width:100px;">' +
-
-                'S/. <span id="subtotal' +
-                cont +
-                '" name="subtotal" style="font-size:14px;font-weight:bold;"></span>' +
-
-                "</td>" +
-
-
-                // =================================================
-                // IGV
-                // =================================================
-
-                '<td style="display:none;">' +
-
-                '<span id="proigv' +
-                cont +
-                '" name="proigv">' +
-
-                proigv +
-
-                "</span>" +
-
-                "</td>" +
-
-                "</tr>";
-
-
-            // =====================================================
-            // AGREGAR FILA
-            // =====================================================
-
-            cont++;
-
-            detalles =
-                detalles + 1;
-
-            articuloAdd +=
-                idproducto_configuracion + "-";
-
-
-            $("#detalles tbody").append(
-                fila
-            );
-
-
-            actualizarFilaVaciaDetalles();
-
-            modificarSubtotales();
-
-            evaluar();
-
-        } else {
-
-            alert(
-                "Error al ingresar el detalle, revisar los datos del artículo"
-            );
-        }
-    }
+  }
 }
 
 
@@ -4564,6 +4605,8 @@ function generarComprobante(idventa) {
 
 function mostrarE() {
   let idcotizacion = $("#comprobanteReferencia").val();
+  console.log(idcotizacion);
+  
   let cotizacionData = null;
 
   if (!idcotizacion) {

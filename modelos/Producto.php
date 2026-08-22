@@ -631,21 +631,21 @@ class Producto extends Helpers
 	}*/
 
 	public function listarstock22($idsucursal)
-{
-    $data = (new DBQuery($this->pdo))
-        ->select('a.idproducto, a.nombre, ip.stock, a.imagen, c.nombre AS categoria')
-        ->from('producto a')
-        ->join('inventario_producto ip', 'ip.idproducto', '=', 'a.idproducto')
-        ->join('categoria c', 'a.idcategoria', '=', 'c.idcategoria')
-        ->where('c.nombre', '!=', 'SERVICIO')
-        ->where('ip.stock', '<=', 'ip.stock_minimo')
-        ->where('a.idsucursal', '=', $idsucursal)
-        ->orderBy('a.fechac', 'DESC')
-        ->limit(5)
-        ->get();
+	{
+		$data = (new DBQuery($this->pdo))
+			->select('a.idproducto, a.nombre, ip.stock, a.imagen, c.nombre AS categoria')
+			->from('producto a')
+			->join('inventario_producto ip', 'ip.idproducto', '=', 'a.idproducto')
+			->join('categoria c', 'a.idcategoria', '=', 'c.idcategoria')
+			->where('c.nombre', '!=', 'SERVICIO')
+			->where('ip.stock', '<=', 'ip.stock_minimo')
+			->where('a.idsucursal', '=', $idsucursal)
+			->orderBy('a.fechac', 'DESC')
+			->limit(5)
+			->get();
 
-	return Response::json($data);
-}
+		return Response::json($data);
+	}
 
 
 
@@ -1092,12 +1092,8 @@ class Producto extends Helpers
 				'ASC'
 			);
 
-		return json_encode(
-			$query->paginate(
-				$page,
-				$limit
-			)
-		);
+		$response = $query->paginate($page, $limit);
+		return Response::json($response);
 	}
 
 	public function contarActivos($idsucursal, $buscar = "")
