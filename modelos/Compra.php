@@ -233,35 +233,6 @@ class Compra extends Helpers
                         $nombre_producto[$i]
                     );
                 }
-
-                // F. FIFO DE COMPRA (LOTE REAL)
-            //     $sqlFifoCompra = "INSERT INTO stock_fifo (
-            //     idsucursal,
-            //     idproducto,
-            //     origen,
-            //     referencia_id,
-            //     cantidad_ingreso,
-            //     cantidad_restante,
-            //     precio_compra,
-            //     precio_venta,
-            //     fecha_ingreso,
-            //     fvencimiento
-            // ) VALUES (
-            //     '$idsucursal',
-            //     '{$idproducto[$i]}',
-            //     'COMPRA',
-            //     '$iddetalle_compra',
-            //     '{$cantidad[$i]}',
-            //     '{$cantidad[$i]}',
-            //     '{$precio_compra[$i]}',
-            //     '{$precio_venta[$i]}',
-            //     '$fechaActual',
-            //     '{$fvencimiento[$i]}'
-            // )";
-
-            //     if (!ejecutarConsulta($sqlFifoCompra)) {
-            //         throw new Exception('Error al registrar FIFO de compra para: ' . $nombre_producto[$i]);
-            //     }
             }
 
             // 3. GESTIONAR CUENTAS POR PAGAR (SI ES CRÉDITO)
@@ -893,36 +864,29 @@ class Compra extends Helpers
 
     public function mostrarEditar($idcompra)
     {
-        $sql = "SELECT c.*, DATE_FORMAT(c.fecha_hora, '%Y-%m-%d') as fecha
-            FROM compra c
-            WHERE c.idcompra = '$idcompra'";
-        return ejecutarConsultaSimpleFila($sql);
+        $query = (new DBQuery($this->pdo))
+            ->select("c.*, DATE_FORMAT(c.fecha_hora, '%Y-%m-%d') AS fecha")
+            ->from('compra c')
+            ->where('c.idcompra', '=', $idcompra);
+
+        return Response::json($query->first());
     }
 
     public function listarDetalleEdicion($idcompra)
     {
-        $sql = "SELECT 
+        $query = (new DBQuery($this->pdo))
+            ->select("
                 dc.*,
                 p.idunidad_medida,
                 CAST(dc.precio_compra AS DECIMAL(18,8)) + 0 AS precio_compra,
-                CAST(dc.precio_venta AS DECIMAL(18,8)) + 0 AS precio_venta,
-                COALESCE((
-                    SELECT SUM(sf.cantidad_restante) 
-                    FROM stock_fifo sf 
-                    WHERE sf.origen = 'COMPRA' 
-                    AND sf.referencia_id = dc.iddetalle_compra
-                ), 0) AS fifo_restante,
-                COALESCE((
-                    SELECT SUM(sf.cantidad_ingreso - sf.cantidad_restante) 
-                    FROM stock_fifo sf 
-                    WHERE sf.origen = 'COMPRA' 
-                    AND sf.referencia_id = dc.iddetalle_compra
-                ), 0) AS cantidad_vendida
-            FROM detalle_compra dc
-            INNER JOIN producto p ON dc.idproducto = p.idproducto
-            WHERE dc.idcompra = '$idcompra'
-            ORDER BY dc.iddetalle_compra";
-        return ejecutarConsulta($sql);
+                CAST(dc.precio_venta AS DECIMAL(18,8)) + 0 AS precio_venta
+            ")
+            ->from('detalle_compra dc')
+            ->join('producto p', 'p.idproducto = dc.idproducto')
+            ->where('dc.idcompra', '=', $idcompra)
+            ->orderBy('dc.iddetalle_compra', 'ASC');
+
+        return Response::json($query->get());
     }
 
     public function limpiarTemporal($idpersonal, $idsucursal)
@@ -1141,7 +1105,7 @@ class Compra extends Helpers
             'editar' => Helpers::getUserPermissionAccion('Editar compra'),
             'anular' => Helpers::getUserPermissionAccion('Anular compra')
         ];
-        return json_encode($response);
+        return Response::json($response);
     }
 
     public function listar2($fecha_inicio, $fecha_fin, $idsucursal)
@@ -1170,31 +1134,31 @@ class Compra extends Helpers
         return ejecutarConsulta($sql);
     }
 
-    public function exportarExcel($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto)
+    public function exportarExcel($fecha_inicio = '', $fecha_fin = '', $idsucursal = '')
     {
-        require_once '../vendor/autoload.php';
-
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
 
-        // PROPIEDADES
         $spreadsheet->getProperties()
             ->setCreator("Sistema de Compras")
             ->setTitle("Reporte de Compras")
             ->setSubject("Reporte de Compras")
             ->setDescription("Reporte detallado de compras");
 
-        // TITULO
         $sheet->mergeCells('A1:P1');
         $sheet->setCellValue('A1', 'REPORTE DE COMPRAS');
         $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
         $sheet->getStyle('A1')->getAlignment()
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
-        // FILTROS
-        $filtrosTexto = "Período: " . date('d/m/Y', strtotime($fecha_inicio)) . " al " . date('d/m/Y', strtotime($fecha_fin));
-        if (!empty($estado)) {
-            $filtrosTexto .= " | Estado: " . $estado;
+        $filtrosTexto = 'Período: ';
+
+        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $filtrosTexto .= date('d/m/Y', strtotime($fecha_inicio))
+                . ' al '
+                . date('d/m/Y', strtotime($fecha_fin));
+        } else {
+            $filtrosTexto .= 'Todos los registros';
         }
 
         $sheet->mergeCells('A2:P2');
@@ -1203,7 +1167,6 @@ class Compra extends Helpers
         $sheet->getStyle('A2')->getAlignment()
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
-        // CABECERA
         $headers = [
             'A4' => '#',
             'B4' => 'FECHA',
@@ -1228,7 +1191,10 @@ class Compra extends Helpers
         }
 
         $sheet->getStyle('A4:P4')->applyFromArray([
-            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF']
+            ],
             'fill' => [
                 'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                 'startColor' => ['rgb' => '4472C4']
@@ -1244,36 +1210,41 @@ class Compra extends Helpers
             ]
         ]);
 
-        // CONSULTA
-        $sql = "SELECT c.idcompra, DATE_FORMAT(c.fecha_hora,'%d/%m/%Y %H:%i') fecha,
-                s.nombre sucursal, p.nombre proveedor, c.tipo_comprobante,
-                c.serie_comprobante, c.num_comprobante, c.tipo_igv,
-                COALESCE(c.monto_exonerado,0) monto_exonerado,
-                COALESCE(c.monto_gravado,0) monto_gravado,
-                COALESCE(c.monto_igv,0) monto_igv,
-                c.total_compra, c.formapago, c.estado,
-                CONCAT(per.nombre) usuario, c.nota
-                FROM compra c
-                INNER JOIN sucursal s ON c.idsucursal=s.idsucursal
-                INNER JOIN persona p ON c.idproveedor=p.idpersona
-                INNER JOIN personal per ON c.idpersonal=per.idpersonal
-                WHERE DATE(c.fecha_hora) BETWEEN '$fecha_inicio' AND '$fecha_fin' AND c.estado = 'REGISTRADO'";
+        $sql = "SELECT
+                c.idcompra,
+                DATE_FORMAT(c.fecha_hora,'%d/%m/%Y %H:%i') AS fecha,
+                s.nombre AS sucursal,
+                p.nombre AS proveedor,
+                c.tipo_comprobante,
+                c.serie_comprobante,
+                c.num_comprobante,
+                c.tipo_igv,
+                COALESCE(c.monto_exonerado,0) AS monto_exonerado,
+                COALESCE(c.monto_gravado,0) AS monto_gravado,
+                COALESCE(c.monto_igv,0) AS monto_igv,
+                c.total_compra,
+                c.formapago,
+                c.estado,
+                per.nombre AS usuario,
+                c.nota
+            FROM compra c
+            INNER JOIN sucursal s
+                ON c.idsucursal = s.idsucursal
+            INNER JOIN persona p
+                ON c.idproveedor = p.idpersona
+            INNER JOIN personal per
+                ON c.idpersonal = per.idpersonal
+            WHERE c.estado = 'REGISTRADO'";
 
-        if (!empty($estado) && $estado !== 'undefined') {
-            $sql .= " AND c.estado = '$estado'";
+        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $sql .= " AND DATE(c.fecha_hora) BETWEEN '$fecha_inicio' AND '$fecha_fin'";
         }
 
-        if (!empty($idsucursal)) {
+        if (!empty($idsucursal) && $idsucursal !== 'undefined') {
             $sql .= " AND c.idsucursal = '$idsucursal'";
         }
 
-        if (!empty($idproducto) && $idproducto !== 'undefined') {
-            $sql .= " AND c.idcompra IN (
-                SELECT DISTINCT idcompra 
-                FROM detalle_compra 
-                WHERE idproducto = '$idproducto'
-            )";
-        }
+        $sql .= " ORDER BY c.fecha_hora DESC";
 
         $rs = ejecutarConsulta($sql);
 
@@ -1305,14 +1276,14 @@ class Compra extends Helpers
                 $r->nota
             ], null, "A$fila");
 
-            $totalExonerado += $r->monto_exonerado;
-            $totalGravado += $r->monto_gravado;
-            $totalIGV += $r->monto_igv;
-            $totalGeneral += $r->total_compra;
+            $totalExonerado += (float) $r->monto_exonerado;
+            $totalGravado += (float) $r->monto_gravado;
+            $totalIGV += (float) $r->monto_igv;
+            $totalGeneral += (float) $r->total_compra;
+
             $fila++;
         }
 
-        // FILA DE TOTALES
         $sheet->mergeCells("A$fila:H$fila");
         $sheet->setCellValue("A$fila", "TOTALES");
 
@@ -1320,6 +1291,7 @@ class Compra extends Helpers
         $sheet->setCellValue("J$fila", number_format($totalGravado, 2));
         $sheet->setCellValue("K$fila", number_format($totalIGV, 2));
         $sheet->setCellValue("L$fila", number_format($totalGeneral, 2));
+
         $sheet->getStyle("A$fila:P$fila")->applyFromArray([
             'font' => [
                 'bold' => true
@@ -1332,17 +1304,19 @@ class Compra extends Helpers
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM
                 ]
-            ],
-            'alignment' => [
-                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT
             ]
         ]);
 
-        // Centrar el texto "TOTALES"
         $sheet->getStyle("A$fila")->getAlignment()
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
-        // EXPORTAR
+        foreach (range('A', 'P') as $columna) {
+            $sheet->getColumnDimension($columna)->setAutoSize(true);
+        }
+
+        $sheet->freezePane('A5');
+        $sheet->getRowDimension(4)->setRowHeight(25);
+
         while (ob_get_level()) {
             ob_end_clean();
         }

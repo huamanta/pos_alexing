@@ -235,7 +235,7 @@ class Persona extends Helpers
 			'historial' => Helpers::getUserPermissionAccion('Historial proveedor'),
 			'eliminar' => Helpers::getUserPermissionAccion('Eliminar proveedor')
 		];
-		return json_encode($response);
+		return Response::json($response);
 	}
 
 
