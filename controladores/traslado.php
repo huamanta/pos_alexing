@@ -118,9 +118,7 @@ switch ($_GET["op"]) {
 		$idtraslado = $_POST["idtraslado"];
 		$productos = json_decode($_POST["productos"], true); // array con productos aceptados/rechazados
 		$idusuario = $_SESSION['idusuario'];
-
-		$rspta = $traslado->aprobarSolicitud($idtraslado, $productos, $idusuario);
-		echo $rspta;
+		echo $traslado->aprobarSolicitud($idtraslado, $productos, $idusuario);
 		break;
 
 

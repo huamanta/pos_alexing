@@ -1,18 +1,238 @@
 <style type="text/css">
-    /* Variables de colores y tipografías */
+    /* =========================================================
+   POS PROFESIONAL - DESIGN SYSTEM
+   ========================================================= */
+
     :root {
-        --primary-color: #2c2fa5;
-        /* Color principal para hover y acentos */
-        --btn-primary-bg: #008000;
-        /* Fondo del botón primario */
-        --btn-secondary-bg: red;
-        /* Fondo del botón secundario */
-        --white: #ffffff;
-        --light-font-size: 11.5px;
-        --small-font-size: 12px;
+        --pos-primary: #2563eb;
+        --pos-primary-dark: #1d4ed8;
+        --pos-primary-soft: #eff6ff;
+
+        --pos-success: #16a34a;
+        --pos-danger: #dc2626;
+        --pos-warning: #d97706;
+        --pos-info: #0891b2;
+
+        --pos-bg: #f5f7fb;
+        --pos-card: #ffffff;
+        --pos-border: #e5e7eb;
+        --pos-border-dark: #d1d5db;
+
+        --pos-text: #1f2937;
+        --pos-text-soft: #6b7280;
+        --pos-text-muted: #9ca3af;
+
+        --pos-radius: 10px;
+        --pos-radius-sm: 7px;
+
+        --pos-shadow: 0 2px 8px rgba(15, 23, 42, .05);
+        --pos-shadow-hover: 0 8px 24px rgba(15, 23, 42, .09);
+
+        --pos-font: "Source Sans Pro", -apple-system, BlinkMacSystemFont,
+            "Segoe UI", sans-serif;
     }
 
-    /* Bloque principal del formulario de venta */
+    /* =========================================================
+   BASE
+   ========================================================= */
+
+    body {
+        background: var(--pos-bg);
+        color: var(--pos-text);
+        font-family: var(--pos-font);
+    }
+
+    .content-wrapper {
+        background: var(--pos-bg);
+    }
+
+    .content {
+        padding-bottom: 30px;
+    }
+
+    .content-header {
+        padding: 15px 0 10px;
+    }
+
+    .content-header h1 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+    }
+
+    .breadcrumb {
+        background: transparent;
+        margin: 0;
+        font-size: 12px;
+    }
+
+    .breadcrumb-item a {
+        color: var(--pos-primary);
+    }
+
+    /* =========================================================
+   CARDS
+   ========================================================= */
+
+    .card {
+        border: 1px solid var(--pos-border) !important;
+        border-radius: var(--pos-radius) !important;
+        box-shadow: var(--pos-shadow);
+        background: var(--pos-card);
+    }
+
+    .card-header {
+        border-bottom: 1px solid var(--pos-border);
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .card-body {
+        background: #fff;
+    }
+
+    .card-footer {
+        background: #fff;
+        border-top: 1px solid var(--pos-border);
+    }
+
+    /* =========================================================
+   FILTROS / LISTADO
+   ========================================================= */
+
+    #header {
+        background: #fff;
+        padding: 14px 16px;
+    }
+
+    #header label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #4b5563;
+        margin-bottom: 4px;
+    }
+
+    #header .form-group {
+        margin-bottom: 0;
+    }
+
+    #header .form-control {
+        height: 34px;
+    }
+
+    #header .input-group-text {
+        height: 34px;
+        background: #f8fafc;
+        border-color: var(--pos-border);
+        color: var(--pos-text-soft);
+    }
+
+    #search {
+        border-radius: 8px;
+    }
+
+    #search:focus {
+        border-color: var(--pos-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+    }
+
+    /* =========================================================
+   INPUTS
+   ========================================================= */
+
+    .form-control {
+        border: 1px solid var(--pos-border-dark);
+        border-radius: var(--pos-radius-sm);
+        color: var(--pos-text);
+        font-size: 13px;
+        transition: border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .form-control:hover {
+        border-color: #b8c0cc;
+    }
+
+    .form-control:focus {
+        border-color: var(--pos-primary);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+    }
+
+    textarea.form-control {
+        resize: vertical;
+    }
+
+    .form-group label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #374151;
+    }
+
+    .input-group-text {
+        border-radius: var(--pos-radius-sm);
+        background: #f8fafc;
+        border-color: var(--pos-border-dark);
+        color: #64748b;
+    }
+
+    /* =========================================================
+   SELECT2
+   ========================================================= */
+
+    .select2-container {
+        width: 100% !important;
+    }
+
+    .select2-container--default .select2-selection--single {
+        height: 34px !important;
+        border: 1px solid var(--pos-border-dark) !important;
+        border-radius: var(--pos-radius-sm) !important;
+        display: flex;
+        align-items: center;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 32px !important;
+        font-size: 13px;
+        color: var(--pos-text);
+        padding-left: 10px;
+    }
+
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 32px !important;
+    }
+
+    .select2-container--default.select2-container--focus .select2-selection--single {
+        border-color: var(--pos-primary) !important;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+    }
+
+    .select2-dropdown {
+        border: 1px solid var(--pos-border) !important;
+        border-radius: 8px !important;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, .12);
+        overflow: hidden;
+    }
+
+    .select2-results__option {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+
+    .select2-results__option--highlighted {
+        background: var(--pos-primary) !important;
+    }
+
+    /* =========================================================
+   FORMULARIO POS
+   ========================================================= */
+
+    #formularioregistros.pos-form-shell {
+        margin-top: 0px;
+    }
 
     #formularioregistros.pos-form-shell .row.mb-3 {
         margin-bottom: 0 !important;
@@ -27,246 +247,152 @@
     }
 
     #formularioregistros.pos-form-shell .card.card-outline.card-danger {
-        margin-top: 0 !important;
-        border: none;
+        border: none !important;
         background: transparent;
+        margin-top: 0 !important;
+        box-shadow: none;
     }
 
     #formularioregistros.pos-form-shell .card.shadow.mb-4 {
-        margin-bottom: 14px !important;
+        margin-bottom: 12px !important;
     }
 
-    #formularioregistros.pos-form-shell .card {
-        border-radius: 12px;
-        border: 1px solid #e1eaf5;
-        box-shadow: 0 6px 18px rgba(23, 42, 73, 0.06);
+    /* =========================================================
+   ENCABEZADO NUEVA VENTA
+   ========================================================= */
+
+    #formularioregistros .card-header.bg-white {
+        background: #fff !important;
     }
 
-    #formularioregistros.pos-form-shell .card-header {
-        border-bottom: 1px solid #e7edf6;
+    #formularioregistros .card-header.bg-white.border-bottom-primary {
+        border-bottom: 1px solid var(--pos-border) !important;
+        background: #fff !important;
     }
 
-    #formularioregistros.pos-form-shell .card-header.bg-white.border-bottom-primary {
-        background: linear-gradient(90deg, #ffffff 0%, #f5f9ff 100%) !important;
+    #formularioregistros .card-title.text-primary {
+        color: #111827 !important;
+        font-size: 17px;
+        font-weight: 700;
     }
 
-    #formularioregistros.pos-form-shell .card-title {
-        letter-spacing: 0.3px;
+    #fechaActual {
+        color: var(--pos-text-muted) !important;
     }
 
-    #formularioregistros.pos-form-shell #datosgenerales,
-    #formularioregistros.pos-form-shell #datosgenerales2 {
-        background: #ffffff;
-        border-radius: 12px;
-    }
+    /* =========================================================
+   BOTONES
+   ========================================================= */
 
-    #formularioregistros.pos-form-shell #datosgenerales {
-        padding: 14px;
-    }
-
-    #formularioregistros.pos-form-shell #datosgenerales2 {
-        margin-top: 0 !important;
-        padding: 14px !important;
-    }
-
-    #formularioregistros.pos-form-shell fieldset {
-        border-color: #d9e4f2 !important;
-        background: #fafcff;
-        border-radius: 10px;
-    }
-
-    #formularioregistros.pos-form-shell fieldset legend {
-        margin-bottom: 0;
+    .btn {
+        border-radius: var(--pos-radius-sm);
         font-size: 12px;
-        color: #2c2fa5;
-        letter-spacing: 0.4px;
-        text-transform: uppercase;
+        font-weight: 600;
+        transition: all .18s ease;
     }
 
-    #formularioregistros.pos-form-shell label {
-        font-size: 11.5px;
-        margin-bottom: 4px;
-        color: #24344f;
+    .btn-primary {
+        background: var(--pos-primary);
+        border-color: var(--pos-primary);
     }
 
-    #formularioregistros.pos-form-shell .form-group {
-        margin-bottom: 10px;
+    .btn-primary:hover,
+    .btn-primary:focus {
+        background: var(--pos-primary-dark);
+        border-color: var(--pos-primary-dark);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, .20);
     }
 
-    #formularioregistros.pos-form-shell .form-control {
-        border-color: #d0dceb;
-        border-radius: 8px;
-        min-height: 34px;
+    .btn-success {
+        background: var(--pos-success);
+        border-color: var(--pos-success);
     }
 
-    #formularioregistros.pos-form-shell .form-control:focus {
-        border-color: #7aa7de;
-        box-shadow: 0 0 0 0.2rem rgba(44, 47, 165, 0.12);
+    .btn-danger {
+        background: var(--pos-danger);
+        border-color: var(--pos-danger);
     }
 
-    #formularioregistros.pos-form-shell .input-group-text {
-        background: #f3f7fd;
-        border-color: #d0dceb;
-        color: #49638a;
+    .btn-outline-info {
+        color: var(--pos-info);
+        border-color: #a5dfe8;
     }
 
-    #formularioregistros.pos-form-shell .container-fluid[style*="background-color: #28a745"] {
-        background: linear-gradient(90deg, #1f9f4e 0%, #28b661 100%) !important;
-        border: 1px solid #1b9549;
-        border-radius: 12px !important;
-    }
-
-    #formularioregistros.pos-form-shell #detalles {
-        border: 1px solid #d9e4f2;
-        border-radius: 10px;
-        background-color: #fff;
-        box-shadow: inset 0 0 0 1px rgba(217, 228, 242, 0.3);
-    }
-
-    #formularioregistros.pos-form-shell #detalles thead {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-    }
-
-    #formularioregistros.pos-form-shell #detalles thead th {
-        background: linear-gradient(90deg, #0ea4bd 0%, #0b8fa4 100%) !important;
+    .btn-outline-info:hover {
+        background: var(--pos-info);
+        border-color: var(--pos-info);
         color: #fff;
-        border: none;
+    }
+
+    .btn-xs {
+        padding: 4px 8px;
         font-size: 11px;
-        letter-spacing: 0.2px;
     }
 
-    #formularioregistros.pos-form-shell #pagosMixtosContainer {
-        background: #f7faff;
-        border: 1px dashed #cddbf0;
-        border-radius: 10px;
-        padding: 10px 8px 2px;
-    }
-
-    #formularioregistros.pos-form-shell .pagoItem {
-        margin: 0 0 8px !important;
-        padding: 8px 4px;
-        border-radius: 8px;
-        background: #ffffff;
-        border: 1px solid #e6eef8;
-    }
-
-    #formularioregistros.pos-form-shell hr {
-        border-top: 1px solid #dce6f4;
-        margin: 12px 0;
-    }
-
-    #formularioregistros.pos-form-shell .btn-sm {
+    .btn-sm {
         border-radius: 7px;
     }
 
-    #formularioregistros.pos-form-shell .btn-outline-info {
-        border-color: #18a2b8;
-        color: #117a8b;
+    /* =========================================================
+   DATOS CLIENTE
+   ========================================================= */
+
+    #formularioregistros fieldset {
+        border: 1px solid var(--pos-border) !important;
+        background: #fafbfc;
+        border-radius: 9px;
+        padding: 12px !important;
     }
 
-    #formularioregistros.pos-form-shell .btn-outline-info:hover {
-        background: #17a2b8;
-        color: #fff;
-    }
-
-    @media only screen and (max-width: 991px) {
-        #formularioregistros.pos-form-shell {
-            padding: 12px 10px 95px;
-            border-radius: 12px;
-        }
-
-        #formularioregistros.pos-form-shell #datosgenerales,
-        #formularioregistros.pos-form-shell #datosgenerales2 {
-            padding: 10px !important;
-        }
-    }
-
-    /* Contenedor de tabla con scroll */
-    #detalles-wrapper {
-        max-height: 300px;
-        overflow-y: auto;
-        width: 100%;
-    }
-
-    #detalles {
-        display: table;
-        width: 100% !important;
-        min-width: 100% !important;
-        font-size: var(--light-font-size);
-        table-layout: fixed;
-    }
-
-    #detalles thead th:first-child,
-    #detalles tbody td:first-child {
-        width: 40%;
-        max-width: 40%;
-    }
-
-    #detalles tbody .fila-vacia-detalles td {
-        width: 100% !important;
-        min-width: 100% !important;
-        white-space: normal !important;
-        padding: 14px 10px;
-        text-align: center;
-    }
-
-    /* Botones flotantes */
-    .btn-flotante,
-    .btn-flotante2 {
-        font-size: 16px;
+    #formularioregistros fieldset legend {
+        font-size: 12px;
+        font-weight: 700;
         text-transform: uppercase;
-        font-weight: bold;
-        color: var(--white);
+        letter-spacing: .6px;
+        color: var(--pos-primary) !important;
+        background: #fff;
         border-radius: 5px;
-        letter-spacing: 2px;
-        padding: 18px 30px;
-        position: fixed;
-        bottom: 20px;
-        transition: all 300ms ease;
-        box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
-        z-index: 99;
     }
 
-    .btn-flotante {
-        background-color: var(--btn-primary-bg);
-        right: 40px;
+    #formularioregistros fieldset label {
+        color: #374151;
     }
 
-    .btn-flotante:hover {
-        background-color: var(--primary-color);
-        box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
-        transform: translateY(-7px);
+    #formularioregistros fieldset .text-info {
+        color: var(--pos-info) !important;
+        font-size: 11px;
     }
 
-    .btn-flotante2 {
-        background-color: var(--btn-secondary-bg);
-        right: 310px;
+    #formularioregistros fieldset .text-success {
+        color: var(--pos-success) !important;
+        font-size: 11px;
     }
 
-    .btn-flotante2:hover {
-        background-color: var(--primary-color);
-        box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);
-        transform: translateY(-7px);
-    }
+    /* =========================================================
+   COLLAPSE DATOS CLIENTE
+   ========================================================= */
 
     .collapse-section {
         position: absolute;
-        top: 90%;
+        top: calc(100% + 5px);
         left: 0;
         width: 100%;
         z-index: 1050;
-        border: rgba(0, 0, 0, .15) solid 1px;
+
         background: #fff;
+        border: 1px solid var(--pos-border);
         border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, .15);
+
+        box-shadow: 0 15px 40px rgba(15, 23, 42, .14);
 
         opacity: 0;
         visibility: hidden;
-        transform: translateY(-10px);
+        transform: translateY(-8px);
 
-        transition: all .25s ease;
+        transition:
+            opacity .18s ease,
+            transform .18s ease,
+            visibility .18s ease;
     }
 
     .collapse-section.show {
@@ -275,167 +401,425 @@
         transform: translateY(0);
     }
 
-    @media only screen and (max-width: 600px) {
-        .btn-flotante {
-            font-size: 14px;
-            padding: 12px 20px;
-            right: 20px;
-        }
+    /* =========================================================
+   TABLA DETALLE VENTA
+   ========================================================= */
 
-        .btn-flotante2 {
-            font-size: 14px;
-            padding: 12px 20px;
-            right: 290px;
-        }
+    #detalles-wrapper {
+        max-height: 320px;
+        overflow-y: auto;
+        width: 100%;
+        border: 1px solid var(--pos-border);
+        border-radius: 9px 9px 0px 0px;
+        background: #fff;
     }
 
-    /* Ajustes en las tablas */
-    #tblarticulos,
-    #tblarticulos2 {
-        font-size: var(--small-font-size);
+    #detalles {
+        width: 100% !important;
+        min-width: 100% !important;
+        margin: 0 !important;
+        font-size: 11px;
+        table-layout: fixed;
     }
 
-    #tblarticulos th,
-    #tblarticulos td,
-    #tblarticulos2 th,
-    #tblarticulos2 td,
-    #detalles th,
-    #detalles td {
-        padding: 4px;
-        white-space: nowrap;
+    #detalles thead {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
+
+    #detalles thead th {
+        background: #f8fafc !important;
+        color: #475569 !important;
+        border: none !important;
+        border-bottom: 1px solid var(--pos-border) !important;
+        padding: 8px 5px !important;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    #detalles tbody td {
+        padding: 7px 5px !important;
+        vertical-align: middle;
+        border-color: #f0f2f5;
+    }
+
+    #detalles tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    #detalles tbody .fila-vacia-detalles td {
+        width: 100% !important;
+        padding: 25px 10px !important;
+        color: var(--pos-text-muted);
         text-align: center;
     }
 
-    /* Estilo para imágenes */
-    .img-thumbnail {
-        border-radius: 5px;
-    }
+    /* Scroll */
 
-    .img-producto {
-        cursor: pointer;
-        transition: transform 0.3s ease;
-    }
-
-    .img-producto:hover {
-        transform: scale(1.05);
-    }
-
-    /* Botones compactos */
-    .btn-xs {
-        padding: 2px 5px;
-        font-size: 10px;
-    }
-
-    .table-responsive {
-        overflow-x: auto;
-        max-width: 100%;
-    }
-
-
-    .card-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
-
-    .modal-header {
-        background-color: var(--primary-color);
-        color: var(--white);
-    }
-
-    .modal-title {
-        font-weight: bold;
-    }
-
-    /* Aseguramos que tu navbar-pos2 esté visible */
-    #navbar-pos2 {
-        display: flex;
-        /* o block, según tu layout */
-    }
-
-    /* ============================
-   ZOOM GLOBAL FUNCIONAL
-   ============================ */
-    .scale-global {
-        zoom: 0.85;
-        /* Cambia el valor a gusto: 0.80 / 0.70 / 0.65 */
-        transform-origin: top center;
-    }
-
-    /* Para navegadores que no soportan zoom */
-    @supports not (zoom:1) {
-        .scale-global {
-            transform: scale(0.85);
-            transform-origin: top center;
-        }
-    }
-
-    /* --- DISEÑO VENTANA FLOTANTE --- */
-    #floating-history {
-        display: none;
-        position: fixed;
-        top: 85px;
-        right: 20px;
-        width: 600px;
-        /* Un poco más ancho para el subtotal */
-        background: #fff;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        /* Sombra elegante */
-        border-radius: 10px;
-        border: none;
-        z-index: 99999;
-        font-family: 'Source Sans Pro', sans-serif;
-        overflow: hidden;
-        /* Para respetar bordes redondeados */
-        /*transition: all 0.3s ease;*/
-    }
-
-    /* Cabecera con degradado */
-    #floating-header {
-        background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
-        color: #fff;
-        padding: 12px 15px;
-        cursor: move;
-        /* Icono de mano */
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-weight: 600;
-        font-size: 1.1rem;
-        letter-spacing: 0.5px;
-    }
-
-    /* Cuerpo con scroll personalizado */
-    #floating-body {
-        max-height: 450px;
-        overflow-y: auto;
-        background-color: #fff;
-    }
-
-    /* Scrollbar moderno (Chrome/Safari) */
-    #floating-body::-webkit-scrollbar {
+    #detalles-wrapper::-webkit-scrollbar,
+    #floating-body::-webkit-scrollbar,
+    #datafechas::-webkit-scrollbar {
         width: 6px;
     }
 
-    #floating-body::-webkit-scrollbar-track {
-        background: #f1f1f1;
+    #detalles-wrapper::-webkit-scrollbar-track,
+    #floating-body::-webkit-scrollbar-track,
+    #datafechas::-webkit-scrollbar-track {
+        background: #f8fafc;
     }
 
-    #floating-body::-webkit-scrollbar-thumb {
-        background: #ccc;
-        border-radius: 3px;
+    #detalles-wrapper::-webkit-scrollbar-thumb,
+    #floating-body::-webkit-scrollbar-thumb,
+    #datafechas::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
     }
 
-    #floating-body::-webkit-scrollbar-thumb:hover {
-        background: #aaa;
+    #detalles-wrapper::-webkit-scrollbar-thumb:hover,
+    #floating-body::-webkit-scrollbar-thumb:hover,
+    #datafechas::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
     }
 
-    /* Estilos de la tabla */
-    .table-historial th {
-        background-color: #f8f9fa;
-        color: #495057;
+    /* =========================================================
+   TABLAS PRODUCTOS
+   ========================================================= */
+
+    #tblarticulos,
+    #tblarticulos2,
+    #tbllistado,
+    #tbllistadoVentas {
+        font-size: 11.5px;
+    }
+
+    #tblarticulos thead th,
+    #tblarticulos2 thead th {
+        background: #f8fafc !important;
+        color: #475569;
+        border-top: none;
+        border-bottom: 1px solid var(--pos-border);
+        font-size: 12px;
         font-weight: 700;
-        border-top: none !important;
-        border-bottom: 2px solid #dee2e6;
+        text-transform: uppercase;
+    }
+
+    #tblarticulos td,
+    #tblarticulos th,
+    #tblarticulos2 td,
+    #tblarticulos2 th {
+        padding: 6px 5px;
+        vertical-align: middle;
+    }
+
+    #tblarticulos tbody tr:hover,
+    #tblarticulos2 tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    /* =========================================================
+   TABLA LISTADO DE VENTAS
+   ========================================================= */
+
+    #tbllistado {
+        margin-bottom: 0;
+    }
+
+    #tbllistado thead th,
+    #tbllistadoVentas thead th {
+        background: #f8fafc;
+        color: #475569;
+        border-top: none;
+        border-bottom: 1px solid var(--pos-border);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .25px;
+    }
+
+    #tbllistado tbody td,
+    #tbllistadoVentas tbody td {
+        padding: 7px 6px;
+        vertical-align: middle;
+    }
+
+    #tbllistado tbody tr,
+    #tbllistadoVentas tbody tr {
+        transition: background .15s ease;
+    }
+
+    #tbllistado tbody tr:hover,
+    #tbllistadoVentas tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    /* =========================================================
+   TABS PRODUCTO / SERVICIO
+   ========================================================= */
+
+    .card-tabs .nav-tabs {
+        border-bottom: 1px solid var(--pos-border);
+    }
+
+    .card-tabs .nav-tabs .nav-link {
+        border: none;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 9px 15px;
+        border-bottom: 2px solid transparent;
+    }
+
+    .card-tabs .nav-tabs .nav-link:hover {
+        color: var(--pos-primary);
+    }
+
+    .card-tabs .nav-tabs .nav-link.active {
+        color: var(--pos-primary);
+        background: transparent;
+        border-bottom: 2px solid var(--pos-primary);
+    }
+
+    /* =========================================================
+   BUSCADOR PRODUCTOS
+   ========================================================= */
+
+    #div_search {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    #div_search input {
+        height: 36px;
+        border-radius: 8px;
+    }
+
+    #div_search .btn {
+        height: 36px;
+        min-width: 36px;
+    }
+
+    .active-search {
+        background: var(--pos-primary) !important;
+        color: #fff !important;
+        border-color: var(--pos-primary) !important;
+    }
+
+    /* =========================================================
+   TOTALES
+   ========================================================= */
+
+    #formularioregistros .border.rounded.shadow-sm {
+        border: 1px solid var(--pos-border) !important;
+        border-radius: 0px 0px 10px 10px !important;
+        overflow: hidden;
+        box-shadow: none !important;
+        background: #fff;
+    }
+
+    #formularioregistros .border.rounded.shadow-sm .d-flex {
+        border-bottom: 1px solid #f0f2f5;
+    }
+
+    #formularioregistros .border.rounded.shadow-sm .d-flex:last-child {
+        background: #f8fbff;
+        border-bottom: none;
+    }
+
+    #formularioregistros .border.rounded.shadow-sm .fw-bold {
+        font-size: 12px;
+    }
+
+    #sp-impuesto,
+    #sp-subtotal {
+        color: #475569;
+    }
+
+    #total {
+        color: var(--pos-success) !important;
+        font-size: 22px !important;
+        font-weight: 800 !important;
+    }
+
+    /* =========================================================
+   PAGOS
+   ========================================================= */
+
+    #pagosMixtosContainer {
+        background: #f8fafc;
+        border: 1px solid var(--pos-border);
+        border-radius: 9px;
+        padding: 10px 8px 3px;
+    }
+
+    .pagoItem {
+        background: #fff;
+        border: 1px solid var(--pos-border);
+        border-radius: 8px;
+        padding: 8px 4px;
+        margin-bottom: 8px !important;
+    }
+
+    .pagoItem:hover {
+        border-color: #cbd5e1;
+    }
+
+    .pagoItem .form-control {
+        font-size: 11px;
+    }
+
+    /* =========================================================
+   BOTONES FLOTANTES
+   ========================================================= */
+
+    .btn-flotante,
+    .btn-flotante2 {
+        position: fixed;
+        bottom: 22px;
+
+        height: 48px;
+        padding: 0 20px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 10px;
+        border: none;
+
+        color: #fff;
+        font-size: 12px;
+        font-weight: 700;
+
+        letter-spacing: .3px;
+
+        box-shadow: 0 8px 20px rgba(15, 23, 42, .18);
+
+        transition:
+            transform .18s ease,
+            box-shadow .18s ease,
+            background .18s ease;
+
+        z-index: 999;
+    }
+
+    .btn-flotante {
+        right: 25px;
+        background: var(--pos-success);
+    }
+
+    .btn-flotante2 {
+        right: 190px;
+        background: #64748b;
+    }
+
+    .btn-flotante:hover,
+    .btn-flotante2:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(15, 23, 42, .22);
+        color: #fff;
+    }
+
+    .btn-flotante:hover {
+        background: #15803d;
+    }
+
+    .btn-flotante2:hover {
+        background: #475569;
+    }
+
+    /* =========================================================
+   HISTORIAL FLOTANTE
+   ========================================================= */
+
+    #floating-history {
+        display: none;
+
+        position: fixed;
+        top: 85px;
+        right: 20px;
+
+        width: 600px;
+        max-width: calc(100vw - 30px);
+
+        background: #fff;
+
+        border: 1px solid var(--pos-border);
+        border-radius: 12px;
+
+        box-shadow: 0 20px 50px rgba(15, 23, 42, .20);
+
+        overflow: hidden;
+
+        z-index: 99999;
+
+        font-family: var(--pos-font);
+
+        will-change: top, left;
+    }
+
+    #floating-header {
+        background: #fff;
+        color: #111827;
+
+        padding: 12px 15px;
+
+        border-bottom: 1px solid var(--pos-border);
+
+        cursor: grab;
+        user-select: none;
+
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        font-weight: 700;
+        font-size: 13px;
+    }
+
+    #floating-header:active {
+        cursor: grabbing;
+    }
+
+    #floating-header i {
+        color: var(--pos-primary);
+    }
+
+    #floating-header button {
+        color: #64748b !important;
+    }
+
+    .search-box-historial {
+        padding: 9px;
+        background: #f8fafc;
+        border-bottom: 1px solid var(--pos-border);
+    }
+
+    .search-box-historial input {
+        border-radius: 20px !important;
+        padding-left: 14px;
+        border: 1px solid var(--pos-border);
+    }
+
+    #floating-body {
+        max-height: 450px;
+        overflow-y: auto;
+        background: #fff;
+    }
+
+    .table-historial {
+        margin-bottom: 0 !important;
+    }
+
+    .table-historial th {
+        background: #f8fafc;
+        color: #64748b;
+        font-weight: 700;
+        border: none !important;
+        border-bottom: 1px solid var(--pos-border) !important;
         font-size: 12px;
         text-transform: uppercase;
         position: sticky;
@@ -445,58 +829,371 @@
 
     .table-historial td {
         vertical-align: middle !important;
-        font-size: 12px;
-        padding: 8px 5px !important;
-        border-bottom: 1px solid #eee;
+        font-size: 11px;
+        padding: 7px 5px !important;
+        border-bottom: 1px solid #f1f5f9;
     }
 
-    /* Fila resaltada (Producto en carrito) */
+    .table-historial tbody tr:hover {
+        background: #f8fbff;
+    }
+
     .resaltado-carrito {
-        background-color: #fff8e1 !important;
-        /* Amarillo muy suave */
-        border-left: 4px solid #ffc107;
+        background: #fffbeb !important;
+        border-left: 3px solid #f59e0b;
     }
 
     .resaltado-carrito td {
-        color: #856404;
+        color: #92400e;
         font-weight: 600;
     }
 
-    /* Input de búsqueda */
-    .search-box-historial {
-        padding: 10px;
-        background: #f4f6f9;
-        border-bottom: 1px solid #e9ecef;
+    /* =========================================================
+   MODALES
+   ========================================================= */
+
+    .modal-content {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(15, 23, 42, .20);
+        overflow: hidden;
     }
 
-    .search-box-historial input {
-        border-radius: 20px;
-        border: 1px solid #ced4da;
-        padding-left: 15px;
+    .modal-header {
+        border-bottom: 1px solid rgba(255, 255, 255, .12);
     }
 
-    .search-box-historial input:focus {
+    .modal-title {
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .modal-body {
+        background: #fff;
+    }
+
+    .modal-footer {
+        background: #f8fafc;
+        border-top: 1px solid var(--pos-border);
+    }
+
+    /* Modal detalle */
+
+    #getCodeModal22 .card {
         box-shadow: none;
-        border-color: #17a2b8;
+        border: 1px solid var(--pos-border) !important;
     }
 
-    #floating-header {
-        /* ... tus estilos actuales ... */
-        cursor: grab;
-        /* Manita abierta */
-        user-select: none;
-        /* IMPRESCINDIBLE: Evita seleccionar texto al arrastrar */
+    #getCodeModal22 .card-header {
+        background: #f8fafc !important;
+        color: #374151;
     }
 
-    #floating-header:active {
-        cursor: grabbing;
-        /* Manita cerrada al agarrar */
+    #getCodeModal22 small.text-muted {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .4px;
     }
 
-    #floating-history {
-        /* ... tus estilos actuales ... */
-        /* Aseguramos que el navegador use la GPU para renderizar si es posible */
-        will-change: top, left;
+    #getCodeModal22 h5 {
+        font-size: 14px;
+    }
+
+    /* =========================================================
+   MODAL CLIENTES
+   ========================================================= */
+
+    #ModalClientes .modal-header,
+    #ModalPrecios .modal-header,
+    #ModalTipocomprobante .modal-header {
+        background: #fff;
+        color: #111827;
+        border-bottom: 1px solid var(--pos-border);
+    }
+
+    #ModalClientes .modal-title,
+    #ModalPrecios .modal-title,
+    #ModalTipocomprobante .modal-title {
+        color: #111827;
+    }
+
+    /* =========================================================
+   MODAL MOVIMIENTO CAJA
+   ========================================================= */
+
+    #myModal .modal-body {
+        background: #f8fafc !important;
+        border-radius: 0 !important;
+    }
+
+    #myModal .form-group label {
+        font-size: 11px;
+    }
+
+    #myModal input[readonly] {
+        background: #f1f5f9 !important;
+        border-color: var(--pos-border) !important;
+        color: #475569;
+    }
+
+    /* =========================================================
+   APERTURA DE CAJA
+   ========================================================= */
+
+    #aperturarcaja {
+        background: transparent;
+    }
+
+    #aperturarcaja .card {
+        border-radius: 14px !important;
+        box-shadow: 0 10px 35px rgba(15, 23, 42, .08);
+    }
+
+    #aperturarcaja h1 {
+        font-size: 22px;
+        font-weight: 800;
+        color: #111827;
+        letter-spacing: .5px;
+    }
+
+    /* =========================================================
+   IMÁGENES PRODUCTO
+   ========================================================= */
+
+    .img-thumbnail {
+        border: 1px solid var(--pos-border);
+        border-radius: 8px;
+    }
+
+    .img-producto {
+        cursor: pointer;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .img-producto:hover {
+        transform: scale(1.04);
+        box-shadow: 0 5px 15px rgba(15, 23, 42, .12);
+    }
+
+    /* =========================================================
+   PRODUCTO DETALLE
+   ========================================================= */
+
+    #modalDetalleProducto .nav-tabs {
+        border-bottom: 1px solid var(--pos-border);
+    }
+
+    #modalDetalleProducto .nav-tabs .nav-link {
+        border: none;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    #modalDetalleProducto .nav-tabs .nav-link.active {
+        color: var(--pos-primary);
+        border-bottom: 2px solid var(--pos-primary);
+    }
+
+    #detalleImagenProducto {
+        padding: 15px;
+    }
+
+    /* =========================================================
+   FECHAS DE CUOTAS
+   ========================================================= */
+
+    #datafechas {
+        display: block;
+        max-height: 300px;
+        overflow-y: auto;
+        width: 100%;
+    }
+
+    #datafechas tr {
+        display: table;
+        width: 100%;
+        table-layout: fixed;
+    }
+
+    #datafechas td {
+        width: 25%;
+        font-size: 11px;
+    }
+
+    /* =========================================================
+   SEPARADORES
+   ========================================================= */
+
+    #formularioregistros hr {
+        border: 0;
+        border-top: 1px solid var(--pos-border);
+        margin: 14px 0;
+    }
+
+    /* =========================================================
+   ZOOM GLOBAL
+   ========================================================= */
+
+    .scale-global {
+        zoom: .85;
+        transform-origin: top center;
+    }
+
+    @supports not (zoom: 1) {
+        .scale-global {
+            transform: scale(.85);
+            transform-origin: top center;
+        }
+    }
+
+    /* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+    @media (max-width: 991px) {
+
+        #formularioregistros.pos-form-shell {
+            padding: 10px;
+        }
+
+        #formularioregistros.pos-form-shell #datosgenerales,
+        #formularioregistros.pos-form-shell #datosgenerales2 {
+            padding: 10px !important;
+        }
+
+        #floating-history {
+            width: calc(100vw - 20px);
+            right: 10px;
+            top: 65px;
+        }
+
+        .btn-flotante,
+        .btn-flotante2 {
+            bottom: 15px;
+            height: 44px;
+        }
+
+        .btn-flotante {
+            right: 15px;
+        }
+
+        .btn-flotante2 {
+            right: 165px;
+        }
+    }
+
+    @media (max-width: 600px) {
+
+        .content-header h1 {
+            font-size: 18px;
+        }
+
+        #header {
+            padding: 10px;
+        }
+
+        #detalles-wrapper {
+            max-height: 260px;
+        }
+
+        .btn-flotante,
+        .btn-flotante2 {
+            font-size: 11px;
+            padding: 0 14px;
+        }
+
+        .btn-flotante {
+            right: 10px;
+        }
+
+        .btn-flotante2 {
+            right: 145px;
+        }
+
+        #floating-history {
+            width: calc(100vw - 16px);
+            right: 8px;
+        }
+
+        #total {
+            font-size: 19px !important;
+        }
+    }
+
+    /* =========================================================
+   ESTADOS / BADGES
+   ========================================================= */
+
+    .badge {
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 8px;
+    }
+
+    /* =========================================================
+   UTILIDADES
+   ========================================================= */
+
+    .text-primary {
+        color: var(--pos-primary) !important;
+    }
+
+    .bg-primary {
+        background-color: var(--pos-primary) !important;
+    }
+
+    .text-success {
+        color: var(--pos-success) !important;
+    }
+
+    .text-danger {
+        color: var(--pos-danger) !important;
+    }
+
+    /* =========================================================
+   FOCUS ACCESIBLE
+   ========================================================= */
+
+    button:focus,
+    a:focus,
+    select:focus,
+    input:focus {
+        outline: none;
+    }
+
+    /* =========================================================
+   TABLA RESPONSIVE
+   ========================================================= */
+
+    .table-responsive {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+
+    /* =========================================================
+   EVITAR EXCESO DE MARGENES DEL TEMPLATE
+   ========================================================= */
+
+    #formularioregistros.pos-form-shell .card.card-outline.card-danger .card.shadow {
+        margin-top: 0 !important;
+    }
+
+    #formularioregistros.pos-form-shell .col-lg-6[style*="margin-top"] {
+        margin-top: 0 !important;
+    }
+
+    /* =========================================================
+   TRANSICIONES GENERALES
+   ========================================================= */
+
+    .card,
+    .form-control,
+    .btn,
+    .table tbody tr,
+    .select2-selection {
+        transition: all .18s ease;
     }
 </style>
 <?php
@@ -526,12 +1223,12 @@ date_default_timezone_set('America/Lima');
     <section class="content">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header" id="header">
+                <div class="col-md-12">
+                    <div class="card" id="header">
+                        <div class="card-header">
                             <div class="row">
-                                <div class="col-md-2">
-                                    <button type="button" class="btn btn-outline-primary btn-xs" id="btnNuevo"
+                                <div class="col-md-2 mt-4">
+                                    <button type="button" class="btn btn-outline-primary btn-block" id="btnNuevo"
                                         onclick="mostrarform(true)"><i class="fa fa-plus"></i>
                                         Nuevo</button>
                                 </div>
@@ -576,17 +1273,10 @@ date_default_timezone_set('America/Lima');
                                         </select>
                                     </div>
                                 </div-->
-                                <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
+                                <div class="form-group col-lg-4 col-md-2 col-sm-4 col-xs-12">
                                     <label>Producto:</label>
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="fas fa-box"></i>
-                                            </span>
-                                        </div>
-                                        <select id="idproducto" name="idproducto" class="form-control select2">
-                                        </select>
-                                    </div>
+                                    <select id="idproducto" name="idproducto" class="form-control select2">
+                                    </select>
                                 </div>
                                 <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Estado:</label>
@@ -601,7 +1291,7 @@ date_default_timezone_set('America/Lima');
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-6 d-flex align-items-center">
+                                <div class="col-md-6 d-flex align-items-center mt-3">
                                     <span class="mr-2">Mostrar</span>
                                     <select id="limit" class="form-control" style="width:100px"
                                         onchange="cambiarLimit()">
@@ -614,7 +1304,7 @@ date_default_timezone_set('America/Lima');
                                     <span class="ml-2">Registros</span>
 
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6 mt-3">
                                     <input type="text" id="search" class="form-control" placeholder="Buscar...">
                                 </div>
 
@@ -668,15 +1358,13 @@ date_default_timezone_set('America/Lima');
 
                             </div>
 
-                            <br>
+                            <div class="row">
 
-                            <div class="row mb-3">
+                                <div class="col-lg-6">
 
-                                <div class="col-lg-6" style="margin-top: -20px;">
+                                    <div class="panel-heading">
 
-                                    <div class="panel-heading" style="border-bottom: 1px dashed hsla(0,0%,80%,.329)">
-
-                                        <div class="card card-outline card-danger" style="margin-top: -20px;">
+                                        <div class="card card-outline card-danger">
 
                                             <div class="card shadow mb-4">
                                                 <!-- Encabezado principal -->
@@ -725,9 +1413,7 @@ date_default_timezone_set('America/Lima');
 
                                                             <!-- Almacén y Cliente (estructura mejorada) -->
                                                             <fieldset class="border p-2 rounded mb-3">
-                                                                <legend
-                                                                    class="w-auto px-2 small font-weight-bold text-primary">
-                                                                    Datos principales</legend>
+                                                                <legend class="w-auto px-2 small font-weight-bold text-primary"> Datos principales</legend>
                                                                 <div class="row">
                                                                     <div class="col-md-4 col-sm-12 mb-2">
                                                                         <label for="idsucursal"
@@ -739,11 +1425,10 @@ date_default_timezone_set('America/Lima');
                                                                             class="form-control"></select>
                                                                     </div>
                                                                     <div class="col-md-8 col-sm-12 mb-2">
-                                                                        <label for="idcliente" class="font-weight-bold">
-                                                                            <i class="fas fa-users"></i> Cliente
-                                                                        </label>
-                                                                        <div
-                                                                            class="d-flex align-items-center justify-content-between mb-1">
+                                                                        <div class="d-flex align-items-center justify-content-between">
+                                                                            <label for="idcliente" class="font-weight-bold">
+                                                                                <i class="fas fa-users"></i> Cliente
+                                                                            </label>
                                                                             <div>
                                                                                 <a class="text-info"
                                                                                     style="cursor:pointer;"
@@ -791,7 +1476,7 @@ date_default_timezone_set('America/Lima');
                                                                             <i class="fas fa-store-alt"></i> Serie
                                                                         </label>
                                                                         <input type="text"
-                                                                            class="form-control form-control-sm text-center bg-warning"
+                                                                            class="form-control form-control text-center bg-warning"
                                                                             name="serie_comprobante"
                                                                             id="serie_comprobante" maxlength="7"
                                                                             placeholder="Serie" readonly>
@@ -802,7 +1487,7 @@ date_default_timezone_set('America/Lima');
                                                                             <i class="fas fa-file-alt"></i> Nº Orden
                                                                         </label>
                                                                         <input type="text"
-                                                                            class="form-control form-control-sm text-center bg-warning"
+                                                                            class="form-control form-control text-center bg-warning"
                                                                             name="num_comprobante" id="num_comprobante"
                                                                             maxlength="10" placeholder="Número"
                                                                             readonly>
@@ -919,17 +1604,12 @@ date_default_timezone_set('America/Lima');
 
                                             <!-- MÉTODO DE PAGO -->
                                             <!--//***************************************************************************//-->
-                                            <div class="card-header" hidden>
-                                                <button type="button"
-                                                    class="btn btn-block bg-gradient-success btn-sm shadow"
-                                                    title="Completa los datos de tu pedido">Opciones de
-                                                    Venta</button>
-                                            </div>
-                                            <div class="card-body p-2" id="datosgenerales2" style="margin-top: -60px;">
 
-                                                <div class="row col-md-12 mt-4">
-                                                    <div class="col-md-2 mt-3">
-                                                        <label style="font-size: 11px;">¿Crédito?</label>
+                                            <div class="card-body p-2" id="datosgenerales2">
+                                                <label for="">Opciones de pago</label>
+                                                <div class="row col-md-12">
+                                                    <div class="col-md-2">
+                                                        <label style=" font-size: 11px;">¿Crédito?</label>
                                                         <select id="tipopago" name="tipopago" class="form-control"
                                                             data-live-search="true" required>
                                                             <option value="No">No</option>
@@ -937,7 +1617,7 @@ date_default_timezone_set('America/Lima');
                                                         </select>
                                                     </div>
 
-                                                    <div class="col-md-3 mt-3">
+                                                    <div class="col-md-3">
                                                         <label style="font-size: 11px;">Total Depósito</label>
                                                         <div class="input-group">
                                                             <input style="text-align:center" type="text"
@@ -947,7 +1627,7 @@ date_default_timezone_set('America/Lima');
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-md-2 mt-3" hidden>
+                                                    <div class="col-md-2" hidden>
                                                         <label style="font-size: 11px;">Descuento:</label>
                                                         <div class="input-group">
                                                             <input style="text-align:center" type="text"
@@ -957,7 +1637,7 @@ date_default_timezone_set('America/Lima');
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-md-2 mt-3">
+                                                    <div class="col-md-2">
                                                         <label style="font-size: 11px;">Total efectivo</label>
                                                         <div class="input-group">
                                                             <input style="text-align:center" type="text"
@@ -967,7 +1647,7 @@ date_default_timezone_set('America/Lima');
                                                         </div>
                                                     </div>
 
-                                                    <div class="col-md-3 mt-3">
+                                                    <div class="col-md-3">
                                                         <label style="font-size: 11px;">Vuelto S/.</label>
                                                         <div class="d-flex">
                                                             <input style="text-align:center" type="text"
@@ -976,7 +1656,7 @@ date_default_timezone_set('America/Lima');
 
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-2 mt-3">
+                                                    <div class="col-md-2">
                                                         <label style="font-size: 11px;"></label>
                                                         <div class="d-flex">
                                                             <button type="button" class="btn btn-primary btn-sm ms-4"
@@ -985,7 +1665,7 @@ date_default_timezone_set('America/Lima');
                                                     </div>
                                                 </div>
 
-                                                <div class="row col-md-12 mt-1">
+                                                <div class="row col-md-12">
                                                     <div class="col-md-12">
                                                         <label style="font-size: 11px;">Pagos Mixtos:</label>
                                                         <div id="pagosMixtosContainer">
@@ -1150,7 +1830,8 @@ date_default_timezone_set('America/Lima');
                                                         <div class="modal-content">
                                                             <div class="modal-header">
                                                                 <h5 class="modal-title"
-                                                                    id="modalAcompananteGaranteLabel">Datos de
+                                                                    id="modalAcompananteGaranteLabel">
+                                                                    Datos de
                                                                     acompañante y garante</h5>
                                                                 <button type="button" class="close" data-dismiss="modal"
                                                                     aria-label="Close">
@@ -1283,8 +1964,8 @@ date_default_timezone_set('America/Lima');
                                 </div>
 
                                 <!-- INICIO DE TABLE PRODUCTO Y SERVICIOS-->
-                                <div class="col-lg-6 hidden-md hidden-sm hidden-xs" style="margin-top: -20px;">
-                                    <div class="card  card-tabs" style="margin-top: -20px;">
+                                <div class="col-lg-6 hidden-md hidden-sm hidden-xs">
+                                    <div class="card  card-tabs">
                                         <div class="card-header p-0 pt-1">
                                             <div class="card-header p-0 pt-1">
                                                 <ul class="nav nav-tabs" id="custom-tabs-one-tab" role="tablist">
@@ -1460,11 +2141,9 @@ date_default_timezone_set('America/Lima');
                             </div>
                         </div>
                     </div>
-
-
                     <!-- /.card -->
+                    <!-- /.col -->
                 </div>
-                <!-- /.col -->
             </div>
             <!-- /.row -->
         </div>
