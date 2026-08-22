@@ -1581,36 +1581,34 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarDetalleVenta':
+		$venta->ventadetalle($idventa);
 
-		$rspta = $venta->ventadetalle($idventa);
+		// $data = array();
 
-		$data = array();
+		// while ($reg = $rspta->fetch_object()) {
 
-		while ($reg = $rspta->fetch_object()) {
+		// 	$data[] = array(
+		// 		0 => $reg->id,
+		// 		1 => $reg->idproducto,
+		// 		2 => $reg->producto,
+		// 		3 => $reg->cantidad,
+		// 		4 => $reg->descuento,
+		// 		5 => $reg->precio_venta,
+		// 		6 => $reg->precioB,
+		// 		7 => $reg->precioC,
+		// 		8 => $reg->precioD,
+		// 		9 => $reg->preciocigv,
+		// 		10 => $reg->stock,
+		// 		11 => $reg->proigv,
+		// 		12 => $reg->unidadmedida,
+		// 		13 => $reg->cantidad_contenedor,
+		// 		14 => $reg->contenedor,
+		// 		15 => $reg->subtotal,
+		// 		16 => $reg->idcategoria
+		// 	);
+		// }
 
-			$data[] = array(
-				0 => $reg->id,
-				1 => $reg->idproducto,
-				2 => $reg->producto,
-				3 => $reg->cantidad,
-				4 => $reg->descuento,
-				5 => $reg->precio_venta,
-				6 => $reg->precioB,
-				7 => $reg->precioC,
-				8 => $reg->precioD,
-				9 => $reg->preciocigv,
-				10 => $reg->stock,
-				11 => $reg->proigv,
-				12 => $reg->unidadmedida,
-				13 => $reg->cantidad_contenedor,
-				14 => $reg->contenedor,
-				15 => $reg->subtotal,
-				16 => $reg->idcategoria
-			);
-		}
-
-		echo json_encode($data);
-
+		// echo json_encode($data);
 
 		break;
 

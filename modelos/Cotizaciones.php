@@ -1,6 +1,6 @@
 <?php
 //incluir la conexion de base de datos
-require "../configuraciones/Conexion.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
 require_once __DIR__ . "/config/Constants.php";
 require_once __DIR__ . "/../core/Response.php";
@@ -656,6 +656,84 @@ class Cotizacion extends Helpers
         }
 
         return ejecutarConsulta($sql);
+    }
+
+    public function listarDataCotizacion($idcotizacion) : array
+    {
+        $query = (new DBQuery($this->pdo))
+            ->select('v.idcotizacion,
+            v.idsucursal,
+            v.idcliente,
+            s.nombre as almacen,
+            p.nombre AS cliente,
+            v.titulo,
+            v.nota,
+            v.igv,
+            v.saludo,
+            DATE_FORMAT(v.fecha_h,"%d/%m/%y") as fecha_h,
+            p.direccion,
+            p.tipo_documento,
+            p.num_documento,
+            p.email,
+            p.telefono,
+            v.idpersonal,
+            u.nombre AS personal,
+            cp.nombre AS tipo_comprobante,
+            v.idcomprobante_pago,
+            v.serie_comprobante,
+            v.num_comprobante,
+            v.fecha_h as fecha_original,
+            DATE_FORMAT(v.fecha_h, "%d/%m/%Y") as fecha,
+            DATE_FORMAT(v.fecha_h, "%r") as hora,
+            v.total_venta,
+            v.nota,
+            v.formapago,
+            v.observacion,
+            v.tiempo_pro,
+            v.frecuencia,
+            v.meses,
+            v.inicial,
+            v.interes')
+            ->from('cotizacion v')
+            ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
+            ->join('persona p', 'v.idcliente=p.idpersona')
+            ->join('personal u', ' v.idpersonal=u.idpersonal')
+            ->join('sucursal s', 'v.idsucursal=s.idsucursal')
+            ->where('v.idcotizacion', '=', $idcotizacion);
+
+        return $query->first();
+    }
+
+    public function listarDataDetalleCotizacion($idcotizacion) : array
+    {
+        $query = (new DBQuery($this->pdo))
+            ->select('a.idproducto, 
+            a.nombre AS producto, 
+            pg.contenedor AS unidadmedida, 
+            a.idunidad_medida, 
+            CASE 
+                WHEN a.codigo = "SIN CODIGO"
+                    THEN "-"
+                ELSE a.codigo 
+            END AS codigo, 
+
+            d.cantidad_contenedor,
+            d.cantidad, 
+            d.precio_venta, 
+            d.descuento, 
+            (d.cantidad * d.precio_venta - d.descuento) AS subtotal,
+            ip.stock, 
+            a.imagen, 
+            a.proigv')
+            ->from('detalle_cotizacion d')
+            ->join('producto a', 'd.idproducto = a.idproducto')
+            ->join('producto_configuracion pg', 'pg.idproducto_configuracion = d.idproducto_configuracion AND pg.idproducto = a.idproducto')
+            ->join('producto_serie ps', 'ps.idproducto = a.idproducto')
+            ->join('inventario_producto ip', 'ip.idproducto = a.idproducto')
+            ->join('unidad_medida um', 'a.idunidad_medida = um.idunidad_medida')
+            ->where('d.idcotizacion', '=', $idcotizacion);
+
+        return $query->get();
     }
 
 }
