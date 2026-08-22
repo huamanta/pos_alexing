@@ -1137,52 +1137,46 @@ class CuentasCobrar extends Helpers
     {
         $hoy = date('Y-m-d');
 
-        $sql = "
-        SELECT 
+        $query = (new DBQuery($this->pdo))
+            ->select("
             cc.idcpc,
             c.nombre AS cliente,
             cc.deudatotal,
             cc.fechavencimiento,
-            DATEDIFF('$hoy', cc.fechavencimiento) AS dias_vencido
-        FROM cuentas_por_cobrar cc
-        INNER JOIN venta v ON v.idventa = cc.idventa
-        INNER JOIN persona c ON c.idpersona = v.idcliente
-        WHERE cc.estado_pago = 1
-          AND cc.condicion = 1
-          AND v.idsucursal = '$idsucursal'
-          AND cc.fechavencimiento <= '$hoy'
-        ORDER BY cc.fechavencimiento ASC
-    ";
+            DATEDIFF(CURDATE(), cc.fechavencimiento) AS dias_vencido
+        ")
+            ->from('cuentas_por_cobrar cc')
+            ->join('venta v', 'v.idventa = cc.idventa')
+            ->join('persona c', 'c.idpersona = v.idcliente')
+            ->where('cc.estado_pago', '=', 1)
+            ->where('cc.condicion', '=', 1)
+            ->where('v.idsucursal', '=', $idsucursal)
+            ->where('cc.fechavencimiento', '<=', $hoy)
+            ->orderBy('cc.fechavencimiento', 'ASC');
 
-        $rspta = ejecutarConsulta($sql);
+        $response = $query->get();
+
         $notificaciones = [];
 
-        while ($r = $rspta->fetch_object()) {
-
-            $monto = number_format($r->deudatotal, 2);
-            $fecha = date("d/m/Y", strtotime($r->fechavencimiento));
-
-            if ($r->dias_vencido > 0) {
-                $mensaje = "💸 <b>{$r->cliente}</b> tiene una cuota vencida hace 
-                        <b>{$r->dias_vencido} día(s)</b> por 
-                        <b>S/ {$monto}</b> (venció el {$fecha})";
-            } else {
-                $mensaje = "⏰ <b>{$r->cliente}</b> tiene una cuota que 
-                        <b>vence HOY</b> por <b>S/ {$monto}</b>";
-            }
+        foreach ($response as $row) {
+            $diasVencido = (int) $row['dias_vencido'];
+            $fecha = date('d/m/Y', strtotime($row['fechavencimiento']));
 
             $notificaciones[] = [
-                'idcpc' => $r->idcpc,
-                'mensaje' => $mensaje,
+                'idcpc' => $row['idcpc'],
+                'cliente' => $row['cliente'],
+                'monto' => (float) $row['deudatotal'],
+                'monto_str' => 'S/ ' . number_format((float) $row['deudatotal'], 2),
                 'fecha' => $fecha,
-                'tipo' => '' // cuota
+                'dias_vencido' => $diasVencido,
+                'tipo' => $diasVencido > 0 ? 'vencida' : 'hoy',
             ];
         }
 
-        return $notificaciones;
+        return Response::json($notificaciones);
     }
 
-
+    
     public function estadoCuentaDocumento($idcpc)
     {
         $sql = "

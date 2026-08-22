@@ -1,14 +1,13 @@
 <?php
 
 require_once __DIR__ . '/../../../../configuraciones/bootstrap.php';
+require_once __DIR__ . '/../../../../modelos/Helpers.php';
 use Greenter\Model\DocumentInterface;
 use Greenter\Model\Response\CdrResponse;
 use Greenter\Ws\Services\SunatEndpoints;
 use Greenter\See;
 
-
-
-final class Util
+final class Util extends Helpers
 {
 
     /**
@@ -18,6 +17,7 @@ final class Util
 
     private function __construct()
     {
+        parent::__construct();
     }
 
     public static function getInstance()
@@ -57,38 +57,171 @@ final class Util
      * @return See
 
      */
-    public function getSee($idsucursal)
+
+    public function getSee($idsucursal, $tipo = 'FE')
     {
         $conexion = $this->abrirConexion();
 
-        $sqlSucursal = mysqli_query($conexion, 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $idsucursal);
-        $sucursal = mysqli_fetch_assoc($sqlSucursal);
-        $ruc = $sucursal['documento'] ?? '';
-        $usuario = $sucursal['usuario_sol'] ?? '';
+        $idsucursal = (int) $idsucursal;
+        $sucursal = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('sucursal s')
+            ->join('empresas e', 's.idempresa = e.idempresa')
+            ->where('s.idsucursal', '=', $idsucursal)
+            ->first();
+
+        if (!$sucursal) {
+            throw new Exception('No se encontró la sucursal.');
+        }
+
+        $ruc = trim($sucursal['ruc'] ?? '');
+        $usuario = trim($sucursal['usuario_sol'] ?? '');
         $contrasena = $sucursal['clave_sol'] ?? '';
-        $contrasenacertificado = $sucursal['clave_certificado'] ?? '';
-        $estadocertificado = !empty($sucursal['estado_certificado']) ? $sucursal['estado_certificado'] : 'BETA';
-        $rutaCertificado = !empty($sucursal['ruta_certificado']) ? $sucursal['ruta_certificado'] : '/certificado.pem';
-        
-        $sunatEnpoint = SunatEndpoints::FE_BETA;
-        if ($estadocertificado == "PRODUCCION") {
-            $sunatEnpoint = SunatEndpoints::FE_PRODUCCION;
+        $estado = strtoupper(trim($sucursal['estado_certificado'] ?? 'BETA'));
+
+        //ENDPOINT
+
+        if ($tipo === 'GRE') {
+            $endpoint = ($estado === 'PRODUCCION')
+                ? SunatEndpoints::GUIA_PRODUCCION
+                : SunatEndpoints::GUIA_BETA;
+        } else {
+            $endpoint = ($estado === 'PRODUCCION')
+                ? SunatEndpoints::FE_PRODUCCION
+                : SunatEndpoints::FE_BETA;
         }
+
+
+        //SEE
         $see = new See();
-        $see->setService($sunatEnpoint);
+        $see->setService($endpoint);
 
-        if (file_exists(__DIR__ . $rutaCertificado)) {
-            $pfx = file_get_contents(__DIR__ . $rutaCertificado);
-            $see->setCertificate($pfx);
+        //CERTIFICADO
+        $rutaCertificado = !empty($sucursal['ruta_certificado']) ? $sucursal['ruta_certificado'] : '/certificado.pem';
+        $rutaCertificadoCompleta = __DIR__ . $rutaCertificado;
+
+        if (!file_exists($rutaCertificadoCompleta)) {
+            throw new Exception('No se encontró el certificado: ' . $rutaCertificadoCompleta);
         }
 
-        $see->setCredentials($ruc . '' . $usuario, $contrasena);
-        $see->setCachePath(__DIR__ . '/../cache');
+        $pfx = file_get_contents($rutaCertificadoCompleta);
+
+        if ($pfx === false) {
+            throw new Exception('No se pudo leer el certificado.');
+        }
+
+        $see->setCertificate($pfx);
+
+
+        // CREDENCIALES SOL
+        $see->setCredentials($ruc . $usuario, $contrasena);
+
+
+        //CACHE
+
+        $cache = __DIR__ . '/../cache';
+
+        if (!is_dir($cache)) {
+            @mkdir($cache, 0777, true);
+        }
+
+        $see->setCachePath($cache);
 
         $this->desconectar($conexion);
 
         return $see;
     }
+
+
+    public function getSeeApi($idsucursal)
+    {
+        $conexion = $this->abrirConexion();
+
+        $sql = "
+        SELECT *
+        FROM sucursal s
+        INNER JOIN empresas e ON s.idempresa = e.idempresa
+        WHERE s.idsucursal = " . (int) $idsucursal;
+
+        $result = mysqli_query($conexion, $sql);
+
+        if (!$result) {
+            throw new Exception(mysqli_error($conexion));
+        }
+
+        $sucursal = mysqli_fetch_assoc($result);
+
+        if (!$sucursal) {
+            throw new Exception('No se encontró la sucursal.');
+        }
+
+        $ruc = trim($sucursal['documento'] ?? '');
+        $usuario = trim($sucursal['usuario_sol'] ?? '');
+        $clave = trim($sucursal['clave_sol'] ?? '');
+
+        $estado = strtoupper(
+            trim($sucursal['estado_certificado'] ?? 'BETA')
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | ENDPOINT GRE
+        |--------------------------------------------------------------------------
+        */
+
+        if ($estado === 'PRODUCCION') {
+
+            $endpointSend =
+                SunatEndpointsApp::SUNAT_SEND_API_ENDPOINT;
+
+            $endpointConsult =
+                SunatEndpointsApp::SUNAT_CONSULT_API_ENDPOINT;
+
+        } else {
+
+            $endpointSend =
+                SunatEndpointsApp::SUNAT_SEND_API_ENDPOINT_TEST;
+
+            $endpointConsult =
+                SunatEndpointsApp::SUNAT_CONSULT_API_ENDPOINT_TEST;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | CERTIFICADO
+        |--------------------------------------------------------------------------
+        */
+
+        $rutaCertificado = !empty($sucursal['ruta_certificado'])
+            ? $sucursal['ruta_certificado']
+            : '/certificado.pem';
+
+        $rutaCertificadoCompleta = __DIR__ . $rutaCertificado;
+
+        if (!file_exists($rutaCertificadoCompleta)) {
+            throw new Exception(
+                'No existe el certificado: ' .
+                $rutaCertificadoCompleta
+            );
+        }
+
+        $certificado = file_get_contents(
+            $rutaCertificadoCompleta
+        );
+
+        $this->desconectar($conexion);
+
+        return [
+            'ruc' => $ruc,
+            'usuario_sol' => $usuario,
+            'clave_sol' => $clave,
+            'estado' => $estado,
+            'certificado' => $certificado,
+            'endpoint_send' => $endpointSend,
+            'endpoint_consult' => $endpointConsult
+        ];
+    }
+
 
     public function showResponse(DocumentInterface $document, CdrResponse $cdr, $id, $tipo, $EMP)
     {
@@ -145,7 +278,6 @@ final class Util
         Codigo: {$error->getCode()}
 
         Descripcion: {$error->getMessage()}
-
         HTML;
 
         return $result;

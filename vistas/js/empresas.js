@@ -41,8 +41,8 @@ function mostrarform(flag) {
         $("#detalles tbody").html("");
         
         // Llenar tabla con comprobantes por defecto para nueva empresa
-        var comprobantes = ['Factura', 'Boleta', 'Nota de Venta', 'Cotización', 'NC', 'NCB', 'Orden Compra', 'Ticket', 'Guia de Remision'];
-        var series = ['F001', 'B001', 'NV01', 'Q001', 'NC01', 'ND01', 'OC01', 'T001', 'G001'];
+        var comprobantes = ['Factura', 'Boleta', 'Nota de Venta', 'Cotización', 'NC', 'NCB', 'Orden Compra', 'Ticket', 'Guia de Remisión'];
+        var series = ['F001', 'B001', 'NV01', 'Q001', 'NC01', 'ND01', 'OC01', 'TK01', 'T001'];
         
         comprobantes.forEach(function(comp, index) {
             var fila = '<tr>' +

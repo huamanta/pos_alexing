@@ -4,32 +4,26 @@ let chartProductosMasVendidos = null;
 //Función que se ejecuta al inicio
 function init() {
     $("#body").addClass("sidebar-collapse sidebar-mini");
-    obtenerProductosStockBajo();
     $('#navInicio').addClass("treeview active");
     $('#navInicio').addClass("active");
-
-    $.post("controladores/venta.php?op=selectSucursal3", function (r) {
+    mostrarInicio();
+   /* $.post("controladores/venta.php?op=selectSucursal3", function (r) {
         $("#idsucursal2").html(r);
         $("#idsucursal2").select2("");
 
         $("#idsucursal2").on("change", function () {
             cargarVendedoresPorSucursal();
-            mostrarInicio();
+            
         });
 
         cargarVendedoresPorSucursal();
 
         // Una vez cargada la sucursal, inicializamos las consultas y tablas
         mostrarInicio();
-    });
+    });*/ 
 
     // Actualizar la alerta cada 30 segundos, pero solo si la tabla está visible
-    setInterval(function () {
-        let table = $('#stockAlertTable');
-        if (table.is(":visible")) {
-            obtenerProductosStockBajo();
-        }
-    }, 30000);
+
 
 }
 
@@ -42,58 +36,24 @@ $(document).ready(function () {
     }
 });
 
-function cargarVendedoresPorSucursal() {
+/*function cargarVendedoresPorSucursal() {
     var idsucursal = $("#idsucursal2").val();
 
     $.post("controladores/venta.php?op=selectVendedor", { idsucursal: idsucursal }, function (r) {
         $("#idcliente").html(r);
         $("#idcliente").select2("");
     });
-}
+}*/
 
 // Función para obtener productos con stock bajo
-function obtenerProductosStockBajo() {
-    let idsucursal2 = $("#idsucursal2").val(); // Obtener el id de la sucursal seleccionada
 
-    $.get("controladores/producto.php?op=listarStockBajoAlert", { idsucursal2: idsucursal2 }, function (data) {
-        let productos = JSON.parse(data);
-        let cantidadBaja = productos.length; // La cantidad de productos con stock bajo (0, 1, 2 o 3)
-
-        // Actualizar el contador de productos en el navbar
-        $('#stockAlertCount').text(cantidadBaja); // Actualiza el contador
-
-        let listaProductos = $('#stockAlertTableBody');
-        listaProductos.html(''); // Limpiar la tabla de productos antes de llenarla
-
-        if (cantidadBaja > 0) {
-            // Mostrar los productos con stock bajo
-            productos.forEach(function (producto) {
-                listaProductos.append(`
-                    <tr>
-                        <td><img src="files/productos/${producto.imagen}" alt="${producto.nombre}" style="width: 30px; height: 30px;" class="mr-2"> ${producto.nombre}</td>
-                        <td class="text-danger">${producto.stock}</td>
-                    </tr>
-                `);
-            });
-        } else {
-            // Si no hay productos con stock bajo
-            listaProductos.append('<tr><td colspan="3" class="text-center">No hay productos con stock bajo.</td></tr>');
-        }
-    });
-}
 
 
 function mostrarInicio() {
 
     var fecha_inicio = $("#fecha_inicio").val();
     var fecha_fin = $("#fecha_fin").val();
-    var idvendedor = $("#idcliente").val();
-    var idsucursal = $("#idsucursal2").val();
-
-    if (!idsucursal) {
-        console.warn('No existe sucursal seleccionada aún en mostrarInicio(), se omiten consultas.');
-        return;
-    }
+   
 
     if ($.fn.DataTable.isDataTable('#tblpedidos')) {
         $('#tblpedidos').DataTable().destroy();
@@ -133,8 +93,7 @@ function mostrarInicio() {
             url: 'controladores/consultas.php?op=mostrartotalpedidos',
             data: {
                 fecha_inicio: fecha_inicio,
-                fecha_fin: fecha_fin,
-                idsucursal: idsucursal
+                fecha_fin: fecha_fin
             },
             type: "get",
             dataType: "json",
@@ -147,81 +106,49 @@ function mostrarInicio() {
         "order": [[1, "desc"]]
     });
 
-    $.post("controladores/consultas.php?op=totalcomprahoy", {
+    $.get("controladores/consultas.php?op=totalcomprahoy", {
         fecha_inicio,
-        fecha_fin,
-        idvendedor,
-        idsucursal
-    }, function (data, status) {
-        data = JSON.parse(data);
+        fecha_fin
+    }, function (response, status) {
+        const data = response;
         var totalCompra = data.total_compra;
-
-        // Formatear el número
-        var formattedTotal = new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(totalCompra);
-
+        var totalCompraStr = data.total_compra_str;
         var label = document.querySelector('#lblComprasHoy');
-        label.textContent = formattedTotal;
+        label.textContent = totalCompraStr;
     });
     
     $.post("controladores/consultas.php?op=totalventahoy", {
         fecha_inicio,
-        fecha_fin,
-        idvendedor,
-        idsucursal
-    }, function (data, status) {
-        data = JSON.parse(data);
+        fecha_fin
+    }, function (response, status) {
+        const data = response;
         var totalVenta = data.total_venta;
-
-        // Formatear el número
-        var formattedTotal = new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(totalVenta);
-
+        var totalVentaStr = data.total_venta_str;
         var label = document.querySelector('#lblVentasHoy');
-        label.textContent = formattedTotal;
+        label.textContent = totalVentaStr;
     });
 
-    $.post("controladores/consultas.php?op=totalusuariosr", function (data, status) {
-
-        data = JSON.parse(data);
+    $.post("controladores/consultas.php?op=totalusuariosr", function (response, status) {
+        const data = response;
         var label = document.querySelector('#lblEmpleados');
-        label.textContent = data.idpersonal;
-
+        label.textContent = data.total;
     });
 
-    $.post("controladores/consultas.php?op=totalproveedoresr", function (data, status) {
-
-        data = JSON.parse(data);
+    $.post("controladores/consultas.php?op=totalproveedoresr", function (response, status) {
+        const data = response;
         var label = document.querySelector('#lblProveedores');
-        label.textContent = data.idpersona;
+        label.textContent = data.total;
 
     });
 
     $.post("controladores/consultas.php?op=totalventachoy", {
         fecha_inicio,
-        fecha_fin,
-        idvendedor,
-        idsucursal
-    }, function (data, status) {
-        data = JSON.parse(data);
-        var totalVentaCredito = data.total_venta;
-
-        var formattedTotal = new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(totalVentaCredito);
-
-        document.querySelector('#lblTotalVentasC').textContent = formattedTotal;
+        fecha_fin
+    }, function (response, status) {
+        const data = response;
+        var totalVenta = data.total_venta;
+        var totalVentaStr = data.total_venta_str;
+        document.querySelector('#lblTotalVentasC').textContent = totalVentaStr;
     });
 
    
@@ -229,56 +156,36 @@ function mostrarInicio() {
     $.post("controladores/consultas.php?op=totalcuentasporcobrar", {
         fecha_inicio,
         fecha_fin,
-        idvendedor,
-        idsucursal
-    }, function (data, status) {
-        data = JSON.parse(data);
-        var totalCompra = data.totaldeuda;
-
-        var formattedTotal = new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(totalCompra);
-
-        document.querySelector('#lblCuentasCobrar').textContent = formattedTotal;
+    }, function (response, status) {
+        const data = response;
+        var totalDeuda = data.totaldeuda;
+        var totalDeudaStr = data.totaldeuda_str;
+        document.querySelector('#lblCuentasCobrar').textContent = totalDeudaStr;
     });
 
     $.post("controladores/consultas.php?op=totalcuentasporpagar", {
         fecha_inicio: fecha_inicio,
-        fecha_fin: fecha_fin,
-        idvendedor: idvendedor,
-        idsucursal: idsucursal
-    }, function (data, status) {
-
-        data = JSON.parse(data);
-        var totalCompra = data.totaldeuda;
-
-        // Formatear el número
-        var formattedTotal = new Intl.NumberFormat('es-PE', {
-            style: 'currency',
-            currency: 'PEN',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(totalCompra);
+        fecha_fin: fecha_fin
+    }, function (response, status) {
+        const data = response;
+        var totalDeuda = data.totaldeuda;
+        var totalDeudaStr = data.totaldeuda_str;
 
         var label = document.querySelector('#lblCuentasPagar');
-        label.textContent = formattedTotal;
+        label.textContent = totalDeudaStr;
     });
 
    
-    $.post("controladores/consultas.php?op=totalcategorias", function (data, status) {
+    $.post("controladores/consultas.php?op=totalcategorias", function (response, status) {
 
-        data = JSON.parse(data);
+        const data = response;
         var label = document.querySelector('#lblCategorias');
         label.textContent = data.totalca;
 
     });
 
-    $.post("controladores/consultas.php?op=totalproductos", function (data, status) {
-
-        data = JSON.parse(data);
+    $.post("controladores/consultas.php?op=totalproductos", function (response, status) {
+        const data = response;
         var label = document.querySelector('#lblProductos');
         label.textContent = data.totalpro;
 
@@ -371,8 +278,8 @@ function mostrarInicio() {
     // =======================
     // GRAFICO INGRESOS/EGRESOS
     // =======================
-    $.post("controladores/consultas.php?op=ingresos_egresos", function (data) {
-        data = JSON.parse(data);
+    $.post("controladores/consultas.php?op=ingresos_egresos", function (response) {
+        const data = response;
         //console.log("Respuesta del servidor:", data);
 
         const ctx = document.getElementById("graficoIngresosEgresos").getContext("2d");
@@ -495,7 +402,7 @@ function mostrarInicio() {
     $.ajax({
         url: 'controladores/consultas.php?op=utilidades12meses',
         method: 'GET',
-        data: { idvendedor: idvendedor, idsucursal: idsucursal },
+        data: { fecha_inicio, fecha_fin },
         dataType: 'json',
         success: function (response) {
             if (!response.labels || !response.labels.length) {

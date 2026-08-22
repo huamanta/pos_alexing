@@ -272,16 +272,53 @@ class Comprobantes extends Helpers
 		return $num;
 	}
 
-	public function select_comprobantes_guia()
+	public function selectComprobantesGuia($idsucursal)
 	{
-		$sql = "SELECT v.idventa, v.serie_comprobante, v.num_comprobante, p.nombre AS cliente
-						FROM venta v
-						INNER JOIN persona p ON v.idcliente = p.idpersona
-						WHERE v.tipo_comprobante IN ('Boleta','Factura') AND v.estado = 'Aceptado'";
-		return ejecutarConsulta($sql);
+		$page = (int) ($_GET['page'] ?? 1);
+		$limit = (int) ($_GET['limit'] ?? 10);
+		$search = trim($_GET['search'] ?? '');
+
+		$data = (new DBQuery($this->pdo))
+		->select([
+			'v.idventa', 
+			'cp.nombre', 
+			'v.serie_comprobante', 
+			'v.num_comprobante', 
+			'p.nombre AS cliente'
+		])
+		->from('venta v')
+		->join('persona p','v.idcliente = p.idpersona')
+		->join('comp_pago cp','cp.idcomprobante_pago = v.idcomprobante_pago')
+		->where('v.idsucursal', '=', $idsucursal)
+		->where('v.estado', '=', 'Aceptado')
+		->whereIn('cp.nombre', ['Boleta', 'Factura'])
+		->search($search, ['cp.nombre', 'v.serie_comprobante', 'v.num_comprobante'])
+		->paginate($page, $limit);
+		
+		return Response::json($data);
 	}
 
-	public function get_numeracion_guia($idsucursal, $serie)
+	public function selectCoprobante($idsucursal, $tipo): array
+	{
+		try {
+			$idempresa = Helpers::getEmpresa($idsucursal);
+			$data = (new DBQuery($this->pdo))
+				->select('*')
+				->from('comp_pago')
+				->where('condicion', '=', 1)
+				->where('nombre', '=', $tipo)
+				->where('idempresa', '=', $idempresa)
+				->first();
+			if(!$data){
+				throw new Exception("No se ha definido el comprobante {$tipo}");
+			}
+			return $data;
+		} catch (\Throwable $th) {
+			return Response::error($th->getMessage());
+		}
+	}
+
+	/*public function get_numeracion_guia($idsucursal, $serie)
 	{
 		$sql = "SELECT num_comprobante FROM comp_pago WHERE nombre = 'Guia' AND " . $this->getEmpresaFilter($idsucursal) . " AND serie_comprobante = '$serie'";
 		$rspta = ejecutarConsultaSimpleFila($sql);
@@ -303,5 +340,5 @@ class Comprobantes extends Helpers
 	{
 		$sql = "SELECT serie_comprobante FROM comp_pago WHERE nombre = 'Guia' AND " . $this->getEmpresaFilter($idsucursal);
 		return ejecutarConsulta($sql);
-	}
+	}*/
 }

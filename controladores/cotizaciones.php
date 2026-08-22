@@ -418,7 +418,6 @@ switch ($_GET["op"]) {
 		require_once "../modelos/Producto.php";
 		$producto = new Producto();
 		echo $producto->listarActivosVenta($idsucursal);
-
 		break;
 
 	case 'selectComprobante':

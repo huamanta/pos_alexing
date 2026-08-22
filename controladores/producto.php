@@ -312,30 +312,8 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarStockBajoAlert':
-		$fechaActual = date('Y-m-d');
-		$idsucursal2 = $_GET['idsucursal2'];
-
-		// Si la sucursal seleccionada es 0, se consultan todos los productos
-		if ($_SESSION['idsucursal'] == 0) {
-			$rspta = $producto->listarstock22($idsucursal2, $_SESSION['idsucursal']);
-		} else {
-			$rspta = $producto->listarstock33($idsucursal2, $_SESSION['idsucursal']);
-		}
-
-		// Array para almacenar los productos
-		$productosBajosStock = [];
-
-		while ($reg = $rspta->fetch_object()) {
-			$productosBajosStock[] = [
-				"idproducto" => $reg->idproducto,
-				"nombre" => $reg->nombre,
-				"stock" => $reg->stock,
-				"imagen" => $reg->imagen
-			];
-		}
-
-		// Devolver los datos como JSON
-		echo json_encode($productosBajosStock);
+		$idsucursal = $_SESSION['idsucursal'];
+		$producto->listarstock22($idsucursal);
 		break;
 
 	case 'actualizarProductoEmpaquetado':

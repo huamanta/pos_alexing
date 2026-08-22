@@ -294,9 +294,8 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'obtener_notificaciones':
-		$idsucursal = isset($_GET["idsucursal"]) ? intval($_GET["idsucursal"]) : 0;
-		$notificaciones = $cuentascobrar->generarNotificaciones($idsucursal);
-		echo json_encode($notificaciones);
+		$idsucursal = $_SESSION['idsucursal'];
+		$cuentascobrar->generarNotificaciones($idsucursal);
 		break;
 
 	case 'marcar_leida':

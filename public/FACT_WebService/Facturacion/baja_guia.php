@@ -16,8 +16,8 @@ if (!$conexion) {
     exit;
 }
 
-$idguia = isset($_POST['idguia']) ? $_POST['idguia'] : null;
-$motivo = isset($_POST['motivo']) ? $_POST['motivo'] : 'Error en los datos';
+$idguia = isset($_GET['idguia']) ? $_GET['idguia'] : null;
+$motivo = isset($_GET['motivo']) ? $_GET['motivo'] : 'Error en los datos';
 
 if (empty($idguia)) {
     echo json_encode(['success' => false, 'message' => 'No se ha seleccionado la guía para dar de baja.']);
