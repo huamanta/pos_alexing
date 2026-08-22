@@ -1,179 +1,189 @@
 <style>
-#navbar-global {
-    background-color: #ffffff;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0.8rem 1rem;
-}
-
-/* Separador vertical sutil */
-.navbar-divider {
-    width: 1px;
-    height: 30px;
-    background-color: #e2e8f0;
-    margin: 0 12px;
-    display: none;
-    /* Oculto en móvil */
-}
-
-@media (min-width: 576px) {
-    .navbar-divider {
-        display: inline-block;
-        vertical-align: middle;
+    #navbar-global {
+        background-color: #ffffff;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.8rem 1rem;
     }
-}
 
-/* Contenedor "Pastilla" del Perfil */
-.user-profile-link {
-    display: flex;
-    align-items: center;
-    padding: 6px 15px !important;
-    border-radius: 30px;
-    transition: all 0.2s ease-in-out;
-    background: #f1f5f9;
-    border: 1px solid transparent;
-    margin-left: 5px;
-}
+    /* Separador vertical sutil */
+    .navbar-divider {
+        width: 1px;
+        height: 30px;
+        background-color: #e2e8f0;
+        margin: 0 12px;
+        display: none;
+        /* Oculto en móvil */
+    }
 
-.user-profile-meta {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    line-height: 1.15;
-    min-height: 35px;
-}
+    @media (min-width: 576px) {
+        .navbar-divider {
+            display: inline-block;
+            vertical-align: middle;
+        }
+    }
 
-/* Efecto al pasar el mouse (Hover) */
-.user-profile-link:hover,
-.user-menu.show .user-profile-link {
-    background-color: #e2e8f0;
-    border-color: #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
+    /* Contenedor "Pastilla" del Perfil */
+    .user-profile-link {
+        display: flex;
+        align-items: center;
+        padding: 6px 15px !important;
+        border-radius: 30px;
+        transition: all 0.2s ease-in-out;
+        background: #f1f5f9;
+        border: 1px solid transparent;
+        margin-left: 5px;
+    }
 
-/* Círculo para el avatar/icono */
-.user-avatar-circle {
-    width: 30px;
-    height: 30px;
-    background-color: #4f46e5;
-    color: #ffffff;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.95rem;
-    font-weight: 600;
-    margin-right: 10px;
-}
+    .user-profile-meta {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        line-height: 1.15;
+        min-height: 35px;
+    }
 
-/* Flecha pequeña indicadora */
-.user-chevron {
-    font-size: 0.7rem;
-    color: #adb5bd;
-    margin-left: 8px;
-}
+    /* Efecto al pasar el mouse (Hover) */
+    .user-profile-link:hover,
+    .user-menu.show .user-profile-link {
+        background-color: #e2e8f0;
+        border-color: #e2e8f0;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
 
-/* Ajuste de badges de notificación */
-.navbar-badge-custom {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 4px 6px;
-    border-radius: 50%;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    position: absolute;
-    right: 0;
-    top: 0;
-}
+    /* Círculo para el avatar/icono */
+    .user-avatar-circle {
+        width: 30px;
+        height: 30px;
+        background-color: #4f46e5;
+        color: #ffffff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-right: 10px;
+    }
 
-.navbar-icon-link {
-    color: #64748b;
-}
+    /* Flecha pequeña indicadora */
+    .user-chevron {
+        font-size: 0.7rem;
+        color: #adb5bd;
+        margin-left: 8px;
+    }
 
-.navbar-icon-link:hover {
-    color: #334155;
-}
+    /* Ajuste de badges de notificación */
+    .navbar-badge-custom {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 4px 6px;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        position: absolute;
+        right: 0;
+        top: 0;
+    }
 
-.stock-alert-dropdown {
-    width: 360px;
-    overflow: hidden;
-}
+    .navbar-icon-link {
+        color: #64748b;
+    }
 
-.stock-alert-list {
-    max-height: 320px;
-    overflow-y: auto;
-}
+    .navbar-icon-link:hover {
+        color: #334155;
+    }
 
-.stock-alert-item {
-    border-bottom: 1px solid #f1f1f1;
-    transition: background-color .15s ease;
-}
+    .stock-alert-dropdown {
+        width: 360px;
+        overflow: hidden;
+    }
 
-.stock-alert-item:hover {
-    background-color: #fafafa;
-}
+    .stock-alert-list {
+        max-height: 320px;
+        overflow-y: auto;
+    }
 
-.stock-alert-item:last-child {
-    border-bottom: 0;
-}
+    .stock-alert-item {
+        border-bottom: 1px solid #f1f1f1;
+        transition: background-color .15s ease;
+    }
 
-.stock-product-icon {
-    width: 38px;
-    height: 38px;
-    min-width: 38px;
-    border-radius: 10px;
-    background: #fff0f0;
-    color: #ffc107;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
+    .stock-alert-item:hover {
+        background-color: #fafafa;
+    }
 
-.stock-product-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #343a40;
-}
+    .stock-alert-item:last-child {
+        border-bottom: 0;
+    }
 
-.stock-value {
-    font-size: 16px;
-    line-height: 16px;
-}
+    .stock-product-icon {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        border-radius: 10px;
+        background: #fff0f0;
+        color: #ffc107;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
-.stock-alert-list::-webkit-scrollbar {
-    width: 5px;
-}
+    .stock-product-name {
+        font-size: 13px;
+        font-weight: 600;
+        color: #343a40;
+    }
 
-.stock-alert-list::-webkit-scrollbar-thumb {
-    background: #d6d6d6;
-    border-radius: 10px;
-}
+    .stock-value {
+        font-size: 16px;
+        line-height: 16px;
+    }
 
-.min-width-0 {
-    min-width: 0;
-}
+    .stock-alert-list::-webkit-scrollbar {
+        width: 5px;
+    }
 
-.bg-danger-light {
-    background: rgba(220, 53, 69, 0.10);
-}
+    .stock-alert-list::-webkit-scrollbar-thumb {
+        background: #d6d6d6;
+        border-radius: 10px;
+    }
 
-.cxc-alert-item {
-    transition: all 0.15s ease;
-}
+    .min-width-0 {
+        min-width: 0;
+    }
 
-.cxc-alert-item:hover {
-    background: #f8f9fa;
-}
+    .bg-danger-light {
+        background: rgba(220, 53, 69, 0.10);
+    }
 
-.cxc-alert-item + .cxc-alert-item {
-    border-top: 1px solid #f0f0f0;
-}
+    .cxc-alert-item {
+        transition: all 0.15s ease;
+    }
 
-.cxcAlertCount {
-    min-width: 24px;
-    padding: 4px 7px;
-    font-size: 11px;
-}
+    .cxc-alert-item:hover {
+        background: #f8f9fa;
+    }
+
+    .cxc-alert-item+.cxc-alert-item {
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .cxcAlertCount {
+        min-width: 24px;
+        padding: 4px 7px;
+        font-size: 11px;
+    }
+
+    .cxc-loading {
+        padding: 30px 15px;
+        text-align: center;
+    }
+
+    .cxc-loading .spinner-border {
+        width: 1.8rem;
+        height: 1.8rem;
+    }
 </style>
 <?php
 require_once __DIR__ . '/../../modelos/Helpers.php';
@@ -185,335 +195,368 @@ $helpers = new Helpers();
 <div id="toastContainer" style="position: fixed; top: 80px; right: 20px; z-index: 1060;"></div>
 
 <script>
-// Sucursal actual
-const currentSucursal = <?php echo $_SESSION['idsucursal'] ?? 0; ?>;
-if (typeof window.CURRENT_SUCURSAL === "undefined") {
-    window.CURRENT_SUCURSAL = currentSucursal;
-}
-
-// ==================== Sesión ====================
-var status = true;
-var sessionChecker = setInterval(() => {
-    if (Boolean(status) === true) {
-        loadSesionsApp();
-    } else {
-        clearInterval(sessionChecker);
+    // Sucursal actual
+    const currentSucursal = <?php echo $_SESSION['idsucursal'] ?? 0; ?>;
+    if (typeof window.CURRENT_SUCURSAL === "undefined") {
+        window.CURRENT_SUCURSAL = currentSucursal;
     }
-}, 10000);
 
-function loadSesionsApp() {
-    $.ajax({
-        url: "controladores/negocio.php?op=sesions",
-        type: "GET",
-        contentType: false,
-        processData: false,
-        success: function(datos) {
-            var data = JSON.parse(datos);
-            if (!data.status) {
-                sessionExpired();
-            }
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            console.error("Error sesión:", textStatus);
+    // ==================== Sesión ====================
+    var status = true;
+    var sessionChecker = setInterval(() => {
+        if (Boolean(status) === true) {
+            loadSesionsApp();
+        } else {
+            clearInterval(sessionChecker);
         }
-    });
-}
+    }, 10000);
 
-function sessionExpired() {
-    if (!status) return;
-    status = false;
-    clearInterval(sessionChecker);
-    Swal.fire({
-        title: "Sesión expirada",
-        text: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
-        icon: "warning",
-        confirmButtonText: "OK",
-        allowOutsideClick: false,
-        allowEscapeKey: false
-    }).then(() => {
+    function loadSesionsApp() {
         $.ajax({
-            url: "controladores/auth.php",
-            type: "POST",
-            complete: function() {
-                window.location.href = "ingreso";
+            url: "controladores/negocio.php?op=sesions",
+            type: "GET",
+            contentType: false,
+            processData: false,
+            success: function (datos) {
+                var data = JSON.parse(datos);
+                if (!data.status) {
+                    sessionExpired();
+                }
+            },
+            error: function (jqXHR, textStatus, errorThrown) {
+                console.error("Error sesión:", textStatus);
             }
         });
-    });
-}
-
-// ==================== Comprobantes Pendientes ====================
-function checkComprobantesPendientes() {
-
-    let ultima = localStorage.getItem("notif_comprobantes_time");
-    let ahora = Date.now();
-
-    // Si aún no pasa 1 hora, no consultar
-    if (ultima && (ahora - Number(ultima)) < 3600000) {
-        return;
     }
 
-    $.ajax({
-        url: 'controladores/venta.php?op=comprobantesPendientes',
-        type: 'GET',
-        dataType: 'json',
-        success: function(response) {
+    function sessionExpired() {
+        if (!status) return;
+        status = false;
+        clearInterval(sessionChecker);
+        Swal.fire({
+            title: "Sesión expirada",
+            text: "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.",
+            icon: "warning",
+            confirmButtonText: "OK",
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        }).then(() => {
+            $.ajax({
+                url: "controladores/auth.php",
+                type: "POST",
+                complete: function () {
+                    window.location.href = "ingreso";
+                }
+            });
+        });
+    }
 
-            if (response && response.total > 0) {
+    // ==================== Comprobantes Pendientes ====================
+    function checkComprobantesPendientes() {
 
-                toastr.warning(
-                    "Tienes " + response.total + " comprobante(s) sin enviar a SUNAT",
-                    "Pendientes de Envío", {
+        let ultima = localStorage.getItem("notif_comprobantes_time");
+        let ahora = Date.now();
+
+        // Si aún no pasa 1 hora, no consultar
+        if (ultima && (ahora - Number(ultima)) < 3600000) {
+            return;
+        }
+
+        $.ajax({
+            url: 'controladores/venta.php?op=comprobantesPendientes',
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+
+                if (response && response.total > 0) {
+
+                    toastr.warning(
+                        "Tienes " + response.total + " comprobante(s) sin enviar a SUNAT",
+                        "Pendientes de Envío", {
                         positionClass: "toast-top-center"
                     }
-                );
-            }
-
-            // Guardar la hora de la última consulta,
-            // independientemente de si hubo pendientes o no.
-            localStorage.setItem("notif_comprobantes_time", ahora);
-        }
-    });
-}
-
-// Ejecuta una vez
-setInterval(checkComprobantesPendientes, 5000);
-
-
-
-// ==================== Notificaciones de Traslados ====================
-let notificacionesMostradas = new Set();
-
-function verificarNuevasNotificaciones() {
-
-    if (currentSucursal <= 0) return;
-
-    const ahora = Date.now();
-    const ultima = localStorage.getItem("notif_traslados_time");
-
-    // 1 hora = 3600000 ms
-    if (ultima && (ahora - Number(ultima)) < 3600000) {
-        return;
-    }
-
-    $.getJSON(
-        "controladores/traslado.php?op=listarnoti&idsucursal=" + currentSucursal,
-        function(data) {
-
-            // Guarda la hora de la consulta
-            localStorage.setItem("notif_traslados_time", ahora);
-
-            if (!data || data.length === 0) return;
-
-            data.forEach(n => {
-
-                if (!n.tipo || n.tipo.trim() === "") return;
-
-                if (!notificacionesMostradas.has(n.idnotificacion) && n.leido == 0) {
-
-                    let tipo = n.tipo.toLowerCase() === "traslado" ?
-                        "traslado" :
-                        "solicitud";
-
-                    mostrarToast(
-                        n.mensaje,
-                        n.fecha,
-                        n.idnotificacion,
-                        n.idtraslado,
-                        tipo,
-                        n.iddestino
                     );
-
-                    notificacionesMostradas.add(n.idnotificacion);
                 }
-            });
-        }
-    );
-}
 
-function mostrarToast(mensaje, fecha, idnotificacion = null, idtraslado = null, tipo = "solicitud", iddestino = null) {
-    const toastId = 'toast_' + Date.now();
-    let titulo = "",
-        icono = "",
-        color = "",
-        contenido = "",
-        botonAccion = "";
-
-    switch (tipo) {
-        case "traslado":
-            titulo = "Nueva notificación de traslado";
-            icono = "fa-truck";
-            color = "#28a745";
-            botonAccion = (idtraslado && iddestino == currentSucursal) ?
-                `<button class="btn btn-success btn-sm mt-2" onclick="aceptarTraslado(${idtraslado}, '${toastId}', ${idnotificacion})"><i class="fa fa-check"></i> Aceptar</button>` :
-                "";
-            break;
-        case "solicitud":
-            titulo = "Nueva solicitud pendiente";
-            icono = "fa-bell";
-            color = "#007bff";
-            botonAccion =
-                `<button class="btn btn-primary btn-sm mt-2" onclick="cerrarSolicitud('${toastId}', ${idnotificacion})"><i class="fa fa-times"></i> Cerrar</button>`;
-            break;
-        default:
-            titulo = "Nueva notificación";
-            icono = "fa-info-circle";
-            color = "#6c757d";
+                // Guardar la hora de la última consulta,
+                // independientemente de si hubo pendientes o no.
+                localStorage.setItem("notif_comprobantes_time", ahora);
+            }
+        });
     }
 
-    contenido = `<div class="toast-body"><small style="color:#777;">${fecha}</small><br>${mensaje}${botonAccion}</div>`;
-    const toastHTML =
-        `<div id="${toastId}" class="toast-custom" style="border-left-color:${color}"><div class="toast-header" style="color:${color}"><div><i class="fa ${icono} toast-icon" style="margin-right:8px;"></i> ${titulo}</div><button class="toast-close" title="Cerrar">&times;</button></div>${contenido}</div>`;
+    // Ejecuta una vez
+    setInterval(checkComprobantesPendientes, 5000);
 
-    $("#toastContainer").append(toastHTML);
-    const $toast = $('#' + toastId);
-    $toast.find('.toast-close').on('click', function(e) {
-        e.stopPropagation();
-        cerrarToast($toast, idnotificacion, tipo);
-    });
-}
 
-function cerrarToast($toast, idnotificacion, tipo) {
-    $toast.css('animation', 'fadeOut 0.4s forwards');
-    setTimeout(() => {
-        if (tipo === "solicitud" && idnotificacion) {
-            $.post("controladores/traslado.php?op=marcarleida", {
-                idnotificacion: idnotificacion
-            });
+
+    // ==================== Notificaciones de Traslados ====================
+    let notificacionesMostradas = new Set();
+
+    function verificarNuevasNotificaciones() {
+
+        if (currentSucursal <= 0) return;
+
+        const ahora = Date.now();
+        const ultima = localStorage.getItem("notif_traslados_time");
+
+        // 1 hora = 3600000 ms
+        if (ultima && (ahora - Number(ultima)) < 3600000) {
+            return;
         }
-        $toast.remove();
-    }, 400);
-}
 
-function cerrarSolicitud(toastId, idnotificacion) {
-    const $toast = $('#' + toastId);
-    $.post("controladores/traslado.php?op=marcarleida", {
-        idnotificacion: idnotificacion
-    }, function() {
-        $toast.fadeOut(300, () => $toast.remove());
-    });
-}
+        $.getJSON(
+            "controladores/traslado.php?op=listarnoti&idsucursal=" + currentSucursal,
+            function (data) {
 
-function aceptarTraslado(idtraslado, toastId, idnotificacion) {
-    Swal.fire({
-        title: '¿Deseas aceptar este traslado?',
-        text: 'Se ingresará al almacén y se registrará en kardex.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, aceptar',
-        cancelButtonText: 'Cancelar'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            $.post("controladores/traslado.php?op=aceptar", {
-                idtraslado: idtraslado
-            }, function(respuesta) {
-                if (respuesta.includes("correctamente")) {
-                    Swal.fire('¡Aceptado!', respuesta, 'success');
-                    if (idnotificacion) {
-                        $.post("controladores/traslado.php?op=marcarleida", {
-                            idnotificacion: idnotificacion
-                        });
+                // Guarda la hora de la consulta
+                localStorage.setItem("notif_traslados_time", ahora);
+
+                if (!data || data.length === 0) return;
+
+                data.forEach(n => {
+
+                    if (!n.tipo || n.tipo.trim() === "") return;
+
+                    if (!notificacionesMostradas.has(n.idnotificacion) && n.leido == 0) {
+
+                        let tipo = n.tipo.toLowerCase() === "traslado" ?
+                            "traslado" :
+                            "solicitud";
+
+                        mostrarToast(
+                            n.mensaje,
+                            n.fecha,
+                            n.idnotificacion,
+                            n.idtraslado,
+                            tipo,
+                            n.iddestino
+                        );
+
+                        notificacionesMostradas.add(n.idnotificacion);
                     }
-                    $('#' + toastId).fadeOut(3000, () => $('#' + toastId).remove());
-                    if (typeof tabla !== 'undefined') tabla.ajax.reload();
-                } else {
-                    Swal.fire('Error', respuesta, 'error');
-                }
-            });
-        }
-    });
-}
-
-setInterval(verificarNuevasNotificaciones, 5000);
-
-// Notificaciones Cuentas por Cobrar
-function cargarNotificacionesCXCNavbar() {
-
-    $.getJSON(
-    "controladores/cuentascobrar.php?op=obtener_notificaciones",
-    function(data) {
-        console.log(data);
-        const cuotas = data.filter(n => !n.tipo || n.tipo.trim() === "");
-        const total = cuotas.length;
-        let html = "";
-        let ids = [];
-
-        if (total === 0) {
-            $(".cxcAlertCount").hide();
-
-            html = `
-                <div class="text-center py-4">
-                    <div class="mb-2">
-                        <i class="fas fa-check-circle text-success" style="font-size: 32px;"></i>
-                    </div>
-                    <div class="font-weight-bold text-dark">
-                        Todo está al día
-                    </div>
-                    <small class="text-muted">
-                        No hay cuentas vencidas
-                    </small>
-                </div>
-            `;
-        } else {
-            $(".cxcAlertCount")
-                .text(total)
-                .show();
-
-            cuotas.forEach(n => {
-                ids.push(n.idnotificacion);
-
-                html += `
-                    <a href="cuentas-cobrar" class="d-flex align-items-start p-3 rounded-lg text-decoration-none cxc-alert-item">
-                        <div class="mr-3">
-                            <div class="d-flex align-items-center justify-content-center bg-danger-light text-danger rounded-circle"
-                                 style="width: 38px; height: 38px;">
-                                <i class="fas fa-exclamation"></i>
-                            </div>
-                        </div>
-
-                        <div class="flex-grow-1" style="min-width: 0;">
-                            <div class="font-weight-bold text-dark mb-1">
-                                ${n.mensaje}
-                            </div>
-
-                            <div class="d-flex align-items-center">
-                                <small class="text-danger mr-2">
-                                    <i class="far fa-clock mr-1"></i>
-                                    Vencida
-                                </small>
-
-                                <small class="text-muted">
-                                    ${n.fecha}
-                                </small>
-                            </div>
-                        </div>
-
-                        <div class="ml-2 text-muted">
-                            <i class="fas fa-chevron-right"></i>
-                        </div>
-                    </a>
-                `;
-            });
-        }
-
-        $(".cxcAlertList").html(html);
-        $(".cxcAlertLink").data("ids", ids.join(","));
+                });
+            }
+        );
     }
-);
-}
 
-function obtenerProductosStockBajo() {
+    function mostrarToast(mensaje, fecha, idnotificacion = null, idtraslado = null, tipo = "solicitud", iddestino = null) {
+        const toastId = 'toast_' + Date.now();
+        let titulo = "",
+            icono = "",
+            color = "",
+            contenido = "",
+            botonAccion = "";
 
-    $.get("controladores/producto.php?op=listarStockBajoAlert", function (response) {
-        let productos = response;
-        let cantidadBaja = productos.length; // La cantidad de productos con stock bajo (0, 1, 2 o 3)
+        switch (tipo) {
+            case "traslado":
+                titulo = "Nueva notificación de traslado";
+                icono = "fa-truck";
+                color = "#28a745";
+                botonAccion = (idtraslado && iddestino == currentSucursal) ?
+                    `<button class="btn btn-success btn-sm mt-2" onclick="aceptarTraslado(${idtraslado}, '${toastId}', ${idnotificacion})"><i class="fa fa-check"></i> Aceptar</button>` :
+                    "";
+                break;
+            case "solicitud":
+                titulo = "Nueva solicitud pendiente";
+                icono = "fa-bell";
+                color = "#007bff";
+                botonAccion =
+                    `<button class="btn btn-primary btn-sm mt-2" onclick="cerrarSolicitud('${toastId}', ${idnotificacion})"><i class="fa fa-times"></i> Cerrar</button>`;
+                break;
+            default:
+                titulo = "Nueva notificación";
+                icono = "fa-info-circle";
+                color = "#6c757d";
+        }
 
-        // Actualizar el contador de productos en el navbar
-        $('#stockAlertCount').text(cantidadBaja); // Actualiza el contador
-        $('#stockAlertCount2').text(cantidadBaja); // Actualiza el contador
+        contenido = `<div class="toast-body"><small style="color:#777;">${fecha}</small><br>${mensaje}${botonAccion}</div>`;
+        const toastHTML =
+            `<div id="${toastId}" class="toast-custom" style="border-left-color:${color}"><div class="toast-header" style="color:${color}"><div><i class="fa ${icono} toast-icon" style="margin-right:8px;"></i> ${titulo}</div><button class="toast-close" title="Cerrar">&times;</button></div>${contenido}</div>`;
 
-        const stockAlertTableBody = document.getElementById('stockAlertTableBody');
+        $("#toastContainer").append(toastHTML);
+        const $toast = $('#' + toastId);
+        $toast.find('.toast-close').on('click', function (e) {
+            e.stopPropagation();
+            cerrarToast($toast, idnotificacion, tipo);
+        });
+    }
 
-        stockAlertTableBody.innerHTML = productos.map(producto => `
+    function cerrarToast($toast, idnotificacion, tipo) {
+        $toast.css('animation', 'fadeOut 0.4s forwards');
+        setTimeout(() => {
+            if (tipo === "solicitud" && idnotificacion) {
+                $.post("controladores/traslado.php?op=marcarleida", {
+                    idnotificacion: idnotificacion
+                });
+            }
+            $toast.remove();
+        }, 400);
+    }
+
+    function cerrarSolicitud(toastId, idnotificacion) {
+        const $toast = $('#' + toastId);
+        $.post("controladores/traslado.php?op=marcarleida", {
+            idnotificacion: idnotificacion
+        }, function () {
+            $toast.fadeOut(300, () => $toast.remove());
+        });
+    }
+
+    function aceptarTraslado(idtraslado, toastId, idnotificacion) {
+        Swal.fire({
+            title: '¿Deseas aceptar este traslado?',
+            text: 'Se ingresará al almacén y se registrará en kardex.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, aceptar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.post("controladores/traslado.php?op=aceptar", {
+                    idtraslado: idtraslado
+                }, function (respuesta) {
+                    if (respuesta.includes("correctamente")) {
+                        Swal.fire('¡Aceptado!', respuesta, 'success');
+                        if (idnotificacion) {
+                            $.post("controladores/traslado.php?op=marcarleida", {
+                                idnotificacion: idnotificacion
+                            });
+                        }
+                        $('#' + toastId).fadeOut(3000, () => $('#' + toastId).remove());
+                        if (typeof tabla !== 'undefined') tabla.ajax.reload();
+                    } else {
+                        Swal.fire('Error', respuesta, 'error');
+                    }
+                });
+            }
+        });
+    }
+
+    setInterval(verificarNuevasNotificaciones, 5000);
+
+    // Notificaciones Cuentas por Cobrar
+    function cargarNotificacionesCXCNavbar() {
+        const $lista = $(".cxcAlertList");
+        const $contador = $(".cxcAlertCount");
+
+        $lista.html(`
+            <div class="cxc-loading">
+                <div class="spinner-border text-primary" role="status"></div>
+                <div class="text-muted small mt-2">
+                    Cargando cuentas...
+                </div>
+            </div>
+        `);
+
+        $.getJSON(
+            "controladores/cuentascobrar.php?op=obtener_notificaciones",
+            function (data) {
+                const total = data.length;
+                let html = "";
+                let ids = [];
+
+                if (total === 0) {
+                    $contador.hide();
+
+                    html = `
+                    <div class="text-center py-4">
+                        <div class="mb-2">
+                            <i class="fas fa-check-circle text-success" style="font-size: 32px;"></i>
+                        </div>
+                        <div class="font-weight-bold text-dark">
+                            Todo está al día
+                        </div>
+                        <small class="text-muted">
+                            No hay cuentas vencidas
+                        </small>
+                    </div>
+                `;
+                } else {
+                    $contador.text(total).show();
+
+                    data.forEach(n => {
+                        ids.push(n.idnotificacion);
+
+                        const estado = n.dias_vencido > 0
+                            ? `Vencida hace ${n.dias_vencido} día(s)`
+                            : "Vence hoy";
+
+                        const mensaje = n.dias_vencido > 0
+                            ? `💸 ${n.cliente} tiene una cuota vencida hace ${n.dias_vencido} día(s) por S/ ${n.monto}`
+                            : `⏰ ${n.cliente} tiene una cuota que vence HOY por S/ ${n.monto}`;
+
+                        html += `
+                        <a href="cuentas-cobrar"
+                           class="d-flex align-items-start p-3 rounded-lg text-decoration-none cxc-alert-item">
+
+                            <div class="mr-3">
+                                <div class="d-flex align-items-center justify-content-center bg-danger-light text-danger rounded-circle"
+                                     style="width: 38px; height: 38px;">
+                                    <i class="fas fa-exclamation"></i>
+                                </div>
+                            </div>
+
+                            <div class="flex-grow-1" style="min-width: 0;">
+                                <div class="font-weight-bold text-dark mb-1">
+                                    ${mensaje}
+                                </div>
+
+                                <div class="d-flex align-items-center">
+                                    <small class="text-danger mr-2">
+                                        <i class="far fa-clock mr-1"></i>
+                                        ${estado}
+                                    </small>
+
+                                    <small class="text-muted">
+                                        ${n.fecha}
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="ml-2 text-muted">
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                    `;
+                    });
+                }
+
+                $lista.html(html);
+                $(".cxcAlertLink").data("ids", ids.join(","));
+            }
+        ).fail(function () {
+            $contador.hide();
+
+            $lista.html(`
+            <div class="text-center py-4">
+                <div class="mb-2">
+                    <i class="fas fa-exclamation-circle text-danger" style="font-size: 30px;"></i>
+                </div>
+                <div class="font-weight-bold text-dark">
+                    No se pudieron cargar las cuentas
+                </div>
+                <small class="text-muted">
+                    Intenta nuevamente
+                </small>
+            </div>
+        `);
+        });
+    }
+
+    function obtenerProductosStockBajo() {
+
+        $.get("controladores/producto.php?op=listarStockBajoAlert", function (response) {
+            let productos = response;
+            let cantidadBaja = productos.length; // La cantidad de productos con stock bajo (0, 1, 2 o 3)
+
+            // Actualizar el contador de productos en el navbar
+            $('#stockAlertCount').text(cantidadBaja); // Actualiza el contador
+            $('#stockAlertCount2').text(cantidadBaja); // Actualiza el contador
+
+            const stockAlertTableBody = document.getElementById('stockAlertTableBody');
+
+            stockAlertTableBody.innerHTML = productos.map(producto => `
             <div class="stock-alert-item px-3 py-2">
                 <div class="d-flex align-items-center">
                     <div class="stock-product-icon mr-3">
@@ -538,44 +581,45 @@ function obtenerProductosStockBajo() {
                 </div>
             </div>
         `).join('');
-    });
-}
-
-$(document).on("click", ".cxcAlertLink", function() {
-    let ids = $(this).data("ids");
-    if (!ids) return;
-    $.post("controladores/cuentascobrar.php?op=marcar_leida", {
-        ids: ids
-    }, function() {
-        //$(".cxcAlertCount").hide();
-    });
-});
-
-$(document).ready(function() {
-    cargarNotificacionesCXCNavbar();
-    obtenerProductosStockBajo();
-});
-
-function notificacionToast(tipo, mensaje) {
-
-    switch (tipo) {
-
-        case 'success':
-            toastr.success(mensaje);
-            break;
-
-        case 'error':
-            toastr.error(mensaje);
-            break;
-
-        case 'warning':
-            toastr.warning(mensaje);
-            break;
-
-        default:
-            toastr.info(mensaje);
+        $("#stockAlertCount").show();
+        });
     }
-}
+
+    $(document).on("click", ".cxcAlertLink", function () {
+        let ids = $(this).data("ids");
+        if (!ids) return;
+        $.post("controladores/cuentascobrar.php?op=marcar_leida", {
+            ids: ids
+        }, function () {
+            //$(".cxcAlertCount").hide();
+        });
+    });
+
+    $(document).ready(function () {
+        cargarNotificacionesCXCNavbar();
+        obtenerProductosStockBajo();
+    });
+
+    function notificacionToast(tipo, mensaje) {
+
+        switch (tipo) {
+
+            case 'success':
+                toastr.success(mensaje);
+                break;
+
+            case 'error':
+                toastr.error(mensaje);
+                break;
+
+            case 'warning':
+                toastr.warning(mensaje);
+                break;
+
+            default:
+                toastr.info(mensaje);
+        }
+    }
 </script>
 
 <nav class="main-header navbar navbar-expand navbar-white navbar-light sticky-top" id="navbar-global">
@@ -586,92 +630,93 @@ function notificacionToast(tipo, mensaje) {
                     class="fas fa-bars fa-lg"></i></a>
         </li>
         <?php if (!empty($_SESSION['nombre_sucursal'])): ?>
-        <li class="nav-item d-flex align-items-center">
-            <span class="badge user-profile-link px-3 py-2">
-                <i class="fas fa-store mr-1"></i>
-                <?php echo $_SESSION['nombre_sucursal']; ?>
-            </span>
-        </li>
+            <li class="nav-item d-flex align-items-center">
+                <span class="badge user-profile-link px-3 py-2">
+                    <i class="fas fa-store mr-1"></i>
+                    <?php echo $_SESSION['nombre_sucursal']; ?>
+                </span>
+            </li>
         <?php endif; ?>
     </ul>
     <ul class="navbar-nav ml-auto align-items-center">
 
         <?php if (!empty($_SESSION['idsucursal'])): ?>
-        <li class="nav-item">
-            <a class="nav-link navbar-icon-link" data-widget="fullscreen" role="button" title="Pantalla Completa">
-                <i class="fas fa-expand-arrows-alt"></i>
-            </a>
-        </li>
-        <?php if ($helpers->getUserPermissionAccion('Puede ver calendario')): ?>
-        <li class="nav-item">
-            <a class="nav-link navbar-icon-link" role="button" title="Ver calendario" onclick="verEventos()">
-                <i class="fas fa-calendar"></i>
-            </a>
-        </li>
-        <?php endif; ?>
-
-        <li class="nav-item dropdown">
-            <a class="nav-link cxcAlertLink position-relative navbar-icon-link" data-toggle="dropdown" href="#"
-                title="Cuentas por Cobrar">
-                <i class="fas fa-file-invoice-dollar fa-lg"></i>
-                <span class="badge badge-danger navbar-badge-custom cxcAlertCount" style="display:none;">0</span>
-            </a>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow border-0 rounded-lg mt-2 p-0">
-                <div class="px-3 py-3 border-bottom bg-light rounded-top">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="font-weight-bold text-dark">
-                                <i class="fas fa-file-invoice-dollar text-primary mr-2"></i>
-                                Cuentas por Cobrar
-                            </div>
-                            <small class="text-muted">Pagos pendientes de atención</small>
-                        </div>
-                        <span class="badge badge-danger cxcAlertCount rounded-pill"></span>
-                    </div>
-                </div>
-
-                <div class="cxcAlertList p-2" style="max-height: 320px; overflow-y: auto;"></div>
-
-                <div class="border-top">
-                    <a href="cuentas-cobrar" class="dropdown-item text-center text-primary font-weight-bold py-3">
-                        Ver todas las cuentas
-                        <i class="fas fa-arrow-right ml-1"></i>
+            <li class="nav-item">
+                <a class="nav-link navbar-icon-link" data-widget="fullscreen" role="button" title="Pantalla Completa">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                </a>
+            </li>
+            <?php if ($helpers->getUserPermissionAccion('Puede ver calendario')): ?>
+                <li class="nav-item">
+                    <a class="nav-link navbar-icon-link" role="button" title="Ver calendario" onclick="verEventos()">
+                        <i class="fas fa-calendar"></i>
                     </a>
-                </div>
-            </div>
-        </li>
+                </li>
+            <?php endif; ?>
 
-        <li class="nav-item dropdown mr-2" id="stockbajito">
-            <a class="nav-link position-relative text-secondary" data-toggle="dropdown" href="#" id="stockAlertLink">
-                <i class="fas fa-bell fa-lg"></i>
-                <span class="badge badge-warning badge-notify navbar-badge-custom" id="stockAlertCount">0</span>
-            </a>
-            <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-lg mt-2 p-0 stock-alert-dropdown">
-                <div class="px-3 py-3 border-bottom bg-light rounded-top">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="font-weight-bold text-dark">
-                                <i class="fas fa-box-open text-warning mr-2"></i>
-                                Stock bajo
+            <li class="nav-item dropdown">
+                <a class="nav-link cxcAlertLink position-relative navbar-icon-link" data-toggle="dropdown" href="#"
+                    title="Cuentas por Cobrar">
+                    <i class="fas fa-file-invoice-dollar fa-lg"></i>
+                    <span class="badge badge-danger navbar-badge-custom cxcAlertCount" style="display:none;">0</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow border-0 rounded-lg mt-2 p-0">
+                    <div class="px-3 py-3 border-bottom bg-light rounded-top">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="font-weight-bold text-dark">
+                                    <i class="fas fa-file-invoice-dollar text-primary mr-2"></i>
+                                    Cuentas por Cobrar
+                                </div>
+                                <small class="text-muted">Pagos pendientes de atención</small>
                             </div>
-                            <small class="text-muted">Productos que requieren reposición</small>
+                            <span class="badge badge-danger cxcAlertCount rounded-pill"></span>
                         </div>
-                        <span class="badge badge-warning badge-pill" id="stockAlertCount2">0</span>
+                    </div>
+
+                    <div class="cxcAlertList p-2" style="max-height: 320px; overflow-y: auto;"></div>
+
+                    <div class="border-top">
+                        <a href="cuentas-cobrar" class="dropdown-item text-center text-primary font-weight-bold py-3">
+                            Ver todas las cuentas
+                            <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
                     </div>
                 </div>
+            </li>
 
-                <div id="stockAlertTable" class="stock-alert-list">
-                    <div id="stockAlertTableBody"></div>
-                </div>
+            <li class="nav-item dropdown mr-2" id="stockbajito">
+                <a class="nav-link position-relative text-secondary" data-toggle="dropdown" href="#" id="stockAlertLink">
+                    <i class="fas fa-bell fa-lg"></i>
+                    <span class="badge badge-warning badge-notify navbar-badge-custom" id="stockAlertCount" style="display:none;">0</span>
+                </a>
+                <div
+                    class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-lg mt-2 p-0 stock-alert-dropdown">
+                    <div class="px-3 py-3 border-bottom bg-light rounded-top">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="font-weight-bold text-dark">
+                                    <i class="fas fa-box-open text-warning mr-2"></i>
+                                    Stock bajo
+                                </div>
+                                <small class="text-muted">Productos que requieren reposición</small>
+                            </div>
+                            <span class="badge badge-warning badge-pill" id="stockAlertCount2">0</span>
+                        </div>
+                    </div>
 
-                <div class="px-3 py-2 border-top bg-light rounded-bottom text-center">
-                    <small class="text-muted">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Revisa el inventario para realizar la reposición
-                    </small>
+                    <div id="stockAlertTable" class="stock-alert-list">
+                        <div id="stockAlertTableBody"></div>
+                    </div>
+
+                    <div class="px-3 py-2 border-top bg-light rounded-bottom text-center">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Revisa el inventario para realizar la reposición
+                        </small>
+                    </div>
                 </div>
-            </div>
-        </li>
+            </li>
         <?php endif; ?>
 
         <div class="navbar-divider"></div>
@@ -707,18 +752,18 @@ function notificacionToast(tipo, mensaje) {
 
                 <li class="user-footer p-2 bg-white">
                     <?php if (!empty($_SESSION['idsucursal'])): ?>
-                    <a href="salirsucursal"
-                        class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
-                        <i class="fas fa-box"></i>
-                        Cambiar sucursal
-                    </a>
+                        <a href="salirsucursal"
+                            class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
+                            <i class="fas fa-box"></i>
+                            Cambiar sucursal
+                        </a>
                     <?php endif; ?>
                     <?php if ($helpers->getUserPermisoModulo('Configuracion general')): ?>
-                    <a href="configuracion"
-                        class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
-                        <i class="fas fa-cog"></i>
-                        Configuracion
-                    </a>
+                        <a href="configuracion"
+                            class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
+                            <i class="fas fa-cog"></i>
+                            Configuracion
+                        </a>
                     <?php endif; ?>
                     <a href="salir"
                         class="btn btn-outline-danger btn-block font-weight-bold border-0 text-left px-3 py-2">
@@ -745,28 +790,28 @@ function notificacionToast(tipo, mensaje) {
                 </button>
             </div>
             <style>
-            #calendar {
-                min-height: 300px;
-            }
+                #calendar {
+                    min-height: 300px;
+                }
 
-            .fc {
-                font-size: 14px;
-            }
+                .fc {
+                    font-size: 14px;
+                }
 
-            .fc-toolbar-title {
-                font-size: 1.3rem !important;
-                font-weight: 600;
-            }
+                .fc-toolbar-title {
+                    font-size: 1.3rem !important;
+                    font-weight: 600;
+                }
 
-            .fc-daygrid-event {
-                border-radius: 8px;
-                padding: 2px 6px;
-            }
+                .fc-daygrid-event {
+                    border-radius: 8px;
+                    padding: 2px 6px;
+                }
 
-            .fc-theme-standard td,
-            .fc-theme-standard th {
-                border-color: #e9ecef;
-            }
+                .fc-theme-standard td,
+                .fc-theme-standard th {
+                    border-color: #e9ecef;
+                }
             </style>
 
             <div class="modal-body p-2 bg-light">
