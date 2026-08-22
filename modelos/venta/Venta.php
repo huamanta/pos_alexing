@@ -59,9 +59,8 @@ class SisVenta extends Helpers
         $this->pdo->beginTransaction();
         try {
             $idcliente = Helpers::clienteDefault($idcliente);
-            //=========================
+            
             // Datos por defecto
-            //=========================
             $fechaActual = Carbon::now();
             $idmotivo = $idmotivo ?: 0;
             $porcentaje = $porcentaje ?: 0;
@@ -76,14 +75,10 @@ class SisVenta extends Helpers
                 $dovEstado = "";
             }
 
-            //=========================
             // Correlativo
-            //=========================
             $config = Helpers::actualizarCorrelativo($idtipo_comprobante, $idsucursal);
 
-            //=========================
             // Forma de pago real
-            //=========================
             $formapagoVenta = $formapago;
 
             if (!empty($_POST['metodo_pago'])) {
@@ -100,9 +95,7 @@ class SisVenta extends Helpers
                 }
             }
 
-            //=========================
             // Cabecera
-            //=========================
             $idVenta = $this->guardarCabecera(
                 $idsucursal,
                 $idcaja,
@@ -138,14 +131,10 @@ class SisVenta extends Helpers
                 $idtipoacompanante
             );
 
-            //=========================
             // Pagos Mixtos
-            //=========================
             $this->guardarPagos($idVenta, $idsucursal, $idusuario);
 
-            //=========================
             // Detalles
-            //=========================
             $this->guardarDetalles(
                 $idVenta,
                 $idsucursal,
@@ -168,32 +157,18 @@ class SisVenta extends Helpers
 
             //=========================
             // Crédito
-            //=========================
             if ($tipopago == "Si") {
-                $this->crearCredito(
-                    $idVenta,
-                    $fechaActual,
-                    $montoDeuda,
-                    $interes,
-                    $input_cuotas,
-                    $fecha_pago
-                );
+                $this->crearCredito($idVenta, $fechaActual, $montoDeuda, $interes, $input_cuotas, $fecha_pago);
             }
 
-            //=========================
             // Cotización
-            //=========================
             if (!empty($comprobanteReferencia) && $tipo == "venta") {
                 $this->actualizarCotizacion($comprobanteReferencia);
             }
 
-            //=========================
-            // Documentación
-            //=========================
+            // Documentación=
             if ($tipopago == "Si") {
-                $this->crearDocumentacion(
-                    $idVenta
-                );
+                $this->crearDocumentacion($idVenta);
             }
 
             $this->pdo->commit();
@@ -573,56 +548,65 @@ class SisVenta extends Helpers
     }
 
     private function movimientoSalida(
+        $idDetalleVenta,
         $rowProduct,
         $idProductoCongiguracion,
         $idsucursal,
         $idserie,
         $cantidad,
         $precioVenta,
-        $motivo = ''
+        $motivo = '',
+        $idventa = null
     ) {
-        // 1. Cambiar estado de la serie
-        // $updateSerie = (new FluentSaver($this->pdo))
-        //     ->table('producto_serie')
-        //     ->primaryKey('idserie')
-        //     ->data([
-        //         'idserie' => $idserie,
-        //         'estado' => 'VENDIDO'
-        //     ])
-        //     ->update();
 
-        // if (!$updateSerie) {
-        //     throw new Exception("La serie de producto no ha sido actualizado");
-        // }
-        // 2. Obtener inventario de la sucursal
-        $sql = "SELECT * FROM inventario_producto WHERE idproducto = :idproducto AND idsucursal = :idsucursal FOR UPDATE";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'idproducto' => $rowProduct['idproducto'],
-            'idsucursal' => $idsucursal
-        ]);
-
-        $inventario = $stmt->fetch(PDO::FETCH_ASSOC);
+        //BLOQUEAR INVENTARIO GENERAL
+        $inventario = (new DBQuery($this->pdo))
+            ->from('inventario_producto')
+            ->where('idproducto', '=', $rowProduct['idproducto'])
+            ->where('idsucursal', '=', $idsucursal)
+            ->forUpdate()
+            ->first();
 
         if (!$inventario) {
-            throw new Exception("No existe inventario del producto.");
+            throw new Exception(
+                "No existe inventario del producto."
+            );
         }
 
-        if ($inventario['stock'] < $cantidad) {
-            throw new Exception("Stock insuficiente.");
+        //VALIDAR STOCK GENERAL
+        if ((float)$inventario['stock'] < $cantidad) {
+            throw new Exception(
+                "Stock insuficiente. Disponible: {$inventario['stock']}"
+            );
         }
 
-        // Actualizar kardex si es necesario
-        $config = $this->pdo->prepare("
-            SELECT *
-            FROM producto_configuracion
-            WHERE idproducto_configuracion = :idproducto_configuracion
-        ");
-        $config->execute(['idproducto_configuracion' => $idProductoCongiguracion]);
-        $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
+        //DESCONTAR LOTES FEFO
+        $verificarLote = Helpers::verificarVentaLotes($idsucursal);
+        if($verificarLote['activo'] && $rowProduct['is_venta_lote']){
+            $this->descontarLotesFEFO(
+                $idDetalleVenta,
+                $rowProduct['idproducto'],
+                $idsucursal,
+                $cantidad,
+                $idventa
+            );
+        }
 
-        // 3. Actualizar stock
-        $nuevoStock = $inventario['stock'] - ($cantidad * $rowConfiguracion['cantidad_contenedor']);
+        //CONFIGURACIÓN DEL PRODUCTO
+        $rowConfiguracion = (new DBQuery($this->pdo))
+            ->from('producto_configuracion')
+            ->where('idproducto_configuracion', '=', $idProductoCongiguracion)
+            ->first();
+
+        if (!$rowConfiguracion) {
+            throw new Exception(
+                "No existe configuración del producto."
+            );
+        }
+
+        // ACTUALIZAR STOCK GENERAL
+        $nuevoStock = (float)$inventario['stock'] - $cantidad;
+
         $updateInventario = (new FluentSaver($this->pdo))
             ->table('inventario_producto')
             ->primaryKey('idinventario')
@@ -633,30 +617,33 @@ class SisVenta extends Helpers
             ->update();
 
         if (!$updateInventario) {
-            throw new Exception("La serie de producto no ha sido actualizado");
-        }
-
-        $salida = 0;
-        if ($rowProduct['controla_stock'] === 'Si') {
-            Helpers::updateKardexSucursal(
-                $idsucursal,
-                $rowProduct['idproducto'],
-                $rowConfiguracion['idproducto_configuracion'],
-                $cantidad,
-                $rowConfiguracion['cantidad_contenedor'],
-                $precioVenta,
-                $nuevoStock,
-                $salida,
-                'Salida por transferencia',
-                $motivo
+            throw new Exception(
+                "No se pudo actualizar el inventario."
             );
         }
+
+        //ARDEX
+        $salida = 0;
+
+        Helpers::updateKardexSucursal(
+            $idsucursal,
+            $rowProduct['idproducto'],
+            $rowConfiguracion['idproducto_configuracion'],
+            $cantidad,
+            $rowConfiguracion['cantidad_contenedor'],
+            $precioVenta,
+            $nuevoStock,
+            $salida,
+            'Salida por venta',
+            $motivo
+        );
 
         return [
             "success" => true,
             "message" => ""
         ];
     }
+
 
     private function insertarDetalleVenta(
         int $idsucursal,
@@ -673,7 +660,7 @@ class SisVenta extends Helpers
         string $tipo,
         string $checkPrecio
     ): void {
-        $detalleVenta = (new FluentSaver($this->pdo))
+        $idDetalleVenta = (new FluentSaver($this->pdo))
             ->table('detalle_venta')
             ->data([
                 'idsucursal' => $idsucursal,
@@ -692,7 +679,7 @@ class SisVenta extends Helpers
             ])
             ->save();
 
-        if (!$detalleVenta) {
+        if (!$idDetalleVenta) {
             throw new Exception("No se pudo guardar el detalle de la venta.");
         }
 
@@ -705,6 +692,7 @@ class SisVenta extends Helpers
         $rowProduct = $stmtProduct->fetch(PDO::FETCH_ASSOC);
         $motivo = "Salida generada por la venta #{$idventa}";
         $this->movimientoSalida(
+            $idDetalleVenta,
             $rowProduct,
             $idProductoCongiguracion,
             $idsucursal,
@@ -716,175 +704,93 @@ class SisVenta extends Helpers
 
     }
 
+    private function descontarLotesFEFO(
+        int $idDetalleVenta,
+        int $idproducto,
+        int $idsucursal,
+        float $cantidad,
+        ?int $idventa = null
+    ): void {
 
-    // private function procesarFIFO(
-    //     int $idventa,
-    //     int $idsucursal,
-    //     int $idproducto,
-    //     array $datosDetalle,
-    //     float $cantidadSolicitada,
-    //     float $precio
-    // ): bool {
+        $pendiente = $cantidad;
 
-    //     $cantidadPendiente = $cantidadSolicitada;
+        $lotes = (new DBQuery($this->pdo))
+                ->from('inventario_lote')
+                ->where('idproducto', '=', $idproducto)
+                ->where('idsucursal', '=', $idsucursal)
+                ->where('stock', '>', 0)
+                ->softDeletes()
+                ->orderBy('idinventario_lote', 'ASC')
+                ->orderBy('fecha_vencimiento', 'ASC')
+                ->forUpdate()
+                ->get();
 
-    //     /*
-    //      * Buscar lotes FIFO disponibles
-    //      */
-    //     $lotes = (new DBQuery($this->pdo))
-    //         ->query("
-    //         SELECT 
-    //             idfifo,
-    //             cantidad_restante
-    //         FROM stock_fifo
-    //         WHERE idproducto = :idproducto
-    //         AND idsucursal = :idsucursal
-    //         AND cantidad_restante > 0
-    //         AND estado = 1
-    //         ORDER BY fecha_ingreso ASC
-    //     ", [
-    //             'idproducto' => $idproducto,
-    //             'idsucursal' => $idsucursal
-    //         ])
-    //         ->get();
+        if (!$lotes) {
+            throw new Exception(
+                "El producto no tiene lotes disponibles."
+            );
+        }
 
+        foreach ($lotes as $lote) {
 
-    //     if (empty($lotes)) {
-    //         return false;
-    //     }
+            if ($pendiente <= 0) {
+                break;
+            }
 
+            $stockLote = (float)$lote['stock'];
 
-    //     $totalDescontado = 0;
+            /*
+            * ¿Cuánto sacar de este lote?
+            */
+            $salida = min($pendiente, $stockLote);
 
+            (new FluentSaver($this->pdo))
+                ->table('detalle_venta_lote')
+                ->data([
+                    'iddetalle_venta' => $idDetalleVenta,
+                    'idinventario_lote' => $lote['idinventario_lote'],
+                    'codigo_lote' => $lote['codigo_lote'],
+                    'fecha_vencimiento' => $lote['fecha_vencimiento'],
+                    'cantidad' => $salida
+                ])
+                ->save();
 
-    //     foreach ($lotes as $lote) {
+            $nuevoStockLote = $stockLote - $salida;
 
+            /*
+            * Actualizar lote
+            */
+            $update = (new FluentSaver($this->pdo))
+                ->table('inventario_lote')
+                ->primaryKey('idinventario_lote')
+                ->data([
+                    'idinventario_lote' => $lote['idinventario_lote'],
+                    'stock' => $nuevoStockLote,
+                    'updated_at' => date('Y-m-d H:i:s')
+                ])
+                ->update();
 
-    //         if ($cantidadPendiente <= 0) {
-    //             break;
-    //         }
+            if (!$update) {
+                throw new Exception(
+                    "No se pudo actualizar el lote {$lote['codigo_lote']}."
+                );
+            }
 
+            //Lo que todavía falta vender
+            $pendiente -= $salida;
+        }
 
-    //         $disponible = floatval($lote['cantidad_restante']);
+        /*
+        * Si todavía queda cantidad pendiente,
+        * no hay suficiente stock por lotes.
+        */
+        if ($pendiente > 0) {
 
-    //         $cantidadTomar = min(
-    //             $cantidadPendiente,
-    //             $disponible
-    //         );
+            throw new Exception(
+                "Stock insuficiente en los lotes. " .
+                "Faltan {$pendiente} unidades."
+            );
+        }
+    }
 
-
-    //         /*
-    //          * Actualizar FIFO
-    //          */
-    //         $stmt = $this->pdo->prepare("
-    //         UPDATE stock_fifo
-    //         SET cantidad_restante = cantidad_restante - :cantidad
-    //         WHERE idfifo = :idfifo
-    //     ");
-
-    //         $stmt->execute([
-    //             'cantidad' => $cantidadTomar,
-    //             'idfifo' => $lote['idfifo']
-    //         ]);
-
-
-
-    //         /*
-    //          * Insertar detalle venta
-    //          */
-
-    //         $detalle = $datosDetalle;
-
-    //         $detalle['id_fifo'] = $lote['idfifo'];
-
-    //         $detalle['cantidad'] = $cantidadTomar;
-
-
-    //         (new FluentSaver($this->pdo))
-    //             ->table('detalle_venta')
-    //             ->data($detalle)
-    //             ->save();
-
-
-
-    //         $cantidadPendiente -= $cantidadTomar;
-
-    //         $totalDescontado += $cantidadTomar;
-    //     }
-
-
-
-    //     /*
-    //      * No hubo suficiente stock
-    //      */
-    //     if ($cantidadPendiente > 0) {
-    //         return false;
-    //     }
-
-
-
-    //     /*
-    //      * Actualizar inventario_producto
-    //      * (nuevo esquema)
-    //      */
-
-    //     $stmt = $this->pdo->prepare("
-    //     UPDATE inventario_producto
-    //     SET stock = stock - :cantidad
-    //     WHERE idproducto = :idproducto
-    //     AND idsucursal = :idsucursal
-    // ");
-
-
-    //     $stmt->execute([
-    //         'cantidad' => $totalDescontado,
-    //         'idproducto' => $idproducto,
-    //         'idsucursal' => $idsucursal
-    //     ]);
-
-
-
-
-    //     /*
-    //      * Obtener stock actual
-    //      */
-
-    //     $inventario = (new DBQuery($this->pdo))
-    //         ->query("
-    //         SELECT stock
-    //         FROM inventario_producto
-    //         WHERE idproducto = :idproducto
-    //         AND idsucursal = :idsucursal
-    //     ", [
-    //             'idproducto' => $idproducto,
-    //             'idsucursal' => $idsucursal
-    //         ])
-    //         ->first();
-
-
-
-    //     /*
-    //      * Kardex
-    //      */
-    //     $fecha_kardex = Carbon::now();
-    //     (new FluentSaver($this->pdo))
-    //         ->table('kardex')
-    //         ->data([
-    //             'idsucursal' => $idsucursal,
-    //             'idproducto' => $idproducto,
-    //             'cantidad' => $totalDescontado,
-    //             'cantidad_contenedor' => $datosDetalle['cantidad_contenedor'],
-    //             'precio_unitario' => $precio,
-    //             'stock_actual' => $inventario['stock'] ?? 0,
-    //             'tipo_movimiento' => 1,
-    //             'motivo' => 'Venta',
-    //             'descripcion' => "Venta #{$idventa}",
-    //             'fecha_kardex' => $fecha_kardex
-    //         ])
-    //         ->save();
-
-
-
-    //     return true;
-    // }
 }

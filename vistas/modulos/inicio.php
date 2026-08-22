@@ -301,12 +301,12 @@ if (session_status() === PHP_SESSION_NONE) {
                     value="<?php echo date("Y-m-d"); ?>">
                 </div>
 
-                <div class="form-group col-lg-3 col-md-3 col-sm-6">
+                <!--div class="form-group col-lg-3 col-md-3 col-sm-6">
                   <label class="small text-uppercase font-weight-bold text-muted">Almacén</label>
                   <select id="idsucursal2" name="idsucursal2" class="form-control"></select>
-                </div>
+                </div-->
 
-                <div class="form-group col-lg-3 col-md-3 col-sm-6">
+                <!--div class="form-group col-lg-3 col-md-3 col-sm-6">
                   <label class="small text-uppercase font-weight-bold text-muted">Vendedor</label>
                   <div class="input-group">
                     <select id="idcliente" name="idcliente" class="form-control select2" required></select>
@@ -317,7 +317,7 @@ if (session_status() === PHP_SESSION_NONE) {
                       </button>
                     </div>
                   </div>
-                </div>
+                </div-->
               </div>
             </div>
           </div>
@@ -535,185 +535,156 @@ if (session_status() === PHP_SESSION_NONE) {
 <script type="text/javascript">
 
   document.addEventListener('DOMContentLoaded', async () => {
-    function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    async function waitSucursal() {
-      let idsucursal = document.getElementById("idsucursal2").value || "";
-      let tries = 0;
-      while ((idsucursal === "" || idsucursal === "0") && tries < 30) {
-        await sleep(150); // espera 150ms
-        idsucursal = document.getElementById("idsucursal2").value || "";
-        tries++;
-      }
-      if (!idsucursal || idsucursal === "0") {
-        idsucursal = "<?= $_SESSION['idsucursal'] ?? '0' ?>";
-      }
-      return idsucursal;
-    }
-
     try {
-      // Esperar a que exista la sucursal activa
-      const idsucursal = await waitSucursal();
+        const [ventasResponse, comprasResponse] = await Promise.all([
+            fetch("controladores/consultas.php?op=totalVentas"),
+            fetch("controladores/consultas.php?op=totalCompras")
+        ]);
 
-      if (!idsucursal || idsucursal === "0") {
-        console.warn('No hay sucursal seleccionada en inicio.php. Se omiten las consultas de ventas/compras.');
-        return;
-      }
+        const ventasData = await ventasResponse.json();
+        const comprasData = await comprasResponse.json();
 
-      // Obtener ventas
-      const ventasResponse = await fetch("controladores/consultas.php?op=totalVentas&idsucursal=" + idsucursal);
-      const ventasData = await ventasResponse.json();
-      const periodos = ventasData.map(item => item[0]);
-      const montosVentas = ventasData.map(item => parseFloat(item[1] || 0));
+        const periodos = [
+            ...new Set([
+                ...ventasData.map(item => item.fecha),
+                ...comprasData.map(item => item.fecha)
+            ])
+        ];
 
-      // Obtener compras
-      const comprasResponse = await fetch("controladores/consultas.php?op=totalCompras&idsucursal=" + idsucursal);
-      const comprasData = await comprasResponse.json();
-      const montosCompras = comprasData.map(item => parseFloat(item[1] || 0));
+        const ventas = Object.fromEntries(
+            ventasData.map(item => [item.fecha, item])
+        );
 
-      crearGrafico(periodos, montosVentas, montosCompras);
+        const compras = Object.fromEntries(
+            comprasData.map(item => [item.fecha, item])
+        );
+
+        const montosVentas = periodos.map(fecha =>
+            parseFloat(ventas[fecha]?.total || 0)
+        );
+
+        const montosCompras = periodos.map(fecha =>
+            parseFloat(compras[fecha]?.total || 0)
+        );
+
+        crearGrafico(
+            periodos,
+            montosVentas,
+            montosCompras,
+            ventas,
+            compras
+        );
     } catch (error) {
-      console.error("Error al cargar los datos:", error);
+        console.error("Error al cargar los datos:", error);
     }
+});
 
-    function crearGrafico(periodos, montosVentas, montosCompras) {
-      const options = {
+function crearGrafico(
+    periodos,
+    montosVentas,
+    montosCompras,
+    ventas,
+    compras
+) {
+    const options = {
         chart: {
-          type: 'bar',
-          height: 350, // Ajuste altura
-          toolbar: { show: false }, // Ocultar toolbar para diseño limpio
-          fontFamily: 'Poppins, sans-serif' // Fuente consistente
+            type: 'bar',
+            height: 350,
+            toolbar: {
+                show: false
+            },
+            fontFamily: 'Poppins, sans-serif'
         },
+
         series: [
-          {
-            name: 'Ventas en S/',
-            data: montosVentas
-          },
-          {
-            name: 'Compras en S/',
-            data: montosCompras
-          }
+            {
+                name: 'Ventas',
+                data: montosVentas
+            },
+            {
+                name: 'Compras',
+                data: montosCompras
+            }
         ],
+
         plotOptions: {
-          bar: {
-            horizontal: false,
-            columnWidth: '50%',
-            borderRadius: 4, // Bordes redondeados en barras
-          }
+            bar: {
+                horizontal: false,
+                columnWidth: '55%',
+                borderRadius: 4
+            }
         },
-        dataLabels: { enabled: false },
-        stroke: { show: true, width: 2, colors: ['transparent'] },
+
+        dataLabels: {
+            enabled: false
+        },
+
         xaxis: {
-          categories: periodos,
-          axisBorder: { show: false },
-          axisTicks: { show: false }
+            categories: periodos,
+            axisBorder: {
+                show: false
+            },
+            axisTicks: {
+                show: false
+            }
         },
-        yaxis: { title: { text: '' } }, // Limpieza eje Y
-        fill: { opacity: 1 },
+
+        yaxis: {
+            labels: {
+                formatter: value => value
+            }
+        },
+
         tooltip: {
-          y: {
-            formatter: val => `S/ ${val.toLocaleString()}`
-          },
-          theme: 'light' // Tooltip claro
+            custom: function({ seriesIndex, dataPointIndex }) {
+                const fecha = periodos[dataPointIndex];
+
+                const item = seriesIndex === 0
+                    ? ventas[fecha]
+                    : compras[fecha];
+
+                return `
+                    <div class="px-3 py-2">
+                        <strong>${fecha}</strong>
+                        <div class="mt-1">
+                            ${item?.total_str || 'S/ 0.00'}
+                        </div>
+                    </div>
+                `;
+            }
         },
-        colors: ['#4f46e5', '#f59e0b'], // Colores Premium (Indigo y Amber)
-        legend: { position: 'top', horizontalAlign: 'left' },
-        grid: { borderColor: '#f1f5f9' } // Grid suave
-      };
 
-      const chart = new ApexCharts(document.querySelector("#areaChart"), options);
-      chart.render();
+        colors: ['#4f46e5', '#f59e0b'],
+
+        legend: {
+            position: 'top',
+            horizontalAlign: 'left'
+        },
+
+        grid: {
+            borderColor: '#f1f5f9'
+        }
+    };
+
+    new ApexCharts(
+        document.querySelector("#areaChart"),
+        options
+    ).render();
+}
+
+
+$("#cxcAlertLink").on("click", function () {
+
+  let ids = $(this).data("ids");
+  if (!ids) return;
+
+  $.post(
+    "controladores/cuentascobrar.php?op=marcar_leida",
+    { ids: ids },
+    function () {
+      $("#cxcAlertCount").hide();
     }
-  });
-
-  // const CURRENT_SUCURSAL = <?= $_SESSION['idsucursal'] ?? 0 ?>;
-  // function getSucursalNavbar() {
-  //   let id = $("#idsucursal2").val();
-  //   return id && id !== "" ? id : null;
-  // }
-
-  // function cargarNotificacionesCXCNavbar() {
-
-  //   let currentSucursal = getSucursalNavbar();
-  //   if (!currentSucursal) return;
-
-  //   $.getJSON(
-  //     "controladores/cuentascobrar.php?op=obtener_notificaciones&idsucursal=" + currentSucursal,
-  //     function (data) {
-
-  //       let cuotas = data.filter(n => !n.tipo || n.tipo.trim() === "");
-
-  //       let total = cuotas.length;
-  //       let html = "";
-  //       let ids = [];
-
-  //       if (total === 0) {
-  //         $("#cxcAlertCount").hide();
-  //         html = `
-  //                   <span class="dropdown-item text-muted text-center py-3">
-  //                       <i class="far fa-check-circle mb-1 d-block text-success fa-2x"></i>
-  //                       No hay cuentas vencidas
-  //                   </span>`;
-  //       } else {
-  //         $("#cxcAlertCount").text(total).show();
-
-  //         cuotas.forEach(n => {
-  //           ids.push(n.idnotificacion);
-
-  //           html += `
-  //                       <a href="#" class="dropdown-item px-3 py-2">
-  //                           <div class="media">
-  //                               <div class="mr-3">
-  //                                   <span class="btn btn-sm btn-light text-danger rounded-circle"><i class="fas fa-exclamation"></i></span>
-  //                               </div>
-  //                               <div class="media-body">
-  //                                   <p class="mb-0 text-sm font-weight-bold text-dark">${n.mensaje}</p>
-  //                                   <p class="text-sm text-muted mb-0"><i class="far fa-clock mr-1"></i> ${n.fecha}</p>
-  //                               </div>
-  //                           </div>
-  //                       </a>
-  //                       <div class="dropdown-divider"></div>`;
-  //         });
-  //       }
-
-  //       $("#cxcAlertList").html(html);
-  //       $("#cxcAlertLink").data("ids", ids.join(","));
-  //     }
-  //   );
-  // }
-
-  // $(document).on("change", "#idsucursal2", function () {
-  //   cargarNotificacionesCXCNavbar();
-  // });
-
-  $("#cxcAlertLink").on("click", function () {
-
-    let ids = $(this).data("ids");
-    if (!ids) return;
-
-    $.post(
-      "controladores/cuentascobrar.php?op=marcar_leida",
-      { ids: ids },
-      function () {
-        $("#cxcAlertCount").hide();
-      }
-    );
-  });
-
-  // $(document).ready(function () {
-
-  //   // Esperar a que idsucursal2 tenga valor
-  //   let esperaSucursal = setInterval(function () {
-  //     if (getSucursalNavbar()) {
-  //       cargarNotificacionesCXCNavbar();
-  //       clearInterval(esperaSucursal);
-  //     }
-  //   }, 3000);
-
-  //   // Refresco normal cada 5 segundos
-  //   setInterval(cargarNotificacionesCXCNavbar, 5000);
-  // });
+  );
+});
 
 </script>

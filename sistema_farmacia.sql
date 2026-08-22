@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 12, 2026 at 04:01 AM
+-- Generation Time: Aug 18, 2026 at 05:31 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.28
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `sistema_blanco`
+-- Database: `sistema_farmacia`
 --
 
 -- --------------------------------------------------------
@@ -211,7 +211,7 @@ INSERT INTO `caja_apertura` (`aperturacajaid`, `created_at`, `fecha_apertura`, `
 (1, '2026-07-01 23:22:11', '2026-07-01 23:22:11', 100.00, '2026-07-08 20:53:11', 7942.09, 7942.09, '0', 1, 1, 1, 1, NULL),
 (2, '2026-07-08 20:53:32', '2026-07-08 20:53:32', 50.00, '2026-08-01 19:43:43', NULL, 65710.10, '0', 1, 1, 1, 1, NULL),
 (3, '2026-07-15 10:10:21', '2026-07-15 10:10:21', 100.00, NULL, NULL, NULL, '1', 2, 2, 1, NULL, NULL),
-(4, '2026-08-02 01:38:18', '2026-08-02 01:38:18', 100.00, NULL, 1447.55, NULL, '1', 1, 1, 1, NULL, NULL);
+(4, '2026-08-02 01:38:18', '2026-08-02 01:38:18', 100.00, NULL, 1859.55, NULL, '1', 1, 1, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -328,7 +328,9 @@ INSERT INTO `compra` (`idcompra`, `idsucursal`, `idproveedor`, `idpersonal`, `ti
 (34, 1, 17, 1, 'Boleta', 'B001', '00554', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 20.00, 0.00, 20.00, 'No', 0, 0, 20, '', NULL, 'REGISTRADO', '2026-08-12 03:27:18', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:27:18', '2026-08-11 22:27:18', NULL),
 (35, 1, 17, 1, 'Boleta', 'B001', '00545', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 20.00, 0.00, 20.00, 'No', 0, 0, 20, '', NULL, 'REGISTRADO', '2026-08-12 03:29:20', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:29:20', '2026-08-11 22:29:20', NULL),
 (36, 1, 17, 1, 'Boleta', 'B001', '000763', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 20.00, 0.00, 20.00, 'No', 0, 0, 20, '', NULL, 'REGISTRADO', '2026-08-12 03:30:21', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:30:21', '2026-08-11 22:30:21', NULL),
-(37, 1, 17, 1, 'Boleta', 'B001', '00487', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 240.00, 0.00, 240.00, 'No', 0, 0, 240, '', NULL, 'REGISTRADO', '2026-08-12 03:32:58', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL);
+(37, 1, 17, 1, 'Boleta', 'B001', '00487', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 240.00, 0.00, 240.00, 'No', 0, 0, 240, '', NULL, 'REGISTRADO', '2026-08-12 03:32:58', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL),
+(40, 1, 17, 1, 'Boleta', 'B001', '000568', '2026-08-12 00:00:00', 0.00, 'EXONERADA', 0.00, 50.00, 0.00, 50.00, 'No', 0, 0, 50, '', NULL, 'REGISTRADO', '2026-08-12 18:29:11', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-12 13:29:11', '2026-08-12 13:29:11', NULL),
+(41, 1, 17, 1, 'Boleta', 'B001', '00055', '2026-08-12 00:00:00', 0.00, 'EXONERADA', 0.00, 25.00, 0.00, 25.00, 'No', 0, 0, 25, '', NULL, 'REGISTRADO', '2026-08-12 18:30:20', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-12 13:30:20', '2026-08-12 13:30:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -370,7 +372,9 @@ INSERT INTO `compra_pago` (`idpago`, `idcompra`, `tipo_pago`, `monto`, `nro_oper
 (13, 34, 'Efectivo', 20.00, NULL, '2026-08-11 22:27:18', NULL, NULL, '2026-08-11 22:27:18', '2026-08-11 22:27:18', NULL),
 (14, 35, 'Efectivo', 20.00, NULL, '2026-08-11 22:29:20', NULL, NULL, '2026-08-11 22:29:20', '2026-08-11 22:29:20', NULL),
 (15, 36, 'Efectivo', 20.00, NULL, '2026-08-11 22:30:21', NULL, NULL, '2026-08-11 22:30:21', '2026-08-11 22:30:21', NULL),
-(16, 37, 'Efectivo', 240.00, NULL, '2026-08-11 22:32:58', NULL, NULL, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL);
+(16, 37, 'Efectivo', 240.00, NULL, '2026-08-11 22:32:58', NULL, NULL, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL),
+(17, 40, 'Efectivo', 50.00, NULL, '2026-08-12 13:29:11', NULL, NULL, '2026-08-12 13:29:11', '2026-08-12 13:29:11', NULL),
+(18, 41, 'Efectivo', 25.00, NULL, '2026-08-12 13:30:20', NULL, NULL, '2026-08-12 13:30:20', '2026-08-12 13:30:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -426,13 +430,14 @@ CREATE TABLE `comp_pago` (
 --
 
 INSERT INTO `comp_pago` (`idcomprobante_pago`, `nombre`, `serie_comprobante`, `num_comprobante`, `idempresa`, `condicion`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'Nota de Venta', 'NV00', '39', 1, 1, '2026-08-06 10:11:42', '2026-08-11 22:36:06', NULL),
-(2, 'Factura', 'F001', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
-(3, 'Boleta', 'B001', '1', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
+(1, 'Nota de Venta', 'NV00', '45', 1, 1, '2026-08-06 10:11:42', '2026-08-18 00:29:25', NULL),
+(2, 'Factura', 'F001', '2', 1, 1, '2026-08-06 10:11:42', '2026-08-18 00:25:19', NULL),
+(3, 'Boleta', 'B001', '2', 1, 1, '2026-08-06 10:11:42', '2026-08-18 00:20:01', NULL),
 (4, 'Nota de Crédito', 'NC01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
 (5, 'Nota de Débito', 'ND01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
 (6, 'Cotización', 'COT0', '26', 1, 1, '2026-08-06 10:11:42', '2026-08-11 22:03:05', NULL),
-(7, 'Orden de Compra', 'OC01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL);
+(7, 'Orden de Compra', 'OC01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
+(8, 'Guia de Remisión', 'T001', '0', 1, 1, '2026-08-13 09:46:10', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -828,7 +833,9 @@ INSERT INTO `detalle_compra` (`iddetalle_compra`, `idsucursal`, `idcompra`, `idp
 (33, 1, 34, 33, NULL, 1.00, 20.00000000, 34.00000000, '', NULL, 'Compra', 'ANILLOS PARA CB190 x undefined', 1.00, '2026-08-11 22:27:18', '2026-08-11 22:27:18', NULL),
 (34, 1, 35, 33, NULL, 1.00, 20.00000000, 34.00000000, '', NULL, 'Compra', 'ANILLOS PARA CB190 x undefined', 1.00, '2026-08-11 22:29:20', '2026-08-11 22:29:20', NULL),
 (35, 1, 36, 33, NULL, 1.00, 20.00000000, 34.00000000, '', NULL, 'Compra', 'ANILLOS PARA CB190 x undefined', 1.00, '2026-08-11 22:30:21', '2026-08-11 22:30:21', NULL),
-(36, 1, 37, 33, NULL, 12.00, 20.00000000, 34.00000000, '', NULL, 'Compra', 'ANILLOS PARA CB190 x undefined', 12.00, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL);
+(36, 1, 37, 33, NULL, 12.00, 20.00000000, 34.00000000, '', NULL, 'Compra', 'ANILLOS PARA CB190 x undefined', 12.00, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL),
+(39, 1, 40, 31, NULL, 10.00, 5.00000000, 10.00000000, 'FDG54UI', '2026-09-25', 'Compra', 'Camara para m300 x undefined', 10.00, '2026-08-12 13:29:11', '2026-08-12 13:29:11', NULL),
+(40, 1, 41, 31, NULL, 5.00, 5.00000000, 10.00000000, 'FDG54UI', '2026-09-25', 'Compra', 'Camara para m300 x undefined', 5.00, '2026-08-12 13:30:20', '2026-08-12 13:30:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -995,14 +1002,29 @@ CREATE TABLE `detalle_guia` (
   `iddetalle` int NOT NULL,
   `idguia` int NOT NULL,
   `idproducto` int NOT NULL,
+  `idproducto_configuracion` int DEFAULT NULL,
+  `idserie` int DEFAULT NULL,
   `codigo` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `nombre_producto` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `cantidad` decimal(10,2) DEFAULT NULL,
   `unidad` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `peso` decimal(10,2) DEFAULT NULL,
   `bultos` int DEFAULT NULL,
-  `lotes` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL
+  `lotes` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+
+--
+-- Dumping data for table `detalle_guia`
+--
+
+INSERT INTO `detalle_guia` (`iddetalle`, `idguia`, `idproducto`, `idproducto_configuracion`, `idserie`, `codigo`, `nombre_producto`, `cantidad`, `unidad`, `peso`, `bultos`, `lotes`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 1, 28, NULL, NULL, '', '', 1.00, '', 0.00, 0, '[{\"idinventario_lote\":1,\"codigo_lote\":\"FDG54UI\",\"fecha_vencimiento\":\"2026-09-25\",\"cantidad\":\"1.00\"},{\"idinventario_lote\":1,\"codigo_lote\":\"FDG54UI\",\"fecha_vencimiento\":\"2026-09-25\",\"cantidad\":\"1.00\"}]', '2026-08-16 20:43:09', NULL, NULL),
+(2, 4, 28, NULL, NULL, '2026003', 'MOTO XR190', 1.00, 'UNIDAD', 0.00, 0, '[{\"idinventario_lote\":1,\"codigo_lote\":\"FDG54UI\",\"fecha_vencimiento\":\"2026-09-25\",\"cantidad\":\"1.00\"},{\"idinventario_lote\":1,\"codigo_lote\":\"FDG54UI\",\"fecha_vencimiento\":\"2026-09-25\",\"cantidad\":\"1.00\"}]', '2026-08-17 01:43:39', '2026-08-17 01:43:39', NULL),
+(3, 5, 28, NULL, NULL, '2026003', 'MOTO XR190', 1.00, 'UNIDAD', 0.00, 0, '[{\"idinventario_lote\":1,\"codigo_lote\":\"FDG54UI\",\"fecha_vencimiento\":\"2026-09-25\",\"cantidad\":\"1.00\"},{\"idinventario_lote\":1,\"codigo_lote\":\"FDG54UI\",\"fecha_vencimiento\":\"2026-09-25\",\"cantidad\":\"1.00\"}]', '2026-08-17 01:54:03', '2026-08-17 01:54:03', NULL),
+(4, 6, 28, 16, 22, '2026003', 'MOTO XR190', 1.00, 'UNIDAD', 0.00, 0, '[{\"idinventario_lote\":1,\"codigo_lote\":\"FDG54UI\",\"fecha_vencimiento\":\"2026-09-25\",\"cantidad\":\"1.00\"},{\"idinventario_lote\":1,\"codigo_lote\":\"FDG54UI\",\"fecha_vencimiento\":\"2026-09-25\",\"cantidad\":\"1.00\"}]', '2026-08-17 02:03:26', '2026-08-17 02:03:26', NULL);
 
 -- --------------------------------------------------------
 
@@ -1038,10 +1060,9 @@ CREATE TABLE `detalle_venta` (
   `cantidad_contenedor` decimal(11,2) NOT NULL,
   `precio_venta` decimal(11,2) NOT NULL,
   `descuento` decimal(11,2) NOT NULL,
+  `idinventario_lote` int DEFAULT NULL,
   `tipo` varchar(150) COLLATE utf8mb3_spanish_ci NOT NULL,
   `check_precio` tinyint(1) DEFAULT '0',
-  `id_detalle_compra` int DEFAULT NULL,
-  `id_fifo` int DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
@@ -1051,61 +1072,97 @@ CREATE TABLE `detalle_venta` (
 -- Dumping data for table `detalle_venta`
 --
 
-INSERT INTO `detalle_venta` (`iddetalle_venta`, `idsucursal`, `idventa`, `idproducto`, `idproducto_configuracion`, `idserie`, `nombre_producto`, `cantidad`, `contenedor`, `cantidad_contenedor`, `precio_venta`, `descuento`, `tipo`, `check_precio`, `id_detalle_compra`, `id_fifo`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 1, 1, NULL, NULL, 'MOTOCICLETA LINEAL HONDA GL 125 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, 'venta', 0, NULL, 0, '2026-07-15 14:13:59', NULL, NULL),
-(2, 1, 2, 1, NULL, NULL, 'MOTOCICLETA LINEAL HONDA GL 125 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, 'venta', 0, NULL, 0, '2026-07-15 14:13:59', NULL, NULL),
-(14, 2, 23, 22, NULL, NULL, 'MOTO WAVE 110 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 4000.00, 0.00, 'venta', 0, NULL, 16, '2026-07-15 14:35:29', '2026-07-15 14:35:29', NULL),
-(32, 1, 49, 24, NULL, 18, 'MOTOCICLETA LINEAL HONDA GL 125', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-16 09:01:35', '2026-07-16 09:01:35', NULL),
-(36, 1, 53, 25, NULL, 19, 'MOTO NS 200 BAJAJ', 1.00, 'UNIDAD', 1.00, 11000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-16 09:15:31', '2026-07-16 09:15:31', NULL),
-(40, 1, 57, 26, NULL, 20, 'GL-125 REACH', 1.00, 'UNIDAD', 1.00, 6000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-16 22:18:01', '2026-07-16 22:18:01', NULL),
-(41, 1, 58, 27, NULL, 21, 'MOTO LINEAL NUEV', 1.00, 'UNIDAD', 1.00, 6000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-16 22:24:49', '2026-07-16 22:24:49', NULL),
-(42, 1, 59, 29, NULL, 23, 'MOTO WAVE 110', 1.00, 'UNIDAD', 1.00, 4000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-17 19:01:27', '2026-07-17 19:01:27', NULL),
-(43, 1, 60, 28, NULL, 22, 'MOTO XR190', 1.00, 'UNIDAD', 1.00, 9000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-17 19:04:45', '2026-07-17 19:04:45', NULL),
-(44, 1, 62, 32, NULL, 25, 'MOTO LINEAL HIUNDAT 200', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, 'venta', 0, NULL, NULL, '2026-07-27 17:42:54', '2026-07-27 17:42:54', NULL),
-(45, 1, 63, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:18:23', '2026-08-02 02:18:23', NULL),
-(46, 1, 64, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:27:49', '2026-08-02 02:27:49', NULL),
-(47, 1, 65, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:38:15', '2026-08-02 02:38:15', NULL),
-(48, 1, 70, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:45:29', '2026-08-02 02:45:29', NULL),
-(49, 1, 71, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:52:19', '2026-08-02 02:52:19', NULL),
-(50, 1, 72, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 02:55:16', '2026-08-02 02:55:16', NULL),
-(51, 1, 78, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 04:18:32', '2026-08-02 04:18:32', NULL),
-(52, 1, 79, 31, NULL, 24, 'Camara para m300', 2.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 04:40:07', '2026-08-02 04:40:07', NULL),
-(53, 1, 80, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 04:41:37', '2026-08-02 04:41:37', NULL),
-(54, 1, 81, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 08:21:15', '2026-08-02 08:21:15', NULL),
-(55, 1, 81, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-02 08:21:15', '2026-08-02 08:21:15', NULL),
-(56, 1, 84, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-06 15:48:26', '2026-08-06 15:48:26', NULL),
-(57, 1, 84, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 16.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-06 15:48:26', '2026-08-06 15:48:26', NULL),
-(58, 1, 85, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 07:45:36', '2026-08-09 07:45:36', NULL),
-(59, 1, 86, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 08:27:24', '2026-08-09 08:27:24', NULL),
-(60, 1, 87, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 08:29:55', '2026-08-09 08:29:55', NULL),
-(61, 1, 88, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 08:49:25', '2026-08-09 08:49:25', NULL),
-(62, 1, 89, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:09:01', '2026-08-09 09:09:01', NULL),
-(63, 1, 90, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:11:37', '2026-08-09 09:11:37', NULL),
-(64, 1, 91, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:12:24', '2026-08-09 09:12:24', NULL),
-(65, 1, 92, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:15:54', '2026-08-09 09:15:54', NULL),
-(66, 1, 93, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:32:21', '2026-08-09 09:32:21', NULL),
-(67, 1, 94, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:40:27', '2026-08-09 09:40:27', NULL),
-(68, 1, 95, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:41:31', '2026-08-09 09:41:31', NULL),
-(69, 1, 96, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:42:54', '2026-08-09 09:42:54', NULL),
-(70, 1, 97, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:48:00', '2026-08-09 09:48:00', NULL),
-(71, 1, 98, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:51:46', '2026-08-09 09:51:46', NULL),
-(72, 1, 99, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 09:52:49', '2026-08-09 09:52:49', NULL),
-(73, 1, 100, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 10:05:09', '2026-08-09 10:05:09', NULL),
-(74, 1, 101, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 10:05:30', '2026-08-09 10:05:30', NULL),
-(75, 1, 102, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 10:06:12', '2026-08-09 10:06:12', NULL),
-(76, 1, 103, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 10:21:31', '2026-08-09 10:21:31', NULL),
-(77, 1, 104, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 10:29:47', '2026-08-09 10:29:47', NULL),
-(78, 1, 105, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 12:18:26', '2026-08-09 12:18:26', NULL),
-(79, 1, 106, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-09 12:56:20', '2026-08-09 12:56:20', NULL),
-(80, 1, 107, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:05:22', '2026-08-11 21:05:22', NULL),
-(81, 1, 108, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:06:13', '2026-08-11 21:06:13', NULL),
-(84, 1, 111, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:30:03', '2026-08-11 21:30:03', NULL),
-(86, 1, 113, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:34:31', '2026-08-11 21:34:31', NULL),
-(87, 1, 114, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:35:42', '2026-08-11 21:35:42', NULL),
-(88, 1, 115, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:40:24', '2026-08-11 21:40:24', NULL),
-(89, 1, 116, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 21:54:05', '2026-08-11 21:54:05', NULL),
-(90, 1, 117, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 22:10:39', '2026-08-11 22:10:39', NULL),
-(91, 1, 118, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, 'venta', 0, NULL, NULL, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL);
+INSERT INTO `detalle_venta` (`iddetalle_venta`, `idsucursal`, `idventa`, `idproducto`, `idproducto_configuracion`, `idserie`, `nombre_producto`, `cantidad`, `contenedor`, `cantidad_contenedor`, `precio_venta`, `descuento`, `idinventario_lote`, `tipo`, `check_precio`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 1, 1, 1, NULL, NULL, 'MOTOCICLETA LINEAL HONDA GL 125 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, NULL, 'venta', 0, '2026-07-15 14:13:59', NULL, NULL),
+(2, 1, 2, 1, NULL, NULL, 'MOTOCICLETA LINEAL HONDA GL 125 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, NULL, 'venta', 0, '2026-07-15 14:13:59', NULL, NULL),
+(14, 2, 23, 22, NULL, NULL, 'MOTO WAVE 110 (UNIDAD)', 1.00, 'UNIDAD', 1.00, 4000.00, 0.00, NULL, 'venta', 0, '2026-07-15 14:35:29', '2026-07-15 14:35:29', NULL),
+(32, 1, 49, 24, NULL, 18, 'MOTOCICLETA LINEAL HONDA GL 125', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, NULL, 'venta', 0, '2026-07-16 09:01:35', '2026-07-16 09:01:35', NULL),
+(36, 1, 53, 25, NULL, 19, 'MOTO NS 200 BAJAJ', 1.00, 'UNIDAD', 1.00, 11000.00, 0.00, NULL, 'venta', 0, '2026-07-16 09:15:31', '2026-07-16 09:15:31', NULL),
+(40, 1, 57, 26, NULL, 20, 'GL-125 REACH', 1.00, 'UNIDAD', 1.00, 6000.00, 0.00, NULL, 'venta', 0, '2026-07-16 22:18:01', '2026-07-16 22:18:01', NULL),
+(41, 1, 58, 27, NULL, 21, 'MOTO LINEAL NUEV', 1.00, 'UNIDAD', 1.00, 6000.00, 0.00, NULL, 'venta', 0, '2026-07-16 22:24:49', '2026-07-16 22:24:49', NULL),
+(42, 1, 59, 29, NULL, 23, 'MOTO WAVE 110', 1.00, 'UNIDAD', 1.00, 4000.00, 0.00, NULL, 'venta', 0, '2026-07-17 19:01:27', '2026-07-17 19:01:27', NULL),
+(43, 1, 60, 28, 16, 22, 'MOTO XR190', 1.00, 'UNIDAD', 1.00, 9000.00, 0.00, NULL, 'venta', 0, '2026-07-17 19:04:45', '2026-07-17 19:04:45', NULL),
+(44, 1, 62, 32, NULL, 25, 'MOTO LINEAL HIUNDAT 200', 1.00, 'UNIDAD', 1.00, 7000.00, 0.00, NULL, 'venta', 0, '2026-07-27 17:42:54', '2026-07-27 17:42:54', NULL),
+(45, 1, 63, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:18:23', '2026-08-02 02:18:23', NULL),
+(46, 1, 64, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:27:49', '2026-08-02 02:27:49', NULL),
+(47, 1, 65, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:38:15', '2026-08-02 02:38:15', NULL),
+(48, 1, 70, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:45:29', '2026-08-02 02:45:29', NULL),
+(49, 1, 71, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:52:19', '2026-08-02 02:52:19', NULL),
+(50, 1, 72, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 02:55:16', '2026-08-02 02:55:16', NULL),
+(51, 1, 78, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 04:18:32', '2026-08-02 04:18:32', NULL),
+(52, 1, 79, 31, NULL, 24, 'Camara para m300', 2.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 04:40:07', '2026-08-02 04:40:07', NULL),
+(53, 1, 80, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 04:41:37', '2026-08-02 04:41:37', NULL),
+(54, 1, 81, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-02 08:21:15', '2026-08-02 08:21:15', NULL),
+(55, 1, 81, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-02 08:21:15', '2026-08-02 08:21:15', NULL),
+(56, 1, 84, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, NULL, 'venta', 0, '2026-08-06 15:48:26', '2026-08-06 15:48:26', NULL),
+(57, 1, 84, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 16.00, 0.00, NULL, 'venta', 0, '2026-08-06 15:48:26', '2026-08-06 15:48:26', NULL),
+(58, 1, 85, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, NULL, 'venta', 0, '2026-08-09 07:45:36', '2026-08-09 07:45:36', NULL),
+(59, 1, 86, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 08:27:24', '2026-08-09 08:27:24', NULL),
+(60, 1, 87, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 08:29:55', '2026-08-09 08:29:55', NULL),
+(61, 1, 88, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 08:49:25', '2026-08-09 08:49:25', NULL),
+(62, 1, 89, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:09:01', '2026-08-09 09:09:01', NULL),
+(63, 1, 90, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:11:37', '2026-08-09 09:11:37', NULL),
+(64, 1, 91, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:12:24', '2026-08-09 09:12:24', NULL),
+(65, 1, 92, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:15:54', '2026-08-09 09:15:54', NULL),
+(66, 1, 93, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:32:21', '2026-08-09 09:32:21', NULL),
+(67, 1, 94, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:40:27', '2026-08-09 09:40:27', NULL),
+(68, 1, 95, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:41:31', '2026-08-09 09:41:31', NULL),
+(69, 1, 96, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:42:54', '2026-08-09 09:42:54', NULL),
+(70, 1, 97, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:48:00', '2026-08-09 09:48:00', NULL),
+(71, 1, 98, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:51:46', '2026-08-09 09:51:46', NULL),
+(72, 1, 99, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 09:52:49', '2026-08-09 09:52:49', NULL),
+(73, 1, 100, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 10:05:09', '2026-08-09 10:05:09', NULL),
+(74, 1, 101, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 10:05:30', '2026-08-09 10:05:30', NULL),
+(75, 1, 102, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-09 10:06:12', '2026-08-09 10:06:12', NULL),
+(76, 1, 103, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 10:21:31', '2026-08-09 10:21:31', NULL),
+(77, 1, 104, 31, NULL, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-09 10:29:47', '2026-08-09 10:29:47', NULL),
+(78, 1, 105, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, NULL, 'venta', 0, '2026-08-09 12:18:26', '2026-08-09 12:18:26', NULL),
+(79, 1, 106, 33, NULL, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 46.00, 0.00, NULL, 'venta', 0, '2026-08-09 12:56:20', '2026-08-09 12:56:20', NULL),
+(80, 1, 107, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:05:22', '2026-08-11 21:05:22', NULL),
+(81, 1, 108, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:06:13', '2026-08-11 21:06:13', NULL),
+(84, 1, 111, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:30:03', '2026-08-11 21:30:03', NULL),
+(86, 1, 113, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:34:31', '2026-08-11 21:34:31', NULL),
+(87, 1, 114, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:35:42', '2026-08-11 21:35:42', NULL),
+(88, 1, 115, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:40:24', '2026-08-11 21:40:24', NULL),
+(89, 1, 116, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 35.00, 0.00, NULL, 'venta', 0, '2026-08-11 21:54:05', '2026-08-11 21:54:05', NULL),
+(90, 1, 117, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 22:10:39', '2026-08-11 22:10:39', NULL),
+(91, 1, 118, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL),
+(92, 1, 119, 31, 28, 24, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:03:31', '2026-08-12 14:03:31', NULL),
+(95, 1, 122, 31, 29, 24, 'Camara para m300', 1.00, 'CAJA', 6.00, 60.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:11:53', '2026-08-12 14:11:53', NULL),
+(102, 2, 129, 34, 23, 27, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:27:58', '2026-08-12 14:27:58', NULL),
+(103, 2, 130, 34, 23, 27, 'Camara para m300', 1.00, 'UNIDAD', 1.00, 10.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:28:23', '2026-08-12 14:28:23', NULL),
+(104, 1, 131, 31, 29, 24, 'Camara para m300', 1.00, 'CAJA', 6.00, 60.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
+(105, 1, 132, 31, 29, 24, 'Camara para m300', 1.00, 'CAJA', 6.00, 60.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL),
+(106, 1, 133, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 34.00, 0.00, NULL, 'venta', 0, '2026-08-18 00:20:01', '2026-08-18 00:20:01', NULL),
+(107, 1, 134, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 34.00, 0.00, NULL, 'venta', 0, '2026-08-18 00:25:19', '2026-08-18 00:25:19', NULL),
+(108, 1, 135, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 34.00, 0.00, NULL, 'venta', 0, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `detalle_venta_lote`
+--
+
+CREATE TABLE `detalle_venta_lote` (
+  `iddetalle_venta_lote` int NOT NULL,
+  `iddetalle_venta` int NOT NULL,
+  `idinventario_lote` int NOT NULL,
+  `codigo_lote` varchar(50) COLLATE utf32_spanish_ci NOT NULL,
+  `fecha_vencimiento` date NOT NULL,
+  `cantidad` decimal(12,2) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
+
+--
+-- Dumping data for table `detalle_venta_lote`
+--
+
+INSERT INTO `detalle_venta_lote` (`iddetalle_venta_lote`, `iddetalle_venta`, `idinventario_lote`, `codigo_lote`, `fecha_vencimiento`, `cantidad`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 95, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:11:53', '2026-08-12 14:11:53', NULL),
+(2, 43, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
+(3, 43, 1, 'FDG54UI', '2026-09-25', 1.00, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL);
 
 -- --------------------------------------------------------
 
@@ -1166,7 +1223,7 @@ CREATE TABLE `empresas` (
 --
 
 INSERT INTO `empresas` (`idempresa`, `ruc`, `razon_social`, `usuario_sol`, `clave_sol`, `ruta_certificado`, `clave_certificado`, `estado_certificado`, `client_id`, `client_secret`, `nombre_impuesto`, `monto_impuesto`, `estado`) VALUES
-(1, '20152458654', 'Multiservicion conan', '71845256', '1sunTSUmen2', '', '', '', '', '', 'IGV', 18, 1);
+(1, '20000000001', 'Multiservicion conan', 'MODDATOS', 'moddatos', '', '', 'BETA', NULL, NULL, 'IGV', 18, 1);
 
 -- --------------------------------------------------------
 
@@ -1187,8 +1244,13 @@ CREATE TABLE `guia_remision` (
   `fecha_factura_ref` date DEFAULT NULL,
   `tipo_transporte` tinyint(1) DEFAULT '0',
   `idtransportista` int DEFAULT NULL,
+  `chofer_documento` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `chofer_tipo_documento` varchar(20) CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `licencia_conducir` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `peso` decimal(10,2) DEFAULT NULL,
   `estado` enum('Por Enviar','Aceptado','Nota Credito','Rechazado') COLLATE utf8mb3_spanish_ci DEFAULT 'Por Enviar',
+  `estado_sunat` datetime DEFAULT NULL,
+  `resumen_sunat` varchar(225) CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `punto_partida` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `ubigeo_partida` varchar(6) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `punto_llegada` varchar(255) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
@@ -1197,11 +1259,24 @@ CREATE TABLE `guia_remision` (
   `referencia` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `idtrabajador` int DEFAULT NULL,
   `idmotivo` int DEFAULT NULL,
+  `motivo_traslado_otro` varchar(120) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `ord_compra` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `ord_pedido` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `observacion` text COLLATE utf8mb3_spanish_ci,
-  `fecha_creacion` datetime DEFAULT CURRENT_TIMESTAMP
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
+
+--
+-- Dumping data for table `guia_remision`
+--
+
+INSERT INTO `guia_remision` (`idguia`, `idsucursal`, `idcliente`, `idpersonal`, `serie_comprobante`, `num_comprobante`, `fecha_emision`, `fecha_traslado`, `factura_ref`, `fecha_factura_ref`, `tipo_transporte`, `idtransportista`, `chofer_documento`, `chofer_tipo_documento`, `licencia_conducir`, `peso`, `estado`, `estado_sunat`, `resumen_sunat`, `punto_partida`, `ubigeo_partida`, `punto_llegada`, `ubigeo_llegada`, `atencion`, `referencia`, `idtrabajador`, `idmotivo`, `motivo_traslado_otro`, `ord_compra`, `ord_pedido`, `observacion`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 1, 1, 1, 'T001', '000001', '2026-08-14 00:00:00', '2026-08-14', 'B001-0000009', '2026-07-17', 1, 5, NULL, '', NULL, 1000.00, 'Por Enviar', NULL, '', 'Amazonas - Chachapoyas - Asunción', '010102', 'Áncash - Aija - Coris', '020202', 'luilui', 'uiluil', 3, 1, NULL, '54978', '555885', '', '2026-08-14 10:06:47', NULL, NULL),
+(4, 1, 1, 1, 'T001', '000001', '2026-08-16 00:00:00', '2026-08-16', 'B001-0000009', '2026-07-17', 0, 5, NULL, NULL, NULL, 800.00, 'Por Enviar', NULL, NULL, 'Áncash - Aija - Coris', '020202', 'Apurímac - Antabamba - Huaquirca', '030303', 'DJDH', 'ASINUFBAUFA', 3, 3, '', '01515', '54546', 'zfgjxfjfgj', '2026-08-17 01:43:39', '2026-08-17 01:43:39', NULL),
+(5, 1, 1, 1, 'T001', '000001', '2026-08-16 00:00:00', '2026-08-16', 'B001-0000009', '2026-07-17', 0, 5, NULL, NULL, NULL, 800.00, 'Por Enviar', NULL, NULL, 'Amazonas - Chachapoyas - Chachapoyas', '010101', 'Amazonas - Bagua - Aramango', '010202', 'kskgjgsdijg', 'ASINUFBAUFA', 2, 13, 'kshjkasjsg', '95994', '599949', 'fjrjtydj', '2026-08-17 01:54:03', '2026-08-17 01:54:03', NULL),
+(6, 1, 1, 1, 'T001', '000001', '2026-08-16 00:00:00', '2026-08-16', 'B001-0000009', '2026-07-17', 0, 5, NULL, NULL, NULL, 800.00, 'Por Enviar', NULL, NULL, 'Amazonas - Chachapoyas - Chachapoyas', '010101', 'Apurímac - Aymaraes - Chapimarca', '030404', 'kskgjgsdijg', 'tfuyguugo', 3, 1, '', '95994', '599949', 'fgjdytj', '2026-08-17 02:03:26', '2026-08-17 02:03:26', NULL);
 
 -- --------------------------------------------------------
 
@@ -1261,6 +1336,32 @@ CREATE TABLE `inventario_detalles` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `inventario_lote`
+--
+
+CREATE TABLE `inventario_lote` (
+  `idinventario_lote` int NOT NULL,
+  `idproducto` int NOT NULL,
+  `idsucursal` int NOT NULL,
+  `codigo_lote` varchar(50) COLLATE utf32_spanish_ci NOT NULL,
+  `fecha_vencimiento` date NOT NULL,
+  `stock` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `stock_original` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
+
+--
+-- Dumping data for table `inventario_lote`
+--
+
+INSERT INTO `inventario_lote` (`idinventario_lote`, `idproducto`, `idsucursal`, `codigo_lote`, `fecha_vencimiento`, `stock`, `stock_original`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 31, 1, 'FDG54UI', '2026-09-25', 11.00, 15.00, '2026-08-12 13:29:11', '2026-08-12 14:45:13', NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `inventario_producto`
 --
 
@@ -1302,10 +1403,10 @@ INSERT INTO `inventario_producto` (`idinventario`, `idproducto`, `idsucursal`, `
 (26, 27, 1, 0.00, 1.00, 10.00, 5000.00, NULL, '2026-07-16 22:24:49', NULL),
 (27, 28, 1, 0.00, 1.00, 1.00, 6000.00, '2026-07-16 23:03:41', '2026-07-17 19:04:45', NULL),
 (28, 29, 1, 0.00, 1.00, 10.00, 2500.00, '2026-07-16 23:03:41', '2026-07-17 19:01:27', NULL),
-(30, 31, 1, 0.00, 10.00, 100.00, 5.00, NULL, '2026-08-09 20:17:03', NULL),
+(30, 31, 1, 11.00, 10.00, 100.00, 5.00, NULL, '2026-08-12 14:45:13', NULL),
 (31, 32, 1, 1.00, 1.00, 1.00, 5000.00, NULL, '2026-07-27 17:42:54', NULL),
-(32, 33, 1, 59.00, 10.00, 100.00, 20.00, NULL, '2026-08-11 22:36:06', NULL),
-(33, 34, 2, 10.00, 10.00, 100.00, 5.00, '2026-08-02 09:05:09', '2026-08-02 09:05:09', NULL),
+(32, 33, 1, 56.00, 10.00, 100.00, 20.00, NULL, '2026-08-18 00:29:25', NULL),
+(33, 34, 2, 8.00, 10.00, 100.00, 5.00, '2026-08-02 09:05:09', '2026-08-12 14:28:23', NULL),
 (34, 35, 2, 6.00, 10.00, 100.00, 20.00, '2026-08-02 09:12:06', '2026-08-02 09:12:06', NULL),
 (35, 36, 1, 1.00, 1.00, 1.00, 1000.00, NULL, NULL, NULL);
 
@@ -1433,7 +1534,18 @@ INSERT INTO `kardex` (`id`, `created_at`, `updated_at`, `idsucursal`, `idproduct
 (82, '2026-08-11 22:29:20', '2026-08-11 22:29:20', 1, 33, NULL, 1.000, 1.00, 20, 52.000, 1, 'Compra', NULL, '2026-08-12 03:29:20', NULL),
 (83, '2026-08-11 22:30:21', '2026-08-11 22:30:21', 1, 33, NULL, 1.000, 1.00, 20, 53.000, 1, 'Compra', NULL, '2026-08-12 03:30:21', NULL),
 (84, '2026-08-11 22:32:58', '2026-08-11 22:32:58', 1, 33, NULL, 12.000, 1.00, 20, 65.000, 1, 'Compra', NULL, '2026-08-12 03:32:58', NULL),
-(85, '2026-08-11 22:36:06', '2026-08-11 22:36:06', 1, 33, 37, 1.000, 6.00, 200, 59.000, 0, 'Salida por transferencia', 'Salida generada por la venta #118', '2026-08-12 03:36:06', NULL);
+(85, '2026-08-11 22:36:06', '2026-08-11 22:36:06', 1, 33, 37, 1.000, 6.00, 200, 59.000, 0, 'Salida por transferencia', 'Salida generada por la venta #118', '2026-08-12 03:36:06', NULL),
+(86, '2026-08-12 13:29:11', '2026-08-12 13:29:11', 1, 31, NULL, 10.000, 1.00, 5, 10.000, 1, 'Compra', NULL, '2026-08-12 18:29:11', NULL),
+(87, '2026-08-12 13:30:20', '2026-08-12 13:30:20', 1, 31, NULL, 5.000, 1.00, 5, 15.000, 1, 'Compra', NULL, '2026-08-12 18:30:20', NULL),
+(88, '2026-08-12 14:03:31', '2026-08-12 14:03:31', 1, 31, 28, 1.000, 1.00, 10, 14.000, 0, 'Salida por venta', 'Salida generada por la venta #119', '2026-08-12 19:03:31', NULL),
+(89, '2026-08-12 14:11:53', '2026-08-12 14:11:53', 1, 31, 29, 1.000, 6.00, 60, 13.000, 0, 'Salida por venta', 'Salida generada por la venta #122', '2026-08-12 19:11:53', NULL),
+(90, '2026-08-12 14:27:58', '2026-08-12 14:27:58', 2, 34, 23, 1.000, 1.00, 10, 9.000, 0, 'Salida por venta', 'Salida generada por la venta #129', '2026-08-12 19:27:58', NULL),
+(91, '2026-08-12 14:28:23', '2026-08-12 14:28:23', 2, 34, 23, 1.000, 1.00, 10, 8.000, 0, 'Salida por venta', 'Salida generada por la venta #130', '2026-08-12 19:28:23', NULL),
+(92, '2026-08-12 14:44:56', '2026-08-12 14:44:56', 1, 31, 29, 1.000, 6.00, 60, 12.000, 0, 'Salida por venta', 'Salida generada por la venta #131', '2026-08-12 19:44:56', NULL),
+(93, '2026-08-12 14:45:13', '2026-08-12 14:45:13', 1, 31, 29, 1.000, 6.00, 60, 11.000, 0, 'Salida por venta', 'Salida generada por la venta #132', '2026-08-12 19:45:13', NULL),
+(94, '2026-08-18 00:20:01', '2026-08-18 00:20:01', 1, 33, 36, 1.000, 1.00, 34, 58.000, 0, 'Salida por venta', 'Salida generada por la venta #133', '2026-08-18 05:20:01', NULL),
+(95, '2026-08-18 00:25:19', '2026-08-18 00:25:19', 1, 33, 36, 1.000, 1.00, 34, 57.000, 0, 'Salida por venta', 'Salida generada por la venta #134', '2026-08-18 05:25:19', NULL),
+(96, '2026-08-18 00:29:25', '2026-08-18 00:29:25', 1, 33, 36, 1.000, 1.00, 34, 56.000, 0, 'Salida por venta', 'Salida generada por la venta #135', '2026-08-18 05:29:25', NULL);
 
 -- --------------------------------------------------------
 
@@ -1506,7 +1618,24 @@ INSERT INTO `login_historial` (`idhistorial`, `idusuario`, `ip`, `user_agent`, `
 (48, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 12:58:20', 0, '2026-08-11 18:07:27'),
 (49, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:07:31', 0, '2026-08-11 18:09:53'),
 (50, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:09:57', 0, '2026-08-11 18:26:00'),
-(51, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:26:04', 1, NULL);
+(51, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-11 13:26:04', 1, NULL),
+(52, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-12 08:18:45', 1, NULL),
+(53, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-13 04:05:38', 1, NULL),
+(54, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-14 04:31:28', 0, '2026-08-17 19:06:31'),
+(55, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:06:35', 0, '2026-08-17 19:20:12'),
+(56, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:20:14', 0, '2026-08-17 19:20:27'),
+(57, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:20:35', 0, '2026-08-17 19:24:16'),
+(58, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:24:24', 0, '2026-08-17 19:24:32'),
+(59, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:24:34', 0, '2026-08-17 19:25:52'),
+(60, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:25:59', 0, '2026-08-17 19:27:33'),
+(61, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:27:35', 0, '2026-08-17 19:32:08'),
+(62, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:32:14', 0, '2026-08-17 19:32:23'),
+(63, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 14:32:25', 0, '2026-08-17 23:43:03'),
+(64, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 18:43:06', 0, '2026-08-17 23:43:14'),
+(65, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 18:43:24', 0, '2026-08-17 23:44:35'),
+(66, 1, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 18:44:38', 0, '2026-08-17 23:44:49'),
+(67, 2, '::1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 18:44:56', 0, '2026-08-17 23:53:35'),
+(68, 1, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36', '2026-08-17 18:53:37', 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -1578,7 +1707,7 @@ CREATE TABLE `movimiento` (
   `totalefectivo` decimal(11,2) NOT NULL,
   `formapago` varchar(50) COLLATE utf8mb3_spanish_ci NOT NULL,
   `totaldeposito` decimal(10,2) NOT NULL,
-  `noperacion` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci DEFAULT NULL,
+  `noperacion` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `descripcion` text COLLATE utf8mb3_spanish_ci NOT NULL,
   `idconcepto_movimiento` int DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -1819,10 +1948,10 @@ INSERT INTO `persona` (`idpersona`, `created_at`, `updated_at`, `tipo_persona`, 
 (10, '2026-07-10 01:36:46', '2026-07-10 06:07:30', 'Cliente', 'Alis Huamanta Edquen', 'DNI', '71845256', 'Plaza de Armas de Tarapoto, Pl. Mayor 453, Tarapoto 22202, Peru', NULL, NULL, NULL, '-6.487595468705555', '-76.3601303100586', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
 (11, '2026-07-10 01:36:53', '2026-07-10 01:36:53', 'Cliente', 'ALIS HUAMANTA EDQUEN', 'DNI', '71845256', 'Ir. Lorenzo Morales c1, Tarapoto 22202, Peru', '956856625', 'alexhe406@gmail.com', NULL, '-6.480185084346602', '-76.3749584665141', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
 (12, '2026-07-10 01:37:02', '2026-07-10 01:37:02', 'Cliente', 'ALIS HUAMANTA EDQUEN', 'DNI', '71845256', 'Ir. Lorenzo Morales c1, Tarapoto 22202, Peru', '956856625', 'alexhe406@gmail.com', NULL, '-6.480185084346602', '-76.3749584665141', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
-(13, '2026-07-10 01:38:07', '2026-07-10 01:50:41', 'Cliente', 'FLOR EEDITH MARRUFO VASQUEZ', 'DNI', '71845223', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
-(14, '2026-07-10 01:39:18', '2026-07-10 06:06:59', 'Cliente', 'FLORR EDITH MARRUFO VASQUEZ', 'DNI', '71845223', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
-(15, '2026-07-14 15:17:45', '2026-07-14 22:17:45', 'Cliente', 'FLORR EDITH MARRUFO VASQUEZ', 'DNI', '71845223', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
-(16, '2026-07-14 15:18:02', '2026-07-24 00:11:49', 'Cliente', 'Alis Huamanta Edquen', 'DNI', '71845256', 'Plaza de Armas de Tarapoto, Pl. Mayor 453, Tarapoto 22202, Peru', '999', NULL, NULL, '-6.487595468705555', '-76.3601303100586', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
+(13, '2026-07-10 01:38:07', '2026-07-10 01:50:41', 'Cliente', 'FLOR EEDITH MARRUFO VASQUEZ', 'DNI', '20718452231', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
+(14, '2026-07-10 01:39:18', '2026-07-10 06:06:59', 'Cliente', 'FLORR EDITH MARRUFO VASQUEZ', 'DNI', '20718452231', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
+(15, '2026-07-14 15:17:45', '2026-07-14 22:17:45', 'Cliente', 'FLORR EDITH MARRUFO VASQUEZ', 'DNI', '20718452231', 'FMX2+MX8, Tarapoto 22202, Peru', '993598356', 'qwqeqeqwe@gmail.com', NULL, '-6.500762691370645', '-76.34742737340275', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
+(16, '2026-07-14 15:18:02', '2026-07-24 00:11:49', 'Cliente', 'Alis Huamanta Edquen', 'DNI', '10718452568', 'Plaza de Armas de Tarapoto, Pl. Mayor 453, Tarapoto 22202, Peru', '999', NULL, NULL, '-6.487595468705555', '-76.3601303100586', NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
 (17, '2026-07-23 15:44:23', '2026-07-23 16:09:55', 'Proveedor', 'HUAMANTA EDQUEN ALIS SAC', 'RUC', '10718452568', 'Plaza de Nueva cajamarca Pl. Mayor 453, Tarapoto 22202, Peru', '956856625', 'alexhe406@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
 (18, '2026-07-23 16:15:01', '2026-07-27 23:28:36', 'Proveedor', 'COCA COLA COMPANY', 'RUC', '20232565895', 'Plaza de Nueva cajamarca Pl. Mayor 453, Tarapoto 22202, Peru', '933216752', 'wegerg@gmail.com', NULL, NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL),
 (19, '2026-07-27 17:40:13', '2026-07-27 17:40:13', 'Cliente', 'VICENTE FERNANDEZ', 'DNI', '70256589', 'Plaza de Nueva cajamarca Pl. Mayor 453, Tarapoto 22202, Peru', '937485661', 'fsdfsf@gmail.com', '2026-07-27', NULL, NULL, NULL, NULL, NULL, 0, NULL, NULL, NULL, NULL);
@@ -1844,7 +1973,7 @@ CREATE TABLE `personal` (
   `telefono` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `email` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `cargo` varchar(20) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
-  `imagen` varchar(50) CHARACTER SET utf8mb3 COLLATE utf8mb3_spanish_ci DEFAULT 'user.png',
+  `imagen` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT 'user.png',
   `porcentaje` decimal(11,2) DEFAULT NULL,
   `salario` decimal(11,2) DEFAULT NULL,
   `condicion` tinyint(1) NOT NULL,
@@ -1859,7 +1988,8 @@ INSERT INTO `personal` (`created_at`, `updated_at`, `idpersonal`, `nombre`, `tip
 ('2026-07-10 22:17:51', '2026-07-11 03:19:41', 1, 'Alis Huamanta', 'DNI', '71845256', NULL, NULL, NULL, 'Administrador', NULL, 0.00, NULL, 1, NULL),
 ('2026-07-11 03:18:25', '2026-08-06 05:18:33', 2, 'Juan Diego Rodriguez Dias', 'DNI', '75485625', 'Ir. Lorenzo Morales c1, Tarapoto 22202, Peru', '956585656', 'wwgwg@gmail.com', 'Vendedor', 'user.png', 0.00, 1500.00, 1, NULL),
 ('2026-08-06 05:20:35', '2026-08-06 05:25:02', 3, 'Ricardo Rodriguez Diaz', 'DNI', '71545856', 'Ir. Lorenzo Morales c1, Tarapoto 22202, Peru', '956856625', 'alexhe406@gmail.com', 'Vendedor', '1785993902.webp', 0.00, 1500.00, 1, NULL),
-('2026-08-06 05:40:08', '2026-08-06 05:40:08', 4, 'asfasgs', 'DNI', '85475452', 'Plaza de Nueva cajamarca Pl. Mayor 453, Tarapoto 22202, Peru', '993598356', 'dhrr44@gmail.com', 'Tecnico', 'user.png', 0.00, 1800.00, 1, NULL);
+('2026-08-06 05:40:08', '2026-08-06 05:40:08', 4, 'asfasgs', 'DNI', '85475452', 'Plaza de Nueva cajamarca Pl. Mayor 453, Tarapoto 22202, Peru', '993598356', 'dhrr44@gmail.com', 'Tecnico', 'user.png', 0.00, 1800.00, 1, NULL),
+('2026-08-13 18:20:25', '2026-08-13 18:20:25', 5, 'Julio Jaramillo Diaz', 'DNI', '72545685', 'Plaza de Armas de Tarapoto, Pl. Mayor 453, Tarapoto 22202, Peru', '968458125', 'alexhe406@gmail.com', 'Transportista', 'user.png', 0.00, 1600.00, 1, NULL);
 
 -- --------------------------------------------------------
 
@@ -1901,6 +2031,7 @@ CREATE TABLE `producto` (
   `controla_stock` enum('Si','No') COLLATE utf8mb3_spanish_ci NOT NULL DEFAULT 'Si',
   `requiere_serie` tinyint(1) NOT NULL DEFAULT '0',
   `alerta_stock` enum('Si','No') COLLATE utf8mb3_spanish_ci NOT NULL DEFAULT 'Si',
+  `is_venta_lote` tinyint(1) NOT NULL DEFAULT '0',
   `proigv` varchar(50) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `percha` varchar(100) COLLATE utf8mb3_spanish_ci DEFAULT NULL,
   `comisionV` decimal(11,2) DEFAULT NULL,
@@ -1912,33 +2043,33 @@ CREATE TABLE `producto` (
 -- Dumping data for table `producto`
 --
 
-INSERT INTO `producto` (`created_at`, `updated_at`, `idproducto`, `idsucursal`, `idcategoria`, `idunidad_medida`, `idrubro`, `idcondicionventa`, `idmarca`, `idmodelo`, `tipo_producto`, `registrosan`, `codigo`, `nombre`, `precio`, `precioB`, `precioC`, `precioD`, `precioE`, `margenpubl`, `margendes`, `margenp1`, `margenp2`, `margendist`, `utilprecio`, `preciocigv`, `fecha`, `descripcion`, `imagen`, `condicion`, `controla_stock`, `requiere_serie`, `alerta_stock`, `proigv`, `percha`, `comisionV`, `fechac`, `deleted_at`) VALUES
-('2026-07-10 22:43:19', '2026-07-11 07:59:46', 1, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
-('2026-07-10 23:59:19', '2026-07-11 07:59:50', 4, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026002', 'NUEVA CAJAMARCA', 9000.00, 1.00, 0.00, 0.00, 0.00, 28.57, 32.86, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'Plato norteño', 'anonymous.png', 1, 'No', 0, 'No', 'No Gravada', NULL, 0.00, '2026-07-11 04:59:19', NULL),
-('2026-07-11 00:05:59', '2026-07-11 08:06:46', 5, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '1', '2026007', 'Moto CB 150 XR', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, 50.00, -99.98, -99.98, -99.98, 3000.00, 0.00, NULL, 'DFNDMGM', 'DFNDMGM', 1, 'No', 0, 'No', '', NULL, 1.00, '2026-07-11 05:05:59', NULL),
-('2026-07-11 00:06:34', '2026-07-11 08:08:48', 8, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
-('2026-07-11 22:06:38', '2026-07-11 22:06:38', 12, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
-('2026-07-12 00:25:12', '2026-07-12 00:25:12', 13, 2, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026002', 'NUEVA CAJAMARCA', 9000.00, 1.00, 0.00, 0.00, 0.00, 28.57, 32.86, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'Plato norteño', 'anonymous.png', 1, 'No', 0, 'No', 'No Gravada', NULL, 0.00, '2026-07-11 04:59:19', NULL),
-('2026-07-12 09:02:33', '2026-07-12 09:02:33', 14, 2, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
-('2026-07-12 23:37:03', '2026-07-12 23:37:03', 15, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '1', '2026007', 'Moto CB 150 XR', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, 50.00, -99.98, -99.98, -99.98, 3000.00, 0.00, NULL, 'DFNDMGM', 'DFNDMGM', 1, 'No', 0, 'No', '', NULL, 1.00, '2026-07-11 05:05:59', NULL),
-('2026-07-12 23:37:51', '2026-07-12 23:37:51', 16, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
-('2026-07-12 23:40:57', '2026-07-12 23:40:57', 17, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
-('2026-07-12 23:55:19', '2026-07-12 23:55:19', 18, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
-('2026-07-13 00:00:51', '2026-07-13 00:00:51', 19, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
-('2026-07-13 00:10:37', '2026-07-13 00:10:37', 22, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
-('2026-07-13 11:45:23', '2026-07-13 11:45:23', 23, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
-('2026-07-13 13:24:27', '2026-07-13 13:24:27', 24, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
-('2026-07-16 09:06:39', '2026-07-16 09:06:39', 25, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026009', 'MOTO NS 200 BAJAJ', 11000.00, 1.00, 0.00, 0.00, 0.00, 37.50, 43.75, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'JTDJ', 'anonymous.png', 1, 'No', 0, 'No', 'Gravada', NULL, 0.00, '2026-07-16 14:06:39', NULL),
-('2026-07-16 10:20:56', '2026-08-11 20:22:30', 26, 1, 1, 1, 1, 4, 1, 1, 'Vehiculo', '', '2026010', 'GL-125 REACH', 6000.00, 1.00, 0.00, 0.00, 0.00, 50.00, 50.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'No', 'No Gravada', NULL, 0.00, '2026-07-16 15:20:56', NULL),
-('2026-07-16 22:24:01', '2026-07-16 22:24:01', 27, 1, 1, 1, 1, 4, 1, 1, 'Vehiculo', '', '2026011', 'MOTO LINEAL NUEV', 6000.00, 1.00, 0.00, 0.00, 0.00, 20.00, 20.00, -100.00, -100.00, -100.00, 1000.00, 0.00, NULL, 'erg', 'anonymous.png', 1, 'No', 0, 'No', 'Gravada', NULL, 0.00, '2026-07-17 03:24:01', NULL),
-('2026-07-16 23:03:41', '2026-07-16 23:03:41', 28, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
-('2026-07-16 23:03:41', '2026-07-16 23:03:41', 29, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
-('2026-07-23 10:26:20', '2026-08-09 20:17:03', 31, 1, 3, 1, 2, 4, 1, 1, 'Producto', '', '2026012', 'Camara para m300', 10.00, 0.00, 1.00, 1.00, 1.00, 100.00, 100.00, -100.00, -100.00, -100.00, 5.00, 0.00, NULL, 'ergerh', 'anonymous.png', 1, 'Si', 0, 'Si', 'Gravada', NULL, 1.00, '2026-07-23 15:26:20', NULL),
-('2026-07-27 17:21:00', '2026-08-05 21:45:52', 32, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026013', 'MOTO LINEAL HIUNDAT 200', 7000.00, 1.00, 1.00, 1.00, 1.00, 40.00, 40.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'owejfpwjefpioew', '1785984353.webp', 1, 'No', 0, 'No', 'Gravada', NULL, 1.00, '2026-07-27 22:21:00', NULL),
-('2026-08-02 08:17:56', '2026-08-11 20:27:11', 33, 1, 3, 1, 2, 1, 1, 1, 'Producto', '', '2026014', 'ANILLOS PARA CB190', 34.00, 0.00, 1.00, 1.00, 1.00, 75.00, 75.00, -100.00, -100.00, -100.00, 15.00, 0.00, NULL, 'jtykyukyuk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 1.00, '2026-08-02 13:17:56', NULL),
-('2026-08-02 09:05:09', '2026-08-02 09:05:09', 34, 2, 3, 1, 2, 4, 1, 1, 'Producto', '', '2026012', 'Camara para m300', 10.00, 1.00, 1.00, 1.00, 1.00, 100.00, 100.00, -100.00, -100.00, -100.00, 5.00, 0.00, NULL, 'ergerh', 'anonymous.png', 1, 'Si', 0, 'Si', 'Gravada', NULL, 1.00, '2026-07-23 15:26:20', NULL),
-('2026-08-02 09:12:06', '2026-08-02 09:12:06', 35, 2, 3, 1, 2, 1, 1, 1, 'Producto', '', '2026014', 'ANILLOS PARA CB190', 35.00, 1.00, 1.00, 1.00, 1.00, 75.00, 75.00, -100.00, -100.00, -100.00, 15.00, 0.00, NULL, 'jtykyukyuk', 'anonymous.png', 1, 'Si', 0, 'Si', 'No Gravada', NULL, 1.00, '2026-08-02 13:17:56', NULL),
-('2026-08-06 00:37:10', '2026-08-06 00:37:10', 36, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026015', 'UGIYYIYGGYI', 1000.00, 1.00, 0.00, 0.00, 0.00, 0.00, 70.00, -100.00, -100.00, -100.00, 0.00, 0.00, NULL, NULL, 'anonymous.png', 1, 'No', 0, 'No', 'No Gravada', NULL, 0.00, '2026-08-06 05:37:10', NULL);
+INSERT INTO `producto` (`created_at`, `updated_at`, `idproducto`, `idsucursal`, `idcategoria`, `idunidad_medida`, `idrubro`, `idcondicionventa`, `idmarca`, `idmodelo`, `tipo_producto`, `registrosan`, `codigo`, `nombre`, `precio`, `precioB`, `precioC`, `precioD`, `precioE`, `margenpubl`, `margendes`, `margenp1`, `margenp2`, `margendist`, `utilprecio`, `preciocigv`, `fecha`, `descripcion`, `imagen`, `condicion`, `controla_stock`, `requiere_serie`, `alerta_stock`, `is_venta_lote`, `proigv`, `percha`, `comisionV`, `fechac`, `deleted_at`) VALUES
+('2026-07-10 22:43:19', '2026-07-11 07:59:46', 1, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
+('2026-07-10 23:59:19', '2026-07-11 07:59:50', 4, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026002', 'NUEVA CAJAMARCA', 9000.00, 1.00, 0.00, 0.00, 0.00, 28.57, 32.86, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'Plato norteño', 'anonymous.png', 1, 'No', 0, 'No', 0, 'No Gravada', NULL, 0.00, '2026-07-11 04:59:19', NULL),
+('2026-07-11 00:05:59', '2026-07-11 08:06:46', 5, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '1', '2026007', 'Moto CB 150 XR', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, 50.00, -99.98, -99.98, -99.98, 3000.00, 0.00, NULL, 'DFNDMGM', 'DFNDMGM', 1, 'No', 0, 'No', 0, '', NULL, 1.00, '2026-07-11 05:05:59', NULL),
+('2026-07-11 00:06:34', '2026-07-11 08:08:48', 8, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
+('2026-07-11 22:06:38', '2026-07-11 22:06:38', 12, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
+('2026-07-12 00:25:12', '2026-07-12 00:25:12', 13, 2, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026002', 'NUEVA CAJAMARCA', 9000.00, 1.00, 0.00, 0.00, 0.00, 28.57, 32.86, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'Plato norteño', 'anonymous.png', 1, 'No', 0, 'No', 0, 'No Gravada', NULL, 0.00, '2026-07-11 04:59:19', NULL),
+('2026-07-12 09:02:33', '2026-07-12 09:02:33', 14, 2, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
+('2026-07-12 23:37:03', '2026-07-12 23:37:03', 15, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '1', '2026007', 'Moto CB 150 XR', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, 50.00, -99.98, -99.98, -99.98, 3000.00, 0.00, NULL, 'DFNDMGM', 'DFNDMGM', 1, 'No', 0, 'No', 0, '', NULL, 1.00, '2026-07-11 05:05:59', NULL),
+('2026-07-12 23:37:51', '2026-07-12 23:37:51', 16, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
+('2026-07-12 23:40:57', '2026-07-12 23:40:57', 17, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
+('2026-07-12 23:55:19', '2026-07-12 23:55:19', 18, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
+('2026-07-13 00:00:51', '2026-07-13 00:00:51', 19, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
+('2026-07-13 00:10:37', '2026-07-13 00:10:37', 22, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
+('2026-07-13 11:45:23', '2026-07-13 11:45:23', 23, 2, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
+('2026-07-13 13:24:27', '2026-07-13 13:24:27', 24, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026001', 'MOTOCICLETA LINEAL HONDA GL 125', 7000.00, 8000.00, 0.00, 0.00, 0.00, 40.00, 60.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'FJFGJ', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'Gravada', NULL, 0.00, '2026-07-02 03:04:40', NULL),
+('2026-07-16 09:06:39', '2026-07-16 09:06:39', 25, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026009', 'MOTO NS 200 BAJAJ', 11000.00, 1.00, 0.00, 0.00, 0.00, 37.50, 43.75, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'JTDJ', 'anonymous.png', 1, 'No', 0, 'No', 0, 'Gravada', NULL, 0.00, '2026-07-16 14:06:39', NULL),
+('2026-07-16 10:20:56', '2026-08-11 20:22:30', 26, 1, 1, 1, 1, 4, 1, 1, 'Vehiculo', '', '2026010', 'GL-125 REACH', 6000.00, 1.00, 0.00, 0.00, 0.00, 50.00, 50.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'No', 0, 'No Gravada', NULL, 0.00, '2026-07-16 15:20:56', NULL),
+('2026-07-16 22:24:01', '2026-07-16 22:24:01', 27, 1, 1, 1, 1, 4, 1, 1, 'Vehiculo', '', '2026011', 'MOTO LINEAL NUEV', 6000.00, 1.00, 0.00, 0.00, 0.00, 20.00, 20.00, -100.00, -100.00, -100.00, 1000.00, 0.00, NULL, 'erg', 'anonymous.png', 1, 'No', 0, 'No', 0, 'Gravada', NULL, 0.00, '2026-07-17 03:24:01', NULL),
+('2026-07-16 23:03:41', '2026-07-16 23:03:41', 28, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026003', 'MOTO XR190', 9000.00, 1.00, 1.00, 1.00, 1.00, 50.00, -99.98, -100.00, -100.00, -100.00, 3000.00, 0.00, NULL, 'DFNDMGM', 'anonymous.png', 1, 'No', 0, 'Si', 0, 'No Gravada', NULL, 1.00, '2026-07-11 05:06:34', NULL),
+('2026-07-16 23:03:41', '2026-07-16 23:03:41', 29, 1, 1, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026008', 'MOTO WAVE 110', 4000.00, 1.00, 0.00, 0.00, 0.00, 60.00, 60.00, -100.00, -100.00, -100.00, 1500.00, 0.00, NULL, 'fgjfdjdtktyk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 0.00, '2026-07-13 04:40:57', NULL),
+('2026-07-23 10:26:20', '2026-08-09 20:17:03', 31, 1, 3, 1, 2, 4, 1, 1, 'Producto', '', '2026012', 'Camara para m300', 10.00, 0.00, 1.00, 1.00, 1.00, 100.00, 100.00, -100.00, -100.00, -100.00, 5.00, 0.00, NULL, 'ergerh', 'anonymous.png', 1, 'Si', 0, 'Si', 1, 'No Gravada', NULL, 1.00, '2026-07-23 15:26:20', NULL),
+('2026-07-27 17:21:00', '2026-08-05 21:45:52', 32, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026013', 'MOTO LINEAL HIUNDAT 200', 7000.00, 1.00, 1.00, 1.00, 1.00, 40.00, 40.00, -100.00, -100.00, -100.00, 2000.00, 0.00, NULL, 'owejfpwjefpioew', '1785984353.webp', 1, 'No', 0, 'No', 0, 'Gravada', NULL, 1.00, '2026-07-27 22:21:00', NULL),
+('2026-08-02 08:17:56', '2026-08-11 20:27:11', 33, 1, 3, 1, 2, 1, 1, 1, 'Producto', '', '2026014', 'ANILLOS PARA CB190', 34.00, 0.00, 1.00, 1.00, 1.00, 75.00, 75.00, -100.00, -100.00, -100.00, 15.00, 0.00, NULL, 'jtykyukyuk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 1.00, '2026-08-02 13:17:56', NULL),
+('2026-08-02 09:05:09', '2026-08-02 09:05:09', 34, 2, 3, 1, 2, 4, 1, 1, 'Producto', '', '2026012', 'Camara para m300', 10.00, 1.00, 1.00, 1.00, 1.00, 100.00, 100.00, -100.00, -100.00, -100.00, 5.00, 0.00, NULL, 'ergerh', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'Gravada', NULL, 1.00, '2026-07-23 15:26:20', NULL),
+('2026-08-02 09:12:06', '2026-08-02 09:12:06', 35, 2, 3, 1, 2, 1, 1, 1, 'Producto', '', '2026014', 'ANILLOS PARA CB190', 35.00, 1.00, 1.00, 1.00, 1.00, 75.00, 75.00, -100.00, -100.00, -100.00, 15.00, 0.00, NULL, 'jtykyukyuk', 'anonymous.png', 1, 'Si', 0, 'Si', 0, 'No Gravada', NULL, 1.00, '2026-08-02 13:17:56', NULL),
+('2026-08-06 00:37:10', '2026-08-06 00:37:10', 36, 1, 2, 1, 1, 1, 1, 1, 'Vehiculo', '', '2026015', 'UGIYYIYGGYI', 1000.00, 1.00, 0.00, 0.00, 0.00, 0.00, 70.00, -100.00, -100.00, -100.00, 0.00, 0.00, NULL, NULL, 'anonymous.png', 1, 'No', 0, 'No', 0, 'No Gravada', NULL, 0.00, '2026-08-06 05:37:10', NULL);
 
 -- --------------------------------------------------------
 
@@ -2355,7 +2486,7 @@ CREATE TABLE `seguimiento_clientes` (
   `idcpc` int DEFAULT NULL,
   `idcliente` int DEFAULT NULL,
   `idpersonal` int NOT NULL,
-  `tipo` enum('LLAMADA','VISITA','WHATSAPP','CORREO','COBRANZA','SUSTENTO','OTRO','REUNION') CHARACTER SET utf32 COLLATE utf32_spanish_ci NOT NULL,
+  `tipo` enum('LLAMADA','VISITA','WHATSAPP','CORREO','COBRANZA','SUSTENTO','OTRO','REUNION') COLLATE utf32_spanish_ci NOT NULL,
   `descripcion` text COLLATE utf32_spanish_ci,
   `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP,
   `fecha_proxima` datetime DEFAULT NULL,
@@ -2479,7 +2610,7 @@ CREATE TABLE `solicitud_evaluacion` (
   `inicial_validada` decimal(12,2) DEFAULT NULL,
   `score_manual` int DEFAULT NULL,
   `observacion` text COLLATE utf32_spanish_ci,
-  `notas_comite` varchar(200) CHARACTER SET utf32 COLLATE utf32_spanish_ci DEFAULT NULL,
+  `notas_comite` varchar(200) COLLATE utf32_spanish_ci DEFAULT NULL,
   `fecha_registro` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
@@ -2541,28 +2672,6 @@ INSERT INTO `solicitud_workflow` (`idworkflow`, `idsolicitud`, `idpaso`, `fecha_
 (28, 10, 3, '2026-08-06 13:51:46', '2026-08-06 13:51:53', 'APROBADO', 'Documentación aprobada', 1),
 (29, 10, 4, '2026-08-06 13:51:53', '2026-08-06 13:52:07', 'APROBADO', 'Verificacion domiciliaria: CONFORME. ', 1),
 (30, 10, 5, '2026-08-06 13:52:07', '2026-08-06 18:52:07', 'APROBADO', 'Enviado a aprobación final', 1);
-
--- --------------------------------------------------------
-
---
--- Table structure for table `stock_fifo`
---
-
-CREATE TABLE `stock_fifo` (
-  `idfifo` int NOT NULL,
-  `idsucursal` int NOT NULL,
-  `idproducto` int NOT NULL,
-  `producto_configuracion_id` int DEFAULT NULL,
-  `origen` enum('ALMACEN','COMPRA') NOT NULL,
-  `referencia_id` int DEFAULT NULL,
-  `cantidad_ingreso` decimal(11,2) NOT NULL,
-  `cantidad_restante` decimal(11,2) NOT NULL,
-  `precio_compra` decimal(11,2) NOT NULL,
-  `precio_venta` decimal(11,2) NOT NULL,
-  `fecha_ingreso` datetime NOT NULL,
-  `estado` tinyint DEFAULT '1',
-  `fvencimiento` date DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
 
@@ -2690,6 +2799,7 @@ CREATE TABLE `sucursal_configuracion` (
   `dias_anticipacion` int DEFAULT '0',
   `is_send_sunat` tinyint(1) DEFAULT '0',
   `is_calculo_mes` tinyint(1) NOT NULL DEFAULT '0',
+  `is_venta_lotes` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL
@@ -2699,9 +2809,9 @@ CREATE TABLE `sucursal_configuracion` (
 -- Dumping data for table `sucursal_configuracion`
 --
 
-INSERT INTO `sucursal_configuracion` (`idsucursal_configuracion`, `idsucursal`, `is_refinanciamiento`, `maximo_refinanciamientos`, `is_mora_credito`, `valor_mora_credito`, `is_notificacion`, `dias_gracia`, `interes_defecto`, `is_descuento_anticipado`, `valor_descuento_anticipado`, `dias_anticipacion`, `is_send_sunat`, `is_calculo_mes`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 1, 1, 1, 1.00, 1, 0, 10.00, 1, 1.00, 2, 0, 1, '2026-07-16 15:59:49', '2026-08-09 02:42:23', NULL),
-(2, 2, 0, 1, 0, 0.00, 0, 0, 10.00, 0, 1.00, 0, 0, 0, '2026-07-16 15:59:49', NULL, NULL);
+INSERT INTO `sucursal_configuracion` (`idsucursal_configuracion`, `idsucursal`, `is_refinanciamiento`, `maximo_refinanciamientos`, `is_mora_credito`, `valor_mora_credito`, `is_notificacion`, `dias_gracia`, `interes_defecto`, `is_descuento_anticipado`, `valor_descuento_anticipado`, `dias_anticipacion`, `is_send_sunat`, `is_calculo_mes`, `is_venta_lotes`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 1, 1, 1, 1, 1.00, 1, 0, 10.00, 1, 1.00, 2, 0, 1, 1, '2026-07-16 15:59:49', '2026-08-09 02:42:23', NULL),
+(2, 2, 0, 1, 0, 0.00, 0, 0, 10.00, 0, 1.00, 0, 0, 0, 0, '2026-07-16 15:59:49', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -4999,16 +5109,20 @@ CREATE TABLE `usuario` (
   `idsucursal` int DEFAULT NULL,
   `condicion` tinyint(1) NOT NULL DEFAULT '1',
   `reset_token` varchar(64) DEFAULT NULL,
-  `reset_expira` datetime DEFAULT NULL
+  `reset_expira` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
 -- Dumping data for table `usuario`
 --
 
-INSERT INTO `usuario` (`idusuario`, `idpersonal`, `login`, `clave`, `superusuario`, `idsucursal`, `condicion`, `reset_token`, `reset_expira`) VALUES
-(1, 1, 'admin', '7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358', 1, NULL, 1, NULL, NULL),
-(2, 2, 'juan', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 0, NULL, 1, NULL, NULL);
+INSERT INTO `usuario` (`idusuario`, `idpersonal`, `login`, `clave`, `superusuario`, `idsucursal`, `condicion`, `reset_token`, `reset_expira`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 1, 'admin', '7676aaafb027c825bd9abab78b234070e702752f625b752e55e55b48e607e358', 1, NULL, 1, NULL, NULL, '2026-08-17 20:15:31', NULL, NULL),
+(2, 2, 'juan', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 0, NULL, 1, NULL, NULL, '2026-08-17 20:15:31', NULL, NULL),
+(4, 3, 'ricardo', '8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92', 0, NULL, 1, NULL, NULL, '2026-08-17 20:21:01', '2026-08-17 23:35:23', NULL);
 
 -- --------------------------------------------------------
 
@@ -5017,29 +5131,38 @@ INSERT INTO `usuario` (`idusuario`, `idpersonal`, `login`, `clave`, `superusuari
 --
 
 CREATE TABLE `usuario_accion` (
+  `idusuario_accion` int NOT NULL,
   `idusuario` int NOT NULL,
-  `idaccion_permiso` int NOT NULL
+  `idaccion_permiso` int NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_spanish_ci;
 
 --
 -- Dumping data for table `usuario_accion`
 --
 
-INSERT INTO `usuario_accion` (`idusuario`, `idaccion_permiso`) VALUES
-(2, 16),
-(1, 33),
-(2, 36),
-(1, 37),
-(2, 37),
-(2, 38),
-(1, 39),
-(1, 42),
-(2, 42),
-(1, 43),
-(2, 43),
-(2, 44),
-(2, 45),
-(2, 46);
+INSERT INTO `usuario_accion` (`idusuario_accion`, `idusuario`, `idaccion_permiso`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, 1, 33, '2026-08-17 20:18:31', NULL, NULL),
+(2, 1, 37, '2026-08-17 20:18:31', NULL, NULL),
+(3, 1, 39, '2026-08-17 20:18:31', NULL, NULL),
+(4, 1, 42, '2026-08-17 20:18:31', NULL, NULL),
+(5, 1, 43, '2026-08-17 20:18:31', NULL, NULL),
+(6, 2, 16, '2026-08-17 20:18:31', NULL, NULL),
+(7, 2, 36, '2026-08-17 20:18:31', NULL, NULL),
+(8, 2, 37, '2026-08-17 20:18:31', NULL, NULL),
+(9, 2, 38, '2026-08-17 20:18:31', NULL, NULL),
+(10, 2, 42, '2026-08-17 20:18:31', NULL, NULL),
+(11, 2, 43, '2026-08-17 20:18:31', NULL, NULL),
+(12, 2, 44, '2026-08-17 20:18:31', NULL, NULL),
+(13, 2, 45, '2026-08-17 20:18:31', NULL, NULL),
+(14, 2, 46, '2026-08-17 20:18:31', NULL, NULL),
+(15, 4, 42, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL),
+(16, 4, 43, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL),
+(17, 4, 44, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL),
+(18, 4, 45, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL),
+(19, 4, 46, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL);
 
 -- --------------------------------------------------------
 
@@ -5051,38 +5174,46 @@ CREATE TABLE `usuario_permiso` (
   `idusuario_permiso` int NOT NULL,
   `idusuario` int NOT NULL,
   `idpermiso` int DEFAULT NULL,
-  `idsubpermiso` int DEFAULT NULL
+  `idsubpermiso` int DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3;
 
 --
 -- Dumping data for table `usuario_permiso`
 --
 
-INSERT INTO `usuario_permiso` (`idusuario_permiso`, `idusuario`, `idpermiso`, `idsubpermiso`) VALUES
-(71, 1, 1, NULL),
-(72, 1, 2, NULL),
-(73, 1, 3, NULL),
-(74, 1, 4, NULL),
-(75, 1, 1, 1),
-(76, 1, 1, 2),
-(77, 1, 1, 5),
-(78, 1, 2, 7),
-(79, 1, 3, 49),
-(80, 1, 4, 12),
-(81, 1, 13, 35),
-(82, 1, 13, 36),
-(83, 1, 13, 37),
-(84, 1, 13, 50),
-(85, 1, 13, 51),
-(93, 2, 1, NULL),
-(94, 2, 2, NULL),
-(95, 2, 3, NULL),
-(96, 2, 12, NULL),
-(97, 2, 1, 1),
-(98, 2, 1, 2),
-(99, 2, 2, 8),
-(100, 2, 3, 49),
-(101, 2, 12, 32);
+INSERT INTO `usuario_permiso` (`idusuario_permiso`, `idusuario`, `idpermiso`, `idsubpermiso`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(71, 1, 1, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(72, 1, 2, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(73, 1, 3, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(74, 1, 4, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(75, 1, 1, 1, '2026-08-17 20:17:04', NULL, NULL),
+(76, 1, 1, 2, '2026-08-17 20:17:04', NULL, NULL),
+(77, 1, 1, 5, '2026-08-17 20:17:04', NULL, NULL),
+(78, 1, 2, 7, '2026-08-17 20:17:04', NULL, NULL),
+(79, 1, 3, 49, '2026-08-17 20:17:04', NULL, NULL),
+(80, 1, 4, 12, '2026-08-17 20:17:04', NULL, NULL),
+(81, 1, 13, 35, '2026-08-17 20:17:04', NULL, NULL),
+(82, 1, 13, 36, '2026-08-17 20:17:04', NULL, NULL),
+(83, 1, 13, 37, '2026-08-17 20:17:04', NULL, NULL),
+(84, 1, 13, 50, '2026-08-17 20:17:04', NULL, NULL),
+(85, 1, 13, 51, '2026-08-17 20:17:04', NULL, NULL),
+(93, 2, 1, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(94, 2, 2, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(95, 2, 3, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(96, 2, 12, NULL, '2026-08-17 20:17:04', NULL, NULL),
+(97, 2, 1, 1, '2026-08-17 20:17:04', NULL, NULL),
+(98, 2, 1, 2, '2026-08-17 20:17:04', NULL, NULL),
+(99, 2, 2, 8, '2026-08-17 20:17:04', NULL, NULL),
+(100, 2, 3, 49, '2026-08-17 20:17:04', NULL, NULL),
+(101, 2, 12, 32, '2026-08-17 20:17:04', NULL, NULL),
+(115, 4, 6, NULL, '2026-08-17 20:21:01', '2026-08-17 23:23:24', NULL),
+(116, 4, 6, 25, '2026-08-17 20:21:01', '2026-08-17 23:23:24', NULL),
+(117, 4, 6, 26, '2026-08-17 20:21:01', '2026-08-17 23:23:24', NULL),
+(118, 4, 3, NULL, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL),
+(119, 4, 3, 49, '2026-08-17 23:23:24', '2026-08-17 23:23:24', NULL);
 
 -- --------------------------------------------------------
 
@@ -5106,7 +5237,9 @@ CREATE TABLE `usuario_sucursal` (
 INSERT INTO `usuario_sucursal` (`idusuario_sucursal`, `idusuario`, `idsucursal`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (12, 1, 1, '2026-07-16 21:49:03', NULL, NULL),
 (13, 1, 2, '2026-07-16 21:49:03', NULL, NULL),
-(15, 2, 1, '2026-08-11 17:16:15', NULL, NULL);
+(15, 2, 1, '2026-08-11 17:16:15', NULL, NULL),
+(18, 4, 1, '2026-08-17 20:21:01', '2026-08-17 20:21:01', NULL),
+(19, 4, 2, '2026-08-17 20:21:01', '2026-08-17 20:21:01', NULL);
 
 -- --------------------------------------------------------
 
@@ -5218,7 +5351,16 @@ INSERT INTO `venta` (`idventa`, `idsucursal`, `idcaja`, `idcliente`, `idpersonal
 (115, 1, 1, 1, 1, 0, 1, 'NV00', '000036', '2026-08-11 21:40:24', 0.00, 35.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-11 21:40:24', 0, 35, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 02:40:24', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-11 21:40:24', '2026-08-11 21:40:24', NULL),
 (116, 1, 1, 14, 1, 0, 1, 'NV00', '000037', '2026-08-11 21:54:05', 0.00, 35.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-11 21:54:05', 0, 35, 0, NULL, 0, NULL, '30', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 02:54:05', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-11 21:54:05', '2026-08-11 21:54:05', NULL),
 (117, 1, 1, 19, 1, 0, 1, 'NV00', '000038', '2026-08-11 22:10:39', 0.00, 200.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-11 22:10:39', 0, 200, 0, NULL, 0, NULL, '32', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 03:10:39', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-11 22:10:39', '2026-08-11 22:10:39', NULL),
-(118, 1, 1, 19, 1, 0, 1, 'NV00', '000039', '2026-08-11 22:36:06', 0.00, 200.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-11 22:36:06', 0, 200, 0, NULL, 0, NULL, '31', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 03:36:06', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL);
+(118, 1, 1, 19, 1, 0, 1, 'NV00', '000039', '2026-08-11 22:36:06', 0.00, 200.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-11 22:36:06', 0, 200, 0, NULL, 0, NULL, '31', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 03:36:06', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL),
+(119, 1, 1, 1, 1, 0, 1, 'NV00', '000040', '2026-08-12 14:03:31', 1.53, 10.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:03:31', 0, 130, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:03:31', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:03:31', '2026-08-12 14:03:31', NULL),
+(122, 1, 1, 1, 1, 0, 1, 'NV00', '000041', '2026-08-12 14:11:53', 9.15, 60.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:11:53', 0, 60, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:11:53', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:11:53', '2026-08-12 14:11:53', NULL),
+(129, 2, 2, 1, 1, 0, 1, 'NV00', '000042', '2026-08-12 14:27:58', 1.53, 10.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:27:58', 0, 10, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:27:58', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:27:58', '2026-08-12 14:27:58', NULL),
+(130, 2, 2, 1, 1, 0, 1, 'NV00', '000043', '2026-08-12 14:28:23', 1.53, 10.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:28:23', 0, 10, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:28:23', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:28:23', '2026-08-12 14:28:23', NULL),
+(131, 1, 1, 1, 1, 0, 1, 'NV00', '000044', '2026-08-12 14:44:56', 9.15, 60.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:44:56', 0, 60, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-12 19:44:56', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
+(132, 1, 1, 16, 1, 0, 2, 'F001', '000001', '2026-08-12 14:45:13', 9.15, 60.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:45:13', 0, 60, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-01-F001-000001', 1, '', NULL, 'Aceptado', '2026-08-12 19:45:13', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL),
+(133, 1, 1, 15, 1, 0, 3, 'B001', '000002', '2026-08-18 00:20:01', 0.00, 34.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-18 00:20:01', 0, 34, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-03-B001-000002', 1, '', NULL, 'Aceptado', '2026-08-18 05:20:01', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-18 00:20:01', '2026-08-18 00:20:01', NULL),
+(134, 1, 1, 14, 1, 0, 2, 'F001', '000002', '2026-08-18 00:25:19', 0.00, 34.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-18 00:25:19', 0, 34, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-01-F001-000002', 1, '', NULL, 'Aceptado', '2026-08-18 05:25:19', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-18 00:25:19', '2026-08-18 00:25:19', NULL),
+(135, 1, 1, 1, 1, 0, 1, 'NV00', '000045', '2026-08-18 00:29:25', 0.00, 34.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-18 00:29:25', 0, 34, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-18 05:29:25', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL);
 
 -- --------------------------------------------------------
 
@@ -5291,7 +5433,16 @@ INSERT INTO `venta_pago` (`idventapago`, `idventa`, `metodo_pago`, `monto`, `nro
 (92, 115, 'Efectivo', 35.00, NULL, NULL, NULL, '2026-08-11 21:40:24', '2026-08-11 21:40:24', NULL),
 (93, 116, 'Efectivo', 35.00, NULL, NULL, NULL, '2026-08-11 21:54:05', '2026-08-11 21:54:05', NULL),
 (94, 117, 'Efectivo', 200.00, NULL, NULL, NULL, '2026-08-11 22:10:39', '2026-08-11 22:10:39', NULL),
-(95, 118, 'Efectivo', 200.00, NULL, NULL, NULL, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL);
+(95, 118, 'Efectivo', 200.00, NULL, NULL, NULL, '2026-08-11 22:36:06', '2026-08-11 22:36:06', NULL),
+(96, 119, 'Efectivo', 130.00, NULL, NULL, NULL, '2026-08-12 14:03:31', '2026-08-12 14:03:31', NULL),
+(99, 122, 'Efectivo', 60.00, NULL, NULL, NULL, '2026-08-12 14:11:53', '2026-08-12 14:11:53', NULL),
+(106, 129, 'Efectivo', 10.00, NULL, NULL, NULL, '2026-08-12 14:27:58', '2026-08-12 14:27:58', NULL),
+(107, 130, 'Efectivo', 10.00, NULL, NULL, NULL, '2026-08-12 14:28:23', '2026-08-12 14:28:23', NULL),
+(108, 131, 'Efectivo', 60.00, NULL, NULL, NULL, '2026-08-12 14:44:56', '2026-08-12 14:44:56', NULL),
+(109, 132, 'Efectivo', 60.00, NULL, NULL, NULL, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL),
+(110, 133, 'Efectivo', 34.00, NULL, NULL, NULL, '2026-08-18 00:20:01', '2026-08-18 00:20:01', NULL),
+(111, 134, 'Efectivo', 34.00, NULL, NULL, NULL, '2026-08-18 00:25:19', '2026-08-18 00:25:19', NULL),
+(112, 135, 'Efectivo', 34.00, NULL, NULL, NULL, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL);
 
 -- --------------------------------------------------------
 
@@ -5541,7 +5692,9 @@ ALTER TABLE `detalle_cuentas_por_pagar`
 --
 ALTER TABLE `detalle_guia`
   ADD PRIMARY KEY (`iddetalle`),
-  ADD KEY `idguia` (`idguia`);
+  ADD KEY `idguia` (`idguia`),
+  ADD KEY `idproducto_configuracion` (`idproducto_configuracion`),
+  ADD KEY `idserie` (`idserie`);
 
 --
 -- Indexes for table `detalle_servicio`
@@ -5560,7 +5713,16 @@ ALTER TABLE `detalle_venta`
   ADD KEY `fk_sucursal_detalle` (`idsucursal`),
   ADD KEY `idproducto` (`idproducto`),
   ADD KEY `fk_detalle_serie` (`idserie`),
-  ADD KEY `idproducto_configuracion` (`idproducto_configuracion`);
+  ADD KEY `idproducto_configuracion` (`idproducto_configuracion`),
+  ADD KEY `idinventario_lote` (`idinventario_lote`);
+
+--
+-- Indexes for table `detalle_venta_lote`
+--
+ALTER TABLE `detalle_venta_lote`
+  ADD PRIMARY KEY (`iddetalle_venta_lote`),
+  ADD KEY `idx_detalle_venta` (`iddetalle_venta`),
+  ADD KEY `idx_inventario_lote` (`idinventario_lote`);
 
 --
 -- Indexes for table `documentacion`
@@ -5597,6 +5759,14 @@ ALTER TABLE `inventario_detalles`
   ADD PRIMARY KEY (`id`),
   ADD KEY `producto_id` (`producto_id`),
   ADD KEY `inventario_id` (`inventario_id`);
+
+--
+-- Indexes for table `inventario_lote`
+--
+ALTER TABLE `inventario_lote`
+  ADD PRIMARY KEY (`idinventario_lote`),
+  ADD KEY `idproducto` (`idproducto`),
+  ADD KEY `idsucursal` (`idsucursal`);
 
 --
 -- Indexes for table `inventario_producto`
@@ -5888,15 +6058,6 @@ ALTER TABLE `solicitud_workflow`
   ADD KEY `idusuario` (`idusuario`);
 
 --
--- Indexes for table `stock_fifo`
---
-ALTER TABLE `stock_fifo`
-  ADD PRIMARY KEY (`idfifo`),
-  ADD KEY `idx_producto_config` (`producto_configuracion_id`),
-  ADD KEY `idx_fifo_busqueda` (`idproducto`,`idsucursal`,`cantidad_restante`,`estado`,`fecha_ingreso`),
-  ADD KEY `idx_calculo_fifo` (`idproducto`,`estado`,`cantidad_restante`,`idfifo`);
-
---
 -- Indexes for table `subpermiso`
 --
 ALTER TABLE `subpermiso`
@@ -5981,9 +6142,10 @@ ALTER TABLE `usuario`
 -- Indexes for table `usuario_accion`
 --
 ALTER TABLE `usuario_accion`
-  ADD PRIMARY KEY (`idusuario`,`idaccion_permiso`),
+  ADD PRIMARY KEY (`idusuario_accion`),
   ADD KEY `idaccion_permiso` (`idaccion_permiso`),
-  ADD KEY `idx_usuario_accion_sucursal` (`idusuario`);
+  ADD KEY `idx_usuario_accion_sucursal` (`idusuario`),
+  ADD KEY `idaccion_permiso_2` (`idaccion_permiso`);
 
 --
 -- Indexes for table `usuario_permiso`
@@ -6098,13 +6260,13 @@ ALTER TABLE `categoria`
 -- AUTO_INCREMENT for table `compra`
 --
 ALTER TABLE `compra`
-  MODIFY `idcompra` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `idcompra` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT for table `compra_pago`
 --
 ALTER TABLE `compra_pago`
-  MODIFY `idpago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `idpago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `compromiso_pago`
@@ -6116,7 +6278,7 @@ ALTER TABLE `compromiso_pago`
 -- AUTO_INCREMENT for table `comp_pago`
 --
 ALTER TABLE `comp_pago`
-  MODIFY `idcomprobante_pago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `idcomprobante_pago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `concepto_ajuste`
@@ -6170,7 +6332,7 @@ ALTER TABLE `detalle_ajuste_inventario`
 -- AUTO_INCREMENT for table `detalle_compra`
 --
 ALTER TABLE `detalle_compra`
-  MODIFY `iddetalle_compra` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `iddetalle_compra` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
 -- AUTO_INCREMENT for table `detalle_cotizacion`
@@ -6194,7 +6356,7 @@ ALTER TABLE `detalle_cuentas_por_pagar`
 -- AUTO_INCREMENT for table `detalle_guia`
 --
 ALTER TABLE `detalle_guia`
-  MODIFY `iddetalle` int NOT NULL AUTO_INCREMENT;
+  MODIFY `iddetalle` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `detalle_servicio`
@@ -6206,7 +6368,13 @@ ALTER TABLE `detalle_servicio`
 -- AUTO_INCREMENT for table `detalle_venta`
 --
 ALTER TABLE `detalle_venta`
-  MODIFY `iddetalle_venta` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
+  MODIFY `iddetalle_venta` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+
+--
+-- AUTO_INCREMENT for table `detalle_venta_lote`
+--
+ALTER TABLE `detalle_venta_lote`
+  MODIFY `iddetalle_venta_lote` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `documentacion`
@@ -6224,7 +6392,7 @@ ALTER TABLE `empresas`
 -- AUTO_INCREMENT for table `guia_remision`
 --
 ALTER TABLE `guia_remision`
-  MODIFY `idguia` int NOT NULL AUTO_INCREMENT;
+  MODIFY `idguia` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `inventarios`
@@ -6237,6 +6405,12 @@ ALTER TABLE `inventarios`
 --
 ALTER TABLE `inventario_detalles`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `inventario_lote`
+--
+ALTER TABLE `inventario_lote`
+  MODIFY `idinventario_lote` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `inventario_producto`
@@ -6254,13 +6428,13 @@ ALTER TABLE `inventario_seleccionados`
 -- AUTO_INCREMENT for table `kardex`
 --
 ALTER TABLE `kardex`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
 
 --
 -- AUTO_INCREMENT for table `login_historial`
 --
 ALTER TABLE `login_historial`
-  MODIFY `idhistorial` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `idhistorial` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- AUTO_INCREMENT for table `marca`
@@ -6338,7 +6512,7 @@ ALTER TABLE `persona`
 -- AUTO_INCREMENT for table `personal`
 --
 ALTER TABLE `personal`
-  MODIFY `idpersonal` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `idpersonal` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `producto`
@@ -6461,12 +6635,6 @@ ALTER TABLE `solicitud_workflow`
   MODIFY `idworkflow` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
--- AUTO_INCREMENT for table `stock_fifo`
---
-ALTER TABLE `stock_fifo`
-  MODIFY `idfifo` int NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `subpermiso`
 --
 ALTER TABLE `subpermiso`
@@ -6512,31 +6680,37 @@ ALTER TABLE `unidad_medida`
 -- AUTO_INCREMENT for table `usuario`
 --
 ALTER TABLE `usuario`
-  MODIFY `idusuario` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `idusuario` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
+-- AUTO_INCREMENT for table `usuario_accion`
+--
+ALTER TABLE `usuario_accion`
+  MODIFY `idusuario_accion` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `usuario_permiso`
 --
 ALTER TABLE `usuario_permiso`
-  MODIFY `idusuario_permiso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=102;
+  MODIFY `idusuario_permiso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=120;
 
 --
 -- AUTO_INCREMENT for table `usuario_sucursal`
 --
 ALTER TABLE `usuario_sucursal`
-  MODIFY `idusuario_sucursal` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `idusuario_sucursal` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
 -- AUTO_INCREMENT for table `venta`
 --
 ALTER TABLE `venta`
-  MODIFY `idventa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=119;
+  MODIFY `idventa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=136;
 
 --
 -- AUTO_INCREMENT for table `venta_pago`
 --
 ALTER TABLE `venta_pago`
-  MODIFY `idventapago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=96;
+  MODIFY `idventapago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
 
 --
 -- AUTO_INCREMENT for table `verificaciones_domiciliarias`
@@ -6630,10 +6804,23 @@ ALTER TABLE `detalle_venta`
   ADD CONSTRAINT `fk_detalle_serie` FOREIGN KEY (`idserie`) REFERENCES `producto_serie` (`idserie`);
 
 --
+-- Constraints for table `detalle_venta_lote`
+--
+ALTER TABLE `detalle_venta_lote`
+  ADD CONSTRAINT `detalle_venta_lote_ibfk_1` FOREIGN KEY (`iddetalle_venta`) REFERENCES `detalle_venta` (`iddetalle_venta`),
+  ADD CONSTRAINT `detalle_venta_lote_ibfk_2` FOREIGN KEY (`idinventario_lote`) REFERENCES `inventario_lote` (`idinventario_lote`);
+
+--
 -- Constraints for table `documentacion`
 --
 ALTER TABLE `documentacion`
   ADD CONSTRAINT `documentacion_ibfk_1` FOREIGN KEY (`idventa`) REFERENCES `venta` (`idventa`);
+
+--
+-- Constraints for table `inventario_lote`
+--
+ALTER TABLE `inventario_lote`
+  ADD CONSTRAINT `inventario_lote_ibfk_1` FOREIGN KEY (`idsucursal`) REFERENCES `sucursal` (`idsucursal`);
 
 --
 -- Constraints for table `inventario_producto`
@@ -6661,7 +6848,7 @@ ALTER TABLE `orden_trabajo_detalle`
 --
 ALTER TABLE `orden_trabajo_mecanico`
   ADD CONSTRAINT `orden_trabajo_mecanico_ibfk_1` FOREIGN KEY (`idorden`) REFERENCES `orden_trabajo` (`idorden`) ON DELETE CASCADE,
-  ADD CONSTRAINT `orden_trabajo_mecanico_ibfk_2` FOREIGN KEY (`idpersonal`) REFERENCES `usuario` (`idusuario`) ON DELETE RESTRICT;
+  ADD CONSTRAINT `orden_trabajo_mecanico_ibfk_2` FOREIGN KEY (`idpersonal`) REFERENCES `usuario` (`idusuario`);
 
 --
 -- Constraints for table `producto`

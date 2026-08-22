@@ -242,7 +242,7 @@ function guardarSolicitud(e) {
 function verSolicitud(idsolicitud) {
   $.getJSON(
     "controladores/solicitudes.php?op=mostrarSolicitud&idsolicitud=" +
-      idsolicitud,
+    idsolicitud,
     function (response) {
       const data = response?.data || {};
       steps = response?.pasos || [];
@@ -409,8 +409,8 @@ function mostrarPanelPasoSeleccionado(idsolicitud, stepId) {
   );
   $(
     "#detalleSolicitud .solicitud-progressbar .step-item[data-paso='" +
-      stepId +
-      "']",
+    stepId +
+    "']",
   ).addClass("selected");
 
   const step = steps.find(function (item) {
@@ -489,9 +489,8 @@ function mostrarPanelPasoSeleccionado(idsolicitud, stepId) {
                         <label>Descripción</label>
                         <textarea class="form-control" rows="3" readonly>Validación documentaria: carga y revisión de los archivos obligatorios.</textarea>
                     </div>
-                    ${
-                      isCurrent
-                        ? `
+                    ${isCurrent
+          ? `
                         <div class="form-group">
                             <label>Elegir documento</label>
                             <input type="file" class="form-control" id="archivoSolicitud_${idsolicitud}_step2">
@@ -503,8 +502,8 @@ function mostrarPanelPasoSeleccionado(idsolicitud, stepId) {
                         <button type="button" class="btn btn-info btn-sm mb-3" onclick="subirDocumentoPaso2(${idsolicitud})">Subir documento</button>
                         <button type="button" class="btn btn-success btn-sm mb-3" onclick="aprobarDocumentacion(${idsolicitud})">Aprobar documentación</button>
                     `
-                        : ""
-                    }
+          : ""
+        }
                     <div class="card card-outline card-info">
                         <div class="card-header">
                             <h6 class="mb-0">Documentos del paso</h6>
@@ -618,9 +617,8 @@ function mostrarPanelPasoSeleccionado(idsolicitud, stepId) {
                 <p>${step?.description || "Sin descripcion de paso"}</p>
                 ${stepDetailHtml}
                 ${note}
-               ${
-                 !isCurrent
-                   ? `
+               ${!isCurrent
+      ? `
                 <div class="alert alert-info mt-3">
                     El estado real de la solicitud sigue en <strong>${currentStepLabel}</strong>
                     <button
@@ -630,8 +628,8 @@ function mostrarPanelPasoSeleccionado(idsolicitud, stepId) {
                     </button>
                 </div>
                 `
-                   : ""
-               }
+      : ""
+    }
             </div>
         </div>`;
 
@@ -1048,13 +1046,12 @@ function verArchivos(idsolicitud) {
                             ${item.nombre_original}
                         </a>
 
-                        ${
-                          item.descripcion
-                            ? `<p class="text-muted small mt-2 mb-0">
+                        ${item.descripcion
+              ? `<p class="text-muted small mt-2 mb-0">
                                     <strong>Descripción:</strong> ${item.descripcion}
                                </p>`
-                            : ""
-                        }
+              : ""
+            }
                     </div>
                 </div>
             `;
@@ -1082,17 +1079,34 @@ function cargarKPIs() {
 }
 
 function seleccionarCliente(idcliente) {
+  const $select = $("#idcotizacion");
+
+  $select.empty().append('<option value="">Seleccione una cotización</option>');
+
   if (!idcliente) {
+    $select.trigger("change");
     return;
   }
+
   $.get(
     "controladores/cotizaciones.php?op=cotizacionesCliente",
     { idcliente: idcliente },
-    function (r) {
-      $("#idcotizacion").html(r);
-      $("#idcotizacion").select2("");
-    },
+    function (response) {
+      let data = typeof response === "string"
+        ? JSON.parse(response)
+        : response;
+
+      data.forEach(function (item) {
+        $select.append(
+          new Option(
+            `${item.serie_comprobante}-${item.num_comprobante}`,
+            item.idcotizacion
+          )
+        );
+      });
+
+      $select.trigger("change");
+    }
   );
 }
-
 init();

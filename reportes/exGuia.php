@@ -1,12 +1,8 @@
 <?php
-ob_start();
-if (strlen(session_id()) < 1) session_start();
-
-if (!isset($_SESSION["nombre"])) {
-    echo 'Debe ingresar al sistema correctamente para visualizar el reporte';
-} else {
-    require_once "../modelos/Guia.php";
-    require_once "../modelos/Negocio.php";
+    ob_start();
+    require_once __DIR__ . '/../configuraciones/bootstrap.php';
+    require_once __DIR__ . "/../modelos/Guia.php";
+    require_once __DIR__ . "/../modelos/Negocio.php";
 
     $guia = new Guia();
     $rspta = $guia->mostrarCabecera($_GET["id"]);
@@ -14,16 +10,16 @@ if (!isset($_SESSION["nombre"])) {
 
     // Datos de la empresa
     $negocio = new Negocio();
-    $rsptan = $negocio->listar();
+    $rsptan = $negocio->listar($reg->idsucursal);
     $regn = $rsptan->fetch_object();
 
     $empresa = $regn->nombre;
-    $documento = $regn->documento;
-    $ndocumento = $regn->ndocumento;
+    $documento = $regn->ruc;
+    $ndocumento = $regn->ndocumento ?? '';
     $telefono = $regn->telefono;
     $email = $regn->email;
-    $pais = $regn->pais;
-    $ciudad = $regn->ciudad;
+    $pais = $regn->departamento;
+    $ciudad = $regn->distrito;
     $imagen = $regn->logo;
     $direccion = $regn->direccion;
 ?>
@@ -128,6 +124,5 @@ if (!isset($_SESSION["nombre"])) {
 </body>
 </html>
 <?php
-}
 ob_end_flush();
 ?>

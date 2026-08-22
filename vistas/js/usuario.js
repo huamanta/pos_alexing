@@ -1,221 +1,220 @@
 var tabla;
 
-function init(){
-	 $("#body").addClass("sidebar-collapse sidebar-mini");
-    listar();
+function init() {
+	$("#body").addClass("sidebar-collapse sidebar-mini");
+	listar();
 	limpiar();
 
-    $("#myModal").on("submit",function(e)
-	{
-		guardaryeditar(e);	
+	$("#myModal").on("submit", function (e) {
+		guardaryeditar(e);
 	});
 
-    //Mostramos los permisos
-	$.post("controladores/usuario.php?op=permisos&id=",function(r){
-	    $("#permisos").html(r);
+	//Mostramos los permisos
+	$.post("controladores/usuario.php?op=permisos&id=", function (r) {
+		$("#permisos").html(r);
 	});
 
 	//cargamos los items al select almacen
-	$.post("controladores/venta.php?op=selectSucursal2", function(r){
+	$.post("controladores/venta.php?op=selectSucursal2", function (r) {
 		$("#idsucursal").html(r);
 		$('#idsucursal').select2();
 	});
 
 	//Cargamos los items al select categoria
-	$.post("controladores/usuario.php?op=selectEmpleado", function(r){
-        $("#idpersonal").html(r);
-        $('#idpersonal').select2();
+	$.post("controladores/usuario.php?op=selectEmpleado", function (r) {
+		$("#idpersonal").html(r);
+		$('#idpersonal').select2();
 	});
 
-    $(document).on('keyup', '#buscarPermisos', function() {
-        filtrarPermisos();
-    });
-    
-    $('#navPersonalActive').addClass("treeview active");
-    $('#navPersonal').addClass("treeview menu-open");
-    $('#navUsuario').addClass("active");
+	$(document).on('keyup', '#buscarPermisos', function () {
+		filtrarPermisos();
+	});
+
+	$('#navPersonalActive').addClass("treeview active");
+	$('#navPersonal').addClass("treeview menu-open");
+	$('#navUsuario').addClass("active");
 
 }
 
 //Función limpiar
-function limpiar()
-{
+function limpiar() {
 	$("#idpersonal").val("");
 	$("#login").val("");
 	$("#clave").val("");
-    $("#idsucursal").val(null).trigger('change');
+	$("#idsucursal").val(null).trigger('change');
 	$("#idusuario").val("");
-    $("#buscarPermisos").val('');
-    $("#noPermisosFound").hide();
+	$("#buscarPermisos").val('');
+	$("#noPermisosFound").hide();
 }
 
-function filtrarPermisos()
-{
-    var search = $("#buscarPermisos").val().toLowerCase().trim();
-    var found = false;
+function filtrarPermisos() {
+	var search = $("#buscarPermisos").val().toLowerCase().trim();
+	var found = false;
 
-    $("#permisos .permiso-card").each(function() {
-        var text = $(this).text().toLowerCase();
-        var visible = search === '' || text.indexOf(search) !== -1;
-        $(this).toggle(visible);
-        if (visible) {
-            found = true;
-        }
-    });
+	$("#permisos .permiso-card").each(function () {
+		var text = $(this).text().toLowerCase();
+		var visible = search === '' || text.indexOf(search) !== -1;
+		$(this).toggle(visible);
+		if (visible) {
+			found = true;
+		}
+	});
 
-    $("#noPermisosFound").toggle(!found);
+	$("#noPermisosFound").toggle(!found);
 }
 
 //Función cancelarform
-function cancelarform()
-{
+function cancelarform() {
 	limpiar();
-	$.post("controladores/usuario.php?op=permisos&id=",function(r){
+	$.post("controladores/usuario.php?op=permisos&id=", function (r) {
 		$("#permisos").html(r);
-        filtrarPermisos();
+		filtrarPermisos();
 	});
 }
 function nuevoUsuario() {
-    limpiar(); // Limpia todos los campos
-    $('#myModal').modal('show');
-    $('#n1').hide(); // Oculta el aviso de login en uso
-    $('#idusuario').val(""); // Asegura que es nuevo
-    $('#idpersonal').val('').trigger('change');
+	limpiar(); // Limpia todos los campos
+	$('#myModal').modal('show');
+	$('#n1').hide(); // Oculta el aviso de login en uso
+	$('#idusuario').val(""); // Asegura que es nuevo
+	$('#idpersonal').val('').trigger('change');
 
-    // Carga permisos vacíos
-    $.post("controladores/usuario.php?op=permisos&id=", function (r) {
-        $("#permisos").html(r);        filtrarPermisos();    });
+	// Carga permisos vacíos
+	$.post("controladores/usuario.php?op=permisos&id=", function (r) {
+		$("#permisos").html(r); filtrarPermisos();
+	});
 }
 
-function verificarUsuario(nombre){
-    const idusuario = $("#idusuario").val();
-    if(idusuario !== "") return; // No verificar login si estás editando
+function verificarUsuario(nombre) {
+	const idusuario = $("#idusuario").val();
+	if (idusuario !== "") return; // No verificar login si estás editando
 
-    $.post("controladores/usuario.php?op=verificarLogin&nombre=" + nombre, function(data) {
-        data = JSON.parse(data);
+	$.post("controladores/usuario.php?op=verificarLogin&nombre=" + nombre, function (data) {
+		data = JSON.parse(data);
 
-        if (data != null) {
-            $('#n1').show();
-            $('#login').val("").focus();
-        } else {
-            $('#n1').hide();
-        }
-    });
+		if (data != null) {
+			$('#n1').show();
+			$('#login').val("").focus();
+		} else {
+			$('#n1').hide();
+		}
+	});
 }
 
 
-function guardaryeditar(e)
-{
+function guardaryeditar(e) {
 	e.preventDefault(); //No se activará la acción predeterminada del evento
 	//$("#btnGuardar").prop("disabled",true);
 	var formData = new FormData($("#formulario")[0]);
 
 	$.ajax({
 		url: "controladores/usuario.php?op=guardaryeditar",
-	    type: "POST",
-	    data: formData,
-	    contentType: false,
-	    processData: false,
-
-	    success: function(datos)
-	    {                  
-	          Swal.fire({
-				  title: 'Usuario',
-				  icon: 'success',
-					text:datos
+		type: "POST",
+		data: formData,
+		contentType: false,
+		processData: false,
+		success: function (response) {
+			if (!response.success) {
+				Swal.fire({
+					title: 'Usuario',
+					icon: 'error',
+					text: response.message
 				});
-				
-              $('#myModal').modal('hide');
-	          tabla.ajax.reload();
+				return;
+			}
+			Swal.fire({
+				title: 'Usuario',
+				icon: 'success',
+				text: response.message
+			});
 
-
-	    }
+			$('#myModal').modal('hide');
+			tabla.ajax.reload();
+			limpiar();
+		},
+		error: function (error) {
+			console.log(error.responseJSON.message || 'Error al guardar usuario');
+		}
 
 	});
-	limpiar();
 }
 
-function mostrar(idusuario)
-{
-    $.post("controladores/usuario.php?op=mostrar",{idusuario : idusuario}, function(data)
-    {
-        data = JSON.parse(data);
+function mostrar(idusuario) {
+	$.post("controladores/usuario.php?op=mostrar", { idusuario: idusuario }, function (response) {
+		const data = response;
 
-        $('#myModal').modal('show');
-        $("#idpersonal").val(data.idpersonal).trigger('change');
-        $("#login").val(data.login);
-        $("#clave").val('');
-        $("#idusuario").val(data.idusuario);
+		$('#myModal').modal('show');
+		$("#idpersonal").val(data.idpersonal).trigger('change');
+		$("#login").val(data.login);
+		$("#clave").val('');
+		$("#idusuario").val(data.idusuario);
 
-        // Cargar sucursales asignadas
-        $.post("controladores/usuario.php?op=listarSucursalesUsuario&idusuario="+idusuario, function(response){
-            let sucursales = JSON.parse(response);
+		// Cargar sucursales asignadas
+		$.post("controladores/usuario.php?op=listarSucursalesUsuario&idusuario=" + idusuario, function (response) {
+			let sucursales = JSON.parse(response);
 			let idsSucursales = sucursales.map(item => item.idsucursal);
-            $("#idsucursal").val(idsSucursales).trigger('change');
-        });
-    }).always(function(){
-        $.post("controladores/usuario.php?op=permisos&id="+idusuario,function(r){
-            $("#permisos").html(r);
-            filtrarPermisos();
-        });
-    });
+			$("#idsucursal").val(idsSucursales).trigger('change');
+		});
+	}).always(function () {
+		$.post("controladores/usuario.php?op=permisos&id=" + idusuario, function (r) {
+			$("#permisos").html(r);
+			filtrarPermisos();
+		});
+	});
 }
 
 //Función Listar
-function listar()
-{
-	tabla=$('#tbllistado').dataTable(
-	{
-		"aProcessing": true,//Activamos el procesamiento del datatables
-	    "aServerSide": true,//Paginación y filtrado realizados por el servidor
-	    "processing": true,
-	    "language": 
-		{          
-		"processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-		},
-	    "responsive": true, "lengthChange": false, "autoWidth": false,
-	    dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-	    lengthMenu: [
-            [5,10, 25, 50, 100, -1],
-            ['5 filas','10 filas', '25 filas', '50 filas','100 filas', 'Mostrar todo']
-        ],
-        buttons: ['pageLength',
-					{
-						extend: 'excelHtml5', 
-						text: "<i class='fas fa-file-csv'></i>", 
-						titleAttr: 'Exportar a Excel', 
-						// className: 'btn btn-success'
-					},
-					{
-						extend: 'pdf', 
-						text: "<i class='fas fa-file-pdf'></i>", 
-						titleAttr: 'Exportar a PDF', 
-						// className: 'btn btn-danger'
-					},
-					{
-						extend: 'colvis', 
-						text: "<i class='fas fa-bars'></i>", 
-						titleAttr: '', 
-						// className: 'btn btn-danger'
-					}],
-		"ajax":
+function listar() {
+	tabla = $('#tbllistado').dataTable(
+		{
+			"aProcessing": true,//Activamos el procesamiento del datatables
+			"aServerSide": true,//Paginación y filtrado realizados por el servidor
+			"processing": true,
+			"language":
+			{
+				"processing": "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
+			},
+			"responsive": true, "lengthChange": false, "autoWidth": false,
+			dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
+			lengthMenu: [
+				[5, 10, 25, 50, 100, -1],
+				['5 filas', '10 filas', '25 filas', '50 filas', '100 filas', 'Mostrar todo']
+			],
+			buttons: ['pageLength',
 				{
-					url: 'controladores/usuario.php?op=listar',
-					type : "get",
-					dataType : "json",						
-					error: function(e){
-						console.log(e.responseText);	
-					}
+					extend: 'excelHtml5',
+					text: "<i class='fas fa-file-csv'></i>",
+					titleAttr: 'Exportar a Excel',
+					// className: 'btn btn-success'
 				},
-		"bDestroy": true,
-		"iDisplayLength": 5,//Paginación
-	    "order": [[ 0, "desc" ]]//Ordenar (columna,orden)
-	}).DataTable();
+				{
+					extend: 'pdf',
+					text: "<i class='fas fa-file-pdf'></i>",
+					titleAttr: 'Exportar a PDF',
+					// className: 'btn btn-danger'
+				},
+				{
+					extend: 'colvis',
+					text: "<i class='fas fa-bars'></i>",
+					titleAttr: '',
+					// className: 'btn btn-danger'
+				}],
+			"ajax":
+			{
+				url: 'controladores/usuario.php?op=listar',
+				type: "get",
+				dataType: "json",
+				error: function (e) {
+					console.log(e.responseText);
+				}
+			},
+			"bDestroy": true,
+			"iDisplayLength": 5,//Paginación
+			"order": [[0, "desc"]]//Ordenar (columna,orden)
+		}).DataTable();
 }
 
 //Función para desactivar registros
-function desactivar(idusuario)
-{
+function desactivar(idusuario) {
 
 	Swal.fire({
 		title: '¿Desactivar?',
@@ -225,30 +224,32 @@ function desactivar(idusuario)
 		confirmButtonColor: '#3085d6',
 		cancelButtonColor: '#d33',
 		confirmButtonText: 'Si'
-		}).then((result) => {
+	}).then((result) => {
 		if (result.isConfirmed) {
-			$.post("controladores/usuario.php?op=desactivar", {idusuario : idusuario}, function(e){
-				Swal.fire(
-					'Desactivado!',
-					e,
-					'success'
-					)
+			$.post("controladores/usuario.php?op=desactivar", { idusuario: idusuario }, function (response) {
+				if (!response.success) {
+					Swal.fire({
+						title: 'Usuario',
+						icon: 'error',
+						text: response.message
+					});
+					return;
+				}
+				Swal.fire({
+					title: 'Usuario',
+					icon: 'success',
+					text: response.message
+				});
 				tabla.ajax.reload();
 			});
-		}else{
-			Swal.fire(
-				'Aviso!',
-				"Se Cancelo la desactivacion de el Usuario",
-				'info'
-				)
+
 		}
-		})
-		
+	})
+
 }
 
 //Función para desactivar registros
-function activar(idusuario)
-{
+function activar(idusuario) {
 
 	Swal.fire({
 		title: 'Activar?',
@@ -258,25 +259,27 @@ function activar(idusuario)
 		confirmButtonColor: '#3085d6',
 		cancelButtonColor: '#d33',
 		confirmButtonText: 'Si'
-		}).then((result) => {
+	}).then((result) => {
 		if (result.isConfirmed) {
-			$.post("controladores/usuario.php?op=activar", {idusuario : idusuario}, function(e){
-				Swal.fire(
-					'Activado!',
-					e,
-					'success'
-					)
+			$.post("controladores/usuario.php?op=activar", { idusuario: idusuario }, function (response) {
+				if (!response.success) {
+					Swal.fire({
+						title: 'Usuario',
+						icon: 'error',
+						text: response.message
+					});
+					return;
+				}
+				Swal.fire({
+					title: 'Usuario',
+					icon: 'success',
+					text: response.message
+				});
 				tabla.ajax.reload();
 			});
-		}else{
-			Swal.fire(
-				'Aviso!',
-				"Se Cancelo la activación de el Usuario",
-				'info'
-				)
 		}
-		})
-		
+	})
+
 }
 
 init();

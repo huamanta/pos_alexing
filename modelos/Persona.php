@@ -5,6 +5,7 @@ require_once "../configuraciones/ConexionPdo.php";
 require_once "../core/FluentQuery.php";
 require_once "../core/FluentSave.php";
 require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
 
 class Persona extends Helpers
 {
@@ -234,7 +235,7 @@ class Persona extends Helpers
 			'historial' => Helpers::getUserPermissionAccion('Historial proveedor'),
 			'eliminar' => Helpers::getUserPermissionAccion('Eliminar proveedor')
 		];
-		return json_encode($response);
+		return Response::json($response);
 	}
 
 
@@ -290,7 +291,62 @@ class Persona extends Helpers
 			'eliminar' => Helpers::getUserPermissionAccion('Eliminar cliente')
 		];
 
-		return json_encode($response);
+		return Response::json($response);
+	}
+
+	public function listarTransportista(){
+		$page = (int) ($_GET['page'] ?? 1);
+		$limit = (int) ($_GET['limit'] ?? 10);
+		$search = trim($_GET['search'] ?? '');
+
+		$response = (new DBQuery($this->pdo))
+			->select('*')
+			->from('personal')
+			->whereIn('cargo', ['Transportista', 'Otro'])
+			->softDeletes()
+			->search(
+				$search,
+				[
+					'nombre',
+					'num_documento',
+					'telefono',
+					'email'
+				]
+			)
+			->orderBy('idpersonal', 'DESC')
+			->paginate(
+				$page,
+				$limit
+			);
+
+		return Response::json($response);
+	}
+
+	public function listarPersonal(){
+		$page = (int) ($_GET['page'] ?? 1);
+		$limit = (int) ($_GET['limit'] ?? 10);
+		$search = trim($_GET['search'] ?? '');
+
+		$response = (new DBQuery($this->pdo))
+			->select('*')
+			->from('personal')
+			->softDeletes()
+			->search(
+				$search,
+				[
+					'nombre',
+					'num_documento',
+					'telefono',
+					'email'
+				]
+			)
+			->orderBy('idpersonal', 'DESC')
+			->paginate(
+				$page,
+				$limit
+			);
+
+		return Response::json($response);
 	}
 
 	public function obtenerPorId($idcliente)

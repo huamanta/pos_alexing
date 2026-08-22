@@ -195,50 +195,40 @@ $total = 0;
 				<td width="25%" align="left" valign="top">
 
 					<div>
-						<img src="file://<?php echo $rutaLogo; ?>" width="120"/>
+						<img src="file://<?php echo $rutaLogo; ?>" width="120" />
 					</div>
 
 				</td>
 
 				<td width="45%" align="center" valign="top">
 
-					<?php
+					<div>
 
-					if ($result_config > 0) {
+						<h1 class="h1">
+							<?php echo $configuracion['razon_social']; ?>
+						</h1>
 
-						$iva = $configuracion['monto_impuesto'];
+						<p>
+							SUCURSAL: <?php echo $configuracion['nombre']; ?>
+						</p>
 
-						?>
+						<p>
+							RUC: <?php echo $configuracion['ruc']; ?>
+						</p>
 
-						<div>
+						<p>
+							<?php echo $configuracion['direccion']; ?>
+						</p>
 
-							<h1 class="h1">
-								<?php echo $configuracion['razon_social']; ?>
-							</h1>
+						<p>
+							Teléfono: <?php echo $configuracion['telefono']; ?>
+						</p>
 
-							<p>
-								SUCURSAL: <?php echo $configuracion['nombre']; ?>
-							</p>
+						<p>
+							Email: <?php echo $configuracion['email']; ?>
+						</p>
 
-							<p>
-								RUC: <?php echo $configuracion['ruc']; ?>
-							</p>
-
-							<p>
-								<?php echo $configuracion['direccion']; ?>
-							</p>
-
-							<p>
-								Teléfono: <?php echo $configuracion['telefono']; ?>
-							</p>
-
-							<p>
-								Email: <?php echo $configuracion['email']; ?>
-							</p>
-
-						</div>
-
-					<?php } ?>
+					</div>
 
 				</td>
 
@@ -358,57 +348,47 @@ $total = 0;
 			<tbody>
 
 				<?php
-
 				$descuento = 0;
 				$exonerado = 0;
+				foreach ($detalles as $row) {
+					?>
 
-				if ($result_detalle > 0) {
+					<tr>
 
-					while ($row = mysqli_fetch_assoc($query_productos)) {
+						<td style="border:1px solid #000;" class="textcenter">
+							<?php echo $row['codigo']; ?>
+						</td>
 
-						?>
+						<td style="border:1px solid #000;" class="textcenter">
+							<?php echo round($row['cantidad'], 2); ?>
+						</td>
 
-						<tr>
+						<td style="border:1px solid #000;" class="textcenter">
+							<?php echo $row['unidadmedida']; ?>
+						</td>
 
-							<td style="border:1px solid #000;" class="textcenter">
-								<?php echo $row['codigo']; ?>
-							</td>
+						<td style="border:1px solid #000; padding-left:5px;">
+							<?php echo $row['producto']; ?>
+						</td>
 
-							<td style="border:1px solid #000;" class="textcenter">
-								<?php echo round($row['cantidad'], 2); ?>
-							</td>
+						<td style="border:1px solid #000;" class="textcenter">
+							<?php echo $helpers->get_currency_symbol($row['precio_venta']); ?>
+						</td>
 
-							<td style="border:1px solid #000;" class="textcenter">
-								<?php echo $row['unidadmedida']; ?>
-							</td>
+						<td style="border:1px solid #000;" class="textcenter">
+							<?php echo $helpers->get_currency_symbol($row['descuento']); ?>
+						</td>
 
-							<td style="border:1px solid #000; padding-left:5px;">
-								<?php echo $row['producto']; ?>
-							</td>
+						<td style="border:1px solid #000;" class="textcenter">
+							<?php echo $helpers->get_currency_symbol($row['subtotal']); ?>
+						</td>
 
-							<td style="border:1px solid #000;" class="textcenter">
-								<?php echo number_format($row['precio_venta'], 2); ?>
-							</td>
+					</tr>
 
-							<td style="border:1px solid #000;" class="textcenter">
-								<?php echo number_format($row['descuento'], 2); ?>
-							</td>
-
-							<td style="border:1px solid #000;" class="textcenter">
-								<?php echo number_format($row['subtotal'], 2); ?>
-							</td>
-
-						</tr>
-
-						<?php
-
-						$subtotal += $row['subtotal'];
-						$descuento += $row['descuento'];
-
-					}
-
+					<?php
+					$subtotal += $row['subtotal'];
+					$descuento += $row['descuento'];
 				}
-
 				?>
 
 			</tbody>

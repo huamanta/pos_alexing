@@ -1198,8 +1198,8 @@ class Venta extends Helpers
 
     //implementar un metodopara mostrar los datos de unregistro a modificar
     public function mostrar($idventa)
-{
-    $sql = "SELECT
+    {
+        $sql = "SELECT
                 v.idventa,
                 DATE(v.fecha_hora) AS fecha,
                 DATE(v.fecha_kardex) AS fechahora,
@@ -1242,8 +1242,8 @@ class Venta extends Helpers
             LEFT JOIN cuentas_por_cobrar cpc ON v.idventa = cpc.idventa
             WHERE v.idventa = '$idventa'";
 
-    return ejecutarConsultaSimpleFila($sql);
-}
+        return ejecutarConsultaSimpleFila($sql);
+    }
 
     public function mostrarEdit($idventa)
     {
@@ -1651,63 +1651,139 @@ class Venta extends Helpers
 
     public function ventacabecera($idventa)
     {
-        $sql = "SELECT v.idventa,v.idsucursal, v.idcliente, p.nombre AS cliente, s.nombre as sucursal, p.direccion, p.tipo_documento, p.num_documento, p.email, p.telefono, v.idpersonal, v.montoPagado, v.formapago, v.numoperacion, date_format(v.fechadeposito,'%d/%m/%y') as fechadeposito, u.nombre AS personal, cp.nombre AS tipo_comprobante, v.idcomprobante_pago, v.serie_comprobante, v.num_comprobante, DATE(v.fecha_hora) AS fecha, date_format(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex, v.impuesto, v.total_venta, v.ventacredito, v.descuento, v.vuelto, v.observacion, v.totalrecibido
-		FROM venta v 
-        INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago 
-		INNER JOIN persona p 
-		ON v.idcliente=p.idpersona 
-		INNER JOIN personal u 
-		ON v.idpersonal=u.idpersonal
-		INNER JOIN sucursal s
-		ON s.idsucursal = v.idsucursal WHERE v.idventa='$idventa'";
-        return ejecutarConsulta($sql);
+        $query = (new DBQuery($this->pdo))
+            ->select([
+                'v.idventa',
+                'v.idsucursal',
+                'v.idcliente',
+                'p.nombre AS cliente',
+                's.nombre AS sucursal',
+                'p.direccion',
+                'p.tipo_documento',
+                'p.num_documento',
+                'p.email',
+                'p.telefono',
+                'v.idpersonal',
+                'v.montoPagado',
+                'v.formapago',
+                'v.numoperacion',
+                'DATE_FORMAT(v.fechadeposito, "%d/%m/%y") AS fechadeposito',
+                'u.nombre AS personal',
+                'cp.nombre AS tipo_comprobante',
+                'v.idcomprobante_pago',
+                'v.serie_comprobante',
+                'v.num_comprobante',
+                'DATE(v.fecha_hora) AS fecha',
+                'DATE_FORMAT(v.fecha_kardex, "%d/%m/%y | %H:%i:%s %p") AS fecha_kardex',
+                'v.impuesto',
+                'v.total_venta',
+                'v.ventacredito',
+                'v.descuento',
+                'v.vuelto',
+                'v.estado',
+                'v.observacion',
+                'v.totalrecibido'
+            ])
+            ->from('venta v')
+            ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
+            ->join('persona p', 'p.idpersona = v.idcliente')
+            ->join('personal u', 'u.idpersonal = v.idpersonal')
+            ->join('sucursal s', 's.idsucursal = v.idsucursal')
+            ->where('v.idventa', '=', $idventa);
+
+        return $query->first();
     }
+
 
     public function ventadetalle($idventa)
     {
-        $sql = "SELECT 
-                pg.idproducto_configuracion, 
-                a.idproducto,
-                a.idcategoria,
-                pg.contenedor,
-                pg.cantidad_contenedor, 
-                a.nombre AS producto, 
-                um.nombre AS unidadmedida, 
-                a.codigo, 
-                d.nombre_producto AS dproducto, 
-                d.cantidad, 
-                d.precio_venta, 
-                a.precioB, 
-                a.precioC, 
-                a.precioD, 
-                a.preciocigv, 
-                v.descuento AS descuento, 
-                CASE 
-                    WHEN d.check_precio = 1 THEN d.precio_venta 
+        $query = (new DBQuery($this->pdo))
+            ->select([
+                'd.iddetalle_venta',
+                'pg.idproducto_configuracion',
+                'a.idproducto',
+                'a.idcategoria',
+                'pg.contenedor',
+                'pg.cantidad_contenedor',
+                'a.nombre AS producto',
+                'um.nombre AS unidadmedida',
+                'a.codigo',
+                'd.nombre_producto AS dproducto',
+                'd.cantidad',
+                'd.precio_venta',
+                'a.precioB',
+                'a.precioC',
+                'a.precioD',
+                'a.preciocigv',
+                'v.descuento AS descuento',
+                'CASE
+                    WHEN d.check_precio = 1 THEN d.precio_venta
                     ELSE (d.cantidad * d.precio_venta - d.descuento)
-                END AS subtotal,
-                ip.stock, 
-                a.proigv,
-                d.check_precio
-            FROM detalle_venta d 
-            INNER JOIN producto a ON a.idproducto = d.idproducto 
-            LEFT JOIN producto_configuracion pg ON pg.idproducto = a.idproducto
-            INNER JOIN inventario_producto ip ON ip.idproducto = a.idproducto
-            INNER JOIN unidad_medida um ON a.idunidad_medida = um.idunidad_medida
-            INNER JOIN venta v ON v.idventa = d.idventa
-            INNER JOIN categoria ca ON a.idcategoria = ca.idcategoria
-            WHERE d.idventa = '$idventa'";
+                END AS subtotal',
+                'ip.stock',
+                'a.proigv',
+                'd.check_precio'
+            ])
+            ->from('detalle_venta d')
+            ->join('venta v', 'v.idventa = d.idventa')
+            ->leftJoin('producto a', 'a.idproducto = d.idproducto')
+            ->leftJoin('producto_configuracion pg', 'pg.idproducto_configuracion = d.idproducto_configuracion AND pg.idproducto = a.idproducto')
+            ->leftJoin('inventario_producto ip', 'ip.idproducto = a.idproducto')
+            ->leftJoin('unidad_medida um', 'a.idunidad_medida = um.idunidad_medida')
+            ->where('d.idventa', '=', $idventa);
 
-        return ejecutarConsulta($sql);
+        return $query->get();
     }
 
 
     public function pagosPorVenta($idventa)
     {
-        $sql = "SELECT metodo_pago, monto 
-                FROM venta_pago 
-                WHERE idventa = '$idventa'";
-        return ejecutarConsulta($sql);
+        $query = (new DBQuery($this->pdo))
+            ->select([
+                'vp.metodo_pago',
+                'vp.monto',
+                'vp.nroOperacion',
+                'vp.fechaDeposito',
+                'vp.idbanco',
+                'b.nombre AS banco'
+            ])
+            ->from('venta_pago vp')
+            ->join('bancos b', 'b.idbanco = vp.idbanco')
+            ->where('vp.idventa', '=', $idventa);
+
+        return $query->get();
+    }
+
+
+    public function cuentasPorCobrar($idventa)
+    {
+        $query = (new DBQuery($this->pdo))
+            ->select([
+                'idventa',
+                'fecharegistro',
+                'SUM(deudatotal) AS totalDeuda',
+                'DATE_FORMAT(fechavencimiento,"%d/%m/%y") as fechavencimiento',
+                'abonototal'
+            ])
+            ->from('cuentas_por_cobrar')
+            ->where('idventa', '=', $idventa)
+            ->groupBy(['idventa, fecharegistro, fechavencimiento, abonototal']);
+
+        return $query->get();
+    }
+
+
+    public function lotesProducto($iddetalle_venta)
+    {
+        $query = (new DBQuery($this->pdo))
+            ->select([
+                'codigo_lote',
+                'fecha_vencimiento'
+            ])
+            ->from('detalle_venta_lote')
+            ->where('iddetalle_venta', '=', $iddetalle_venta);
+
+        return $query->get();
     }
 
     public function ventadetallePDF($idventa)
@@ -1836,18 +1912,18 @@ class Venta extends Helpers
     public function buscarProducto($idsucursal)
     {
         $page = $_GET['page'] ?? 1;
-		$limit = $_GET['limit'] ?? 20;
-		$search = trim($_GET['search'] ?? '');
+        $limit = $_GET['limit'] ?? 20;
+        $search = trim($_GET['search'] ?? '');
         $data = (new DBQuery($this->pdo))
-        ->select('p.*, numero_serie, ps.numero_motor, ps.placa, ps.color, ps.anio_fabricacion, ps.estado, um.nombre as unidadmedida')
-        ->from('producto p')
-        ->join('unidad_medida um', 'p.idunidad_medida = um.idunidad_medida')
-        ->join('producto_serie ps', 'ps.idproducto=p.idproducto')
-        ->where('p.tipo_producto', '=', 'Vehiculo')
-        ->where('p.idsucursal', '=', $idsucursal)
-        ->whereIn('ps.estado', ['DISPONIBLE', 'MANTENIMIENTO'])
-        ->search($search, ['p.codigo', 'p.nombre'])
-        ->paginate($page, $limit);
+            ->select('p.*, numero_serie, ps.numero_motor, ps.placa, ps.color, ps.anio_fabricacion, ps.estado, um.nombre as unidadmedida')
+            ->from('producto p')
+            ->join('unidad_medida um', 'p.idunidad_medida = um.idunidad_medida')
+            ->join('producto_serie ps', 'ps.idproducto=p.idproducto')
+            ->where('p.tipo_producto', '=', 'Vehiculo')
+            ->where('p.idsucursal', '=', $idsucursal)
+            ->whereIn('ps.estado', ['DISPONIBLE', 'MANTENIMIENTO'])
+            ->search($search, ['p.codigo', 'p.nombre'])
+            ->paginate($page, $limit);
         return Response::json($data);
     }
 
@@ -2202,23 +2278,81 @@ class Venta extends Helpers
 
     public function getVentaData($idventa)
     {
-        $sql = "SELECT v.idcliente, p.nombre as cliente, v.fecha_hora as fecha, p.direccion as punto_llegada 
-            FROM venta v
-            INNER JOIN persona p ON v.idcliente = p.idpersona
-            WHERE v.idventa = '$idventa'";
-        return ejecutarConsultaSimpleFila($sql);
+        $venta = (new DBQuery($this->pdo))
+            ->select(['v.*', 'p.nombre as cliente', 'p.num_documento', 'v.fecha_hora as fecha', 'p.direccion as punto_llegada'])
+            ->from('venta v')
+            ->join('persona p', 'v.idcliente = p.idpersona')
+            ->where('v.idventa', '=', $idventa)
+            ->first();
+
+        $data = [
+            'cabecera' => $venta,
+            'detalles' => $this->getVentaDetalles($idventa)
+        ];
+        return Response::json($data);
     }
 
     public function getVentaDetalles($idventa)
     {
-        $sql = "SELECT dv.idproducto, p.codigo, dv.nombre_producto, dv.cantidad, um.nombre as unidad, p.stock as peso, 1 as bultos, '' as lotes
-            FROM detalle_venta dv
-            INNER JOIN producto p ON dv.idproducto = p.idproducto
-            INNER JOIN unidad_medida um ON p.idunidad_medida = um.idunidad_medida
-            WHERE dv.idventa = '$idventa'";
-        return ejecutarConsulta($sql);
-    }
+        $data = (new DBQuery($this->pdo))
+            ->select([
+                'dv.iddetalle_venta',
+                'dv.idproducto',
+                'dv.idproducto_configuracion',
+                'dv.idserie',
+                'p.*',
+                'dv.nombre_producto',
+                'dv.cantidad',
+                'um.nombre as unidad',
 
+                'dvl.idinventario_lote',
+                'dvl.codigo_lote',
+                'dvl.fecha_vencimiento',
+                'dvl.cantidad as cantidad_lote'
+            ])
+            ->from('detalle_venta dv')
+            ->join('producto p', 'dv.idproducto = p.idproducto')
+            ->join('unidad_medida um', 'p.idunidad_medida = um.idunidad_medida')
+            ->leftJoin('detalle_venta_lote dvl', 'dvl.iddetalle_venta = dv.iddetalle_venta')
+            ->where('dv.idventa', '=', $idventa)
+            ->whereNull('dvl.deleted_at')
+            ->get();
+
+        $resultado = [];
+
+        foreach ($data as $row) {
+
+            $idDetalle = $row['iddetalle_venta'];
+
+            if (!isset($resultado[$idDetalle])) {
+
+                $resultado[$idDetalle] = $row;
+
+                $resultado[$idDetalle]['lotes'] = [];
+
+                // Evitar que estos campos aparezcan al mismo nivel
+                unset(
+                    $resultado[$idDetalle]['idinventario_lote'],
+                    $resultado[$idDetalle]['codigo_lote'],
+                    $resultado[$idDetalle]['fecha_vencimiento'],
+                    $resultado[$idDetalle]['cantidad_lote']
+                );
+            }
+
+            // Solo agregar lote si existe
+            if (!empty($row['idinventario_lote'])) {
+
+                $resultado[$idDetalle]['lotes'][] = [
+                    'idinventario_lote' => $row['idinventario_lote'],
+                    'codigo_lote' => $row['codigo_lote'],
+                    'fecha_vencimiento' => $row['fecha_vencimiento'],
+                    'cantidad' => $row['cantidad_lote']
+                ];
+            }
+        }
+
+        return array_values($resultado);
+    }
     public function cambiarComprobante($idventa, $nuevo_tipo, $idsucursal)
     {
         // --- 1. DEFINIR PREFIJO ---
@@ -2345,10 +2479,10 @@ class Venta extends Helpers
     public function selectTipoAcompanante()
     {
         $data = (new DBQuery($this->pdo))
-        ->select('*')
-        ->from('tipoacompanante')
-        ->where('estado', '=', 1)
-        ->get();
+            ->select('*')
+            ->from('tipoacompanante')
+            ->where('estado', '=', 1)
+            ->get();
         return Response::json($data);
     }
 }

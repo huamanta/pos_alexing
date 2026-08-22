@@ -33,6 +33,7 @@
 #################################################
 
 /reportes/qr
+/reportes/factura/qr
 /reportes/documentos
 /public/FACT_WebService/Facturacion/cdrs
 /public/FACT_WebService/Facturacion/files
@@ -67,3 +68,7 @@ files/seguimientos/*
 files/logos/*
 !files/logos/default.png
 !files/logos/.gitkeep
+
+files/compras/*
+!files/compras/default.png
+!files/compras/.gitkeep

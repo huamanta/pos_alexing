@@ -1501,14 +1501,10 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'totalVentas':
-		$idsucursal = $_POST['idsucursal'] ?? $_SESSION['idsucursal'];
-		if (empty($idsucursal) || $idsucursal == "0" || $idsucursal == "Todos") {
-			$idsucursal = "Todos";
-		}
-		$rspta = $consulta->ventasultimos_12meses($idsucursal);
-		$reg = $rspta->fetch_all();
-		echo json_encode($reg);
-
+		$idsucursal = $_SESSION['idsucursal'];
+		$fecha_inicio = $_REQUEST["fecha_inicio"] ?? '';
+		$fecha_fin = $_REQUEST["fecha_fin"] ?? '';
+		$consulta->totalVentas($idsucursal, $fecha_inicio, $fecha_fin);
 		break;
 
 	/*case 'productosmasvendidos':
@@ -1519,70 +1515,28 @@ switch ($_GET["op"]) {
 	break;*/
 
 	case 'utilidades12meses':
-		$idvendedor = $_REQUEST["idvendedor"] ?? "Todos"; // Usar null coalescing operator
-		$idsucursal = $_REQUEST["idsucursal"] ?? "Todos"; // Usar null coalescing operator
-
-		// Llamar a la función para obtener los datos
-		$rspta = $consulta->utilidadUltimos12Meses($idvendedor, $idsucursal);
-		$reg = $rspta->fetch_all(MYSQLI_ASSOC); // Obtener datos como array asociativo
-
-		// Prepara los datos para el gráfico
-		$labels = [];
-		$data = [];
-		foreach ($reg as $row) {
-			$labels[] = $row['mes']; // Mes
-			$data[] = floatval($row['total_utilidad']); // Total de utilidad
-		}
-
-		// Devuelve un JSON con las etiquetas y los datos
-		echo json_encode(['labels' => $labels, 'data' => $data]);
+		$idsucursal = $_SESSION["idsucursal"];
+		$consulta->utilidadUltimos12Meses($idsucursal);
 		break;
 
 
 	case 'ingresos_egresos':
+		$idsucursal = $_SESSION["idsucursal"];
 		$rspta = $consulta->IngresosEgresosMesesDelAnio();
-
-		$labels = [];
-		$ingresos = [];
-		$egresos = [];
-
-		while ($reg = $rspta->fetch_object()) {
-			$labels[] = ucfirst($reg->mes); // Poner mayúscula inicial
-			$ingresos[] = floatval($reg->ingresos);
-			$egresos[] = floatval($reg->egresos);
-		}
-
-		echo json_encode([
-			"labels" => $labels,
-			"ingresos" => $ingresos,
-			"egresos" => $egresos
-		]);
 		break;
 
 
 	case 'productosmasvendidos':
-		$rspta = $consulta->productosmasvendidos();
-		$reg = [];
-		while ($row = $rspta->fetch_assoc()) {
-			$reg[] = [
-				'nombre' => $row['nombre'],
-				'cantidad' => (int) $row['cantidad']
-			];
-		}
-		echo json_encode($reg);
+		$consulta->productosmasvendidos();
 		break;
 
 
 
 	case 'totalCompras':
-		$idsucursal = $_POST['idsucursal'] ?? $_SESSION['idsucursal'];
-		if (empty($idsucursal) || $idsucursal == "0" || $idsucursal == "Todos") {
-			$idsucursal = "Todos";
-		}
-		$rspta = $consulta->comprasultimos_10dias($idsucursal);
-		$reg = $rspta->fetch_all();
-		echo json_encode($reg);
-
+		$idsucursal = $_SESSION['idsucursal'];
+		$fecha_inicio = $_REQUEST["fecha_inicio"] ?? '';
+		$fecha_fin = $_REQUEST["fecha_fin"] ?? '';
+		$consulta->totalCompras($idsucursal, $fecha_inicio, $fecha_fin);
 		break;
 
 	case 'totalDocumentosPendientes2':
@@ -2193,13 +2147,10 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'totalcomprahoy':
-
-		$fecha_inicio = $_REQUEST["fecha_inicio"];
-		$fecha_fin = $_REQUEST["fecha_fin"];
-		$idvendedor = $_REQUEST["idvendedor"];
-		$idsucursal = $_REQUEST["idsucursal"];
-
-		$rspta = $consulta->totalcomprahoy($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal);
+		$idsucursal = $_SESSION["idsucursal"];
+		$fecha_inicio = $_REQUEST["fecha_inicio"] ?? '';
+		$fecha_fin = $_REQUEST["fecha_fin"] ?? '';
+		$rspta = $consulta->totalcomprahoy($idsucursal, $fecha_inicio, $fecha_fin);
 		echo json_encode($rspta);
 
 		break;
@@ -2265,24 +2216,10 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'totalventahoy':
-
-		// Recuperar los datos de entrada desde el request
-		$fecha_inicio = $_REQUEST["fecha_inicio"];
-		$fecha_fin = $_REQUEST["fecha_fin"];
-		$idvendedor = $_REQUEST["idvendedor"];
-		$idsucursal = $_REQUEST["idsucursal"];
-
-		// Llamar a la función que calcula el total de ventas de hoy
-		$rspta = $consulta->totalventahoy($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal);
-
-		// Verificar si 'total_venta' está presente y formatear con dos decimales
-		if (isset($rspta['total_venta'])) {
-			$rspta['total_venta'] = number_format((float) $rspta['total_venta'], 2, '.', '');
-		}
-
-		// Enviar respuesta formateada en JSON
-		echo json_encode($rspta);
-
+		$idsucursal = $_SESSION["idsucursal"];
+		$fecha_inicio = $_REQUEST["fecha_inicio"] ?? '';
+		$fecha_fin = $_REQUEST["fecha_fin"] ?? '';
+		$rspta = $consulta->totalventahoy($idsucursal, $fecha_inicio, $fecha_fin);
 		break;
 
 	case 'totalutilidadhoy':
@@ -2298,41 +2235,25 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'totalusuariosr':
-
-		$rspta = $consulta->totalusuariosr();
-		echo json_encode($rspta);
-
+		$consulta->totalusuariosr();
 		break;
 
 	case 'totalproveedoresr':
-
-		$rspta = $consulta->totalproveedoresr();
-		echo json_encode($rspta);
-
+		$consulta->totalproveedoresr();
 		break;
 
 	case 'totalventachoy':
-
-		$fecha_inicio = $_REQUEST["fecha_inicio"];
-		$fecha_fin = $_REQUEST["fecha_fin"];
-		$idvendedor = $_REQUEST["idvendedor"];
-		$idsucursal = $_REQUEST["idsucursal"];
-
-		$rspta = $consulta->totalventachoy($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal);
-		echo json_encode($rspta);
-
+		$idsucursal = $_SESSION["idsucursal"];
+		$fecha_inicio = $_REQUEST["fecha_inicio"] ?? '';
+		$fecha_fin = $_REQUEST["fecha_fin"] ?? '';
+		$consulta->totalventachoy($idsucursal, $fecha_inicio, $fecha_fin);
 		break;
 
 	case 'totalcuentasporcobrar':
-
-		$fecha_inicio = $_REQUEST["fecha_inicio"];
-		$fecha_fin = $_REQUEST["fecha_fin"];
-		$idvendedor = $_REQUEST["idvendedor"];
-		$idsucursal = $_REQUEST["idsucursal"];
-
-		$rspta = $consulta->totalcuentasporcobrar($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal);
-		echo json_encode($rspta);
-
+		$idsucursal = $_SESSION["idsucursal"];
+		$fecha_inicio = $_REQUEST["fecha_inicio"] ?? '';
+		$fecha_fin = $_REQUEST["fecha_fin"] ?? '';
+		$consulta->totalcuentasporcobrar($idsucursal, $fecha_inicio, $fecha_fin);
 		break;
 
 	case 'totalabonoscobrados':
@@ -2361,15 +2282,10 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'totalcuentasporpagar':
-
-		$fecha_inicio = $_REQUEST["fecha_inicio"];
-		$fecha_fin = $_REQUEST["fecha_fin"];
-		$idvendedor = $_REQUEST["idvendedor"];
-		$idsucursal = $_REQUEST["idsucursal"];
-
-		$rspta = $consulta->totalcuentasporpagar($fecha_inicio, $fecha_fin, $idvendedor, $idsucursal);
-		echo json_encode($rspta);
-
+		$idsucursal = $_SESSION["idsucursal"];
+		$fecha_inicio = $_REQUEST["fecha_inicio"] ?? '';
+		$fecha_fin = $_REQUEST["fecha_fin"] ?? '';
+		$consulta->totalcuentasporpagar($idsucursal, $fecha_inicio, $fecha_fin);
 		break;
 
 	case 'totalabonospagados':
@@ -2386,16 +2302,11 @@ switch ($_GET["op"]) {
 
 
 	case 'totalcategorias':
-
-		$rspta = $consulta->totalcategorias();
-		echo json_encode($rspta);
-
+		$consulta->totalcategorias();
 		break;
 
 	case 'totalproductos':
-		$rspta = $consulta->totalproductos($idsucursal);
-		echo json_encode($rspta);
-
+		$consulta->totalproductos($idsucursal);
 		break;
 
 	case 'listarStocksBajos':

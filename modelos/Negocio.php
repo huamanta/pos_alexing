@@ -74,8 +74,12 @@ class Negocio extends Helpers
 	//listar registros
 	public function listar($idsucursal)
 	{
-		$sql = "SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = $idsucursal";
-		return ejecutarConsulta($sql);
+		return (new DBQuery($this->pdo))
+		->select('*')
+		->from('sucursal s')
+		->join('empresas e', 's.idempresa = e.idempresa')
+		->where('s.idsucursal', '=', $idsucursal)
+		->first();
 	}
 
 }

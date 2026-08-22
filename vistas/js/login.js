@@ -11,24 +11,52 @@ $("#frmAcceso").on('submit', function(e) {
 
     let inicioCarga = performance.now();
 
-    $.post("controladores/usuario.php?op=verificar", { logina, clavea }, function(data) {
-        let finCarga = performance.now();
-        let tiempoServidor = finCarga - inicioCarga;
-        
-        try {
-            let usuario = JSON.parse(data);
+    $.post(
+        "controladores/usuario.php?op=verificar",
+        { logina, clavea },
+        function (response) {
 
-            if (usuario != null && usuario.nombre) {
-                mostrarMensajeBienvenida(usuario.nombre, tiempoServidor);
-            } else {
-                $('#n1').slideDown(); // Usamos slideDown que es más elegante
-                btn.prop("disabled", false).html(originalText); // Restaurar botón
-                setTimeout(() => { $('#n1').slideUp(); }, 3000);
+            let finCarga = performance.now();
+            let tiempoServidor = finCarga - inicioCarga;
+
+            console.log("Respuesta:", response);
+
+            try {
+
+                const data = response;
+
+                if (!data.success) {
+                    $('#n1').slideDown();
+
+                    btn.prop("disabled", false).html(originalText);
+
+                    setTimeout(() => {
+                        $('#n1').slideUp();
+                    }, 3000);
+
+                    return;
+                }
+
+                mostrarMensajeBienvenida(data.data.nombre, tiempoServidor);
+            } catch (err) {
+                console.error("Error procesando respuesta:", err);
+                console.error("Respuesta recibida:", response);
+                btn.prop("disabled", false).html(originalText);
             }
-        } catch(err) {
-            console.log("Error de respuesta", err);
-            btn.prop("disabled", false).html(originalText);
+
         }
+    )
+    .fail(function (xhr, status, error) {
+
+        btn.prop("disabled", false).html(originalText);
+
+        $('#n1').text(
+            xhr.responseJSON.message || 'Error del servidor.'
+        ).slideDown();
+
+        setTimeout(() => {
+            $('#n1').slideUp();
+        }, 3000);
     });
 });
 
@@ -63,7 +91,7 @@ function mostrarMensajeBienvenida(nombre, tiempoServidor) {
                         </div>
                     </div>
 
-                    <h3 class="loading-title"></h3>
+                    <h3 class="loading-title">Bienvenido ${nombre}</h3>
                     <p class="loading-text">Sincronizando sus preferencias...</p>
                     
                     <div class="progress-bar-wrapper">

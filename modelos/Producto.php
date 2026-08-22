@@ -630,22 +630,21 @@ class Producto extends Helpers
 		return ejecutarConsulta($sql);
 	}*/
 
-	public function listarstock22($idsucursal, $ids)
+	public function listarstock22($idsucursal)
 	{
-		$sql = "SELECT a.idproducto, a.nombre, a.stock, a.imagen, c.nombre as categoria
-	            FROM producto a
-	            INNER JOIN categoria c ON a.idcategoria = c.idcategoria
-	            WHERE c.nombre != 'SERVICIO' AND a.stock <= 3";
+		$data = (new DBQuery($this->pdo))
+			->select('a.idproducto, a.nombre, ip.stock, a.imagen, c.nombre AS categoria')
+			->from('producto a')
+			->join('inventario_producto ip', 'ip.idproducto', '=', 'a.idproducto')
+			->join('categoria c', 'a.idcategoria', '=', 'c.idcategoria')
+			->where('c.nombre', '!=', 'SERVICIO')
+			->where('ip.stock', '<=', 'ip.stock_minimo')
+			->where('a.idsucursal', '=', $idsucursal)
+			->orderBy('a.fechac', 'DESC')
+			->limit(5)
+			->get();
 
-		// Filtrar por sucursal si es necesario
-		if ($ids != '0' || $idsucursal != '' && $idsucursal != 'Todos') {
-			$sql .= " AND a.idsucursal = '$idsucursal'";
-		}
-
-		// Ordenar y limitar los resultados a los 5 más recientes
-		$sql .= " ORDER BY a.fechac DESC LIMIT 5";
-
-		return ejecutarConsulta($sql);
+		return Response::json($data);
 	}
 
 
@@ -1093,12 +1092,8 @@ class Producto extends Helpers
 				'ASC'
 			);
 
-		return json_encode(
-			$query->paginate(
-				$page,
-				$limit
-			)
-		);
+		$response = $query->paginate($page, $limit);
+		return Response::json($response);
 	}
 
 	public function contarActivos($idsucursal, $buscar = "")
