@@ -69,14 +69,15 @@ switch ($_GET["op"]) {
 
 		while ($reg = $rspta->fetch_object()) {
 
-			if ($reg->nombre == NULL) {
-
-				$nombre = 'Acceso a Todas las Sucursales';
-
-			} else {
-
+			$nombre = 'Acceso a Todas las Sucursales';
+			$btnEditar = '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idusuario . ')"><i class="fas fa-edit"></i></button>';
+			$btnAnular = '';
+			if (!$reg->superusuario) {
 				$nombre = $reg->nombre;
-
+				$btnAnular = '<button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idusuario . ')"><i class="fas fa-times-circle"></i></button>';
+				if (!$reg->condicion) {
+					$btnAnular = '<button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idusuario . ')"><i class="fa fa-check"></i></button>';
+				}
 			}
 
 			$data[] = array(
@@ -85,10 +86,7 @@ switch ($_GET["op"]) {
 				"2" => $nombre,
 				"3" => ($reg->condicion) ? '<span class="badge bg-green">ACTIVADO</span>' :
 					'<span class="badge bg-red">DESACTIVADO</span>',
-				"4" => ($reg->condicion) ? '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idusuario . ')"><i class="fas fa-edit"></i></button>' .
-					' <button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idusuario . ')"><i class="fas fa-times-circle"></i></button>' :
-					'<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idusuario . ')"><i class="fas fa-edit"></i></button>' .
-					' <button class="btn btn-primary btn-xs" onclick="activar(' . $reg->idusuario . ')"><i class="fa fa-check"></i></button>',
+				"4" => $btnEditar . $btnAnular,
 			);
 		}
 		$results = array(
@@ -137,83 +135,131 @@ switch ($_GET["op"]) {
 
 	case 'permisos':
 		require_once "../modelos/Permiso.php";
+
 		$permiso = new Permiso();
-		$rspta = $permiso->listar();
+		$rspta = $permiso->listarPermisos();
 
 		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-		// Permisos y subpermisos marcados del usuario
-		$marcados = ($id > 0) ? $usuario->listarmarcados($id) : false;
+		$marcados = $usuario->listarmarcados($id);
+
 		$permisosMarcados = [];
 		$subpermisosMarcados = [];
 
-		if ($marcados) {
-			while ($per = $marcados->fetch_object()) {
-				if (!is_null($per->idsubpermiso) && $per->idsubpermiso != '') {
-					$subpermisosMarcados[] = intval($per->idsubpermiso);
-				} else {
-					$permisosMarcados[] = intval($per->idpermiso);
-				}
+		foreach ($marcados as $per) {
+			if (!empty($per['idsubpermiso'])) {
+				$subpermisosMarcados[] = intval($per['idsubpermiso']);
+			} else {
+				$permisosMarcados[] = intval($per['idpermiso']);
 			}
 		}
 
-		// Acciones marcadas
 		$accionesMarcadas = [];
+
 		if ($id > 0) {
 			$rspta_acciones = $usuario->listaraccionesmarcadas($id);
-			while ($act = $rspta_acciones->fetch_object()) {
-				$accionesMarcadas[] = intval($act->idaccion_permiso);
+
+			while ($act = $rspta_acciones->fetch_assoc()) {
+				$accionesMarcadas[] = intval($act['idaccion_permiso']);
 			}
 		}
 
-		// Cargar subpermisos y acciones de una sola vez
 		$subpermisos = [];
-		$sql_sub = "SELECT * FROM subpermiso ORDER BY idpermiso, idsubpermiso";
-		$rs_sub = ejecutarConsulta($sql_sub);
-		while ($row = $rs_sub->fetch_object()) {
-			$subpermisos[$row->idpermiso][] = $row;
+		$rs_sub = $permiso->listarSubPermisos();
+		foreach ($rs_sub as $row) {
+			$subpermisos[$row['idpermiso']][] = $row;
 		}
 
 		$acciones = [];
-		$sql_acc = "SELECT * FROM accion_permiso ORDER BY idsubpermiso, idaccion_permiso";
-		$rs_acc = ejecutarConsulta($sql_acc);
-		while ($row = $rs_acc->fetch_object()) {
-			$acciones[$row->idsubpermiso][] = $row;
+
+		$rs_acc = $permiso->listarAccionesPermiso();
+		foreach ($rs_acc as $row) {
+			$acciones[$row['idsubpermiso']][] = $row;
 		}
 
-		while ($perm = $rspta->fetch_object()) {
-			$checked = in_array($perm->idpermiso, $permisosMarcados) ? 'checked' : '';
+		foreach ($rspta as $perm) {
+
+			$idPermiso = intval($perm['idpermiso']);
+			$nombrePermiso = htmlspecialchars($perm['nombre'], ENT_QUOTES, 'UTF-8');
+
+			$checked = in_array(
+				$idPermiso,
+				$permisosMarcados
+			) ? 'checked' : '';
 
 			echo "
 			<div class='permiso-card'>
+
 				<label class='permiso-title'>
-					<input type='checkbox' name='permiso[]' value='{$perm->idpermiso}' $checked>
-					{$perm->nombre}
+					<input
+						type='checkbox'
+						name='permiso[]'
+						value='{$idPermiso}'
+						{$checked}
+					>
+					{$nombrePermiso}
 				</label>
 			";
 
-			if (isset($subpermisos[$perm->idpermiso])) {
-				foreach ($subpermisos[$perm->idpermiso] as $sub) {
-					$sub_checked = in_array($sub->idsubpermiso, $subpermisosMarcados) ? 'checked' : '';
+			if (isset($subpermisos[$idPermiso])) {
+
+				foreach ($subpermisos[$idPermiso] as $sub) {
+
+					$idSubPermiso = intval($sub['idsubpermiso']);
+					$nombreSubPermiso = htmlspecialchars(
+						$sub['nombre'],
+						ENT_QUOTES,
+						'UTF-8'
+					);
+
+					$sub_checked = in_array(
+						$idSubPermiso,
+						$subpermisosMarcados
+					) ? 'checked' : '';
 
 					echo "
 					<div class='subpermiso'>
+
 						<label>
-							<input type='checkbox' name='subpermisos[]' value='{$sub->idsubpermiso}' $sub_checked>
-							{$sub->nombre}
+							<input
+								type='checkbox'
+								name='subpermisos[]'
+								value='{$idSubPermiso}'
+								{$sub_checked}
+							>
+							{$nombreSubPermiso}
 						</label>
 					";
 
-					if (isset($acciones[$sub->idsubpermiso])) {
-						foreach ($acciones[$sub->idsubpermiso] as $accion) {
-							$accion_checked = in_array($accion->idaccion_permiso, $accionesMarcadas) ? 'checked' : '';
+					if (isset($acciones[$idSubPermiso])) {
+
+						foreach ($acciones[$idSubPermiso] as $accion) {
+
+							$idAccion = intval($accion['idaccion_permiso']);
+							$nombreAccion = htmlspecialchars(
+								$accion['nombre'],
+								ENT_QUOTES,
+								'UTF-8'
+							);
+
+							$accion_checked = in_array(
+								$idAccion,
+								$accionesMarcadas
+							) ? 'checked' : '';
 
 							echo "
 							<div class='accion'>
+
 								<label>
-									<input type='checkbox' name='acciones[]' value='{$accion->idaccion_permiso}' $accion_checked>
-									{$accion->nombre}
+									<input
+										type='checkbox'
+										name='acciones[]'
+										value='{$idAccion}'
+										{$accion_checked}
+									>
+									{$nombreAccion}
 								</label>
+
 							</div>
 							";
 						}
@@ -225,7 +271,7 @@ switch ($_GET["op"]) {
 
 			echo "</div>";
 		}
-		echo "</div>";
+
 		break;
 
 
@@ -261,7 +307,7 @@ switch ($_GET["op"]) {
 
 	case 'listarSucursalesUsuario':
 		$idusuario = $_GET['idusuario'];
-		$usuario->listarSucursalesUsuario($idusuario);
+		echo json_encode($usuario->listarSucursalesUsuario($idusuario));
 		break;
 
 	case 'recuperar':
