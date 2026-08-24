@@ -338,7 +338,6 @@ class Cotizacion extends Helpers
         if ($search !== '') {
             $paginator->search($search, [
                 'p.nombre',
-                'u.nombre',
                 'c.serie_comprobante',
                 'c.num_comprobante'
             ]);

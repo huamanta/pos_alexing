@@ -478,7 +478,37 @@
 
                                             </div>
 
-                                            <!-- FILA -->
+                                            <div class="setting-row">
+
+                                                <div class="row">
+
+                                                    <div class="row m-0 mt-3">
+                                                        <div class="form-group col-lg-12 col-md-12 col-xs-12">
+                                                            <label><strong>Datos generales</strong></label>
+                                                        </div>
+
+                                                        <div class="form-group col-lg-4 col-md-12 col-xs-12">
+                                                            <label for="ruc" class="control-label">RUC:</label>
+                                                            <input type="text" class="form-control" name="ruc" id="ruc">
+                                                        </div>
+
+                                                        <div class="form-group col-lg-8 col-md-12 col-xs-12">
+                                                            <label for="razon_social" class="control-label">Razon
+                                                                social:</label>
+                                                            <input class="form-control" type="text" name="razon_social"
+                                                                id="razon_social" placeholder="Razon social">
+                                                        </div>
+                                                        <div class="form-group col-lg-4 col-md-12 col-xs-12">
+                                                            <label for="monto_impuesto" class="control-label">Valor
+                                                                impuesto (%):</label>
+                                                            <input type="text" class="form-control" name="monto_impuesto"
+                                                                id="monto_impuesto">
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                            </div>
 
                                             <div class="setting-row">
 
@@ -486,22 +516,35 @@
 
                                                     <div class="row m-0 mt-3">
                                                         <div class="form-group col-lg-12 col-md-12 col-xs-12">
-                                                            <label><strong>Certificado Electrónico y
-                                                                    Contraseña</strong></label>
+                                                            <label><strong>Certificado electrónico y
+                                                                    contraseña</strong></label>
+                                                        </div>
+                                                        <div class="form-group col-lg-6 col-md-12 col-xs-12">
+                                                            <label for="usuario_sol" class="control-label">Usuario
+                                                                SOL:</label>
+                                                            <input class="form-control" type="text" name="usuario_sol"
+                                                                id="usuario_sol" placeholder="Usuario sol">
+                                                        </div>
+                                                        <div class="form-group col-lg-6 col-md-12 col-xs-12">
+                                                            <label for="clave_sol" class="control-label">Clave
+                                                                SOL:</label>
+                                                            <input class="form-control" type="password" name="clave_sol"
+                                                                id="clave_sol" placeholder="**********">
                                                         </div>
 
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">
                                                             <label for="ruta_certificado" class="control-label">Certificado
                                                                 Digital:</label>
                                                             <input type="file" class="form-control" name="ruta_certificado"
-                                                                id="ruta_certificado">
+                                                                id="rutac_ertificado">
                                                         </div>
 
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">
                                                             <label for="clave_certificado"
                                                                 class="control-label">Contraseña:</label>
-                                                            <input class="form-control" type="text" name="clave_certificado"
-                                                                id="clave_certificado" placeholder="Contraseña">
+                                                            <input class="form-control" type="passwod"
+                                                                name="clave_certificado" id="clave_certificado"
+                                                                placeholder="**********">
                                                         </div>
 
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">
@@ -523,7 +566,7 @@
 
                                         <div class="setting-footer">
 
-                                            <button class="btn btn-primary btn-lg" id="btnGuardarMora">
+                                            <button class="btn btn-primary btn-lg" id="btnGuardarFacturacion">
 
                                                 <i class="fa fa-save"></i>
 
@@ -707,7 +750,8 @@
                                                         </div>
 
                                                         <div class="setting-desc">
-                                                            El sistema enviará automáticamente notificaciones de una cuota que se encuentre por vencer.
+                                                            El sistema enviará automáticamente notificaciones de una cuota
+                                                            que se encuentre por vencer.
                                                         </div>
 
                                                     </div>
@@ -737,7 +781,8 @@
                                                         </div>
 
                                                         <div class="setting-desc">
-                                                            El sistema calculará las cuotas y sus plazos considerando cada mes como un período de 30 días.
+                                                            El sistema calculará las cuotas y sus plazos considerando cada
+                                                            mes como un período de 30 días.
                                                         </div>
 
                                                     </div>

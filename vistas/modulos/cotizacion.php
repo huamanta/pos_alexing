@@ -17,7 +17,6 @@ date_default_timezone_set('America/Lima');
         z-index: 10;
         background: #007bff;
         color: #fff;
-        text-align: center;
     }
 
 
@@ -30,19 +29,6 @@ date_default_timezone_set('America/Lima');
         background-color: #f0f8ff;
         cursor: pointer;
         transition: background 0.3s ease;
-    }
-
-    /* Feedback visual de validación */
-    input:valid,
-    select:valid,
-    textarea:valid {
-        border: 1px solid #28a745 !important;
-    }
-
-    input:invalid,
-    select:invalid,
-    textarea:invalid {
-        border: 1px solid #dc3545 !important;
     }
 
     /* Botones flotantes con animación pulsante */
@@ -239,6 +225,215 @@ date_default_timezone_set('America/Lima');
         font-size: 28px;
         font-weight: bold;
     }
+
+    
+
+    /* =========================================================
+   TABLA DETALLE VENTA
+   ========================================================= */
+
+    #detalles-wrapper {
+        max-height: 320px;
+        overflow-y: auto;
+        width: 100%;
+        border: 1px solid var(--pos-border);
+        border-radius: 9px 9px 0px 0px;
+        background: #fff;
+    }
+
+    #detalles {
+        width: 100% !important;
+        min-width: 100% !important;
+        margin: 0 !important;
+        font-size: 11px;
+        table-layout: fixed;
+    }
+
+    #detalles thead {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+    }
+
+    #detalles thead th {
+        background: #f8fafc !important;
+        color: #475569 !important;
+        border: none !important;
+        border-bottom: 1px solid var(--pos-border) !important;
+        padding: 8px 5px !important;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .3px;
+    }
+
+    #detalles tbody td {
+        padding: 7px 5px !important;
+        vertical-align: middle;
+        border-color: #f0f2f5;
+    }
+
+    #detalles tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    #detalles tbody .fila-vacia-detalles td {
+        width: 100% !important;
+        padding: 25px 10px !important;
+        color: var(--pos-text-muted);
+        text-align: center;
+    }
+
+    /* Scroll */
+
+    #detalles-wrapper::-webkit-scrollbar,
+    #floating-body::-webkit-scrollbar,
+    #datafechas::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    #detalles-wrapper::-webkit-scrollbar-track,
+    #floating-body::-webkit-scrollbar-track,
+    #datafechas::-webkit-scrollbar-track {
+        background: #f8fafc;
+    }
+
+    #detalles-wrapper::-webkit-scrollbar-thumb,
+    #floating-body::-webkit-scrollbar-thumb,
+    #datafechas::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    #detalles-wrapper::-webkit-scrollbar-thumb:hover,
+    #floating-body::-webkit-scrollbar-thumb:hover,
+    #datafechas::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    /* =========================================================
+   TABLAS PRODUCTOS
+   ========================================================= */
+
+    #tblarticulos,
+    #tblarticulos2,
+    #tbllistado,
+    #tbllistadoVentas {
+        font-size: 11.5px;
+    }
+
+    #tblarticulos thead th,
+    #tblarticulos2 thead th {
+        background: #f8fafc !important;
+        color: #475569;
+        border-top: none;
+        border-bottom: 1px solid var(--pos-border);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    #tblarticulos td,
+    #tblarticulos th,
+    #tblarticulos2 td,
+    #tblarticulos2 th {
+        padding: 6px 5px;
+        vertical-align: middle;
+    }
+
+    #tblarticulos tbody tr:hover,
+    #tblarticulos2 tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    /* =========================================================
+   TABLA LISTADO DE VENTAS
+   ========================================================= */
+
+    #tbllistado {
+        margin-bottom: 0;
+    }
+
+    #tbllistado thead th,
+    #tbllistadoVentas thead th {
+        background: #f8fafc;
+        color: #475569;
+        border-top: none;
+        border-bottom: 1px solid var(--pos-border);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: .25px;
+    }
+
+    #tbllistado tbody td,
+    #tbllistadoVentas tbody td {
+        padding: 7px 6px;
+        vertical-align: middle;
+    }
+
+    #tbllistado tbody tr,
+    #tbllistadoVentas tbody tr {
+        transition: background .15s ease;
+    }
+
+    #tbllistado tbody tr:hover,
+    #tbllistadoVentas tbody tr:hover {
+        background: #f8fbff;
+    }
+
+    /* =========================================================
+   TABS PRODUCTO / SERVICIO
+   ========================================================= */
+
+    .card-tabs .nav-tabs {
+        border-bottom: 1px solid var(--pos-border);
+    }
+
+    .card-tabs .nav-tabs .nav-link {
+        border: none;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 9px 15px;
+        border-bottom: 2px solid transparent;
+    }
+
+    .card-tabs .nav-tabs .nav-link:hover {
+        color: var(--pos-primary);
+    }
+
+    .card-tabs .nav-tabs .nav-link.active {
+        color: var(--pos-primary);
+        background: transparent;
+        border-bottom: 2px solid var(--pos-primary);
+    }
+
+    /* =========================================================
+   BUSCADOR PRODUCTOS
+   ========================================================= */
+
+    #div_search {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    #div_search input {
+        height: 36px;
+        border-radius: 8px;
+    }
+
+    #div_search .btn {
+        height: 36px;
+        min-width: 36px;
+    }
+
+    .active-search {
+        background: var(--pos-primary) !important;
+        color: #fff !important;
+        border-color: var(--pos-primary) !important;
+    }
 </style>
 
 <div class="content-wrapper">
@@ -262,39 +457,40 @@ date_default_timezone_set('America/Lima');
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
-                    <div class="card">
-                        <div class="card-header" id="header">
-                            <h3 class="card-title">Gestión de Cotizaciones</h3>
+                    <div class="card" id="listadoregistros">
+                        <div class="card-header">
                             <div class="row">
-                                <div class="col-md-6">
-                                    <button type="button" class="btn btn-outline-primary btn-xs" id="btnNuevo"
+                                <div class="col-md-2 mt-4">
+                                    <button type="button" class="btn btn-outline-primary btn-block" id="btnNuevo"
                                         onclick="mostrarform(true)"><i class="fa fa-plus"></i> Nuevo</button>
                                 </div>
-                            </div>
-                        </div>
-                        <!-- /.card-header -->
-
-                        <!-- ============== LISTADO ============== -->
-                        <div class="card-body" id="listadoregistros">
-                            <div class="row">
-                                <div class="form-group col-lg-4 col-md-4 col-sm-4 col-xs-12">
+                                <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Fecha Inicio:</label>
                                     <div class="input-group">
-                                        <div class="input-group-prepend"><span class="input-group-text"><i
-                                                    class="far fa-calendar-alt"></i></span></div>
-                                        <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio" />
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </span>
+                                        </div>
+                                        <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio"
+                                            value="">
                                     </div>
                                 </div>
-                                <div class="form-group col-lg-4 col-md-4 col-sm-4 col-xs-12">
+
+                                <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Fecha Fin:</label>
+
                                     <div class="input-group">
-                                        <div class="input-group-prepend"><span class="input-group-text"><i
-                                                    class="far fa-calendar-alt"></i></span></div>
-                                        <input type="date" class="form-control" name="fecha_fin" id="fecha_fin" />
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">
+                                                <i class="far fa-calendar-alt"></i>
+                                            </span>
+                                        </div>
+                                        <input type="date" class="form-control" name="fecha_fin" id="fecha_fin"
+                                            value="">
                                     </div>
                                 </div>
-
-
+                                <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12"></div>
                                 <div class="col-md-6 d-flex align-items-center">
                                     <span class="mr-2">Mostrar</span>
                                     <select id="limit" class="form-control" style="width:100px"
@@ -311,6 +507,12 @@ date_default_timezone_set('America/Lima');
                                 <div class="col-md-6">
                                     <input type="text" id="search" class="form-control" placeholder="Buscar...">
                                 </div>
+                            </div>
+                        </div>
+                        <!-- ============== LISTADO ============== -->
+                        <div class="card-body">
+                            <div class="row">
+
                                 <div class="col-md-12 mt-2">
                                     <div class="table-responcive">
                                         <table id="tbllistado" class="table table-striped table-hover">
@@ -323,7 +525,7 @@ date_default_timezone_set('America/Lima');
                                                     <th>Número</th>
                                                     <th>Total</th>
                                                     <th>Estado</th>
-                                                    <th style="width: 120px;">Acciones</th>
+                                                    <th>Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="tbody_cotizaciones"></tbody>
@@ -501,7 +703,8 @@ date_default_timezone_set('America/Lima');
                                                         <div class="row">
                                                             <div class="col-md-4">
                                                                 <div class="form-group mb-2">
-                                                                    <label class="col-form-label" for="tipo_comprobante">
+                                                                    <label class="col-form-label"
+                                                                        for="tipo_comprobante">
                                                                         <i class="fas fa-file-alt fs-6"></i>
                                                                         <span class="small">Tipo Documento </span>
                                                                     </label>
@@ -875,7 +1078,6 @@ date_default_timezone_set('America/Lima');
                 .form-control {
                     border-radius: 10px;
                     border: 1px solid #dcdfe3;
-                    height: 42px;
                     background: #fdfdfd;
                     font-size: 14px;
                 }

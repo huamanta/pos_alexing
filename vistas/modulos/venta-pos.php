@@ -1234,7 +1234,6 @@ date_default_timezone_set('America/Lima');
                                 </div>
                                 <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Fecha Inicio:</label>
-
                                     <div class="input-group">
                                         <div class="input-group-prepend">
                                             <span class="input-group-text">
