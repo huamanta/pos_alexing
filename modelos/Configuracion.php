@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . "/Helpers.php";
-header('Content-Type: application/json; charset=utf-8');
+require_once __DIR__ . "/../core/Response.php";
 
 class Configuracion extends Helpers
 {
@@ -9,7 +9,7 @@ class Configuracion extends Helpers
         parent::__construct();
     }
 
-    public function listarConfiguracion(int $idsucursal): string
+    public function listarConfiguracion(int $idsucursal)
     {
         try {
 
@@ -52,20 +52,25 @@ class Configuracion extends Helpers
                 $sucursal['logo_url'] = null;
             }
 
-            return json_encode([
+            #facturacion
+            $facturacion = (new DBQuery($this->pdo))
+                ->select('*')
+                ->from('empresas')
+                ->where('idempresa', '=', $sucursal['idempresa'])
+                ->first();
+
+            return Response::json([
                 "status" => true,
                 "data" => [
                     "configuracion" => $config,
                     "sucursal" => $sucursal,
+                    "facturacion" => $facturacion,
                 ]
             ]);
 
         } catch (Throwable $e) {
 
-            return json_encode([
-                "status" => false,
-                "message" => $e->getMessage()
-            ]);
+            return Response::error($e->getMessage());
 
         }
     }
@@ -83,7 +88,6 @@ class Configuracion extends Helpers
         $ubigeo,
         $moneda
     ) {
-
         try {
 
             if (empty($idsucursal)) {
@@ -161,18 +165,13 @@ class Configuracion extends Helpers
                 throw new Exception("No se pudo actualizar la configuración.");
             }
 
-            return json_encode([
-                'status' => true,
+            return Response::json([
+                'success' => true,
                 'message' => 'Configuración actualizada correctamente.'
             ]);
 
         } catch (Throwable $e) {
-
-            return json_encode([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
-
+            return Response::error($e->getMessage());
         }
     }
 
@@ -181,7 +180,7 @@ class Configuracion extends Helpers
         int $is_mora_credito,
         float $valor_mora_credito,
         int $dias_gracia
-    ): string {
+    ) {
 
         try {
 
@@ -222,17 +221,13 @@ class Configuracion extends Helpers
                 throw new Exception("No se pudo guardar la configuración de mora.");
             }
 
-            return json_encode([
-                'status' => true,
+            return Response::json([
+                'success' => true,
                 'message' => 'La configuración de mora se guardó correctamente.'
             ]);
 
         } catch (Throwable $e) {
-
-            return json_encode([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
+            return Response::error($e->getMessage());
 
         }
     }
@@ -245,7 +240,7 @@ class Configuracion extends Helpers
         int $is_descuento_anticipado,
         float $valor_descuento_anticipado,
         int $dias_anticipacion
-    ): string {
+    ) {
 
         try {
 
@@ -288,18 +283,13 @@ class Configuracion extends Helpers
 
             }
 
-            return json_encode([
-                'status' => true,
+            return Response::json([
+                'success' => true,
                 'message' => 'La configuración de crédito se guardó correctamente.'
             ]);
 
         } catch (Throwable $e) {
-
-            return json_encode([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
-
+            return Response::error($e->getMessage());
         }
     }
 
@@ -308,7 +298,7 @@ class Configuracion extends Helpers
         int $idsucursal,
         int $is_refinanciamiento,
         int $maximo_refinanciamientos
-    ): string {
+    ) {
 
         try {
 
@@ -343,18 +333,132 @@ class Configuracion extends Helpers
 
             }
 
-            return json_encode([
-                'status' => true,
+            return Response::json([
+                'success' => true,
                 'message' => 'La configuración de refinanciamiento se guardó correctamente.'
             ]);
 
         } catch (Throwable $e) {
-
-            return json_encode([
-                'status' => false,
-                'message' => $e->getMessage()
-            ]);
-
+            return Response::error($e->getMessage());
         }
+    }
+
+
+    public function actualizarConfiguracionFacturacion(
+        int $idsucursal,
+        int $is_send_sunat,
+        string $ruc,
+        string $razon_social,
+        string $monto_impuesto,
+        string $usuario_sol,
+        string $clave_sol,
+        $ruta_certificado,
+        string $clave_certificado,
+        string $estado_certificado
+    ) {
+        try {
+            $this->pdo->beginTransaction();
+            if (!$idsucursal) {
+                throw new Exception("No se ha recibido la sucursal.");
+            }
+
+            $config = Helpers::sucursalConfiguracion($idsucursal);
+
+            if ($config) {
+                (new FluentSaver($this->pdo))
+                    ->table('sucursal_configuracion')
+                    ->primaryKey('idsucursal_configuracion')
+                    ->data([
+                        'idsucursal_configuracion' => $config['idsucursal_configuracion'],
+                        'is_send_sunat' => $is_send_sunat
+                    ])
+                    ->update();
+
+            } else {
+                (new FluentSaver($this->pdo))
+                    ->table('sucursal_configuracion')
+                    ->data([
+                        'idsucursal' => $idsucursal,
+                        'is_send_sunat' => $is_send_sunat
+                    ])
+                    ->save();
+            }
+
+            $idEmpresa = Helpers::getEmpresa($idsucursal);
+
+            if (!$idEmpresa) {
+                throw new Exception("La sucursal no tiene empresa asignada.");
+            }
+            $data = [
+                'idempresa' => $idEmpresa,
+                'ruc' => $ruc,
+                'razon_social' => $razon_social,
+                'usuario_sol' => $usuario_sol,
+                'monto_impuesto' => $monto_impuesto,
+                'ruta_certificado' => self::guardarCertificado($ruta_certificado, $idsucursal),
+                'estado_certificado' => $estado_certificado,
+            ];
+
+            if (!empty($clave_sol)) {
+                $data['clave_sol'] = $clave_sol;
+            }
+
+            if (!empty($clave_certificado)) {
+                $data['clave_certificado'] = $clave_certificado;
+            }
+            (new FluentSaver($this->pdo))
+                ->table('empresas')
+                ->primaryKey('idempresa')
+                ->data($data)
+                ->update();
+
+            $this->pdo->commit();
+
+            return Response::json(['success' => true, 'message' => 'Se ha actualizado correctamente la facturacion']);
+        } catch (\Throwable $th) {
+            $this->pdo->rollBack();
+            return Response::error($th->getMessage());
+        }
+    }
+
+
+    public function guardarCertificado($archivo, $idsucursal)
+    {
+        if (!isset($archivo) || !isset($archivo['error']) || $archivo['error'] === UPLOAD_ERR_NO_FILE) {
+            return null;
+        }
+
+        if ($archivo['error'] !== UPLOAD_ERR_OK) {
+            throw new Exception('Error al cargar el certificado.');
+        }
+
+        $extension = strtolower(
+            pathinfo($archivo['name'], PATHINFO_EXTENSION)
+        );
+
+        if (!in_array($extension, ['p12', 'pfx'], true)) {
+            throw new Exception('El certificado debe ser .p12 o .pfx.');
+        }
+
+        if ($archivo['size'] > 5 * 1024 * 1024) {
+            throw new Exception('El certificado no puede superar los 5 MB.');
+        }
+
+        $directorio = __DIR__ . '/../public/FACT_WebService/Facturacion/src/';
+
+        if (!is_dir($directorio) && !mkdir($directorio, 0755, true)) {
+            throw new Exception('No se pudo crear el directorio de certificados.');
+        }
+
+        $nombre = 'certificado_' . $idsucursal . '_' . bin2hex(random_bytes(8)) . '.' . $extension;
+
+        $destino = $directorio . $nombre;
+
+        if (!move_uploaded_file($archivo['tmp_name'], $destino)) {
+            throw new Exception('No se pudo guardar el certificado.');
+        }
+
+        return $nombre;
+
     }
 }

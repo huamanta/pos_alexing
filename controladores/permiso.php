@@ -25,25 +25,7 @@ switch ($_GET["op"]) {
         break;
 
     case 'listar':
-        $rspta = $permiso->listar();
-        $data = [];
-
-        while ($reg = $rspta->fetch_object()) {
-            $data[] = [
-                "0" => '<button class="btn btn-warning" onclick="mostrar(' . $reg->idpermiso . ')"><i class="fas fa-edit"></i></button>' .
-                       ' <button class="btn btn-danger" onclick="eliminar(' . $reg->idpermiso . ')"><i class="fa fa-trash"></i></button>',
-                "1" => $reg->nombre
-            ];
-        }
-
-        $results = [
-            "sEcho" => 1,
-            "iTotalRecords" => count($data),
-            "iTotalDisplayRecords" => count($data),
-            "aaData" => $data
-        ];
-
-        echo json_encode($results);
+        $permiso->listar();
         break;
 
     // ================= SUBPERMISOS ==================

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Aug 18, 2026 at 05:31 AM
+-- Generation Time: Aug 25, 2026 at 12:09 PM
 -- Server version: 8.0.30
 -- PHP Version: 8.2.28
 
@@ -144,6 +144,8 @@ CREATE TABLE `bancos` (
   `updated_at` datetime DEFAULT NULL,
   `nombre` varchar(155) COLLATE utf32_spanish_ci NOT NULL,
   `descripcion` varchar(255) COLLATE utf32_spanish_ci NOT NULL,
+  `cuenta` varchar(50) COLLATE utf32_spanish_ci DEFAULT NULL,
+  `cci` varchar(50) COLLATE utf32_spanish_ci DEFAULT NULL,
   `saldo` decimal(11,2) NOT NULL,
   `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
@@ -152,10 +154,10 @@ CREATE TABLE `bancos` (
 -- Dumping data for table `bancos`
 --
 
-INSERT INTO `bancos` (`idbanco`, `created_at`, `updated_at`, `nombre`, `descripcion`, `saldo`, `deleted_at`) VALUES
-(1, '2026-08-09 07:54:27', NULL, 'BCP', 'BANCO DE CREDITO DEL PERU', -30.00, NULL),
-(2, '2026-08-09 07:55:15', NULL, 'INTERBANK', 'BANCO INTERBANK', 35.00, NULL),
-(3, '2026-08-09 07:55:15', NULL, 'BBVA', 'BANCO BBVA', 150.00, NULL);
+INSERT INTO `bancos` (`idbanco`, `created_at`, `updated_at`, `nombre`, `descripcion`, `cuenta`, `cci`, `saldo`, `deleted_at`) VALUES
+(1, '2026-08-09 07:54:27', NULL, 'BCP', 'BANCO DE CREDITO DEL PERU', NULL, NULL, -30.00, NULL),
+(2, '2026-08-09 07:55:15', NULL, 'INTERBANK', 'BANCO INTERBANK', NULL, NULL, 35.00, NULL),
+(3, '2026-08-09 07:55:15', NULL, 'BBVA', 'BANCO BBVA', NULL, NULL, 150.00, NULL);
 
 -- --------------------------------------------------------
 
@@ -211,7 +213,7 @@ INSERT INTO `caja_apertura` (`aperturacajaid`, `created_at`, `fecha_apertura`, `
 (1, '2026-07-01 23:22:11', '2026-07-01 23:22:11', 100.00, '2026-07-08 20:53:11', 7942.09, 7942.09, '0', 1, 1, 1, 1, NULL),
 (2, '2026-07-08 20:53:32', '2026-07-08 20:53:32', 50.00, '2026-08-01 19:43:43', NULL, 65710.10, '0', 1, 1, 1, 1, NULL),
 (3, '2026-07-15 10:10:21', '2026-07-15 10:10:21', 100.00, NULL, NULL, NULL, '1', 2, 2, 1, NULL, NULL),
-(4, '2026-08-02 01:38:18', '2026-08-02 01:38:18', 100.00, NULL, 1859.55, NULL, '1', 1, 1, 1, NULL, NULL);
+(4, '2026-08-02 01:38:18', '2026-08-02 01:38:18', 100.00, NULL, 2059.55, NULL, '1', 1, 1, 1, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -330,7 +332,7 @@ INSERT INTO `compra` (`idcompra`, `idsucursal`, `idproveedor`, `idpersonal`, `ti
 (36, 1, 17, 1, 'Boleta', 'B001', '000763', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 20.00, 0.00, 20.00, 'No', 0, 0, 20, '', NULL, 'REGISTRADO', '2026-08-12 03:30:21', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:30:21', '2026-08-11 22:30:21', NULL),
 (37, 1, 17, 1, 'Boleta', 'B001', '00487', '2026-08-11 00:00:00', 0.00, 'EXONERADA', 0.00, 240.00, 0.00, 240.00, 'No', 0, 0, 240, '', NULL, 'REGISTRADO', '2026-08-12 03:32:58', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-11 22:32:58', '2026-08-11 22:32:58', NULL),
 (40, 1, 17, 1, 'Boleta', 'B001', '000568', '2026-08-12 00:00:00', 0.00, 'EXONERADA', 0.00, 50.00, 0.00, 50.00, 'No', 0, 0, 50, '', NULL, 'REGISTRADO', '2026-08-12 18:29:11', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-12 13:29:11', '2026-08-12 13:29:11', NULL),
-(41, 1, 17, 1, 'Boleta', 'B001', '00055', '2026-08-12 00:00:00', 0.00, 'EXONERADA', 0.00, 25.00, 0.00, 25.00, 'No', 0, 0, 25, '', NULL, 'REGISTRADO', '2026-08-12 18:30:20', 'Compra', 'REGISTRADO', '', '', '', '', '', '', NULL, '2026-08-12 13:30:20', '2026-08-12 13:30:20', NULL);
+(41, 1, 17, 1, 'Boleta', 'B001', '00055', '2026-08-12 00:00:00', 0.00, 'EXONERADA', 0.00, 25.00, 0.00, 25.00, 'No', 0, 0, 25, '', NULL, 'REALIZADO', '2026-08-12 18:30:20', 'Compra', 'REGISTRADO', '', '', '', '', '', '', '1787430271.jpeg', '2026-08-12 13:30:20', '2026-08-12 13:30:20', NULL);
 
 -- --------------------------------------------------------
 
@@ -432,7 +434,7 @@ CREATE TABLE `comp_pago` (
 INSERT INTO `comp_pago` (`idcomprobante_pago`, `nombre`, `serie_comprobante`, `num_comprobante`, `idempresa`, `condicion`, `created_at`, `updated_at`, `deleted_at`) VALUES
 (1, 'Nota de Venta', 'NV00', '45', 1, 1, '2026-08-06 10:11:42', '2026-08-18 00:29:25', NULL),
 (2, 'Factura', 'F001', '2', 1, 1, '2026-08-06 10:11:42', '2026-08-18 00:25:19', NULL),
-(3, 'Boleta', 'B001', '2', 1, 1, '2026-08-06 10:11:42', '2026-08-18 00:20:01', NULL),
+(3, 'Boleta', 'B001', '3', 1, 1, '2026-08-06 10:11:42', '2026-08-22 12:05:01', NULL),
 (4, 'Nota de Crédito', 'NC01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
 (5, 'Nota de Débito', 'ND01', '0', 1, 1, '2026-08-06 10:11:42', NULL, NULL),
 (6, 'Cotización', 'COT0', '26', 1, 1, '2026-08-06 10:11:42', '2026-08-11 22:03:05', NULL),
@@ -945,7 +947,7 @@ INSERT INTO `detalle_cuentas_por_cobrar` (`iddcpc`, `idcpc`, `idcaja`, `idperson
 (146, 20, 1, 1, 100.00, 0.00, NULL, 'guardaryeditar', '2026-07-17 23:00:00', 'Efectivo', NULL, '2026-07-17 23:00:13', '2026-07-17 23:00:13', NULL),
 (147, 20, 1, 1, 100.00, 0.00, NULL, 'guardaryeditar', '2026-07-17 23:04:03', 'Efectivo', NULL, '2026-07-17 23:04:17', '2026-07-17 23:04:17', NULL),
 (148, 20, 1, 1, 100.00, 0.00, NULL, 'guardaryeditar', '2026-07-17 23:06:16', 'Efectivo', NULL, '2026-07-17 23:06:35', '2026-07-17 23:06:35', NULL),
-(149, 20, 1, 1, 0.00, 2143.20, 2, 'guardaryeditar', '2026-07-28 21:55:16', 'Plin', NULL, '2026-07-28 21:57:12', '2026-07-28 21:57:12', NULL),
+(149, 20, 1, 1, 0.00, 2143.20, 3, 'guardaryeditar', '2026-07-28 21:55:16', 'Plin', NULL, '2026-07-28 21:57:12', '2026-07-28 21:57:12', NULL),
 (150, 21, 1, 1, 0.00, 100.00, NULL, 'guardaryeditar', '2026-07-28 22:09:32', 'Yape', NULL, '2026-07-28 22:10:11', '2026-07-28 22:10:11', NULL),
 (151, 20, 1, 1, 0.00, 100.00, NULL, 'guardaryeditar', '2026-07-28 22:09:32', 'Transferencia', NULL, '2026-07-28 22:14:22', '2026-07-28 22:14:22', NULL),
 (152, 20, 1, 1, 0.00, 100.00, NULL, 'guardaryeditar', '2026-07-28 22:09:32', 'Transferencia', NULL, '2026-07-28 22:14:43', '2026-07-28 22:14:43', NULL),
@@ -1135,7 +1137,8 @@ INSERT INTO `detalle_venta` (`iddetalle_venta`, `idsucursal`, `idventa`, `idprod
 (105, 1, 132, 31, 29, 24, 'Camara para m300', 1.00, 'CAJA', 6.00, 60.00, 0.00, NULL, 'venta', 0, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL),
 (106, 1, 133, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 34.00, 0.00, NULL, 'venta', 0, '2026-08-18 00:20:01', '2026-08-18 00:20:01', NULL),
 (107, 1, 134, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 34.00, 0.00, NULL, 'venta', 0, '2026-08-18 00:25:19', '2026-08-18 00:25:19', NULL),
-(108, 1, 135, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 34.00, 0.00, NULL, 'venta', 0, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL);
+(108, 1, 135, 33, 36, 26, 'ANILLOS PARA CB190', 1.00, 'UNIDAD', 1.00, 34.00, 0.00, NULL, 'venta', 0, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL),
+(109, 1, 136, 33, 37, 26, 'ANILLOS PARA CB190', 1.00, 'CAJA', 6.00, 200.00, 0.00, NULL, 'venta', 0, '2026-08-22 12:05:01', '2026-08-22 12:05:01', NULL);
 
 -- --------------------------------------------------------
 
@@ -1215,15 +1218,18 @@ CREATE TABLE `empresas` (
   `client_secret` varchar(255) COLLATE utf32_spanish_ci DEFAULT NULL,
   `nombre_impuesto` varchar(10) COLLATE utf32_spanish_ci DEFAULT NULL,
   `monto_impuesto` float DEFAULT NULL,
-  `estado` int NOT NULL DEFAULT '1'
+  `estado` int NOT NULL DEFAULT '1',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf32 COLLATE=utf32_spanish_ci;
 
 --
 -- Dumping data for table `empresas`
 --
 
-INSERT INTO `empresas` (`idempresa`, `ruc`, `razon_social`, `usuario_sol`, `clave_sol`, `ruta_certificado`, `clave_certificado`, `estado_certificado`, `client_id`, `client_secret`, `nombre_impuesto`, `monto_impuesto`, `estado`) VALUES
-(1, '20000000001', 'Multiservicion conan', 'MODDATOS', 'moddatos', '', '', 'BETA', NULL, NULL, 'IGV', 18, 1);
+INSERT INTO `empresas` (`idempresa`, `ruc`, `razon_social`, `usuario_sol`, `clave_sol`, `ruta_certificado`, `clave_certificado`, `estado_certificado`, `client_id`, `client_secret`, `nombre_impuesto`, `monto_impuesto`, `estado`, `created_at`, `updated_at`, `deleted_at`) VALUES
+(1, '20000000001', 'Multiservicion conan', 'MODDATOS', 'moddatos', 'certificado_1_d5e68c1179070c04.jpeg', 'xxxxxx', 'BETA', NULL, NULL, 'IGV', 18, 1, '2026-08-23 14:06:18', '2026-08-23 19:34:50', NULL);
 
 -- --------------------------------------------------------
 
@@ -1405,7 +1411,7 @@ INSERT INTO `inventario_producto` (`idinventario`, `idproducto`, `idsucursal`, `
 (28, 29, 1, 0.00, 1.00, 10.00, 2500.00, '2026-07-16 23:03:41', '2026-07-17 19:01:27', NULL),
 (30, 31, 1, 11.00, 10.00, 100.00, 5.00, NULL, '2026-08-12 14:45:13', NULL),
 (31, 32, 1, 1.00, 1.00, 1.00, 5000.00, NULL, '2026-07-27 17:42:54', NULL),
-(32, 33, 1, 56.00, 10.00, 100.00, 20.00, NULL, '2026-08-18 00:29:25', NULL),
+(32, 33, 1, 55.00, 10.00, 100.00, 20.00, NULL, '2026-08-22 12:05:01', NULL),
 (33, 34, 2, 8.00, 10.00, 100.00, 5.00, '2026-08-02 09:05:09', '2026-08-12 14:28:23', NULL),
 (34, 35, 2, 6.00, 10.00, 100.00, 20.00, '2026-08-02 09:12:06', '2026-08-02 09:12:06', NULL),
 (35, 36, 1, 1.00, 1.00, 1.00, 1000.00, NULL, NULL, NULL);
@@ -1545,7 +1551,8 @@ INSERT INTO `kardex` (`id`, `created_at`, `updated_at`, `idsucursal`, `idproduct
 (93, '2026-08-12 14:45:13', '2026-08-12 14:45:13', 1, 31, 29, 1.000, 6.00, 60, 11.000, 0, 'Salida por venta', 'Salida generada por la venta #132', '2026-08-12 19:45:13', NULL),
 (94, '2026-08-18 00:20:01', '2026-08-18 00:20:01', 1, 33, 36, 1.000, 1.00, 34, 58.000, 0, 'Salida por venta', 'Salida generada por la venta #133', '2026-08-18 05:20:01', NULL),
 (95, '2026-08-18 00:25:19', '2026-08-18 00:25:19', 1, 33, 36, 1.000, 1.00, 34, 57.000, 0, 'Salida por venta', 'Salida generada por la venta #134', '2026-08-18 05:25:19', NULL),
-(96, '2026-08-18 00:29:25', '2026-08-18 00:29:25', 1, 33, 36, 1.000, 1.00, 34, 56.000, 0, 'Salida por venta', 'Salida generada por la venta #135', '2026-08-18 05:29:25', NULL);
+(96, '2026-08-18 00:29:25', '2026-08-18 00:29:25', 1, 33, 36, 1.000, 1.00, 34, 56.000, 0, 'Salida por venta', 'Salida generada por la venta #135', '2026-08-18 05:29:25', NULL),
+(97, '2026-08-22 12:05:01', '2026-08-22 12:05:01', 1, 33, 37, 1.000, 6.00, 200, 55.000, 0, 'Salida por venta', 'Salida generada por la venta #136', '2026-08-22 17:05:01', NULL);
 
 -- --------------------------------------------------------
 
@@ -1725,10 +1732,10 @@ INSERT INTO `movimiento` (`idmovimiento`, `idcaja`, `idbanco`, `fecha`, `tipo`, 
 (5, 1, NULL, '2026-08-01 16:53:07', 'Egresos', 1, 1, 1, 100.00, 'Deposito', 0.00, '', 'Adelanto de sueldo', 1, '2026-08-01 16:53:07', '2026-08-01 16:56:41', NULL),
 (6, 1, NULL, '2026-08-01 16:57:19', 'Egresos', 1, 2, 1, 110.00, 'Efectivo', 0.00, '', 'Adelanto de sueldo', 1, '2026-08-01 16:57:19', '2026-08-01 16:57:19', NULL),
 (7, 1, NULL, '2026-08-09 13:18:35', 'Egresos', 1, 2, 1, 100.00, 'Efectivo', 0.00, '', 'gjfgjfgj', 2, '2026-08-09 13:18:35', '2026-08-09 13:18:35', NULL),
-(8, 1, 1, '2026-08-09 13:28:00', 'Egresos', 1, 3, 1, 20.00, 'Yape', 30.00, '7868', 'etrjtrjtyk', 2, '2026-08-09 13:31:34', '2026-08-09 13:31:34', NULL),
+(8, 1, 3, '2026-08-09 13:28:00', 'Egresos', 1, 3, 1, 20.00, 'Yape', 30.00, '7868', 'etrjtrjtyk', 2, '2026-08-09 13:31:34', '2026-08-09 13:31:34', NULL),
 (9, 1, 3, '2026-08-09 13:38:00', 'Ingresos', 1, 2, 1, 10.00, 'Efectivo', 10.00, '56756', 'rtjrtj', 3, '2026-08-09 13:39:10', '2026-08-09 13:39:10', NULL),
-(10, 1, NULL, NULL, 'Ingresos', 1, NULL, 1, 10.00, 'Efectivo', 0.00, NULL, 'sgherjherjtrj', 3, '2026-08-09 13:45:11', '2026-08-09 13:45:11', NULL),
-(11, 1, NULL, NULL, 'Ingresos', 1, NULL, 1, 10.00, 'Efectivo', 0.00, NULL, '', 3, '2026-08-09 13:45:34', '2026-08-09 13:45:34', NULL),
+(10, 1, NULL, NULL, 'Ingresos', 1, 1, 1, 10.00, 'Efectivo', 0.00, NULL, 'sgherjherjtrj', 3, '2026-08-09 13:45:11', '2026-08-09 13:45:11', NULL),
+(11, 1, NULL, NULL, 'Ingresos', 1, 1, 1, 10.00, 'Efectivo', 0.00, NULL, '', 3, '2026-08-09 13:45:34', '2026-08-09 13:45:34', NULL),
 (12, 1, NULL, NULL, 'Egresos', 1, 2, 1, 10.00, 'Efectivo', 0.00, NULL, '', 1, '2026-08-09 13:45:57', '2026-08-09 13:45:57', NULL),
 (13, 1, 1, '2026-08-09 13:46:00', 'Egresos', 1, 2, 1, 10.00, 'Tarjeta', 10.00, '3534', 'Adelanto de sueldo', 1, '2026-08-09 13:47:02', '2026-08-09 13:47:02', NULL);
 
@@ -2269,7 +2276,11 @@ INSERT INTO `recordatorio_envios` (`id`, `idcpc`, `idcliente`, `fecha_envio`) VA
 (31, 158, 19, '2026-07-28 10:02:56'),
 (32, 159, 19, '2026-07-28 10:02:56'),
 (33, 160, 19, '2026-07-28 10:02:56'),
-(34, 1, 3, '2026-07-31 23:38:35');
+(34, 1, 3, '2026-07-31 23:38:35'),
+(35, 125, 15, '2026-08-22 09:37:37'),
+(36, 161, 19, '2026-08-22 09:37:37'),
+(37, 165, 16, '2026-08-22 09:37:37'),
+(38, 170, 16, '2026-08-22 09:37:37');
 
 -- --------------------------------------------------------
 
@@ -2743,7 +2754,8 @@ INSERT INTO `subpermiso` (`idsubpermiso`, `idpermiso`, `nombre`) VALUES
 (54, 13, 'Configuracion credito'),
 (55, 13, 'Configuracion refinanciamiento'),
 (56, 4, 'Conceptos'),
-(57, 4, 'Movimientos');
+(57, 4, 'Movimientos'),
+(58, 4, 'Bancos');
 
 -- --------------------------------------------------------
 
@@ -2775,7 +2787,7 @@ CREATE TABLE `sucursal` (
 --
 
 INSERT INTO `sucursal` (`idsucursal`, `nombre`, `direccion`, `telefono`, `email`, `departamento`, `provincia`, `distrito`, `ubigeo`, `moneda`, `simbolo`, `logo`, `idempresa`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 'JIMENEZ 2', 'jr jimenez pimentel 345', '933216752', 'alexhe406@gmail.com', 'San Martín', 'San Martín ', 'Morales', '220910', 'PEN', 'S/', NULL, 1, '2026-07-14 12:40:21', '2026-07-18 04:58:08', NULL),
+(1, 'JIMENEZ 2', 'jr jimenez pimentel 345', '933216752', 'alexhe406@gmail.com', 'San Martín', 'San Martín ', 'Morales', '220910', 'PEN', 'S/', NULL, 1, '2026-07-14 12:40:21', '2026-08-23 19:13:43', NULL),
 (2, 'Nueva cajamarca', 'S/N', '985652456', '', '', '', '', NULL, 'PEN', 'S/', NULL, 1, '2026-07-14 12:40:21', NULL, NULL);
 
 -- --------------------------------------------------------
@@ -2810,7 +2822,7 @@ CREATE TABLE `sucursal_configuracion` (
 --
 
 INSERT INTO `sucursal_configuracion` (`idsucursal_configuracion`, `idsucursal`, `is_refinanciamiento`, `maximo_refinanciamientos`, `is_mora_credito`, `valor_mora_credito`, `is_notificacion`, `dias_gracia`, `interes_defecto`, `is_descuento_anticipado`, `valor_descuento_anticipado`, `dias_anticipacion`, `is_send_sunat`, `is_calculo_mes`, `is_venta_lotes`, `created_at`, `updated_at`, `deleted_at`) VALUES
-(1, 1, 1, 1, 1, 1.00, 1, 0, 10.00, 1, 1.00, 2, 0, 1, 1, '2026-07-16 15:59:49', '2026-08-09 02:42:23', NULL),
+(1, 1, 1, 1, 1, 2.00, 1, 2, 10.00, 1, 2.00, 2, 0, 1, 1, '2026-07-16 15:59:49', '2026-08-23 19:34:50', NULL),
 (2, 2, 0, 1, 0, 0.00, 0, 0, 10.00, 0, 1.00, 0, 0, 0, 0, '2026-07-16 15:59:49', NULL, NULL);
 
 -- --------------------------------------------------------
@@ -5360,7 +5372,8 @@ INSERT INTO `venta` (`idventa`, `idsucursal`, `idcaja`, `idcliente`, `idpersonal
 (132, 1, 1, 16, 1, 0, 2, 'F001', '000001', '2026-08-12 14:45:13', 9.15, 60.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-12 14:45:13', 0, 60, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-01-F001-000001', 1, '', NULL, 'Aceptado', '2026-08-12 19:45:13', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL),
 (133, 1, 1, 15, 1, 0, 3, 'B001', '000002', '2026-08-18 00:20:01', 0.00, 34.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-18 00:20:01', 0, 34, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-03-B001-000002', 1, '', NULL, 'Aceptado', '2026-08-18 05:20:01', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-18 00:20:01', '2026-08-18 00:20:01', NULL),
 (134, 1, 1, 14, 1, 0, 2, 'F001', '000002', '2026-08-18 00:25:19', 0.00, 34.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-18 00:25:19', 0, 34, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-01-F001-000002', 1, '', NULL, 'Aceptado', '2026-08-18 05:25:19', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-18 00:25:19', '2026-08-18 00:25:19', NULL),
-(135, 1, 1, 1, 1, 0, 1, 'NV00', '000045', '2026-08-18 00:29:25', 0.00, 34.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-18 00:29:25', 0, 34, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-18 05:29:25', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL);
+(135, 1, 1, 1, 1, 0, 1, 'NV00', '000045', '2026-08-18 00:29:25', 0.00, 34.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-18 00:29:25', 0, 34, 0, NULL, 0, NULL, '', 'ACEPTADO', NULL, NULL, '', NULL, 'Activado', '2026-08-18 05:29:25', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL),
+(136, 1, 1, 15, 1, 0, 3, 'B001', '000003', '2026-08-22 12:05:01', 0.00, 200.00, 'No', 10, 0, 0, 'Efectivo', '', '2026-08-22 12:05:01', 0, 200, 0, NULL, 0, NULL, '', 'ACEPTADO', '20000000001-03-B001-000003', 1, '', NULL, 'Aceptado', '2026-08-22 17:05:01', 0.00, 'TERMINADO', 1, NULL, NULL, NULL, NULL, '2026-08-22 12:05:01', '2026-08-22 12:05:01', NULL);
 
 -- --------------------------------------------------------
 
@@ -5442,7 +5455,8 @@ INSERT INTO `venta_pago` (`idventapago`, `idventa`, `metodo_pago`, `monto`, `nro
 (109, 132, 'Efectivo', 60.00, NULL, NULL, NULL, '2026-08-12 14:45:13', '2026-08-12 14:45:13', NULL),
 (110, 133, 'Efectivo', 34.00, NULL, NULL, NULL, '2026-08-18 00:20:01', '2026-08-18 00:20:01', NULL),
 (111, 134, 'Efectivo', 34.00, NULL, NULL, NULL, '2026-08-18 00:25:19', '2026-08-18 00:25:19', NULL),
-(112, 135, 'Efectivo', 34.00, NULL, NULL, NULL, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL);
+(112, 135, 'Efectivo', 34.00, NULL, NULL, NULL, '2026-08-18 00:29:25', '2026-08-18 00:29:25', NULL),
+(113, 136, 'Efectivo', 200.00, NULL, NULL, NULL, '2026-08-22 12:05:01', '2026-08-22 12:05:01', NULL);
 
 -- --------------------------------------------------------
 
@@ -6368,7 +6382,7 @@ ALTER TABLE `detalle_servicio`
 -- AUTO_INCREMENT for table `detalle_venta`
 --
 ALTER TABLE `detalle_venta`
-  MODIFY `iddetalle_venta` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+  MODIFY `iddetalle_venta` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
 
 --
 -- AUTO_INCREMENT for table `detalle_venta_lote`
@@ -6428,7 +6442,7 @@ ALTER TABLE `inventario_seleccionados`
 -- AUTO_INCREMENT for table `kardex`
 --
 ALTER TABLE `kardex`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=97;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=98;
 
 --
 -- AUTO_INCREMENT for table `login_historial`
@@ -6542,7 +6556,7 @@ ALTER TABLE `producto_serie`
 -- AUTO_INCREMENT for table `recordatorio_envios`
 --
 ALTER TABLE `recordatorio_envios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `recuperacion_documento`
@@ -6638,7 +6652,7 @@ ALTER TABLE `solicitud_workflow`
 -- AUTO_INCREMENT for table `subpermiso`
 --
 ALTER TABLE `subpermiso`
-  MODIFY `idsubpermiso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
+  MODIFY `idsubpermiso` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=59;
 
 --
 -- AUTO_INCREMENT for table `sucursal`
@@ -6704,13 +6718,13 @@ ALTER TABLE `usuario_sucursal`
 -- AUTO_INCREMENT for table `venta`
 --
 ALTER TABLE `venta`
-  MODIFY `idventa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=136;
+  MODIFY `idventa` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=137;
 
 --
 -- AUTO_INCREMENT for table `venta_pago`
 --
 ALTER TABLE `venta_pago`
-  MODIFY `idventapago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=113;
+  MODIFY `idventapago` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=114;
 
 --
 -- AUTO_INCREMENT for table `verificaciones_domiciliarias`

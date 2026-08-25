@@ -64,6 +64,13 @@ function listarConfiguracion() {
                 $("#provincia_select").prop('disabled', false);
                 $("#distrito_select").prop('disabled', false);
             }
+
+            const facturacion = data?.facturacion || {}
+            $("#ruc").val(facturacion.ruc);
+            $("#razon_social").val(facturacion.razon_social);
+            $("#monto_impuesto").val(facturacion.monto_impuesto);
+            $("#usuario_sol").val(facturacion.usuario_sol);
+            $("#estado_certificado").val(facturacion.estado_certificado);
         }
     });
 }
@@ -236,24 +243,23 @@ $("#formConfiguracionGeneral").submit(function (e) {
                 .html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
         },
         success: function (response) {
-            if (response.status) {
-                Swal.fire("Correcto", response.message, "success");
-                listarConfiguracion();
-            } else {
+            if (!response.success) {
                 Swal.fire("Alerta", response.message, "error");
+                return;
             }
-
+            Swal.fire("Correcto", response.message, "success");
+            listarConfiguracion();
             $("#btnGuardarGeneral")
                 .prop("disabled", false)
                 .html('<i class="fa fa-save"></i> Guardar configuración');
         },
-        error: function () {
+        error: function (error) {
 
             $("#btnGuardarGeneral")
                 .prop("disabled", false)
                 .html('<i class="fa fa-save"></i> Guardar configuración');
-            Swal.fire("Alerta", "Ocurrió un error.", "error");
 
+            Swal.fire("Alerta", error.responseJSON.message || "Ocurrió un error.", "error");
         }
     });
 })
@@ -276,25 +282,23 @@ $("#formConfiguracionMora").submit(function (e) {
                 .html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
         },
         success: function (response) {
-            if (response.status) {
-                Swal.fire("Correcto", response.message, "success");
-                listarConfiguracion();
-            } else {
+            if (!response.success) {
                 Swal.fire("Alerta", response.message, "error");
+                return;
             }
+            Swal.fire("Correcto", response.message, "success");
+            listarConfiguracion();
 
             $("#btnGuardarMora")
                 .prop("disabled", false)
                 .html('<i class="fa fa-save"></i> Guardar configuración');
 
         },
-        error: function () {
-
+        error: function (error) {
             $("#btnGuardarMora")
                 .prop("disabled", false)
                 .html('<i class="fa fa-save"></i> Guardar configuración');
-            Swal.fire("Alerta", "Ocurrió un error.", "error");
-
+            Swal.fire("Alerta", error.responseJSON.message || "Ocurrió un error.", "error");
         }
 
     });
@@ -320,25 +324,25 @@ $("#formConfiguracionCreditos").submit(function (e) {
                 .html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
         },
         success: function (response) {
-            if (response.status) {
-                Swal.fire("Correcto", response.message, "success");
-                listarConfiguracion();
-            } else {
+            if (!response.success) {
                 Swal.fire("Alerta", response.message, "error");
+                return;
             }
 
+            Swal.fire("Correcto", response.message, "success");
+            listarConfiguracion();
             $("#btnGuardarCreditos")
                 .prop("disabled", false)
                 .html('<i class="fa fa-save"></i> Guardar configuración');
 
         },
-        error: function () {
+        error: function (error) {
 
             $("#btnGuardarCreditos")
                 .prop("disabled", false)
                 .html('<i class="fa fa-save"></i> Guardar configuración');
-            Swal.fire("Alerta", "Ocurrió un error.", "error");
 
+            Swal.fire("Alerta", error.responseJSON.message || "Ocurrió un error.", "error");
         }
 
     });
@@ -364,30 +368,69 @@ $("#formConfiguracionRefinanciamiento").submit(function (e) {
                 .html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
         },
         success: function (response) {
-            if (response.status) {
-                Swal.fire("Correcto", response.message, "success");
-                listarConfiguracion();
-            } else {
+            if (!response.success) {
                 Swal.fire("Alerta", response.message, "error");
+                return;
             }
+            Swal.fire("Correcto", response.message, "success");
+            listarConfiguracion();
 
             $("#btnGuardarRefinanciamiento")
                 .prop("disabled", false)
                 .html('<i class="fa fa-save"></i> Guardar configuración');
 
         },
-        error: function () {
-
+        error: function (error) {
             $("#btnGuardarRefinanciamiento")
                 .prop("disabled", false)
                 .html('<i class="fa fa-save"></i> Guardar configuración');
-            Swal.fire("Alerta", "Ocurrió un error.", "error");
 
+            Swal.fire("Alerta", error.responseJSON.message || "Ocurrió un error.", "error");
         }
 
     });
 
 });
+
+$("#formConfiguracionFacturacion").submit(function (e) {
+    e.preventDefault();
+
+    var data = new FormData(this);
+
+    $.ajax({
+        url: "controladores/configuracion.php?op=actualizarConfiguracionFacturacion",
+        type: "POST",
+        data: data,
+        processData: false,
+        contentType: false,
+        beforeSend: function () {
+            $("#btnGuardarFacturacion")
+                .prop("disabled", true)
+                .html('<i class="fa fa-spinner fa-spin"></i> Guardando...');
+        },
+        success: function (response) {
+            if (!response.success) {
+                Swal.fire("Alerta", response.message, "error");
+                return;
+            }
+
+            Swal.fire("Correcto", response.message, "success");
+            listarConfiguracion();
+            $("#btnGuardarFacturacion")
+                .prop("disabled", false)
+                .html('<i class="fa fa-save"></i> Guardar configuración');
+        },
+        error: function (error) {
+            $("#btnGuardarFacturacion")
+                .prop("disabled", false)
+                .html('<i class="fa fa-save"></i> Guardar configuración');
+
+            Swal.fire("Alerta", error.responseJSON.message || "Ocurrió un error.", "error");
+        }
+
+    });
+
+})
 
 
 listarConfiguracion();

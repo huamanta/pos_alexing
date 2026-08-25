@@ -97,8 +97,9 @@ final class Util extends Helpers
         $see->setService($endpoint);
 
         //CERTIFICADO
-        $rutaCertificado = !empty($sucursal['ruta_certificado']) ? $sucursal['ruta_certificado'] : '/certificado.pem';
-        $rutaCertificadoCompleta = __DIR__ . $rutaCertificado;
+        $rutaCertificado = !empty($sucursal['ruta_certificado']) ? $sucursal['ruta_certificado'] : 'certificado.pem';
+        
+        $rutaCertificadoCompleta = __DIR__ . DIRECTORY_SEPARATOR . $rutaCertificado;
 
         if (!file_exists($rutaCertificadoCompleta)) {
             throw new Exception('No se encontró el certificado: ' . $rutaCertificadoCompleta);

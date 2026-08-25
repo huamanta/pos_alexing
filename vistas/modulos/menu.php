@@ -201,6 +201,14 @@ $helpers = new Helpers();
                   </a>
                 </li>
               <?php endif; ?>
+              <?php if ($helpers->getUserPermisoModulo('Bancos', 'Facturacion y cajas')): ?>
+                <li class="nav-item" style="font-size: 14px">
+                  <a href="bancos" class="nav-link" id="navBancos">
+                    <i class="fas fa-university nav-icon text-orange" style="font-size: 14px"></i>
+                    <p>Bancos</p>
+                  </a>
+                </li>
+              <?php endif; ?>
               <?php if ($helpers->getUserPermisoModulo('Conceptos', 'Facturacion y cajas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="conceptos" class="nav-link" id="navConceptos">

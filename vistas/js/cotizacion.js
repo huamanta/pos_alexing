@@ -871,7 +871,7 @@ function agregarDetalle(
       if (idpInputs[i].value == idproducto_configuracion) {
         let currentCant = parseFloat(cantInputs[i].value);
         console.log(((currentCant + 1) * cantidad_contenedor));
-        
+
         if (stock < ((currentCant + 1) * cantidad_contenedor)) {
           Swal.fire("Alerta", "No hay suficiente stock!", "error");
           return false;

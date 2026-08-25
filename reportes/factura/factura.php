@@ -1,4 +1,8 @@
 <?php
+
+use chillerlan\QRCode\QRCode;
+use chillerlan\QRCode\QROptions;
+
 $iva = $configuracion['monto_impuesto'] ?? 18;
 $formaPago = ($factura['ventacredito'] == 'Si') ? 'CRÉDITO' : 'CONTADO';
 $condicionPago = ($factura['ventacredito'] == 'Si') ? 'CRÉDITO 90 DÍAS' : 'CONTADO';
@@ -10,13 +14,6 @@ $texto = strtoupper($formatter->toWords($entero));
 $con_letra = "{$texto} Y {$decimales}/100 SOLES";
 $logo = !empty($configuracion['logo']) ? $configuracion['logo'] : 'default.png';
 $rutaLogo = realpath(__DIR__ . '/../../files/logos/' . $logo);
-
-// Preparar datos fiscales (4 almacenes como en COBEFAR)
-$direccion = $configuracion['direccion'] ?? 'Cal. Carlos Pedemonte Nro. 145B Int. 2pis Urb. Lotizacion Ex Fundo El Pino Lima - Lima - San Luis';
-$telefono = $configuracion['telefono'] ?? '428-1248';
-$email = $configuracion['email'] ?? 'cobefar.ventas@gmail.com';
-$razonSocial = strtoupper($configuracion['razon_social'] ?? 'DROGUERIA COBEFAR');
-$web = 'www.cobefar.com.pe';
 ?>
 
 <!DOCTYPE html>
@@ -28,26 +25,90 @@ $web = 'www.cobefar.com.pe';
     </title>
 
     <style>
-        @page {
-            margin: 8mm 10mm;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
         body {
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 8.5px;
+            font-family: DejaVu Sans, Helvetica, Arial, sans-serif;
+            font-size: 11px;
             color: #000;
-            margin: 0;
-            padding: 0;
-            line-height: 1.2;
+            margin: 20px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
+        }
+
+        .header td {
+            vertical-align: top;
+        }
+
+        .empresa {
+            padding: 5px 10px;
+        }
+
+        .empresa h2 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .empresa p {
+            margin: 2px 0;
+            font-size: 10px;
+        }
+
+        .ruc-box {
+            border: 2px solid #000;
+            border-radius: 8px;
+            text-align: center;
+            padding: 8px;
+        }
+
+        .ruc-box h3 {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .ruc-box h2 {
+            margin: 5px 0;
+            font-size: 16px;
+        }
+
+        .cliente {
+            margin-top: 10px;
+            border: 1px solid #ffffff;
+        }
+
+        .cliente th {
+            background: #e6e6e6;
+            text-align: left;
+            padding: 5px;
+            font-size: 11px;
+        }
+
+        .cliente td {
+            padding: 4px 6px;
+            border-top: 1px solid #ddd;
+        }
+
+        .detalle {
+            margin-top: 10px;
+        }
+
+        .detalle th {
+            background: #e6e6e6;
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .detalle td {
+            border: 1px solid #999;
+            padding: 4px;
+            font-size: 10px;
+        }
+
+        .detalle tr:nth-child(even) {
+            background: #f9f9f9;
         }
 
         .text-right {
@@ -58,321 +119,52 @@ $web = 'www.cobefar.com.pe';
             text-align: center;
         }
 
-        .text-left {
-            text-align: left;
-        }
-
-        /* ========== ENCABEZADO ========== */
-        .header {
-            margin-bottom: 0;
-        }
-
-        .header td {
-            vertical-align: top;
-            padding: 0;
-        }
-
-        .logo-area {
-            width: 33%;
-            text-align: center;
-            padding-right: 15px;
-        }
-
-        .logo-area img {
-            max-width: 130px;
-            max-height: 60px;
-        }
-
-        .logo-text .marca {
-            color: #2d8a3e;
-            font-size: 18px;
-            font-weight: bold;
-            font-style: italic;
-            line-height: 1;
-        }
-
-        .logo-text .marca .slogan {
-            font-size: 8px;
-            font-style: normal;
-            letter-spacing: 2px;
-            vertical-align: super;
-        }
-
-        .logo-text .web {
-            color: #d32027;
-            font-size: 8px;
-            margin-top: 3px;
-        }
-
-        .fiscal-area {
-            width: 34%;
-            font-size: 8px;
-            line-height: 1.35;
-            padding-right: 15px;
-        }
-
-        .fiscal-area .label {
-            font-weight: bold;
-        }
-
-        .fiscal-area .line {
-            margin-bottom: 1px;
-        }
-
-        .ruc-area {
-            width: 33%;
-        }
-
-        .ruc-box {
-            border: 1.2px solid #000;
-            padding: 8px 16px;
-            text-align: center;
-            border-radius: 10px;
-        }
-
-        .ruc-box .ruc {
-            font-size: 11px;
-            letter-spacing: 0.5px;
-            margin-bottom: 16px;
-        }
-
-        .ruc-box .doc-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin: 16px 0;
-            letter-spacing: 1px;
-        }
-
-        .ruc-box .doc-num {
-            font-size: 12px;
-        }
-
-        /* ========== SECCION CLIENTE + INFO DERECHA ========== */
-        .cliente-info {
-            margin-top: 8px;
-        }
-
-        .cliente-info td {
-            vertical-align: top;
-        }
-
-        .cliente-box {
-            width: 95%;
-            border: 1px solid #000;
-            border-radius: 10px;
-            padding: 6px 10px;
-        }
-
-        .cliente-box table td {
-            padding: 1.5px 3px 1.5px 0;
-            font-size: 8.5px;
-            vertical-align: top;
-        }
-
-        .cliente-box .label {
-            font-weight: bold;
-            width: 70px;
-        }
-
-        .cliente-box .value {
-            font-weight: normal;
-        }
-
-        .info-derecha {
-            width: 35%;
-            padding-left: 8px;
-            font-size: 8.5px;
-        }
-
-        .info-derecha .row {
-            margin-bottom: 3px;
-        }
-
-        .info-derecha .label {
-            font-weight: bold;
-        }
-
-        /* ========== PUNTO PARTIDA / LLEGADA ========== */
-        .puntos-section {
-            margin-top: 10px;
-            border: 1px solid #000;
-        }
-
-        .puntos-section td {
-            vertical-align: top;
-            padding: 10px;
-            font-size: 8.5px;
-        }
-
-        .puntos-section .label {
-            font-weight: bold;
-        }
-
-        .puntos-section .puntos-left {
-            width: 65%;
-        }
-
-        .puntos-section .puntos-right {
-            width: 35%;
-            padding-left: 8px;
-        }
-
-        /* ========== TABLA VENDEDOR ========== */
-        .vendedor-tabla {
-            width: 100%;
-            border-collapse: collapse;
+        .totales {
             margin-top: 10px;
         }
 
-        .vendedor-tabla th {
+        .totales td {
+            vertical-align: top;
+        }
+
+        .letras {
             border: 1px solid #000;
-            padding: 4px 6px;
-            font-size: 8.5px;
+            border-radius: 6px;
+            padding: 8px;
+            min-height: 90px;
+        }
+
+        .totales-box {
+            border: 1px solid #000;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .totales-box table td {
+            padding: 5px 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .total-final {
+            background: #000;
+            color: #fff;
             font-weight: bold;
+            font-size: 13px;
+        }
+
+        .qr-box {
             text-align: center;
-        }
-
-        .vendedor-tabla td {
-            border: 1px solid #000;
-            padding: 5px 6px;
-            font-size: 8.5px;
-            text-align: center;
-        }
-
-        /* ========== DETALLE DE PRODUCTOS ========== */
-        .detalle-tabla {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 0;
-        }
-
-        .detalle-tabla th {
-            border: 1px solid #000;
-            padding: 5px 4px;
-            font-size: 8px;
-            font-weight: bold;
-            text-align: center;
-            line-height: 1.15;
-        }
-
-        .detalle-tabla td {
-            border: 1px solid #000;
-            padding: 5px 4px;
-            font-size: 8.5px;
-            vertical-align: middle;
-        }
-
-        .detalle-tabla td.text-right {
-            text-align: right;
-        }
-
-        .detalle-tabla td.text-center {
-            text-align: center;
-        }
-
-        .detalle-tabla td.desc {
-            text-align: left;
-        }
-
-        /* ========== SON (importe letras) ========== */
-        .son-section {
-            border-top: none;
-            padding: 5px 10px;
             font-size: 9px;
-            font-weight: bold;
-        }
-
-        /* ========== LINEA PUNTEADA ========== */
-        .dotted-line {
-            border: none;
-            border-top: 1px dashed #000;
-            margin: 5px 0;
-        }
-
-        /* ========== SECCION INFERIOR (NOTAS + TOTALES) ========== */
-        .footer-section {
             margin-top: 5px;
         }
 
-        .footer-section td {
-            vertical-align: top;
-            padding: 0;
-        }
-
-        .notas-cell {
-            width: 55%;
-            padding-right: 12px;
-        }
-
-        .notas-content {
+        .footer {
+            margin-top: 10px;
+            border: 1px solid #000;
+            border-radius: 6px;
+            padding: 6px;
             text-align: center;
-            font-size: 8.5px;
-            line-height: 1.4;
-            padding: 4px 6px;
-        }
-
-        .notas-content strong {
-            font-weight: bold;
-        }
-
-        .totales-cell {
-            width: 45%;
-        }
-
-        .totales-tabla {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .totales-tabla td {
-            padding: 2px 6px;
-            font-size: 9px;
-            border: none;
-        }
-
-        .totales-tabla td.etiqueta {
-            text-align: left;
-            padding-left: 20px;
-        }
-
-        .totales-tabla td.simbolo {
-            text-align: right;
-            width: 30px;
-            padding-right: 2px;
-        }
-
-        .totales-tabla td.monto {
-            text-align: right;
-            width: 60px;
-            padding-right: 15px;
-        }
-
-        .totales-tabla .importe-total td {
-            border-top: 1px solid #000;
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
-
-        .totales-tabla .importe-total td.etiqueta {
-            font-weight: bold;
             font-size: 10px;
-            padding-left: 20px;
-        }
-
-        .totales-tabla .importe-total td.monto {
-            font-weight: bold;
-            font-size: 10px;
-        }
-
-        .anulada {
-            position: fixed;
-            top: 80;
-            left: 80;
-            width: 80%;
-            height: 80%;
-            object-fit: contain;
-            z-index: 999999;
-            pointer-events: none;
         }
     </style>
 </head>
@@ -384,128 +176,71 @@ $web = 'www.cobefar.com.pe';
     <!-- ========== ENCABEZADO PRINCIPAL ========== -->
     <table class="header">
         <tr>
-            <!-- LOGO -->
-            <td class="logo-area">
-                <div class="logo-text">
-                    <img src="file://<?= $rutaLogo ?>" height="60">
-                </div>
+            <td width="18%" class="text-center">
+                <img src="file://<?php echo $rutaLogo; ?>" width="120" />
             </td>
 
-            <!-- DATOS FISCALES -->
-            <td class="fiscal-area">
-                <div class="line"><span class="label">Dom. Fiscal:</span> <?= $direccion ?></div>
-                <div class="line"><span class="label">Almacén:</span> Av. Nicolás Arriola N°2955-2963, 2do. Piso Urb.
-                    Mercurio - San Luis - Lima - Lima</div>
-                <div class="line"><span class="label">Almacén:</span> Jr. Antonio Miroquezada N° 806 Int. 303 Lima -
-                    Lima - Lima</div>
-                <div class="line"><span class="label">Almacén:</span> Jr. Antonio Miroquezada N° 806 Int. 502 Lima -
-                    Lima - Lima</div>
-                <div class="line"><span class="label">Teléfono:</span> <?= $telefono ?></div>
-                <div class="line"><span class="label">Email:</span> <?= $email ?></div>
+            <td width="52%" class="empresa">
+                <h2><?= $configuracion['razon_social'] ?></h2>
+                <p><strong>Sucursal:</strong> <?= $configuracion['nombre'] ?></p>
+                <p><strong>Dirección:</strong> <?= $configuracion['direccion'] ?></p>
+                <p><strong>Teléfono:</strong> <?= $configuracion['telefono'] ?></p>
+                <p><strong>Correo:</strong> <?= $configuracion['email'] ?? '' ?></p>
             </td>
 
-            <!-- RUC Y COMPROBANTE -->
-            <td class="ruc-area">
+            <td width="30%">
                 <div class="ruc-box">
-                    <div class="ruc">R.U.C. <?= $configuracion['ruc'] ?></div>
-                    <div class="doc-title"><?= strtoupper($factura['tipo_comprobante']) ?> ELECTRÓNICA</div>
-                    <div class="doc-num">N° <?= $factura['serie_comprobante'] ?>-<?= $factura['num_comprobante'] ?>
-                    </div>
+                    <h3>RUC <?= $configuracion['ruc'] ?></h3>
+                    <h2><?= strtoupper($factura['tipo_comprobante']) ?> ELECTRÓNICA</h2>
+                    <strong><?= $factura['serie_comprobante'] . ' - ' . $factura['num_comprobante'] ?></strong>
                 </div>
             </td>
         </tr>
     </table>
 
     <!-- ========== CAJA CLIENTE + INFO DERECHA ========== -->
-    <table class="cliente-info">
+    <table class="cliente">
         <tr>
-            <td>
-                <div class="cliente-box">
-                    <table>
-                        <tr>
-                            <td class="label" width="65">Cliente:</td>
-                            <td colspan="3"><?= $factura['cliente'] ?></td>
-                        </tr>
-                        <tr>
-                            <td class="label">Dirección:</td>
-                            <td colspan="3"><?= $factura['direccion'] ?></td>
-                        </tr>
-                        <tr>
-                            <td class="label">R.U.C.:</td>
-                            <td colspan="3"><?= $factura['num_documento'] ?></td>
-                        </tr>
-                        <tr>
-                            <td class="label">Nro O/C:</td>
-                            <td colspan="3"><?= $factura['numoperacion'] ?? '' ?></td>
-                        </tr>
-                    </table>
-                </div>
-            </td>
-            <td class="info-derecha">
-                <div class="row"><span class="label">FECHA DE EMISIÓN:</span> <?= $factura['fecha'] ?></div>
-                <div class="row"><span class="label">MONEDA:</span> Soles</div>
-                <div class="row"><span class="label">ALMACÉN:</span> <?= $configuracion['nombre'] ?></div>
-            </td>
+            <th colspan="4">DATOS GENERALES</th>
+        </tr>
+        <tr>
+            <td width="18%"><strong>Cliente:</strong></td>
+            <td width="32%"><?= $factura['cliente'] ?></td>
+            <td width="18%"><strong>Forma Pago:</strong></td>
+            <td width="32%"><?= $formaPago ?></td>
+        </tr>
+        <tr>
+            <td><strong>Documento:</strong></td>
+            <td><?= $factura['tipo_documento'] ?> - <?= $factura['num_documento'] ?></td>
+            <td><strong>Fecha:</strong></td>
+            <td><?= $factura['fecha'] ?> </td>
+        </tr>
+        <tr>
+            <td><strong>Dirección:</strong></td>
+            <td><?= $factura['direccion'] ?></td>
+            <td><strong>Almacén:</strong></td>
+            <td><?= $configuracion['nombre'] ?></td>
+        </tr>
+        <tr>
+            <td><strong>Ejecutivo:</strong></td>
+            <td><?= $factura['personal'] ?></td>
+            <td><strong>Observación:</strong></td>
+            <td><?= $factura['observacion'] ?></td>
         </tr>
     </table>
 
-    <!-- ========== PUNTO PARTIDA / LLEGADA ========== -->
-    <table class="puntos-section">
-        <tr>
-            <td class="puntos-left">
-                <div><span class="label">Punto de partida :</span>
-                    <?= $configuracion['direccion'] ?? 'AV. MARISCAL ELOY URETA N° 45-65 URB. EL PINO San Luis Lima Lima' ?>
-                </div>
-            </td>
-            <td class="puntos-right">
-                <div><span class="label">Fecha Entrega :</span></div>
-                <div><span class="label">Ruc / Dni Transportista:</span></div>
-            </td>
-        </tr>
-        <tr>
-            <td class="puntos-left">
-                <div><span class="label">Punto de llegada :</span> <?= $factura['direccion'] ?></div>
-            </td>
-            <td class="puntos-right">
-                <div><span class="label">Transportista :</span></div>
-                <div><span class="label">Licencia :</span></div>
-            </td>
-        </tr>
-    </table>
 
-    <!-- ========== VENDEDOR / COND. PAGO / GUIA / ORDEN ========== -->
-    <table class="vendedor-tabla">
-        <thead>
-            <tr>
-                <th width="32%">VENDEDOR</th>
-                <th width="22%">COND. PAGO</th>
-                <th width="23%">GUÍA DE REMISIÓN</th>
-                <th width="23%">NRO. ORDEN DE VENTA</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td><?= strtoupper($factura['personal']) ?></td>
-                <td><?= $condicionPago ?></td>
-                <td><?= $factura['serie_comprobante'] ?? '' ?></td>
-                <td><?= $factura['num_comprobante'] ?? '' ?></td>
-            </tr>
-        </tbody>
-    </table>
 
     <!-- ========== DETALLE DE PRODUCTOS ========== -->
-    <table class="detalle-tabla">
+    <table class="detalle">
         <thead>
             <tr>
-                <th width="6%">CANT.</th>
-                <th width="32%">DESCRIPCIÓN</th>
-                <th width="6%">LAB.</th>
-                <th width="9%">LOTE</th>
-                <th width="9%">FECHA VC.</th>
-                <th width="9%">P.UNITARIO</th>
-                <th width="7%">DSCTO %</th>
-                <th width="10%">V.VENTA NETO</th>
-                <th width="12%">PRECIO VENTA</th>
+                <th width="8%">CANT.</th>
+                <th width="8%">UM</th>
+                <th width="40%">DESCRIPCIÓN</th>
+                <th width="12%">P.UNIT</th>
+                <th width="8%">DSCTO</th>
+                <th width="12%">IMPORTE</th>
             </tr>
         </thead>
         <tbody>
@@ -540,18 +275,16 @@ $web = 'www.cobefar.com.pe';
                 ?>
                 <tr>
                     <td class="text-center"><?= round($row['cantidad'], 2) ?></td>
-                    <td class="desc"><?= htmlspecialchars($row['dproducto']) ?></td>
                     <td class="text-center"><?= $row['contenedor'] ?? '' ?></td>
-                    <td class="text-center"><?= buscarLotes($row['iddetalle_venta']) ?></td>
-                    <td class="text-center"><?= buscarVencimientos($row['iddetalle_venta']) ?></td>
+                    <td class="desc"><?= htmlspecialchars($row['dproducto']) ?></td>
                     <td class="text-right"><?= $helpers->get_currency_symbol($row['precio_venta']) ?></td>
                     <td class="text-right"><?= $helpers->get_currency_symbol($dsctoPct) ?></td>
-                    <td class="text-right"><?= $helpers->get_currency_symbol($vVentaNeto) ?></td>
                     <td class="text-right"><?= $helpers->get_currency_symbol($row['subtotal']) ?></td>
                 </tr>
             <?php } ?>
         </tbody>
     </table>
+
     <!-- ========== LINEA PUNTEADA SEPARADORA ========== -->
     <hr class="dotted-line">
     <!-- ========== IMPORTE EN LETRAS ========== -->
@@ -569,17 +302,34 @@ $web = 'www.cobefar.com.pe';
     $subtotal = $total - $igv;
     ?>
 
-    <table class="footer-section">
+    <table class="totales">
         <tr>
-            <td class="notas-cell">
-                <div class="notas-content">
-                    <strong>Autorizado mediante N° R.S. 300-2014/SUNAT</strong><br>
-                    Representación impresa de la Factura Electrónica. Puede ser consultada<br>
-                    en <strong>www.cobefar.com.pe</strong><br><br>
-                    <strong>Nota:</strong> No aceptamos devoluciones ni reclamos después de la entrega de la mercadería
+            <td width="18%" class="text-center">
+                <?php
+                $options = new QROptions([
+                    'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+                    'scale' => 6,
+                ]);
+
+                $textoQr = $configuracion['ruc'] . "|" .
+                    $factura['serie_comprobante'] . "|" .
+                    $factura['num_comprobante'] . "|" .
+                    $iva . "|" .
+                    $factura['total_venta'] . "|" .
+                    $factura['fecha'] . "|" .
+                    $factura['num_documento'] . "|";
+
+                $qr = (new QRCode($options))->render($textoQr);
+                ?>
+
+                <img src="<?= $qr ?>" width="100" height="100">
+
+                <div class="qr-box">
+                    Consulte en SUNAT
                 </div>
             </td>
-
+            <td width="50%">
+            </td>
             <td class="totales-cell">
                 <table class="totales-tabla">
                     <tr>
@@ -642,10 +392,10 @@ $web = 'www.cobefar.com.pe';
     <?php endif; ?>
 
     <!-- ========== PIE ========== -->
-    <div
-        style="margin-top:8px; padding:6px 10px; border:1px solid #000; border-radius:6px; text-align:center; font-size:8.5px;">
+    <div class="footer">
         <strong>Representación impresa de la <?= strtoupper($factura['tipo_comprobante']) ?> ELECTRÓNICA</strong><br>
-        Autorizado mediante SEE - Del Contribuyente.
+        Autorizado mediante SEE - Del Contribuyente.<br>
+        Gracias por su preferencia.
     </div>
 
 </body>

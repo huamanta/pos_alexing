@@ -1,7 +1,9 @@
 <?php
 require_once "../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
 
-class Permiso
+class Permiso extends Helpers
 {
     public function insertar($nombre)
     {
@@ -27,20 +29,69 @@ class Permiso
         return ejecutarConsultaSimpleFila($sql);
     }
 
+    public function listarPermisos()
+    {
+        return (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('permiso')
+            ->get();
+    }
+
+    public function listarSubPermisos()
+    {
+        return (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('subpermiso')
+            ->orderBy('idpermiso')
+            ->orderBy('idsubpermiso')
+            ->get();
+    }
+
+    public function listarAccionesPermiso() {
+        return (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('accion_permiso')
+            ->orderBy('idsubpermiso')
+            ->orderBy('idaccion_permiso')
+            ->get();
+    }
+
     public function listar()
     {
-        $sql = "SELECT * FROM permiso";
-        return ejecutarConsulta($sql);
+        $query = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('permiso')
+            ->get();
+
+        $data = [];
+        foreach ($query as $row) {
+            $data[] = [
+                "0" => $row['nombre'],
+                "1" => '<button class="btn btn-warning" onclick="mostrar(' . $row['idpermiso'] . ')"><i class="fas fa-edit"></i></button>' .
+                    ' <button class="btn btn-danger" onclick="eliminar(' . $row['idpermiso'] . ')"><i class="fa fa-trash"></i></button>',
+
+            ];
+        }
+        $results = [
+            "sEcho" => 1,
+            "iTotalRecords" => count($data),
+            "iTotalDisplayRecords" => count($data),
+            "aaData" => $data
+        ];
+
+        return Response::json($results);
     }
     // ================= SUBPERMISOS ==================
 
-	// Insertar subpermiso
-	public function insertarSubpermiso($idpermiso, $nombre) {
+    // Insertar subpermiso
+    public function insertarSubpermiso($idpermiso, $nombre)
+    {
         $sql = "INSERT INTO subpermiso (idpermiso, nombre) VALUES ('$idpermiso', '$nombre')";
         return ejecutarConsulta($sql) ? "Subpermiso registrado" : "Error al registrar";
     }
 
-    public function listarSubpermiso($idpermiso) {
+    public function listarSubpermiso($idpermiso)
+    {
         $sql = "SELECT s.idsubpermiso, s.nombre, p.nombre as modulo
                 FROM subpermiso s
                 INNER JOIN permiso p ON s.idpermiso = p.idpermiso
@@ -48,7 +99,8 @@ class Permiso
         return ejecutarConsulta($sql);
     }
 
-    public function eliminarSubpermiso($idsubpermiso) {
+    public function eliminarSubpermiso($idsubpermiso)
+    {
         $sql = "DELETE FROM subpermiso WHERE idsubpermiso = '$idsubpermiso'";
         return ejecutarConsulta($sql) ? "Subpermiso eliminado" : "Error al eliminar";
     }

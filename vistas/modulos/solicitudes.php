@@ -303,7 +303,7 @@
 
 <div class="modal fade" id="modalSolicitud">
 
-    <div class="modal-dialog modal-xl">
+    <div class="modal-dialog modal-md">
 
         <div class="modal-content">
 
@@ -327,50 +327,43 @@
 
                     <div class="row">
 
-                        <div class="col-md-6">
-                            <label>Cliente</label>
-                            <select class="form-control select2" id="idcliente" name="idcliente"
-                                onchange="seleccionarCliente(this.value)">
-                            </select>
-
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Cliente</label>
+                                <select class="form-control select2" id="idcliente" name="idcliente"
+                                    onchange="seleccionarCliente(this.value)">
+                                </select>
+                            </div>
                         </div>
-
-                        <div class="col-md-6">
-
-                            <label>Cotizacion</label>
-
-                            <select class="form-control select2" id="idcotizacion" name="idcotizacion">
-                                <option value="">Seleccione una cotización</option>
-                            </select>
-
-                        </div>
-
-                        <div class="col-md-3">
-
-                            <label>Ingreso Mensual</label>
-
-                            <input type="number" class="form-control" name="ingreso_mensual">
-
-                        </div>
-
-                        <div class="col-md-3">
-
-                            <label>Inicial Disponible</label>
-
-                            <input type="number" class="form-control" name="inicial">
-
-                        </div>
-
-                    </div>
-
-                    <div class="row mt-3">
 
                         <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Cotizacion</label>
+                                <select class="form-control select2" id="idcotizacion" name="idcotizacion">
+                                    <option value="">Seleccione una cotización</option>
+                                </select>
+                            </div>
+                        </div>
 
-                            <label>Observación</label>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Ingreso Mensual</label>
+                                <input type="number" class="form-control" name="ingreso_mensual">
+                            </div>
+                        </div>
 
-                            <textarea class="form-control" rows="4" name="observacion"></textarea>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Inicial Disponible</label>
+                                <input type="number" class="form-control" name="inicial">
+                            </div>
+                        </div>
 
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label>Observación</label>
+                                <textarea class="form-control" rows="4" name="observacion"></textarea>
+                            </div>
                         </div>
 
                     </div>

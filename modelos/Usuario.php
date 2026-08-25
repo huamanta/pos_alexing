@@ -561,7 +561,7 @@ class Usuario extends Helpers
     public function listar()
     {
         $sql = "SELECT a.idusuario,a.idpersonal,c.nombre as trabajador,a.login,a.condicion,
-                 GROUP_CONCAT(s.nombre SEPARATOR ', ') as nombre
+                 GROUP_CONCAT(s.nombre SEPARATOR ', ') as nombre, a.superusuario
           FROM usuario a 
           INNER JOIN personal c ON a.idpersonal=c.idpersonal 
           LEFT JOIN usuario_sucursal us ON a.idusuario=us.idusuario
@@ -574,8 +574,11 @@ class Usuario extends Helpers
     //Implementar un método para listar los permisos marcados
     public function listarmarcados($idusuario)
     {
-        $sql = "SELECT idpermiso, idsubpermiso FROM usuario_permiso WHERE idusuario='$idusuario'";
-        return ejecutarConsulta($sql);
+        return (new DBQuery($this->pdo))
+            ->select('idpermiso, idsubpermiso')
+            ->from('usuario_permiso')
+            ->where('idusuario', '=', $idusuario)
+            ->get();
     }
 
 
