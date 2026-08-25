@@ -34,10 +34,7 @@
                     color: #333;
                 }
 
-                .container {
-                    max-width: 1400px;
-                    margin: 0px auto;
-                }
+                
 
                 .caja-status {
                     display: flex;
@@ -586,7 +583,6 @@
                 }
             </style>
 
-            <div class="container">
                 <!-- ESTADO DE CAJA -->
                 <div id="estadoCaja" class="box mb-4" style="display:none;">
                     <div class="box-body">
@@ -1055,7 +1051,6 @@
                     </div>
 
                 </div>
-            </div>
         </div>
     </section>
     <!-- MODAL RESUMEN DE CAJA CHICA -->

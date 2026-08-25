@@ -769,15 +769,7 @@ class DBQuery
 
         $offset = ($this->page - 1) * $this->perPage;
 
-        $sql = "
-        SELECT *
-        FROM (
-            {$this->buildQuery()}
-        ) AS resultado
-        {$orderSql}
-        LIMIT :limit
-        OFFSET :offset
-    ";
+        $sql = $this->buildQuery() . $orderSql . " LIMIT :limit OFFSET :offset";
 
         $stmt = $this->pdo->prepare($sql);
 
@@ -802,17 +794,14 @@ class DBQuery
 
         return [
             'data' => $stmt->fetchAll(PDO::FETCH_ASSOC),
-
             'meta' => [
                 'current_page' => $this->page,
                 'last_page' => $this->lastPage,
                 'per_page' => $this->perPage,
                 'total' => $this->total,
-
                 'from' => $this->total
                     ? (($this->page - 1) * $this->perPage) + 1
                     : null,
-
                 'to' => min(
                     $this->page * $this->perPage,
                     $this->total
