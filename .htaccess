@@ -1,4 +1,8 @@
-#AddHandler application/x-httpd-php81 .php
+<IfModule mod_suphp.c>
+    suPHP_ConfigPath /opt/alt/php82/etc
+</IfModule>
+
+#AddHandler application/x-httpd-alt-php82 .php
 
 Options -Indexes
 
