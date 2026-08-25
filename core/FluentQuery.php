@@ -33,7 +33,7 @@ class DBQuery
     private array $selects = [];
     private string $from = '';
     private array $joins = [];
-
+    private array $unions = [];
     private bool $lockForUpdate = false;
 
     private array $havings = [];
@@ -44,10 +44,92 @@ class DBQuery
     private int $perPage = 15;
     private int $total = 0;
     private int $lastPage = 0;
+    private static int $queryCounter = 0;
+    private int $queryId;
 
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
+        $this->queryId = ++self::$queryCounter;
+    }
+
+    public function union(DBQuery $query, bool $all = false): self
+    {
+        $this->unions[] = [
+            'query' => $query,
+            'all' => $all
+        ];
+
+        return $this;
+    }
+
+    public function unionAll(DBQuery $query): self
+    {
+        return $this->union($query, true);
+    }
+
+    private function getUnionParams(): array
+    {
+        $params = [];
+
+        foreach ($this->unions as $union) {
+
+            $query = $union['query'];
+
+            [, $whereParams] = $query->buildQueryWithConditions();
+
+            $params = array_merge(
+                $params,
+                $query->baseParams,
+                $whereParams,
+                $query->havingBindings,
+                $query->getUnionParams()
+            );
+        }
+
+        return $params;
+    }
+
+    private function buildBaseQuery(): string
+    {
+        if (!empty($this->baseQuery)) {
+            return $this->baseQuery;
+        }
+
+        if (empty($this->from)) {
+            throw new Exception(
+                'No se ha definido la tabla FROM.'
+            );
+        }
+
+        $sql = 'SELECT ';
+
+        $sql .= empty($this->selects)
+            ? '*'
+            : implode(",\n", $this->selects);
+
+        $sql .= "\nFROM {$this->from}";
+
+        if (!empty($this->joins)) {
+            $sql .= "\n" . implode("\n", $this->joins);
+        }
+
+        return $sql;
+    }
+
+    private function buildQueryWithConditions(): array
+    {
+        [$whereSql, $params] = $this->buildWhereClause();
+
+        $sql = $this->buildBaseQuery()
+            . $whereSql
+            . $this->buildGroupBy()
+            . $this->buildHaving();
+
+        return [
+            $sql,
+            $params
+        ];
     }
 
     public function whereExists(string $sql): self
@@ -66,7 +148,7 @@ class DBQuery
         $value
     ): self {
 
-        $key = 'having_' . count($this->havingBindings);
+        $key = "having_{$this->queryId}_" . count($this->havingBindings);
 
         $this->havings[] = "{$column} {$operator} :{$key}";
 
@@ -253,11 +335,15 @@ class DBQuery
     {
         [$whereSql, $params] = $this->buildWhereClause();
 
-        $sql = $this->buildQuery()
-            . $whereSql
-            . $this->buildGroupBy()
-            . $this->buildHaving()
-            . $this->buildOrderBy();
+        $sql = $this->buildQuery();
+
+        if (empty($this->unions)) {
+            $sql .= $whereSql
+                . $this->buildGroupBy()
+                . $this->buildHaving();
+        }
+
+        $sql .= $this->buildOrderBy();
 
         if ($this->limit !== null) {
             $sql .= " LIMIT {$this->limit}";
@@ -269,7 +355,15 @@ class DBQuery
 
         $stmt = $this->pdo->prepare($sql);
 
-        $this->bindParams($stmt, array_merge($this->baseParams, $params, $this->havingBindings));
+        $this->bindParams(
+            $stmt,
+            array_merge(
+                $this->baseParams,
+                $params,
+                $this->havingBindings,
+                $this->getUnionParams()
+            )
+        );
 
         $stmt->execute();
 
@@ -368,7 +462,7 @@ class DBQuery
         mixed $value
     ): self {
 
-        $key = "where_" . count($this->whereConditions);
+        $key = "where_{$this->queryId}_" . count($this->whereConditions);
 
 
         switch (strtoupper($operator)) {
@@ -530,26 +624,22 @@ class DBQuery
 
     private function buildQuery(): string
     {
-        if (!empty($this->baseQuery)) {
-            return $this->baseQuery;
-        }
+        [$sql] = $this->buildQueryWithConditions();
 
-        if (empty($this->from)) {
-            throw new Exception(
-                'No se ha definido la tabla FROM.'
-            );
-        }
+        if (!empty($this->unions)) {
 
-        $sql = 'SELECT ';
+            foreach ($this->unions as $union) {
 
-        $sql .= empty($this->selects)
-            ? '*'
-            : implode(",\n", $this->selects);
+                $unionQuery = $union['query'];
 
-        $sql .= "\nFROM {$this->from}";
+                [$unionSql] = $unionQuery->buildQueryWithConditions();
 
-        if (!empty($this->joins)) {
-            $sql .= "\n" . implode("\n", $this->joins);
+                $sql .= $union['all']
+                    ? "\nUNION ALL\n"
+                    : "\nUNION\n";
+
+                $sql .= $unionSql;
+            }
         }
 
         return $sql;
@@ -633,7 +723,7 @@ class DBQuery
 
             foreach ($this->searchColumns as $i => $column) {
 
-                $key = "search_" . $i;
+                $key = "search_{$this->queryId}_{$i}";
 
                 $search[] = "LOWER({$column}) LIKE LOWER(:{$key})";
 
@@ -667,7 +757,6 @@ class DBQuery
         int $perPage = 15
     ): array {
 
-
         $this->page = max(1, $page);
 
         $this->perPage = max(
@@ -675,52 +764,34 @@ class DBQuery
             min(100, $perPage)
         );
 
-
-        [
-            $whereSql,
-            $params
-        ] = $this->buildWhereClause();
-
         $orderSql = $this->buildOrderBy();
-
-
 
         $finalParams = array_merge(
             $this->baseParams,
-            $params,
-            $this->havingBindings
+            $this->getCurrentParams(),
+            $this->getUnionParams()
         );
 
-
-        $this->calculateTotal(
-            $whereSql,
-            $finalParams
-        );
-
-
+        $this->calculateTotal($finalParams);
 
         $offset = ($this->page - 1) * $this->perPage;
 
-
         $sql = "
+        SELECT *
+        FROM (
             {$this->buildQuery()}
-            {$whereSql}
-            {$this->buildGroupBy()}
-            {$this->buildHaving()}
-            {$orderSql}
-            LIMIT :limit
-            OFFSET :offset
-        ";
-
+        ) AS resultado
+        {$orderSql}
+        LIMIT :limit
+        OFFSET :offset
+    ";
 
         $stmt = $this->pdo->prepare($sql);
-
 
         $this->bindParams(
             $stmt,
             $finalParams
         );
-
 
         $stmt->bindValue(
             ':limit',
@@ -728,90 +799,72 @@ class DBQuery
             PDO::PARAM_INT
         );
 
-
         $stmt->bindValue(
             ':offset',
             $offset,
             PDO::PARAM_INT
         );
 
-
         $stmt->execute();
 
-
         return [
+            'data' => $stmt->fetchAll(PDO::FETCH_ASSOC),
 
-            "data" => $stmt->fetchAll(PDO::FETCH_ASSOC),
+            'meta' => [
+                'current_page' => $this->page,
+                'last_page' => $this->lastPage,
+                'per_page' => $this->perPage,
+                'total' => $this->total,
 
-            "meta" => [
-
-                "current_page" => $this->page,
-
-                "last_page" => $this->lastPage,
-
-                "per_page" => $this->perPage,
-
-                "total" => $this->total,
-
-                "from" =>
-                    $this->total
+                'from' => $this->total
                     ? (($this->page - 1) * $this->perPage) + 1
                     : null,
 
-                "to" =>
-                    min(
-                        $this->page * $this->perPage,
-                        $this->total
-                    )
+                'to' => min(
+                    $this->page * $this->perPage,
+                    $this->total
+                )
             ]
         ];
     }
 
-
-
-
-    private function calculateTotal(string $whereSql, array $params): void
+    private function getCurrentParams(): array
     {
+        [, $params] = $this->buildWhereClause();
 
+        return array_merge(
+            $params,
+            $this->havingBindings
+        );
+    }
+
+
+    private function calculateTotal(array $params): void
+    {
         $sql = "
-            SELECT COUNT(*)
-            FROM (
-                {$this->buildQuery()}
-                {$whereSql}
-                {$this->buildGroupBy()}
-                {$this->buildHaving()}
-            ) total
-            ";
-
+        SELECT COUNT(*)
+        FROM (
+            {$this->buildQuery()}
+        ) AS total
+    ";
 
         $stmt = $this->pdo->prepare($sql);
-
-
 
         $this->bindParams(
             $stmt,
             $params
         );
 
-
         $stmt->execute();
 
+        $this->total = (int) $stmt->fetchColumn();
 
-
-        $this->total =
-            (int) $stmt->fetchColumn();
-
-
-        $this->lastPage =
-            (int) ceil(
-                $this->total /
-                $this->perPage
-            );
-
+        $this->lastPage = $this->total > 0
+            ? (int) ceil($this->total / $this->perPage)
+            : 0;
 
         if (
-            $this->page > $this->lastPage
-            &&
+            $this->page > $this->lastPage &&
             $this->lastPage > 0
         ) {
             $this->page = $this->lastPage;
@@ -866,7 +919,6 @@ class DBQuery
         $this->whereParams = [];
 
         $this->orders = [];
-
         $this->rawWhere = [];
 
         $this->searchColumns = [];
@@ -886,9 +938,10 @@ class DBQuery
 
         $this->limit = null;
         $this->offset = null;
-        $this->orders = [];
         $this->groups = [];
-        $this->rawWhere = [];
+        $this->havings = [];
+        $this->havingBindings = [];
+        $this->unions = [];
 
         return $this;
     }
