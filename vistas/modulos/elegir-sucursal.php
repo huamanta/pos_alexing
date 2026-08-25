@@ -982,7 +982,7 @@ $esAdmin = $usuario->esSuperusuario();
                                                 .html('<i class="fas fa-check-circle"></i> Sucursal seleccionada');
 
                                             setTimeout(function () {
-                                                window.location.href = '<?php echo $baseUrl; ?>/inicio';
+                                                window.location.reload();
                                             }, 400);
 
                                             return;
@@ -1138,9 +1138,8 @@ $esAdmin = $usuario->esSuperusuario();
                 idsucursal: idsucursal
             },
                 function (response) {
-
                     if (response == "ok") {
-                        window.location.href = baseUrl + '/inicio';
+                        window.location.reload();
                     } else {
                         alert("Error al seleccionar sucursal");
                     }
@@ -1170,7 +1169,7 @@ $esAdmin = $usuario->esSuperusuario();
                     telefono: telefono
                 }, function (response) {
                     if (response == 'ok') {
-                        window.location.href = baseUrl + '/inicio';
+                        window.location.reload();
                     } else {
                         alert('Error: ' + response);
                     }

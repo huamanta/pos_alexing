@@ -39,8 +39,7 @@ class Bancos extends Helpers
             ->select([
                 'm.fecha AS fecha',
                 'm.tipo AS tipo',
-                'm.totalefectivo AS efectivo',
-                'm.totaldeposito AS deposito',
+                'm.totaldeposito AS monto',
                 'p.nombre AS responsable',
                 "'movimiento' AS origen",
             ])
@@ -63,8 +62,7 @@ class Bancos extends Helpers
             ->select([
                 'dcc.fechapago AS fecha',
                 "'Ingresos' AS tipo",
-                'dcc.montopagado AS efectivo',
-                'dcc.montotarjeta AS deposito',
+                'dcc.montotarjeta AS monto',
                 'p.nombre AS responsable',
                 "'cuenta_por_cobrar' AS origen",
             ])
