@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . "/../Helpers.php";
-require_once __DIR__ . "/../config/Constants.php";
+require_once __DIR__ . "/../../core/Constants.php";
 header('Content-Type: application/json; charset=utf-8');
 class Recuperacion extends Helpers
 {

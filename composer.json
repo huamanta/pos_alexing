@@ -8,6 +8,6 @@
         "luecano/numero-a-letras": "^3.0",
         "greenter/lite": "^5.3",
         "nesbot/carbon": "^3.13",
-        "chillerlan/php-qrcode": "^5.0"
+        "chillerlan/php-qrcode": "^6.0"
     }
 }

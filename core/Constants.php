@@ -24,4 +24,5 @@ class Constants {
     ];
     const INGRESOS = 'Ingresos';
     const EGRESOS = 'Egresos';
+    const OUTPUT_IMAGE_PNG = 'png';
 }

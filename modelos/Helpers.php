@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../configuraciones/ConexionPdo.php';
-require_once __DIR__ . '/config/Constants.php';
+require_once __DIR__ . '/../core/Constants.php';
 class Helpers
 {
     public PDO $pdo;

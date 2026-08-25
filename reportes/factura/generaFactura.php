@@ -5,6 +5,7 @@ require_once __DIR__ . "/../../configuraciones/Conexion.php";
 require_once __DIR__ . "/../../modelos/Helpers.php";
 require_once __DIR__ . "/../../modelos/Venta.php";
 require_once __DIR__ . "/../../modelos/Negocio.php";
+require_once __DIR__ . "/../../core/Constants.php";
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
