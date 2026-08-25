@@ -333,17 +333,10 @@ class DBQuery
 
     public function get(): array
     {
-        [$whereSql, $params] = $this->buildWhereClause();
+        [, $params] = $this->buildWhereClause();
 
-        $sql = $this->buildQuery();
-
-        if (empty($this->unions)) {
-            $sql .= $whereSql
-                . $this->buildGroupBy()
-                . $this->buildHaving();
-        }
-
-        $sql .= $this->buildOrderBy();
+        $sql = $this->buildQuery()
+            . $this->buildOrderBy();
 
         if ($this->limit !== null) {
             $sql .= " LIMIT {$this->limit}";
@@ -370,15 +363,11 @@ class DBQuery
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-
     public function first(): ?array
     {
-        [$whereSql, $params] = $this->buildWhereClause();
+        [, $params] = $this->buildWhereClause();
 
         $sql = $this->buildQuery()
-            . $whereSql
-            . $this->buildGroupBy()
-            . $this->buildHaving()
             . $this->buildOrderBy()
             . " LIMIT 1";
 
@@ -388,7 +377,14 @@ class DBQuery
 
         $stmt = $this->pdo->prepare($sql);
 
-        $this->bindParams($stmt, array_merge($this->baseParams, $params, $this->havingBindings));
+        $this->bindParams(
+            $stmt,
+            array_merge(
+                $this->baseParams,
+                $params,
+                $this->havingBindings
+            )
+        );
 
         $stmt->execute();
 
@@ -397,17 +393,14 @@ class DBQuery
 
     public function count(): int
     {
-        [$whereSql, $params] = $this->buildWhereClause();
+        [, $params] = $this->buildWhereClause();
 
         $sql = "
-                SELECT COUNT(*)
-                FROM (
-                    {$this->buildQuery()}
-                    {$whereSql}
-                    {$this->buildGroupBy()}
-                    {$this->buildHaving()}
-                ) t
-                ";
+            SELECT COUNT(*)
+            FROM (
+                {$this->buildQuery()}
+            ) t
+        ";
 
         $stmt = $this->pdo->prepare($sql);
 

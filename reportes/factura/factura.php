@@ -1,5 +1,4 @@
 <?php
-
 use chillerlan\QRCode\QRCode;
 use chillerlan\QRCode\QROptions;
 
@@ -307,7 +306,7 @@ $rutaLogo = realpath(__DIR__ . '/../../files/logos/' . $logo);
             <td width="18%" class="text-center">
                 <?php
                 $options = new QROptions([
-                    'outputType' => QRCode::OUTPUT_IMAGE_PNG,
+                    'outputType' => Constants::OUTPUT_IMAGE_PNG,
                     'scale' => 6,
                 ]);
 

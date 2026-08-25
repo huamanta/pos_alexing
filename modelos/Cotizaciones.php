@@ -2,7 +2,7 @@
 //incluir la conexion de base de datos
 require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
-require_once __DIR__ . "/config/Constants.php";
+require_once __DIR__ . "/../core/Constants.php";
 require_once __DIR__ . "/../core/Response.php";
 
 date_default_timezone_set('America/Lima');
