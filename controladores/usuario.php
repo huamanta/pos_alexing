@@ -486,53 +486,7 @@ switch ($_GET["op"]) {
 			$direccion,
 			$telefono
 		);
-		// if (intval($res_empresa['success']) === true) {
-		// 	// Obtener idempresa
-		// 	$sql_emp = "SELECT idempresa FROM empresas ORDER BY idempresa DESC LIMIT 1";
-		// 	$emp = ejecutarConsultaSimpleFila($sql_emp);
-		// 	$idempresa = $emp['idempresa'];
-
-		// 	require_once "../modelos/Categoria.php";
-		// 	$categoria = new Categoria();
-		// 	$nombre = isset($_POST["nombre"]) ? limpiarCadena($_POST["nombre"]) : "";
-		// 	$direccion = isset($_POST["direccion"]) ? limpiarCadena($_POST["direccion"]) : "";
-		// 	$telefono = isset($_POST["telefono"]) ? limpiarCadena($_POST["telefono"]) : "";
-		// 	$rspta = $categoria->insertarSucursal(
-		// 		$nombre,
-		// 		$direccion,
-		// 		$telefono,
-		// 		'',
-		// 		'',
-		// 		'',
-		// 		'',
-		// 		$idempresa,
-		// 		'PEN',
-		// 		'S/'
-		// 	);
-
-		// 	if ($rspta) {
-		// 		$sql_new = "SELECT idsucursal FROM sucursal ORDER BY idsucursal DESC LIMIT 1";
-		// 		$new_suc = ejecutarConsultaSimpleFila($sql_new);
-		// 		$idsucursal_new = $new_suc['idsucursal'];
-		// 		$sql_asignar = "INSERT INTO usuario_sucursal (idusuario, idsucursal) VALUES ('{$_SESSION['idusuario']}', '$idsucursal_new')";
-		// 		ejecutarConsulta($sql_asignar);
-		// 		$res = $usuario->seleccionarSucursal($idsucursal_new);
-		// 		if ($res) {
-		// 			$_SESSION['idsucursal'] = $res['idsucursal'];
-		// 			$_SESSION['nombre_impuesto'] = $res['nombre_impuesto'];
-		// 			$_SESSION['monto_impuesto'] = $res['monto_impuesto'];
-		// 			echo 'ok';
-		// 		} else {
-		// 			echo 'error al seleccionar';
-		// 		}
-		// 	} else {
-		// 		echo 'error al crear sucursal';
-		// 	}
-		// } else {
-		// 	echo 'error al crear empresa';
-		// }
 		break;
-
-
+		
 }
 ?>
