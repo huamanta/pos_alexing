@@ -39,12 +39,12 @@ function mostrarform(flag) {
     if (flag) {
         $("#listadoregistros").show();
         $("#detalles tbody").html("");
-        
+
         // Llenar tabla con comprobantes por defecto para nueva empresa
         var comprobantes = ['Factura', 'Boleta', 'Nota de Venta', 'Cotización', 'NC', 'NCB', 'Orden Compra', 'Ticket', 'Guia de Remisión'];
         var series = ['F001', 'B001', 'NV01', 'Q001', 'NC01', 'ND01', 'OC01', 'TK01', 'T001'];
-        
-        comprobantes.forEach(function(comp, index) {
+
+        comprobantes.forEach(function (comp, index) {
             var fila = '<tr>' +
                 '<td><input class="form-control" type="text" name="nombreSucursal[]" value="' + comp + '"></td>' +
                 '<td><input class="form-control" type="text" name="serie[]" value="' + series[index] + '"></td>' +
@@ -52,7 +52,7 @@ function mostrarform(flag) {
                 '</tr>';
             $("#detalles tbody").append(fila);
         });
-        
+
         $('#myModal').modal('show');
 
         $('#myModal').off('shown.bs.modal').on('shown.bs.modal', function () {
@@ -139,40 +139,42 @@ function guardaryeditar(e) {
         contentType: false,
         processData: false,
 
-        success: function (datos) {
-            var jsonData = JSON.parse(datos);
-
-            Swal.fire({
-                title: 'Empresa',
-                icon: jsonData.status,
-                text: jsonData.message
-            });
-
-            if (jsonData.code != 200) {
+        success: function (response) {
+            const data = response;
+            if (!data.success) {
+                Swal.fire({
+                    title: 'Empresa',
+                    icon: 'error',
+                    text: data.message
+                });
                 return;
             }
-
+            Swal.fire({
+                title: 'Empresa',
+                icon: 'success',
+                text: data.message
+            });
             $('#myModal').modal('hide');
-
             mostrarform(false);
             tabla.ajax.reload();
-
-
+            limpiar();
+        },
+        error: function (error) {
+            Swal.fire({
+                title: 'Empresa',
+                icon: 'error',
+                text: error.responseJSON.message || 'Erorrs'
+            });
         }
-
     });
-    limpiar();
     //location.reload();
 }
 
 function mostrar(idempresa) {
     $.post("controladores/empresas.php?op=mostrarEmpresa",
         { idempresa: idempresa },
-        function (data) {
-            data = JSON.parse(data);
-            console.log(data);
-            
-
+        function (response) {
+            const data = response;
             // 👉 abrir modal
             limpiar();
             $("#detalles tbody").html("");
@@ -185,7 +187,6 @@ function mostrar(idempresa) {
             $("#razon_social").val(data.razon_social);
             $("#usuario_sol").val(data.usuario_sol);
             $("#clave_sol").val(data.clave_sol);
-            $("#ruta_certificado").val(data.ruta_certificado);
             $("#clave_certificado").val(data.clave_certificado);
             $("#estado_certificado").val(data.estado_certificado);
             $("#client_id").val(data.client_id);
@@ -202,16 +203,16 @@ function mostrar(idempresa) {
 function cargarComprobantes(idempresa) {
     $.post("controladores/empresas.php?op=mostrarComprobantes",
         { idempresa: idempresa },
-        function (datos) {
-            var data = JSON.parse(datos);
+        function (response) {
+            const data = response;
             $("#detalles tbody").html("");
-            
+
             if (data && data.length > 0) {
-                data.forEach(function(comp) {
+                data.forEach(function (comp) {
                     var fila = '<tr>' +
                         '<td><input class="form-control" type="text" name="nombreSucursal[]" value="' + comp.nombre + '"></td>' +
-                        '<td><input class="form-control" type="text" name="serie[]" value="' + comp.serie + '"></td>' +
-                        '<td><input class="form-control" type="text" name="numero[]" value="' + comp.numero + '"></td>' +
+                        '<td><input class="form-control" type="text" name="serie[]" value="' + comp.serie_comprobante + '"></td>' +
+                        '<td><input class="form-control" type="text" name="numero[]" value="' + comp.num_comprobante + '"></td>' +
                         '</tr>';
                     $("#detalles tbody").append(fila);
                 });
@@ -221,7 +222,7 @@ function cargarComprobantes(idempresa) {
 }
 
 // Event listener para el tab de comprobantes
-$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function(e) {
+$(document).on('shown.bs.tab', 'a[data-toggle="tab"]', function (e) {
     if ($(e.target).attr('href') === '#comprobantes-content') {
         var idempresa = $("#idempresa").val();
         if (idempresa) {
@@ -243,29 +244,26 @@ function desactivar(idempresa) {
         confirmButtonColor: "#0004FA",
         cancelButtonColor: "#FF0000",
         showLoaderOnConfirm: true,
-        reverseButtons: true,
-        preConfirm: () => {
-            return $.post(
-                "controladores/empresas.php?op=activar_descativar",
-                { idempresa: idempresa, estado: 0 }
-            ).then(response => {
-                return response;
-            }).catch(() => {
-                Swal.showValidationMessage("Error en la solicitud");
-            });
-        }
+        reverseButtons: true
     }).then((result) => {
         if (result.isConfirmed) {
-            var jsonData = JSON.parse(result.value);
-            Swal.fire({
-                title: 'Empresa',
-                icon: jsonData.status,
-                text: jsonData.message
+            $.post("controladores/empresas.php?op=activar_descativar", { idempresa: idempresa, estado: 0 }, function (response) {
+                const data = response;
+                if (!data.success) {
+                    Swal.fire({
+                        title: 'Empresa',
+                        icon: 'error',
+                        text: data.message
+                    });
+                    return;
+                }
+                Swal.fire({
+                    title: 'Empresa',
+                    icon: 'success',
+                    text: data.message
+                });
+                tabla.ajax.reload();
             });
-            if (jsonData.code != 200) {
-                return;
-            }
-            tabla.ajax.reload();
         }
     });
 }
@@ -284,16 +282,21 @@ function activar(idempresa) {
         reverseButtons: true,
     }).then((result) => {
         if (result.isConfirmed) {
-            $.post("controladores/empresas.php?op=activar_descativar", { idempresa: idempresa, estado: 1 }, function (e) {
-                var jsonData = JSON.parse(e);
-                Swal.fire({
-                    title: 'Empresa',
-                    icon: jsonData.status,
-                    text: jsonData.message
-                });
-                if (jsonData.code != 200) {
+            $.post("controladores/empresas.php?op=activar_descativar", { idempresa: idempresa, estado: 1 }, function (response) {
+                const data = response;
+                if (!data.success) {
+                    Swal.fire({
+                        title: 'Empresa',
+                        icon: 'error',
+                        text: data.message
+                    });
                     return;
                 }
+                Swal.fire({
+                    title: 'Empresa',
+                    icon: 'success',
+                    text: data.message
+                });
                 tabla.ajax.reload();
             });
         }
