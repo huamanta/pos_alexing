@@ -66,14 +66,4 @@ switch ($op) {
         $empresa->mostrarComprobantesEmpresa($idempresa);
         break;
 
-    // case 'guardarComprobantes':
-    //     require_once "../modelos/Categoria.php";
-    //     $categoria = new Categoria();
-    //     $nombreSucursal = isset($_POST["nombreSucursal"]) ? $_POST["nombreSucursal"] : [];
-    //     $serie = isset($_POST["serie"]) ? $_POST["serie"] : [];
-    //     $numero = isset($_POST["numero"]) ? $_POST["numero"] : [];
-        
-    //     $rspta = $categoria->actualizarComprobantesEmpresa($idempresa, $nombreSucursal, $serie, $numero);
-    //     echo $rspta ? "Comprobantes actualizados" : "Error al actualizar comprobantes";
-    //     break;
 }
