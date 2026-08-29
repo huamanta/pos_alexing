@@ -18,13 +18,8 @@ $("#frmAcceso").on('submit', function(e) {
 
             let finCarga = performance.now();
             let tiempoServidor = finCarga - inicioCarga;
-
-            console.log("Respuesta:", response);
-
             try {
-
                 const data = response;
-
                 if (!data.success) {
                     $('#n1').slideDown();
 

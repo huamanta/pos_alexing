@@ -686,6 +686,81 @@ $esAdmin = $usuario->esSuperusuario();
     .sucursal-btn:hover i {
         transform: translateX(3px);
     }
+
+    .sucursales-search {
+        position: relative;
+        margin-bottom: 20px;
+    }
+
+    .sucursales-search i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #9298a1;
+        font-size: 14px;
+        z-index: 2;
+    }
+
+    .sucursales-search input {
+        width: 100%;
+        height: 44px;
+        padding: 0 40px 0 42px;
+        border: 1px solid #dfe2e6;
+        border-radius: 9px;
+        font-size: 13px;
+        outline: none;
+        transition: all .2s ease;
+    }
+
+    .sucursales-search input:focus {
+        border-color: #2c2fa5;
+        box-shadow: 0 0 0 3px rgba(44, 47, 165, .08);
+    }
+
+    .sucursales-search .search-clear {
+        display: none;
+        position: absolute;
+        right: 13px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #9298a1;
+        font-size: 13px;
+    }
+
+    .sucursales-search .search-clear:hover {
+        color: #dc3545;
+    }
+
+    .sucursal-no-results {
+        display: none;
+        width: 100%;
+        padding: 35px 20px;
+        text-align: center;
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        color: #8a8f98;
+    }
+
+    .sucursal-no-results i {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 28px;
+        color: #c5c9d0;
+    }
+
+    .sucursal-no-results strong {
+        display: block;
+        margin-bottom: 5px;
+        color: #555b64;
+        font-size: 14px;
+    }
+
+    .sucursal-no-results span {
+        font-size: 12px;
+    }
 </style>
 <div class="content-wrapper">
     <section class="content">
@@ -1021,101 +1096,135 @@ $esAdmin = $usuario->esSuperusuario();
                                     </div>
 
                                     <div class="sucursales-count">
-                                        <strong><?php echo count($sucursales); ?></strong>
+                                        <strong id="sucursalesTotal"><?php echo count($sucursales); ?></strong>
                                         <span>Sucursales</span>
                                     </div>
                                 </div>
+
+                                <div class="sucursales-search">
+                                    <i class="fas fa-search"></i>
+
+                                    <input type="text" id="buscarSucursal"
+                                        placeholder="Buscar sucursal por nombre, dirección, teléfono o código..."
+                                        autocomplete="off">
+
+                                    <i class="fas fa-times search-clear" id="limpiarBusqueda"></i>
+                                </div>
                             </div>
 
-                            <?php foreach ($sucursales as $suc): ?>
-                                <div class="col-xl-3 col-lg-4 col-md-6 mb-4">
-                                    <div class="card sucursal-card h-100">
+                            <div id="listaSucursales" class="row w-100 mx-0">
+                                <?php foreach ($sucursales as $suc): ?>
+                                    <div class="col-xl-3 col-lg-4 col-md-6 mb-4 sucursal-item" data-search="<?php echo htmlspecialchars(
+                                        strtolower(
+                                            $suc['nombre'] . ' ' .
+                                            ($suc['direccion'] ?? '') . ' ' .
+                                            ($suc['telefono'] ?? '') . ' ' .
+                                            $suc['idsucursal']
+                                        )
+                                    ); ?>">
 
-                                        <div class="sucursal-header">
-                                            <div class="sucursal-icon">
-                                                <?php if (!empty($suc['logo'])): ?>
-                                                    <img src="<?php echo htmlspecialchars($suc['logo']); ?>"
-                                                        alt="<?php echo htmlspecialchars($suc['nombre']); ?>">
-                                                <?php else: ?>
-                                                    <i class="fas fa-store"></i>
-                                                <?php endif; ?>
-                                            </div>
+                                        <div class="card sucursal-card h-100">
 
-                                            <div class="sucursal-status">
-                                                <i class="fas fa-circle"></i>
-                                                Activa
-                                            </div>
-                                        </div>
+                                            <div class="sucursal-header">
+                                                <div class="sucursal-icon">
+                                                    <?php if (!empty($suc['logo'])): ?>
+                                                        <img src="<?php echo htmlspecialchars($suc['logo']); ?>"
+                                                            alt="<?php echo htmlspecialchars($suc['nombre']); ?>">
+                                                    <?php else: ?>
+                                                        <i class="fas fa-store"></i>
+                                                    <?php endif; ?>
+                                                </div>
 
-                                        <div class="card-body">
-
-                                            <div class="sucursal-title">
-                                                <div>
-                                                    <h4><?php echo htmlspecialchars($suc['nombre']); ?></h4>
-                                                    <span>
-                                                        Sucursal #<?php echo (int) $suc['idsucursal']; ?>
-                                                    </span>
+                                                <div class="sucursal-status">
+                                                    <i class="fas fa-circle"></i>
+                                                    Activa
                                                 </div>
                                             </div>
 
-                                            <div class="sucursal-info">
+                                            <div class="card-body">
 
-                                                <?php if (!empty($suc['direccion'])): ?>
-                                                    <div class="info-item">
-                                                        <div class="info-icon">
-                                                            <i class="fas fa-map-marker-alt"></i>
-                                                        </div>
+                                                <div class="sucursal-title">
+                                                    <div>
+                                                        <h4>
+                                                            <?php echo htmlspecialchars($suc['nombre']); ?>
+                                                        </h4>
 
-                                                        <div class="info-content">
-                                                            <small>Dirección</small>
-                                                            <strong>
-                                                                <?php echo htmlspecialchars($suc['direccion']); ?>
-                                                            </strong>
-                                                        </div>
+                                                        <span>
+                                                            Sucursal #<?php echo (int) $suc['idsucursal']; ?>
+                                                        </span>
                                                     </div>
-                                                <?php endif; ?>
-
-                                                <?php if (!empty($suc['telefono'])): ?>
-                                                    <div class="info-item">
-                                                        <div class="info-icon">
-                                                            <i class="fas fa-phone"></i>
-                                                        </div>
-
-                                                        <div class="info-content">
-                                                            <small>Teléfono</small>
-                                                            <strong>
-                                                                <?php echo htmlspecialchars($suc['telefono']); ?>
-                                                            </strong>
-                                                        </div>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                            </div>
-
-                                            <div class="sucursal-footer">
-
-                                                <div class="sucursal-currency">
-                                                    <span>Moneda</span>
-                                                    <strong>
-                                                        <?php echo htmlspecialchars($suc['moneda']); ?>
-                                                        <small>
-                                                            <?php echo htmlspecialchars($suc['simbolo']); ?>
-                                                        </small>
-                                                    </strong>
                                                 </div>
 
-                                                <button type="button" class="btn btn-primary sucursal-btn"
-                                                    data-id="<?php echo (int) $suc['idsucursal']; ?>">
-                                                    Ingresar
-                                                    <i class="fas fa-arrow-right"></i>
-                                                </button>
+                                                <div class="sucursal-info">
+
+                                                    <?php if (!empty($suc['direccion'])): ?>
+                                                        <div class="info-item">
+                                                            <div class="info-icon">
+                                                                <i class="fas fa-map-marker-alt"></i>
+                                                            </div>
+
+                                                            <div class="info-content">
+                                                                <small>Dirección</small>
+                                                                <strong>
+                                                                    <?php echo htmlspecialchars($suc['direccion']); ?>
+                                                                </strong>
+                                                            </div>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                    <?php if (!empty($suc['telefono'])): ?>
+                                                        <div class="info-item">
+                                                            <div class="info-icon">
+                                                                <i class="fas fa-phone"></i>
+                                                            </div>
+
+                                                            <div class="info-content">
+                                                                <small>Teléfono</small>
+                                                                <strong>
+                                                                    <?php echo htmlspecialchars($suc['telefono']); ?>
+                                                                </strong>
+                                                            </div>
+                                                        </div>
+                                                    <?php endif; ?>
+
+                                                </div>
+
+                                                <div class="sucursal-footer">
+
+                                                    <div class="sucursal-currency">
+                                                        <span>Moneda</span>
+
+                                                        <strong>
+                                                            <?php echo htmlspecialchars($suc['moneda']); ?>
+
+                                                            <small>
+                                                                <?php echo htmlspecialchars($suc['simbolo']); ?>
+                                                            </small>
+                                                        </strong>
+                                                    </div>
+
+                                                    <button type="button" class="btn btn-primary sucursal-btn"
+                                                        data-id="<?php echo (int) $suc['idsucursal']; ?>">
+
+                                                        Ingresar
+                                                        <i class="fas fa-arrow-right"></i>
+                                                    </button>
+
+                                                </div>
 
                                             </div>
-
                                         </div>
                                     </div>
+                                <?php endforeach; ?>
+
+                                <div class="col-12">
+                                    <div class="sucursal-no-results" id="sucursalNoResults">
+                                        <i class="fas fa-search"></i>
+                                        <strong>No se encontraron sucursales</strong>
+                                        <span>Prueba con otro nombre, dirección, teléfono o código.</span>
+                                    </div>
                                 </div>
-                            <?php endforeach; ?>
+                            </div>
                         </div>
 
 
@@ -1168,13 +1277,55 @@ $esAdmin = $usuario->esSuperusuario();
                     direccion: direccion,
                     telefono: telefono
                 }, function (response) {
-                    if (response == 'ok') {
-                        window.location.reload();
-                    } else {
-                        alert('Error: ' + response);
+                    if (!response.success) {
+                        Swal.fire('Sucursale', response.message || 'Error al crear sucursal', 'error');
+                        return;
                     }
+                    window.location.reload();
+                }).fail(function (error) {
+                    console.log(error);
+                    Swal.fire('Sucursale', error.responseJSON.message || 'Error al crear sucursal', 'error');
                 });
             }
+        });
+
+        $(document).ready(function () {
+
+            $('#buscarSucursal').on('input', function () {
+
+                const texto = $.trim($(this).val().toLowerCase());
+                let encontrados = 0;
+
+                $('.sucursal-item').each(function () {
+
+                    const datos = $(this).data('search');
+
+                    if (datos.includes(texto)) {
+                        $(this).show();
+                        encontrados++;
+                    } else {
+                        $(this).hide();
+                    }
+                });
+
+                $('#sucursalesTotal').text(encontrados);
+
+                if (texto.length > 0) {
+                    $('#limpiarBusqueda').show();
+                } else {
+                    $('#limpiarBusqueda').hide();
+                }
+
+                $('#sucursalNoResults').toggle(encontrados === 0);
+            });
+
+            $('#limpiarBusqueda').on('click', function () {
+
+                $('#buscarSucursal').val('').trigger('input');
+                $('#buscarSucursal').focus();
+
+            });
+
         });
     });
 </script>

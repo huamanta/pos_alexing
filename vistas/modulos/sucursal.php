@@ -42,15 +42,16 @@
                         <div class="card-body" id="listadoregistros">
                             <table id="tbllistado" class="table table-striped">
                                 <thead>
-                                    <th>Almacén</th>
+                                    <th>Nombre</th>
+                                    <th>Direccion</th>
+                                    <th>Telefono</th>
+                                    <th>Email</th>
+                                    <th>Ubigeo</th>
+                                    <th>Moneda</th>
                                     <th>Acciones</th>
                                 </thead>
                                 <tbody>
                                 </tbody>
-                                <tfoot>
-                                    <th>Nombre</th>
-                                    <th>Acciones</th>
-                                </tfoot>
                             </table>
                         </div>
 
