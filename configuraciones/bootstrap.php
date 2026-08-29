@@ -13,6 +13,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+function limpiarCadena($str)
+{
+    return htmlspecialchars(trim($str), ENT_QUOTES, 'UTF-8');
+}
+
 /*
 |--------------------------------------------------------------------------
 | Configuración de errores
