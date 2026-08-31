@@ -54,9 +54,9 @@ switch ($_GET['op']) {
         $ruc = $_POST['ruc'];
         $razon_social = $_POST['razon_social'];
         $monto_impuesto = $_POST['monto_impuesto'];
-        $usuario_sol = $_POST['usuario_sol'];
-        $clave_sol = $_POST['clave_sol'];
-        $clave_certificado = $_POST['clave_certificado'];
+        $usuario_sol = $_POST['usuario_sol'] ?? '';
+        $clave_sol = $_POST['clave_sol'] ?? '';
+        $clave_certificado = $_POST['clave_certificado'] ?? '';
         $estado_certificado = $_POST['estado_certificado'];
         $configuracion->actualizarConfiguracionFacturacion($idsucursal, $is_send_sunat, $ruc, $razon_social, $monto_impuesto, $usuario_sol, $clave_sol, $_FILES['ruta_certificado'], $clave_certificado, $estado_certificado);
         break;
