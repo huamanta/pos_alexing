@@ -462,9 +462,11 @@ switch ($_GET["op"]) {
 		$nombre_impuesto = isset($_POST["nombre_impuesto"]) ? limpiarCadena($_POST["nombre_impuesto"]) : "";
 		$monto_impuesto = isset($_POST["monto_impuesto"]) ? limpiarCadena($_POST["monto_impuesto"]) : "";
 		$estado = 1; // Activo por defecto
+		$nombre = isset($_POST["nombre"]) ? limpiarCadena($_POST["nombre"]) : "";
+		$direccion = isset($_POST["direccion"]) ? limpiarCadena($_POST["direccion"]) : "";
+		$telefono = isset($_POST["telefono"]) ? limpiarCadena($_POST["telefono"]) : "";
 		// Insertar empresa
-		$res_empresa = $empresa->guardaryeditar(
-			"",
+		$empresa->guardarPrimeraSucursal(
 			$ruc,
 			$razon_social,
 			"",
@@ -479,55 +481,12 @@ switch ($_GET["op"]) {
 			$estado,
 			['Nota de Venta', 'Factura', 'Boleta', 'Nota de Crédito', 'Nota de Débito', 'Cotización', 'Orden de Compra', 'Guia de Remisión'],
 			['NV001', 'F001', 'B001', 'NC01', 'ND01', 'COT01', 'OC01', 'T001'],
-			[0, 0, 0, 0, 0, 0, 0]
+			[0, 0, 0, 0, 0, 0, 0, 0],
+			$nombre,
+			$direccion,
+			$telefono
 		);
-		if (intval($res_empresa['code']) === 200) {
-			// Obtener idempresa
-			$sql_emp = "SELECT idempresa FROM empresas ORDER BY idempresa DESC LIMIT 1";
-			$emp = ejecutarConsultaSimpleFila($sql_emp);
-			$idempresa = $emp['idempresa'];
-
-			require_once "../modelos/Categoria.php";
-			$categoria = new Categoria();
-			$nombre = isset($_POST["nombre"]) ? limpiarCadena($_POST["nombre"]) : "";
-			$direccion = isset($_POST["direccion"]) ? limpiarCadena($_POST["direccion"]) : "";
-			$telefono = isset($_POST["telefono"]) ? limpiarCadena($_POST["telefono"]) : "";
-			$rspta = $categoria->insertarSucursal(
-				$nombre,
-				$direccion,
-				$telefono,
-				'',
-				'',
-				'',
-				'',
-				$idempresa,
-				'PEN',
-				'S/'
-			);
-
-			if ($rspta) {
-				$sql_new = "SELECT idsucursal FROM sucursal ORDER BY idsucursal DESC LIMIT 1";
-				$new_suc = ejecutarConsultaSimpleFila($sql_new);
-				$idsucursal_new = $new_suc['idsucursal'];
-				$sql_asignar = "INSERT INTO usuario_sucursal (idusuario, idsucursal) VALUES ('{$_SESSION['idusuario']}', '$idsucursal_new')";
-				ejecutarConsulta($sql_asignar);
-				$res = $usuario->seleccionarSucursal($idsucursal_new);
-				if ($res) {
-					$_SESSION['idsucursal'] = $res['idsucursal'];
-					$_SESSION['nombre_impuesto'] = $res['nombre_impuesto'];
-					$_SESSION['monto_impuesto'] = $res['monto_impuesto'];
-					echo 'ok';
-				} else {
-					echo 'error al seleccionar';
-				}
-			} else {
-				echo 'error al crear sucursal';
-			}
-		} else {
-			echo 'error al crear empresa';
-		}
 		break;
-
-
+		
 }
 ?>

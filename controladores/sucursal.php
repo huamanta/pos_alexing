@@ -72,7 +72,12 @@ switch ($_GET["op"]){
  		while ($reg=$rspta->fetch_object()){
  			$data[]=array(
  				"0"=>$reg->nombre,
- 				"1"=>'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idsucursal.')"><i class="fas fa-edit"></i></button>'.
+ 				"1"=>$reg->direccion,
+ 				"2"=>$reg->telefono,
+ 				"3"=>$reg->email,
+ 				"4"=>$reg->ubigeo,
+ 				"5"=>$reg->moneda,
+ 				"6"=>'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idsucursal.')"><i class="fas fa-edit"></i></button>'.
  				     ' <button class="btn btn-danger btn-xs" onclick="eliminar('.$reg->idsucursal.')"><i class="fa fa-trash"></i></button>'
  				);
  		}

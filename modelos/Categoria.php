@@ -28,7 +28,6 @@ Class Categoria
 		$idsucursalnew=ejecutarConsulta_retornarID($sql);
 
 		return $idsucursalnew;
-
 	}
 
 	//Implementamos un método para editar registros
@@ -191,27 +190,22 @@ public function obtenerUltimaSerie()
     return ejecutarConsultaSimpleFila($sql);
 }
 
-	public function mostrarComprobantesEmpresa($idempresa)
-	{
-	    $sql = "SELECT * FROM comp_pago WHERE idempresa = '$idempresa'";
-	    return ejecutarConsulta($sql);
-	}
 
-	public function actualizarComprobantesEmpresa($idempresa, $nombre, $serie, $numero)
-	{
-	    $sql="DELETE FROM comp_pago WHERE idempresa='$idempresa'";
-	    ejecutarConsulta($sql);
+	// public function actualizarComprobantesEmpresa($idempresa, $nombre, $serie, $numero)
+	// {
+	//     $sql="DELETE FROM comp_pago WHERE idempresa='$idempresa'";
+	//     ejecutarConsulta($sql);
 
-	    $num_elementos=0;
-	    $sw=true;
-	    while ($num_elementos < count($nombre)) {
-	        $sql="INSERT INTO comp_pago (nombre,serie_comprobante,num_comprobante,idempresa,condicion)
-	              VALUES ('$nombre[$num_elementos]','$serie[$num_elementos]','$numero[$num_elementos]','$idempresa','1')";
-	        ejecutarConsulta($sql) or $sw=false;
-	        $num_elementos++;
-	    }
-	    return $sw;
-	}
+	//     $num_elementos=0;
+	//     $sw=true;
+	//     while ($num_elementos < count($nombre)) {
+	//         $sql="INSERT INTO comp_pago (nombre,serie_comprobante,num_comprobante,idempresa,condicion)
+	//               VALUES ('$nombre[$num_elementos]','$serie[$num_elementos]','$numero[$num_elementos]','$idempresa','1')";
+	//         ejecutarConsulta($sql) or $sw=false;
+	//         $num_elementos++;
+	//     }
+	//     return $sw;
+	// }
 
 	public function selectEmpresas() {
 		$sql = "SELECT * FROM empresas";

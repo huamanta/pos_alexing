@@ -24,24 +24,23 @@ $numero = isset($_POST["numero"]) ? $_POST["numero"] : [];
 
 switch ($op) {
     case 'listarEmpresas':
-        $rspta = $empresa->listarEmpresas();
-         		//Vamos a declarar un array
-        $data= Array();
-
- 		while ($reg=$rspta->fetch_object()){
-		 			$data[]=array(
-		 				"0"=>$reg->ruc,
-		 				"1"=>$reg->razon_social,
-		 				"2"=>$reg->usuario_sol,
-		 				"3"=>$reg->estado_certificado,
-		 				"4"=>$reg->nombre_impuesto,
-		 				"5"=>$reg->monto_impuesto,
-		 				"6"=>($reg->estado)?'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idempresa.')"><i class="fas fa-edit"></i></button>'.
-		 					' <button class="btn btn-danger btn-xs" onclick="desactivar('.$reg->idempresa.')"><i class="fas fa-times-circle"></i></button>':
-		 					'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg->idempresa.')"><i class="fas fa-edit"></i></button>'.
-		 					' <button class="btn btn-primary btn-xs" onclick="activar('.$reg->idempresa.')"><i class="fa fa-check"></i></button>'
-		 				);
-		 		}
+        $response = $empresa->listarEmpresas();
+        //Vamos a declarar un array
+        $data = [];
+        foreach ($response as $reg) {
+            $data[] = [
+                "0"=>$reg['ruc'],
+                "1"=>$reg['razon_social'],
+                "2"=>$reg['usuario_sol'],
+                "3"=>$reg['estado_certificado'],
+                "4"=>$reg['nombre_impuesto'],
+                "5"=>$reg['monto_impuesto'],
+                "6"=>($reg['estado'])?'<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg['idempresa'].')"><i class="fas fa-edit"></i></button>'.
+                    ' <button class="btn btn-danger btn-xs" onclick="desactivar('.$reg['idempresa'].')"><i class="fas fa-times-circle"></i></button>':
+                    '<button class="btn btn-warning btn-xs" onclick="mostrar('.$reg['idempresa'].')"><i class="fas fa-edit"></i></button>'.
+                    ' <button class="btn btn-primary btn-xs" onclick="activar('.$reg['idempresa'].')"><i class="fa fa-check"></i></button>'
+            ];
+        }
  		$results = array(
  			"sEcho"=>1, //Información para el datatables
  			"iTotalRecords"=>count($data), //enviamos el total registros al datatable
@@ -51,46 +50,20 @@ switch ($op) {
         break;
 
     case 'guardaryeditar':
-        $res = $empresa->guardaryeditar($idempresa, $ruc, $razon_social, $usuario_sol, $clave_sol, $ruta_certificado, $clave_certificado, $client_id, $client_secret, $estado_certificado, $nombre_impuesto, $monto_impuesto, $estado, $nombreSucursal, $serie, $numero);
-        echo json_encode($res);
+        $idsucursal = $_SESSION['idsucursal'];
+        $empresa->guardaryeditar($idsucursal, $idempresa, $ruc, $razon_social, $usuario_sol, $clave_sol, $_FILES["ruta_certificado"], $clave_certificado, $client_id, $client_secret, $estado_certificado, $nombre_impuesto, $monto_impuesto, $nombreSucursal, $serie, $numero);
         break;
 
     case 'mostrarEmpresa':
-        $res = $empresa->mostrarEmpresa($idempresa);
-        echo json_encode($res);
+        $empresa->mostrarEmpresa($idempresa);
         break;
 
     case 'activar_descativar':
-        $res = $empresa->activarDesactivar($idempresa, $estado);
-        echo json_encode($res);
+        $empresa->activarDesactivar($idempresa, $estado);
         break;
 
     case 'mostrarComprobantes':
-        require_once "../modelos/Categoria.php";
-        $categoria = new Categoria();
-        $rspta = $categoria->mostrarComprobantesEmpresa($idempresa);
-        $data = array();
-
-        while ($reg = $rspta->fetch_object()) {
-            $data[] = array(
-                "id_comp_pago" => $reg->id_comp_pago,
-                "nombre" => $reg->nombre,
-                "serie" => $reg->serie_comprobante,
-                "numero" => $reg->num_comprobante
-            );
-        }
-
-        echo json_encode($data);
+        $empresa->mostrarComprobantesEmpresa($idempresa);
         break;
 
-    case 'guardarComprobantes':
-        require_once "../modelos/Categoria.php";
-        $categoria = new Categoria();
-        $nombreSucursal = isset($_POST["nombreSucursal"]) ? $_POST["nombreSucursal"] : [];
-        $serie = isset($_POST["serie"]) ? $_POST["serie"] : [];
-        $numero = isset($_POST["numero"]) ? $_POST["numero"] : [];
-        
-        $rspta = $categoria->actualizarComprobantesEmpresa($idempresa, $nombreSucursal, $serie, $numero);
-        echo $rspta ? "Comprobantes actualizados" : "Error al actualizar comprobantes";
-        break;
 }
