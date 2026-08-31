@@ -339,6 +339,7 @@ function pintarPersonas(data, permissions) {
 
 listarPersonas = new FluentPaginator({
     url: "controladores/persona.php?op=listarc",
+    tableBody: "#tbody_personas",
     renderTabla: pintarPersonas
 });
 
