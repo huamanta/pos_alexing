@@ -436,7 +436,7 @@
                                         </h3>
 
                                     </div>
-                                    <form id="formConfiguracionFacturacion">
+                                    <form id="formConfiguracionFacturacion" autocomplete="off">
                                         <div class="setting-body">
 
                                             <!-- FILA -->
@@ -520,16 +520,33 @@
                                                                     contraseña</strong></label>
                                                         </div>
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">
-                                                            <label for="usuario_sol" class="control-label">Usuario
-                                                                SOL:</label>
-                                                            <input class="form-control" type="text" name="usuario_sol"
-                                                                id="usuario_sol" placeholder="Usuario sol">
+                                                            <label for="usuario_sol" class="control-label">
+                                                                Usuario SOL:
+                                                            </label>
+
+                                                            <input
+                                                                class="form-control"
+                                                                type="text"
+                                                                name="usuario_sistema_facturacion"
+                                                                id="usuario_sol"
+                                                                placeholder="Usuario SOL"
+                                                                autocomplete="new-password"
+                                                            >
                                                         </div>
+
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">
-                                                            <label for="clave_sol" class="control-label">Clave
-                                                                SOL:</label>
-                                                            <input class="form-control" type="password" name="clave_sol"
-                                                                id="clave_sol" placeholder="**********">
+                                                            <label for="clave_sol" class="control-label">
+                                                                Clave SOL:
+                                                            </label>
+
+                                                            <input
+                                                                class="form-control"
+                                                                type="password"
+                                                                name="clave_sistema_facturacion"
+                                                                id="clave_sol"
+                                                                placeholder="**********"
+                                                                autocomplete="new-password"
+                                                            >
                                                         </div>
 
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">
@@ -540,11 +557,18 @@
                                                         </div>
 
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">
-                                                            <label for="clave_certificado"
-                                                                class="control-label">Contraseña:</label>
-                                                            <input class="form-control" type="passwod"
-                                                                name="clave_certificado" id="clave_certificado"
-                                                                placeholder="**********">
+                                                            <label for="clave_certificado" class="control-label">
+                                                                Contraseña:
+                                                            </label>
+
+                                                            <input
+                                                                class="form-control"
+                                                                type="password"
+                                                                name="clave_certificado"
+                                                                id="clave_certificado"
+                                                                placeholder="**********"
+                                                                autocomplete="new-password"
+                                                            >
                                                         </div>
 
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">

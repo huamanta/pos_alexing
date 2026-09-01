@@ -69,7 +69,7 @@ function listarConfiguracion() {
             $("#ruc").val(facturacion.ruc);
             $("#razon_social").val(facturacion.razon_social);
             $("#monto_impuesto").val(facturacion.monto_impuesto);
-            $("#usuario_sol").val(facturacion.usuario_sol);
+            $("#usuario_sol").val(facturacion.usuario_sol || '');
             $("#estado_certificado").val(facturacion.estado_certificado);
         }
     });
