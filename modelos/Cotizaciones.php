@@ -264,9 +264,14 @@ class Cotizacion extends Helpers
                 "c.frecuencia",
                 "c.meses",
                 "c.interes",
-                "c.observacion"
+                "c.observacion",
+                "cp.nombre AS tipo_comprobante"
             ])
             ->from("cotizacion c")
+            ->join(
+                "comp_pago cp",
+                "c.idcomprobante_pago = cp.idcomprobante_pago"
+            )
             ->join(
                 "persona p",
                 "c.idcliente = p.idpersona"

@@ -1414,6 +1414,35 @@ date_default_timezone_set('America/Lima');
     <!-- /.modal-dialog -->
 </div>
 
+<!-- Modal para registrar número de celular -->
+<div class="modal fade" id="modalCelular" tabindex="-1" role="dialog" aria-labelledby="modalCelularLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalCelularLabel">Registrar Número de Celular</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label for="numeroCelular">Número de Celular:</label>
+                <input type="text" name="numeroCelular" id="numeroCelular" class="form-control"
+                    placeholder="Ingrese número de celular">
+                <!-- Campos ocultos para tipo de comprobante, serie y número -->
+                <input type="hidden" id="idventa">
+                <input type="hidden" id="tipoComprobante">
+                <input type="hidden" id="numComprobante">
+                <input type="hidden" id="serieComprobante">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cancelarmodalCelular()">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="abrirWhatsApp()">Abrir WhatsApp</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .img-producto {
         cursor: pointer;

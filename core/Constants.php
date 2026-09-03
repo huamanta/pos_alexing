@@ -25,4 +25,11 @@ class Constants {
     const INGRESOS = 'Ingresos';
     const EGRESOS = 'Egresos';
     const OUTPUT_IMAGE_PNG = 'png';
+    const OUTPUT_IMAGE_JPG = 'jpg';
+    const OUTPUT_IMAGE_JPEG = 'jpeg';
+    const OUTPUT_IMAGE_GIF = 'gif';
+    const CONTENEDOR_BASE = 1;
+    const INGRESO_KARDEX = 1;
+    const EGRESO_KARDEX = 2;
+    
 }

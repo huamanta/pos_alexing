@@ -58,7 +58,7 @@ $("#idcliente").select2({
   minimumInputLength: 2,
   ajax: {
     url: "controladores/venta.php?op=selectCliente",
-    type: "POST",
+    type: "GET",
     dataType: "json",
     delay: 250,
     data: function (params) {
@@ -812,6 +812,153 @@ function pintarCotizaciones(data, permissions) {
   });
 
   $("#tbllistado tbody").html(html);
+}
+
+
+function EnviarComprobante(idcotizacion) {
+
+  $.get(
+    "controladores/cotizaciones.php?op=mostrar",
+    {
+      idcotizacion: idcotizacion
+    },
+    function (response, status) {
+
+      if (status !== "success") {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "No se pudieron obtener los datos del comprobante."
+        });
+        return;
+      }
+
+      const data = response;
+
+      let telefono = data.telefono
+        ? data.telefono.replace(/\D/g, "")
+        : "";
+
+      // Agregar código de Perú
+      if (telefono && !telefono.startsWith("51")) {
+        telefono = "51" + telefono;
+      }
+
+      // Mostrar modal
+      $("#modalCelular").modal("show");
+
+      // Precargar teléfono
+      document.getElementById("numeroCelular").value = telefono;
+
+      // Datos del comprobante
+      document.getElementById("tipoComprobante").value =
+        data.tipo_comprobante || "";
+
+      document.getElementById("numComprobante").value =
+        data.num_comprobante || "";
+
+      document.getElementById("serieComprobante").value =
+        data.serie_comprobante || "";
+
+      document.getElementById("idventa").value =
+        idcotizacion;
+    }
+  );
+}
+
+function obtenerBaseUrl() {
+  const path = window.location.pathname;
+  const partes = path.split("/").filter(Boolean);
+
+  return partes.length > 0
+    ? `${window.location.origin}/${partes[0]}`
+    : window.location.origin;
+}
+
+
+function abrirWhatsApp() {
+  let telefono = document.getElementById("numeroCelular").value.replace(/\D/g, "");
+  const nombreEmpresa = null;
+  const tipoComprobante = document.getElementById("tipoComprobante").value;
+  const numComprobante = document.getElementById("numComprobante").value;
+  const serieComprobante = document.getElementById("serieComprobante").value;
+  const idventa = document.getElementById("idventa").value;
+
+  if (!telefono) {
+    Swal.fire({
+      icon: "warning",
+      title: "Número requerido",
+      text: "Ingrese un número de WhatsApp."
+    });
+    return;
+  }
+
+  if (!telefono.startsWith("51")) {
+    telefono = "51" + telefono;
+  }
+
+
+  if (telefono.length !== 11) {
+    Swal.fire({
+      icon: "warning",
+      title: "Número inválido",
+      text: "Ingrese un número de celular válido."
+    });
+    return;
+  }
+
+  const baseUrl = obtenerBaseUrl();
+  const urlPDF = `${baseUrl}/reportes/factura/generaFacturaCoti.php?id=${idventa}`;
+  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlPDF)}`;
+  let mensaje = `🏢 *${nombreEmpresa || "Mi Empresa"}*\n` +
+    `━━━━━━━━━━━━━━━━━━\n` +
+    `🧾 *Comprobante Electrónico*\n\n` +
+    `Estimado cliente 👋,\n` +
+    `Su comprobante ya está disponible.\n\n` +
+    `📄 *Detalles:*\n` +
+    `• Tipo: ${tipoComprobante}\n` +
+    `• Serie: ${serieComprobante}\n` +
+    `• Número: ${numComprobante}\n\n` +
+    `🔗 *Descargar aquí:*\n` +
+    `${urlPDF}\n\n` +
+    `📷 *Código QR:*\n${qr}\n\n` +
+    `🙏 Gracias por confiar en nosotros.\n` +
+    `━━━━━━━━━━━━━━━━━━`;
+
+  Swal.fire({
+    title: "Enviar comprobante",
+    html: `
+            <div class="text-center">
+                <i class="fab fa-whatsapp text-success"
+                   style="font-size:50px;"></i>
+                <p class="mt-3 mb-1">
+                    Se enviará el comprobante:
+                </p>
+                <strong>
+                    ${tipoComprobante}
+                    ${serieComprobante}-${numComprobante}
+                </strong>
+
+                <p class="mt-3 mb-0 text-muted">
+                    El comprobante se enviará mediante WhatsApp
+                    con su enlace y código QR.
+                </p>
+            </div>
+        `,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: '<i class="fab fa-whatsapp"></i> Enviar por WhatsApp',
+    cancelButtonText: "Cancelar",
+    reverseButtons: true
+  }).then((result) => {
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    const urlWhatsApp = `https://api.whatsapp.com/send?phone=${telefono}` + `&text=${encodeURIComponent(mensaje)}`;
+    window.open(urlWhatsApp, "_blank");
+    $("#modalCelular").modal("hide");
+  });
 }
 
 listarCotizaciones = new FluentPaginator({

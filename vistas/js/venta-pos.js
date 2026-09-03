@@ -205,7 +205,7 @@ $("#idcliente").select2({
 
   ajax: {
     url: "controladores/venta.php?op=selectCliente",
-    type: "POST",
+    type: "GET",
     dataType: "json",
     delay: 250,
 
