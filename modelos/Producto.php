@@ -520,37 +520,28 @@ class Producto extends Helpers
 				"ps.propietario_vehiculo",
 				"ps.estado AS estado_serie",
 
-				// Precio FIFO
-				"COALESCE((
-					SELECT NULLIF(sf.precio_venta, 0)
-					FROM stock_fifo sf
-					WHERE sf.idproducto = p.idproducto
-					AND sf.cantidad_restante > 0
-					AND sf.estado = 1
-					ORDER BY sf.fecha_ingreso ASC
-					LIMIT 1
-				), p.precio) AS precio",
+				// Configuración
+				"pg.idproducto_configuracion",
+				"pg.precio_credito"
 
-				// Precio compra FIFO
-				"COALESCE((
-					SELECT NULLIF(sf.precio_compra,0)
-					FROM stock_fifo sf
-					WHERE sf.idproducto = p.idproducto
-					AND sf.cantidad_restante > 0
-					AND sf.estado = 1
-					ORDER BY sf.fecha_ingreso ASC
-					LIMIT 1
-				), ip.precio_compra) AS precio_compra",
-				'pg.idproducto_configuracion',
-				'pg.precio_credito'
 			])
 			->from("producto p")
-			->join('producto_configuracion pg', 'pg.idproducto = p.idproducto')
-			->leftJoin("inventario_producto ip", "ip.idproducto = p.idproducto")
-			->leftJoin("producto_serie ps", "ps.idproducto = p.idproducto")
+			->join(
+				'producto_configuracion pg',
+				'pg.idproducto = p.idproducto'
+			)
+			->leftJoin(
+				"inventario_producto ip",
+				"ip.idproducto = p.idproducto"
+			)
+			->leftJoin(
+				"producto_serie ps",
+				"ps.idproducto = p.idproducto"
+			)
 			->where("p.idproducto", "=", $idproducto)
 			->orderBy("ps.idserie", "ASC")
 			->first();
+
 		return Response::json($data);
 	}
 
@@ -1736,6 +1727,291 @@ class Producto extends Helpers
 		return ejecutarConsulta($sql);
 	}
 
+	public function listarVencimientos($idproducto)
+	{
+		// Obtener nombre del producto
+		$producto = (new DBQuery($this->pdo))
+			->select([
+				'p.nombre'
+			])
+			->from('producto p')
+			->where('p.idproducto', '=', $idproducto)
+			->first();
+
+		$nombre_producto = $producto['nombre'] ?? '';
+
+		// Verificar si el producto maneja lotes
+		$lote = (new DBQuery($this->pdo))
+			->select([
+				'il.idinventario_lote'
+			])
+			->from('inventario_lote il')
+			->where('il.idproducto', '=', $idproducto)
+			->first();
+
+		$maneja_lotes = $lote !== null;
+
+		$total_stock = 0;
+		$lote_activo = null;
+
+		if ($maneja_lotes) {
+
+			// Stock desde inventario_lote
+			$resultado = (new DBQuery($this->pdo))
+				->select([
+					'SUM(il.stock) AS total_stock'
+				])
+				->from('inventario_lote il')
+				->where('il.idproducto', '=', $idproducto)
+				->where('il.stock', '>', 0)
+				->first();
+
+			$total_stock = $resultado['total_stock'] ?? 0;
+
+			// Obtener el lote activo más próximo a vencer
+			$lote_activo = (new DBQuery($this->pdo))
+				->select([
+					'il.idinventario_lote',
+					'il.codigo_lote',
+					'il.fecha_vencimiento',
+					'il.stock'
+				])
+				->from('inventario_lote il')
+				->where('il.idproducto', '=', $idproducto)
+				->where('il.stock', '>', 0)
+				->orderBy('il.fecha_vencimiento', 'ASC')
+				->orderBy('il.idinventario_lote', 'ASC')
+				->first();
+
+		} else {
+
+			// Producto sin lotes: stock desde inventario_producto
+			$inventario = (new DBQuery($this->pdo))
+				->select([
+					'ip.stock'
+				])
+				->from('inventario_producto ip')
+				->where('ip.idproducto', '=', $idproducto)
+				->first();
+
+			$total_stock = $inventario['stock'] ?? 0;
+		}
+
+		return Response::json([
+			'nombre_producto' => $nombre_producto,
+			'total_stock' => number_format((float) $total_stock, 2),
+			'maneja_lotes' => $maneja_lotes,
+			'idinventario_lote_activo' => $lote_activo['idinventario_lote'] ?? null,
+			'lote_activo' => $lote_activo
+		]);
+	}
+
+
+	public function listarVencimientosDatatable($idproducto)
+	{
+		$page = $_GET['page'] ?? 1;
+		$limit = $_GET['limit'] ?? 20;
+		$search = $_GET['search'] ?? '';
+
+		/*
+		 * Verificar si el producto maneja lotes
+		 */
+		$lote = (new DBQuery($this->pdo))
+			->select([
+				'il.idinventario_lote'
+			])
+			->from('inventario_lote il')
+			->where('il.idproducto', '=', $idproducto)
+			->whereNull('il.deleted_at')
+			->first();
+
+		/*
+		 * Producto sin lotes
+		 */
+		if (!$lote) {
+
+			$inventario = (new DBQuery($this->pdo))
+				->select([
+					'ip.stock',
+					'ip.precio_compra'
+				])
+				->from('inventario_producto ip')
+				->where('ip.idproducto', '=', $idproducto)
+				->first();
+
+			$stock = (float) ($inventario['stock'] ?? 0);
+
+			$data = [
+				[
+					'numero' => 1,
+					'fecha_ingreso' => 'N/A',
+					'fvencimiento' => 'Sin lote',
+					'dias_restantes' =>
+						'<span class="badge bg-secondary">N/A</span>',
+					'cantidad' => number_format($stock, 2),
+					'stock_lote' => $stock > 0
+						? '<span class="badge bg-success">'
+						. number_format($stock, 2)
+						. ' Unid.</span>'
+						: '<span class="badge bg-danger">Agotado</span>',
+					'nlote' => 'N/A',
+					'precio_compra' => number_format(
+						(float) ($inventario['precio_compra'] ?? 0),
+						2
+					),
+					'precio_venta' => 'N/A',
+					'clase' => ''
+				]
+			];
+
+			return Response::json([
+				'data' => $data,
+				'meta' => [
+					'current_page' => 1,
+					'last_page' => 1,
+					'per_page' => 1,
+					'total' => 1,
+					'from' => 1,
+					'to' => 1
+				]
+			]);
+		}
+
+		/*
+		 * Lote activo
+		 *
+		 * El lote con vencimiento más próximo
+		 * que todavía tenga stock.
+		 */
+		$loteActivo = (new DBQuery($this->pdo))
+			->select([
+				'il.idinventario_lote'
+			])
+			->from('inventario_lote il')
+			->where('il.idproducto', '=', $idproducto)
+			->where('il.stock', '>', 0)
+			->whereNull('il.deleted_at')
+			->orderBy('il.fecha_vencimiento', 'ASC')
+			->orderBy('il.idinventario_lote', 'ASC')
+			->first();
+
+		$idinventario_lote_activo =
+			$loteActivo['idinventario_lote'] ?? null;
+
+
+		/*
+		 * Listado de lotes
+		 */
+		$paginator = (new DBQuery($this->pdo))
+			->select([
+				'il.idinventario_lote',
+				'date_format(il.created_at,"%d/%m/%y") as fecha_ingreso',
+				'date_format(il.fecha_vencimiento,"%d/%m/%y") as fvencimiento',
+
+				'DATEDIFF(
+                il.fecha_vencimiento,
+                CURDATE()
+            ) as dias_transcurridos',
+
+				'il.stock_original as cantidad',
+				'il.stock as stock_lote',
+				'il.codigo_lote'
+			])
+			->from('inventario_lote il')
+			->where('il.idproducto', '=', $idproducto)
+			->whereNull('il.deleted_at');
+
+
+		/*
+		 * Búsqueda
+		 */
+		if ($search !== '') {
+			$paginator->search($search, [
+				'il.codigo_lote',
+				'il.created_at',
+				'il.fecha_vencimiento'
+			]);
+		}
+
+
+		/*
+		 * Paginar
+		 */
+		$response = $paginator
+			->orderBy('il.fecha_vencimiento', 'ASC')
+			->orderBy('il.idinventario_lote', 'ASC')
+			->paginate($page, $limit);
+
+
+		/*
+		 * Formatear resultados
+		 */
+		foreach ($response['data'] as &$reg) {
+
+			$diasTranscurridos = (int) $reg['dias_transcurridos'];
+
+			$producto = new Producto();
+			$reg['dias_restantes'] = self::calcularDiasVencimiento($diasTranscurridos);
+
+			/*
+			 * Stock del lote
+			 */
+			$stockLote = (float) $reg['stock_lote'];
+			$cantidad = (float) $reg['cantidad'];
+
+			if ($stockLote <= 0) {
+				$reg['stock_lote'] = '<span class="badge bg-danger"> Agotado </span>';
+
+			} elseif ($cantidad > 0 && ($stockLote / $cantidad) < 0.3) {
+				$reg['stock_lote'] = '<span class="badge bg-warning">' . number_format($stockLote, 2) . ' Unid.</span>';
+			} else {
+				$reg['stock_lote'] = '<span class="badge bg-success">' . number_format($stockLote, 2) . ' Unid.</span>';
+			}
+
+			/*
+			 * Lote activo
+			 */
+			$esLoteActivo = $idinventario_lote_activo !== null && (int) $reg['idinventario_lote'] === (int) $idinventario_lote_activo;
+
+			$reg['clase'] = $esLoteActivo ? 'table-info' : '';
+
+
+			$indicadorActivo = $esLoteActivo
+				? '<span class="badge bg-primary"
+                    style="margin-left:5px">
+                    <i class="fa fa-star"></i>
+                    EN VENTA
+               </span>'
+				: '';
+
+
+			$reg['nlote'] =
+				($reg['codigo_lote'] ?: 'N/A')
+				. $indicadorActivo;
+
+
+			/*
+			 * Campos que ya no vienen de FIFO
+			 */
+			$reg['precio_compra'] = 'N/A';
+			$reg['precio_venta'] = 'N/A';
+
+
+			/*
+			 * Número de fila
+			 */
+			$reg['numero'] =
+				(($response['meta']['current_page'] - 1)
+					* $response['meta']['per_page'])
+				+ 1;
+		}
+
+		unset($reg);
+
+
+		return Response::json($response);
+	}
+
 	public function mostrarFechaVencProducto($idproducto)
 	{
 		$sql = "SELECT
@@ -2265,6 +2541,269 @@ class Producto extends Helpers
             LIMIT 20";
 
 		return ejecutarConsulta($sql);
+	}
+
+
+	public function cargarData()
+	{
+		try {
+
+			$jsonFile = __DIR__ . '/../productos.json';
+
+			if (!file_exists($jsonFile)) {
+				throw new Exception('No existe el archivo productos.json');
+			}
+
+			$json = file_get_contents($jsonFile);
+
+			if ($json === false) {
+				throw new Exception('No se pudo leer el archivo productos.json');
+			}
+
+			$productos = json_decode($json, true);
+
+			if (json_last_error() !== JSON_ERROR_NONE) {
+				throw new Exception(
+					'JSON inválido: ' . json_last_error_msg()
+				);
+			}
+
+			if (!is_array($productos)) {
+				throw new Exception('La estructura del JSON no es válida');
+			}
+
+			$idsucursal = $_SESSION['idsucursal'];
+
+			$this->pdo->beginTransaction();
+
+			$insertados = 0;
+			$seriesInsertadas = 0;
+
+			foreach ($productos as $index => $item) {
+
+				$nombre = trim($item['PRODUCTO'] ?? '');
+				$stock = (float) ($item['STOCK'] ?? 0);
+				$codigo = self::generarCodigo();
+				if ($nombre === '') {
+					continue;
+				}
+
+				$serie = trim($item['SERIE'] ?? '');
+				$motor = trim($item['MOTOR'] ?? '');
+				$placa = trim($item['PLACA'] ?? '');
+				$color = trim($item['COLOR'] ?? '');
+
+				$fecha = date('Y-m-d H:i:s');
+
+				/*
+				|--------------------------------------------------------------------------
+				| PRODUCTO
+				|--------------------------------------------------------------------------
+				*/
+
+				$producto = (new FluentSaver($this->pdo))
+					->table('producto')
+					->data([
+						'idsucursal' => $idsucursal,
+						'idrubro' => $item['IDLINEA'],
+						'idunidad_medida' => 1,
+						'idcategoria' => 1,
+						'idcondicionventa' => 1,
+						'idmarca' => self::buscarMarca($item['MARCA']),
+						'idmodelo' => self::buscarModelo($item['MODELO']),
+						'codigo' => $codigo,
+						'nombre' => $nombre,
+						'tipo_producto' => 'Vehiculo',
+						'condicion' => 1,
+						'controla_stock' => 'No',
+						'requiere_serie' => $serie !== '' ? 1 : 0,
+						'alerta_stock' => 'No',
+						'proigv' => 'No Grabada',
+						'precio' => 0,
+						'precioB' => 0,
+						'precioC' => 0,
+						'precioD' => 0,
+						'precioE' => 0,
+						'preciocigv' => 0,
+						'comisionV' => 0,
+						'fechac' => $fecha,
+						'created_at' => $fecha,
+						'updated_at' => $fecha,
+					])
+					->save();
+
+				if (!$producto) {
+					throw new Exception(
+						"No se pudo insertar el producto en la posición {$index}: {$nombre}"
+					);
+				}
+
+				/*
+				|--------------------------------------------------------------------------
+				| CONFIGURACIÓN
+				|--------------------------------------------------------------------------
+				*/
+
+				$configuracion = (new FluentSaver($this->pdo))
+					->table('producto_configuracion')
+					->data([
+						'codigo_extra' => $codigo,
+						'contenedor' => 'UNIDAD',
+						'cantidad_contenedor' => 1,
+						'precio_venta' => 0,
+						'precio_credito' => 0,
+						'precio_promocion' => 0,
+						'estado' => 1,
+						'idproducto' => $producto,
+						'created_at' => $fecha,
+						'updated_at' => $fecha,
+					])
+					->save();
+
+				if (!$configuracion) {
+					throw new Exception(
+						"No se pudo insertar la configuración del producto ID {$producto}"
+					);
+				}
+
+				/*
+				|--------------------------------------------------------------------------
+				| INVENTARIO
+				|--------------------------------------------------------------------------
+				*/
+
+				$inventario = (new FluentSaver($this->pdo))
+					->table('inventario_producto')
+					->data([
+						'idproducto' => $producto,
+						'idsucursal' => $idsucursal,
+						'stock' => $stock,
+						'stock_minimo' => 0,
+						'stock_maximo' => $stock,
+						'precio_compra' => 0,
+						'created_at' => $fecha,
+						'updated_at' => $fecha,
+					])
+					->save();
+
+				if (!$inventario) {
+					throw new Exception(
+						"No se pudo insertar el inventario del producto ID {$producto}"
+					);
+				}
+
+				/*
+				|--------------------------------------------------------------------------
+				| SERIE
+				|--------------------------------------------------------------------------
+				*/
+
+				if ($serie !== '') {
+
+					$productoSerie = (new FluentSaver($this->pdo))
+						->table('producto_serie')
+						->data([
+							'idproducto' => $producto,
+							'idsucursal' => $idsucursal,
+							'numero_serie' => $serie,
+							'numero_motor' => $motor !== '' ? $motor : null,
+							'placa' => $placa !== '' ? $placa : null,
+							'color' => $color !== '' ? $color : null,
+							'estado' => 1,
+							'created_at' => $fecha,
+							'updated_at' => $fecha,
+						])
+						->save();
+
+					if (!$productoSerie) {
+						throw new Exception(
+							"No se pudo insertar la serie {$serie} del producto ID {$producto}"
+						);
+					}
+
+					$seriesInsertadas++;
+				}
+
+				$insertados++;
+			}
+
+			$this->pdo->commit();
+
+			return Response::json([
+				'success' => true,
+				'message' => 'Datos cargados correctamente',
+				'productos' => $insertados,
+				'series' => $seriesInsertadas
+			]);
+
+		} catch (Throwable $e) {
+
+			if ($this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+
+			return Response::json([
+				'success' => false,
+				'message' => 'Error al cargar los datos',
+				'error' => $e->getMessage()
+			], 500);
+		}
+	}
+
+	public function buscarMarca($nombre)
+	{
+		$nombre = trim($nombre);
+
+		if ($nombre === '') {
+			return null;
+		}
+
+		$marca = (new DBQuery($this->pdo))
+			->select('*')
+			->from('marca')
+			->where('nombre', '=', $nombre)
+			->first();
+
+		if ($marca) {
+			return $marca['idmarca'];
+		}
+
+		$idmarca = (new FluentSaver($this->pdo))
+			->table('marca')
+			->data([
+				'nombre' => $nombre,
+			])
+			->save();
+
+		return $idmarca;
+	}
+
+	public function buscarModelo($nombre)
+	{
+		$nombre = trim($nombre);
+
+		if ($nombre === '') {
+			return null;
+		}
+
+		$modelo = (new DBQuery($this->pdo))
+			->select('*')
+			->from('modelo')
+			->where('nombre', '=', $nombre)
+			->first();
+
+		if ($modelo) {
+			return $modelo['idmodelo'];
+		}
+
+		$idmodelo = (new FluentSaver($this->pdo))
+			->table('modelo')
+			->data([
+				'nombre' => $nombre,
+			])
+			->save();
+
+		return $idmodelo;
 	}
 
 }

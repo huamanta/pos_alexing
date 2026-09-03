@@ -169,7 +169,7 @@ switch ($_GET["op"]) {
 
 		if (empty($idproducto)) {
 			echo $producto->insertar($idsucursal, $idcategoria, $idunidad_medida, $idrubro, $idcondicionventa, $registrosan, $idmarca, $tipo_producto, $codigo, strtoupper($nombre), $stock, $stockMinimo, $stockMaximo, $precio, $precio_credito, $preciocigv, $precioB, $precioC, $precioD, $precioE, $margenpubl, $margendes, $margenp1, $margenp2, $margendist, $utilprecio, $utilprecioB, $utilprecioC, $utilprecioD, $utilprecioE, $precioCompra, $fecha, $descripcion, $imagen, $idmodelo, $nserie, $placa, $color, $motor, $permiso_circulacion, $anio_fabricacion, $tipo_vehiculo, $clase_vehiculo, $propietario_vehiculo, $controla_stock, $alerta_stock, $tipoigv, $comisionV);
-			
+
 		} else {
 			echo $producto->editar(
 				$idproductoconfiguracion,
@@ -588,180 +588,13 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarvencimiento':
-		ob_clean();
-		header('Content-Type: application/json');
-
 		$idproducto = intval($_GET["id"]);
-
-		// Calcular stock total
-		$sql_total = "SELECT SUM(cantidad_restante) as total_stock
-	                  FROM stock_fifo
-	                  WHERE idproducto='$idproducto' AND estado=1";
-
-		$result_total = ejecutarConsultaSimpleFila($sql_total);
-		$total_stock_actual_producto = isset($result_total['total_stock']) ? $result_total['total_stock'] : 0;
-
-		// Obtener nombre del producto
-		$sql_nombre = "SELECT nombre FROM producto WHERE idproducto='$idproducto'";
-		$result_nombre = ejecutarConsultaSimpleFila($sql_nombre);
-		$nombre_producto = isset($result_nombre['nombre']) ? $result_nombre['nombre'] : '';
-
-		// Obtener el ID del lote activo
-		$sql_lote_activo = "SELECT idfifo 
-	                        FROM stock_fifo 
-	                        WHERE idproducto='$idproducto' 
-	                        AND cantidad_restante > 0 
-	                        AND estado=1 
-	                        ORDER BY 
-	                            CASE WHEN fvencimiento IS NULL THEN 1 ELSE 0 END,
-	                            fvencimiento ASC, 
-	                            fecha_ingreso ASC,
-	                            idfifo ASC 
-	                        LIMIT 1";
-
-		$lote_activo_result = ejecutarConsultaSimpleFila($sql_lote_activo);
-		$idfifo_activo = isset($lote_activo_result['idfifo']) ? $lote_activo_result['idfifo'] : null;
-
-		echo json_encode([
-			'nombre_producto' => $nombre_producto,
-			'total_stock' => number_format($total_stock_actual_producto, 2),
-			'idfifo_activo' => $idfifo_activo
-		]);
-		exit;
+		$producto->listarVencimientos($idproducto);
 		break;
 
 	case 'listarvencimiento_datatable':
-		ob_clean();
-		header('Content-Type: application/json');
-
 		$idproducto = intval($_GET["id"]);
-
-		// Parámetros de DataTables
-		$draw = isset($_GET['draw']) ? intval($_GET['draw']) : 1;
-		$start = isset($_GET['start']) ? intval($_GET['start']) : 0;
-		$length = isset($_GET['length']) ? intval($_GET['length']) : 10;
-		$searchValue = isset($_GET['search']['value']) ? $_GET['search']['value'] : '';
-
-		// Ordenamiento
-		$orderColumnIndex = isset($_GET['order'][0]['column']) ? intval($_GET['order'][0]['column']) : 1;
-		$orderDir = isset($_GET['order'][0]['dir']) ? $_GET['order'][0]['dir'] : 'asc';
-
-		$columns = ['', 'sf.fecha_ingreso', 'dc.fvencimiento', 'dias_transcurridos', 'sf.cantidad_ingreso', 'sf.cantidad_restante', 'dc.nlote', 'sf.precio_compra', 'sf.precio_venta'];
-		$orderColumn = isset($columns[$orderColumnIndex]) ? $columns[$orderColumnIndex] : 'sf.fecha_ingreso';
-
-		// Obtener el lote activo
-		$sql_lote_activo = "SELECT idfifo 
-	                        FROM stock_fifo 
-	                        WHERE idproducto='$idproducto' 
-	                        AND cantidad_restante > 0 
-	                        AND estado=1 
-	                        ORDER BY 
-	                            CASE WHEN fvencimiento IS NULL THEN 1 ELSE 0 END,
-	                            fvencimiento ASC, 
-	                            fecha_ingreso ASC,
-	                            idfifo ASC 
-	                        LIMIT 1";
-
-		$lote_activo_result = ejecutarConsultaSimpleFila($sql_lote_activo);
-		$idfifo_activo = isset($lote_activo_result['idfifo']) ? $lote_activo_result['idfifo'] : null;
-
-		// Consulta base
-		$sql_base = "FROM stock_fifo sf
-	                 INNER JOIN producto p ON p.idproducto = sf.idproducto
-	                 LEFT JOIN detalle_compra dc ON dc.iddetalle_compra = sf.referencia_id AND sf.origen = 'COMPRA'
-	                 WHERE sf.idproducto = '$idproducto' AND sf.estado = 1";
-
-		// Búsqueda
-		$whereSearch = "";
-		if (!empty($searchValue)) {
-			$whereSearch = " AND (dc.nlote LIKE '%$searchValue%' 
-	                         OR DATE_FORMAT(sf.fecha_ingreso, '%d-%m-%Y') LIKE '%$searchValue%'
-	                         OR DATE_FORMAT(dc.fvencimiento, '%d-%m-%Y') LIKE '%$searchValue%')";
-		}
-
-		// Contar total de registros
-		$sql_count = "SELECT COUNT(*) as total $sql_base";
-		$total_records = ejecutarConsultaSimpleFila($sql_count)['total'];
-
-		// Contar registros filtrados
-		$sql_count_filtered = "SELECT COUNT(*) as total $sql_base $whereSearch";
-		$total_filtered = ejecutarConsultaSimpleFila($sql_count_filtered)['total'];
-
-		// Consulta con paginación
-		$sql = "SELECT
-	                sf.idfifo,
-	                sf.fecha_ingreso,
-	                dc.fvencimiento,
-	                DATEDIFF(dc.fvencimiento, NOW()) AS dias_transcurridos,
-	                sf.cantidad_ingreso AS cantidad,
-	                sf.cantidad_restante AS stock_lote,
-	                dc.nlote,
-	                sf.precio_compra,
-	                sf.precio_venta
-	            $sql_base $whereSearch
-	            ORDER BY $orderColumn $orderDir
-	            LIMIT $start, $length";
-
-		$rspta = ejecutarConsulta($sql);
-
-		$data = [];
-		$numero = $start + 1;
-
-		while ($reg = $rspta->fetch_object()) {
-			$fecha_ingreso = date('d-m-Y', strtotime($reg->fecha_ingreso));
-			$fvencimiento = ($reg->fvencimiento != '0000-00-00 00:00:00' && !empty($reg->fvencimiento))
-				? date('d-m-Y', strtotime($reg->fvencimiento))
-				: 'Sin fecha';
-
-			// Calcular días restantes
-			if ($fvencimiento != 'Sin fecha') {
-				$producto = new Producto();
-				$dias_restantes = $producto->calcularDiasVencimiento($reg->dias_transcurridos);
-				$estado = $reg->stock_lote <= 0 ? 'agotado' : ($reg->dias_transcurridos < 7 ? 'por_vencer' : 'ok');
-			} else {
-				$dias_restantes = '<span class="badge bg-secondary">N/A</span>';
-				$estado = 'sin_fecha';
-			}
-
-			// Stock por lote
-			if ($reg->stock_lote === null) {
-				$stock_lote = '<span class="badge bg-secondary">Antiguo</span>';
-			} elseif ($reg->stock_lote <= 0) {
-				$stock_lote = '<span class="badge bg-danger">Agotado</span>';
-			} elseif ($reg->stock_lote / $reg->cantidad < 0.3) {
-				$stock_lote = '<span class="badge bg-warning">' . number_format($reg->stock_lote, 2) . ' Unid.</span>';
-			} else {
-				$stock_lote = '<span class="badge bg-success">' . number_format($reg->stock_lote, 2) . ' Unid.</span>';
-			}
-
-			// Identificar si es el lote activo
-			$es_lote_activo = ($idfifo_activo && $reg->idfifo == $idfifo_activo);
-			$claseResaltado = $es_lote_activo ? 'table-info' : '';
-			$indicadorActivo = $es_lote_activo ? '<span class="badge bg-primary" style="margin-left:5px"><i class="fa fa-star"></i> EN VENTA</span>' : '';
-
-			$nlote_display = ($reg->nlote ? $reg->nlote : 'N/A') . $indicadorActivo;
-
-			$data[] = [
-				'numero' => $numero++,
-				'fecha_ingreso' => $fecha_ingreso,
-				'fvencimiento' => $fvencimiento,
-				'dias_restantes' => $dias_restantes,
-				'cantidad' => number_format($reg->cantidad, 2),
-				'stock_lote' => $stock_lote,
-				'nlote' => $nlote_display,
-				'precio_compra' => 'S/ ' . number_format($reg->precio_compra, 2),
-				'precio_venta' => 'S/ ' . number_format($reg->precio_venta, 2),
-				'clase' => $claseResaltado
-			];
-		}
-
-		echo json_encode([
-			'draw' => $draw,
-			'recordsTotal' => $total_records,
-			'recordsFiltered' => $total_filtered,
-			'data' => $data
-		]);
-		exit;
+		echo $producto->listarVencimientosDatatable($idproducto);
 		break;
 
 	case 'movimientoEntradaSalida':
@@ -791,45 +624,45 @@ switch ($_GET["op"]) {
 		echo json_encode($rspta);
 		break;
 
-	case 'listarLotesFifo':
-		$idproducto = limpiarCadena($_POST['idproducto']);
-		$idsucursal = limpiarCadena($_POST['idsucursal']);
+	// case 'listarLotesFifo':
+	// 	$idproducto = limpiarCadena($_POST['idproducto']);
+	// 	$idsucursal = limpiarCadena($_POST['idsucursal']);
 
-		$sql = "SELECT 
-	                idfifo, 
-	                cantidad_restante, 
-	                precio_venta, 
-	                precio_compra,
-	                DATE_FORMAT(fecha_ingreso, '%d/%m/%Y') as fecha_ingreso_format
-	            FROM stock_fifo
-	            WHERE idproducto='$idproducto' 
-	              AND idsucursal='$idsucursal' 
-	              AND estado=1
-	            ORDER BY fecha_ingreso ASC";
+	// 	$sql = "SELECT 
+	//                 idfifo, 
+	//                 cantidad_restante, 
+	//                 precio_venta, 
+	//                 precio_compra,
+	//                 DATE_FORMAT(fecha_ingreso, '%d/%m/%Y') as fecha_ingreso_format
+	//             FROM stock_fifo
+	//             WHERE idproducto='$idproducto' 
+	//               AND idsucursal='$idsucursal' 
+	//               AND estado=1
+	//             ORDER BY fecha_ingreso ASC";
 
-		$rs = ejecutarConsulta($sql);
+	// 	$rs = ejecutarConsulta($sql);
 
-		// Opciones iniciales
-		$opt = "<option value=''>── Seleccionar lote ──</option>";
-		$opt .= "<option value='0'>➕ Crear nuevo lote</option>";
-		$opt .= "<option disabled>──────────────────</option>";
+	// 	// Opciones iniciales
+	// 	$opt = "<option value=''>── Seleccionar lote ──</option>";
+	// 	$opt .= "<option value='0'>➕ Crear nuevo lote</option>";
+	// 	$opt .= "<option disabled>──────────────────</option>";
 
-		// Listar lotes existentes con formato mejorado
-		while ($r = $rs->fetch_object()) {
-			$idfifo = $r->idfifo;
-			$stock = number_format($r->cantidad_restante, 2);
-			$pv = number_format($r->precio_venta, 2);
-			$pc = number_format($r->precio_compra, 2);
-			$fecha = $r->fecha_ingreso_format;
+	// 	// Listar lotes existentes con formato mejorado
+	// 	while ($r = $rs->fetch_object()) {
+	// 		$idfifo = $r->idfifo;
+	// 		$stock = number_format($r->cantidad_restante, 2);
+	// 		$pv = number_format($r->precio_venta, 2);
+	// 		$pc = number_format($r->precio_compra, 2);
+	// 		$fecha = $r->fecha_ingreso_format;
 
-			// Formato mejorado con información clara
-			$texto = "Lote #$idfifo │ Stock: $stock │ PC: S/ $pc │ PV: S/ $pv │ $fecha";
+	// 		// Formato mejorado con información clara
+	// 		$texto = "Lote #$idfifo │ Stock: $stock │ PC: S/ $pc │ PV: S/ $pv │ $fecha";
 
-			$opt .= "<option value='$idfifo'>$texto</option>";
-		}
+	// 		$opt .= "<option value='$idfifo'>$texto</option>";
+	// 	}
 
-		echo $opt;
-		break;
+	// 	echo $opt;
+	// 	break;
 
 	case 'listarservice':
 		$rspta = $producto->listarService();
@@ -1121,5 +954,9 @@ switch ($_GET["op"]) {
 		echo json_encode(["codigo" => $codigo]);
 		break;
 
+	case 'cargar_data':
+		$producto = new Producto();
+		$producto->cargarData();
+		break;
 
 }
