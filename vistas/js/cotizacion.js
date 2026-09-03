@@ -1353,4 +1353,12 @@ function mostrarform(flag) {
   numSerieTicket();
   listarConfiguracionCreditos();
 }
+
+function cancelarmodalCelular() {
+  $("#numeroCelular").val("");
+  $("#modalCelular").find(".is-invalid").removeClass("is-invalid");
+  $("#modalCelular").find(".is-valid").removeClass("is-valid");
+  $("#modalCelular").modal("hide");
+}
+
 init();
