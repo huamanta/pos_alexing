@@ -414,18 +414,5 @@
         "CHASIS": "LDAPAK101SGD18863",
         "MOTOR": "WX162FMJ225J18863",
         "STOCK": "1"
-    },
-    {
-        "ID": 7699,
-        "IDLINEA": 2,
-        "PRODUCTO": "ACEITES SSENDA",
-        "PLACA": "",
-        "COLOR": "",
-        "MARCA": "SSENDA",
-        "MODELO": "ACEITE SSENDA",
-        "SERIE": "",
-        "CHASIS": "",
-        "MOTOR": "",
-        "STOCK": "3"
     }
 ]

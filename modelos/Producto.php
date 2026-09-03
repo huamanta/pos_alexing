@@ -2422,25 +2422,24 @@ class Producto extends Helpers
 	{
 		$anio = date('Y');
 
-		// Buscar el último código AUTOMÁTICO del año actual (mayor numéricamente)
-		$sql = "
-        SELECT MAX(CAST(SUBSTRING(codigo, 5, 3) AS UNSIGNED)) AS ultimo
-        FROM producto
-        WHERE codigo REGEXP '^[0-9]{4}[0-9]{3}$'
-        AND codigo LIKE '$anio%'
-    ";
-		$rspta = ejecutarConsultaSimpleFila($sql);
+		$data = (new DBQuery($this->pdo))
+			->select([
+				'MAX(CAST(SUBSTRING(codigo, 5, 3) AS UNSIGNED)) AS ultimo'
+			])
+			->from('producto')
+			->whereRaw(
+				"codigo REGEXP :patron",
+				[
+					':patron' => '^' . $anio . '[0-9]{3}$'
+				]
+			)
+			->first();
 
-		if (isset($rspta['ultimo']) && $rspta['ultimo'] !== null) {
-			$nuevoNumero = intval($rspta['ultimo']) + 1;
-		} else {
-			$nuevoNumero = 1;
-		}
+		$ultimo = isset($data['ultimo']) && $data['ultimo'] !== null
+			? (int) $data['ultimo']
+			: 0;
 
-		// Formatear el número a 3 dígitos (ej: 001, 002, ...)
-		$codigo = $anio . str_pad($nuevoNumero, 3, '0', STR_PAD_LEFT);
-
-		return $codigo;
+		return $ultimo + 1;
 	}
 
 	public function selectProductosVenta()
@@ -2579,14 +2578,22 @@ class Producto extends Helpers
 			$insertados = 0;
 			$seriesInsertadas = 0;
 
+			// Obtener el siguiente número disponible UNA SOLA VEZ
+			$numeroCodigo = self::generarCodigo();
+
 			foreach ($productos as $index => $item) {
 
 				$nombre = trim($item['PRODUCTO'] ?? '');
-				$stock = (float) ($item['STOCK'] ?? 0);
-				$codigo = self::generarCodigo();
+
 				if ($nombre === '') {
 					continue;
 				}
+
+				// Generar código y avanzar para el siguiente producto
+				$codigo = date('Y') . str_pad($numeroCodigo, 3, '0', STR_PAD_LEFT);
+				$numeroCodigo++;
+
+				$stock = (float) ($item['STOCK'] ?? 0);
 
 				$serie = trim($item['SERIE'] ?? '');
 				$motor = trim($item['MOTOR'] ?? '');
