@@ -1105,32 +1105,22 @@
             aria-describedby="tblIngresos_info" width="100%" role="grid" style="width: 100%;">
             <thead>
               <tr>
-                <th>#</th>
                 <th>Fecha Ingreso</th>
                 <th>Fecha Vencimiento</th>
                 <th>Días Restantes</th>
                 <th>Cant. Comprada</th>
-                <th>Stock Lote</th>
+                <th>Stock</th>
                 <th>N° Lote</th>
                 <th>Precio Compra</th>
                 <th>Precio Venta</th>
               </tr>
             </thead>
             <tbody id="dataVencimiento"></tbody>
-            <tfoot>
-              <tr>
-                <th>#</th>
-                <th>Fecha Ingreso</th>
-                <th>Fecha Vencimiento</th>
-                <th>Días Restantes</th>
-                <th>Cant. Comprada</th>
-                <th>Stock Lote</th>
-                <th>N° Lote</th>
-                <th>Precio Compra</th>
-                <th>Precio Venta</th>
-              </tr>
-            </tfoot>
           </table>
+          <div class="col-md-6"></div>
+          <div class="col-md-6">
+            <div id="paginationVencimiento"></div>
+          </div>
           <br>
           <table class="table table-striped table-bordered table-condensed table-hover dataTable">
             <tbody>

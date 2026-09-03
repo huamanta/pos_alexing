@@ -1,5 +1,7 @@
 var tabla;
 let listarProductos = null;
+let listarVencimientos = null;
+let idproductoVer = null;
 toastr.options = {
   closeButton: true,
   progressBar: true,
@@ -547,7 +549,6 @@ function pintarProductos(data, permissions) {
                 </td>
                 <td>
                     ${permissions.desactivar ? `<button class="btn btn-warning btn-xs" onclick="mostrar(${item.idproducto})"><i class="fas fa-edit"></i></button>` : ''}
-		                <!--button class="btn btn-primary btn-xs" onclick="entradaSalida(${item.idproducto}, ${item.idsucursal})"><i class="fas fa-archive"></i></button-->
                     ${permissions.configurar ? `<button class="btn btn-success btn-xs" onclick='config(${JSON.stringify(item).replace(/'/g, "\\'")})'><i class="fas fa-cog"></i></button>` : ''}
                     ${permissions.vencimientos ? `<button class="btn btn-info btn-xs" onclick="fechaVencimiento(${item.idproducto})"><i class="fa fa-list"></i></button>` : ''}  
 		                ${btnActivarDesactivar}
@@ -570,6 +571,56 @@ listarProductos = new FluentPaginator({
 });
 
 
+
+function pintarProductosVencimiento(data, permissions) {
+
+  let html = "";
+
+  if (data.length === 0) {
+
+    html = `
+            <tr>
+                <td colspan="10" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+    $("#tbody_productos").html(html);
+    return;
+  }
+
+  data.forEach(item => {
+
+    html += `
+            <tr>
+                <td>${item.fecha_ingreso || '-'}</td>
+                <td>${item.fvencimiento || '-'}</td>
+                <td>${item.dias_restantes}</td>
+                <td>${item.cantidad}</td>
+                <td>${item.stock_lote || '-'}</td>
+                <td>${item.nlote || '-'}</td>
+                <td>S/ ${item.precio_compra}</td>
+                <td>S/ ${item.precio_venta}</td>
+            </tr>
+        `;
+
+  });
+
+  $("#dataVencimiento").html(html);
+
+}
+
+
+listarVencimientos = new FluentPaginator({
+  url: "controladores/producto.php?op=listarvencimiento_datatable&id=" + idproductoVer,
+  tableBody: "#dataVencimiento",
+  renderTabla: pintarProductosVencimiento,
+  paginationId: "#paginationVencimiento",
+});
+
+
+
 toastr.options = {
   closeButton: false,
   progressBar: true,
@@ -577,25 +628,6 @@ toastr.options = {
   timeOut: "4000",
   extendedTimeOut: "1000",
 };
-
-// let timeout = null;
-
-// $(document).on("input", "#stock_filtro", function () {
-//   clearTimeout(timeout);
-
-//   timeout = setTimeout(() => {
-//     const valor = parseInt($("#stock_filtro").val());
-
-//     if (!isNaN(valor) && valor >= 0) {
-//       toastr.info(
-//         `Listando productos con stock menor o igual a ${valor}`,
-//         "Filtro aplicado",
-//       );
-//     } else {
-//       toastr.warning("Listando todos los productos", "Sin filtro");
-//     }
-//   }, 1200); // Espera 1.2 segundos después de escribir
-// });
 
 function generarbarcode(e = null) {
   if (e) e.preventDefault(); // Solo prevenir si viene de un evento
@@ -1546,7 +1578,7 @@ function comprobarData() {
 
 function fechaVencimiento(id) {
   $("#fechavencimiento-modal").modal("show");
-
+  idproductoVer = id;
   // Cargar información general del producto
   $.ajax({
     url: "controladores/producto.php?op=listarvencimiento&id=" + id,
@@ -1563,63 +1595,7 @@ function fechaVencimiento(id) {
       // Mostrar total de stock
       $("#totareal").html(json.total_stock + " Unid.");
 
-      // Destruir DataTable si existe
-      if ($.fn.DataTable.isDataTable("#tbllistadoKardex")) {
-        $("#tbllistadoKardex").DataTable().destroy();
-      }
-
-      // Inicializar DataTable con server-side processing
-      $("#tbllistadoKardex").DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-          url:
-            "controladores/producto.php?op=listarvencimiento_datatable&id=" +
-            id,
-          type: "GET",
-          error: function (xhr, error, thrown) {
-            Swal.fire("Error", "No se pudo cargar los datos", "error");
-          },
-        },
-        columns: [
-          { data: "numero", orderable: false },
-          { data: "fecha_ingreso" },
-          { data: "fvencimiento" },
-          { data: "dias_restantes", orderable: true },
-          { data: "cantidad" },
-          { data: "stock_lote" },
-          { data: "nlote" },
-          { data: "precio_compra" },
-          { data: "precio_venta" },
-        ],
-        createdRow: function (row, data, dataIndex) {
-          if (data.clase) {
-            $(row).addClass(data.clase);
-          }
-        },
-        dom: "Bfrtip",
-        buttons: ["copy", "excel", "pdf", "print"],
-        responsive: true,
-        pageLength: 10,
-        order: [[1, "asc"]],
-        language: {
-          processing: "Procesando...",
-          lengthMenu: "Mostrar _MENU_ registros",
-          zeroRecords: "No se encontraron resultados",
-          emptyTable: "Ningún dato disponible en esta tabla",
-          info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-          infoEmpty:
-            "Mostrando registros del 0 al 0 de un total de 0 registros",
-          infoFiltered: "(filtrado de un total de _MAX_ registros)",
-          search: "Buscar:",
-          paginate: {
-            first: "Primero",
-            last: "Último",
-            next: "Siguiente",
-            previous: "Anterior",
-          },
-        },
-      });
+      listarVencimientos.load();
     },
     error: function () {
       Swal.fire(
@@ -1804,25 +1780,25 @@ function filtrarEntrada(valor) {
   return valor.replace(/[^0-9.]/g, "");
 }
 
-function entradaSalida(idproducto, idsucursal) {
-  $("#myModalEntradas").modal("show");
-  $("#input-idproducto").val(idproducto);
-  $("#input-idsucursal").val(idsucursal);
+// function entradaSalida(idproducto, idsucursal) {
+//   $("#myModalEntradas").modal("show");
+//   $("#input-idproducto").val(idproducto);
+//   $("#input-idsucursal").val(idsucursal);
 
-  $.post(
-    "controladores/producto.php?op=listarLotesFifo",
-    {
-      idproducto: idproducto,
-      idsucursal: idsucursal,
-    },
-    function (r) {
-      $("#idfifo").html(r);
-      // Reiniciar los campos cuando se abre el modal
-      $("#tipo_movimiento").val("");
-      actualizarPreciosBox();
-    },
-  );
-}
+//   $.post(
+//     "controladores/producto.php?op=listarLotesFifo",
+//     {
+//       idproducto: idproducto,
+//       idsucursal: idsucursal,
+//     },
+//     function (r) {
+//       $("#idfifo").html(r);
+//       // Reiniciar los campos cuando se abre el modal
+//       $("#tipo_movimiento").val("");
+//       actualizarPreciosBox();
+//     },
+//   );
+// }
 
 $("#formularioIngreso").submit(function (e) {
   e.preventDefault();
@@ -1889,37 +1865,37 @@ $("#formularioIngreso").submit(function (e) {
   });
 });
 
-function actualizarPreciosBox() {
-  let tipo = $("#tipo_movimiento").val();
-  let lote = $("#idfifo").val();
+// function actualizarPreciosBox() {
+//   let tipo = $("#tipo_movimiento").val();
+//   let lote = $("#idfifo").val();
 
-  // Por defecto ocultamos los precios
-  $(".precio-box").hide();
+//   // Por defecto ocultamos los precios
+//   $(".precio-box").hide();
 
-  // ENTRADA (0)
-  if (tipo == "0") {
-    // Si selecciona "Crear nuevo lote" (value="0") o no selecciona nada
-    if (!lote || lote === "" || lote === "0") {
-      $(".precio-box").show();
+//   // ENTRADA (0)
+//   if (tipo == "0") {
+//     // Si selecciona "Crear nuevo lote" (value="0") o no selecciona nada
+//     if (!lote || lote === "" || lote === "0") {
+//       $(".precio-box").show();
 
-      // Hacer los campos requeridos solo cuando se muestran
-      $("#precio_venta").prop("required", true);
-      $("#precio_compra").prop("required", true);
-    } else {
-      // Lote existente seleccionado - quitar required
-      $("#precio_venta").prop("required", false);
-      $("#precio_compra").prop("required", false);
-    }
-  } else {
-    // SALIDA (1) - quitar required
-    $("#precio_venta").prop("required", false);
-    $("#precio_compra").prop("required", false);
-  }
-}
+//       // Hacer los campos requeridos solo cuando se muestran
+//       $("#precio_venta").prop("required", true);
+//       $("#precio_compra").prop("required", true);
+//     } else {
+//       // Lote existente seleccionado - quitar required
+//       $("#precio_venta").prop("required", false);
+//       $("#precio_compra").prop("required", false);
+//     }
+//   } else {
+//     // SALIDA (1) - quitar required
+//     $("#precio_venta").prop("required", false);
+//     $("#precio_compra").prop("required", false);
+//   }
+// }
 
-// Eventos para actualizar la visibilidad de precios
-$("#tipo_movimiento").on("change", actualizarPreciosBox);
-$("#idfifo").on("change", actualizarPreciosBox);
+// // Eventos para actualizar la visibilidad de precios
+// $("#tipo_movimiento").on("change", actualizarPreciosBox);
+// $("#idfifo").on("change", actualizarPreciosBox);
 
 function limpiarIngreso() {
   $("#formularioIngreso")[0].reset();
@@ -2015,40 +1991,40 @@ $(document).on("click", ".editable-price", function () {
   document.execCommand("selectAll", false, null);
 });
 
-$(document).on("blur keypress", ".editable-price", function (e) {
-  let $this = $(this);
+// $(document).on("blur keypress", ".editable-price", function (e) {
+//   let $this = $(this);
 
-  // Enter key or blur
-  if (e.type === "blur" || e.which === 13) {
-    e.preventDefault();
+//   // Enter key or blur
+//   if (e.type === "blur" || e.which === 13) {
+//     e.preventDefault();
 
-    let newValue = $this.text().trim();
-    let original = $this.data("original");
+//     let newValue = $this.text().trim();
+//     let original = $this.data("original");
 
-    if (newValue === original) {
-      $this.attr("contenteditable", false);
-      return;
-    }
+//     if (newValue === original) {
+//       $this.attr("contenteditable", false);
+//       return;
+//     }
 
-    let id = $this.data("id");
-    let field = $this.data("field");
+//     let id = $this.data("id");
+//     let field = $this.data("field");
 
-    $.ajax({
-      url: "controladores/producto.php?op=actualizarPrecio",
-      method: "POST",
-      data: { idproducto: id, campo: field, valor: newValue },
-      success: function (response) {
-        $this.attr("contenteditable", false);
-        // Actualiza el valor por si viene con formato del servidor
-        $this.text(newValue);
-      },
-      error: function (err) {
-        alert("Error al actualizar precio");
-        $this.text(original).attr("contenteditable", false);
-      },
-    });
-  }
-});
+//     $.ajax({
+//       url: "controladores/producto.php?op=actualizarPrecio",
+//       method: "POST",
+//       data: { idproducto: id, campo: field, valor: newValue },
+//       success: function (response) {
+//         $this.attr("contenteditable", false);
+//         // Actualiza el valor por si viene con formato del servidor
+//         $this.text(newValue);
+//       },
+//       error: function (err) {
+//         alert("Error al actualizar precio");
+//         $this.text(original).attr("contenteditable", false);
+//       },
+//     });
+//   }
+// });
 
 // Asignar evento una sola vez
 $("#btnGenerarCatalogo").on("click", function () {
