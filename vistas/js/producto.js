@@ -116,10 +116,10 @@ function init() {
   $("#navAlmacen").addClass("treeview menu-open");
   $("#navProducto").addClass("active");
 
-  cargarComboProductos();
+ // cargarComboProductos();
 }
 
-function cargarComboProductos() {
+/*function cargarComboProductos() {
   var idp = $("#idsucursal3").val();
 
   //cargamos los items al select almacen
@@ -137,7 +137,7 @@ function cargarComboProductos2() {
     $("#idproducto3").html(r);
     $("#idproducto3").select2("");
   });
-}
+}*/
 
 function guardarcat(e) {
   e.preventDefault(); //no se activara la accion predeterminada
@@ -380,14 +380,6 @@ function cancelarform() {
   });
 }
 
-$("#controla_stock").change(function () {
-  if ($(this).val() == "Si") {
-    $("#stock").attr("readonly", "readonly");
-    $("#stock").val('0');
-  } else {
-    $("#stock").removeAttr("readonly", "readonly");
-  }
-});
 
 function mostrar(idproducto) {
   $.get(
@@ -475,21 +467,7 @@ function mostrar(idproducto) {
         );
         $("#codigo").data("tieneCodigo", false);
       }
-
-      // $("#myModal")
-      //   .off("shown.bs.modal")
-      //   .on("shown.bs.modal", function () {
-      //     var idsucursalSeleccionada = $("#idsucursal2").val();
-      //     console.log("Sucursal activa:", idsucursalSeleccionada);
-
-      //     $.post(
-      //       "controladores/producto.php?op=sucursales",
-      //       { idsucursal: idsucursalSeleccionada, idproducto: data.idproducto },
-      //       function (r) {
-      //         $("#sucursales").html(r);
-      //       },
-      //     );
-      //   });
+      $("#stock").attr("readonly", "readonly");
     },
   );
 }

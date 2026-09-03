@@ -273,9 +273,7 @@ class Persona extends Helpers
 				$search,
 				[
 					'nombre',
-					'num_documento',
-					'telefono',
-					'email'
+					'num_documento'
 				]
 			)
 			->orderBy('idpersona', 'DESC')

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/../Helpers.php";
+require_once __DIR__ . "/../../core/Constants.php";
 use Carbon\Carbon;
 class SisVenta extends Helpers
 {
@@ -606,7 +607,6 @@ class SisVenta extends Helpers
 
         // ACTUALIZAR STOCK GENERAL
         $nuevoStock = (float)$inventario['stock'] - $cantidad;
-
         $updateInventario = (new FluentSaver($this->pdo))
             ->table('inventario_producto')
             ->primaryKey('idinventario')
@@ -621,22 +621,20 @@ class SisVenta extends Helpers
                 "No se pudo actualizar el inventario."
             );
         }
-
-        //ARDEX
-        $salida = 0;
-
-        Helpers::updateKardexSucursal(
-            $idsucursal,
-            $rowProduct['idproducto'],
-            $rowConfiguracion['idproducto_configuracion'],
-            $cantidad,
-            $rowConfiguracion['cantidad_contenedor'],
-            $precioVenta,
-            $nuevoStock,
-            $salida,
-            'Salida por venta',
-            $motivo
-        );
+        if($rowProduct['controla_stock'] === 'Si') {
+            Helpers::updateKardexSucursal(
+                $idsucursal,
+                $rowProduct['idproducto'],
+                $rowConfiguracion['idproducto_configuracion'],
+                $cantidad,
+                $rowConfiguracion['cantidad_contenedor'],
+                $precioVenta,
+                $nuevoStock,
+                Constants::EGRESO_KARDEX,
+                'Salida por venta',
+                $motivo
+            );
+        }
 
         return [
             "success" => true,

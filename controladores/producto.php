@@ -950,7 +950,8 @@ switch ($_GET["op"]) {
 	case 'generar_codigo':
 		require_once "../modelos/Producto.php";
 		$producto = new Producto();
-		$codigo = $producto->generarCodigo();
+		$numeroCodigo = $producto->generarCodigo();
+		$codigo = date('Y') . str_pad($numeroCodigo, 3, '0', STR_PAD_LEFT);
 		echo json_encode(["codigo" => $codigo]);
 		break;
 

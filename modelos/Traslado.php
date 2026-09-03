@@ -6,6 +6,7 @@ require_once __DIR__ . "/../core/FluentQuery.php";
 require_once __DIR__ . "/../core/FluentSave.php";
 require_once __DIR__ . "/Helpers.php";
 require_once __DIR__ . "/../core/Response.php";
+require_once __DIR__ . "/../core/Constants.php";
 use Carbon\Carbon;
 
 class Traslado extends Helpers
@@ -283,7 +284,7 @@ class Traslado extends Helpers
                 $cantidad * $rowConfiguracion['cantidad_contenedor'],
                 $nuevoProducto['precio'],
                 $stockActual,
-                1,
+                Constants::INGRESO_KARDEX,
                 'Ingreso por transferencia',
                 $motivo
             );
@@ -359,7 +360,6 @@ class Traslado extends Helpers
         ]);
 
         $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
-        $salida = 0;
         if ($rowProduct['controla_stock'] === 'Si') {
             $nuevo_stock = $rowProduct['stock'] - $cantidad;
             Helpers::updateKardexSucursal(
@@ -370,7 +370,7 @@ class Traslado extends Helpers
                 $cantidad * $rowConfiguracion['cantidad_contenedor'],
                 $rowProduct['precio'],
                 $nuevo_stock,
-                $salida,
+                Constants::EGRESO_KARDEX,
                 'Salida por transferencia',
                 $motivo
             );

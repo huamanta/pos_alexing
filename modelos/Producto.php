@@ -4,6 +4,7 @@ require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/../configuraciones/ConexionPdo.php";
 require_once __DIR__ . "/Helpers.php";
 require_once __DIR__ . "/../core/Response.php";
+require_once __DIR__ . "/../core/Constants.php";
 date_default_timezone_set('America/Lima');
 
 class Producto extends Helpers
@@ -101,11 +102,11 @@ class Producto extends Helpers
 					'precioD' => $precioD || 0,
 					'precioE' => $precioE || 0,
 					'margenpubl' => $margenpubl,
-					'margendes' => $margendes,
-					'margenp1' => $margenp1,
-					'margenp2' => $margenp2,
-					'margendist' => $margendist,
-					'utilprecio' => $utilprecio,
+					'margendes' => $margendes || 0,
+					'margenp1' => $margenp1 || 0,
+					'margenp2' => $margenp2 || 0,
+					'margendist' => $margendist || 0,
+					'utilprecio' => $utilprecio || 0,
 					'fecha' => $fecha,
 					'descripcion' => $descripcion,
 					'imagen' => $imagen,
@@ -131,16 +132,16 @@ class Producto extends Helpers
 				->save();
 
 			// Configuración
-			(new FluentSaver($this->pdo))
+			$idproducto_configuracion =(new FluentSaver($this->pdo))
 				->table("producto_configuracion")
 				->data([
 					'idproducto' => $idproducto,
 					'codigo_extra' => $codigo,
 					'contenedor' => 'UNIDAD',
-					'cantidad_contenedor' => 1,
+					'cantidad_contenedor' => Constants::CONTENEDOR_BASE,
 					'precio_venta' => $precio,
 					'precio_credito' => $precio_credito,
-					'precio_promocion' => $precioB
+					'precio_promocion' => $precioB || 0,
 				])
 				->save();
 
@@ -174,6 +175,25 @@ class Producto extends Helpers
 					'estado' => 'DISPONIBLE'
 				])
 				->save();
+
+			if($stock > $stockMaximo){
+				throw new Exception("El stock actual no puede ser mayor al stock máximo.");
+			}
+
+			if($controla_stock === 'Si' && $stock > 0){
+				Helpers::updateKardexSucursal(
+					$idsucursal,
+					$idproducto,
+					$idproducto_configuracion,
+					$stock,
+					Constants::CONTENEDOR_BASE,
+					$precio,
+					$stock,
+					Constants::INGRESO_KARDEX,
+					'Ingreso inicial por registro de producto',
+					'Registro de producto',
+				);
+			}
 
 			$this->pdo->commit();
 
@@ -332,7 +352,8 @@ class Producto extends Helpers
 				->primaryKey('idproducto_configuracion')
 				->data([
 					'idproducto_configuracion' => $idproductoconfiguracion,
-					'precio_credito' => $precio_credito,
+					'precio_venta' => $precio,
+					'precio_credito' => $precio_credito
 				])
 				->update();
 
@@ -974,7 +995,6 @@ class Producto extends Helpers
 			->softDeletes('p.deleted_at')
 			->search($search, [
 				'p.codigo',
-				'pg.codigo_extra',
 				'p.nombre',
 				'ps.numero_serie',
 				'ps.numero_motor',

@@ -540,10 +540,10 @@
   <!-- /.modal-dialog -->
 </div>
 
-<div class="modal fade modal-tailpanel" id="myModal">
+<div class="modal fade" id="myModal">
   <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content modal-content-tailpanel">
-      <div class="modal-header modal-header-tailpanel">
+    <div class="modal-content">
+      <div class="modal-header">
         <h4 class="modal-title">
           <i class="fas fa-box-open text-primary"></i> Producto
         </h4>
@@ -575,7 +575,7 @@
                 </li>
               </ul>
 
-              <div class="tab-content border rounded p-2 bg-light" id="tabsProductoVehiculoContent">
+              <div class="tab-content p-2" id="tabsProductoVehiculoContent">
                 <div class="tab-pane fade show active" id="tab-basico" role="tabpanel"
                   aria-labelledby="tab-basico-link">
                   <div class="row">
@@ -769,6 +769,12 @@
                 </div>
 
                 <div class="tab-pane fade" id="tab-stock" role="tabpanel" aria-labelledby="tab-stock-link">
+                  <div class="alert alert-info py-2 mb-0" role="alert">
+                    <div class="text-white">
+                      <i class="fas fa-info-circle me-1"></i>
+                      Los vehículos se manejan con <strong>1 unidad por producto</strong>; registre el stock correspondiente al momento del ingreso.
+                    </div>
+                  </div>
                   <div class="row">
                     <div class="col-sm-3">
                       <div class="form-group">
@@ -785,7 +791,7 @@
                     <div class="col-sm-3">
                       <div class="form-group">
                         <label class="control-label">Stock</label>
-                        <input type="number" class="form-control" step="any" name="stock" id="stock" value="0" readonly>
+                        <input type="number" class="form-control" step="any" name="stock" id="stock" value="0">
                       </div>
                     </div>
                     <div class="col-sm-3">
@@ -843,7 +849,6 @@
                       </div>
                     </div>
                   </div>
-
                   <div class="row" hidden>
                     <div class="col-sm-3">
                       <div class="form-group">
