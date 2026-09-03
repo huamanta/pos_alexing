@@ -537,16 +537,16 @@ $total = 0;
 						</td>
 
 						<td class="amount">
-							<?php echo $helpers->get_currency_symbol($row['precio_venta']); ?>
+							<?php echo $helpers->get_currency_symbol($row['precio_venta'], $currency); ?>
 						</td>
 
 						<td class="amount">
-							<?php echo $helpers->get_currency_symbol($row['descuento']); ?>
+							<?php echo $helpers->get_currency_symbol($row['descuento'], $currency); ?>
 						</td>
 
 						<td class="amount">
 							<strong>
-								<?php echo $helpers->get_currency_symbol($row['subtotal']); ?>
+								<?php echo $helpers->get_currency_symbol($row['subtotal'], $currency); ?>
 							</strong>
 						</td>
 					</tr>
@@ -567,7 +567,7 @@ $total = 0;
 					</td>
 
 					<td class="detail-total-value">
-						<?php echo $helpers->get_currency_symbol($factura['total_venta']); ?>
+						<?php echo $helpers->get_currency_symbol($factura['total_venta'], $currency); ?>
 					</td>
 				</tr>
 			</tfoot>
@@ -608,19 +608,19 @@ $total = 0;
 					<tr>
 						<td>Total venta</td>
 						<td>
-							<?php echo $helpers->get_currency_symbol($totalVenta); ?>
+							<?php echo $helpers->get_currency_symbol($totalVenta, $currency); ?>
 						</td>
 
 						<td>Inicial</td>
 						<td>
-							<?php echo $helpers->get_currency_symbol($inicial); ?>
+							<?php echo $helpers->get_currency_symbol($inicial, $currency); ?>
 						</td>
 					</tr>
 
 					<tr>
 						<td>Saldo</td>
 						<td>
-							<?php echo $helpers->get_currency_symbol($saldoFinanciar); ?>
+							<?php echo $helpers->get_currency_symbol($saldoFinanciar, $currency); ?>
 						</td>
 
 						<td>Interés</td>
@@ -633,7 +633,7 @@ $total = 0;
 						<td>Total financiado</td>
 						<td>
 							<strong>
-								<?php echo $helpers->get_currency_symbol($totalCredito); ?>
+								<?php echo $helpers->get_currency_symbol($totalCredito, $currency); ?>
 							</strong>
 						</td>
 
@@ -652,7 +652,7 @@ $total = 0;
 						<td>Cuota</td>
 						<td>
 							<strong>
-								<?php echo $helpers->get_currency_symbol($montoCuota); ?>
+								<?php echo $helpers->get_currency_symbol($montoCuota, $currency); ?>
 							</strong>
 						</td>
 					</tr>
@@ -708,16 +708,16 @@ $total = 0;
 								<td><?php echo $fechaPago; ?></td>
 
 								<td>
-									<?php echo $helpers->get_currency_symbol($capitalCuota); ?>
+									<?php echo $helpers->get_currency_symbol($capitalCuota, $currency); ?>
 								</td>
 
 								<td>
-									<?php echo $helpers->get_currency_symbol($interesCuota); ?>
+									<?php echo $helpers->get_currency_symbol($interesCuota, $currency); ?>
 								</td>
 
 								<td>
 									<strong>
-										<?php echo $helpers->get_currency_symbol($montoCuota); ?>
+										<?php echo $helpers->get_currency_symbol($montoCuota, $currency); ?>
 									</strong>
 								</td>
 
@@ -728,15 +728,15 @@ $total = 0;
 							<td colspan="2">TOTALES</td>
 
 							<td>
-								<?php echo $helpers->get_currency_symbol($capitalCuotaTotal); ?>
+								<?php echo $helpers->get_currency_symbol($capitalCuotaTotal, $currency); ?>
 							</td>
 
 							<td>
-								<?php echo $helpers->get_currency_symbol($interesCuotaTotal); ?>
+								<?php echo $helpers->get_currency_symbol($interesCuotaTotal, $currency); ?>
 							</td>
 
 							<td>
-								<?php echo $helpers->get_currency_symbol($montoCuotaTotal); ?>
+								<?php echo $helpers->get_currency_symbol($montoCuotaTotal, $currency); ?>
 							</td>
 						</tr>
 
