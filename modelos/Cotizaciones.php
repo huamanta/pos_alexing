@@ -4,6 +4,7 @@ require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
 require_once __DIR__ . "/../core/Constants.php";
 require_once __DIR__ . "/../core/Response.php";
+require_once __DIR__ . "/../core/Email.php";
 
 date_default_timezone_set('America/Lima');
 
@@ -112,15 +113,81 @@ class Cotizacion extends Helpers
 
             $this->pdo->commit();
 
+            $clientData = (new DBQuery($this->pdo))
+                    ->select('email, nombre')
+                    ->from('persona')
+                    ->where('idpersona', '=', $idcliente)
+                    ->first();
+
+            if ($clientData && !empty($clientData['email'])) {
+
+                $enviado = self::enviarCotizacion($idcotizacion, $comprobante, $clientData, $fecha_hora, $idsucursal);
+
+                if (!$enviado) {
+                    return Response::json([
+                        'success' => true,
+                        'message' => 'Cotización registrada correctamente, pero no se pudo enviar el correo electrónico.'
+                    ]);
+                }
+
+            }
+
             return Response::json([
                 'success' => true,
                 'message' => 'Cotizacion registrado correctamente.'
             ]);
 
         } catch (Throwable $e) {
-            $this->pdo->rollBack();
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
             return Response::error($e->getMessage());
         }
+    }
+
+
+    public function enviarCotizacion(int $idcotizacion, array $comprobante, array $clientData, string $fecha_hora, int $idsucursal): bool 
+    {
+        $urlPdf = rtrim($_ENV['APP_URL'], '/') . "/reportes/factura/generaFacturaCoti.php?id={$idcotizacion}";
+
+        $pdf = @file_get_contents($urlPdf);
+
+        if ($pdf === false) {
+            throw new Exception("No se pudo generar el PDF de la cotización.");
+        }
+
+        $archivoPdf = sys_get_temp_dir() . "/cotizacion_{$idcotizacion}.pdf";
+
+        if (file_put_contents($archivoPdf, $pdf) === false) {
+            throw new Exception("No se pudo guardar temporalmente el PDF.");
+        }
+
+        $sucursal = Helpers::dataSucursal($idsucursal);
+        $numero = $comprobante['serie_comprobante'] . '-' . $comprobante['num_comprobante'];
+        $fecha = date('d/m/Y', strtotime($fecha_hora));
+
+        $mensaje = Email::plantilla('cotizacion', [
+            'cliente' => $clientData['nombre'],
+            'numero' => $numero,
+            'fecha' => $fecha,
+            'empresa' => $sucursal['nombre'] ?? 'Sistema'
+        ]);
+
+
+        $enviado = Email::enviarEmail(
+            $sucursal['email'] ?? $_ENV['MAIL_FROM_ADDRESS'],
+            $clientData['email'],
+            "Nueva Cotización Registrada",
+            $mensaje,
+            $clientData['nombre'],
+            [$archivoPdf]
+        );  
+
+        if (file_exists($archivoPdf)) {
+            unlink($archivoPdf);
+        }
+
+        return $enviado;
     }
 
 
