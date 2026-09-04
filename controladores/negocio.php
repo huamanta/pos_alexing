@@ -62,10 +62,8 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'mostrarNombreNegocio':
-
-		$rspta = $negocio->mostrarNombreNegocio();
-		echo json_encode($rspta);
-
+		$idsucursal = $_SESSION['idsucursal'];
+		$negocio->mostrarNombreNegocio($idsucursal);
 		break;
 
 	case 'desactivar':

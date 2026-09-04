@@ -11,17 +11,87 @@
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-primary-subtle text-primary px-3 py-2"><i class="fas fa-cube me-2"></i> ERP
                         Taller</span>
-                    <a href="#" class="btn btn-outline-secondary">
+                    <a href="#" class="btn btn-outline-secondary" id="btnRegresar" onclick="regresarPanel()">
                         <i class="fas fa-arrow-left me-2"></i> Regresar
                     </a>
                 </div>
             </div>
         </div>
     </section>
-
     <section class="content">
         <div class="container-fluid">
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden" id="panelOrdenesTrabajo">
+                <div class="card-body p-4 p-lg-5">  
+                    <div class="row"> 
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-outline-primary mt-4"
+                                onclick="crearOrden()"><i class="fa fa-plus"></i> Nuevo</button>
+                        </div>
+                        <div class="form-group col-lg-2 col-md-3 col-sm-4 col-xs-12">
+                            <label>Fecha Inicio:</label>
 
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">
+                                        <i class="far fa-calendar-alt"></i>
+                                    </span>
+                                </div>
+                                <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio">
+                            </div>
+                        </div>
+
+                        <div class="form-group col-lg-2 col-md-3 col-sm-3 col-xs-12">
+                            <label>Fecha Fin:</label>
+
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">
+                                        <i class="far fa-calendar-alt"></i>
+                                    </span>
+                                </div>
+                                <input type="date" class="form-control" name="fecha_fin" id="fecha_fin">
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-center mt-2">
+                        </div>
+                        <div class="col-md-6 d-flex align-items-center mt-2">
+                                <span class="mr-2">Mostrar</span>
+                                <select id="limit" class="form-control" style="width:100px">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span class="ml-2">Registros</span>
+                        </div>
+                        <div class="col-md-6 mt-2">
+                            <input type="text" id="search" class="form-control" placeholder="Buscar...">
+                        </div>
+                        <div class="col-12 mt-2">
+                            <table id="tbllistado" class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Número</th>
+                                        <th>Producto</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                        <th>Fecha llegada</th>
+                                        <th>Fecha finalización</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyOrdenesTrabajo">
+                                </tbody>
+                            </table>
+                        </div>
+                         <div class="col-md-6"></div>
+                                <div class="col-md-6">
+                                    <div id="pagination"></div>
+                                </div>
+                    </div>
+                </div>
+            </div>
             <form id="frmOrdenTrabajo" data-endpoint="">
                 <input type="hidden" name="payloadJson" id="payloadJson">
 
@@ -72,7 +142,7 @@
                             <div class="col-md-2">
                                 <div class="wizard-step rounded-3 p-3" data-step="2">
                                     <div class="d-flex align-items-center justify-content-between">
-                                        <span class="fw-bold">2. Mecónicos</span>
+                                        <span class="fw-bold">2. Mecánicos</span>
                                         <i class="fas fa-users text-info"></i>
                                     </div>
                                 </div>
@@ -257,18 +327,16 @@
                             <div class="row g-4">
                                 <div class="col-lg-8">
                                     <div class="card border-0 shadow-sm h-100">
-                                        <div
-                                            class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
+                                        <div class="card-header bg-light border-0 d-flex justify-content-between align-items-center">
                                             <h3 class="card-title mb-0"><i class="fas fa-users me-2"></i> Asignación de
-                                                mecónicos</h3>
+                                                mecánicos</h3>
                                             
                                         </div>
-                                        <div class="d-flex flex-wrap gap-2 align-items-center">
-                                                <select class="form-control" style="min-width: 260px;"
-                                                    id="mechanicSelect">
-                                                    <option value="">Seleccione un mecánico...</option>
-                                                </select>
-                                            </div>
+                                        <div class="inpu-group">
+                                            <select class="form-control" id="mechanicSelect">
+                                                <option value="">Seleccione un mecánico...</option>
+                                            </select>
+                                        </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
                                                 <table class="table align-middle">
@@ -300,15 +368,15 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between mb-3">
                                                 <span>Cantidad de mecónicos</span>
-                                                <strong id="mechanicsCount">2</strong>
+                                                <strong id="mechanicsCount">0</strong>
                                             </div>
                                             <div class="d-flex justify-content-between mb-3">
                                                 <span>Horas totales</span>
-                                                <strong id="hoursTotal">10 h</strong>
+                                                <strong id="hoursTotal">0.00 h</strong>
                                             </div>
                                             <div class="d-flex justify-content-between mb-3">
                                                 <span>Costo mano de obra</span>
-                                                <strong id="laborCost">S/. 340</strong>
+                                                <strong id="laborCost">S/. 0.00</strong>
                                             </div>
                                             <div class="border-top pt-3">
                                                 <div class="text-center text-muted small">Asignación preparada para el
@@ -368,19 +436,19 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between mb-3">
                                                 <span>Cantidad de productos</span>
-                                                <strong id="productsCount">2</strong>
+                                                <strong id="productsCount">0</strong>
                                             </div>
                                             <div class="d-flex justify-content-between mb-3">
                                                 <span>Costo repuestos</span>
-                                                <strong id="repuestosCost">S/. 132</strong>
+                                                <strong id="repuestosCost">S/. 0.00</strong>
                                             </div>
                                             <div class="d-flex justify-content-between mb-3">
                                                 <span>Impuestos</span>
-                                                <strong id="taxCost">S/. 19.80</strong>
+                                                <strong id="taxCost">S/. 0.00</strong>
                                             </div>
                                             <div class="d-flex justify-content-between mb-3">
                                                 <span>Total parcial</span>
-                                                <strong id="partialTotal">S/. 151.80</strong>
+                                                <strong id="partialTotal">S/. 0.00</strong>
                                             </div>
                                         </div>
                                     </div>
@@ -398,7 +466,7 @@
                                                     <div class="d-flex justify-content-between align-items-start">
                                                         <div>
                                                             <h6 class="mb-1">Costo de repuestos</h6>
-                                                            <h3 class="mb-0">S/. 132</h3>
+                                                            <h3 class="mb-0" id="costRepuestos">S/. 0.00</h3>
                                                         </div>
                                                         <i class="fas fa-boxes fa-2x opacity-75"></i>
                                                     </div>
@@ -411,7 +479,7 @@
                                                     <div class="d-flex justify-content-between align-items-start">
                                                         <div>
                                                             <h6 class="mb-1">Costo mano de obra</h6>
-                                                            <h3 class="mb-0">S/. 340</h3>
+                                                            <h3 class="mb-0" id="costManoObra">S/. 0.00</h3>
                                                         </div>
                                                         <i class="fas fa-user-cog fa-2x opacity-75"></i>
                                                     </div>
@@ -424,7 +492,7 @@
                                                     <div class="d-flex justify-content-between align-items-start">
                                                         <div>
                                                             <h6 class="mb-1">Otros gastos</h6>
-                                                            <h3 class="mb-0">S/. 95</h3>
+                                                            <h3 class="mb-0" id="costOtrosGastos">S/. 0.00</h3>
                                                         </div>
                                                         <i class="fas fa-coins fa-2x opacity-75"></i>
                                                     </div>
@@ -437,7 +505,7 @@
                                                     <div class="d-flex justify-content-between align-items-start">
                                                         <div>
                                                             <h6 class="mb-1">Costo total</h6>
-                                                            <h3 class="mb-0">S/. 567</h3>
+                                                            <h3 class="mb-0" id="costTotal">S/. 0.00</h3>
                                                         </div>
                                                         <i class="fas fa-dollar-sign fa-2x opacity-75"></i>
                                                     </div>
@@ -455,26 +523,26 @@
                                             <div class="row g-3">
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-bold">Otros gastos</label>
-                                                    <input type="number" class="form-control" value="95"
+                                                    <input type="number" class="form-control" value="0" min="0" step="0.01"
                                                         name="otrosGastos">
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-bold">Servicios externos</label>
-                                                    <input type="number" class="form-control" value="0"
+                                                    <input type="number" class="form-control" value="0" min="0" step="0.01"
                                                         name="serviciosExternos">
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-bold">Pintura</label>
-                                                    <input type="number" class="form-control" value="0" name="pintura">
+                                                    <input type="number" class="form-control" value="0" min="0" step="0.01" name="pintura">
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-bold">Transporte</label>
-                                                    <input type="number" class="form-control" value="0"
+                                                    <input type="number" class="form-control" value="0" min="0" step="0.01"
                                                         name="transporte">
                                                 </div>
                                                 <div class="col-md-6">
                                                     <label class="form-label fw-bold">Lavado</label>
-                                                    <input type="number" class="form-control" value="35" name="lavado">
+                                                    <input type="number" class="form-control" value="0" min="0" step="0.01" name="lavado">
                                                 </div>
                                                 <div class="col-md-12">
                                                     <label class="form-label fw-bold">Observaciones</label>
@@ -493,10 +561,10 @@
                                         </div>
                                         <div class="card-body text-center">
                                             <div class="mx-auto rounded-circle d-flex align-items-center justify-content-center border border-4 border-primary"
-                                                style="width:220px;height:220px;background:conic-gradient(#0d6efd 0 45%, #20c997 45% 70%, #ffc107 70% 85%, #6c757d 85% 100%);">
+                                                id="costDistribution" style="width:220px;height:220px;background:conic-gradient(#0d6efd 0 100%, #20c997 100% 100%);">
                                                 <div class="bg-white rounded-circle d-flex flex-column align-items-center justify-content-center"
                                                     style="width:150px;height:150px;">
-                                                    <h4 class="mb-0">S/. 567</h4>
+                                                    <h4 class="mb-0" id="costDistributionTotal">S/. 0.00</h4>
                                                     <small class="text-muted">Total</small>
                                                 </div>
                                             </div>
@@ -526,38 +594,36 @@
                                                 <div class="col-md-6">
                                                     <div class="p-3 rounded-3 bg-light">
                                                         <h6 class="fw-bold text-primary">Información de la orden</h6>
-                                                        <p class="mb-1"><strong>Tipo:</strong> Reparación</p>
-                                                        <p class="mb-1"><strong>Sucursal:</strong> Principal</p>
+                                                        <p class="mb-1"><strong>Tipo:</strong> <span id="summaryOrderType">Reparación</span></p>
+                                                        <p class="mb-1"><strong>Sucursal:</strong> <span id="summaryBranch">Principal</span></p>
                                                         <p class="mb-1"><strong>Estado:</strong> <span
-                                                                class="badge bg-warning">Pendiente</span></p>
-                                                        <p class="mb-0"><strong>Prioridad:</strong> Alta</p>
+                                                            class="badge bg-warning" id="summaryOrderStatus">Pendiente</span></p>
+                                                        <p class="mb-0"><strong>Prioridad:</strong> <span id="summaryOrderPriority">Alta</span></p>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="p-3 rounded-3 bg-light">
-                                                        <h6 class="fw-bold text-primary">Vehóculo</h6>
-                                                        <p class="mb-1"><strong>Modelo:</strong> Honda XR150</p>
-                                                        <p class="mb-1"><strong>Placa:</strong> ABC-123</p>
-                                                        <p class="mb-1"><strong>Cliente:</strong> Carlos Mendoza</p>
-                                                        <p class="mb-0"><strong>Fecha compromiso:</strong> 06/08/2026
+                                                        <h6 class="fw-bold text-primary">Vehículo</h6>
+                                                        <p class="mb-1"><strong>Vehículo:</strong> <span id="summaryVehicleName">No seleccionada</span></p>
+                                                        <p class="mb-1"><span id="summaryVehicleDetails">Seleccione una motocicleta en la información general</span></p>
+                                                        <p class="mb-1"><strong>Cliente:</strong> <span id="summaryClient">No seleccionado</span></p>
+                                                        <p class="mb-0"><strong>Fecha compromiso:</strong> <span id="summaryCommitmentDate">No definida</span>
                                                         </p>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="p-3 rounded-3 bg-light">
-                                                        <h6 class="fw-bold text-primary">Mecónicos asignados</h6>
-                                                        <ul class="mb-0 ps-3">
-                                                            <li>Juan Pórez ó 6 h</li>
-                                                            <li>Marcos Rojas ó 4 h</li>
+                                                        <h6 class="fw-bold text-primary">Mecánicos asignados</h6>
+                                                        <ul class="mb-0 ps-3" id="summaryMechanics">
+                                                            <li class="text-muted">Sin mecánicos asignados</li>
                                                         </ul>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
                                                     <div class="p-3 rounded-3 bg-light">
                                                         <h6 class="fw-bold text-primary">Repuestos utilizados</h6>
-                                                        <ul class="mb-0 ps-3">
-                                                            <li>Filtro de aceite</li>
-                                                            <li>Kit de frenos</li>
+                                                        <ul class="mb-0 ps-3" id="summaryParts">
+                                                            <li class="text-muted">Sin repuestos agregados</li>
                                                         </ul>
                                                     </div>
                                                 </div>
@@ -574,20 +640,20 @@
                                         <div class="card-body">
                                             <div class="d-flex justify-content-between mb-3">
                                                 <span>Repuestos</span>
-                                                <strong>S/. 132</strong>
+                                                <strong id="finalRepuestos">S/. 0.00</strong>
                                             </div>
                                             <div class="d-flex justify-content-between mb-3">
                                                 <span>Mano de obra</span>
-                                                <strong>S/. 340</strong>
+                                                <strong id="finalManoObra">S/. 0.00</strong>
                                             </div>
                                             <div class="d-flex justify-content-between mb-3">
                                                 <span>Otros gastos</span>
-                                                <strong>S/. 95</strong>
+                                                <strong id="finalOtrosGastos">S/. 0.00</strong>
                                             </div>
                                             <hr>
                                             <div class="d-flex justify-content-between mb-2">
                                                 <span class="fw-bold">Total</span>
-                                                <strong class="text-primary fs-5">S/. 567</strong>
+                                                <strong class="text-primary fs-5" id="finalTotal">S/. 0.00</strong>
                                             </div>
                                             <div class="mt-4">
                                                 <span class="badge bg-success">Estado final: Listo para entregar</span>
@@ -612,8 +678,6 @@
                                 </button>
                             </div>
                         </div>
-
-                        <div class="alert alert-info mt-4 d-none" id="wizardAlert" role="alert"></div>
 
                     </div>
                 </div>

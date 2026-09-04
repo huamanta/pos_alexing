@@ -273,11 +273,10 @@ function pintarMovimientos(data, permissions) {
     let html = "";
 
     if (data.length === 0) {
-        html = `
-      <tr>
-        <td colspan="7" class="text-center">No se encontraron registros</td>
-      </tr>
-    `;
+        html = `<tr>
+                    <td colspan="7" class="text-center">No se encontraron registros</td>
+                </tr>
+                `;
         $("#tbllistado tbody").html(html);
         return;
     }
