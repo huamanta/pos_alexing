@@ -33,7 +33,7 @@ if (isset($rutaActual)) {
   <meta http-equiv="x-ua-compatible" content="ie=edge">
 
   <title>SYSPIDER TECHNOLOGY</title>
-
+  <link rel="icon" type="image/x-icon" href="files/favicon.png">
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -103,6 +103,7 @@ if (isset($rutaActual)) {
   <script src="./files/plugins/toastr/toastr.min.js"></script>
 
   <script src="./files/plugins/fullcalendar/main.min.js"></script>
+  <script src="vistas/js/menu.js"></script>
   <script src="./vistas/js/pagination.js"></script>
   <script>
     $(document).ready(function () {

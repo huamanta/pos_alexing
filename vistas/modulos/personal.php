@@ -160,6 +160,7 @@
                   <option value="Vendedor">Vendedor</option>
                   <option value="Tecnico">Técnico</option>
                   <option value="Transportista">Transportista</option>
+                  <option value="Mecanico">Mecánico</option>
                   <option value="Otro">Otro</option>
                 </select>
               </div>

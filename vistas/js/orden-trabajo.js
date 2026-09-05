@@ -1,22 +1,113 @@
 $('#navTallerActive').addClass("treeview active");
 $('#navTaller').addClass("treeview menu-open");
 $('#navOrdenTrabajo').addClass("active");
-
+$('#frmOrdenTrabajo').hide();
+$("#btnRegresar").hide();
 const orderForm = $('#frmOrdenTrabajo');
 const wizardSteps = $('.wizard-step');
 const stepContents = $('.step-content');
 const mechanicsTableBody = $('#mechanicsTableBody');
 const partsTableBody = $('#partsTableBody');
-const wizardAlert = $('#wizardAlert');
 let currentStep = 1;
+let listarOrdenesTrabajo = null;
 
-const fecha = new Date();
+function init() {
+    listarOrdenesTrabajo.load();
+}
 
-const dia = String(fecha.getDate()).padStart(2, "0");
-const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-const anio = fecha.getFullYear();
+$("#fecha_inicio, #fecha_fin").change(function () {
+    listarOrdenesTrabajo.load();
+});
 
-$("#fecha_registro").val(`${dia}/${mes}/${anio}`);
+function pintarOrdenesTrabajo(data, permissions) {
+    let html = "";
+
+    if (data.length === 0) {
+        html = `<tr>
+                    <td colspan="8" class="text-center">No se encontraron registros</td>
+                </tr>
+                `;
+        $("#tbllistado tbody").html(html);
+        return;
+    }
+
+    data.forEach(item => {
+
+        html += `
+            <tr>
+                <td>${item.created_at ?? ''}</td>
+                <td>${item.numero ?? ''}</td>
+                <td>${item.producto_nombre ?? ''}</td>
+                <td>${item.tipo ?? ''}</td>
+                <td>${item.estado ?? ''}</td>
+                <td>${item.fecha_inicio ?? ''}</td>
+                <td>${item.fecha_fin ?? ''}</td>
+                <td>
+                    <button class="btn btn-info btn-xs"
+                        onclick='mostrar(${item.idorden})'>
+                        <i class="fa fa-edit"></i>
+                    </button>
+
+                    <button class="btn btn-primary btn-xs"
+                        onclick="abrirRecibo(${item.idorden})">
+                        <i class="fa fa-print"></i>
+                    </button>
+                    
+                    <button class="btn btn-danger btn-xs"
+                        onclick="eliminar(${item.idorden})">
+                        <i class="fa fa-trash"></i>
+                    </button>
+
+                </td>
+            </tr>
+            `;
+
+    });
+
+
+    $("#tbllistado tbody").html(html);
+}
+
+listarOrdenesTrabajo = new FluentPaginator({
+    url: "controladores/ordentrabajo.php?op=listar",
+    renderTabla: pintarOrdenesTrabajo,
+    tableBody: "#tbodyOrdenesTrabajo",
+    extraParams: () => ({
+        fecha_inicio: $("#fecha_inicio").val() || '',
+        fecha_fin: $("#fecha_fin").val() || ''
+    })
+});
+
+function regresarPanel() {
+    $('#panelOrdenesTrabajo').show();
+    $('#frmOrdenTrabajo').hide();
+    $("#btnRegresar").hide();
+    listarOrdenesTrabajo.load();
+}
+
+function crearOrden() {
+    const fecha = new Date();
+
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = fecha.getFullYear();
+    const fechaFormateada = `${anio}-${mes}-${dia}`;
+    $("#fecha_registro").val(fechaFormateada);
+
+    orderForm[0].reset();
+    orderState.vehicle = null;
+    orderState.mechanics = [];
+    orderState.parts = [];
+    orderState.costs = {};
+    $('#panelOrdenesTrabajo').hide();
+    $('#frmOrdenTrabajo').show();
+    $("#btnRegresar").show();
+    renderMechanics();
+    renderParts();
+    syncPayload();
+    renderWizard(1);
+}
+
 
 
 $("#idcliente").select2({
@@ -60,7 +151,7 @@ $("#mechanicSelect").select2({
     minimumInputLength: 2,
     ajax: {
         url: "controladores/ordentrabajo.php?op=selectPersonal",
-        type: "POST",
+        type: "GET",
         dataType: "json",
         delay: 250,
         data: function (params) {
@@ -96,7 +187,7 @@ $("#repuestoBuscar").select2({
     minimumInputLength: 2,
     ajax: {
         url: "controladores/producto.php?op=listar",
-        type: "POST",
+        type: "GET",
         dataType: "json",
         delay: 250,
         data: function (params) {
@@ -150,26 +241,21 @@ function initDefaultDates() {
 }
 
 const orderState = {
+    vehicle: null,
     mechanics: [],
     parts: [],
     costs: {
-        repuestos: 132,
-        manoObra: 340,
-        otrosGastos: 95,
-        total: 567
+        repuestos: 0,
+        manoObra: 0,
+        otrosGastos: 0,
+        serviciosExternos: 0,
+        pintura: 0,
+        transporte: 0,
+        lavado: 0,
+        total: 0
     }
 };
 
-function showAlert(message, type = 'info') {
-    if (!message) {
-        wizardAlert.addClass('d-none').empty();
-        return;
-    }
-
-    wizardAlert.removeClass('d-none alert-info alert-success alert-danger alert-warning')
-        .addClass('alert-' + type)
-        .html(message);
-}
 
 function updateSummary() {
     const mechanicCount = orderState.mechanics.length;
@@ -177,23 +263,105 @@ function updateSummary() {
     const laborCost = orderState.mechanics.reduce((sum, m) => sum + Number(m.subtotal || 0), 0);
     const partsCount = orderState.parts.length;
     const repuestosCost = orderState.parts.reduce((sum, p) => sum + Number(p.subtotal || 0), 0);
-    const taxCost = Number((repuestosCost * 0.18).toFixed(2));
-    const partialTotal = Number((repuestosCost + taxCost).toFixed(2));
+    // IGV incluido en el precio
+    const taxCost = Number(((repuestosCost * IMPUESTO) / (100 + IMPUESTO)).toFixed(2));
+    // Total ya incluye IGV
+    const partialTotal = Number(repuestosCost.toFixed(2));
+    const additionalCosts = {
+        otrosGastos: getCostInputValue('otrosGastos'),
+        serviciosExternos: getCostInputValue('serviciosExternos'),
+        pintura: getCostInputValue('pintura'),
+        transporte: getCostInputValue('transporte'),
+        lavado: getCostInputValue('lavado')
+    };
+    const otherCosts = Object.values(additionalCosts).reduce((sum, cost) => sum + cost, 0);
+    const totalCost = Number((repuestosCost + laborCost + otherCosts).toFixed(2));
 
     $('#mechanicsCount').text(mechanicCount);
-    $('#hoursTotal').text(totalHours + ' h');
-    $('#laborCost').text('S/. ' + laborCost);
+    $('#hoursTotal').text(formatNumber(totalHours) + ' h');
+    $('#laborCost').text(formatCurrency(laborCost));
     $('#productsCount').text(partsCount);
-    $('#repuestosCost').text('S/. ' + repuestosCost);
-    $('#taxCost').text('S/. ' + taxCost.toFixed(2));
-    $('#partialTotal').text('S/. ' + partialTotal.toFixed(2));
+    $('#repuestosCost').text(formatCurrency(repuestosCost));
+    $('#taxCost').text(formatCurrency(taxCost));
+    $('#partialTotal').text(formatCurrency(partialTotal));
 
     orderState.costs = {
         repuestos: repuestosCost,
         manoObra: laborCost,
-        otrosGastos: 95,
-        total: Number((repuestosCost + laborCost + 95).toFixed(2))
+        ...additionalCosts,
+        total: totalCost
     };
+
+    $('#costRepuestos').text(formatCurrency(repuestosCost));
+    $('#costManoObra').text(formatCurrency(laborCost));
+    $('#costOtrosGastos').text(formatCurrency(otherCosts));
+    $('#costTotal').text(formatCurrency(totalCost));
+    $('#finalRepuestos').text(formatCurrency(repuestosCost));
+    $('#finalManoObra').text(formatCurrency(laborCost));
+    $('#finalOtrosGastos').text(formatCurrency(otherCosts));
+    $('#finalTotal').text(formatCurrency(totalCost));
+    $('#costDistributionTotal').text(formatCurrency(totalCost));
+
+    const distributionTotal = totalCost || 1;
+    $('#costDistribution').css('background', buildDistributionGradient(
+        repuestosCost / distributionTotal,
+        laborCost / distributionTotal,
+        otherCosts / distributionTotal
+    ));
+    renderFinalSummary();
+}
+
+function getCostInputValue(name) {
+    const value = Number($(`[name="${name}"]`).val());
+    return Number.isFinite(value) && value > 0 ? Number(value.toFixed(2)) : 0;
+}
+
+function formatNumber(value) {
+    return Number(value || 0).toFixed(2);
+}
+
+function formatCurrency(value) {
+    return 'S/. ' + formatNumber(value);
+}
+
+function buildDistributionGradient(partsRatio, laborRatio, otherRatio) {
+    const partsEnd = partsRatio * 100;
+    const laborEnd = partsEnd + laborRatio * 100;
+    const otherEnd = laborEnd + otherRatio * 100;
+    return `conic-gradient(#0d6efd 0 ${partsEnd}%, #20c997 ${partsEnd}% ${laborEnd}%, #ffc107 ${laborEnd}% ${otherEnd}%, #6c757d ${otherEnd}% 100%)`;
+}
+
+function renderFinalSummary() {
+    const orderType = $('#tipoOrden').val() || 'REPARACION';
+    const vehicle = orderState.vehicle;
+    const isNewVehicle = orderType === 'ENSAMBLAJE';
+    const vehicleName = isNewVehicle
+        ? 'Nueva motocicleta por ensamblar'
+        : (vehicle ? (vehicle.nombre || vehicle.codigo || 'Moto seleccionada') : 'No seleccionada');
+    const vehicleDetails = isNewVehicle
+        ? 'Se creará al finalizar la orden'
+        : vehicle
+            ? `Placa: ${vehicle.placa || 'Sin placa'} | Serie: ${vehicle.numero_serie || 'Sin serie'}`
+            : 'Seleccione una motocicleta en la información general';
+    const clientText = $('#idcliente option:selected').text() || 'No seleccionado';
+    const commitmentDate = $('input[name="fechaCompromiso"]').val() || 'No definida';
+    const mechanics = orderState.mechanics.length
+        ? orderState.mechanics.map((mechanic) => `<li>${mechanic.name} - ${mechanic.hours} h - ${formatCurrency(mechanic.subtotal)}</li>`).join('')
+        : '<li class="text-muted">Sin mecánicos asignados</li>';
+    const parts = orderState.parts.length
+        ? orderState.parts.map((part) => `<li>${part.producto} x${part.cantidad} - ${formatCurrency(part.subtotal)}</li>`).join('')
+        : '<li class="text-muted">Sin repuestos agregados</li>';
+
+    $('#summaryOrderType').text($('#tipoOrden option:selected').text() || orderType);
+    $('#summaryOrderStatus').text($('select[name="estado"] option:selected').text() || 'PENDIENTE');
+    $('#summaryOrderPriority').text($('select[name="prioridad"] option:selected').text() || 'No definida');
+    $('#summaryVehicleName').text(vehicleName);
+    $('#summaryVehicleDetails').text(vehicleDetails);
+    $('#summaryClient').text(clientText);
+    $('#summaryCommitmentDate').text(commitmentDate);
+    $('#summaryMechanics').html(mechanics);
+    $('#summaryParts').html(parts);
+    $('#summaryBranch').html(dataSucursal?.nombre || 'Principal');
 }
 
 function renderMechanics() {
@@ -250,14 +418,14 @@ function addMechanic() {
     const selectedOption = $("#mechanicSelect").select2("data")[0];
 
     if (!selectedOption) {
-        showAlert('<i class="fas fa-user me-2"></i> Selecciona un mecánico del sistema antes de agregarlo.', 'warning');
+        Swal.fire('Orden trabajo', 'Selecciona un mecánico del sistema antes de agregarlo.', 'warning');
         return;
     }
 
     const personal = selectedOption.data;
 
     if (orderState.mechanics.some((mechanic) => mechanic.id == personal.idpersonal)) {
-        showAlert('<i class="fas fa-info-circle me-2"></i> Ese mecánico ya está agregado.', 'info');
+        Swal.fire('Orden trabajo', 'Ese mecánico ya está agregado.', 'info');
         return;
     }
 
@@ -285,13 +453,17 @@ function addMechanic() {
 
     renderMechanics();
     syncPayload();
-    showAlert('', 'info');
 }
 
 function addPart() {
     const selectedOption = $("#repuestoBuscar").select2("data")[0];
+    if (!selectedOption || !selectedOption.data) {
+        Swal.fire('Orden trabajo', 'Selecciona un repuesto antes de agregarlo.', 'warning');
+        return;
+    }
+
     const producto = selectedOption.data;
-    
+
     orderState.parts.push({
         idproducto: producto.idproducto,
         codigo: producto.codigo,
@@ -390,15 +562,15 @@ $('.next-step').on('click', function () {
     }
 
     if (currentStep === 1 && $('#tipoOrden').val() === '') {
-        showAlert('<i class="fas fa-lightbulb me-2"></i> Complete la información general antes de continuar.', 'info');
+        Swal.fire('Orden trabajo', 'Complete la información general antes de continuar.', 'info');
         return;
     }
 
-    showAlert('', 'info');
     renderWizard(currentStep + 1);
 });
 
 orderForm.on('input change select', 'input, select, textarea', function () {
+    updateSummary();
     syncPayload();
 });
 
@@ -407,29 +579,27 @@ orderForm.on('submit', function (e) {
     syncPayload();
 
     const payload = buildPayload();
-    const endpoint = orderForm.data('endpoint') || window.ordenTrabajoEndpoint || '';
+    const endpoint = 'controladores/ordentrabajo.php?op=guardarOrdenTrabajo';
 
     if (endpoint) {
         $.ajax({
             url: endpoint,
             type: 'POST',
-            contentType: 'application/json',
-            dataType: 'json',
-            data: JSON.stringify(payload),
+            data: payload,
             success: function (response) {
-                showAlert('<strong>Orden enviada al backend correctamente.</strong><br>' + JSON.stringify(response, null, 2), 'success');
-                console.log('[orden-trabajo] backend response:', response);
+                if (!response.success) {
+                    Swal.fire('Orden trabajo', response.message, 'danger');
+                    return;
+                }
+                Swal.fire('Orden trabajo', response.message, 'success');
+                window.location.href = 'orden-trabajo.php';
             },
-            error: function (xhr) {
-                showAlert('<strong>No se pudo enviar la orden al backend.</strong><br>Revisa la URL o el endpoint configurado.', 'danger');
-                console.error('[orden-trabajo] backend error:', xhr);
+            error: function (error) {
+                Swal.fire('Orden trabajo', error.responseJSON.message || 'Error al enviar la orden al backend.', 'danger');
             }
         });
         return;
     }
-
-    console.log('[orden-trabajo] payload listo para backend:', payload);
-    showAlert('<strong>Payload listo para conectar tu backend.</strong><br>El formulario está preparado para enviar la orden cuando definas el endpoint.', 'success');
 });
 
 
@@ -439,7 +609,7 @@ $("#vehiculoBuscar").select2({
     minimumInputLength: 2,
     ajax: {
         url: "controladores/venta.php?op=buscarProducto",
-        type: "POST",
+        type: "GET",
         dataType: "json",
         delay: 250,
         data: function (params) {
@@ -477,9 +647,9 @@ $("#vehiculoBuscar").select2({
 $("#vehiculoBuscar").on("select2:select", function (e) {
 
     const producto = e.params.data.producto;
+    orderState.vehicle = producto;
     $('#panelProductoEmpty').hide();
     $('#panelProducto').show();
-    console.log(producto);
 
     // Ejemplo
     $("#productoNombre").text(producto.codigo + ' - ' + producto.nombre);
@@ -495,9 +665,15 @@ $("#vehiculoBuscar").on("select2:select", function (e) {
         .show()
         .attr("src", "files/productos/" + producto.imagen);
 
+    updateSummary();
+    syncPayload();
+
 });
 
-renderMechanics();
-renderParts();
-syncPayload();
-renderWizard(1);
+$("#vehiculoBuscar").on("select2:clear", function () {
+    orderState.vehicle = null;
+    updateSummary();
+    syncPayload();
+});
+
+init();

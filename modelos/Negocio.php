@@ -28,10 +28,10 @@ class Negocio extends Helpers
 		return ejecutarConsulta($sql);
 	}
 
-	public function mostrarNombreNegocio()
+	public function mostrarNombreNegocio($idsucursal)
 	{
-		$sql = "SELECT * FROM datos_negocio";
-		return ejecutarConsultaSimpleFila($sql);
+		$sucursal = Helpers::dataSucursal($idsucursal);
+		return Response::json($sucursal);
 	}
 
 	public function desactivar($id_negocio)

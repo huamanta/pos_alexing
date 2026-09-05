@@ -788,5 +788,3 @@ $helpers = new Helpers();
   </div>
   <!-- /.sidebar -->
 </aside>
-
-<script src="vistas/js/menu.js"></script>
