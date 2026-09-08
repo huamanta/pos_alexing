@@ -1661,7 +1661,7 @@ function pintarProductos(data, permissions) {
                     onclick="agregarDetalle(
                         ${item.idproducto_configuracion},
                         ${item.idproducto},
-                        '${item.nombre}',
+                        '${item.nombre} ${item.marca || ''} ${item.modelo || ''}',
                         1,
                         0,
                         ${item.precio_venta},
@@ -3653,34 +3653,10 @@ function agregarDetalle(
 
 
         '<textarea class="form-control nombre-producto" ' +
-        'name="nombreProducto[]" rows="1" ' +
-        'oninput="autoResize(this)" onfocus="this.select()" ' +
-        'style="font-weight:bold;width:300px;resize:none;overflow:hidden;white-space:pre-wrap;word-break:break-word;overflow-wrap:break-word;line-height:1.2;">' +
+        'name="nombreProducto[]" ' +
+        'oninput="autoResize(this)" onfocus="this.select()" >' +
 
         producto +
-
-        (
-          fabricante ||
-            modelo ||
-            color
-            ? " " +
-            (
-              fabricante
-                ? fabricante + " "
-                : ""
-            ) +
-            (
-              modelo
-                ? modelo + " "
-                : ""
-            ) +
-            (
-              color
-                ? color
-                : ""
-            )
-            : ""
-        ) +
 
         "</textarea>" +
 
@@ -4659,7 +4635,7 @@ function mostrarE() {
         agregarDetalle(
           item.idproducto_configuracion,
           item.idproducto,
-          item.nombre,
+          item.nombre + " " + item.marca || "" + " " + (item.modelo || ""),
           item.cantidad,
           item.descuento,
           item.precio_venta,

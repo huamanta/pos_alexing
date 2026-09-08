@@ -470,7 +470,7 @@ function buscarProductoCod(e, codigo) {
           } else {
             agregarDetalle(
               data.idproducto,
-              data.nombre,
+              data.nombre + " " + (data.marca || "") + " " + (data.modelo || ""),
               1,
               0,
               data.precio,
@@ -646,7 +646,7 @@ function mostrarEditar(idcotizacion) {
             agregarDetalle(
               item.idproducto_configuracion,
               item.idproducto,
-              item.nombre,
+              item.nombre + " " + (item.marca || "") + " " + (item.modelo || ""),
               item.cantidad,
               item.descuento,
               item.precio_venta,
@@ -1011,6 +1011,8 @@ function agregarDetalle(
   idserie
 ) {
 
+  console.log(producto);
+  
   if (articuloAdd.indexOf(idproducto_configuracion) != -1) {
     let cantInputs = document.getElementsByName("cantidad[]");
     let idpInputs = document.getElementsByName("idp[]");
@@ -1204,7 +1206,7 @@ function pintarProductos(data, permissions) {
                     onclick="agregarDetalle(
                         ${item.idproducto_configuracion},
                         ${item.idproducto},
-                        '${item.nombre}',
+                        '${item.nombre} ${item.marca || ''} ${item.modelo || ''}',
                         1,
                         0,
                         ${item.precio_venta},

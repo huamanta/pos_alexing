@@ -1543,7 +1543,7 @@ date_default_timezone_set('America/Lima');
                                                 <div id="detalles-wrapper">
                                                     <table id="detalles" class="table table-striped table-hover">
                                                         <thead class="bg-info">
-                                                            <th>Producto</th>
+                                                            <th style="width: 250px;">Producto</th>
                                                             <th>UM</th>
                                                             <th>Precio</th>
                                                             <th>Blz</th>
