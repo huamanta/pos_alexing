@@ -403,7 +403,7 @@ class Usuario extends Helpers
 
                 if ($existente) {
 
-                    (new FluentSaver($this->pdo))
+                    $actualizado = (new FluentSaver($this->pdo))
                         ->table('usuario_accion')
                         ->primaryKey('idusuario_accion')
                         ->data([
@@ -412,9 +412,15 @@ class Usuario extends Helpers
                         ])
                         ->update();
 
+                    if (!$actualizado) {
+                        throw new Exception(
+                            "No se pudo activar la acción {$idAccion}."
+                        );
+                    }
+
                 } else {
 
-                    (new FluentSaver($this->pdo))
+                    $insertado = (new FluentSaver($this->pdo))
                         ->table('usuario_accion')
                         ->data([
                             'idusuario' => $idusuario,
@@ -422,6 +428,12 @@ class Usuario extends Helpers
                             'deleted_at' => null
                         ])
                         ->save();
+
+                    if (!$insertado) {
+                        throw new Exception(
+                            "No se pudo asignar la acción {$idAccion}."
+                        );
+                    }
                 }
             }
 
@@ -436,7 +448,7 @@ class Usuario extends Helpers
                         ->table('usuario_accion')
                         ->primaryKey('idusuario_accion')
                         ->data([
-                            'idusuario_accion' => $existente['idusuario_accion'],
+                            'idusuario_accion' => $accion['idusuario_accion'],
                             'deleted_at' => date('Y-m-d H:i:s')
                         ])
                         ->update();
@@ -577,6 +589,7 @@ class Usuario extends Helpers
         return (new DBQuery($this->pdo))
             ->select('idpermiso, idsubpermiso')
             ->from('usuario_permiso')
+            ->softDeletes()
             ->where('idusuario', '=', $idusuario)
             ->get();
     }
@@ -644,9 +657,14 @@ class Usuario extends Helpers
 
     public function listaraccionesmarcadas($idusuario)
     {
-        $sql = "SELECT idaccion_permiso FROM usuario_accion WHERE idusuario = '$idusuario'";
-        return ejecutarConsulta($sql);
+        return (new DBQuery($this->pdo))
+            ->select('idaccion_permiso')
+            ->from('usuario_accion')
+            ->softDeletes()
+            ->where('idusuario', '=', $idusuario)
+            ->get();
     }
+
     public function listaracciones($idusuario)
     {
         $sql = "SELECT 

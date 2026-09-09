@@ -100,41 +100,21 @@ class Helpers
             return false;
         }
 
-        // 1. Verificar si es superusuario
-        $stmt = $this->pdo->prepare("
-            SELECT superusuario
-            FROM usuario
-            WHERE idusuario = :idusuario
-            LIMIT 1
-        ");
+        $esSuperusuario = self::esSuperusuario($idusuario);
 
-        $stmt->execute([
-            ':idusuario' => $idusuario
-        ]);
-
-        $superusuario = $stmt->fetchColumn();
-
-        if ((int) $superusuario === 1) {
+        if ($esSuperusuario ) {
             return true;
         }
 
         // 2. Verificar permisos por usuario
-        $stmt = $this->pdo->prepare("
-            SELECT 1
-            FROM usuario_accion ua
-            INNER JOIN accion_permiso ap
-                ON ua.idaccion_permiso = ap.idaccion_permiso
-            WHERE ua.idusuario = :idusuario
-            AND ap.nombre = :nombre_permiso
-            LIMIT 1
-        ");
-
-        $stmt->execute([
-            ':idusuario' => $idusuario,
-            ':nombre_permiso' => $nombre_permiso
-        ]);
-
-        return (bool) $stmt->fetchColumn();
+        return (new DBQuery($this->pdo))
+                ->select('ua.*')
+                ->from('usuario_accion ua')
+                ->join('accion_permiso ap', 'ua.idaccion_permiso = ap.idaccion_permiso')
+                ->softDeletes('ua.deleted_at')
+                ->where('ua.idusuario', '=', $idusuario)
+                ->where('ap.nombre', '=', $nombre_permiso)
+                ->exists();
     }
 
 
@@ -147,56 +127,31 @@ class Helpers
             return false;
         }
 
-        // Verificar si es superusuario
-        $stmt = $this->pdo->prepare("
-            SELECT superusuario
-            FROM usuario
-            WHERE idusuario = :idusuario
-            LIMIT 1
-        ");
+        $esSuperusuario = self::esSuperusuario($idusuario);
 
-        $stmt->execute([
-            ':idusuario' => $idusuario
-        ]);
-
-        if ($stmt->fetchColumn() == 1) {
+        if ($esSuperusuario ) {
             return true;
         }
 
         if ($modulo_parent === null) {
+            return (new DBQuery($this->pdo))
+                ->select('up.*')
+                ->from('usuario_permiso up')
+                ->join('permiso p', 'up.idpermiso = p.idpermiso')
+                ->softDeletes('up.deleted_at')
+                ->where('up.idusuario', '=', $idusuario)
+                ->where('p.nombre', '=', $modulo)
+                ->exists();
+        } 
 
-            $sql = "
-                SELECT 1
-                FROM usuario_permiso up
-                INNER JOIN permiso p
-                    ON up.idpermiso = p.idpermiso
-                WHERE up.idusuario = :idusuario
-                AND p.nombre = :modulo
-                LIMIT 1
-            ";
-
-        } else {
-
-            $sql = "
-                SELECT 1
-                FROM usuario_permiso up
-                INNER JOIN subpermiso sp
-                    ON up.idsubpermiso = sp.idsubpermiso
-                WHERE up.idusuario = :idusuario
-                AND sp.nombre = :modulo
-                LIMIT 1
-            ";
-
-        }
-
-        $stmt = $this->pdo->prepare($sql);
-
-        $stmt->execute([
-            ':idusuario' => $idusuario,
-            ':modulo' => $modulo
-        ]);
-
-        return (bool) $stmt->fetchColumn();
+        return (new DBQuery($this->pdo))
+                ->select('up.*')
+                ->from('usuario_permiso up')
+                ->join('subpermiso sp', 'up.idsubpermiso = sp.idsubpermiso')
+                ->softDeletes('up.deleted_at')
+                ->where('up.idusuario', '=', $idusuario)
+                ->where('sp.nombre', '=', $modulo)
+                ->exists();
     }
 
 
@@ -208,30 +163,30 @@ class Helpers
             return false;
         }
 
-        $stmt = $this->pdo->prepare("
-            SELECT superusuario
-            FROM usuario
-            WHERE idusuario = :idusuario
-            LIMIT 1
-        ");
+        $user = (new DBQuery($this->pdo))
+            ->select('superusuario')
+            ->from('usuario')
+            ->where('idusuario', '=', $idusuario)
+            ->first();
 
-        $stmt->execute([
-            ':idusuario' => $idUsuario
-        ]);
+        if (!$user) {
+            return false;
+        }
 
-        return (bool) $stmt->fetchColumn();
+        if ((int) $user['superusuario'] != 1) {
+            return false;
+        }
+
+        return true;
     }
 
     public function dataArchivosAdjuntos($idseguimiento)
     {
-        $sql = "SELECT * FROM seguimiento_adjuntos WHERE idseguimiento = $idseguimiento";
-        $rspta = ejecutarConsulta($sql);
-        $data = array();
-        while ($reg = $rspta->fetch_object()) {
-            $data[] = $reg;
-        }
-
-        return $data;
+        return (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('seguimiento_adjuntos')
+            ->where('idseguimiento', '=', $idseguimiento)
+            ->get();
     }
 
 
