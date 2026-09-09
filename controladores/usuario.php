@@ -156,12 +156,10 @@ switch ($_GET["op"]) {
 
 		$accionesMarcadas = [];
 
-		if ($id > 0) {
-			$rspta_acciones = $usuario->listaraccionesmarcadas($id);
+		$rsptaAcciones = $usuario->listaraccionesmarcadas($id);
 
-			while ($act = $rspta_acciones->fetch_assoc()) {
-				$accionesMarcadas[] = intval($act['idaccion_permiso']);
-			}
+		foreach ($rsptaAcciones as $act) {
+			$accionesMarcadas[] = intval($act['idaccion_permiso']);
 		}
 
 		$subpermisos = [];
