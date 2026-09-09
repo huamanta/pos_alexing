@@ -107,7 +107,7 @@ $helpers = new Helpers();
                 </li>
               <?php endif; ?>
 
-              <?php if ($helpers->getUserPermisoModulo('Venta Pos', 'Ventas')): ?>
+              <?php if ($helpers->getUserPermisoModulo('Punto de venta', 'Ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="venta-pos" class="nav-link" id="navCrearVenta">
                     <i class="fas fa-shopping-cart nav-icon text-primary" style="font-size: 14px"></i>
@@ -116,7 +116,7 @@ $helpers = new Helpers();
                 </li>
               <?php endif; ?>
 
-              <?php if ($helpers->getUserPermisoModulo('Guia de Remision', 'Ventas')): ?>
+              <?php if ($helpers->getUserPermisoModulo('Guia de remision', 'Ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="guia" class="nav-link" id="navGuia">
                     <i class="fas fa-truck nav-icon text-primary" style="font-size: 14px"></i>
@@ -134,7 +134,7 @@ $helpers = new Helpers();
                 </li>
               <?php endif; ?>
 
-              <?php if ($helpers->getUserPermisoModulo('NotasCredito', 'Ventas')): ?>
+              <?php if ($helpers->getUserPermisoModulo('Notas de credito', 'Ventas')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="nota-credito" class="nav-link" id="navNotasCredito">
                     <i class="fas fa-receipt nav-icon text-primary" style="font-size: 14px"></i>
