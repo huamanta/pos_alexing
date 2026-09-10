@@ -526,7 +526,7 @@ function pintarProductos(data, permissions) {
       }
                 </td>
                 <td>
-                    ${permissions.desactivar ? `<button class="btn btn-warning btn-xs" onclick="mostrar(${item.idproducto})"><i class="fas fa-edit"></i></button>` : ''}
+                    ${permissions.editar ? `<button class="btn btn-warning btn-xs" onclick="mostrar(${item.idproducto})"><i class="fas fa-edit"></i></button>` : ''}
                     ${permissions.configurar ? `<button class="btn btn-success btn-xs" onclick='config(${JSON.stringify(item).replace(/'/g, "\\'")})'><i class="fas fa-cog"></i></button>` : ''}
                     ${permissions.vencimientos ? `<button class="btn btn-info btn-xs" onclick="fechaVencimiento(${item.idproducto})"><i class="fa fa-list"></i></button>` : ''}  
 		                ${btnActivarDesactivar}

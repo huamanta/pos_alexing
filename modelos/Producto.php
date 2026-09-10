@@ -1245,7 +1245,9 @@ class Producto extends Helpers
 				'p.nombre',
 				'ps.numero_serie',
 				'ps.numero_motor',
-				'ps.placa'
+				'ps.placa',
+				'mr.nombre',
+				'md.nombre'
 			])
 			->orderBy('p.nombre')
 			->paginate((int) $page, (int) $limit);

@@ -498,15 +498,12 @@ class Cotizacion extends Helpers
             ->select([
                 "d.iddetalle_cotizacion",
                 "p.*",
-
                 "pg.idproducto_configuracion",
                 "pg.precio_venta AS precio_configuracion",
                 "pg.precio_credito",
                 "pg.contenedor",
                 "pg.cantidad_contenedor",
-
                 "i.stock",
-
                 "ps.idserie",
                 "ps.numero_serie",
                 "ps.numero_motor",
@@ -514,55 +511,23 @@ class Cotizacion extends Helpers
                 "ps.color",
                 "ps.anio_fabricacion",
                 "ps.estado AS estado_serie",
-
                 "um.nombre AS unidadmedida",
-
                 "d.cantidad",
                 "d.precio_venta",
                 "d.descuento",
-
-                "(d.cantidad * d.precio_venta - d.descuento) AS subtotal"
+                "(d.cantidad * d.precio_venta - d.descuento) AS subtotal",
+                "m.nombre AS marca",
+                "mo.nombre AS modelo"
             ])
             ->from("detalle_cotizacion d")
-
-            // PRODUCTO
-            ->join(
-                "producto p",
-                "p.idproducto = d.idproducto"
-            )
-
-            // CONFIGURACIÓN EXACTA DE LA COTIZACIÓN
-            ->join(
-                "producto_configuracion pg",
-                "pg.idproducto_configuracion = d.idproducto_configuracion
-             AND pg.idproducto = p.idproducto"
-            )
-
-            // UNIDAD DE MEDIDA
-            ->join(
-                "unidad_medida um",
-                "um.idunidad_medida = p.idunidad_medida"
-            )
-
-            // INVENTARIO
-            ->leftJoin(
-                "inventario_producto i",
-                "i.idproducto = p.idproducto"
-            )
-
-            // SERIE DISPONIBLE
-            ->leftJoin(
-                "producto_serie ps",
-                "ps.idproducto = p.idproducto
-             AND ps.estado = 'DISPONIBLE'"
-            )
-
-            ->where(
-                "d.idcotizacion",
-                "=",
-                $idcotizacion
-            )
-
+            ->join("producto p", "p.idproducto = d.idproducto")
+            ->leftJoin('marca m', 'm.idmarca = p.idmarca')
+            ->leftJoin('modelo mo', 'mo.idmodelo = p.idmodelo')
+            ->join("producto_configuracion pg", "pg.idproducto_configuracion = d.idproducto_configuracion AND pg.idproducto = p.idproducto")
+            ->join("unidad_medida um", "um.idunidad_medida = p.idunidad_medida")
+            ->leftJoin("inventario_producto i", "i.idproducto = p.idproducto")
+            ->leftJoin("producto_serie ps", "ps.idproducto = p.idproducto AND ps.estado = 'DISPONIBLE'")
+            ->where("d.idcotizacion", "=", $idcotizacion)
             ->get();
 
         return Response::json($data);
