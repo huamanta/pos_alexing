@@ -521,6 +521,7 @@ date_default_timezone_set('America/Lima');
                                                     <th>Fecha</th>
                                                     <th>Proveedor</th>
                                                     <th>Personal</th>
+                                                    <th>Crédito</th>
                                                     <th>Tipo Documento</th>
                                                     <th>Número</th>
                                                     <th>Total</th>

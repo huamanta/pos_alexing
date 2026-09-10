@@ -19,6 +19,7 @@ class Bancos extends Helpers
         $data = (new DBQuery($this->pdo))
             ->select('*')
             ->from('bancos')
+            ->softDeletes()
             ->search($search, [
                 'nombre',
                 'descripcion'
@@ -44,19 +45,9 @@ class Bancos extends Helpers
                 "'movimiento' AS origen",
             ])
             ->from('movimiento m')
-            ->join(
-                'usuario u',
-                'u.idusuario=m.idusuario'
-            )
-            ->join(
-                'personal p',
-                'p.idpersonal=u.idpersonal'
-            )
-            ->where(
-                'm.idbanco',
-                '=',
-                $idbanco
-            );
+            ->join('usuario u', 'u.idusuario=m.idusuario')
+            ->join('personal p', 'p.idpersonal=u.idpersonal')
+            ->where('m.idbanco', '=', $idbanco);
 
         $cuentas = (new DBQuery($this->pdo))
             ->select([
@@ -67,24 +58,123 @@ class Bancos extends Helpers
                 "'cuenta_por_cobrar' AS origen",
             ])
             ->from('detalle_cuentas_por_cobrar dcc')
-            ->join(
-                'personal p',
-                'p.idpersonal=dcc.idpersonal'
-            )
-            ->where(
-                'dcc.idbanco',
-                '=',
-                $idbanco
-            );
+            ->join('personal p', 'p.idpersonal=dcc.idpersonal')
+            ->where('dcc.idbanco', '=', $idbanco);
+
+        $venta_pago = (new DBQuery($this->pdo))
+            ->select([
+                'vp.created_at AS fecha',
+                "'Ingresos' as tipo",
+                'vp.monto',
+                'p.nombre AS responsable',
+                "'venta' AS origen"
+            ])
+            ->from('venta_pago vp')
+            ->join('usuario u', 'u.idusuario=vp.idusuario')
+            ->join('personal p', 'p.idpersonal=u.idpersonal')
+            ->where('vp.idbanco', '=', $idbanco);
 
         $resultado = $movimientos
             ->unionAll($cuentas)
+            ->unionAll($venta_pago)
             ->orderBy('fecha', 'DESC')
-            ->paginate(
-                $page,
-                $limit
-            );
+            ->paginate($page, $limit);
 
         return Response::json($resultado);
+    }
+
+
+    public function insertar($data) {
+        try {
+            $save = (new FluentSaver($this->pdo))
+                ->table('bancos')
+                ->nullable([
+                    'cuenta',
+                    'cci'
+                ])
+                ->data([
+                    'nombre' => $data['nombre'],
+                    'descripcion' => $data['descripcion'],
+                    'cuenta' => $data['cuenta'],
+                    'cci' => $data['cci'],
+                    'saldo' => 0
+                ])
+                ->save();
+
+            if (!$save) {
+				throw new Exception("Banco no se pudo guardar");
+			}
+
+            return Response::json([
+                'success' => true, 
+                'message' => 'Banco registrado correctamente'
+            ]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
+    }
+
+
+    public function editar($idbanco, $data){
+        try {   
+            $update = (new FluentSaver($this->pdo))
+                ->table('bancos')
+                ->nullable([
+                    'cuenta',
+                    'cci'
+                ])
+                ->primaryKey('idbanco')
+                ->data([
+                    'idbanco' => $idbanco,
+                    'nombre' => $data['nombre'],
+                    'descripcion' => $data['descripcion'],
+                    'cuenta' => $data['cuenta'],
+                    'cci' => $data['cci'],
+                ])
+                ->update();
+
+            if (!$update) {
+				throw new Exception("Banco no se pudo actualizar");
+			}
+
+            return Response::json([
+                'success' => true, 
+                'message' => 'Banco actualizado correctamente'
+            ]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
+    }
+
+
+    public function mostrar($idbanco) {
+        $data = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('bancos')
+            ->where('idbanco', '=', $idbanco)
+            ->first();
+
+        return Response::json($data);
+    }
+
+
+    public function eliminar($idbanco) {
+        try {
+            $deleted = (new FluentSaver($this->pdo))
+                ->table('bancos')
+                ->primaryKey('idbanco')
+                ->softDelete($idbanco);
+
+            if (!$deleted) {
+				throw new Exception("No se pudo eliminar el registro");
+			}
+
+			return Response::json([
+				"success" => true,
+				"message" => "Registro eliminado correctamente"
+			]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
     }
 }

@@ -133,12 +133,11 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'mostrar':
-		echo $venta->mostrar($idcotizacion);
+		$venta->mostrar($idcotizacion);
 		break;
 
 	case 'desistir':
-		$rspta = $venta->desistir($idcotizacion);
-		echo $rspta ? "Operación Exitosa" : "Operación no se pudo realizar";
+		$venta->desistir($idcotizacion);
 		break;
 
 	case 'mostrardetalle':
