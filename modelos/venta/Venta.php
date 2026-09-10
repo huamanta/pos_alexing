@@ -407,7 +407,7 @@ class SisVenta extends Helpers
         }
 
         $metodos = $_POST['metodo_pago'];
-        $montos = $_POST['monto_real_pago'] ?? [];
+        $montos = $_POST['monto_pago'] ?? [];
         $operaciones = $_POST['nroOperacion_pago'] ?? [];
         $bancos = $_POST['banco_pago'] ?? [];
         $fechas = $_POST['fecha_deposito_pago'] ?? [];

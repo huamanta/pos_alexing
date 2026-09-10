@@ -237,6 +237,7 @@ function limpiar() {
   $("#tiempoproduccion").val("").trigger("change");
   $("#nota").val("").trigger("change");
   $("#igv").val("").trigger("change");
+  seleccionarCliente('', '');
 }
 
 $("#numeroMeses").on("input", calcularCuotasDesdeNumeroMeses);
@@ -806,7 +807,28 @@ function mostrarEditar(idcotizacion) {
   );
 }
 
+function validateDataCotizacion() {
+  const idcliente = parseInt($("#idcliente").val());
+  const tipopago = $("#formapago").val().trim();
+  console.log(idcliente);
+  console.log(CLIENTE_GENERAL);
+  if ((idcliente === CLIENTE_GENERAL || idcliente.length === 0) && tipopago === "Si") {
+    Swal.fire(
+      "Selecciona un cliente para realizar una venta a credito",
+      "",
+      "warning",
+    );
+    return false;
+  }
+  return true;
+}
+
 function guardaryeditar() {
+
+  if (!validateDataCotizacion()) {
+    return;
+  }
+
   var formData = new FormData($("#formulario")[0]);
   $.ajax({
     url: "controladores/cotizaciones.php?op=guardaryeditar",
@@ -892,6 +914,12 @@ function pintarCotizaciones(data, permissions) {
                 <td>${item.cliente || "-"}</td>
                 <td style="text-align:left;">
                     <strong>${item.personal || ""}</strong>
+                </td>
+                <td>
+                    ${item.formapago === 'Si'
+                    ? `<span class="badge badge-success">${item.formapago}</span>`
+                    : `<span class="badge badge-error">${item.formapago}</span>`
+                  }
                 </td>
                 <td>${item.tipo_comprobante}</td>
                 <td>${item.serie_comprobante}-${item.num_comprobante}</td>
@@ -1201,16 +1229,21 @@ function desistir(idcotizacion) {
     confirmButtonColor: "#3085d6",
     cancelButtonColor: "#d33",
     confirmButtonText: "Si",
+    reverseButtons: true
   }).then((result) => {
     if (result.isConfirmed) {
-      $.post(
+      $.get(
         "controladores/cotizaciones.php?op=desistir",
         {
           idcotizacion: idcotizacion,
         },
-        function (e) {
-          Swal.fire("! Operación Exitosa !", e, "success");
-          tabla.ajax.reload();
+        function (response) {
+          if(!response.success){
+            Swal.fire("! Error !", response.message, "success");
+            return;
+          }
+          Swal.fire("! Operación Exitosa !", response.message, "success");
+          listarCotizaciones.load();
         },
       );
     } else {

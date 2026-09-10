@@ -2365,7 +2365,7 @@ date_default_timezone_set('America/Lima');
                 <h5 class="modal-title">
                     <i class="fas fa-receipt mr-2"></i>Detalle de Venta
                 </h5>
-                <button type="button" class="close text-white" data-bs-dismiss="modal" aria-label="Close">
+                <button type="button" class="close text-white" onclick="cancelarmodalDetalle()">
                     <span>&times;</span>
                 </button>
             </div>
@@ -2401,15 +2401,42 @@ date_default_timezone_set('America/Lima');
                                 <h5 id="tipo_comprobantem" class="mb-0"></h5>
                             </div>
 
-                            <div class="col-md-4 mb-3">
+                            <div class="col-md-8 mb-3">
                                 <small class="text-muted">Correlativo</small>
                                 <h5 id="correlativo" class="mb-0"></h5>
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <small class="text-muted">Forma de Pago</small>
-                                <span id="formapagom" class="badge badge-success p-2"></span>
+                                <small class="text-muted">Venta crédito</small> <br>
+                                <span id="formapagom" class="badge badge-info p-2"></span>
                             </div>
+
+                            <div class="col-md-4 mb-3">
+                                <small class="text-muted">Inicial</small><br>
+                                <span id="pagoinicial"></span>
+
+                                <button
+                                    id="imprimirComp"
+                                    type="button"
+                                    class="btn btn-dark btn-sm"
+                                    title="Imprimir comprobante de pago">
+                                    <i class="fa fa-print"></i>
+                                </button>
+
+                                <button
+                                    id="ajuntarComp"
+                                    type="button"
+                                    class="btn btn-success btn-sm"
+                                    title="Adjuntar comprobante de pago">
+                                    <i class="fa fa-paperclip"></i>
+                                </button>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <small class="text-muted">Saldo</small> <br>
+                                <span id="pagocredito"></span>
+                            </div>
+                            
 
                             <div class="col-12">
                                 <small class="text-muted">Observaciones</small>
@@ -2463,7 +2490,7 @@ date_default_timezone_set('America/Lima');
             </div>
 
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                <button class="btn btn-secondary" onclick="cancelarmodalDetalle()">
                     <i class="fas fa-times"></i> Cerrar
                 </button>
             </div>

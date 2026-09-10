@@ -852,13 +852,7 @@ function EnviarSunat(tipoc, idventa, idcol) {
   });
 }
 
-// Variable global para guardar la venta a enviar a Sunat
-var ventaAGenerarSunat = null;
-
-function guardaryeditar(e) {
-  //  Protección contra null
-  if (e) e.preventDefault();
-
+function validateDataVenta() {
   if (detalles <= 0) {
     Swal.fire("Agrega productos a la venta", "", "warning");
     return false;
@@ -868,7 +862,7 @@ function guardaryeditar(e) {
   const tipopago = $("#tipopago").val().trim();
   const lista = $("#datafechas");
 
-  if (idcliente === 6 && tipopago === "Si") {
+  if ((idcliente === CLIENTE_GENERAL || idcliente.length === 0) && tipopago === "Si") {
     Swal.fire(
       "Selecciona un cliente para realizar una venta a credito",
       "",
@@ -905,6 +899,20 @@ function guardaryeditar(e) {
     }
   }
 
+  return true;
+}
+
+// Variable global para guardar la venta a enviar a Sunat
+let ventaAGenerarSunat = null;
+
+function guardaryeditar(e) {
+  //  Protección contra null
+  if (e) e.preventDefault();
+
+  if (!validateDataVenta()) {
+    return;
+  }
+
   var formData = new FormData($("#formulario")[0]);
   Swal.fire({
     title: "Procesando venta...",
@@ -936,7 +944,7 @@ function guardaryeditar(e) {
           console.log();
           ventaAGenerarSunat = {
             idventa: data.id_venta,
-            tipo: $("#tipo_comprobante").val() == "Boleta" ? 1 : 2,
+            tipo: $("#tipo_comprobante").val() == "Boleta" ? BOLETA : FACTURA,
             idpersonal: $("#idpersonal").val(),
           };
         }
@@ -958,6 +966,7 @@ function guardaryeditar(e) {
       listarDataVentas.load();
       $("#datafechas").empty();
       // cargarItemsAlSelect();
+      seleccionarCliente('Publico general', CLIENTE_GENERAL);
     },
     error: function () {
       Swal.fire(
@@ -1365,8 +1374,8 @@ function guardarCliente(e) {
 }
 
 function seleccionarCliente(nombre, idcliente) {
-  $("#idcliente").val(idcliente);
-  $("#idcliente").select2("");
+  const cliente = new Option(nombre, idcliente, true, true);
+  $("#idcliente").append(cliente).trigger("change");
 }
 
 // function documentosSucursal() {
@@ -1380,7 +1389,6 @@ function seleccionarCliente(nombre, idcliente) {
 
 function limpiar() {
   $("#idventa").val("");
-  $("#cliente").val("");
   $("#serie_comprobante").val("");
   $("#num_comprobante").val("");
   // $("#impuesto").val("");
@@ -1396,7 +1404,7 @@ function limpiar() {
   var month = ("0" + (now.getMonth() + 1)).slice(-2);
   var today = now.getFullYear() + "-" + month + "-" + day;
   $("#fecha").val(today);
-
+  seleccionarCliente('Publico general', CLIENTE_GENERAL);
   // let firstOption = $("#tipo_comprobante option:first").val();
   // if (firstOption) {
   //   $("#tipo_comprobante").val(firstOption).trigger("change");
@@ -4586,7 +4594,7 @@ function generarComprobante(idventa) {
 function mostrarE() {
   let idcotizacion = $("#comprobanteReferencia").val();
   console.log(idcotizacion);
-  
+
   let cotizacionData = null;
 
   if (!idcotizacion) {
@@ -4833,6 +4841,8 @@ function notaCredito(idventa, idsucursal) {
 
 function mostrar(idventa) {
   $("#getCodeModal22").modal("show");
+  $("#imprimirComp").hide();
+  $("#ajuntarComp").hide();
 
   $.post(
     "controladores/venta.php?op=mostrar",
@@ -4865,9 +4875,15 @@ function mostrar(idventa) {
       $("#fecha_hora").text(data.fecha);
       $("#impuestom").text(data.impuesto);
       $("#observaciones").text(data.observacion);
-      $("#formapagom").html(
-        '<span class="badge badge-info">' + data.formapago + "</span>",
-      );
+      $("#formapagom").html(data.ventacredito);
+      const {inicial, totaldeuda} = calcularMontoCredito(data.totalrecibido, data.totaldeposito, data.total_venta, data.interes, data.cuotas);
+      $("#pagoinicial").html('S/. ' + inicial);
+      $("#pagocredito").html('S/. ' + totaldeuda);
+
+      if(data.ventacredito === 'Si' && inicial > 0){
+        $("#imprimirComp").show();
+        $("#ajuntarComp").show();
+      };
 
       // Montos
       let montopagado = parseFloat(data.montopagado) || 0;
@@ -4889,6 +4905,22 @@ function mostrar(idventa) {
       $("#detallesm").html(r);
     },
   );
+}
+
+function calcularMontoCredito(ttlrecibido, ttldeposito, totalventa, valinteres, cuotas) {
+    const recibido = parseFloat(ttlrecibido) || 0;
+    const deposito = parseFloat(ttldeposito) || 0;
+    const venta = parseFloat(totalventa) || 0;
+    const tasaInteres = parseFloat(valinteres) || 0;
+    const numeroCuotas = parseInt(cuotas, 10) || 0;
+
+    const inicial = recibido + deposito;
+    const saldoCapital = Math.max(venta - inicial, 0);
+    const interesCuota = saldoCapital * (tasaInteres / 100);
+    const totalInteres = interesCuota * numeroCuotas;
+    const totaldeuda = saldoCapital + totalInteres;
+
+    return { inicial, totaldeuda };
 }
 
 function cancelarform02() {
@@ -5314,11 +5346,8 @@ function verCronogramPago(idventa) {
   }
 }
 
-// --- 3. TRIGGER AUTOMÁTICO (OPCIONAL) ---
-// Si quieres que se actualice cada vez que agregas un producto:
-// Busca tu función 'agregarDetalle' y al final añade:
-/* if ($('#floating-history').is(':visible')) {
-       verHistorialCliente();
-   }
-*/
+function cancelarmodalDetalle() {
+  // Cerrar el modal
+  $("#getCodeModal22").modal("hide");
+}
 init();

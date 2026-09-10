@@ -33,12 +33,28 @@ function pintarBancos(data, permissions) {
                     <td>${item.saldo || '0'}</td>
                     <td>
                         <button
+                            class="btn btn-info btn-xs"
+                            onclick='mostar(${JSON.stringify(item)})'
+                            data-toggle="tooltip"
+                            title="editar movimiento"
+                            >
+                            <i class="fa fa-edit"></i>
+                            </button>
+                        <button
                             class="btn btn-dark btn-xs"
                             onclick='verMovimientos(${JSON.stringify(item)})'
                             data-toggle="tooltip"
                             title="Ver movimientos"
                         >
                             <i class="fa fa-list"></i>
+                        </button>
+                        <button
+                            class="btn btn-danger btn-xs"
+                            onclick='eliminar(${item.idbanco})'
+                            data-toggle="tooltip"
+                            title="Eliminar movimiento"
+                        >
+                            <i class="fa fa-trash"></i>
                         </button>
                     </td>
                 </tr>
@@ -84,7 +100,7 @@ function pintarBancoMovimientos(data, permissions) {
             </tr>
         `;
 
-        $("#tbllistado tbody").html(html);
+        $("#tbllistadoMovimientos tbody").html(html);
         return;
     }
 
@@ -121,6 +137,97 @@ listarBancoMovimientos = new FluentPaginator({
 function regresarBancos() {
     $('#panelMovimientoBancos').hide();
     $('#panelBancos').show();
+    listarBancos.load();
+}
+
+$("#btnNuevo").click(function (e) {
+    limpiar();
+    $("#idbanco").val('');
+    $('#myModal').modal('show');
+});
+
+function limpiar() {
+    $("#formulario")[0].reset();
+}
+
+$("#formulario").submit(function (e) {
+    e.preventDefault();
+
+    const data = {
+        nombre: $("#nombre").val(),
+        descripcion: $("#descripcion").val(),
+        cuenta: $("#cuenta").val(),
+        cci: $("#cci").val(),
+    };
+
+    $.ajax({
+        url: "controladores/bancos.php?op=guardaryeditar&idbanco=" + $("#idbanco").val(),
+        type: "POST",
+        data: JSON.stringify(data),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (response) {
+            if (!response.success) {
+                Swal.fire({
+                    title: 'Bancos',
+                    icon: 'error',
+                    text: response.message
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Bancos',
+                icon: 'success',
+                text: response.message
+            });
+
+            $('#myModal').modal('hide');
+            listarBancos.load();
+            limpiar();
+        },
+        error: function (error) {
+            console.log(error.responseText);
+        }
+    });
+});
+
+
+function mostar(data) {
+    $('#myModal').modal('show');
+    $("#idbanco").val(data.idbanco);
+    $("#nombre").val(data.nombre);
+    $("#descripcion").val(data.descripcion);
+    $("#cuenta").val(data.cuenta);
+    $("#cci").val(data.cci);
+}
+
+
+function eliminar(idbanco) {
+    console.log(idbanco);
+    
+    Swal.fire({
+        title: '¿Desactivar?',
+        text: "¿Está seguro Que Desea Desactivar la Categoría?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.get("controladores/bancos.php?op=eliminar", { idbanco: idbanco }, function (response) {
+                if (!response.success) {
+                    Swal.fire('Bancos!', response.message || 'No se pudo eliminar', 'error');
+                    return;
+                }
+                Swal.fire('Bancos!', response.message, 'success');
+                listarBancos.load();
+            });
+        }
+    })
+
 }
 
 

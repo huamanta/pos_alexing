@@ -1215,11 +1215,14 @@ class Venta extends Helpers
                 v.impuesto,
                 v.ventacredito,
                 v.formapago,
+                v.interes,
+                (SELECT count(*) FROM cuentas_por_cobrar ncc WHERE v.idventa = ncc.idventa AND ncc.idventa = '$idventa') AS cuotas,
                 v.meses,
                 v.observacion,
                 v.descuento,
                 v.totalrecibido,
-                cpc.deudatotal,
+                v.totaldeposito,
+                (SELECT sum(nncc.deudatotal) FROM cuentas_por_cobrar nncc WHERE v.idventa = nncc.idventa AND nncc.idventa = '$idventa') AS deudatotal,
                 (
                     SELECT IFNULL(SUM(dcpc.montopagado), 0)
                     FROM detalle_cuentas_por_cobrar dcpc

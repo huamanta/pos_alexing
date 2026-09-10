@@ -379,8 +379,23 @@ class Cotizacion extends Helpers
 
     public function desistir($idcotizacion)
     {
-        $sql = "UPDATE COTIZACION SET estado = 'DESISTIO' where idcotizacion = '$idcotizacion'";
-        return ejecutarConsulta($sql);
+        try {
+            $deleted = (new FluentSaver($this->pdo))
+                ->table('cotizacion')
+                ->primaryKey('idcotizacion')
+                ->softDelete($idcotizacion);
+
+            if (!$deleted) {
+				throw new Exception("No se pudo eliminar el registro");
+			}
+
+			return Response::json([
+				"success" => true,
+				"message" => "Registro eliminado correctamente"
+			]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
     }
 
     //listar registros
@@ -391,8 +406,24 @@ class Cotizacion extends Helpers
         $search = trim($_GET['search'] ?? '');
 
         $paginator = (new DBQuery($this->pdo))
-            ->select('c.idcotizacion, DATE(c.fecha_h) as fecha_hora, date_format(c.fecha_h,"%d/%m/%y | %H:%i:%s %p") as fecha, c.idcliente,p.nombre as cliente,u.idpersonal,u.nombre as personal, cp.nombre as tipo_comprobante,c.serie_comprobante,c.num_comprobante,c.total_venta,c.estado, c.nota')
+            ->select([
+                'c.idcotizacion', 
+                'DATE(c.fecha_h) as fecha_hora', 
+                'date_format(c.fecha_h,"%d/%m/%y | %H:%i:%s %p") as fecha', 
+                'c.idcliente',
+                'p.nombre as cliente',
+                'u.idpersonal',
+                'u.nombre as personal', 
+                'cp.nombre as tipo_comprobante',
+                'c.serie_comprobante',
+                'c.num_comprobante',
+                'c.total_venta',
+                'c.estado', 
+                'c.nota',
+                'c.formapago'
+            ])
             ->from('cotizacion c')
+            ->softDeletes('c.deleted_at')
             ->join('persona p', 'c.idcliente=p.idpersona')
             ->join('personal u', 'c.idpersonal=u.idpersonal')
             ->join('comp_pago cp', 'c.idcomprobante_pago=cp.idcomprobante_pago')
