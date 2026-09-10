@@ -332,7 +332,7 @@ class Empleado extends Helpers
 					'idcpc' => $reg['idcpc'],
 					'idcliente' => $reg['idcliente'],
 					'idpersonal' => $reg['idpersonal'],
-					'archivos' => $this->dataArchivosAdjuntos(
+					'archivos' => Helpers::dataArchivosAdjuntos(
 						$reg['idseguimiento']
 					)
 				]

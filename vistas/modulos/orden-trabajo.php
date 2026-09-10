@@ -222,11 +222,11 @@
                                 <div class="col-lg-5">
                                     <div class="card border-0 shadow-sm h-100">
                                         <div class="card-header bg-light border-0">
-                                            <h3 class="card-title mb-0"><i class="fas fa-motorcycle me-2"></i> Vehóculo
+                                            <h3 class="card-title mb-0"><i class="fas fa-motorcycle me-2"></i> Vehículo
                                             </h3>
                                         </div>
                                         <div class="card-body">
-                                            <div class="input-group mb-3">
+                                            <div class="form-group mb-3">
                                                 <select type="text" class="form-control form-control-lg select2"
                                                     name="vehiculoBuscar" id="vehiculoBuscar">
                                                 </select>
@@ -670,7 +670,7 @@
                                 <i class="fas fa-arrow-left me-2"></i> Anterior
                             </button>
                             <div class="d-flex gap-2">
-                                <button type="button" class="btn btn-outline-primary btn-lg">
+                                <button type="button" class="btn btn-outline-primary btn-lg" id="btnImprimirOrden">
                                     <i class="fas fa-print me-2"></i> Imprimir
                                 </button>
                                 <button type="button" class="btn btn-primary btn-lg next-step">

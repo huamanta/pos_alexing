@@ -253,21 +253,21 @@ switch ($_GET["op"]){
 		}
 		break;
 
-	case 'selectCliente':
-		require_once "../modelos/Persona.php";
-		$persona = new Persona();
+	// case 'selectCliente':
+	// 	require_once "../modelos/Persona.php";
+	// 	$persona = new Persona();
 
-		$rspta = $persona->listarc();
+	// 	$rspta = $persona->listarc();
 
-		while ($reg = $rspta->fetch_object()) {
-			echo '<option value=' . $reg->idpersona . '>' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
-		}
-		break;
+	// 	while ($reg = $rspta->fetch_object()) {
+	// 		echo '<option value=' . $reg->idpersona . '>' . $reg->nombre . ' - ' . $reg->num_documento . '</option>';
+	// 	}
+	// 	break;
 
-	case 'mostrarUltimoCliente':
+	// case 'mostrarUltimoCliente':
 
-		$rspta = $servicio->mostrarUltimoCliente();
-		echo json_encode($rspta);
+	// 	$rspta = $servicio->mostrarUltimoCliente();
+	// 	echo json_encode($rspta);
 
 		break;
 

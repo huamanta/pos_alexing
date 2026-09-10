@@ -1351,9 +1351,8 @@ function guardarCliente(e) {
 
       $.post(
         "controladores/venta.php?op=mostrarUltimoCliente",
-        function (data, status) {
-          data = JSON.parse(data);
-
+        function (response, status) {
+          const data = response;
           seleccionarCliente(data.nombre, data.idpersona);
         },
       );
@@ -4104,22 +4103,27 @@ function generarTabla(cuotas, frecuencia, fechaBase, deuda, interes) {
   let html = "";
   let fechaTemp = new Date(fechaBase);
 
-  const interesTotal = deuda * (interes / 100);
-  const montoBase = deuda / cuotas;
-  const interesPorCuota = interesTotal / cuotas;
-  const totalCuota = montoBase + interesPorCuota;
+  const interesPorCuota = Number((deuda * (interes / 100)).toFixed(2));
+  const montoBase = Number((deuda / cuotas).toFixed(2));
+  let capitalAcumulado = 0;
 
   for (let i = 1; i <= cuotas; i++) {
     fechaTemp = sumarFrecuencia(fechaTemp, frecuencia);
     let fecha = formatearFecha(fechaTemp);
+    const capitalCuota = i === cuotas
+      ? Number((deuda - capitalAcumulado).toFixed(2))
+      : montoBase;
+    const totalCuota = capitalCuota + interesPorCuota;
 
     html += `
       <tr>
         <td><input type="date" class="form-control" name="fecha_pago[]" value="${fecha}"></td>
-        <td>S/. ${montoBase.toFixed(2)}</td>
+        <td>S/. ${capitalCuota.toFixed(2)}</td>
         <td>S/. ${interesPorCuota.toFixed(2)}</td>
         <td>S/. ${totalCuota.toFixed(2)}</td>
       </tr>`;
+
+    capitalAcumulado += capitalCuota;
   }
 
   return html;
@@ -4171,7 +4175,7 @@ function sumarFrecuencia(fecha, frecuencia) {
 function calcularMontos(deuda, interes, cuotas) {
   let interesTotal = deuda * (interes / 100);
   let deudaTotal = deuda + interesTotal;
-  let montoCuota = (deudaTotal / cuotas).toFixed(2);
+  let montoCuota = ((deuda / cuotas) + interesTotal).toFixed(2);
 
   return {
     interesTotal,

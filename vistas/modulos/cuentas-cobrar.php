@@ -400,6 +400,7 @@ date_default_timezone_set('America/Lima');
                     <th>Documento</th>
                     <th>Total Venta</th>
                     <th>Inicial</th>
+                    <th>N° Cuotas</th>
                     <th>Interes</th>
                     <th>Total Abonado</th>
                     <th>Saldo Pendiente</th>
@@ -408,18 +409,6 @@ date_default_timezone_set('America/Lima');
                     <th>Acciones</th>
                   </thead>
                   <tbody></tbody>
-                  <tfoot>
-                    <th>Fecha Venta</th>
-                    <th>Documento</th>
-                    <th>Total Venta</th>
-                    <th>Inicial</th>
-                    <th>Interes</th>
-                    <th>Total Abonado</th>
-                    <th>Saldo Pendiente</th>
-                    <th>Refinanciado</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                  </tfoot>
                 </table>
               </div>
             </div>

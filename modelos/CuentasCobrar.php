@@ -8,6 +8,8 @@ require_once "../core/FluentQuery.php";
 require_once "../core/FluentSave.php";
 use Carbon\Carbon;
 
+
+$helpers = new Helpers();
 class CuentasCobrar extends Helpers
 {
 
@@ -1486,7 +1488,7 @@ class CuentasCobrar extends Helpers
 
         $sql = "SELECT
                 v.idventa,
-                DATE_FORMAT(v.fecha_hora, '%d/%m/%y | %H:%i:%s %p') AS fecha_venta,
+                DATE_FORMAT(v.fecha_hora, '%d/%m/%y %H:%i %p') AS fecha_venta,
                 v.idcomprobante_pago,
                 cp.nombre AS tipo_comprobante,
                 v.serie_comprobante,
@@ -1549,6 +1551,20 @@ class CuentasCobrar extends Helpers
             $totalAbonado = floatval($credito["abonado"]);
             $saldoPendiente = floatval($credito["deuda"]);
 
+                $sqlResumenCuotas = !empty($ref["idref"])
+                     ? "SELECT COUNT(*) AS cuotas, SUM(interes) AS interes_total
+                         FROM cuentas_por_cobrar
+                         WHERE idrefinanciamiento='{$ref["idref"]}'"
+                     : "SELECT COUNT(*) AS cuotas, SUM(interes) AS interes_total
+                         FROM cuentas_por_cobrar
+                         WHERE idventa='$row->idventa'
+                            AND idrefinanciamiento IS NULL
+                            AND idrefinanciamiento_origen IS NULL";
+
+                $resumenCuotas = ejecutarConsultaSimpleFila($sqlResumenCuotas);
+                $numeroCuotas = intval($resumenCuotas["cuotas"] ?? 0);
+                $interesTotal = floatval($resumenCuotas["interes_total"] ?? 0);
+
             $contratos = new Contratos();
             $retension = $contratos->buscarRetencion($row->idventa);
             $estadoRetension = $retension['estado'];
@@ -1600,8 +1616,6 @@ class CuentasCobrar extends Helpers
 
             $recibido = floatval($row->totalrecibido) + floatval($row->totaldeposito);
 
-            $interes = ($row->total_venta - $recibido) * (floatval($row->interes) / 100);
-
             $badgeRef = $refinanciado
                 ? "<span class='badge bg-blue'>Sí</span>"
                 : "<span class='badge bg-default'>No</span>";
@@ -1611,14 +1625,13 @@ class CuentasCobrar extends Helpers
                 "1" => $doc,
                 "2" => Helpers::get_currency_symbol($row->total_venta),
                 "3" => Helpers::get_currency_symbol($recibido),
-                "4" => ($row->interes)
-                    ? Helpers::get_currency_symbol($interes) . " <span class='badge badge-info'>{$row->interes}%</span>"
-                    : "0.00",
-                "5" => Helpers::get_currency_symbol($totalAbonado),
-                "6" => Helpers::get_currency_symbol($saldoPendiente),
-                "7" => $badgeRef,
-                "8" => $estado,
-                "9" => $buttons
+                "4" => $numeroCuotas,
+                "5" => Helpers::get_currency_symbol($interesTotal) . " <span class='badge badge-info'>{$row->interes}%</span>",
+                "6" => Helpers::get_currency_symbol($totalAbonado),
+                "7" => Helpers::get_currency_symbol($saldoPendiente),
+                "8" => $badgeRef,
+                "9" => $estado,
+                "10" => $buttons
             );
         }
 
@@ -2797,7 +2810,7 @@ class CuentasCobrar extends Helpers
         $count = 1;
         while ($reg = $rspta->fetch_object()) {
             $credito = $this->obtenerCredito($reg->idventa, $reg->idcpc);
-            $archivos_adjuntos = $this->dataArchivosAdjuntos($reg->idseguimiento);
+            $archivos_adjuntos = Helpers::dataArchivosAdjuntos($reg->idseguimiento);
             $data[] = array(
                 "0" => $count++,
                 "1" => $reg->tipo,
@@ -2806,7 +2819,7 @@ class CuentasCobrar extends Helpers
                 "4" => $reg->fecha_proxima,
                 "5" => $reg->estado,
                 "6" => $reg->prioridad,
-                "7" => '<button class="btn btn-primary" onclick=\'verArchivosAdjuntos(' . $archivos_adjuntos . ')\'>
+                "7" => '<button class="btn btn-primary" onclick=\'verArchivosAdjuntos(' . json_encode($archivos_adjuntos) . ')\'>
                         <i class="fa fa-eye"></i> Adjuntos
                         </button>'
             );
@@ -2861,36 +2874,6 @@ class CuentasCobrar extends Helpers
         return json_encode($results);
     }
 
-    // public function mostrarSeguimiento($idseguimiento)
-    // {
-    //     $sql = "SELECT
-    //             s.*,
-    //             p.nombre as personal,
-    //             c.nombre as cliente
-    //         FROM seguimiento_clientes s
-    //         INNER JOIN personal p ON p.idpersonal = s.idpersonal
-    //         LEFT JOIN persona c ON c.idpersona = s.idcliente
-    //         WHERE s.idseguimiento = $idseguimiento";
-    //     $rspta = ejecutarConsultaSimpleFila($sql);
-    //     $credito = '';
-    //     $total_cuotas = '';
-    //     $numero_comprobante = '';
-    //     $serie_comprobante = '';
-    //     if ($rspta['idventa'] && $rspta['idcpc']) {
-    //         $data_credito = $this->obtenerCredito($rspta['idventa'], $rspta['idcpc']);
-    //         $credito = $data_credito['numero_cuota'];
-    //         $total_cuotas = $data_credito['total_cuotas'];
-    //         $numero_comprobante = $data_credito['num_comprobante'];
-    //         $serie_comprobante = $data_credito['serie_comprobante'];
-    //     }
-    //     $rspta['adjuntos'] = $this->dataArchivosAdjuntos($idseguimiento);
-    //     $rspta['numero_cuota'] = $credito;
-    //     $rspta['total_cuotas'] = $total_cuotas;
-    //     $rspta['numero_comprobante'] = $numero_comprobante;
-    //     $rspta['serie_comprobante'] = $serie_comprobante;
-    //     return json_encode($rspta);
-    // }
-
     public function mostrarSeguimiento($idseguimiento)
     {
         $rspta = (new DBQuery($this->pdo))
@@ -2933,7 +2916,7 @@ class CuentasCobrar extends Helpers
                 }
             }
 
-            $rspta['adjuntos'] = $this->dataArchivosAdjuntos($idseguimiento);
+            $rspta['adjuntos'] = Helpers::dataArchivosAdjuntos($idseguimiento);
 
             $rspta['numero_cuota'] = $credito;
             $rspta['total_cuotas'] = $total_cuotas;

@@ -8,6 +8,65 @@ let listarCotizaciones = null;
 let listarProductos = null;
 let calculoMes = false;
 $("#formularioregistros").hide();
+
+$("#formularioClientes").on("submit", function (e) {
+  guardarCliente(e);
+});
+
+function guardarCliente(e) {
+  e.preventDefault(); //no se activara la accion predeterminada
+  //$("#btnGuardar").prop("disabled",true);
+  var formData = new FormData($("#formularioClientes")[0]);
+
+  $.ajax({
+    url: "controladores/venta.php?op=guardarCliente",
+    type: "POST",
+    data: formData,
+    contentType: false,
+    processData: false,
+
+    success: function (datos) {
+      Swal.fire({
+        title: "Cliente",
+        icon: "success",
+        text: datos,
+      });
+      //cargamos los items al select cliente
+      $.post("controladores/venta.php?op=selectCliente", function (r) {
+        $("#idcliente").html(r);
+        $("#idcliente").trigger("change");
+
+        $.post(
+          "controladores/venta.php?op=mostrarUltimoCliente",
+          function (response, status) {
+            const data = response;
+            seleccionarCliente(data.nombre, data.idpersona);
+          },
+        );
+      });
+    },
+  });
+
+  $("#ModalClientes").modal("hide");
+
+  limpiarCliente();
+}
+
+function limpiarCliente() {
+  $("#nombre").val("");
+  $("#num_documento").val("");
+  $("#direccion").val("");
+  $("#telefono").val("");
+  $("#email").val("");
+  $("#fecha_hora").val("");
+  $("#idpersona").val("");
+}
+
+function seleccionarCliente(nombre, idcliente) {
+  const cliente = new Option(nombre, idcliente, true, true);
+  $("#idcliente").append(cliente).trigger("change");
+}
+
 function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
   mostrarform(false);
@@ -151,11 +210,22 @@ function limpiar() {
   $("#serie_comprobante").val("");
   $("#num_comprobante").val("");
   articuloAdd = "";
+  cont = 0;
+  detalles = 0;
   $("#total_venta").val("");
   $(".filas").remove();
   $("#total").html("0");
+  $("#most_total2").val("0");
   $("#most_total").html("0");
   $("#most_imp").html("0");
+  $("#montoDeuda").val("");
+  $("#inicial").val("");
+  $("#input_frecuencia").val("");
+  $("#input_cuotas").val("");
+  $("#numeroMeses").val("");
+  $("#fechaOperacion").val(obtenerFechaHoyISO());
+  $("#datafechas, #resumenCuotas, #dataCuotasCredito, #resumenCuotasCredito").html("");
+  $("#datosCredito, #panelCredito, #panel2").attr("hidden", true);
   var now = new Date();
   var day = ("0" + now.getDate()).slice(-2);
   var month = ("0" + (now.getMonth() + 1)).slice(-2);
@@ -330,6 +400,23 @@ function calcularCuotas() {
   );
 
   $("#datafechas").html(html);
+  $("#resumenCuotas").html(generarResumenCuotas(data.deuda, data.interes, data.cuotas));
+}
+
+function generarResumenCuotas(deuda, interes, cuotas) {
+  const capital = Number(deuda) || 0;
+  const interesPorCuota = Number((capital * (Number(interes) || 0) / 100).toFixed(2));
+  const interesTotal = interesPorCuota * cuotas;
+  const total = capital + interesTotal;
+  const formato = (valor) => `S/ ${valor.toFixed(2)}`;
+
+  return `
+    <tr>
+      <td style="width:130px"><strong>Cuotas: ${cuotas}</strong></td>
+      <td><strong>${formato(capital)}</strong></td>
+      <td><strong>${formato(interesTotal)}</strong</td>
+      <td><strong>${formato(total)}</strong></td>
+    </tr>`;
 }
 
 $("#calcular_cuotas").click(function (e) {
@@ -403,22 +490,32 @@ function generarTabla(
   let html = "";
   frecuencia = parseInt(frecuencia, 10);
   let fechaTemp = parseFecha(fechaBase);
-  const interesTotal = deuda * (interes / 100);
-  const montoBase = deuda / cuotas;
-  const interesPorCuota = interesTotal / cuotas;
-  const totalCuota = montoBase + interesPorCuota;
+  const interesTotal = Number((deuda * (interes / 100)).toFixed(2));
+  const montoBase = Number((deuda / cuotas).toFixed(2));
+  const interesPorCuota = interesTotal;
+  let capitalAcumulado = 0;
 
   for (let i = 1; i <= cuotas; i++) {
     fechaTemp = sumarFrecuencia(fechaTemp, frecuencia);
     let fecha = formatearFecha(fechaTemp);
+    let capitalCuota = montoBase;
+    let interesCuota = interesPorCuota;
+
+    if (i === cuotas) {
+      capitalCuota = Number((deuda - capitalAcumulado).toFixed(2));
+    }
+
+    const totalCuota = capitalCuota + interesCuota;
 
     html += `
       <tr>
-        <td>${input ? `<input type="date" class="form-control" name="fecha_pago[]" value="${fecha}">` : fecha}</td>
-        <td>S/. ${montoBase.toFixed(2)}</td>
-        <td>S/. ${interesPorCuota.toFixed(2)}</td>
+        <td>${input ? `<input type="date" class="form-control" name="fecha_pago[]" value="${fecha}" readonly>` : fecha}</td>
+        <td>S/. ${capitalCuota.toFixed(2)}</td>
+        <td>S/. ${interesCuota.toFixed(2)}</td>
         <td>S/. ${totalCuota.toFixed(2)}</td>
       </tr>`;
+
+    capitalAcumulado += capitalCuota;
   }
 
   return html;
@@ -551,8 +648,10 @@ function mostrar(idcotizacion) {
         $("#textInteres").text(`${interes}%`);
         $("#textCuotas").text(`${cuotas}`);
         $("#dataCuotasCredito").html(tabla);
+        $("#resumenCuotasCredito").html(generarResumenCuotas(deuda, interes, cuotas));
       } else {
         $("#dataCuotasCredito").html("");
+        $("#resumenCuotasCredito").html("");
         $("#panelCredito").attr("hidden", true);
         $("#panel2").attr("hidden", true);
       }
@@ -660,7 +759,8 @@ function mostrarEditar(idcotizacion) {
               item.cantidad_contenedor,
               item.contenedor,
               item.idcategoria,
-              item.idserie);
+              item.idserie,
+              item.precio_venta);
           });
           detalles = dataDetalle.length;
 
@@ -983,7 +1083,12 @@ function aplicarPrecioSegunFormaPago() {
     const precioNormal = parseFloat($fila.attr("data-precio-normal")) || 0;
     const precioCredito =
       parseFloat($fila.attr("data-precio-credito")) || precioNormal;
-    const precioSeleccionado = usarCredito ? precioCredito : precioNormal;
+    const precioCotizacion = $fila.attr("data-precio-cotizacion");
+    const precioSeleccionado = precioCotizacion !== undefined
+      ? parseFloat(precioCotizacion)
+      : usarCredito
+        ? precioCredito
+        : precioNormal;
 
     $fila.find('input[name="precio_venta[]"]').val(precioSeleccionado.toFixed(2));
   });
@@ -1008,11 +1113,12 @@ function agregarDetalle(
   cantidad_contenedor,
   contenedor,
   idcategoria,
-  idserie
+  idserie,
+  precioCotizacion = null
 ) {
 
   console.log(producto);
-  
+
   if (articuloAdd.indexOf(idproducto_configuracion) != -1) {
     let cantInputs = document.getElementsByName("cantidad[]");
     let idpInputs = document.getElementsByName("idp[]");
@@ -1045,9 +1151,12 @@ function agregarDetalle(
   const precioActual = $("#formapago").val() === "Si" ? precioCredito : precioNormal;
   let detail = contenedor ? contenedor + " x " + cantidad_contenedor + " Und." : "";
   let filaId = "fila" + cont;
+  const atributoPrecioCotizacion = precioCotizacion !== null
+    ? ` data-precio-cotizacion="${parseFloat(precioCotizacion) || 0}"`
+    : "";
 
   let fila = `
-    <tr class="filas custom-row" id="${filaId}" data-precio-normal="${precioNormal}" data-precio-credito="${precioCredito}">
+    <tr class="filas custom-row" id="${filaId}" data-precio-normal="${precioNormal}" data-precio-credito="${precioCredito}"${atributoPrecioCotizacion}>
       <td>
         <input type="hidden" name="idtmp[]" value="">
         <input type="hidden" name="idproducto[]" value="${idproducto}">
@@ -1120,8 +1229,8 @@ function cancelarform() {
 }
 
 function seleccionarCliente(nombre, idcliente) {
-  $("#idcliente").val(idcliente);
-  $("#idcliente").select2("");
+  const cliente = new Option(nombre, idcliente, true, true);
+  $("#idcliente").append(cliente).trigger("change");
 }
 
 function numTicket() {
@@ -1361,6 +1470,121 @@ function cancelarmodalCelular() {
   $("#modalCelular").find(".is-invalid").removeClass("is-invalid");
   $("#modalCelular").find(".is-valid").removeClass("is-valid");
   $("#modalCelular").modal("hide");
+}
+
+function BuscarCliente() {
+  let numero = $("#num_documento").val();
+
+  $.post(
+    "controladores/venta.php?op=selectCliente3&numero=" + numero,
+    function (data, status) {
+      data = JSON.parse(data);
+
+      if (data != null) {
+        Swal.fire({
+          title: "¡Aviso!",
+          icon: "info",
+          text: "El Cliente ya se encuentra registrado",
+        });
+
+        $("#num_documento").val("");
+      } else {
+        if ($("#tipo_documento").val() == "DNI") {
+          var cod = $.trim($("#tipo_documento").val());
+          $numero = $("#num_documento").val();
+          if ($numero.length < 8) {
+            Swal.fire({
+              title: "Falta Números en el DNI",
+              icon: "info",
+              text: "El DNI debe tener 8 Carácteres",
+            });
+          } else {
+            $("#Buscar_Cliente").hide();
+            var numdni = $("#num_documento").val();
+            var url =
+              "https://dniruc.apisperu.com/api/v1/dni/" +
+              numdni +
+              "?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo";
+
+            $("#cargando").show();
+            $.ajax({
+              type: "GET",
+              url: url,
+              success: function (dat) {
+                if (dat.success == false) {
+                  Swal.fire({
+                    title: "DNI Inválido",
+                    icon: "error",
+                    text: "¡No Existe DNI!",
+                  });
+                } else {
+                  //$('#nombre').val(dat.success[0]);
+                  $("#nombre").val(
+                    dat.nombres +
+                    " " +
+                    dat.apellidoPaterno +
+                    " " +
+                    dat.apellidoMaterno,
+                  );
+                  $("#Buscar_Cliente").hide();
+                  $("#cargando").hide();
+                }
+              },
+              complete: function () {
+                $("#Buscar_Cliente").show();
+                $("#cargando").hide();
+              },
+              error: function () { },
+            });
+          }
+        } else {
+          var cod = $.trim($("#tipo_documento").val());
+          $numero = $("#num_documento").val();
+          if ($numero.length < 11) {
+            Swal.fire({
+              title: "Falta Números en el RUC",
+              icon: "info",
+              text: "El DNI debe tener 11 Carácteres",
+            });
+          } else {
+            $("#Buscar_Cliente").hide();
+            var numdni = $("#num_documento").val();
+            var url =
+              "https://dniruc.apisperu.com/api/v1/ruc/" +
+              numdni +
+              "?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo";
+            $("#cargando").show();
+            $.ajax({
+              type: "GET",
+              url: url,
+              success: function (dat) {
+                if (dat.success == false) {
+                  Swal.fire({
+                    title: "Ruc Inválido",
+                    icon: "info",
+                    text: "¡No Existe RUC!",
+                  });
+                } else {
+                  $("#nombre").val(dat.razonSocial);
+                  $("#direccion").val(dat.direccion);
+                  document.getElementById("estado2").innerHTML = dat.estado;
+                  document.getElementById("condicion").innerHTML =
+                    dat.condicion;
+                  $("#Buscar_Cliente").hide();
+                  $("#cargando").hide();
+                }
+              },
+              complete: function () {
+                $("#Buscar_Cliente").show();
+                $("#cargando").hide();
+              },
+              error: function () { },
+            });
+          }
+        }
+      }
+    },
+  );
 }
 
 init();
