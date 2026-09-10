@@ -102,19 +102,19 @@ class Helpers
 
         $esSuperusuario = self::esSuperusuario($idusuario);
 
-        if ($esSuperusuario ) {
+        if ($esSuperusuario) {
             return true;
         }
 
         // 2. Verificar permisos por usuario
         return (new DBQuery($this->pdo))
-                ->select('ua.*')
-                ->from('usuario_accion ua')
-                ->join('accion_permiso ap', 'ua.idaccion_permiso = ap.idaccion_permiso')
-                ->softDeletes('ua.deleted_at')
-                ->where('ua.idusuario', '=', $idusuario)
-                ->where('ap.nombre', '=', $nombre_permiso)
-                ->exists();
+            ->select('ua.*')
+            ->from('usuario_accion ua')
+            ->join('accion_permiso ap', 'ua.idaccion_permiso = ap.idaccion_permiso')
+            ->softDeletes('ua.deleted_at')
+            ->where('ua.idusuario', '=', $idusuario)
+            ->where('ap.nombre', '=', $nombre_permiso)
+            ->exists();
     }
 
 
@@ -129,7 +129,7 @@ class Helpers
 
         $esSuperusuario = self::esSuperusuario($idusuario);
 
-        if ($esSuperusuario ) {
+        if ($esSuperusuario) {
             return true;
         }
 
@@ -142,16 +142,16 @@ class Helpers
                 ->where('up.idusuario', '=', $idusuario)
                 ->where('p.nombre', '=', $modulo)
                 ->exists();
-        } 
+        }
 
         return (new DBQuery($this->pdo))
-                ->select('up.*')
-                ->from('usuario_permiso up')
-                ->join('subpermiso sp', 'up.idsubpermiso = sp.idsubpermiso')
-                ->softDeletes('up.deleted_at')
-                ->where('up.idusuario', '=', $idusuario)
-                ->where('sp.nombre', '=', $modulo)
-                ->exists();
+            ->select('up.*')
+            ->from('usuario_permiso up')
+            ->join('subpermiso sp', 'up.idsubpermiso = sp.idsubpermiso')
+            ->softDeletes('up.deleted_at')
+            ->where('up.idusuario', '=', $idusuario)
+            ->where('sp.nombre', '=', $modulo)
+            ->exists();
     }
 
 

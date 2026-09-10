@@ -276,9 +276,8 @@ class SisVenta extends Helpers
 
         $interesTotal = round($montoDeuda * ($interes / 100), 2);
         $capitalCuotaBase = round($montoDeuda / $cantidadCuotas, 2);
-        $interesCuotaBase = round($interesTotal / $cantidadCuotas, 2);
+        $interesCuotaBase = $interesTotal;
         $capitalAcumulado = 0;
-        $interesAcumulado = 0;
 
         foreach ($fechasPago as $index => $fechaVencimiento) {
 
@@ -289,7 +288,6 @@ class SisVenta extends Helpers
             # Ajuste última cuota
             if ($index == ($cantidadCuotas - 1)) {
                 $capitalCuota = round($montoDeuda - $capitalAcumulado, 2);
-                $interesCuota = round($interesTotal - $interesAcumulado, 2);
             }
 
             $totalCuota = round($capitalCuota + $interesCuota, 2);
@@ -316,7 +314,6 @@ class SisVenta extends Helpers
             }
 
             $capitalAcumulado += $capitalCuota;
-            $interesAcumulado += $interesCuota;
         }
 
 

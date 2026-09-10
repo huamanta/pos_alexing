@@ -585,13 +585,14 @@ $total = 0;
 
 			$totalInteres = ($saldoFinanciar * $interes) / 100;
 
-			$totalCredito = $saldoFinanciar + $totalInteres;
-
 			if ($numCuotas <= 0) {
 				$numCuotas = 1;
 			}
 
-			$montoCuota = $totalCredito / $numCuotas;
+			$capitalCuota = $saldoFinanciar / $numCuotas;
+			$interesCuota = $totalInteres;
+			$totalCredito = $saldoFinanciar + ($interesCuota * $numCuotas);
+			$montoCuota = $capitalCuota + $interesCuota;
 
 			?>
 
@@ -680,8 +681,6 @@ $total = 0;
 
 						<?php
 
-						$capitalCuota = $saldoFinanciar / $numCuotas;
-						$interesCuota = $totalInteres / $numCuotas;
 						$capitalCuotaTotal = 0;
 						$interesCuotaTotal = 0;
 						$montoCuotaTotal = 0;

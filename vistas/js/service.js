@@ -474,9 +474,8 @@ function guardarCliente(e) {
 
       $.post(
         "controladores/servicio.php?op=mostrarUltimoCliente",
-        function (data, status) {
-          data = JSON.parse(data);
-
+        function (response, status) {
+          const data = response;
           seleccionarCliente(data.nombre, data.idpersona);
         }
       );

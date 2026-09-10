@@ -603,11 +603,10 @@ class Venta extends Helpers
 
                 // 🔹 Calcular base por cuota
                 $capital_cuota_base = round($montoDeuda / $input_cuotas, 2);
-                $interes_cuota_base = round($interes_total / $input_cuotas, 2);
+                $interes_cuota_base = $interes_total;
 
                 // 🔹 Acumuladores para ajuste final
                 $capital_acumulado = 0;
-                $interes_acumulado = 0;
 
                 while ($cuotas < count($fecha_pago)) {
 
@@ -620,7 +619,6 @@ class Venta extends Helpers
                     // 🔥 Ajuste en la última cuota (evita descuadres)
                     if ($cuotas == $input_cuotas - 1) {
                         $capital_cuota = round($montoDeuda - $capital_acumulado, 2);
-                        $interes_cuota = round($interes_total - $interes_acumulado, 2);
                     }
 
                     // 🔹 Total cuota
@@ -637,7 +635,6 @@ class Venta extends Helpers
                     }
 
                     $capital_acumulado += $capital_cuota;
-                    $interes_acumulado += $interes_cuota;
 
                     $cuotas++;
                 }
@@ -1332,9 +1329,13 @@ class Venta extends Helpers
 
     public function mostrarUltimoCliente()
     {
-
-        $sql = "SELECT * FROM persona order by idpersona desc limit 1";
-        return ejecutarConsultaSimpleFila($sql);
+        $data = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('persona')
+            ->orderBy('idpersona', 'DESC')
+            ->limit(1)
+            ->first();
+        return Response::json($data);
     }
 
     public function listarDetalle($idventa)
