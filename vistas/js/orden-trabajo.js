@@ -8,6 +8,7 @@ const wizardSteps = $('.wizard-step');
 const stepContents = $('.step-content');
 const mechanicsTableBody = $('#mechanicsTableBody');
 const partsTableBody = $('#partsTableBody');
+let idOrdenTrabajo = null;
 let currentStep = 1;
 let listarOrdenesTrabajo = null;
 
@@ -37,7 +38,7 @@ function pintarOrdenesTrabajo(data, permissions) {
             <tr>
                 <td>${item.created_at ?? ''}</td>
                 <td>${item.numero ?? ''}</td>
-                <td>${item.producto_nombre ?? ''}</td>
+                <td>${item.producto_nombre ?? 'No creado'}</td>
                 <td>${item.tipo ?? ''}</td>
                 <td>${item.estado ?? ''}</td>
                 <td>${item.fecha_inicio ?? ''}</td>
@@ -324,6 +325,35 @@ function formatCurrency(value) {
     return 'S/. ' + formatNumber(value);
 }
 
+function calculateWorkHours() {
+    const startValue = $('input[name="fecha"]').val();
+    const endValue = $('input[name="fechaCompromiso"]').val();
+
+    if (!startValue || !endValue) {
+        return 8;
+    }
+
+    const startDate = new Date(`${startValue}T00:00:00`);
+    const endDate = new Date(`${endValue}T00:00:00`);
+    const millisecondsPerDay = 24 * 60 * 60 * 1000;
+    const days = Math.floor((endDate - startDate) / millisecondsPerDay) + 1;
+
+    return Math.max(1, days) * 8;
+}
+
+function updateMechanicHours() {
+    const hours = calculateWorkHours();
+
+    orderState.mechanics = orderState.mechanics.map((mechanic) => ({
+        ...mechanic,
+        hours,
+        subtotal: Number((hours * Number(mechanic.rate || 0)).toFixed(2))
+    }));
+
+    renderMechanics();
+    syncPayload();
+}
+
 function buildDistributionGradient(partsRatio, laborRatio, otherRatio) {
     const partsEnd = partsRatio * 100;
     const laborEnd = partsEnd + laborRatio * 100;
@@ -394,14 +424,17 @@ function renderParts() {
         updateSummary();
         return;
     }
-
     const rows = orderState.parts.map((p) => {
         return `
             <tr>
                 <td>${p.codigo}</td>
                 <td>${p.producto}</td>
                 <td>${p.stock}</td>
-                <td>${p.cantidad}</td>
+                <td>
+                    <input type="number" class="form-control form-control-sm part-quantity"
+                        min="0.01" step="0.01" value="${p.cantidad}"
+                        data-code="${p.codigo}">
+                </td>
                 <td>S/. ${p.precio}</td>
                 <td>${p.descuento}%</td>
                 <td><strong>S/. ${p.subtotal}</strong></td>
@@ -431,7 +464,7 @@ function addMechanic() {
 
     const salary = Number(personal.salario || 30);
     const hourlyRate = salary / 30 / 8;
-    const hours = 4;
+    const hours = calculateWorkHours();
 
     orderState.mechanics.push({
         id: personal.idpersonal,
@@ -490,6 +523,21 @@ function removePart(code) {
     syncPayload();
 }
 
+function updatePartQuantity(input) {
+    const code = String($(input).data('code'));
+    const quantity = Math.max(0.01, Number($(input).val()) || 0.01);
+    const part = orderState.parts.find((item) => item.codigo === code);
+
+    if (!part) {
+        return;
+    }
+
+    part.cantidad = quantity;
+    part.subtotal = Number((quantity * Number(part.precio || 0)).toFixed(2));
+    renderParts();
+    syncPayload();
+}
+
 function buildPayload() {
     const formValues = orderForm.serializeArray().reduce((acc, item) => {
         if (item.name === 'payloadJson') {
@@ -500,6 +548,7 @@ function buildPayload() {
     }, {});
 
     return {
+        idOrdenTrabajo: idOrdenTrabajo,
         ...formValues,
         mechanics: orderState.mechanics,
         parts: orderState.parts,
@@ -528,9 +577,22 @@ function renderWizard(step) {
     });
 
     $('.prev-step').prop('disabled', currentStep === 1);
-    $('.next-step').html(currentStep === 5
-        ? 'Guardar Orden <i class="fas fa-check ms-2"></i>'
-        : 'Siguiente <i class="fas fa-arrow-right ms-2"></i>');
+    $('.next-step').html(
+        currentStep !== 5
+            ? 'Siguiente <i class="fas fa-arrow-right ms-2"></i>'
+            : idOrdenTrabajo === null
+                ? 'Guardar Orden <i class="fas fa-check ms-2"></i>'
+                : 'Actualizar Orden <i class="fas fa-check ms-2"></i>'
+    );
+}
+
+function abrirRecibo(id) {
+    if (!id) {
+        Swal.fire('Orden trabajo', 'Primero debe guardar o seleccionar una orden para imprimir.', 'info');
+        return;
+    }
+
+    window.open('reportes/exOrdenTrabajo.php?id=' + encodeURIComponent(id), '_blank');
 }
 
 populateMechanicSelect();
@@ -551,8 +613,16 @@ partsTableBody.on('click', '.btn-delete-part', function () {
     removePart($(this).data('code'));
 });
 
+partsTableBody.on('change', '.part-quantity', function () {
+    updatePartQuantity(this);
+});
+
 $('.prev-step').on('click', function () {
     renderWizard(currentStep - 1);
+});
+
+$('#btnImprimirOrden').on('click', function () {
+    abrirRecibo(idOrdenTrabajo);
 });
 
 $('.next-step').on('click', function () {
@@ -574,6 +644,10 @@ orderForm.on('input change select', 'input, select, textarea', function () {
     syncPayload();
 });
 
+$('input[name="fecha"], input[name="fechaCompromiso"]').on('change', function () {
+    updateMechanicHours();
+});
+
 orderForm.on('submit', function (e) {
     e.preventDefault();
     syncPayload();
@@ -592,7 +666,7 @@ orderForm.on('submit', function (e) {
                     return;
                 }
                 Swal.fire('Orden trabajo', response.message, 'success');
-                window.location.href = 'orden-trabajo.php';
+                regresarPanel();
             },
             error: function (error) {
                 Swal.fire('Orden trabajo', error.responseJSON.message || 'Error al enviar la orden al backend.', 'danger');
@@ -672,8 +746,137 @@ $("#vehiculoBuscar").on("select2:select", function (e) {
 
 $("#vehiculoBuscar").on("select2:clear", function () {
     orderState.vehicle = null;
+    $('#panelProductoEmpty').show();
+    $('#panelProducto').hide();
     updateSummary();
     syncPayload();
 });
+
+function formatDateForInput(value) {
+    if (!value) return '';
+    const date = new Date(value);
+    if (!isNaN(date.getTime())) {
+        return date.toISOString().slice(0, 10);
+    }
+    return String(value).slice(0, 10);
+}
+
+function hydrateVehicleInfo(producto) {
+    if (!producto) {
+        $('#panelProductoEmpty').show();
+        $('#panelProducto').hide();
+        return;
+    }
+
+    orderState.vehicle = producto;
+    $('#panelProductoEmpty').hide();
+    $('#panelProducto').show();
+
+    $("#productoNombre").text((producto.codigo || '') + ' - ' + (producto.nombre || 'Motocicleta'));
+    $("#prooductoDescripcion").text(producto.descripcion || 'Sin descripción');
+    $("#productoEstado").text(producto.estado || 'Sin estado');
+    $("#productoSerie").text(producto.numero_serie || '-');
+    $("#productoPlaca").text(producto.placa || '-');
+    $("#prodcutoColor").text(producto.color || '-');
+    $("#productoAnio").text(producto.anio_fabricacion || '-');
+    $("#productoKilometraje").text(producto.kilometraje || '-');
+    $("#productoPrecio").text(producto.precio ? 'S/. ' + Number(producto.precio).toFixed(2) : '-');
+    $("#imagenmuestra").show().attr("src", producto.imagen ? "files/productos/" + producto.imagen : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='220' viewBox='0 0 320 220'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%230d6efd'/%3E%3Cstop offset='100%25' stop-color='%231b4de5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='320' height='220' rx='24' fill='%23f8fbff'/%3E%3Ccircle cx='100' cy='145' r='48' fill='%23e9f2ff'/%3E%3Ccircle cx='230' cy='145' r='48' fill='%23e9f2ff'/%3E%3Crect x='70' y='95' width='180' height='70' rx='28' fill='url(%23g)'/%3E%3Crect x='110' y='70' width='90' height='40' rx='16' fill='%230d6efd'/%3E%3Crect x='90' y='120' width='145' height='18' rx='9' fill='%23ffffff' opacity='0.8'/%3E%3C/svg%3E");
+    updateSummary();
+    syncPayload();
+}
+
+function mapMechanicFromApi(item) {
+    const id = Number(item.id || 0) || null;
+    const idpersonal = Number(item.idpersonal);
+    const name = item.nombre_personal || item.nombre || 'Mecánico';
+    const role = item.rol || item.cargo || 'Personal';
+    const salary = Number(item.salario ?? item.sueldo ?? 30);
+    const hourlyRate = salary / 30 / 8;
+    const hours = Number(item.horas ?? item.hours ?? 4);
+    const subtotal = Number((hours * hourlyRate).toFixed(2));
+
+    return {
+        id,
+        idpersonal,
+        name,
+        role,
+        document: item.num_documento || '',
+        phone: item.telefono || '',
+        email: item.email || '',
+        percentage: Number(item.porcentaje || 0),
+        salary,
+        hours,
+        rate: hourlyRate,
+        subtotal,
+        photo: item.imagen ? `files/personal/${item.imagen}` : 'files/personal/user.png',
+        data: item
+    };
+}
+
+function mapPartFromApi(item) {
+    const cantidad = Number(item.cantidad || 1);
+    const precio = Number(item.precio_unitario ?? item.precio ?? 0);
+    const subtotal = Number(item.subtotal ?? (cantidad * precio));
+
+    return {
+        iddetalle: Number(item.iddetalle || 0) || null,
+        idproducto: Number(item.idproducto),
+        codigo: item.codigo || item.codigoproducto || '',
+        producto: item.nombre_producto || item.nombre || 'Producto',
+        stock: Number(item.stock || 0),
+        cantidad,
+        precio,
+        descuento: Number(item.descuento || 0),
+        subtotal: Number(subtotal.toFixed(2))
+    };
+}
+
+function mostrar(idorden) {
+    idOrdenTrabajo = idorden;
+    $.get("controladores/ordentrabajo.php", { op: "mostrar", idOrdenTrabajo: idOrdenTrabajo }, function (response) {
+        const data = response || {};
+        const orden = data.ordenTrabajo || {};
+        const producto = orden.productoRelacionado || null;
+
+        orderState.vehicle = producto;
+        orderState.mechanics = Array.isArray(data.mecanicos) ? data.mecanicos.map(mapMechanicFromApi) : [];
+        orderState.parts = Array.isArray(data.repuestos) ? data.repuestos.map(mapPartFromApi) : [];
+
+        $('#tipoOrden').val(orden.tipo || 'REPARACION');
+        $('input[name="fecha"]').val(formatDateForInput(orden.fecha_inicio || orden.fecha));
+        $('select[name="estado"]').val(orden.estado || 'PENDIENTE');
+        $('select[name="prioridad"]').val(orden.prioridad || 'Media');
+        $('textarea[name="observaciones"]').val(orden.observaciones || '');
+        $('input[name="fechaCompromiso"]').val(formatDateForInput(orden.fecha_fin || orden.fechaCompromiso));
+        $('input[name="referencia"]').val(orden.referencia || '');
+        $('input[name="documentoRelacionado"]').val(orden.documentoRelacionado || orden.documento_relacionado || '');
+        $('textarea[name="observacionesInternas"]').val(orden.observaciones_internas || '');
+
+        const mechanicHours = calculateWorkHours();
+        orderState.mechanics = orderState.mechanics.map((mechanic) => ({
+            ...mechanic,
+            hours: mechanicHours,
+            subtotal: Number((mechanicHours * Number(mechanic.rate || 0)).toFixed(2))
+        }));
+
+        if (producto) {
+            hydrateVehicleInfo(producto);
+        } else {
+            $('#panelProductoEmpty').show();
+            $('#panelProducto').hide();
+        }
+
+        renderMechanics();
+        renderParts();
+        updateSummary();
+        syncPayload();
+        renderWizard(1);
+
+        $('#panelOrdenesTrabajo').hide();
+        $('#frmOrdenTrabajo').show();
+        $('#btnRegresar').show();
+    });
+}
 
 init();

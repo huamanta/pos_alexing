@@ -16,8 +16,9 @@ switch ($op) {
         $fecha_fin = $_GET['fecha_fin'] ?? '';
         $ordentrabajo->listarOrdenesTrabajo($idsucursal, $fecha_inicio, $fecha_fin);
         break;
-    
+
     case 'guardarOrdenTrabajo':
+        $idOrdenTrabajo = $_POST['idOrdenTrabajo'] ?? null;
         $costosObservaciones = $_POST['costosObservaciones'] ?? '';
         $documentoRelacionado = $_POST['documentoRelacionado'] ?? '';
         $estado = $_POST['estado'] ?? '';
@@ -34,8 +35,54 @@ switch ($op) {
         $vehiculoId = $_POST['vehiculoBuscar'] ?? '';
         $mecanicos = $_POST['mechanics'] ?? [];
         $repuestos = $_POST['parts'] ?? [];
-        
-        $ordentrabajo->guardarOrdenTrabajo($idusuario, $idsucursal, $vehiculoId, $costosObservaciones, $documentoRelacionado, $estado, $fecha, $fechaCompromiso, 
-        $lavado, $otrosGastos, $pintura, $prioridad, $referencia, $serviciosExternos, $tipoOrden, $transporte, $mecanicos, $repuestos);
+        if (empty($idOrdenTrabajo)) {
+            $ordentrabajo->guardarOrdenTrabajo(
+                $idusuario,
+                $idsucursal,
+                $vehiculoId,
+                $costosObservaciones,
+                $documentoRelacionado,
+                $estado,
+                $fecha,
+                $fechaCompromiso,
+                $lavado,
+                $otrosGastos,
+                $pintura,
+                $prioridad,
+                $referencia,
+                $serviciosExternos,
+                $tipoOrden,
+                $transporte,
+                $mecanicos,
+                $repuestos
+            );
+        } else {
+            $ordentrabajo->actualizarOrdenTrabajo(
+                $idOrdenTrabajo,
+                $idusuario,
+                $idsucursal,
+                $vehiculoId,
+                $costosObservaciones,
+                $documentoRelacionado,
+                $estado,
+                $fecha,
+                $fechaCompromiso,
+                $lavado,
+                $otrosGastos,
+                $pintura,
+                $prioridad,
+                $referencia,
+                $serviciosExternos,
+                $tipoOrden,
+                $transporte,
+                $mecanicos,
+                $repuestos
+            );
+        }
+        break;
+
+    case 'mostrar':
+        $idOrdenTrabajo = $_GET['idOrdenTrabajo'] ?? '';
+        $ordentrabajo->mostrarOrdenTrabajo($idOrdenTrabajo);
         break;
 }
