@@ -36,7 +36,7 @@ switch ($op) {
         $idvendedor = $_SESSION['idusuario'];
         $res = $contratos->selectUsuarios($idventa, $idsucursal);
         $usuarios = $res['data'];
-        echo '<option value="">Seleccione tipo de acompañante</option>';
+        echo '<option value="">Seleccione vendedor</option>';
 		if ($usuarios) {
 			while ($reg = $usuarios->fetch_object()) {
                 $selected = ($reg->idusuario == $res['idvendedor']) ? 'selected' : '';
