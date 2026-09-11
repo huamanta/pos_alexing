@@ -1,18 +1,20 @@
 <?php
+
 ob_start();
 session_start();
+
 if (!isset($_SESSION["idusuario"])) {
-  echo "Debe ingresar al sistema correctamente para visualizar el reporte";
-  exit;
+    echo "Debe ingresar al sistema correctamente para visualizar el reporte";
+    exit;
 }
 
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
-$fecha_inicio = $_GET['fechai'];
-$fecha_fin = $_GET['fechaf'];
-$idcliente = $_GET['idcliente'];
-$idsucursal = $_SESSION['idsucursal'];
+$fecha_inicio = $_GET['fechai'] ?? '';
+$fecha_fin = $_GET['fechaf'] ?? '';
+$idcliente = $_GET['idcliente'] ?? '';
+$idsucursal = $_SESSION['idsucursal'] ?? null;
 
 require_once "../modelos/Consultas.php";
 require_once "../modelos/Venta.php";
@@ -25,13 +27,21 @@ $venta = new Venta();
 $helpers = new Helpers();
 
 $rspta = $consulta->ventasfechacliente(
-  $fecha_inicio,
-  $fecha_fin,
-  $idcliente,
-  $idsucursal
+    $fecha_inicio,
+    $fecha_fin,
+    $idcliente,
+    $idsucursal
 );
 
 $estadocuenta = 0;
+
+$fechaInicioMostrar = !empty($fecha_inicio)
+    ? date("d/m/Y", strtotime($fecha_inicio))
+    : '-';
+
+$fechaFinMostrar = !empty($fecha_fin)
+    ? date("d/m/Y", strtotime($fecha_fin))
+    : '-';
 
 $html = '
 <!DOCTYPE html>
@@ -114,74 +124,90 @@ td{
 
 <div class="info">
 
-<p><strong>FECHA INICIO:</strong> ' . date("d/m/Y", strtotime($fecha_inicio)) . '</p>
+<p>
+    <strong>FECHA INICIO:</strong>
+    ' . $fechaInicioMostrar . '
+</p>
 
-<p><strong>FECHA FIN:</strong> ' . date("d/m/Y", strtotime($fecha_fin)) . '</p>
+<p>
+    <strong>FECHA FIN:</strong>
+    ' . $fechaFinMostrar . '
+</p>
 
-<p><strong>DETALLE DE DEUDA</strong></p>
+<p>
+    <strong>DETALLE DE DEUDA</strong>
+</p>
 
 </div>
-
 ';
 
-while ($reg = $rspta->fetch_object()) {
+foreach ($rspta as $reg) {
 
-  $codigoComprobante =
-    $reg->tipo_comprobante .
-    " - " .
-    $reg->serie_comprobante .
-    " - " .
-    $reg->num_comprobante;
+    $codigoComprobante =
+        ($reg['tipo_comprobante'] ?? '') .
+        " - " .
+        ($reg['serie_comprobante'] ?? '') .
+        " - " .
+        ($reg['num_comprobante'] ?? '');
 
-  $tipoVenta =
-    ($reg->ventacredito == "Si")
-    ? "CRÉDITO"
-    : "CONTADO";
+    $tipoVenta =
+        (($reg['ventacredito'] ?? '') === "Si")
+        ? "CRÉDITO"
+        : "CONTADO";
 
-  $html .= '
+    $cliente = $reg['cliente'] ?? '';
+    $totalVenta = (float) ($reg['total_venta'] ?? 0);
+    $idventa = $reg['idventa'] ?? 0;
+
+    $rsptad = $venta->ventadetalle($idventa);
+
+    $rsptacc = $CC->deudacliente($idventa);
+
+    $deudatotal = 0;
+
+    foreach ($rsptacc as $regv) {
+        $deudatotal += (float) ($regv['deuda'] ?? 0);
+    }
+
+    $html .= '
 
     <table>
 
-    <tr>
+        <tr>
 
-        <th width="35%">Cliente</th>
+            <th width="35%">Cliente</th>
 
-        <th width="35%">Comprobante</th>
+            <th width="35%">Comprobante</th>
 
-        <th width="15%">Total Venta</th>
+            <th width="15%">Total Venta</th>
 
-        <th width="15%">Tipo Venta</th>
+            <th width="15%">Tipo Venta</th>
 
-    </tr>
+        </tr>
 
-    <tr>
+        <tr>
 
-        <td>' . htmlspecialchars($reg->cliente) . '</td>
+            <td>
+                ' . htmlspecialchars($cliente, ENT_QUOTES, 'UTF-8') . '
+            </td>
 
-        <td>' . $codigoComprobante . '</td>
+            <td>
+                ' . htmlspecialchars($codigoComprobante, ENT_QUOTES, 'UTF-8') . '
+            </td>
 
-        <td class="right">' . $helpers->get_currency_symbol($reg->total_venta) . '</td>
+            <td class="right">
+                ' . $helpers->get_currency_symbol($totalVenta) . '
+            </td>
 
-        <td class="center">' . $tipoVenta . '</td>
+            <td class="center">
+                ' . htmlspecialchars($tipoVenta, ENT_QUOTES, 'UTF-8') . '
+            </td>
 
-    </tr>
+        </tr>
 
     </table>
 
     <br>
-
-    ';
-  $rsptad = $venta->ventadetalle($reg->idventa);
-
-  $rsptacc = $CC->deudacliente($reg->idventa);
-
-  $deudatotal = 0;
-
-while ($regv = $rsptacc->fetch_object()) {
-    $deudatotal += $regv->deuda;
-}
-
-  $html .= '
 
     <table class="productos">
 
@@ -200,60 +226,61 @@ while ($regv = $rsptacc->fetch_object()) {
             <th width="12%">TOTAL</th>
 
         </tr>
-
     ';
 
-  while ($regd = $rsptad->fetch_object()) {
+    foreach ($rsptad as $regd) {
 
-    $codigo = $regd->codigo == "SIN CODIGO"
-      ? "-"
-      : $regd->codigo;
+        $codigo = ($regd['codigo'] ?? '') === "SIN CODIGO"
+            ? "-"
+            : ($regd['codigo'] ?? '-');
 
-    $html .= '
+        $producto = $regd['producto'] ?? '';
+        $cantidad = $regd['cantidad'] ?? 0;
+        $precioVenta = (float) ($regd['precio_venta'] ?? 0);
+        $descuento = (float) ($regd['descuento'] ?? 0);
+        $subtotal = (float) ($regd['subtotal'] ?? 0);
+
+        $html .= '
 
         <tr>
 
             <td class="center">
-                ' . htmlspecialchars($codigo) . '
+                ' . htmlspecialchars($codigo, ENT_QUOTES, 'UTF-8') . '
             </td>
 
             <td>
-                ' . htmlspecialchars($regd->producto) . '
+                ' . htmlspecialchars($producto, ENT_QUOTES, 'UTF-8') . '
             </td>
 
             <td class="center">
-                ' . $regd->cantidad . '
+                ' . htmlspecialchars((string) $cantidad, ENT_QUOTES, 'UTF-8') . '
             </td>
 
             <td class="right">
-                ' . $helpers->get_currency_symbol($regd->precio_venta) . '
+                ' . $helpers->get_currency_symbol($precioVenta) . '
             </td>
 
             <td class="right">
-                ' . $helpers->get_currency_symbol($regd->descuento) . '
+                ' . $helpers->get_currency_symbol($descuento) . '
             </td>
 
             <td class="right">
-                ' . $helpers->get_currency_symbol($regd->subtotal) . '
+                ' . $helpers->get_currency_symbol($subtotal) . '
             </td>
 
         </tr>
-
         ';
+    }
 
-  }
-
-  $html .= '
+    $html .= '
 
         <tr>
 
             <td colspan="6" class="right">
 
                 <strong>
-
                     DEUDA PENDIENTE :
                     ' . $helpers->get_currency_symbol($deudatotal) . '
-
                 </strong>
 
             </td>
@@ -263,11 +290,9 @@ while ($regv = $rsptacc->fetch_object()) {
     </table>
 
     <div class="separador"></div>
-
     ';
 
-  $estadocuenta += $deudatotal;
-
+    $estadocuenta += $deudatotal;
 }
 
 $html .= '
@@ -292,7 +317,6 @@ $html .= '
 
 </body>
 </html>
-
 ';
 
 $options = new Options();
@@ -308,10 +332,10 @@ $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
 $dompdf->stream(
-  "Reporte_Cuentas_Cobrar_Consolidado.pdf",
-  [
-    "Attachment" => false
-  ]
+    "Reporte_Cuentas_Cobrar_Consolidado.pdf",
+    [
+        "Attachment" => false
+    ]
 );
 
 ob_end_flush();
