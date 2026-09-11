@@ -2292,7 +2292,7 @@ function eliminarProducto(idproducto) {
         "controladores/producto.php?op=eliminar",
         { idproducto: idproducto },
         function (response) {
-          const data = JSON.parse(response);
+          const data = response;
           if (!data.success) {
             Swal.fire({ title: "Producto", icon: "error", text: data.message });
             return;
