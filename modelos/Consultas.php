@@ -1135,19 +1135,40 @@ class Consultas extends Helpers
 
 	public function ventasfechacliente($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
 	{
-		$sqlCliente = !empty($idcliente) ? "AND v.idcliente = '$idcliente'" : "";
-		$sql = "SELECT v.idventa,DATE(v.fecha_hora) as fecha,u.nombre as personal, p.nombre as cliente, cp.nombre AS tipo_comprobante, v.serie_comprobante,v.num_comprobante,v.total_venta,v.impuesto,v.ventacredito,v.estado 
-		FROM venta v 
-		INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
-		INNER JOIN persona p ON v.idcliente=p.idpersona 
-		INNER JOIN personal u ON v.idpersonal=u.idpersonal 
-		WHERE DATE(v.fecha_hora)>='$fecha_inicio' 
-		AND DATE(v.fecha_hora)<='$fecha_fin' 
-		$sqlCliente 
-		AND v.idsucursal = '$idsucursal'";
+		$query = (new DBQuery($this->pdo))
+			->select('
+				v.idventa,
+				DATE(v.fecha_hora) AS fecha,
+				u.nombre AS personal,
+				p.nombre AS cliente,
+				cp.nombre AS tipo_comprobante,
+				v.serie_comprobante,
+				v.num_comprobante,
+				v.total_venta,
+				v.impuesto,
+				v.ventacredito,
+				v.estado
+			')
+			->from('venta v')
+			->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
+			->join('persona p', 'p.idpersona = v.idcliente')
+			->join('personal u', 'u.idpersonal = v.idpersonal')
+        	->where('v.ventacredito', '=', 'Si')
+			->where('v.idsucursal', '=', $idsucursal);
+		
+		if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $query->whereBetween('DATE(v.fecha_hora)', $fecha_inicio, $fecha_fin);
+        } 
 
-		return ejecutarConsulta($sql);
+		if (!empty($idcliente)) {
+			$query->where('v.idcliente', '=', $idcliente);
+		}
+
+		return $query
+			->orderBy('v.fecha_hora')
+			->get();
 	}
+
 
 	public function ventasfechavendedor($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
 	{

@@ -1693,8 +1693,7 @@ function descragarResumen() {
         fecha_inicio: fecha_inicio,
         fecha_fin: fecha_fin
     });
-    console.log(`modelos/exports/exportar_cuentas_cobrar.php?${params.toString()}`);
-
+    
     window.location.href = `modelos/exports/exportar_cuentas_cobrar.php?${params.toString()}`;
 }
 

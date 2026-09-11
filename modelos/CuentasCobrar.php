@@ -1304,180 +1304,332 @@ class CuentasCobrar extends Helpers
         return $html;
     }
 
+
     public function estadoCuentaCliente($idcliente, $fecha_inicio, $fecha_fin)
     {
         /* ========= CLIENTE ========= */
-        $cliente = ejecutarConsultaSimpleFila("
-        SELECT nombre, num_documento
-        FROM persona
-        WHERE idpersona = '$idcliente'
-    ");
+        $cliente = (new DBQuery($this->pdo))
+            ->select('nombre, num_documento')
+            ->from('persona')
+            ->where('idpersona', '=', $idcliente)
+            ->first();
+
+        if (!$cliente) {
+            return "<div class='alert alert-warning'>Cliente no encontrado.</div>";
+        }
 
         /* ========= VENTAS ========= */
-        $ventas = ejecutarConsulta("
-        SELECT *
-        FROM venta
-        WHERE idcliente = '$idcliente'
-        AND DATE(fecha_hora) BETWEEN '$fecha_inicio' AND '$fecha_fin'
-        AND estado IN ('Activado','Aceptado','Por Enviar')
-        AND tipo_comprobante IN ('Factura','Boleta','Nota de Venta')
-        ORDER BY fecha_hora ASC
-    ");
+        $query = (new DBQuery($this->pdo))
+            ->select('v.*, cp.nombre AS tipo_comprobante')
+            ->from('venta v')
+            ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
+            ->where('v.idcliente', '=', $idcliente)
+            ->whereIn('v.estado', ['Activado', 'Aceptado', 'Por Enviar'])
+            ->whereIn('cp.nombre', ['Factura', 'Boleta', 'Nota de Venta']);
 
+        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $query->whereBetween('DATE(v.fecha_hora)', $fecha_inicio, $fecha_fin);
+        } 
+
+        $ventas = $query
+            ->orderBy('v.fecha_hora')
+            ->get();
+
+        /* ========= TOTALES ========= */
         $totalDebe = 0;
         $totalHaber = 0;
         $saldoGeneral = 0;
 
+        $periodoInicio = !empty($fecha_inicio) ? $fecha_inicio : 'Todo';
+        $periodoFin = !empty($fecha_fin) ? $fecha_fin : 'Todo';
+
+        /* ========= HTML ========= */
         $html = "
-        <div class='card mb-3 shadow-sm'>
-            <div class='card-body'>
-                <div class='row align-items-center'>
-                    <div class='col-md-7'>
-                        <h5 class='mb-1 text-primary'>
-                            <i class='fas fa-user'></i> {$cliente['nombre']}
-                        </h5>
-                        <small class='text-muted'>
-                            DNI / RUC: {$cliente['num_documento']}
-                        </small>
-                    </div>
-                    <div class='col-md-5 text-right'>
-                        <div class='text-muted'>Periodo del Estado de Cuenta</div>
-                        <span class='badge badge-secondary'>$fecha_inicio</span>
-                        <span class='mx-1'>—</span>
-                        <span class='badge badge-secondary'>$fecha_fin</span>
+            <div class='card mb-3 shadow-sm'>
+                <div class='card-body'>
+                    <div class='row align-items-center'>
+                        <div class='col-md-7'>
+                            <h5 class='mb-1 text-primary'>
+                                <i class='fas fa-user'></i>
+                                {$cliente['nombre']}
+                            </h5>
+                            <small class='text-muted'>
+                                DNI / RUC: {$cliente['num_documento']}
+                            </small>
+                        </div>
+
+                        <div class='col-md-5 text-right'>
+                            <div class='text-muted'>
+                                Periodo del Estado de Cuenta
+                            </div>
+
+                            <span class='badge badge-secondary'>
+                                {$periodoInicio}
+                            </span>
+
+                            <span class='mx-1'>—</span>
+
+                            <span class='badge badge-secondary'>
+                                {$periodoFin}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <table class='table table-bordered table-sm'>
-            <thead class='bg-primary text-white'>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Documento</th>
-                    <th class='text-right'>Debe</th>
-                    <th class='text-right'>Haber</th>
-                    <th class='text-right'>Saldo</th>
-                </tr>
-            </thead>
-            <tbody>
-    ";
-
-        while ($v = $ventas->fetch_object()) {
-
-            /* ====== DATOS VENTA ====== */
-            $docVenta = "{$v->tipo_comprobante}-{$v->serie_comprobante}-{$v->num_comprobante}";
-            $saldoVenta = $v->total_venta;
-
-            /* ====== VENTA (DEBE) ====== */
-            $totalDebe += $v->total_venta;
-            $saldoGeneral += $v->total_venta;
-
-            $html .= "
-            <tr style='background:#eef'>
-                <td>{$v->fecha_hora}</td>
-                <td><b>VENTA $docVenta</b></td>
-                <td class='text-right'>S/ " . number_format($v->total_venta, 2) . "</td>
-                <td class='text-right'>S/ 0.00</td>
-                <td class='text-right'><b>S/ " . number_format($saldoVenta, 2) . "</b></td>
-            </tr>
+            <table class='table table-bordered table-sm'>
+                <thead class='bg-primary text-white'>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Documento / Movimiento</th>
+                        <th class='text-right'>Debe</th>
+                        <th class='text-right'>Haber</th>
+                        <th class='text-right'>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody>
         ";
 
-            /* ====== ANTICIPO (montoPagado) ====== */
-            if ($v->montoPagado > 0) {
+        /* ============================================================
+        RECORRER VENTAS
+        ============================================================ */
 
-                $anticipo = $v->montoPagado;
+        foreach ($ventas as $v) {
+            $currency = Helpers::get_currency_code(['idsucursal']);
 
-                $saldoVenta -= $anticipo;
-                $saldoGeneral -= $anticipo;
+            $idventa = $v['idventa'];
 
-                if ($saldoVenta < 0)
-                    $saldoVenta = 0;
-                if ($saldoGeneral < 0)
-                    $saldoGeneral = 0;
+            $totalVenta = (float) ($v['total_venta'] ?? 0);
 
-                $totalHaber += $anticipo;
+            $totalRecibido = (float) ($v['totalrecibido'] ?? 0);
 
-                $html .= "
-                <tr>
-                    <td>{$v->fecha_hora}</td>
-                    <td style='padding-left:30px;color:#0d6efd'>
-                        ↳ ANTICIPO $docVenta
-                    </td>
-                    <td class='text-right'>S/ 0.00</td>
-                    <td class='text-right'>S/ " . number_format($anticipo, 2) . "</td>
-                    <td class='text-right'><b>S/ " . number_format($saldoVenta, 2) . "</b></td>
-                </tr>
-            ";
+            $totalDeposito = (float) ($v['totaldeposito'] ?? 0);
+
+            /*
+            * Pagos realizados directamente al momento de registrar
+            * la venta.
+            */
+            $pagoInicial = $totalRecibido + $totalDeposito;
+
+            /*
+            * No permitir que el pago inicial supere la venta.
+            */
+            if ($pagoInicial > $totalVenta) {
+                $pagoInicial = $totalVenta;
             }
 
-            /* ====== CUOTAS / ABONOS ====== */
-            $cpcs = ejecutarConsulta("
-            SELECT idcpc
-            FROM cuentas_por_cobrar
-            WHERE idventa = '$v->idventa'
-            AND condicion = 1
-        ");
+            /*
+            * Saldo que queda después del pago inicial.
+            */
+            $saldoVenta = $totalVenta;
 
-            while ($cc = $cpcs->fetch_object()) {
+            if ($saldoVenta < 0) {
+                $saldoVenta = 0;
+            }
 
-                $abonos = ejecutarConsulta("
-                SELECT fechapago, montopagado, montotarjeta
-                FROM detalle_cuentas_por_cobrar
-                WHERE idcpc = '$cc->idcpc'
-                ORDER BY fechapago ASC
-            ");
+            /*
+            * Documento
+            */
+            $docVenta = "{$v['tipo_comprobante']} " . "{$v['serie_comprobante']}-" . "{$v['num_comprobante']}";
 
-                while ($ab = $abonos->fetch_object()) {
+            /* ========================================================
+            VENTA
+            ======================================================== */
 
-                    $montoAbono = $ab->montopagado + $ab->montotarjeta;
+            $totalDebe += $totalVenta;
 
+            $html .= "
+                <tr style='background:#eef'>
+                    <td>
+                        {$v['fecha_hora']}
+                    </td>
+
+                    <td>
+                        <b>VENTA {$docVenta}</b>
+                    </td>
+
+                    <td class='text-right'>" . Helpers::get_currency_symbol($totalVenta, $currency) . "</td>
+                    <td class='text-right'>" . Helpers::get_currency_symbol(0, $currency) . "</td>
+                    <td class='text-right'>
+                        <b>"  . Helpers::get_currency_symbol($totalVenta, $currency) . "</b>
+                    </td>
+                </tr>
+            ";
+
+            /* ========================================================
+            PAGO INICIAL
+            ======================================================== */
+
+            if ($pagoInicial > 0) {
+
+                $saldoVenta -= $pagoInicial;
+
+                if ($saldoVenta < 0) {
+                    $saldoVenta = 0;
+                }
+
+                $totalHaber += $pagoInicial;
+
+                $html .= "
+                    <tr>
+                        <td>
+                            {$v['fecha_hora']}
+                        </td>
+
+                        <td style='padding-left:30px;color:#0d6efd'>
+                            ↳ PAGO INICIAL {$docVenta}
+                        </td>
+                        <td class='text-right'>" . Helpers::get_currency_symbol(0, $currency) . "</td>
+                        <td class='text-right'>" . Helpers::get_currency_symbol($pagoInicial, $currency) . "</td>
+                        <td class='text-right'>
+                            <b>" . Helpers::get_currency_symbol($saldoVenta, $currency) . "</b>
+                        </td>
+                    </tr>
+                ";
+            }
+
+            /* ========================================================
+            CUENTAS POR COBRAR
+            ======================================================== */
+
+            $cpcs = (new DBQuery($this->pdo))
+                ->select('idcpc, deudatotal, fechavencimiento')
+                ->from('cuentas_por_cobrar')
+                ->where('idventa', '=', $idventa)
+                ->where('condicion', '=', 1)
+                ->orderBy('fechavencimiento')
+                ->get();
+
+            /* ========================================================
+            ABONOS DE LAS CUOTAS
+            ======================================================== */
+
+            foreach ($cpcs as $cc) {
+
+                $abonos = (new DBQuery($this->pdo))
+                    ->select('fechapago, montopagado, montotarjeta')
+                    ->from('detalle_cuentas_por_cobrar')
+                    ->where('idcpc', '=', $cc['idcpc'])
+                    ->orderBy('fechapago')
+                    ->get();
+
+                /*
+                * Si la cuota no tiene pagos, mostramos la cuota
+                * pendiente.
+                */
+                $totalAbonadoCuota = 0;
+
+                foreach ($abonos as $ab) {
+
+                    $montoPagado = (float) ($ab['montopagado'] ?? 0);
+
+                    $montoTarjeta = (float) ($ab['montotarjeta'] ?? 0);
+
+                    $montoAbono = $montoPagado + $montoTarjeta;
+
+                    if ($montoAbono <= 0) {
+                        continue;
+                    }
+
+                    $totalAbonadoCuota += $montoAbono;
+
+                    /*
+                    * Descontar del saldo de la venta.
+                    */
                     $saldoVenta -= $montoAbono;
-                    $saldoGeneral -= $montoAbono;
 
-                    if ($saldoVenta < 0)
+                    if ($saldoVenta < 0) {
                         $saldoVenta = 0;
-                    if ($saldoGeneral < 0)
-                        $saldoGeneral = 0;
+                    }
 
                     $totalHaber += $montoAbono;
 
                     $html .= "
-                    <tr>
-                        <td>{$ab->fechapago}</td>
-                        <td style='padding-left:30px;color:green'>
-                            ↳ ABONO $docVenta
-                        </td>
-                        <td class='text-right'>S/ 0.00</td>
-                        <td class='text-right'>S/ " . number_format($montoAbono, 2) . "</td>
-                        <td class='text-right'><b>S/ " . number_format($saldoVenta, 2) . "</b></td>
-                    </tr>
-                ";
+                        <tr>
+                            <td>
+                                {$ab['fechapago']}
+                            </td>
+                            <td style='padding-left:30px;color:green'>
+                                ↳ ABONO {$docVenta}
+                            </td>
+                            <td class='text-right'>". Helpers::get_currency_symbol(0, $currency) ."</td>
+                            <td class='text-right'>" . Helpers::get_currency_symbol($montoAbono, $currency) . "</td>
+                            <td class='text-right'>
+                                <b>" . Helpers::get_currency_symbol($saldoVenta, $currency) . "</b>
+                            </td>
+                        </tr>
+                    ";
+                }
+
+                /*
+                * Si no existen abonos para la cuota,
+                * mostrarla como pendiente.
+                */
+                if ($totalAbonadoCuota <= 0) {
+
+                    $montoCuota = (float) ($cc['deudatotal'] ?? 0);
+
+                    if ($montoCuota > 0) {
+
+                        $html .= "
+                            <tr>
+                                <td>
+                                    {$cc['fechavencimiento']}
+                                </td>
+                                <td style='padding-left:30px;color:#dc3545'>
+                                    ↳ CUOTA PENDIENTE {$docVenta}
+                                </td>
+                                <td class='text-right'>" . Helpers::get_currency_symbol($montoCuota, $currency) . "</td>
+                                <td class='text-right'>". Helpers::get_currency_symbol(0, $currency) ."</td>
+                                <td class='text-right'>
+                                    <b>" . Helpers::get_currency_symbol($saldoVenta, $currency) . "</b>
+                                </td>
+                            </tr>
+                        ";
+                    }
                 }
             }
 
-            /* ====== SALDO FINAL DE LA VENTA ====== */
+            /* ========================================================
+            SALDO FINAL DE LA VENTA
+            ======================================================== */
+
+            $saldoGeneral += $saldoVenta;
+
             $html .= "
-            <tr style='background:#f9f9f9'>
-                <td colspan='4' class='text-right'><b>Saldo Venta</b></td>
-                <td class='text-right'><b>S/ " . number_format($saldoVenta, 2) . "</b></td>
-            </tr>
-        ";
+                <tr style='background:#f9f9f9'>
+                    <td colspan='4' class='text-right'>
+                        <b>Saldo pendiente de la venta</b>
+                    </td>
+
+                    <td class='text-right'>
+                        <b>" . Helpers::get_currency_symbol($saldoVenta, $currency) . "</b>
+                    </td>
+                </tr>
+            ";
         }
 
-        /* ====== TOTALES ====== */
+        /* ============================================================
+        TOTALES
+        ============================================================ */
+
         $html .= "
-            </tbody>
-            <tfoot class='bg-light'>
-                <tr>
-                    <th colspan='2' class='text-right'>TOTALES</th>
-                    <th class='text-right'>S/ " . number_format($totalDebe, 2) . "</th>
-                    <th class='text-right'>S/ " . number_format($totalHaber, 2) . "</th>
-                    <th class='text-right'><b>S/ " . number_format($saldoGeneral, 2) . "</b></th>
-                </tr>
-            </tfoot>
-        </table>
-    ";
+                </tbody>
+
+                <tfoot class='bg-light'>
+                    <tr>
+                        <th colspan='2' class='text-right'>
+                            TOTALES
+                        </th>
+                        <th class='text-right'>" . Helpers::get_currency_symbol($totalDebe, $currency) . "</th>
+                        <th class='text-right'>" . Helpers::get_currency_symbol($totalHaber, $currency) . "</th>
+                        <th class='text-right'>
+                            <b>" . Helpers::get_currency_symbol($saldoGeneral, $currency) . "</b>
+                        </th>
+                    </tr>
+                </tfoot>
+            </table>
+        ";
 
         return $html;
     }
