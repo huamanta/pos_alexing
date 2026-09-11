@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../configuraciones/bootstrap.php';
 require "../../configuraciones/Conexion.php";
 require "./HelpersService.php";
+use Carbon\Carbon;
 $helpers = new  HelpersService();
 date_default_timezone_set('America/Lima');
 
@@ -445,6 +446,7 @@ ob_start();
                 $saldoDescuento = 0;
 
                 while ($row = mysqli_fetch_assoc($resultCuentaCobrar)) {
+                    $idcpc = floatval($row['idcpc'] ?? 0);
                     $deuda = floatval($row['deuda'] ?? 0);
                     $mora = floatval($row['mora'] ?? 0);
                     $abonototal = floatval($row['abonototal'] ?? 0);
@@ -464,13 +466,31 @@ ob_start();
                             $montoAtrasado += $totalFilaPendiente;
                         }
                     }
+                    
+                    // Obtener último pago
+                    $sqldetalle = "
+                        SELECT *
+                        FROM detalle_cuentas_por_cobrar
+                        WHERE idcpc = $idcpc
+                        ORDER BY iddcpc DESC
+                        LIMIT 1
+                    ";
 
+                    $resultDetalle = ejecutarConsultaSimpleFila($sqldetalle);
                     echo '<tr>';
                     echo '<td>' . $contador++ . '</td>';
                     echo '<td>LETRA</td>';
-                    echo '<td>' . ($row['fechavencimiento'] ?? '-') . '</td>';
-                    echo '<td>' . ($row['fecha_hora'] ?? '-') . '</td>';
-                    echo '<td>-</td>';
+                    echo '<td>' . (
+                            !empty($row['fechavencimiento'])
+                                ? Carbon::parse($row['fechavencimiento'])->format('d/m/Y')
+                                : '-'
+                        ) . '</td>';
+                    echo '<td>' . (
+                            !empty($resultDetalle['fechapago'])
+                                ? Carbon::parse($resultDetalle['fechapago'])->format('d/m/Y h:i A')
+                                : '-'
+                        ) . '</td>';
+                    echo '<td>' . ($resultDetalle['formapago'] ?? '-') . '</td>';
                     echo '<td>' . $helpers->monedaFormt($deuda, $currency) . '</td>';
                     echo '<td>' . $helpers->monedaFormt($mora, $currency) . '</td>';
                     echo '<td>' . $helpers->monedaFormt($totalFilaPendiente, $currency) . '</td>';
