@@ -427,13 +427,13 @@ switch ($_GET["op"]) {
 
 	case 'listar':
 		$idsucursal = $_SESSION['idsucursal'];
-		echo $producto->listarPorSucursal($idsucursal);
+		$producto->listarPorSucursal($idsucursal);
 		break;
 
 	case 'eliminar':
 		$idproducto = $_POST['idproducto'];
 		// Llamar al modelo para eliminar
-		$rspta = $producto->eliminar($idproducto);
+		$producto->eliminar($idproducto);
 		echo $rspta;
 		break;
 

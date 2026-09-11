@@ -988,8 +988,7 @@ class Producto extends Helpers
 			->join('unidad_medida um', 'um.idunidad_medida = p.idunidad_medida')
 			->join('marca mr', 'mr.idmarca = p.idmarca')
 			->join('modelo md', 'md.idmodelo = p.idmodelo')
-			->leftJoin('producto_serie ps', 'ps.idproducto = p.idproducto AND ps.idsucursal = p.idsucursal AND ps.estado = "DISPONIBLE"')
-			->where('p.condicion', '=', 1)
+			->leftJoin('producto_serie ps', 'ps.idproducto = p.idproducto AND ps.idsucursal = p.idsucursal')
 			->where('p.idsucursal', '=', $idsucursal)
 			->where('c.nombre', '<>', 'SERVICIO')
 			->softDeletes('p.deleted_at')
@@ -998,7 +997,9 @@ class Producto extends Helpers
 				'p.nombre',
 				'ps.numero_serie',
 				'ps.numero_motor',
-				'ps.placa'
+				'ps.placa',
+				'mr.nombre',
+				'md.nombre'
 			])
 			->orderBy('p.nombre')
 			->paginate((int) $page, (int) $limit);
@@ -1018,32 +1019,21 @@ class Producto extends Helpers
 	public function eliminar($idproducto)
 	{
 		try {
-			$this->pdo->beginTransaction();
+			$deleted = (new FluentSaver($this->pdo))
+                ->table('producto')
+                ->primaryKey('idproducto')
+                ->softDelete($idcotizacion);
 
-			$update = (new FluentSaver($this->pdo))
-				->table('producto')
-				->primaryKey('idproducto')
-				->data([
-					'idproducto' => $idproducto,
-					'deleted_at' => date('Y-m-d H:i:s'),
-				])
-				->update();
-
-			if (!$update) {
+			if (!$deleted) {
 				throw new Exception("No se pudo eliminar el registro");
 			}
 
-			$this->pdo->commit();
-
-			return json_encode(array("success" => true, "message" => "Registro eliminado correctamente", "id" => $update));
-
-
+			return Response::json([
+				"success" => true, 
+				"message" => "Registro eliminado correctamente"
+			]);
 		} catch (Throwable $e) {
-
-			if (isset($this->pdo) && $this->pdo->inTransaction()) {
-				$this->pdo->rollBack();
-			}
-			return json_encode(array("success" => false, "message" => "Error al eliminar producto: " . $e->getMessage()));
+			return Response::error($e->getMessage());
 		}
 	}
 
