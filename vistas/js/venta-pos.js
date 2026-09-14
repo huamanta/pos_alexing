@@ -1879,9 +1879,8 @@ function pintarVentas(data, permissions) {
           : null;
     let enviarButtons =
       item.tipo_comprobante === "Boleta" || item.tipo_comprobante === "Factura";
-    if (enviarButtons) {
-      if (item.estado === "Por Enviar") {
-        enviarSunat = `
+    if (enviarButtons && item.estado === "Por Enviar") {
+      enviarSunat = `
                 <a data-toggle="tooltip" title="Enviar a Sunat"
                     onclick="EnviarSunat(${tipo},${item.idventa},${item.idpersonal});">
                     <button class="btn btn-primary btn-xs">
@@ -1901,8 +1900,9 @@ function pintarVentas(data, permissions) {
                     </button>
                 </a>
             `;
-      } else {
-        pdf = `
+    }
+
+    pdf = `
                 <a title="PDF" onclick="imprimirFactura(${item.idventa})">
                     <button class="btn btn-info btn-xs">
                         <i class="fas fa-file-pdf"></i>
@@ -1910,15 +1910,13 @@ function pintarVentas(data, permissions) {
                 </a>
             `;
 
-        ticket = `
+    ticket = `
                 <a title="Ticket" onclick="imprimirBoleta(${item.idventa})">
                     <button class="btn btn-primary btn-xs">
                         <i class="fas fa-receipt"></i>
                     </button>
                 </a>
             `;
-      }
-    }
 
     let estado = "";
 
@@ -4925,6 +4923,47 @@ function calcularMontoCredito(ttlrecibido, ttldeposito, totalventa, valinteres, 
   return { inicial, totaldeuda };
 }
 
+function formatearMonedaPesos(valor) {
+  const numero = Number(valor || 0);
+  return `S/ ${numero.toLocaleString("es-PE", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function imprimirConstanciaPagoInicial(ventaData, formato = "ticket") {
+  const idVenta = ventaData.idventa || idVentaGlobal;
+  const formatoParam = formato === "ticket" ? "ticket" : "a4";
+  const url = `reportes/constancia_pago_inicial.php?id=${encodeURIComponent(idVenta)}&formato=${encodeURIComponent(formatoParam)}`;
+
+  const iframe = document.createElement("iframe");
+  iframe.src = url;
+  iframe.style.position = "fixed";
+  iframe.style.width = "0";
+  iframe.style.height = "0";
+  iframe.style.left = "-9999px";
+  iframe.style.top = "-9999px";
+  iframe.style.border = "0";
+  iframe.style.opacity = "0";
+  iframe.style.pointerEvents = "none";
+
+  document.body.appendChild(iframe);
+
+  iframe.onload = function () {
+    setTimeout(() => {
+      try {
+        iframe.focus();
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+      } catch (e) {
+        console.warn("No se pudo abrir la impresión del iframe oculto:", e);
+      }
+
+      setTimeout(() => iframe.remove(), 1200);
+    }, 500);
+  };
+}
+
 function cancelarform02() {
   // Cerrar el modal (asegúrate que coincida con tu HTML)
   $("#getCodeModal22").modal("hide");
@@ -5353,6 +5392,43 @@ function cancelarmodalDetalle() {
   $("#getCodeModal22").modal("hide");
 }
 
+
+$("#imprimirComp").click(function (e) {
+  e.preventDefault();
+
+  if (!idVentaGlobal) {
+    Swal.fire("Venta", "No se ha seleccionado una venta", "warning");
+    return;
+  }
+
+  Swal.fire({
+    title: "Formato de impresión",
+    text: "Selecciona el formato de la constancia de pago inicial",
+    showDenyButton: true,
+    showCancelButton: true,
+    confirmButtonText: "Ticket",
+    denyButtonText: "A4",
+    cancelButtonText: "Cancelar",
+    reverseButtons: true,
+  }).then((result) => {
+    if (result.isDismissed || (!result.isConfirmed && !result.isDenied)) {
+      return;
+    }
+
+    const formato = result.isConfirmed ? "ticket" : "a4";
+
+    $.post(
+      "controladores/venta.php?op=mostrar",
+      { idventa: idVentaGlobal },
+      function (response) {
+        const venta = JSON.parse(response);
+        imprimirConstanciaPagoInicial(venta, formato);
+      },
+    ).fail(function () {
+      Swal.fire("Venta", "No se pudo cargar la información de la venta", "error");
+    });
+  });
+});
 
 $("#ajuntarComp").click(function (e) {
   e.preventDefault();
