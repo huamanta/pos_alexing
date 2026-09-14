@@ -2,6 +2,7 @@ let IMPUESTO = null;
 let dataSucursal = null;
 let label = document.querySelector('#nombreNegocio');
 const CLIENTE_GENERAL = 1;
+let BASE_URL = null;
 const BOLETA = 1;
 const FACTURA = 2;
 
@@ -20,6 +21,7 @@ function listar() {
 
         dataSucursal = data;
         IMPUESTO = data?.monto_impuesto ?? 18;
+        BASE_URL = data.baseUrl;
     });
 }
 
