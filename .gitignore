@@ -72,6 +72,9 @@ files/compras/*
 !files/compras/default.png
 !files/compras/.gitkeep
 
+files/ventas/*
+!files/ventas/.gitkeep
+
 /reportes/factura/qr/*
 /reportes/factura/qr/.gitkeep
 /reportes/factura/qr/img2.png

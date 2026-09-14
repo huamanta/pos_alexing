@@ -926,8 +926,7 @@ switch ($_GET["op"]) {
 		$only_client = isset($_POST["only_client"]) ? $_POST["only_client"] : false;
 		$tipo_documento = isset($_POST["tipo_documento"]) ? $_POST["tipo_documento"] : "";
 		$es_factura = isset($_POST["es_factura"]) ? $_POST["es_factura"] : "0";
-		$rspta = $persona->listarc($tipo_documento, $only_client);
-		echo $rspta;
+		$persona->listarc($tipo_documento, $only_client);
 		break;
 
 
@@ -954,8 +953,7 @@ switch ($_GET["op"]) {
 	case 'selectCliente2':
 		require_once "../modelos/Persona.php";
 		$persona = new Persona();
-		$rspta = $persona->listarc();
-		echo $rspta;
+		$persona->listarc();
 		break;
 
 	case 'selectCliente3':
@@ -1087,8 +1085,7 @@ switch ($_GET["op"]) {
 	case 'selectProducto':
 		$idsucursal = $_SESSION["idsucursal"]; // Obtiene el ID de la sucursal seleccionada
 		$producto = new Producto();
-		$rspta = $producto->listar($idsucursal);
-		echo $rspta;
+		$producto->listar($idsucursal);
 		break;
 
 	case 'selectProductoV':
@@ -1128,10 +1125,6 @@ switch ($_GET["op"]) {
 		$producto = new Producto();
 		$idsucursal = $_SESSION['idsucursal'];
 		echo $producto->listar($idsucursal);
-
-		// while ($reg = $rspta->fetch_object()) {
-		// 	echo '<option value=' . $reg->idproducto . '>' . $reg->nombre . ' - ' . $reg->unidad . '</option>';
-		// }
 		break;
 
 	case 'selectVendedor':
@@ -1185,80 +1178,6 @@ switch ($_GET["op"]) {
 			echo '<option value=' . $reg->idpersona . '>' . $reg->nombre . '</option>';
 		}
 		break;
-
-	// case 'listarArticulos3':
-
-	// 	$fechaActual = date('Y-m-d');
-
-	// 	$idsucursal = $_REQUEST["idsucursal"];
-
-	// 	require_once "../modelos/Producto.php";
-	// 	$producto = new Producto();
-
-	// 	$rspta = $producto->listarActivosVenta($idsucursal);
-
-	// 	$data = array();
-
-	// 	while ($reg = $rspta->fetch_object()) {
-	// 		$data[] = array(
-	// 			"0" => (($reg->stock == 0 && $reg->controla_stock == 'Si') ?
-	// 				'<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>' :
-	// 				'<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->unidadmedida . '\'); mostrarAlerta(\'Se agrego correctamente al carrito\');"><span class="fa fa-shopping-cart"></span></a>'),
-
-	// 			"1" => "<img src='files/productos/" . $reg->imagen . "' height='50px' width='50px'>",
-	// 			"2" => '<span style="font-weight: bold;">' . $reg->nombre . '</span>' . ' - ' . '<span style="font-size:10px">' . $reg->descripcion . '</span>',
-	// 			"3" => $reg->categoria,
-	// 			"4" => $reg->unidadmedida,
-	// 			"5" => $reg->stock,
-	// 			"6" => '<span class="badge bg-info">' . $reg->precio_venta . '</span>',
-	// 			"7" => $reg->descripcion
-
-	// 		);
-	// 	}
-	// 	$results = array(
-	// 		"sEcho" => 1, //info para datatables
-	// 		"iTotalRecords" => count($data), //enviamos el total de registros al datatable
-	// 		"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-	// 		"aaData" => $data
-	// 	);
-	// 	echo json_encode($results);
-
-	// 	break;
-
-	/*case 'listarArticulos2':
-
-		$fechaActual = date('Y-m-d');
-
-		$idsucursal = $_REQUEST["idsucursal"];
-
-		require_once "../modelos/Producto.php";
-		$producto = new Producto();
-
-		$rspta = $producto->listarActivosVenta2($idsucursal);
-
-		$data = array();
-
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = array(
-				"0" => '<button class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'1\',\'' . $reg->proigv . '\',\'' . $reg->contendor . '\')"><span class="fa fa-shopping-cart"></span></button>',
-				"1" => $reg->nombre,
-				//"2" => ($reg->fecha != $fechaActual) ? $reg->fecha : '<span class="badge bg-red">' . $reg->fecha . '</span>',
-				"2" => $reg->contendor,
-				"3" => $reg->categoria,
-				"4" => 1,
-				"5" => '<span class="badge bg-info">' . $reg->precio_venta . '</span>',
-
-			);
-		}
-		$results = array(
-			"sEcho" => 1, //info para datatables
-			"iTotalRecords" => count($data), //enviamos el total de registros al datatable
-			"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-			"aaData" => $data
-		);
-		echo json_encode($results);
-
-		break;*/
 
 	case 'listarArticulos2':
 
@@ -1461,57 +1380,6 @@ switch ($_GET["op"]) {
 		echo json_encode($data);
 		break;
 
-	// case 'listarArticulos':
-
-	// 	$fechaActual = date('Y-m-d');
-
-	// 	$idsucursal = $_REQUEST["idsucursal"];
-
-	// 	require_once "../modelos/Producto.php";
-	// 	$producto = new Producto();
-
-	// 	$rspta = $producto->listarActivosVenta($idsucursal);
-
-	// 	$data = array();
-
-	// 	while ($reg = $rspta->fetch_object()) {
-	// 		$data[] = array(
-	// 			"0" => (($reg->stock == 0 && $reg->controla_stock == 'Si') ? '<a class="btn btn-danger btn-sm" onclick="nostock()"> <span class="fa fa-shopping-cart"></span></a>'
-	// 				: '<a class="btn btn-success btn-sm" onclick="agregarDetalle(' . $reg->id . ',' . $reg->idproducto . ',\'' . $reg->nombre . '\',1,0,\'' . $reg->precio_venta . '\',\'' . $reg->preciocigv . '\',\'' . $reg->precioB . '\',\'' . $reg->precioC . '\',\'' . $reg->precioD . '\',\'' . $reg->stock . '\',\'' . $reg->proigv . '\',\'' . $reg->cantidad_contenedor . '\',\'' . $reg->contenedor . '\',' . $reg->idcategoria . ')"><span class="fa fa-shopping-cart"></span></a>'),
-	// 			"1" => "<div style='display: flex; align-items: center; gap: 1px;'>
-	// 			            <img onclick='verimagen(" . $reg->idproducto . ", \"" . $reg->imagen . "\", \"" . $reg->nombre . "\",\"" . $reg->stock . "\",\"" . $reg->precio_venta . "\",\"" . $reg->precioB . "\",\"" . $reg->precioC . "\",\"" . $reg->precioD . "\",\"" . $reg->precioE . "\" ,\"" . $reg->margenpubl . "\",\"" . $reg->margendes . "\",\"" . $reg->margenp1 . "\",\"" . $reg->margenp2 . "\",\"" . $reg->margendist . "\",\"" . $reg->utilprecio . "\",\"" . $reg->utilprecioB . "\",\"" . $reg->utilprecioC . "\",\"" . $reg->utilprecioD . "\",\"" . $reg->utilprecioE . "\")' 
-	// 			                 src='files/productos/" . $reg->imagen . "' 
-	// 			                 height='35px' width='35px' 
-	// 			                 style='border-radius: 5px; cursor: pointer;'>
-
-	// 			            <div style='min-width: 250px; text-align: left; word-wrap: break-word; overflow-wrap: break-word;'>
-	// 			                <span style='font-weight: bold; font-size:12px; display: block;'>" . wordwrap($reg->nombre, 30, "<br>", true) . "</span>
-	// 			                <span class='badge bg-green' style='font-size:10px;'>" . $reg->cantidad_contenedor . " Und.</span>
-	// 			                <span style='font-size:10px; display: block;'>" . $reg->contenedor . "</span>
-	// 			            </div>
-    //    				 	</div>",
-	// 			//"2" => $reg->categoria,
-	// 			"2" => "<div style='min-width: 120px; text-align: left;'>" . $reg->codigo . "</div>",
-	// 			"3" => floor($reg->stock / $reg->cantidad_contenedor),
-	// 			"4" => '<span class="badge bg-info">' . 'S/ ' . $reg->precio_venta . '</span>',
-	// 			"5" => '<span class="badge bg-orange text-white">' . 'S/ ' . $reg->precioB . '</span>',
-	// 			"6" => '<span class="badge bg-purple">' . ' S/ ' . $reg->precioC . '</span>',
-	// 			"7" => '<span class="badge bg-primary">' . 'S/ ' . $reg->precioD . '</span>',
-	// 			"8" => '<span class="badge bg-orange">' . 'S/ ' . $reg->precioE . '</span>',
-	// 			//' '.'<span class="badge bg-purple">'.'PrecioII '.' S/ '.$reg->precioC.'</span>'.
-	// 			//' '.'<span class="badge bg-primary">'.'PrecioIII '.'S/ '.$reg->precioD.'</span>',
-	// 		);
-	// 	}
-	// 	$results = array(
-	// 		"sEcho" => 1, //info para datatables
-	// 		"iTotalRecords" => count($data), //enviamos el total de registros al datatable
-	// 		"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-	// 		"aaData" => $data
-	// 	);
-	// 	echo json_encode($results);
-
-	// 	break;
-
 	case 'updateFactura':
 		$rspta = $venta->updateBoleta($idventa);
 		echo json_encode($rspta);
@@ -1521,17 +1389,6 @@ switch ($_GET["op"]) {
 		$rspta = $venta->updateFactura($idventa);
 		echo json_encode($rspta);
 		break;
-
-	// case 'selectComprobante':
-	// 	require_once "../modelos/Comprobantes.php";
-	// 	$comprobantes = new Comprobantes();
-
-	// 	$rspta = $comprobantes->select();
-
-	// 	while ($reg = $rspta->fetch_object()) {
-	// 		echo '<option value="' . $reg->nombre . '">' . $reg->nombre . '</option>';
-	// 	}
-	// 	break;
 
 	case 'selectComprobante2':
 		require_once "../modelos/Comprobantes.php";
@@ -1574,42 +1431,11 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'mostrarUltimoCliente':
-
-		$rspta = $venta->mostrarUltimoCliente();
-		echo json_encode($rspta);
-
+		$venta->mostrarUltimoCliente();
 		break;
 
 	case 'listarDetalleVenta':
 		$venta->ventadetalle($idventa);
-
-		// $data = array();
-
-		// while ($reg = $rspta->fetch_object()) {
-
-		// 	$data[] = array(
-		// 		0 => $reg->id,
-		// 		1 => $reg->idproducto,
-		// 		2 => $reg->producto,
-		// 		3 => $reg->cantidad,
-		// 		4 => $reg->descuento,
-		// 		5 => $reg->precio_venta,
-		// 		6 => $reg->precioB,
-		// 		7 => $reg->precioC,
-		// 		8 => $reg->precioD,
-		// 		9 => $reg->preciocigv,
-		// 		10 => $reg->stock,
-		// 		11 => $reg->proigv,
-		// 		12 => $reg->unidadmedida,
-		// 		13 => $reg->cantidad_contenedor,
-		// 		14 => $reg->contenedor,
-		// 		15 => $reg->subtotal,
-		// 		16 => $reg->idcategoria
-		// 	);
-		// }
-
-		// echo json_encode($data);
-
 		break;
 
 	case 'listarhistorialcliente':
@@ -1690,18 +1516,6 @@ switch ($_GET["op"]) {
 		echo ejecutarConsulta($sql);
 		break;
 
-	// case 'selectProductoFiltro':
-	// 	require_once "../modelos/Producto.php";
-	// 	$producto = new Producto();
-	// 	$rspta = $producto->selectProductosVenta();
-
-	// 	echo '<option value="Todos">Todos</option>';  // ← ESTA ES LA LÍNEA NECESARIA
-
-	// 	while ($reg = $rspta->fetch_object()) {
-	// 		echo '<option value="' . $reg->idproducto . '">' . $reg->nombre . '</option>';
-	// 	}
-	// 	break;
-
 	case 'listarProductosCliente':
 		$idcliente = isset($_POST["idcliente"]) ? $_POST["idcliente"] : "";
 		// 1. RECIBIMOS LA SUCURSAL
@@ -1760,5 +1574,20 @@ switch ($_GET["op"]) {
 
 	case "selectTipoAcompanante":
 		echo $venta->selectTipoAcompanante();
+		break;
+
+	case "adjuntarComprobante";
+		$idventapago = $_GET['idventapago'];
+		$comprobante = $_FILES['comprobante'];
+		$sisVenta->adjuntarComprobante($idventapago, $comprobante);
+		break;
+
+	case 'verComprobantes':
+		$idventa = $_GET['idventa'] ?? 138;
+		$sisVenta->verComprobantes($idventa);
+		break;
+
+	default:
+		echo "No existe la opción";
 		break;
 }

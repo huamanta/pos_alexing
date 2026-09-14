@@ -80,30 +80,11 @@ $productoTraslado = isset($_POST["idproducto3"]) ? limpiarCadena($_POST["idprodu
 $cantidadTrasladar = isset($_POST["cantidadT"]) ? limpiarCadena($_POST["cantidadT"]) : "";
 $tipo_producto = isset($_POST["tipo_producto"]) ? limpiarCadena($_POST["tipo_producto"]) : "Producto";
 
-// function obtenerIdCategoriaVehiculo()
-// {
-// 	$categoriaVehiculo = ejecutarConsultaSimpleFila("SELECT idcategoria FROM categoria WHERE UPPER(nombre)='VEHICULO' LIMIT 1");
-
-// 	if (!empty($categoriaVehiculo) && isset($categoriaVehiculo['idcategoria'])) {
-// 		return $categoriaVehiculo['idcategoria'];
-// 	}
-
-// 	ejecutarConsulta("INSERT INTO categoria (nombre, condicion) VALUES ('VEHICULO', '1')");
-// 	$categoriaVehiculoNueva = ejecutarConsultaSimpleFila("SELECT idcategoria FROM categoria WHERE UPPER(nombre)='VEHICULO' ORDER BY idcategoria DESC LIMIT 1");
-
-// 	return isset($categoriaVehiculoNueva['idcategoria']) ? $categoriaVehiculoNueva['idcategoria'] : null;
-// }
 
 switch ($_GET["op"]) {
 
 	case 'guardaryeditar':
 		$idsucursal = $_SESSION['idsucursal'];
-		// if (strtolower($tipo_producto) === 'vehiculo') {
-		// 	$idcategoriaVehiculo = obtenerIdCategoriaVehiculo();
-		// 	if (!empty($idcategoriaVehiculo)) {
-		// 		$idcategoria = $idcategoriaVehiculo;
-		// 	}
-		// }
 
 		if (
 			!file_exists($_FILES['imagen']['tmp_name']) ||

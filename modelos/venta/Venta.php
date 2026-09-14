@@ -60,7 +60,7 @@ class SisVenta extends Helpers
         $this->pdo->beginTransaction();
         try {
             $idcliente = Helpers::clienteDefault($idcliente);
-            
+
             // Datos por defecto
             $fechaActual = Carbon::now();
             $idmotivo = $idmotivo ?: 0;
@@ -572,7 +572,7 @@ class SisVenta extends Helpers
         }
 
         //VALIDAR STOCK GENERAL
-        if ((float)$inventario['stock'] < $cantidad) {
+        if ((float) $inventario['stock'] < $cantidad) {
             throw new Exception(
                 "Stock insuficiente. Disponible: {$inventario['stock']}"
             );
@@ -580,7 +580,7 @@ class SisVenta extends Helpers
 
         //DESCONTAR LOTES FEFO
         $verificarLote = Helpers::verificarVentaLotes($idsucursal);
-        if($verificarLote['activo'] && $rowProduct['is_venta_lote']){
+        if ($verificarLote['activo'] && $rowProduct['is_venta_lote']) {
             $this->descontarLotesFEFO(
                 $idDetalleVenta,
                 $rowProduct['idproducto'],
@@ -603,7 +603,7 @@ class SisVenta extends Helpers
         }
 
         // ACTUALIZAR STOCK GENERAL
-        $nuevoStock = (float)$inventario['stock'] - $cantidad;
+        $nuevoStock = (float) $inventario['stock'] - $cantidad;
         $updateInventario = (new FluentSaver($this->pdo))
             ->table('inventario_producto')
             ->primaryKey('idinventario')
@@ -618,7 +618,7 @@ class SisVenta extends Helpers
                 "No se pudo actualizar el inventario."
             );
         }
-        if($rowProduct['controla_stock'] === 'Si') {
+        if ($rowProduct['controla_stock'] === 'Si') {
             Helpers::updateKardexSucursal(
                 $idsucursal,
                 $rowProduct['idproducto'],
@@ -710,15 +710,15 @@ class SisVenta extends Helpers
         $pendiente = $cantidad;
 
         $lotes = (new DBQuery($this->pdo))
-                ->from('inventario_lote')
-                ->where('idproducto', '=', $idproducto)
-                ->where('idsucursal', '=', $idsucursal)
-                ->where('stock', '>', 0)
-                ->softDeletes()
-                ->orderBy('idinventario_lote', 'ASC')
-                ->orderBy('fecha_vencimiento', 'ASC')
-                ->forUpdate()
-                ->get();
+            ->from('inventario_lote')
+            ->where('idproducto', '=', $idproducto)
+            ->where('idsucursal', '=', $idsucursal)
+            ->where('stock', '>', 0)
+            ->softDeletes()
+            ->orderBy('idinventario_lote', 'ASC')
+            ->orderBy('fecha_vencimiento', 'ASC')
+            ->forUpdate()
+            ->get();
 
         if (!$lotes) {
             throw new Exception(
@@ -732,11 +732,11 @@ class SisVenta extends Helpers
                 break;
             }
 
-            $stockLote = (float)$lote['stock'];
+            $stockLote = (float) $lote['stock'];
 
             /*
-            * ¿Cuánto sacar de este lote?
-            */
+             * ¿Cuánto sacar de este lote?
+             */
             $salida = min($pendiente, $stockLote);
 
             (new FluentSaver($this->pdo))
@@ -753,8 +753,8 @@ class SisVenta extends Helpers
             $nuevoStockLote = $stockLote - $salida;
 
             /*
-            * Actualizar lote
-            */
+             * Actualizar lote
+             */
             $update = (new FluentSaver($this->pdo))
                 ->table('inventario_lote')
                 ->primaryKey('idinventario_lote')
@@ -776,9 +776,9 @@ class SisVenta extends Helpers
         }
 
         /*
-        * Si todavía queda cantidad pendiente,
-        * no hay suficiente stock por lotes.
-        */
+         * Si todavía queda cantidad pendiente,
+         * no hay suficiente stock por lotes.
+         */
         if ($pendiente > 0) {
 
             throw new Exception(
@@ -786,6 +786,80 @@ class SisVenta extends Helpers
                 "Faltan {$pendiente} unidades."
             );
         }
+    }
+
+
+    public function adjuntarComprobante($idventapago, $comprobante)
+    {
+        try {
+            if (!$comprobante || $comprobante['error'] !== UPLOAD_ERR_OK) {
+                return [
+                    'success' => false,
+                    'message' => 'No se recibió el comprobante.'
+                ];
+            }
+
+            $permitidos = ['jpg', 'jpeg', 'png', 'webp'];
+
+            $extension = strtolower(
+                pathinfo($comprobante['name'], PATHINFO_EXTENSION)
+            );
+
+            if (!in_array($extension, $permitidos, true)) {
+                throw new Exception("El archivo debe ser una imagen JPG, PNG o WEBP.", 1);
+            }
+
+            if ($comprobante['size'] > 5 * 1024 * 1024) {
+                throw new Exception("El comprobante no puede superar los 5 MB.", 1);
+            }
+
+            $directorio = __DIR__ . '/../../files/ventas/';
+
+            if (!is_dir($directorio)) {
+                mkdir($directorio, 0755, true);
+            }
+
+            $nombre = uniqid('comprobante_', true) . '.' . $extension;
+
+            $ruta = $directorio . $nombre;
+
+            if (!move_uploaded_file($comprobante['tmp_name'], $ruta)) {
+                throw new Exception("No se pudo guardar el comprobante.", 1);
+            }
+
+            $ventaComprobante = (new FluentSaver($this->pdo))
+                ->table('venta_pago')
+                ->primaryKey('idventapago')
+                ->data([
+                    'idventapago' => $idventapago,
+                    'comprobante' => $nombre
+                ])
+                ->update();
+
+            if (!$ventaComprobante) {
+                throw new Exception("Error al guardar el registro", 1);
+            }
+
+            Response::json([
+                'success' => true,
+                'message' => 'Comprobante guardado correctamente.'
+            ]);
+        } catch (\Throwable $th) {
+            Response::error($th->getMessage());
+        }
+
+    }
+
+    public function verComprobantes($idventa)
+    {
+        $data = (new DBQuery($this->pdo))
+            ->select('vp.*, b.nombre AS banco')
+            ->from('venta_pago vp')
+            ->leftJoin('bancos b', 'b.idbanco = vp.idbanco')
+            ->where('vp.idventa', '=', $idventa)
+            ->get();
+
+        return Response::json($data);
     }
 
 }
