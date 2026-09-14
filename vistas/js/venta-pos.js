@@ -10,6 +10,7 @@ let listarProductos = null;
 let listarDataVentas = null;
 let calculoMes = false;
 let bancos = [];
+let idVentaGlobal = null;
 
 function actualizarResumenVenta(total, subtotal, impuestoCalculado) {
   const totalFmt = (parseFloat(total) || 0).toFixed(2);
@@ -4843,6 +4844,7 @@ function mostrar(idventa) {
   $("#getCodeModal22").modal("show");
   $("#imprimirComp").hide();
   $("#ajuntarComp").hide();
+  idVentaGlobal = idventa;
 
   $.post(
     "controladores/venta.php?op=mostrar",
@@ -4876,11 +4878,11 @@ function mostrar(idventa) {
       $("#impuestom").text(data.impuesto);
       $("#observaciones").text(data.observacion);
       $("#formapagom").html(data.ventacredito);
-      const {inicial, totaldeuda} = calcularMontoCredito(data.totalrecibido, data.totaldeposito, data.total_venta, data.interes, data.cuotas);
+      const { inicial, totaldeuda } = calcularMontoCredito(data.totalrecibido, data.totaldeposito, data.total_venta, data.interes, data.cuotas);
       $("#pagoinicial").html('S/. ' + inicial);
       $("#pagocredito").html('S/. ' + totaldeuda);
 
-      if(data.ventacredito === 'Si' && inicial > 0){
+      if (data.ventacredito === 'Si' && inicial > 0) {
         $("#imprimirComp").show();
         $("#ajuntarComp").show();
       };
@@ -4908,19 +4910,19 @@ function mostrar(idventa) {
 }
 
 function calcularMontoCredito(ttlrecibido, ttldeposito, totalventa, valinteres, cuotas) {
-    const recibido = parseFloat(ttlrecibido) || 0;
-    const deposito = parseFloat(ttldeposito) || 0;
-    const venta = parseFloat(totalventa) || 0;
-    const tasaInteres = parseFloat(valinteres) || 0;
-    const numeroCuotas = parseInt(cuotas, 10) || 0;
+  const recibido = parseFloat(ttlrecibido) || 0;
+  const deposito = parseFloat(ttldeposito) || 0;
+  const venta = parseFloat(totalventa) || 0;
+  const tasaInteres = parseFloat(valinteres) || 0;
+  const numeroCuotas = parseInt(cuotas, 10) || 0;
 
-    const inicial = recibido + deposito;
-    const saldoCapital = Math.max(venta - inicial, 0);
-    const interesCuota = saldoCapital * (tasaInteres / 100);
-    const totalInteres = interesCuota * numeroCuotas;
-    const totaldeuda = saldoCapital + totalInteres;
+  const inicial = recibido + deposito;
+  const saldoCapital = Math.max(venta - inicial, 0);
+  const interesCuota = saldoCapital * (tasaInteres / 100);
+  const totalInteres = interesCuota * numeroCuotas;
+  const totaldeuda = saldoCapital + totalInteres;
 
-    return { inicial, totaldeuda };
+  return { inicial, totaldeuda };
 }
 
 function cancelarform02() {
@@ -5350,4 +5352,127 @@ function cancelarmodalDetalle() {
   // Cerrar el modal
   $("#getCodeModal22").modal("hide");
 }
+
+
+$("#ajuntarComp").click(function (e) {
+  e.preventDefault();
+  $("#modalListarPagos").modal("show");
+  listarComprobantes(idVentaGlobal);
+});
+
+
+$("#formAdjuntarComp").submit(function (e) {
+  e.preventDefault();
+
+  if (!idVentaGlobal) {
+    Swal.fire('Venta', 'No se ha seleccionado una venta', 'warning');
+  };
+
+  const formData = new FormData(this);
+  const idventapago = $("#idventapago").val();
+  $.ajax({
+    url: `controladores/venta.php?op=adjuntarComprobante&idventapago=${idventapago}`,
+    type: "POST",
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function (response) {
+      if (!response.success) {
+        Swal.fire('Venta', response?.message || 'Error al guardar comprobante', 'error');
+      };
+      Swal.fire('Venta', response?.message, 'success');
+      $("#modalAjuntarComp").modal("hide");
+      listarComprobantes(idVentaGlobal);
+    },
+    error: function (xhr) {
+      Swal.fire('Venta', xhr?.responseJSON?.message || 'Error al guardar comprobante', 'error');
+    }
+  });
+});
+
+function cerarrAjuntarComp() {
+  $("#modalListarPagos").modal("hide");
+}
+
+function listarComprobantes(idVenta) {
+  $.ajax({
+    url: "controladores/venta.php",
+    type: "GET",
+    dataType: "json",
+    data: {
+      op: "verComprobantes",
+      idventa: idVenta
+    },
+    success: function (response) {
+      let html = "";
+
+      if (!response.length) {
+        html = `
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">
+                            No hay comprobantes adjuntos
+                        </td>
+                    </tr>
+                `;
+      } else {
+        response.forEach(function (item) {
+          html += `
+                        <tr>
+                            <td>${item.created_at}</td>
+                            <td>
+                                ${item.metodo_pago}
+                            </td>
+                            <td>
+                                <i class="fas fa-file-image text-primary"></i>
+                                ${item.comprobante || ''}
+                            </td>
+                            <td>
+                                ${item.monto}
+                            </td>
+                            <td>
+                                ${item.nroOperacion || ''}
+                            </td>
+                            <td>
+                                ${item.banco || ''}
+                            </td>
+                           <td class="text-end">
+                                ${item.metodo_pago === 'Efectivo'
+              ? ''
+              : item.comprobante
+                ? `
+                                            <a
+                                                href="files/ventas/${item.comprobante}"
+                                                target="_blank"
+                                                class="btn btn-sm btn-outline-primary"
+                                                title="Ver comprobante">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        `
+                : `
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                onclick="abrirAjuntarComp(${item.idventapago})"
+                                                title="Adjuntar comprobante">
+                                                <i class="fas fa-upload"></i>
+                                            </button>
+                                        `
+            }
+                            </td>
+                        </tr>
+                    `;
+        });
+      }
+
+      $("#listaComprobantes").html(html);
+    }
+  });
+}
+
+
+function abrirAjuntarComp(idventapago) {
+  $("#modalAjuntarComp").modal("show");
+  $("#idventapago").val(idventapago);
+}
+
 init();

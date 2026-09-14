@@ -1412,7 +1412,9 @@ date_default_timezone_set('America/Lima');
 
                                                             <!-- Almacén y Cliente (estructura mejorada) -->
                                                             <fieldset class="border p-2 rounded mb-3">
-                                                                <legend class="w-auto px-2 small font-weight-bold text-primary"> Datos principales</legend>
+                                                                <legend
+                                                                    class="w-auto px-2 small font-weight-bold text-primary">
+                                                                    Datos principales</legend>
                                                                 <div class="row">
                                                                     <div class="col-md-4 col-sm-12 mb-2">
                                                                         <label for="idsucursal"
@@ -1424,8 +1426,10 @@ date_default_timezone_set('America/Lima');
                                                                             class="form-control"></select>
                                                                     </div>
                                                                     <div class="col-md-8 col-sm-12 mb-2">
-                                                                        <div class="d-flex align-items-center justify-content-between">
-                                                                            <label for="idcliente" class="font-weight-bold">
+                                                                        <div
+                                                                            class="d-flex align-items-center justify-content-between">
+                                                                            <label for="idcliente"
+                                                                                class="font-weight-bold">
                                                                                 <i class="fas fa-users"></i> Cliente
                                                                             </label>
                                                                             <div>
@@ -2415,18 +2419,12 @@ date_default_timezone_set('America/Lima');
                                 <small class="text-muted">Inicial</small><br>
                                 <span id="pagoinicial"></span>
 
-                                <button
-                                    id="imprimirComp"
-                                    type="button"
-                                    class="btn btn-dark btn-sm"
+                                <button id="imprimirComp" type="button" class="btn btn-dark btn-sm"
                                     title="Imprimir comprobante de pago">
                                     <i class="fa fa-print"></i>
                                 </button>
 
-                                <button
-                                    id="ajuntarComp"
-                                    type="button"
-                                    class="btn btn-success btn-sm"
+                                <button id="ajuntarComp" type="button" class="btn btn-success btn-sm"
                                     title="Adjuntar comprobante de pago">
                                     <i class="fa fa-paperclip"></i>
                                 </button>
@@ -2436,7 +2434,7 @@ date_default_timezone_set('America/Lima');
                                 <small class="text-muted">Saldo</small> <br>
                                 <span id="pagocredito"></span>
                             </div>
-                            
+
 
                             <div class="col-12">
                                 <small class="text-muted">Observaciones</small>
@@ -2731,7 +2729,100 @@ date_default_timezone_set('America/Lima');
     </div>
     <!-- /.modal-dialog -->
 </div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalListarPagos">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAjuntarCompLabel">Adjuntar comprobante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Metodo</th>
+                                    <th>Documento</th>
+                                    <th>Monto</th>
+                                    <th>N° operación</th>
+                                    <th>BAnco</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaComprobantes">
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted">
+                                        No hay comprobantes adjuntos
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="cerarrAjuntarComp()">
+                        Cerrar
+                    </button>
+                </div>
+        </div>
+    </div>
 </div>
+
+<div class="modal fade" id="modalAjuntarComp">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalAjuntarCompLabel">Adjuntar comprobante</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form id="formAdjuntarComp" enctype="multipart/form-data">
+                <div class="modal-body">
+                    <input type="hidden" id="idventapago">                                
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="comprobanteAdjunto">Documento</label>
+                                <input
+                                    type="file"
+                                    class="form-control"
+                                    id="comprobanteAdjunto"
+                                    name="comprobante"
+                                    accept="image/*,.pdf"
+                                >
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-upload"></i> Adjuntar
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="cerarrAjuntarComp()">
+                        Cerrar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener("click", cerrarCollapse);
 
