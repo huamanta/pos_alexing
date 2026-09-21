@@ -217,7 +217,14 @@
                                     </a>
                                 </li>
                             <?php endif; ?>
-
+                            <?php if ($helpers->getUserPermisoModulo('Solicitud credito', 'Configuracion')): ?>
+                                <li id="itemMenuSolicitud">
+                                    <a href="#solicitudes" data-toggle="tab" onclick="activarMenu('itemMenuSolicitud')">
+                                        <i class="fa fa-file-contract"></i>
+                                        Solicitudes de crédito
+                                    </a>
+                                </li>
+                            <?php endif; ?>
                             <?php if ($helpers->getUserPermisoModulo('Configuracion credito', 'Configuracion')): ?>
                                 <li id="itemMenuCredito">
                                     <a href="#credito" data-toggle="tab" onclick="activarMenu('itemMenuCredito')">
@@ -266,13 +273,9 @@
                             <div class="tab-pane active" id="general">
                                 <div class="setting-card">
                                     <div class="setting-header">
-
                                         <h3>
-
                                             Configuración general
-
                                         </h3>
-
                                     </div>
                                     <form id="formConfiguracionGeneral">
                                         <div class="setting-body">
@@ -424,6 +427,90 @@
                                 </div>
                             </div>
                         <?php endif; ?>
+                        <?php if ($helpers->getUserPermisoModulo('Solicitud credito', 'Configuracion')): ?>
+                            <div class="tab-pane active" id="solicitudes">
+                                <div class="setting-card">
+                                    <div class="setting-header">
+                                        <h3>
+                                            Solicitudes de credito
+                                        </h3>
+                                    </div>
+                                    <form id="formConfiguracionGeneral">
+                                        <div class="setting-body">
+                                            <!-- FILA -->
+                                            <div class="setting-row">
+                                                <div class="row">
+                                                    <div class="form-group col-lg-12 col-md-12 col-xs-12">
+                                                        <label>
+                                                            <strong>Comité de crédito</strong>
+                                                        </label>
+                                                        <small class="form-text text-muted">
+                                                            Configure los integrantes que participarán en la evaluación de las solicitudes de crédito.
+                                                        </small>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <div class="row">
+                                                            <div class="col-md-8">
+                                                                <div class="form-group">
+                                                                    <label for="personal_comite">
+                                                                        Integrante del comité:
+                                                                    </label>
+                                                                    <select
+                                                                        class="form-control"
+                                                                        id="personal_comite">
+                                                                        <option value="">Seleccione un integrante...</option>
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4">
+                                                                <div class="form-group">
+                                                                    <label for="cargo_comite">
+                                                                        Cargo:
+                                                                    </label>
+                                                                    <input
+                                                                        type="text"
+                                                                        class="form-control"
+                                                                        id="cargo_comite"
+                                                                        placeholder="Ej. Presidente">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="text-right mb-3">
+                                                            <button
+                                                                type="button"
+                                                                class="btn btn-primary btn-sm"
+                                                                id="btnAgregarComite">
+                                                                <i class="fa fa-plus mr-1"></i>
+                                                                Agregar integrante
+                                                            </button>
+                                                        </div>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered table-hover">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th width="10%">#</th>
+                                                                        <th>Integrante</th>
+                                                                        <th>Cargo</th>
+                                                                        <th width="15%">Acción</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody id="tablaComite">
+                                                                    <tr>
+                                                                        <td colspan="4" class="text-center text-muted">
+                                                                            No hay integrantes configurados.
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        <?php endif; ?>
                         <?php if ($helpers->getUserPermisoModulo('Configuracion facturacion', 'Configuracion')): ?>
                             <div class="tab-pane" id="facturacion">
                                 <div class="setting-card">
@@ -530,8 +617,7 @@
                                                                 name="usuario_sistema_facturacion"
                                                                 id="usuario_sol"
                                                                 placeholder="Usuario SOL"
-                                                                autocomplete="new-password"
-                                                            >
+                                                                autocomplete="new-password">
                                                         </div>
 
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">
@@ -545,8 +631,7 @@
                                                                 name="clave_sistema_facturacion"
                                                                 id="clave_sol"
                                                                 placeholder="**********"
-                                                                autocomplete="new-password"
-                                                            >
+                                                                autocomplete="new-password">
                                                         </div>
 
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">
@@ -567,8 +652,7 @@
                                                                 name="clave_certificado"
                                                                 id="clave_certificado"
                                                                 placeholder="**********"
-                                                                autocomplete="new-password"
-                                                            >
+                                                                autocomplete="new-password">
                                                         </div>
 
                                                         <div class="form-group col-lg-6 col-md-12 col-xs-12">

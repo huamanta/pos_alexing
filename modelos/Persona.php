@@ -451,9 +451,7 @@ class Persona extends Helpers
 			"score" => $score,
 			"riesgo" => $riesgo['riesgo'],
 			"color" => $riesgo['color'],
-
 			...$credito,
-
 			"mora_total" => round($moraCliente['mora_total'], 2),
 			"porcentaje_pagado" => round($porcentaje_pagado, 2)
 		]);
@@ -729,7 +727,7 @@ class Persona extends Helpers
 	{
 		return [
 			"score" => 0,
-			"riesgo" => "SIN HISTORIAL",
+			"riesgo" => "BAJO",
 			"color" => "secondary",
 			"total_creditos" => 0,
 			"cuotas_vencidas" => 0,
