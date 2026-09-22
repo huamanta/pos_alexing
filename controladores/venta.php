@@ -68,7 +68,8 @@ $direccion = isset($_POST["direccion"]) ? limpiarCadena($_POST["direccion"]) : "
 $telefono = isset($_POST["telefono"]) ? limpiarCadena($_POST["telefono"]) : "";
 $email = isset($_POST["email"]) ? limpiarCadena($_POST["email"]) : "";
 $fecha_hora = date("Y-m-d H:i:s");
-$input_cuotas = trim($_POST["input_cuotas"] ?? '') === '' ? 0 : limpiarCadena($_POST["input_cuotas"]);
+$meses = trim($_POST["numeroMeses"] ?? '') === '' ? 0 : limpiarCadena($_POST["numeroMeses"]);
+$cuotas = trim($_POST["input_cuotas"] ?? '') === '' ? 0 : limpiarCadena($_POST["input_cuotas"]);
 $input_frecuencia = trim($_POST["input_frecuencia"] ?? '') === '' ? 0 : limpiarCadena($_POST["input_frecuencia"]);
 $inputInteres = trim($_POST["inputInteres"] ?? '') === '' ? 0 : limpiarCadena($_POST["inputInteres"]);
 
@@ -153,7 +154,8 @@ switch ($_GET["op"]) {
 				$observaciones,
 				$fecha_pago,
 				$inputInteres,
-				$input_cuotas,
+				$meses,
+				$cuotas,
 				$input_frecuencia,
 				$_POST["cantidad_contenedor"],
 				$_POST["contenedor"],

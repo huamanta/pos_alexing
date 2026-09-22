@@ -44,7 +44,8 @@ class SisVenta extends Helpers
         $observaciones,
         $fecha_pago,
         $interes,
-        $input_cuotas,
+        $meses,
+        $cuotas,
         $input_frecuencia,
         $cantidad_contenedor,
         $contenedor,
@@ -66,7 +67,6 @@ class SisVenta extends Helpers
             $idmotivo = $idmotivo ?: 0;
             $porcentaje = $porcentaje ?: 0;
             $fechaDepostivo = $fechaDepostivo ?: $fechaActual;
-            $input_cuotas = $input_cuotas ?: 0;
 
             if ($idtipo_comprobante == 1) {
                 $estado = "Activado";
@@ -113,7 +113,8 @@ class SisVenta extends Helpers
                 $interes,
                 $formapagoVenta,
                 $input_frecuencia,
-                $input_cuotas,
+                $meses,
+                $cuotas,
                 $nroOperacion,
                 $fechaDepostivo,
                 $porcentaje,
@@ -159,7 +160,7 @@ class SisVenta extends Helpers
             //=========================
             // Crédito
             if ($tipopago == "Si") {
-                $this->crearCredito($idVenta, $fechaActual, $montoDeuda, $interes, $input_cuotas, $fecha_pago);
+                $this->crearCredito($idVenta, $fechaActual, $montoDeuda, $interes, $cuotas, $fecha_pago);
             }
 
             // Cotización
@@ -337,6 +338,7 @@ class SisVenta extends Helpers
         $formapago,
         $frecuencia,
         $meses,
+        $cuotas,
         $numoperacion,
         $fechadeposito,
         $descuento,
@@ -373,6 +375,7 @@ class SisVenta extends Helpers
                 'formapago' => $formapago,
                 'frecuencia' => $frecuencia,
                 'meses' => $meses,
+                'cuotas' => $cuotas,
                 'numoperacion' => $numoperacion,
                 'fechadeposito' => $fechadeposito,
                 'descuento' => $descuento,

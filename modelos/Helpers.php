@@ -287,6 +287,21 @@ class Helpers
     }
 
 
+    public function verificarMes30Dias($idsucursal): bool
+    {
+        $config = (new DBQuery($this->pdo))
+            ->select('is_calculo_mes')
+            ->from('sucursal_configuracion')
+            ->where('idsucursal', '=', $idsucursal)
+            ->first();
+
+        if (!$config) {
+            return false;
+        }
+
+        return (bool) $config['is_calculo_mes'];
+    }
+
 
     public function toFloat($valor)
     {

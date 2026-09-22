@@ -364,7 +364,7 @@ function calcularCuotasDesdeNumeroMeses() {
 
   let semanal = 1 / 4;
   if (calculoMes) {
-    semanal = 7 / 30;
+    semanal = 1 / 5;
   }
 
   const mesesPorCuota = {
@@ -4227,13 +4227,15 @@ $("#calcular_cuotas").click(function (e) {
 
 function calcularCuotas() {
   // Si no se eligio cuotas manualmente, intentar autocalcular desde N° meses + frecuencia.
+  alert($("#input_cuotas").val());
   if (!$("#input_cuotas").val()) {
+    alert();
     calcularCuotasDesdeNumeroMeses();
   }
 
-  if ($("#tipopago").val() === "Si") {
-    calcularCuotasDesdeNumeroMeses();
-  }
+  // if ($("#tipopago").val() === "Si") {
+  //   calcularCuotasDesdeNumeroMeses();
+  // }
 
   let fechaOperacion = ("" + $("#fechaOperacion").val() || "").trim();
   if (!fechaOperacion) {
