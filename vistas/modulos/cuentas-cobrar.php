@@ -1633,6 +1633,5 @@ date_default_timezone_set('America/Lima');
 
 </div>
 
-<script type="text/javascript" src="vistas/js/recibo-pago-print.js"></script>
 <script type="text/javascript" src="vistas/js/cuentascobrar.js"></script>
 <script type="text/javascript" src="vistas/js/ventasfechacliente2.js"></script>
