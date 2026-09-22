@@ -53,6 +53,7 @@ $tiempoproduccion = isset($_POST["tiempoproduccion"]) ? limpiarCadena($_POST["ti
 $inicial = isset($_POST["inicial"]) ? limpiarCadena($_POST["inicial"]) : "";
 $frecuencia = isset($_POST["input_frecuencia"]) ? limpiarCadena($_POST["input_frecuencia"]) : "";
 $meses = isset($_POST["numeroMeses"]) ? limpiarCadena($_POST["numeroMeses"]) : "";
+$cuotas = isset($_POST["input_cuotas"]) ? limpiarCadena($_POST["input_cuotas"]) : "";
 $interes = isset($_POST["inputInteres"]) ? limpiarCadena($_POST["inputInteres"]) : "";
 
 switch ($_GET["op"]) {
@@ -84,6 +85,7 @@ switch ($_GET["op"]) {
 				$inicial,
 				$frecuencia,
 				$meses,
+				$cuotas,
 				$interes,
 				$_POST["idserie"]
 			);
@@ -113,6 +115,7 @@ switch ($_GET["op"]) {
 				$inicial,
 				$frecuencia,
 				$meses,
+				$cuotas,
 				$interes,
 				$_POST["idserie"]
 			);

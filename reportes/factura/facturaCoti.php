@@ -1,66 +1,58 @@
 <?php
 
 $frecuenciaTexto = '';
-$diasFrecuencia = 30;
-$numCuotas = 1;
+$mesesPorCuota = 1;
+$numCuotas = (int) $factura['cuotas'];
+
 $logo = !empty($configuracion['logo']) ? $configuracion['logo'] : 'default.png';
 $rutaLogo = realpath(__DIR__ . '/../../files/logos/' . $logo);
 
 switch ($factura['frecuencia']) {
 
-	case 1:
-		$frecuenciaTexto = 'Diario';
-		$diasFrecuencia = 1;
-		$numCuotas = $factura['meses'] * 30;
-		break;
+    case 1:
+        $frecuenciaTexto = 'Diario';
+        $mesesPorCuota = 1 / 30;
+        break;
 
-	case 2:
-		$frecuenciaTexto = 'Semanal';
-		$diasFrecuencia = 7;
-		$numCuotas = $factura['meses'] * 4;
-		break;
+    case 2:
+        $frecuenciaTexto = 'Semanal';
+        $mesesPorCuota = $calculo30Dias ? 1 / 5 : 1 / 4;
+        break;
 
-	case 3:
-		$frecuenciaTexto = 'Quincenal';
-		$diasFrecuencia = 15;
-		$numCuotas = $factura['meses'] * 2;
-		break;
+    case 3:
+        $frecuenciaTexto = 'Quincenal';
+        $mesesPorCuota = 1 / 2;
+        break;
 
-	case 4:
-		$frecuenciaTexto = 'Mensual';
-		$diasFrecuencia = 30;
-		$numCuotas = $factura['meses'];
-		break;
+    case 4:
+        $frecuenciaTexto = 'Mensual';
+        $mesesPorCuota = 1;
+        break;
 
-	case 5:
-		$frecuenciaTexto = 'Bimestral';
-		$diasFrecuencia = 60;
-		$numCuotas = ceil($factura['meses'] / 2);
-		break;
+    case 5:
+        $frecuenciaTexto = 'Bimestral';
+        $mesesPorCuota = 2;
+        break;
 
-	case 6:
-		$frecuenciaTexto = 'Trimestral';
-		$diasFrecuencia = 90;
-		$numCuotas = ceil($factura['meses'] / 3);
-		break;
+    case 6:
+        $frecuenciaTexto = 'Trimestral';
+        $mesesPorCuota = 3;
+        break;
 
-	case 7:
-		$frecuenciaTexto = 'Semestral';
-		$diasFrecuencia = 180;
-		$numCuotas = ceil($factura['meses'] / 6);
-		break;
+    case 7:
+        $frecuenciaTexto = 'Semestral';
+        $mesesPorCuota = 6;
+        break;
 
-	case 8:
-		$frecuenciaTexto = 'Anual';
-		$diasFrecuencia = 365;
-		$numCuotas = ceil($factura['meses'] / 12);
-		break;
+    case 8:
+        $frecuenciaTexto = 'Anual';
+        $mesesPorCuota = 12;
+        break;
 
-	default:
-		$frecuenciaTexto = '-';
-		$diasFrecuencia = 30;
-		$numCuotas = 1;
-		break;
+    default:
+        $frecuenciaTexto = '-';
+        $mesesPorCuota = 1;
+        break;
 }
 
 $subtotal = 0;
@@ -130,8 +122,6 @@ $total = 0;
 		.textleft {
 			text-align: left;
 		}
-
-		/* ENCABEZADO */
 
 		.header-table {
 			width: 100%;
@@ -203,15 +193,11 @@ $total = 0;
 			padding: 3px 5px 9px;
 		}
 
-		/* SEPARADOR */
-
 		.header-line {
 			border-bottom: 2px solid #0d47a1;
 			margin-top: 7px;
 			margin-bottom: 10px;
 		}
-
-		/* SECCIONES */
 
 		.section-title {
 			background: #0d47a1;
@@ -241,8 +227,6 @@ $total = 0;
 		.info-value {
 			color: #263238;
 		}
-
-		/* DETALLE */
 
 		.detail-table {
 			width: 100%;
@@ -301,8 +285,6 @@ $total = 0;
 			font-size: 12px;
 		}
 
-		/* CRÉDITO */
-
 		.credito-box {
 			margin-top: 12px;
 			border: 1px solid #cfd8dc;
@@ -343,8 +325,6 @@ $total = 0;
 			width: 33%;
 		}
 
-		/* CUOTAS */
-
 		.table-cuotas {
 			width: 100%;
 			border: 1px solid #cfd8dc;
@@ -375,8 +355,6 @@ $total = 0;
 			color: #0d47a1;
 			padding: 6px;
 		}
-
-		/* UTILIDADES */
 
 		.muted {
 			color: #607d8b;
@@ -598,7 +576,6 @@ $total = 0;
 
 			<br>
 
-
 			<div class="credito-header">
 				DETALLE DEL CRÉDITO
 			</div>
@@ -664,17 +641,13 @@ $total = 0;
 				<table class="table-cuotas">
 
 					<thead>
-
 						<tr>
-
 							<th>#</th>
 							<th>Fecha Pago</th>
 							<th>Capital</th>
 							<th>Interés</th>
 							<th>Total Cuota</th>
-
 						</tr>
-
 					</thead>
 
 					<tbody>
@@ -685,18 +658,123 @@ $total = 0;
 						$interesCuotaTotal = 0;
 						$montoCuotaTotal = 0;
 
+						$fechaBase = strtotime($factura['fecha_original']);
+
 						for ($i = 1; $i <= $numCuotas; $i++) {
 
-							$fechaPago = date(
-								'd/m/Y',
-								strtotime(
-									'+' . ($diasFrecuencia * $i) . ' days',
-									strtotime($factura['fecha_original'])
-								)
-							);
-							$capitalCuotaTotal = $capitalCuotaTotal + $capitalCuota;
-							$interesCuotaTotal = $interesCuotaTotal + $interesCuota;
-							$montoCuotaTotal = $montoCuotaTotal + $montoCuota;
+							switch ($factura['frecuencia']) {
+
+								case 1:
+									$fechaPago = date(
+										'd/m/Y',
+										strtotime('+' . $i . ' day', $fechaBase)
+									);
+									break;
+
+								case 2:
+									$dias = $calculo30Dias ? 5 : 7;
+
+									$fechaPago = date(
+										'd/m/Y',
+										strtotime('+' . ($i * $dias) . ' days', $fechaBase)
+									);
+									break;
+
+								case 3:
+									$fechaPago = date(
+										'd/m/Y',
+										strtotime('+' . ($i * 15) . ' days', $fechaBase)
+									);
+									break;
+
+								case 4:
+									if ($calculo30Dias) {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . ($i * 30) . ' days', $fechaBase)
+										);
+									} else {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . $i . ' month', $fechaBase)
+										);
+									}
+									break;
+
+								case 5:
+									if ($calculo30Dias) {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . ($i * 60) . ' days', $fechaBase)
+										);
+									} else {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . ($i * 2) . ' months', $fechaBase)
+										);
+									}
+									break;
+
+								case 6:
+									if ($calculo30Dias) {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . ($i * 90) . ' days', $fechaBase)
+										);
+									} else {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . ($i * 3) . ' months', $fechaBase)
+										);
+									}
+									break;
+
+								case 7:
+									if ($calculo30Dias) {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . ($i * 180) . ' days', $fechaBase)
+										);
+									} else {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . ($i * 6) . ' months', $fechaBase)
+										);
+									}
+									break;
+
+								case 8:
+									if ($calculo30Dias) {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . ($i * 360) . ' days', $fechaBase)
+										);
+									} else {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . $i . ' year', $fechaBase)
+										);
+									}
+									break;
+
+								default:
+									if ($calculo30Dias) {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . ($i * 30) . ' days', $fechaBase)
+										);
+									} else {
+										$fechaPago = date(
+											'd/m/Y',
+											strtotime('+' . $i . ' month', $fechaBase)
+										);
+									}
+									break;
+							}
+
+							$capitalCuotaTotal += $capitalCuota;
+							$interesCuotaTotal += $interesCuota;
+							$montoCuotaTotal += $montoCuota;
 
 							?>
 
@@ -723,8 +801,12 @@ $total = 0;
 							</tr>
 
 						<?php } ?>
+
 						<tr class="total-row">
-							<td colspan="2">TOTALES</td>
+
+							<td colspan="2">
+								TOTALES
+							</td>
 
 							<td>
 								<?php echo $helpers->get_currency_symbol($capitalCuotaTotal, $currency); ?>
@@ -737,6 +819,7 @@ $total = 0;
 							<td>
 								<?php echo $helpers->get_currency_symbol($montoCuotaTotal, $currency); ?>
 							</td>
+
 						</tr>
 
 					</tbody>
@@ -744,7 +827,6 @@ $total = 0;
 				</table>
 
 			</div>
-
 
 		<?php } ?>
 

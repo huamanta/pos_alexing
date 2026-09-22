@@ -43,6 +43,7 @@ class Cotizacion extends Helpers
         $inicial,
         $frecuencia,
         $meses,
+        $cuotas,
         $interes,
         $idserie
     ) {
@@ -85,6 +86,7 @@ class Cotizacion extends Helpers
                     'inicial' => $inicial,
                     'frecuencia' => $frecuencia,
                     'meses' => $meses,
+                    'cuotas' => $cuotas,
                     'interes' => $interes
                 ])
                 ->save();
@@ -216,6 +218,7 @@ class Cotizacion extends Helpers
         $inicial,
         $frecuencia,
         $meses,
+        $cuotas,
         $interes,
         $isderie
     ) {
@@ -251,6 +254,7 @@ class Cotizacion extends Helpers
                     "inicial" => $inicial,
                     "frecuencia" => $frecuencia,
                     "meses" => $meses,
+                    "cuotas" => $cuotas,
                     "interes" => $interes
                 ])
                 ->update();
@@ -696,6 +700,7 @@ class Cotizacion extends Helpers
             v.tiempo_pro,
             v.frecuencia,
             v.meses,
+            v.cuotas,
             v.inicial,
             v.interes')
             ->from('cotizacion v')

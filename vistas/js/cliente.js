@@ -299,7 +299,7 @@ function BuscarCliente() {
 function pintarPersonas(data, permissions) {
 
   let html = "";
-  
+
   if (data.length === 0) {
     html = `
       <tr>
@@ -320,10 +320,10 @@ function pintarPersonas(data, permissions) {
                 <td>${item.telefono ?? ''}</td>
                 <td>${item.email ?? ''}</td>
                 <td>
-                  ${permissions.editar ? `<button class="btn btn-warning btn-xs" onclick="mostrar(${item.idpersona})"><i class="fas fa-edit"></i></button>`:''}
-                  ${permissions.historial ? `<button class="btn btn-info btn-xs" onclick="ListarReportesClientes(${item.idpersona})"><i class="fa fa-list"></i></button>`:''}
-                  ${permissions.puntuacion ? `<button class="btn btn-info btn-xs" onclick="ScoreCrediticioCliente(${item.idpersona})"><i class="fa fa-star"></i></button>`:''}
-                  ${permissions.eliminar ? `<button class="btn btn-danger btn-xs" onclick="eliminar(${item.idpersona})"><i class="fa fa-trash"></i></button>`:''}
+                  ${permissions.editar ? `<button class="btn btn-warning btn-xs" onclick="mostrar(${item.idpersona})"><i class="fas fa-edit"></i></button>` : ''}
+                  ${permissions.historial ? `<button class="btn btn-info btn-xs" onclick="ListarReportesClientes(${item.idpersona})"><i class="fa fa-list"></i></button>` : ''}
+                  ${permissions.puntuacion ? `<button class="btn btn-info btn-xs" onclick="ScoreCrediticioCliente(${item.idpersona})"><i class="fa fa-star"></i></button>` : ''}
+                  ${permissions.eliminar ? `<button class="btn btn-danger btn-xs" onclick="eliminar(${item.idpersona})"><i class="fa fa-trash"></i></button>` : ''}
                 </td>
             </tr>
         `;
@@ -338,9 +338,9 @@ function pintarPersonas(data, permissions) {
 
 
 listarPersonas = new FluentPaginator({
-    url: "controladores/persona.php?op=listarc",
-    tableBody: "#tbody_personas",
-    renderTabla: pintarPersonas
+  url: "controladores/persona.php?op=listarc",
+  tableBody: "#tbody_personas",
+  renderTabla: pintarPersonas
 });
 
 
@@ -518,15 +518,18 @@ $("#fecha_fin").change(function () {
 });
 
 function ListarReportesClientes(idcliente) {
+
   $("#data_compras").html("");
   $("#data_cuentas_pagar").html("");
   $("#data_proveedor").html("");
   $("#data_proveedor_pagar").html("");
   $("#clientesreporte").val(idcliente);
+
   var fecha_inicio = $("#fecha_inicio").val();
   var fecha_fin = $("#fecha_fin").val();
 
   $("#listarReporteCliente").modal("show");
+
   $.ajax({
     url:
       "controladores/venta.php?op=listarhistorialcliente&idcliente=" +
@@ -538,441 +541,899 @@ function ListarReportesClientes(idcliente) {
     type: "GET",
     contentType: false,
     processData: false,
-    success: function (datos) {
-      var data = JSON.parse(datos);
-      var symbol = data.symbol;
-      // Tabla de Compras
-      var ventas = data.ventas;
-      var total_sin_interes = 0;
-      var total = 0;
-      var pagado = 0;
-      var interes = 0;
-      var html = `
-			<table class="table table-bordered table-striped table-hover table-sm">
-			  <thead>
-			    <tr>
-			      <th>Fecha</th>
-			      <th>Recibo</th>
-			      <th>Detalle</th>
-			      <th>Valor venta</th>
-			      <th>Inicial</th>
-			      <th>Interes</th>
-			      <th>Total</th>
-			      <th>Cuotas</th>
-			    </tr>
-			  </thead>
-			  <tbody>`;
 
-      $.each(ventas, function (i, item) {
-        total_sin_interes += parseFloat(ventas[i].venta_sin_interes);
-        total += parseFloat(ventas[i].total_venta);
-        interes += ventas[i].interes;
-        pagado += parseFloat(ventas[i].totalrecibido);
-        html +=
-          `<tr>
-					<td>` +
-          ventas[i].fecha_hora +
-          `</td>
-					<td>` +
-          ventas[i].serie_comprobante +
-          `</td>
-					<td></td>
-          <td>` +
-          symbol +
-          ventas[i].venta_sin_interes +
-          `</td>
-					<td>` +
-          symbol +
-          ventas[i].totalrecibido +
-          `</td>
-					<td>` +
-          symbol +
-          ventas[i].interes +
-          `</td>
-					<td>` +
-          symbol +
-          ventas[i].total_venta +
-          `</td>
-					<td>` +
-          ventas[i].meses +
-          `</td>
-				</tr>`;
+    success: function (response) {
 
-        var detalle = ventas[i].detalle;
-        html += `<tr>
-					<td colspan="2" ></td>
-					<td style="font-weight:bold !important">Producto</td>
-					<td style="font-weight:bold !important">Cantidad</td>
-					<td style="font-weight:bold !important">Precio</td>
-				</tr>`;
+      const data = response;
+      const symbol = data.symbol || "";
 
-        $.each(detalle, function (a, item) {
-          html +=
-            `<tr>
-						<td colspan="2"></td>
-						<td>` +
-            detalle[a].nombre_producto +
-            `</td>
-						<td>` +
-            detalle[a].cantidad +
-            `</td>
-						<td>` +
-            detalle[a].precio_venta +
-            `</td>
-					</tr>`;
-        });
-      });
+      function money(value) {
+        return symbol + Number(value || 0).toFixed(2);
+      }
 
-      html +=
-        `<tr>
-				<td style="color: blue; text-align: right;" colspan="3">TOTAL</td>
-        <td style="color: blue">` +
-        symbol +
-        total_sin_interes +
-        `</td>
-				<td style="color: blue">` +
-        symbol +
-        pagado +
-        `</td>
-				<td style="color: blue">` +
-        symbol +
-        interes +
-        `</td>
-				<td style="color: red">` +
-        symbol +
-        total +
-        `</td>
-				<td></td>
-			</tr>
-			  </tbody>
-			</table>`;
-      $("#data_compras").html(html);
+      function number(value) {
+        return Number(value || 0);
+      }
 
-      // Tabla de Cuentas por Cobrar
-      var cuentasxcobrar = data.cuentasxcobrar;
-      var totalc = 0;
-      var interesc = 0;
-      var morac = 0;
-      var descuentoc = 0;
+      function empty(message) {
+        return `
+          <div class="text-center py-4 text-muted">
+            <i class="fa fa-inbox fa-2x mb-2 d-block"></i>
+            <span>${message}</span>
+          </div>
+        `;
+      }
 
-      var recibidoc = 0;
-      var htmlform = `
-			<table class="table table-bordered table-hover table-sm">
-			  <thead>
-			    <tr>
-			      <th>Fecha</th>
-			      <th>Tipo</th>
-			      <th>Deuda Total</th>
-			      <th>Interes</th>
-			      <th>Mora</th>
-			      <th>Descuento</th>
-			      <th>Abono Total</th>
-			    </tr>
-			  </thead>
-			  <tbody>`;
+      function badge(text, type) {
+        return `<span class="badge badge-${type}">${text}</span>`;
+      }
 
-      $.each(cuentasxcobrar, function (i, item) {
-        totalc += parseFloat(cuentasxcobrar[i].deudatotal);
-        interesc += parseFloat(cuentasxcobrar[i].interes);
-        morac += parseFloat(cuentasxcobrar[i].mora_pagada);
-        descuentoc += parseFloat(cuentasxcobrar[i].descuento);
-        recibidoc += parseFloat(cuentasxcobrar[i].abonototal);
-        htmlform +=
-          `<tr style="background: #dee2e6">
-					<td>` +
-          cuentasxcobrar[i].fecha_hora +
-          `</td>
-					<td>` +
-          cuentasxcobrar[i].tipo +
-          `</td>
-					<td>` +
-          symbol +
-          Number(cuentasxcobrar[i].deudatotal).toFixed(2) +
-          `</td>
-					<td>` +
-          symbol +
-          Number(cuentasxcobrar[i].interes).toFixed(2) +
-          `</td>
-          <td>
-    ${symbol}${Number(cuentasxcobrar[i].mora_pagada).toFixed(2)}
-    ${cuentasxcobrar[i].dias_mora
-            ? `<i class="fa fa-info-circle text-primary ml-1"
-                data-toggle="popover"
-                data-trigger="hover"
-                data-placement="top"
-                data-content="${cuentasxcobrar[i].dias_mora}"
-                style="cursor:pointer;"></i>`
-            : ''
+      /* =========================================================
+         1. VENTAS A CLIENTE
+      ========================================================= */
+
+      const ventas = data.ventas || [];
+
+      let totalVenta = 0;
+      let totalPagado = 0;
+      let totalInteres = 0;
+      let totalSaldo = 0;
+
+      let htmlVentas = `
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+            <thead class="thead-light">
+              <tr>
+                <th style="width:110px;">Fecha</th>
+                <th style="width:130px;">Comprobante</th>
+                <th>Detalle</th>
+                <th class="text-right">Venta</th>
+                <th class="text-right">Inicial</th>
+                <th class="text-right">Interés</th>
+                <th class="text-right">Total</th>
+                <th class="text-center">Cuotas</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      if (ventas.length === 0) {
+
+        htmlVentas += `
+          <tr>
+            <td colspan="8">
+              ${empty("No existen ventas a crédito en el período seleccionado")}
+            </td>
+          </tr>
+        `;
+
+      } else {
+
+        $.each(ventas, function (i, venta) {
+
+          const ventaSinInteres = number(venta.venta_sin_interes);
+          const pagado = number(venta.totalrecibido);
+          const interes = number(venta.interes);
+          const total = number(venta.total_venta);
+          const saldo = total - pagado;
+
+          totalVenta += ventaSinInteres;
+          totalPagado += pagado;
+          totalInteres += interes;
+          totalSaldo += saldo;
+
+          const detalle = venta.detalle || [];
+
+          let detalleHtml = `
+            <div class="bg-light border rounded p-2 mt-2">
+              <div class="d-flex align-items-center mb-2">
+                <i class="fa fa-shopping-cart text-primary mr-2"></i>
+                <strong class="text-dark">Detalle de productos</strong>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered bg-white mb-0">
+                  <thead>
+                    <tr class="text-muted">
+                      <th>Producto</th>
+                      <th class="text-center" style="width:140px;">Cantidad</th>
+                      <th class="text-right" style="width:130px;">Precio</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+          `;
+
+          if (detalle.length === 0) {
+
+            detalleHtml += `
+              <tr>
+                <td colspan="3" class="text-center text-muted">
+                  Sin detalle de productos
+                </td>
+              </tr>
+            `;
+
+          } else {
+
+            $.each(detalle, function (a, item) {
+
+              detalleHtml += `
+                <tr>
+                  <td>
+                    <span class="text-primary font-weight-bold">
+                      ${item.nombre_producto}
+                    </span>
+                  </td>
+                  <td class="text-center">
+                    ${item.cantidad}
+                  </td>
+                  <td class="text-right">
+                    ${item.precio_venta}
+                  </td>
+                </tr>
+              `;
+
+            });
           }
-</td>
-          <td>` +
-          symbol +
-          Number(cuentasxcobrar[i].descuento).toFixed(2) +
-          `</td>
-					<td>` +
-          symbol +
-          Number(cuentasxcobrar[i].abonototal).toFixed(2) +
-          `</td>
-				</tr>`;
 
-        var detallecuentasxcobrar = cuentasxcobrar[i].detalle;
-        htmlform += `<tr>
-              <th colspan="2"></th>
-              <th colspan="2">Detalle</th>
-              <th>Efectivo</th>
-              <th>Transferencia</th>
-              <th>Total abono</th>
-            </tr>`;
+          detalleHtml += `
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
 
-        $.each(detallecuentasxcobrar, function (a, item) {
-          htmlform +=
-            `<tr>
-						<td colspan="2"></td>
-						<td colspan="2">` +
-            detallecuentasxcobrar[a].tipo +
-            `</td>
-            <td>` +
-            symbol +
-            detallecuentasxcobrar[a].montopagado +
-            `</td>
-            <td>` +
-            symbol +
-            detallecuentasxcobrar[a].montotarjeta +
-            `</td>
-						<td>` +
-            symbol +
-            detallecuentasxcobrar[a].total +
-            `</td>
-					</tr>`;
+          htmlVentas += `
+            <tr>
+              <td>
+                <small class="text-muted">${venta.fecha_hora}</small>
+              </td>
+
+              <td>
+                ${badge(venta.serie_comprobante, "primary")}
+              </td>
+
+              <td>
+                <button
+                  type="button"
+                  class="btn btn-link btn-sm p-0"
+                  data-toggle="collapse"
+                  data-target="#detalleVenta${i}"
+                  aria-expanded="false"
+                >
+                  <i class="fa fa-list mr-1"></i>
+                  Ver productos
+                </button>
+
+                <div
+                  id="detalleVenta${i}"
+                  class="collapse"
+                >
+                  ${detalleHtml}
+                </div>
+              </td>
+
+              <td class="text-right">
+                ${money(ventaSinInteres)}
+              </td>
+
+              <td class="text-right text-success">
+                ${money(pagado)}
+              </td>
+
+              <td class="text-right">
+                ${money(interes)}
+              </td>
+
+              <td class="text-right font-weight-bold">
+                ${money(total)}
+              </td>
+
+              <td class="text-center">
+                ${venta.meses || 0}
+              </td>
+            </tr>
+          `;
         });
-      });
+      }
 
-      htmlform +=
-        `<tr>
-				<td style="color: blue; text-align: right;" colspan="2">TOTAL</td>
-				<td style="color: red">` +
-        symbol +
-        totalc.toFixed(2) +
-        `</td>
-				<td style="color: blue">` +
-        symbol +
-        interesc.toFixed(2) +
-        `</td>
-				<td style="color: blue">` +
-        symbol +
-        morac.toFixed(2) +
-        `</td>
-        <td style="color: blue">` +
-        symbol +
-        descuentoc.toFixed(2) +
-        `</td>
-				<td style="color: blue">` +
-        symbol +
-        recibidoc.toFixed(2) +
-        `</td>
-			</tr>
-			  </tbody>
-			</table>`;
-      $("#data_cuentas_pagar").html(htmlform);
+      htmlVentas += `
+            </tbody>
 
-      // Tabla de Proveedores
-      var ventas = data.compras;
-      var total = 0;
-      var pagado = 0;
-      var interes = 0;
-      var html = `
-			<table class="table table-bordered  table-sm">
-			  <thead>
-			    <tr>
-			      <th>Fecha</th>
-			      <th>Recibo</th>
-			      <th>Detalle</th>
-			      <th>Importe</th>
-			      <th>Interes</th>
-			      <th>Total</th>
-			      <th>Mes</th>
-			    </tr>
-			  </thead>
-			  <tbody>`;
+            <tfoot>
+              <tr class="bg-light font-weight-bold">
+                <td colspan="3" class="text-right">
+                  TOTAL
+                </td>
 
-      $.each(ventas, function (i, item) {
-        total += parseFloat(ventas[i].total_venta);
-        interes += ventas[i].interes;
-        pagado += parseFloat(ventas[i].totalrecibido);
-        html +=
-          `<tr>
-					<td>` +
-          ventas[i].fecha_hora +
-          `</td>
-					<td>` +
-          ventas[i].serie_comprobante +
-          `</td>
-					<td></td>
-					<td>` +
-          symbol +
-          ventas[i].totalrecibido +
-          `</td>
-					<td>` +
-          symbol +
-          ventas[i].interes +
-          `</td>
-					<td>` +
-          symbol +
-          ventas[i].total_venta +
-          `</td>
-					<td>` +
-          ventas[i].meses +
-          `</td>
-				</tr>`;
+                <td class="text-right">
+                  ${money(totalVenta)}
+                </td>
 
-        var detalle = ventas[i].detalle;
-        html += `<tr>
-					<td colspan="2"></td>
-					<td style="font-weight:bold !important">Producto</td>
-					<td style="font-weight:bold !important">Cantidad</td>
-					<td style="font-weight:bold !important">Precio</td>
-				</tr>`;
+                <td class="text-right text-success">
+                  ${money(totalPagado)}
+                </td>
 
-        $.each(detalle, function (a, item) {
-          html +=
-            `<tr>
-						<td colspan="2"></td>
-						<td>` +
-            detalle[a].nombre_producto +
-            `</td>
-						<td>` +
-            detalle[a].cantidad +
-            `</td>
-						<td>` +
-            symbol +
-            detalle[a].precio_venta +
-            `</td>
-					</tr>`;
+                <td class="text-right">
+                  ${money(totalInteres)}
+                </td>
+
+                <td class="text-right text-danger">
+                  ${money(totalVenta + totalInteres)}
+                </td>
+
+                <td></td>
+              </tr>
+            </tfoot>
+
+          </table>
+        </div>
+      `;
+
+      $("#data_compras").html(htmlVentas);
+
+
+      /* =========================================================
+         2. CUENTAS POR COBRAR
+      ========================================================= */
+
+      const cuentasxcobrar = data.cuentasxcobrar || [];
+
+      let totalDeuda = 0;
+      let totalInteresCobrar = 0;
+      let totalMora = 0;
+      let totalDescuento = 0;
+      let totalAbonado = 0;
+
+      let htmlCobrar = `
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+
+            <thead class="thead-light">
+              <tr>
+                <th style="width:120px;">Fecha</th>
+                <th>Cuenta</th>
+                <th class="text-right">Deuda</th>
+                <th class="text-right">Interés</th>
+                <th class="text-right">Mora</th>
+                <th class="text-right">Descuento</th>
+                <th class="text-right">Abonado</th>
+                <th class="text-center" style="width:90px;">Detalle</th>
+              </tr>
+            </thead>
+
+            <tbody>
+      `;
+
+      if (cuentasxcobrar.length === 0) {
+
+        htmlCobrar += `
+          <tr>
+            <td colspan="8">
+              ${empty("No existen cuentas por cobrar en el período seleccionado")}
+            </td>
+          </tr>
+        `;
+
+      } else {
+
+        $.each(cuentasxcobrar, function (i, cuenta) {
+
+          const deuda = number(cuenta.deudatotal);
+          const interes = number(cuenta.interes);
+          const mora = number(cuenta.mora_pagada);
+          const descuento = number(cuenta.descuento);
+          const abonado = number(cuenta.abonototal);
+
+          totalDeuda += deuda;
+          totalInteresCobrar += interes;
+          totalMora += mora;
+          totalDescuento += descuento;
+          totalAbonado += abonado;
+
+          const detalle = cuenta.detalle || [];
+
+          let detalleHtml = `
+            <div class="bg-light border rounded p-2 mt-2">
+
+              <div class="d-flex align-items-center mb-2">
+                <i class="fa fa-money text-success mr-2"></i>
+                <strong>Detalle de amortizaciones</strong>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered bg-white mb-0">
+
+                  <thead>
+                    <tr>
+                      <th>Concepto</th>
+                      <th class="text-right">Efectivo</th>
+                      <th class="text-right">Transferencia</th>
+                      <th class="text-right">Total</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+          `;
+
+          if (detalle.length === 0) {
+
+            detalleHtml += `
+              <tr>
+                <td colspan="4" class="text-center text-muted">
+                  Sin amortizaciones registradas
+                </td>
+              </tr>
+            `;
+
+          } else {
+
+            $.each(detalle, function (a, item) {
+
+              detalleHtml += `
+                <tr>
+                  <td>${item.tipo}</td>
+                  <td class="text-right">
+                    ${money(item.montopagado)}
+                  </td>
+                  <td class="text-right">
+                    ${money(item.montotarjeta)}
+                  </td>
+                  <td class="text-right font-weight-bold">
+                    ${money(item.total)}
+                  </td>
+                </tr>
+              `;
+
+            });
+          }
+
+          detalleHtml += `
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+          htmlCobrar += `
+            <tr>
+
+              <td>
+                <small>${cuenta.fecha_hora}</small>
+              </td>
+
+              <td>
+                ${badge(cuenta.tipo, "info")}
+
+                ${cuenta.dias_mora
+              ? `<i
+                        class="fa fa-info-circle text-danger ml-1"
+                        data-toggle="popover"
+                        data-trigger="hover"
+                        data-placement="top"
+                        data-content="${cuenta.dias_mora}"
+                        style="cursor:pointer;"
+                      ></i>`
+              : ""
+            }
+              </td>
+
+              <td class="text-right font-weight-bold">
+                ${money(deuda)}
+              </td>
+
+              <td class="text-right">
+                ${money(interes)}
+              </td>
+
+              <td class="text-right ${mora > 0 ? "text-danger font-weight-bold" : ""
+            }">
+                ${money(mora)}
+              </td>
+
+              <td class="text-right text-success">
+                ${money(descuento)}
+              </td>
+
+              <td class="text-right font-weight-bold">
+                ${money(abonado)}
+              </td>
+
+              <td class="text-center">
+
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm"
+                  data-toggle="collapse"
+                  data-target="#detalleCobrar${i}"
+                  title="Ver amortizaciones"
+                >
+                  <i class="fa fa-eye"></i>
+                </button>
+
+              </td>
+
+            </tr>
+
+            <tr
+              id="detalleCobrar${i}"
+              class="collapse"
+            >
+              <td colspan="8">
+                ${detalleHtml}
+              </td>
+            </tr>
+          `;
         });
-      });
+      }
 
-      html +=
-        `<tr>
-				<td colspan="2"></td>
-				<td style="color: blue; text-align: right;">TOTAL</td>
-				<td style="color: blue">` +
-        symbol +
-        pagado +
-        `</td>
-				<td style="color: blue">` +
-        symbol +
-        interes +
-        `</td>
-				<td style="color: red">` +
-        symbol +
-        total +
-        `</td>
-				<td></td>
-			</tr>
-			  </tbody>
-			</table>`;
-      $("#data_proveedor").html(html);
+      htmlCobrar += `
+            </tbody>
 
-      // Tabla de Cuentas por Pagar
-      var cuentasxcobrar = data.cuentasxpagar;
-      var totalc = 0;
-      var interesc = 0;
-      var recibidoc = 0;
-      var htmlform = `
-			<table class="table table-bordered table-striped table-hover table-sm">
-			  <thead>
-			    <tr>
-			      <th>Fecha</th>
-			      <th>Tipo</th>
-			      <th>Deuda Total</th>
-			      <th>Interes</th>
-			      <th>Abono Total</th>
-			      <th>Monto Pagado</th>
-			    </tr>
-			  </thead>
-			  <tbody>`;
+            <tfoot>
+              <tr class="bg-light font-weight-bold">
 
-      $.each(cuentasxcobrar, function (i, item) {
-        totalc += parseFloat(cuentasxcobrar[i].deudatotal);
-        interesc += parseFloat(cuentasxcobrar[i].interes);
-        htmlform +=
-          `<tr>
-					<td>` +
-          cuentasxcobrar[i].fecha_hora +
-          `</td>
-					<td>` +
-          cuentasxcobrar[i].tipo +
-          `</td>
-					<td>` +
-          symbol +
-          Number(cuentasxcobrar[i].deudatotal).toFixed(2) +
-          `</td>
-					<td>` +
-          symbol +
-          Number(cuentasxcobrar[i].interes).toFixed(2) +
-          `</td>
-					<td>` +
-          symbol +
-          Number(cuentasxcobrar[i].abonototal).toFixed(2) +
-          `</td>
-					<td>` +
-          symbol +
-          0 +
-          `</td>
-				</tr>`;
+                <td colspan="2" class="text-right">
+                  TOTAL
+                </td>
 
-        var detallecuentasxcobrar = cuentasxcobrar[i].detalle;
-        $.each(detallecuentasxcobrar, function (a, item) {
-          recibidoc += parseFloat(detallecuentasxcobrar[a].montopagado);
-          htmlform +=
-            `<tr>
-						<td colspan="2"></td>
-						<td>` +
-            detallecuentasxcobrar[a].tipo +
-            `</td>
-						<td></td>
-						<td></td>
-						<td>` +
-            symbol +
-            detallecuentasxcobrar[a].montopagado +
-            `</td>
-					</tr>`;
+                <td class="text-right text-danger">
+                  ${money(totalDeuda)}
+                </td>
+
+                <td class="text-right">
+                  ${money(totalInteresCobrar)}
+                </td>
+
+                <td class="text-right">
+                  ${money(totalMora)}
+                </td>
+
+                <td class="text-right text-success">
+                  ${money(totalDescuento)}
+                </td>
+
+                <td class="text-right">
+                  ${money(totalAbonado)}
+                </td>
+
+                <td></td>
+
+              </tr>
+            </tfoot>
+
+          </table>
+        </div>
+      `;
+
+      $("#data_cuentas_pagar").html(htmlCobrar);
+
+
+      /* =========================================================
+         3. COMPRAS A PROVEEDORES
+      ========================================================= */
+
+      const compras = data.compras || [];
+
+      let totalCompra = 0;
+      let totalCompraPagado = 0;
+      let totalCompraInteres = 0;
+
+      let htmlCompras = `
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+
+            <thead class="thead-light">
+              <tr>
+                <th style="width:120px;">Fecha</th>
+                <th style="width:140px;">Comprobante</th>
+                <th>Detalle</th>
+                <th class="text-right">Importe</th>
+                <th class="text-right">Interés</th>
+                <th class="text-right">Total</th>
+                <th class="text-center">Cuotas</th>
+              </tr>
+            </thead>
+
+            <tbody>
+      `;
+
+      if (compras.length === 0) {
+
+        htmlCompras += `
+          <tr>
+            <td colspan="7">
+              ${empty("No existen compras a crédito en el período seleccionado")}
+            </td>
+          </tr>
+        `;
+
+      } else {
+
+        $.each(compras, function (i, compra) {
+
+          const importe = number(compra.totalrecibido);
+          const interes = number(compra.interes);
+          const total = number(compra.total_venta);
+
+          totalCompra += total;
+          totalCompraPagado += importe;
+          totalCompraInteres += interes;
+
+          const detalle = compra.detalle || [];
+
+          let detalleHtml = `
+            <div class="bg-light border rounded p-2 mt-2">
+
+              <div class="d-flex align-items-center mb-2">
+                <i class="fa fa-shopping-basket text-primary mr-2"></i>
+                <strong>Detalle de productos</strong>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered bg-white mb-0">
+
+                  <thead>
+                    <tr>
+                      <th>Producto</th>
+                      <th class="text-center">Cantidad</th>
+                      <th class="text-right">Precio</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+          `;
+
+          if (detalle.length === 0) {
+
+            detalleHtml += `
+              <tr>
+                <td colspan="3" class="text-center text-muted">
+                  Sin detalle de productos
+                </td>
+              </tr>
+            `;
+
+          } else {
+
+            $.each(detalle, function (a, item) {
+
+              detalleHtml += `
+                <tr>
+                  <td>${item.nombre_producto}</td>
+                  <td class="text-center">${item.cantidad}</td>
+                  <td class="text-right">
+                    ${symbol}${Number(item.precio_venta || 0).toFixed(2)}
+                  </td>
+                </tr>
+              `;
+
+            });
+          }
+
+          detalleHtml += `
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          `;
+
+          htmlCompras += `
+            <tr>
+
+              <td>
+                <small>${compra.fecha_hora}</small>
+              </td>
+
+              <td>
+                ${badge(compra.serie_comprobante, "secondary")}
+              </td>
+
+              <td>
+
+                <button
+                  type="button"
+                  class="btn btn-link btn-sm p-0"
+                  data-toggle="collapse"
+                  data-target="#detalleCompra${i}"
+                >
+                  <i class="fa fa-list mr-1"></i>
+                  Ver productos
+                </button>
+
+                <div
+                  id="detalleCompra${i}"
+                  class="collapse"
+                >
+                  ${detalleHtml}
+                </div>
+
+              </td>
+
+              <td class="text-right">
+                ${money(importe)}
+              </td>
+
+              <td class="text-right">
+                ${money(interes)}
+              </td>
+
+              <td class="text-right font-weight-bold">
+                ${money(total)}
+              </td>
+
+              <td class="text-center">
+                ${compra.meses || 0}
+              </td>
+
+            </tr>
+          `;
         });
-      });
+      }
 
-      htmlform +=
-        `<tr>
-				<td style="color: blue; text-align: right;" colspan="2">TOTAL</td>
-				<td style="color: red">` +
-        symbol +
-        totalc.toFixed(2) +
-        `</td>
-				<td style="color: blue">` +
-        symbol +
-        interesc.toFixed(2) +
-        `</td>
-				<td style="color: blue">` +
-        symbol +
-        recibidoc.toFixed(2) +
-        `</td>
-				<td style="color: blue">` +
-        symbol +
-        recibidoc.toFixed(2) +
-        `</td>
-			</tr>
-			  </tbody>
-			</table>`;
-      $("#data_proveedor_pagar").html(htmlform);
+      htmlCompras += `
+            </tbody>
+
+            <tfoot>
+              <tr class="bg-light font-weight-bold">
+
+                <td colspan="3" class="text-right">
+                  TOTAL
+                </td>
+
+                <td class="text-right">
+                  ${money(totalCompraPagado)}
+                </td>
+
+                <td class="text-right">
+                  ${money(totalCompraInteres)}
+                </td>
+
+                <td class="text-right text-danger">
+                  ${money(totalCompra)}
+                </td>
+
+                <td></td>
+
+              </tr>
+            </tfoot>
+
+          </table>
+        </div>
+      `;
+
+      $("#data_proveedor").html(htmlCompras);
+
+
+      /* =========================================================
+         4. CUENTAS POR PAGAR
+      ========================================================= */
+
+      const cuentasxpagar = data.cuentasxpagar || [];
+
+      let totalPagar = 0;
+      let totalInteresPagar = 0;
+      let totalPagadoPagar = 0;
+
+      let htmlPagar = `
+        <div class="table-responsive">
+          <table class="table table-sm table-hover mb-0">
+
+            <thead class="thead-light">
+              <tr>
+                <th style="width:120px;">Fecha</th>
+                <th>Cuenta</th>
+                <th class="text-right">Deuda</th>
+                <th class="text-right">Interés</th>
+                <th class="text-right">Abonado</th>
+                <th class="text-right">Pagado</th>
+                <th class="text-center">Detalle</th>
+              </tr>
+            </thead>
+
+            <tbody>
+      `;
+
+      if (cuentasxpagar.length === 0) {
+
+        htmlPagar += `
+          <tr>
+            <td colspan="7">
+              ${empty("No existen cuentas por pagar en el período seleccionado")}
+            </td>
+          </tr>
+        `;
+
+      } else {
+
+        $.each(cuentasxpagar, function (i, cuenta) {
+
+          const deuda = number(cuenta.deudatotal);
+          const interes = number(cuenta.interes);
+          const abonado = number(cuenta.abonototal);
+
+          totalPagar += deuda;
+          totalInteresPagar += interes;
+
+          const detalle = cuenta.detalle || [];
+
+          let detalleHtml = `
+            <div class="bg-light border rounded p-2 mt-2">
+
+              <div class="d-flex align-items-center mb-2">
+                <i class="fa fa-money text-success mr-2"></i>
+                <strong>Detalle de pagos</strong>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-sm table-bordered bg-white mb-0">
+
+                  <thead>
+                    <tr>
+                      <th>Concepto</th>
+                      <th class="text-right">Monto pagado</th>
+                    </tr>
+                  </thead>
+
+                  <tbody>
+          `;
+
+          if (detalle.length === 0) {
+
+            detalleHtml += `
+              <tr>
+                <td colspan="2" class="text-center text-muted">
+                  Sin pagos registrados
+                </td>
+              </tr>
+            `;
+
+          } else {
+
+            $.each(detalle, function (a, item) {
+
+              const monto = number(item.montopagado);
+
+              totalPagadoPagar += monto;
+
+              detalleHtml += `
+                <tr>
+                  <td>${item.tipo}</td>
+                  <td class="text-right font-weight-bold">
+                    ${money(monto)}
+                  </td>
+                </tr>
+              `;
+
+            });
+          }
+
+          detalleHtml += `
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          `;
+
+          htmlPagar += `
+            <tr>
+
+              <td>
+                <small>${cuenta.fecha_hora}</small>
+              </td>
+
+              <td>
+                ${badge(cuenta.tipo, "warning")}
+              </td>
+
+              <td class="text-right font-weight-bold">
+                ${money(deuda)}
+              </td>
+
+              <td class="text-right">
+                ${money(interes)}
+              </td>
+
+              <td class="text-right">
+                ${money(abonado)}
+              </td>
+
+              <td class="text-right text-success font-weight-bold">
+                ${money(
+            detalle.reduce(function (total, item) {
+              return total + number(item.montopagado);
+            }, 0)
+          )}
+              </td>
+
+              <td class="text-center">
+
+                <button
+                  type="button"
+                  class="btn btn-outline-primary btn-sm"
+                  data-toggle="collapse"
+                  data-target="#detallePagar${i}"
+                >
+                  <i class="fa fa-eye"></i>
+                </button>
+
+              </td>
+
+            </tr>
+
+            <tr
+              id="detallePagar${i}"
+              class="collapse"
+            >
+              <td colspan="7">
+                ${detalleHtml}
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      htmlPagar += `
+            </tbody>
+
+            <tfoot>
+              <tr class="bg-light font-weight-bold">
+
+                <td colspan="2" class="text-right">
+                  TOTAL
+                </td>
+
+                <td class="text-right text-danger">
+                  ${money(totalPagar)}
+                </td>
+
+                <td class="text-right">
+                  ${money(totalInteresPagar)}
+                </td>
+
+                <td></td>
+
+                <td class="text-right text-success">
+                  ${money(totalPagadoPagar)}
+                </td>
+
+                <td></td>
+
+              </tr>
+            </tfoot>
+
+          </table>
+        </div>
+      `;
+
+      $("#data_proveedor_pagar").html(htmlPagar);
+
+
+      /* =========================================================
+         POPOVERS
+      ========================================================= */
 
       $('[data-toggle="popover"]').popover({
-        trigger: 'hover',
-        container: 'body'
+        trigger: "hover",
+        container: "body"
       });
 
     },
+
+    error: function () {
+
+      $("#data_compras").html(
+        empty("No se pudo obtener el historial del cliente")
+      );
+
+      $("#data_cuentas_pagar").html("");
+      $("#data_proveedor").html("");
+      $("#data_proveedor_pagar").html("");
+
+    }
   });
-
-
 }
 
 
