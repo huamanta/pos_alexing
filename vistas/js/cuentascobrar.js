@@ -801,37 +801,8 @@ async function guardaryeditar(e) {
             }
 
             const t = res.ticket;
-            let formaPago = "";
-            if (Number(t.monto_efectivo) > 0) {
-                formaPago += `
-                    <tr>
-                        <td>Efectivo</td>
-                        <td style="text-align:right">S/ ${Number(t.monto_efectivo).toFixed(2)}</td>
-                    </tr>`;
-            }
-
-            if (Number(t.monto_tarjeta) > 0) {
-                formaPago += `
-                    <tr>
-                        <td>Tarjeta</td>
-                        <td style="text-align:right">S/ ${Number(t.monto_tarjeta).toFixed(2)}</td>
-                    </tr>
-
-                    <tr>
-                        <td>Banco</td>
-                        <td style="text-align:right">${t.banco || "-"}</td>
-                    </tr>
-
-                    <tr>
-                        <td>Operación</td>
-                        <td style="text-align:right">${t.operacion || "-"}</td>
-                    </tr>`;
-            }
-
-            abrirReciboPagoTicket(t, formaPago);
-
-            window.document.close();
-
+            imprimirConstanciaPagoInicial(t.idcpc);
+            
             Swal.fire("Éxito", res.message, "success");
 
             $('#getCodeModal').modal('hide');
@@ -849,6 +820,37 @@ async function guardaryeditar(e) {
             $("#btnGuardarPago").text("Guardar pago").prop('disabled', false);
         }
     });
+}
+
+function imprimirConstanciaPagoInicial(idcpc) {
+    const url = `reportes/exTicketPagoCuota.php?id=${encodeURIComponent(idcpc)}`;
+
+    const iframe = document.createElement("iframe");
+    iframe.src = url;
+    iframe.style.position = "fixed";
+    iframe.style.width = "0";
+    iframe.style.height = "0";
+    iframe.style.left = "-9999px";
+    iframe.style.top = "-9999px";
+    iframe.style.border = "0";
+    iframe.style.opacity = "0";
+    iframe.style.pointerEvents = "none";
+
+    document.body.appendChild(iframe);
+
+    iframe.onload = function () {
+        setTimeout(() => {
+            try {
+                iframe.focus();
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+            } catch (e) {
+                console.warn("No se pudo abrir la impresión del iframe oculto:", e);
+            }
+
+            setTimeout(() => iframe.remove(), 1200);
+        }, 500);
+    };
 }
 
 
@@ -1693,7 +1695,7 @@ function descragarResumen() {
         fecha_inicio: fecha_inicio,
         fecha_fin: fecha_fin
     });
-    
+
     window.location.href = `modelos/exports/exportar_cuentas_cobrar.php?${params.toString()}`;
 }
 
