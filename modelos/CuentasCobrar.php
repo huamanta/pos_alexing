@@ -6,6 +6,7 @@ require_once "Helpers.php";
 require_once "../configuraciones/ConexionPdo.php";
 require_once "../core/FluentQuery.php";
 require_once "../core/FluentSave.php";
+
 use Carbon\Carbon;
 
 
@@ -98,7 +99,6 @@ class CuentasCobrar extends Helpers
                     "observacion" => $observacion
                 ]
             ];
-
         } catch (Throwable $e) {
             $this->pdo->rollBack();
             return [
@@ -106,6 +106,18 @@ class CuentasCobrar extends Helpers
                 "message" => $e->getMessage()
             ];
         }
+    }
+
+    public function obtenerNumeroCuota($idventa, $idcpc)
+    {
+        $cuota = (new DBQuery($this->pdo))
+            ->select('COUNT(*) AS numero_cuota')
+            ->from('cuentas_por_cobrar')
+            ->where('idventa', '=', $idventa)
+            ->where('idcpc', '<=', $idcpc)
+            ->first();
+
+        return (int) ($cuota['numero_cuota'] ?? 0);
     }
 
     private function obtenerFechaPago($fechaPago)
@@ -125,7 +137,7 @@ class CuentasCobrar extends Helpers
         }
     }
 
-    private function obtenerCuentaPorCobrar(int $idcpc): array
+    public function obtenerCuentaPorCobrar(int $idcpc): array
     {
         $fila = (new DBQuery($this->pdo))
             ->from('cuentas_por_cobrar cc')
@@ -240,8 +252,8 @@ class CuentasCobrar extends Helpers
 
         $moraNueva = round(
             floatval($fila["deuda"]) *
-            ($config["valor"] / 100) *
-            $dias,
+                ($config["valor"] / 100) *
+                $dias,
             2
         );
 
@@ -286,7 +298,7 @@ class CuentasCobrar extends Helpers
 
         $monto = round(
             Helpers::toFloat($montoEfectivo) +
-            Helpers::toFloat($montoTarjeta),
+                Helpers::toFloat($montoTarjeta),
             2
         );
 
@@ -471,7 +483,6 @@ class CuentasCobrar extends Helpers
 		        ON c.idpersona = v.idcliente
 		        WHERE cc.idventa = '$idventa'";
         return ejecutarConsulta($sql);
-
     }
 
     public function listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal)
@@ -769,7 +780,6 @@ class CuentasCobrar extends Helpers
 		        ON c.idpersona = v.idcliente
 		        WHERE cc.idventa = '$idventa'";
         return ejecutarConsulta($sql);
-
     }
 
     public function mostrarDeuda($idVenta)
@@ -1178,7 +1188,7 @@ class CuentasCobrar extends Helpers
         return Response::json($notificaciones);
     }
 
-    
+
     public function estadoCuentaDocumento($idcpc)
     {
         $sql = "
@@ -1329,7 +1339,7 @@ class CuentasCobrar extends Helpers
 
         if (!empty($fecha_inicio) && !empty($fecha_fin)) {
             $query->whereBetween('DATE(v.fecha_hora)', $fecha_inicio, $fecha_fin);
-        } 
+        }
 
         $ventas = $query
             ->orderBy('v.fecha_hora')
@@ -1552,7 +1562,7 @@ class CuentasCobrar extends Helpers
                             <td style='padding-left:30px;color:green'>
                                 ↳ ABONO {$docVenta}
                             </td>
-                            <td class='text-right'>". Helpers::get_currency_symbol(0, $currency) ."</td>
+                            <td class='text-right'>" . Helpers::get_currency_symbol(0, $currency) . "</td>
                             <td class='text-right'>" . Helpers::get_currency_symbol($montoAbono, $currency) . "</td>
                             <td class='text-right'>
                                 <b>" . Helpers::get_currency_symbol($saldoVenta, $currency) . "</b>
@@ -1580,7 +1590,7 @@ class CuentasCobrar extends Helpers
                                     ↳ CUOTA PENDIENTE {$docVenta}
                                 </td>
                                 <td class='text-right'>" . Helpers::get_currency_symbol($montoCuota, $currency) . "</td>
-                                <td class='text-right'>". Helpers::get_currency_symbol(0, $currency) ."</td>
+                                <td class='text-right'>" . Helpers::get_currency_symbol(0, $currency) . "</td>
                                 <td class='text-right'>
                                     <b>" . Helpers::get_currency_symbol($saldoVenta, $currency) . "</b>
                                 </td>
@@ -1683,7 +1693,6 @@ class CuentasCobrar extends Helpers
                             MAX(condicion) condicion
                          FROM cuentas_por_cobrar
                          WHERE idrefinanciamiento='{$ref["idref"]}'";
-
             } else {
 
                 $refinanciado = false;
@@ -1703,19 +1712,19 @@ class CuentasCobrar extends Helpers
             $totalAbonado = floatval($credito["abonado"]);
             $saldoPendiente = floatval($credito["deuda"]);
 
-                $sqlResumenCuotas = !empty($ref["idref"])
-                     ? "SELECT COUNT(*) AS cuotas, SUM(interes) AS interes_total
+            $sqlResumenCuotas = !empty($ref["idref"])
+                ? "SELECT COUNT(*) AS cuotas, SUM(interes) AS interes_total
                          FROM cuentas_por_cobrar
                          WHERE idrefinanciamiento='{$ref["idref"]}'"
-                     : "SELECT COUNT(*) AS cuotas, SUM(interes) AS interes_total
+                : "SELECT COUNT(*) AS cuotas, SUM(interes) AS interes_total
                          FROM cuentas_por_cobrar
                          WHERE idventa='$row->idventa'
                             AND idrefinanciamiento IS NULL
                             AND idrefinanciamiento_origen IS NULL";
 
-                $resumenCuotas = ejecutarConsultaSimpleFila($sqlResumenCuotas);
-                $numeroCuotas = intval($resumenCuotas["cuotas"] ?? 0);
-                $interesTotal = floatval($resumenCuotas["interes_total"] ?? 0);
+            $resumenCuotas = ejecutarConsultaSimpleFila($sqlResumenCuotas);
+            $numeroCuotas = intval($resumenCuotas["cuotas"] ?? 0);
+            $interesTotal = floatval($resumenCuotas["interes_total"] ?? 0);
 
             $contratos = new Contratos();
             $retension = $contratos->buscarRetencion($row->idventa);
@@ -1821,7 +1830,6 @@ class CuentasCobrar extends Helpers
                   AND cc.idrefinanciamiento = '{$ref["idref"]}'
                   AND cc.condicion = '1'
                 ORDER BY cc.fechavencimiento";
-
         } else {
 
             // Mostrar cuotas originales
@@ -1841,7 +1849,6 @@ class CuentasCobrar extends Helpers
                   AND cc.idrefinanciamiento_origen IS NULL
                   AND cc.condicion = '1'
                 ORDER BY cc.fechavencimiento";
-
         }
 
         $result = ejecutarConsulta($sql);
@@ -1936,8 +1943,8 @@ class CuentasCobrar extends Helpers
                         if ($dias > 0) {
                             $moraNueva = round(
                                 floatval($row->deuda) *
-                                ($config["valor"] / 100) *
-                                $dias,
+                                    ($config["valor"] / 100) *
+                                    $dias,
                                 2
                             );
                             $dias_mora = $dias;
@@ -1976,6 +1983,17 @@ class CuentasCobrar extends Helpers
                     onclick='verEstadoCuenta({$row->idcpc})'
                     title='Ver estado de cuenta'>
                     <i class='fas fa-file-invoice-dollar'></i>
+                </button>";
+            }
+
+            if ($saldo <= 0) {
+                $acciones .= "
+                <button
+                    type='button'
+                    class='btn btn-sm btn-success'
+                    onclick='imprimirConstanciaPagoInicial({$row->idcpc})'
+                    title='Ver estado de cuenta'>
+                    <i class='fas fa-print'></i>
                 </button>";
             }
 
@@ -2409,7 +2427,6 @@ class CuentasCobrar extends Helpers
                     2
                 )
             ];
-
         } catch (Exception $e) {
 
             $this->pdo->rollBack();
@@ -2523,8 +2540,8 @@ class CuentasCobrar extends Helpers
 
                         $mora += round(
                             floatval($row["deuda"]) *
-                            ($configMora["valor"] / 100) *
-                            $dias,
+                                ($configMora["valor"] / 100) *
+                                $dias,
                             2
                         );
                     }
@@ -2556,7 +2573,7 @@ class CuentasCobrar extends Helpers
 
                         $descuento = round(
                             floatval($row["deuda"]) *
-                            ($configDescuento["valor"] / 100),
+                                ($configDescuento["valor"] / 100),
                             2
                         );
                     }
@@ -2699,7 +2716,6 @@ class CuentasCobrar extends Helpers
                 "success" => true,
                 "message" => "Seguimiento registrado correctamente"
             ]);
-
         } catch (Throwable $e) {
 
             if (isset($this->pdo) && $this->pdo->inTransaction()) {
@@ -2903,7 +2919,6 @@ class CuentasCobrar extends Helpers
                 "success" => true,
                 "message" => "Seguimiento actualizado correctamente"
             ]);
-
         } catch (Exception $e) {
 
             if ($this->pdo->inTransaction()) {
@@ -2914,7 +2929,6 @@ class CuentasCobrar extends Helpers
                 "success" => false,
                 "message" => $e->getMessage()
             ]);
-
         }
     }
 
@@ -3219,6 +3233,14 @@ class CuentasCobrar extends Helpers
         return json_encode($eventos);
     }
 
+    public function obtenerUltimoPagoCuota($idcpc)
+    {
+        return (new DBQuery($this->pdo))
+            ->select('dcpc.*, b.nombre AS banco')
+            ->from('detalle_cuentas_por_cobrar dcpc')
+            ->leftJoin('bancos b', 'b.idbanco=dcpc.idbanco')
+            ->where('dcpc.idcpc', '=', $idcpc)
+            ->orderBy('dcpc.iddcpc', 'DESC')
+            ->first();
+    }
 }
-
-?>
