@@ -1,5 +1,7 @@
 <?php
 
+use function Safe\error_log;
+
 require "../configuraciones/Conexion.php";
 require_once 'Persona.php';
 require_once 'Helpers.php';
@@ -83,155 +85,11 @@ class Solicitudes extends Persona
             ];
 
             return json_encode($response);
-
         } catch (\Throwable $th) {
             throw $th;
         }
     }
 
-
-    // public function listarSolicitudes(
-    //     $idsucursal,
-    //     $search = '',
-    //     $start = 0,
-    //     $length = 10,
-    //     $estado = '',
-    //     $riesgo = '',
-    //     $paso = '',
-    //     $texto = ''
-    // ) {
-
-    //     $where = "AND s.idsucursal = '$idsucursal'";
-
-    //     if (!empty($texto)) {
-    //         $search = $texto;
-    //     }
-
-    //     if (!empty($search)) {
-
-    //         $search = mysqli_real_escape_string(
-    //             $GLOBALS['conexion'],
-    //             $search
-    //         );
-
-    //         $where .= " AND (
-    //             s.codigo LIKE '%$search%'
-    //             OR p.nombre LIKE '%$search%'
-    //             OR s.estado LIKE '%$search%'
-    //             OR s.riesgo LIKE '%$search%'
-    //         )";
-    //     }
-
-    //     if (!empty($estado)) {
-    //         $where .= " AND s.estado='$estado'";
-    //     }
-
-    //     if (!empty($riesgo)) {
-    //         $where .= " AND s.riesgo='$riesgo'";
-    //     }
-
-    //     if (!empty($paso)) {
-    //         $where .= " AND s.paso_actual='$paso'";
-    //     }
-
-    //     $sqlTotal = "SELECT COUNT(*) total
-    //                 FROM solicitud_credito s
-    //                 INNER JOIN persona p
-    //                     ON p.idpersona=s.idcliente
-    //                 WHERE 1=1 $where";
-
-    //     $total = ejecutarConsultaSimpleFila($sqlTotal);
-
-    //     $sql = "SELECT
-    //                 s.*,
-    //                 p.nombre cliente,
-    //                 wp.nombre paso_actual_nombre,
-
-    //                 (
-    //                     SELECT DATEDIFF(
-    //                         NOW(),
-    //                         MAX(sw.fecha_inicio)
-    //                     )
-    //                     FROM solicitud_workflow sw
-    //                     WHERE sw.idsolicitud=s.idsolicitud
-    //                 ) dias_etapa
-
-    //             FROM solicitud_credito s
-
-    //             INNER JOIN persona p
-    //                 ON p.idpersona=s.idcliente
-
-    //             LEFT JOIN workflow_paso wp
-    //                 ON wp.idpaso=s.paso_actual
-
-    //             WHERE 1=1 $where
-
-    //             ORDER BY s.idsolicitud DESC
-
-    //             LIMIT $start,$length";
-
-    //     $rspta = ejecutarConsulta($sql);
-
-    //     $data = array();
-    //     while ($reg = $rspta->fetch_object()) {
-    //         $botones = '';
-    //         if (Helpers::getUserPermissionAccion('Aprobar solicitudes')) {
-    //             $botones .= '<button
-    //                     class="btn btn-info btn-sm"
-    //                     onclick="verSolicitud(' . $reg->idsolicitud . ')">
-    //                     <i class="fa fa-eye"></i>
-    //                 </button>';
-    //         }
-    //         if (Helpers::getUserPermissionAccion('Ver flujo de pasos')) {
-    //             $botones .= '<button
-    //                     class="btn btn-warning btn-sm"
-    //                     onclick="verWorkflow(' . $reg->idsolicitud . ')">
-    //                     <i class="fa fa-route"></i>
-    //                 </button>';
-    //         }
-
-    //         if (Helpers::getUserPermissionAccion('Ver archivos de solicitud')) {
-    //             $botones .= '<button
-    //                     class="btn btn-success btn-sm"
-    //                     onclick="verArchivos(' . $reg->idsolicitud . ')">
-    //                     <i class="fa fa-folder"></i>
-    //                 </button>';
-    //         }
-    //         $data[] = array(
-
-    //             "0" => $reg->codigo,
-
-    //             "1" => $reg->cliente,
-
-    //             "2" => '<span class="badge badge-dark">'
-    //                 . $reg->score .
-    //                 '</span>',
-
-    //             "3" => $reg->riesgo,
-
-    //             "4" => $reg->paso_actual_nombre,
-
-    //             "5" => intval($reg->dias_etapa) . ' día(s)',
-
-    //             "6" => $reg->estado,
-
-    //             "7" => date(
-    //                 'd/m/Y H:i',
-    //                 strtotime($reg->fecha_registro)
-    //             ),
-    //             "8" => '
-    //             <div class="btn-group">
-    //                 ' . $botones . '
-    //             </div>'
-    //         );
-    //     }
-
-    //     return array(
-    //         "recordsTotal" => (int) $total['total'],
-    //         "recordsFiltered" => (int) $total['total'],
-    //         "data" => $data
-    //     );
-    // }
 
     public function guardar(
         $idcliente,
@@ -364,7 +222,6 @@ class Solicitudes extends Persona
                 "riesgo" => $riesgo,
                 "msg" => "Solicitud registrada correctamente"
             ]);
-
         } catch (Exception $e) {
 
             ejecutarConsulta("ROLLBACK");
@@ -631,14 +488,21 @@ class Solicitudes extends Persona
         }
     }
 
-    public function aprobarSolicitud($idsolicitud, $observacion, $idusuario, $notas_comite)
+    public function aprobarSolicitud($idsolicitud, $observacion, $idusuario, $notas_comite, $comite)
     {
         try {
             ejecutarConsulta("START TRANSACTION");
 
-            // Obtener cotización asociada
-            $sqlCotizacion = "SELECT idcotizacion 
-                          FROM solicitud_credito 
+            if (empty($idsolicitud)) {
+                throw new Exception("Solicitud inválida");
+            }
+
+            if (!is_array($comite) || empty($comite)) {
+                throw new Exception("La solicitud no tiene responsables del comité registrados");
+            }
+
+            $sqlCotizacion = "SELECT idcotizacion
+                          FROM solicitud_credito
                           WHERE idsolicitud='$idsolicitud'";
 
             $cotizacion = ejecutarConsultaSimpleFila($sqlCotizacion);
@@ -647,21 +511,105 @@ class Solicitudes extends Persona
                 throw new Exception("No se encontró la cotización asociada");
             }
 
-            // Marcar paso 4 como aprobado
+            $totalResponsables = count($comite);
+
+            $aprobados = 0;
+            $desaprobados = 0;
+            $pendientes = 0;
+
+            foreach ($comite as $responsable) {
+
+                $idcomite = isset($responsable['idcomite_credito'])
+                    ? intval($responsable['idcomite_credito'])
+                    : 0;
+
+                $estado = isset($responsable['estado'])
+                    ? strtoupper(trim($responsable['estado']))
+                    : 'PENDIENTE';
+
+                if ($idcomite <= 0) {
+                    throw new Exception("Uno de los integrantes del comité no es válido");
+                }
+
+                if ($estado === 'APROBADO') {
+                    $aprobados++;
+                } elseif ($estado === 'DESAPROBADO') {
+                    $desaprobados++;
+                } else {
+                    $pendientes++;
+                }
+            }
+
+            if ($pendientes > 0) {
+                throw new Exception(
+                    "Todos los responsables del comité deben emitir su decisión"
+                );
+            }
+
+            if ($aprobados === $totalResponsables) {
+
+                $estadoSolicitud = 'APROBADO';
+                $estadoWorkflow = 'APROBADO';
+                $observacionFinal = $observacion ?: 'Comité aprobado';
+            } elseif ($desaprobados === $totalResponsables) {
+
+                $estadoSolicitud = 'RECHAZADO';
+                $estadoWorkflow = 'RECHAZADO';
+                $observacionFinal = $observacion ?: 'Comité desaprobado';
+            } else {
+
+                throw new Exception(
+                    "La solicitud no puede pasar al paso 5 porque existen decisiones diferentes entre los responsables del comité"
+                );
+            }
+
+            foreach ($comite as $responsable) {
+
+                $idcomite = intval($responsable['idcomite_credito']);
+                $estado = strtoupper(trim($responsable['estado']));
+
+                $sqlExiste = "SELECT idcomite_credito
+                          FROM solicitud_comite
+                          WHERE idsolicitud='$idsolicitud'
+                          AND idcomite_credito='$idcomite'";
+
+                $existe = ejecutarConsultaSimpleFila($sqlExiste);
+
+                if ($existe) {
+
+                    $sqlUpdate = "UPDATE solicitud_comite
+                              SET estado='$estado'
+                              WHERE idsolicitud='$idsolicitud'
+                              AND idcomite_credito='$idcomite'";
+
+                    if (!ejecutarConsulta($sqlUpdate)) {
+                        throw new Exception("No se pudo actualizar la decisión del comité");
+                    }
+                } else {
+
+                    $sqlInsert = "INSERT INTO solicitud_comite
+                              (idsolicitud, idcomite_credito, estado)
+                              VALUES
+                              ('$idsolicitud', '$idcomite', '$estado')";
+
+                    if (!ejecutarConsulta($sqlInsert)) {
+                        throw new Exception("No se pudo registrar la decisión del comité");
+                    }
+                }
+            }
+
             $this->marcarPasoCompletado($idsolicitud, 4);
 
-            // Aprobar solicitud
             $sql_solicitud = "UPDATE solicitud_credito
-                          SET estado='APROBADO',
+                          SET estado='$estadoSolicitud',
                               paso_actual=5,
                               fecha_actualizacion=NOW()
                           WHERE idsolicitud='$idsolicitud'";
 
             if (!ejecutarConsulta($sql_solicitud)) {
-                throw new Exception("No se pudo aprobar la solicitud");
+                throw new Exception("No se pudo actualizar la solicitud");
             }
 
-            // Guardar notas del comité
             $sql2 = "UPDATE solicitud_evaluacion
                  SET notas_comite='$notas_comite'
                  WHERE idsolicitud='$idsolicitud'";
@@ -670,26 +618,30 @@ class Solicitudes extends Persona
                 throw new Exception("No se pudo actualizar las notas del comité");
             }
 
-            // Registrar workflow
             $date = date('Y-m-d H:i:s');
+
             if (
                 !$this->insertarWorkflow(
                     $idsolicitud,
                     5,
-                    $observacion,
+                    $observacionFinal,
                     $idusuario,
-                    'APROBADO',
+                    $estadoWorkflow,
                     $date
                 )
             ) {
-                throw new Exception("No se pudo registrar el workflow de aprobación");
+                throw new Exception("No se pudo registrar el workflow");
             }
 
-            // Actualizar cotización
             $fecha_aprobacion = date('Y-m-d H:i:s');
 
+            $estadoCotizacion = $estadoSolicitud === 'APROBADO'
+                ? 'APROBADO'
+                : 'RECHAZADO';
+
             $update_cotizacion = "UPDATE cotizacion
-                              SET fecha_aprobacion='$fecha_aprobacion', estado='APROBADO'
+                              SET fecha_aprobacion='$fecha_aprobacion',
+                                  estado='$estadoCotizacion'
                               WHERE idcotizacion='{$cotizacion['idcotizacion']}'";
 
             if (!ejecutarConsulta($update_cotizacion)) {
@@ -700,9 +652,10 @@ class Solicitudes extends Persona
 
             return json_encode([
                 "status" => true,
-                "msg" => "Solicitud aprobada correctamente"
+                "msg" => $estadoSolicitud === 'APROBADO'
+                    ? "Todos los responsables aprobaron la solicitud"
+                    : "Todos los responsables desaprobaron la solicitud"
             ]);
-
         } catch (Exception $e) {
 
             ejecutarConsulta("ROLLBACK");
@@ -713,6 +666,7 @@ class Solicitudes extends Persona
             ]);
         }
     }
+
 
     public function workflow($idsolicitud)
     {
@@ -878,5 +832,99 @@ class Solicitudes extends Persona
         }
 
         return json_encode($data);
+    }
+
+    public function comiteCredito($idsolicitud, $idsucursal)
+    {
+        $comite = (new DBQuery($this->pdo))
+            ->select('cc.idcomite_credito, p.nombre, cc.cargo')
+            ->from('comite_credito cc')
+            ->join('personal p', 'p.idpersonal=cc.idpersonal')
+            ->softDeletes('cc.deleted_at')
+            ->where('cc.idsucursal', '=', $idsucursal)
+            ->get();
+
+        if (empty($comite)) {
+            return Response::json([]);
+        }
+
+        foreach ($comite as &$persona) {
+            $persona['estado'] = 'PENDIENTE';
+        }
+
+        if (!empty($idsolicitud)) {
+
+            $solicitudes = (new DBQuery($this->pdo))
+                ->select('idcomite_credito, estado')
+                ->from('solicitud_comite')
+                ->where('idsolicitud', '=', $idsolicitud)
+                ->get();
+
+            foreach ($solicitudes as $solicitud) {
+
+                $idComiteSolicitud = intval($solicitud['idcomite_credito']);
+                $estadoSolicitud = strtoupper(trim($solicitud['estado']));
+
+                foreach ($comite as &$persona) {
+
+                    $idComite = intval($persona['idcomite_credito']);
+
+                    if ($idComite === $idComiteSolicitud) {
+                        $persona['estado'] = $estadoSolicitud;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return Response::json($comite);
+    }
+
+    public function agregarComiteCredito($idsucursal, $idpersonal, $cargo)
+    {
+        try {
+            $saveData = (new FluentSaver($this->pdo))
+                ->table('comite_credito')
+                ->data([
+                    'idsucursal' => $idsucursal,
+                    'idpersonal' => $idpersonal,
+                    'cargo' => $cargo,
+                ])
+                ->save();
+
+            if (!$saveData) {
+                throw new Exception("Error al crear el item", 1);
+            }
+
+            return Response::json([
+                'success' => true,
+                'message' => 'El integrante se ha guardado correctamente'
+            ]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
+    }
+
+
+    public function eliminarComiteCredito($idcomite_credito)
+    {
+        try {
+            $deleted = (new FluentSaver($this->pdo))
+                ->table('comite_credito')
+                ->primaryKey('idcomite_credito')
+                ->softDelete($idcomite_credito);
+
+            if (!$deleted) {
+                throw new Exception("No se pudo eliminar el registro");
+            }
+
+
+            return Response::json([
+                "success" => true,
+                "message" => "Registro eliminado correctamente"
+            ]);
+        } catch (Throwable $e) {
+            return Response::error($e->getMessage());
+        }
     }
 }

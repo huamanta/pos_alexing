@@ -1198,12 +1198,14 @@ class Venta extends Helpers
     {
         $sql = "SELECT
                 v.idventa,
+                DATE_FORMAT(v.fecha_hora, '%d/%m/%Y %H:%i') AS fecha_hora,
                 DATE(v.fecha_hora) AS fecha,
                 DATE(v.fecha_kardex) AS fechahora,
                 c.idcaja AS caja,
                 s.idsucursal AS sucursal,
                 v.idcliente,
                 p.nombre AS cliente,
+                p.num_documento AS num_documento,
                 u.idpersonal,
                 u.nombre AS personal,
                 p.telefono,

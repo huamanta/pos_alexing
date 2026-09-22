@@ -1,12 +1,12 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Solicitudes.php";
-$credito = new Solicitudes();
+$solicitudes = new Solicitudes();
 $idsucursal = $_SESSION['idsucursal'];
 
 switch ($_GET["op"]) {
     case 'listarGeneralSolicitudes':
-        $result = $credito->listarGeneralSolicitudes($idsucursal);
+        $result = $solicitudes->listarGeneralSolicitudes($idsucursal);
         echo $result;
         break;
 
@@ -21,7 +21,7 @@ switch ($_GET["op"]) {
             ? limpiarCadena($_GET['paso'])
             : "";
 
-        $result = $credito->listarSolicitudes(
+        $result = $solicitudes->listarSolicitudes(
             $idsucursal,
             $estado,
             $riesgo,
@@ -30,7 +30,7 @@ switch ($_GET["op"]) {
 
         echo $result;
 
-    break;
+        break;
 
     case 'guardar':
 
@@ -56,7 +56,7 @@ switch ($_GET["op"]) {
 
         $idsucursal = $_SESSION['idsucursal'];
 
-        echo $credito->guardar(
+        echo $solicitudes->guardar(
             $idcliente,
             $idcotizacion,
             $ingreso_mensual,
@@ -66,15 +66,15 @@ switch ($_GET["op"]) {
             $idsucursal
         );
 
-    break;
+        break;
 
     case 'mostrarSolicitud':
         $idsolicitud = isset($_GET['idsolicitud'])
             ? intval($_GET['idsolicitud'])
             : 0;
-        echo $credito->mostrar($idsolicitud);
+        echo $solicitudes->mostrar($idsolicitud);
 
-    break;
+        break;
 
     case 'documentacion':
         $idsolicitud = isset($_POST['idsolicitud'])
@@ -88,14 +88,14 @@ switch ($_GET["op"]) {
             : '';
         $idusuario = $_SESSION['idusuario'];
 
-        echo $credito->cargarDocumentacion(
+        echo $solicitudes->cargarDocumentacion(
             $idsolicitud,
             $observacion,
             $idusuario,
             $observacion_evaluacion
         );
 
-    break;
+        break;
 
     case 'avanzarPaso':
         $idsolicitud = isset($_POST['idsolicitud'])
@@ -109,14 +109,14 @@ switch ($_GET["op"]) {
             : 'Avanzando al siguiente paso';
         $idusuario = $_SESSION['idusuario'];
 
-        echo $credito->avanzarPaso(
+        echo $solicitudes->avanzarPaso(
             $idsolicitud,
             $idpaso,
             $observacion,
             $idusuario
         );
 
-    break;
+        break;
 
     case 'subirDocumento':
         if (
@@ -174,7 +174,7 @@ switch ($_GET["op"]) {
             break;
         }
 
-        if (!$credito->guardarDocumento($idsolicitud, $tipo_documento, $safeName, $originalName, $descripcion)) {
+        if (!$solicitudes->guardarDocumento($idsolicitud, $tipo_documento, $safeName, $originalName, $descripcion)) {
             echo json_encode([
                 'status' => false,
                 'msg' => 'No se pudo registrar el documento.'
@@ -187,7 +187,7 @@ switch ($_GET["op"]) {
             'msg' => 'Documento subido correctamente'
         ]);
 
-    break;
+        break;
 
     case 'aprobarDocumentacion':
         $idsolicitud = isset($_POST['idsolicitud'])
@@ -198,13 +198,13 @@ switch ($_GET["op"]) {
             : 'Documentación aprobada';
         $idusuario = $_SESSION['idusuario'];
 
-        echo $credito->aprobarDocumentacion(
+        echo $solicitudes->aprobarDocumentacion(
             $idsolicitud,
             $observacion,
             $idusuario
         );
 
-    break;
+        break;
 
     case 'observarSolicitud':
         $idsolicitud = isset($_POST['idsolicitud'])
@@ -215,34 +215,47 @@ switch ($_GET["op"]) {
             : 'Solicitud observada';
         $idusuario = $_SESSION['idusuario'];
 
-        echo $credito->marcarObservado(
+        echo $solicitudes->marcarObservado(
             $idsolicitud,
             $observacion,
             $idusuario
         );
 
-    break;
+        break;
+
 
     case 'aprobarSolicitud':
         $idsolicitud = isset($_POST['idsolicitud'])
             ? intval($_POST['idsolicitud'])
             : 0;
+
         $observacion = isset($_POST['observacion'])
             ? limpiarCadena($_POST['observacion'])
             : 'Solicitud aprobada';
+
         $notas_comite = isset($_POST['notas_comite'])
             ? limpiarCadena($_POST['notas_comite'])
             : '';
+
         $idusuario = $_SESSION['idusuario'];
 
-        echo $credito->aprobarSolicitud(
+        $comite = isset($_POST['comite'])
+            ? json_decode($_POST['comite'], true)
+            : [];
+
+        if (!is_array($comite)) {
+            $comite = [];
+        }
+
+        echo $solicitudes->aprobarSolicitud(
             $idsolicitud,
             $observacion,
             $idusuario,
-            $notas_comite
+            $notas_comite,
+            $comite
         );
 
-    break;
+        break;
 
     case 'workflow':
 
@@ -250,25 +263,27 @@ switch ($_GET["op"]) {
             ? intval($_POST['idsolicitud'])
             : 0;
 
-        echo $credito->workflow($idsolicitud);
+        echo $solicitudes->workflow($idsolicitud);
 
-    break;
+        break;
 
     case 'archivos':
-
         $idsolicitud = isset($_POST['idsolicitud'])
             ? intval($_POST['idsolicitud'])
             : 0;
+        echo $solicitudes->archivos($idsolicitud);
 
-        echo $credito->archivos($idsolicitud);
+        break;
 
-    break;
+    case 'comiteCredito':
+        $idsucursal = $_SESSION['idsucursal'];
+        $idsolicitud = $_GET['idsolicitud'] ?? null;
+        $solicitudes->comiteCredito($idsolicitud, $idsucursal);
+        break;
 
     case 'kpis':
-
-        echo $credito->kpis();
-
-    break;
+        echo $solicitudes->kpis();
+        break;
 
     case 'verificacionDomiciliaria':
         $idsolicitud = isset($_POST['idsolicitud'])
@@ -287,7 +302,7 @@ switch ($_GET["op"]) {
         $observacion = "Verificacion domiciliaria: $resultado. $comentarios";
         $idusuario = $_SESSION['idusuario'];
 
-        if (!$credito->guardarVerificacionDomiciliaria($idsolicitud, $resultado, $comentarios, $idusuario, $direccion_registrada)) {
+        if (!$solicitudes->guardarVerificacionDomiciliaria($idsolicitud, $resultado, $comentarios, $idusuario, $direccion_registrada)) {
             echo json_encode([
                 'status' => false,
                 'msg' => 'No se pudo guardar la verificacion domiciliaria'
@@ -295,18 +310,27 @@ switch ($_GET["op"]) {
             break;
         }
 
-        if($resultado === 'CONFORME'){
-            echo $credito->avanzarPaso($idsolicitud, $idpaso, $observacion, $idusuario);
+        if ($resultado === 'CONFORME') {
+            echo $solicitudes->avanzarPaso($idsolicitud, $idpaso, $observacion, $idusuario);
             break;
         }
 
         echo json_encode([
             'status' => true,
-            'msg' => 'Se ha guardado la verificacion con estado'. $resultado
+            'msg' => 'Se ha guardado la verificacion con estado' . $resultado
         ]);
 
-    break;
+        break;
 
+    case 'agregarComiteCredito':
+        $idsucursal = $_SESSION['idsucursal'];
+        $idpersonal = $_POST['idpersonal'];
+        $cargo = $_POST['cargo'];
+        $solicitudes->agregarComiteCredito($idsucursal, $idpersonal, $cargo);
+        break;
+
+    case 'eliminarComiteCredito':
+        $idcomite_credito = $_POST['idcomite_credito'];
+        $solicitudes->eliminarComiteCredito($idcomite_credito);
+        break;
 }
-
-?>

@@ -1037,8 +1037,8 @@ function abrirWhatsApp() {
     return;
   }
 
-  const baseUrl = obtenerBaseUrl();
-  const urlPDF = `${baseUrl}/reportes/factura/generaFacturaCoti.php?id=${idventa}`;
+  
+  const urlPDF = `${BASE_URL}/reportes/factura/generaFacturaCoti.php?id=${idventa}`;
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlPDF)}`;
   let mensaje = `🏢 *${nombreEmpresa || "Mi Empresa"}*\n` +
     `━━━━━━━━━━━━━━━━━━\n` +

@@ -430,7 +430,260 @@ $("#formConfiguracionFacturacion").submit(function (e) {
 
     });
 
-})
+});
+
+
+let comiteCredito = [];
+$("#personal_comite").select2({
+    with: '100%',
+    placeholder: "Buscar personal...",
+    allowClear: true,
+    minimumInputLength: 2,
+    ajax: {
+        url: "controladores/ordentrabajo.php?op=selectPersonal",
+        type: "GET",
+        dataType: "json",
+        delay: 250,
+        data: function (params) {
+            return {
+                search: params.term,
+                page: params.page || 1,
+                only_client: 1,
+            };
+        },
+        processResults: function (data, params) {
+            params.page = params.page || 1;
+            return {
+                results: data.data.map(function (item) {
+                    return {
+                        id: item.idpersonal,
+                        text: item.nombre + " - " + item.num_documento,
+                        data: item
+                    };
+                }),
+                pagination: {
+                    more: data.meta.current_page < data.meta.last_page,
+                },
+            };
+        },
+        cache: true,
+    },
+});
+
+
+function cargarComiteCredito() {
+
+    $.get(
+        'controladores/solicitudes.php',
+        {
+            op: 'comiteCredito'
+        },
+        function (response) {
+
+            if (typeof response === 'string') {
+                try {
+                    response = JSON.parse(response);
+                } catch (e) {
+                    response = [];
+                }
+            }
+
+            comiteCredito = Array.isArray(response)
+                ? response
+                : [];
+
+            renderComiteCredito();
+        },
+        'json'
+    );
+}
+
+
+
+function renderComiteCredito() {
+
+    const tbody = $('#tablaComite');
+
+    if (!comiteCredito.length) {
+
+        tbody.html(`
+            <tr>
+                <td colspan="4" class="text-center text-muted py-3">
+                    <i class="fa fa-users mr-1"></i>
+                    No hay integrantes configurados.
+                </td>
+            </tr>
+        `);
+
+        return;
+    }
+
+    let html = '';
+
+    comiteCredito.forEach(function (item, index) {
+
+        html += `
+            <tr>
+                <td class="text-center">
+                    ${index + 1}
+                </td>
+
+                <td>
+                    <strong>${item.nombre}</strong>
+                </td>
+
+                <td>
+                    ${item.cargo || 'Sin cargo'}
+                </td>
+
+                <td class="text-center">
+                    <button
+                        type="button"
+                        class="btn btn-danger btn-sm"
+                        onclick="eliminarComite(${item.idcomite_credito})"
+                    >
+                        <i class="fa fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tbody.html(html);
+}
+
+$("#btnAgregarComite").on("click", function () {
+
+    const idsucursal = $("#idsucursal").val();
+    const idpersonal = $("#personal_comite").val();
+    const cargo = $.trim($("#cargo_comite").val());
+
+    if (!idsucursal) {
+        Swal.fire("Aviso", "No se encontró la sucursal", "warning");
+        return;
+    }
+
+    if (!idpersonal) {
+        Swal.fire("Aviso", "Seleccione el personal", "warning");
+        return;
+    }
+
+    if (!cargo) {
+        Swal.fire("Aviso", "Ingrese el cargo", "warning");
+        return;
+    }
+
+    $.post(
+        "controladores/solicitudes.php?op=agregarComiteCredito",
+        {
+            idsucursal: idsucursal,
+            idpersonal: idpersonal,
+            cargo: cargo
+        },
+        function (response) {
+
+            let data = response;
+
+            if (typeof response === "string") {
+                try {
+                    data = JSON.parse(response);
+                } catch (e) {
+                    data = {
+                        status: false,
+                        msg: "Respuesta inválida del servidor"
+                    };
+                }
+                return;
+            }
+
+            if (!data.success) {
+
+                Swal.fire(
+                    "Aviso",
+                    data.message || "No se pudo agregar",
+                    "warning"
+                );
+                return;
+            }
+
+            Swal.fire({
+                icon: "success",
+                title: "Comité actualizado",
+                text: data.message,
+                timer: 1500,
+                showConfirmButton: false
+            });
+
+            $("#personal_comite").val(null).trigger("change");
+            $("#cargo_comite").val("");
+
+            cargarComiteCredito();
+
+        },
+        "json"
+    );
+});
+
+function eliminarComite(idcomite_credito) {
+
+    Swal.fire({
+        title: '¿Eliminar integrante?',
+        text: 'El integrante dejará de formar parte del comité.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    }).then(function (result) {
+
+        if (!result.isConfirmed) {
+            return;
+        }
+
+        $.post(
+            'controladores/solicitudes.php?op=eliminarComiteCredito',
+            {
+                idcomite_credito: idcomite_credito
+            },
+            function (response) {
+
+                if (typeof response === 'string') {
+                    try {
+                        response = JSON.parse(response);
+                    } catch (e) {
+                        Swal.fire(
+                            'Error',
+                            'Respuesta inválida del servidor.',
+                            'error'
+                        );
+                        return;
+                    }
+                }
+
+                if (!response.success) {
+                    Swal.fire(
+                        'Error',
+                        response.message,
+                        'error'
+                    );
+                    return;
+                }
+
+                cargarComiteCredito();
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Correcto',
+                    text: response.message,
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            },
+            'json'
+        );
+    });
+}
 
 
 listarConfiguracion();
+cargarComiteCredito();

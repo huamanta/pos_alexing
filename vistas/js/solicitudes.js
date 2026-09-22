@@ -571,34 +571,164 @@ function mostrarPanelPasoSeleccionado(idsolicitud, stepId) {
                 </form>
             `;
       break;
+
     case 4:
+
       stepDetailHtml = `
-                <form id="formPaso4_${idsolicitud}">
-                    <div class="form-group">
-                        <label>Notas del comité</label>
-                        <textarea id="notasComite_${idsolicitud}" class="form-control" rows="3" ${!isCurrent ? "disabled" : ""}>${solicitudActual ? solicitudActual.notas_comite || "" : ""}</textarea>
+        <form id="formPaso4_${idsolicitud}">
+
+            <div class="card border-0 shadow-sm">
+
+                <div class="card-header bg-white border-bottom">
+                    <div class="d-flex align-items-center">
+
+                        <div>
+                            <div class="font-weight-bold text-dark">
+                                Comité de crédito
+                            </div>
+
+                            <small class="text-muted">
+                                Registre el resultado de la evaluación de cada integrante.
+                            </small>
+                        </div>
+
                     </div>
-                    <div class="text-right mt-3">
-                        ${isCurrent ? '<button type="button" class="btn btn-default btn-sm float-right" onclick="actualizrSolicitudEstado(' + idsolicitud + ')">Observar</button>' : ""}
-                        ${isCurrent ? '<button type="button" class="btn btn-success btn-sm float-right" onclick="enviarComiteAprobacion(' + idsolicitud + ')">Enviar a aprobación final</button>' : ""}
+                </div>
+
+                <div class="card-body">
+
+                    <div id="comiteCredito_${idsolicitud}">
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>
+                            Cargando comité...
+                        </div>
                     </div>
-                </form>
-            `;
+
+                </div>
+
+            </div>
+
+            <div class="card border-0 shadow-sm mt-3">
+
+                <div class="card-header bg-white border-bottom">
+                    <div class="font-weight-bold">
+                        <i class="fas fa-comment-alt text-muted mr-2"></i>
+                        Notas del comité
+                    </div>
+                </div>
+
+                <div class="card-body">
+
+                    <textarea
+                        id="notasComite_${idsolicitud}"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Ingrese las notas u observaciones del comité..."
+                        ${!isCurrent ? 'disabled' : ''}
+                    >${solicitudActual ? solicitudActual.notas_comite || '' : ''}</textarea>
+
+                </div>
+
+            </div>
+
+            <div class="d-flex justify-content-end mt-3">
+
+                ${isCurrent ? `
+                    <button
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm mr-2"
+                        onclick="actualizrSolicitudEstado(${idsolicitud})"
+                    >
+                        <i class="fas fa-eye mr-1"></i>
+                        Observar
+                    </button>
+
+                    <button
+                        type="button"
+                        class="btn btn-success btn-sm"
+                        onclick="enviarComiteAprobacion(${idsolicitud})"
+                    >
+                        <i class="fas fa-check-circle mr-1"></i>
+                        Enviar a aprobación final
+                    </button>
+                ` : ''}
+
+            </div>
+
+        </form>
+    `;
+
+      setTimeout(function () {
+        cargarResponsables(idsolicitud, isCurrent);
+      }, 100);
+
       break;
+
     case 5:
+      const estadoFinal = solicitudActual
+        ? solicitudActual.estado || ""
+        : "";
+
+      const esAprobado = estadoFinal === "APROBADO";
+      const esRechazado = estadoFinal === "RECHAZADO";
+
       stepDetailHtml = `
-                <form id="formPaso5_${idsolicitud}">
-                    <div class="form-group">
-                        <label>Estado final</label>
-                        <input type="text" class="form-control" value="${solicitudActual ? solicitudActual.estado : ""}" readonly>
-                    </div>
-                    <div class="form-group">
-                        <label>Observación final</label>
-                        <textarea class="form-control" rows="3" readonly>${solicitudActual ? solicitudActual.observacion || "" : ""}</textarea>
-                    </div>
-                </form>
-            `;
+    <form id="formPaso5_${idsolicitud}">
+
+      <div class="text-center py-4">
+
+        <div class="mb-3">
+          ${esAprobado
+          ? `<i class="fas fa-check-circle fa-4x text-success"></i>`
+          : esRechazado
+            ? `<i class="fas fa-times-circle fa-4x text-danger"></i>`
+            : `<i class="fas fa-info-circle fa-4x text-info"></i>`
+        }
+        </div>
+
+        <h4 class="font-weight-bold">
+          ${esAprobado
+          ? "Solicitud aprobada"
+          : esRechazado
+            ? "Solicitud rechazada"
+            : "Resultado de la solicitud"
+        }
+        </h4>
+
+        <p class="text-muted">
+          ${esAprobado
+          ? "Todos los responsables del comité aprobaron la solicitud."
+          : esRechazado
+            ? "Todos los responsables del comité desaprobaron la solicitud."
+            : "La solicitud tiene un resultado registrado."
+        }
+        </p>
+
+      </div>
+
+      <div class="form-group">
+        <label>Estado final</label>
+        <input
+          type="text"
+          class="form-control"
+          value="${estadoFinal}"
+          readonly
+        >
+      </div>
+
+      <div class="form-group">
+        <label>Observación final</label>
+        <textarea
+          class="form-control"
+          rows="3"
+          readonly
+        >${solicitudActual ? solicitudActual.observacion || "" : ""}</textarea>
+      </div>
+
+    </form>
+  `;
       break;
+      
     default:
       stepDetailHtml = "<p>Detalle de paso no disponible.</p>";
   }
@@ -637,6 +767,96 @@ function mostrarPanelPasoSeleccionado(idsolicitud, stepId) {
   actualizarVistaDocumentosPaso(idsolicitud, stepId);
 }
 
+function cargarResponsables(idsolicitud, isCurrent) {
+
+  $.get(
+    'controladores/solicitudes.php',
+    {
+      op: 'comiteCredito',
+      idsolicitud: idsolicitud,
+      idsucursal: solicitudActual.idsucursal
+    },
+    function (response) {
+
+      const contenedor = $('#comiteCredito_' + idsolicitud);
+
+      if (!response || response.length === 0) {
+        contenedor.html(`
+                    <div class="text-center py-4 text-muted">
+                        <i class="fas fa-users-slash fa-2x mb-2"></i>
+                        <div class="font-weight-bold">
+                            No hay integrantes disponibles
+                        </div>
+                    </div>
+                `);
+        return;
+      }
+
+      let html = '';
+
+      response.forEach(function (persona) {
+
+        const estado = persona.estado || 'PENDIENTE';
+
+        html += `
+                    <div class="comite-persona mb-3">
+
+                        <div class="d-flex align-items-center">
+
+                            <div class="comite-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+
+                            <div class="flex-grow-1 ml-3">
+
+                                <div class="font-weight-bold text-dark">
+                                    ${persona.nombre}
+                                </div>
+
+                                <div class="small text-muted">
+                                    <i class="fas fa-briefcase mr-1"></i>
+                                    ${persona.cargo || 'Sin cargo'}
+                                </div>
+
+                            </div>
+
+                            <div style="width: 170px;">
+
+                                <select
+                                    class="form-control form-control-sm estado-comite"
+                                    data-idcomite="${persona.idcomite_credito}"
+                                    ${!isCurrent ? 'disabled' : ''}
+                                >
+                                    <option value="PENDIENTE"
+                                        ${estado === 'PENDIENTE' ? 'selected' : ''}>
+                                        Pendiente
+                                    </option>
+
+                                    <option value="APROBADO"
+                                        ${estado === 'APROBADO' ? 'selected' : ''}>
+                                        ✓ Aprobado
+                                    </option>
+
+                                    <option value="DESAPROBADO"
+                                        ${estado === 'DESAPROBADO' ? 'selected' : ''}>
+                                        ✕ Desaprobado
+                                    </option>
+                                </select>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                `;
+      });
+
+      contenedor.html(html);
+
+    },
+    'json'
+  );
+}
 function actualizarVistaDocumentosPaso(idsolicitud, stepId) {
   if (stepId !== 2) {
     return;
@@ -749,32 +969,99 @@ function registrarVerificacionDomiciliaria(idsolicitud) {
 }
 
 function enviarComiteAprobacion(idsolicitud) {
-  const notas = document
-    .getElementById("notasComite_" + idsolicitud)
-    .value.trim();
-  const observacion = "Enviado a aprobación final";
+  const estados = [];
 
-  $.post(
-    "controladores/solicitudes.php?op=aprobarSolicitud",
-    {
-      idsolicitud: idsolicitud,
-      observacion: observacion,
-      notas_comite: notas,
-    },
-    function (r) {
-      let data = JSON.parse(r);
+  $("#comiteCredito_" + idsolicitud + " .estado-comite").each(function () {
+    estados.push({
+      idcomite_credito: $(this).data("idcomite"),
+      estado: $(this).val()
+    });
+  });
 
-      if (!data.status) {
-        Swal.fire("Error", data.msg, "error");
-        return;
+  if (estados.length === 0) {
+    Swal.fire(
+      "Atención",
+      "No hay integrantes del comité para evaluar.",
+      "warning"
+    );
+    return;
+  }
+
+  const pendientes = estados.filter(function (item) {
+    return item.estado === "PENDIENTE" || !item.estado;
+  });
+
+  if (pendientes.length > 0) {
+    Swal.fire(
+      "Comité incompleto",
+      "Todos los responsables deben emitir su decisión antes de enviar a aprobación final.",
+      "warning"
+    );
+    return;
+  }
+
+  const desaprobados = estados.filter(function (item) {
+    return item.estado === "DESAPROBADO";
+  });
+
+  if (desaprobados.length > 0) {
+    Swal.fire(
+      "Solicitud no aprobada",
+      "Uno o más responsables del comité han desaprobado la solicitud.",
+      "error"
+    );
+    return;
+  }
+
+  const notas = $("#notasComite_" + idsolicitud).val().trim();
+
+  Swal.fire({
+    title: "Enviar a aprobación final",
+    text: "Todos los responsables han aprobado la solicitud. ¿Desea continuar?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí, enviar",
+    cancelButtonText: "Cancelar",
+    reverseButtons: true
+  }).then(function (result) {
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    $.post(
+      "controladores/solicitudes.php?op=aprobarSolicitud",
+      {
+        idsolicitud: idsolicitud,
+        observacion: "Comité aprobado. Enviado a aprobación final",
+        notas_comite: notas,
+        comite: JSON.stringify(estados)
+      },
+      function (r) {
+        let data;
+
+        try {
+          data = typeof r === "string" ? JSON.parse(r) : r;
+        } catch (e) {
+          Swal.fire("Error", "Respuesta inválida del servidor.", "error");
+          return;
+        }
+
+        if (!data.status) {
+          Swal.fire("Error", data.msg, "error");
+          return;
+        }
+
+        Swal.fire("Correcto", data.msg, "success");
+
+        $("#modalDetalleSolicitud").modal("hide");
+
+        listarSolicitudes.load();
+        cargarKPIs();
       }
-
-      Swal.fire("Correcto", data.msg, "success");
-
-      verSolicitud(idsolicitud);
-    },
-  );
+    );
+  });
 }
+
 
 function verPaso(idsolicitud, idpaso) {
   mostrarPanelPasoSeleccionado(idsolicitud, idpaso);
