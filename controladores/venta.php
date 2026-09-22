@@ -1444,25 +1444,8 @@ switch ($_GET["op"]) {
 		$idcliente = $_GET['idcliente'];
 		$fecha_inicio = isset($_GET['fecha_inicio']) ? $_GET['fecha_inicio'] : null;
 		$fecha_fin = isset($_GET['fecha_fin']) ? $_GET['fecha_fin'] : null;
-		$ventas = $venta->listarHistorialCliente($idcliente, $fecha_inicio, $fecha_fin);
-
-		// print_r($ventas);
-		//exit();
-
-		// Verificar el resultado de la función
-		if ($ventas === false) {
-			echo "Error en la consulta.";
-		} else {
-			echo json_encode($ventas);
-		}
+		$venta->listarHistorialCliente($idcliente, $fecha_inicio, $fecha_fin);
 		break;
-
-	// Listar pisos disponibles
-
-
-	// ===================== LISTAR PRODUCTOS =========================
-
-
 
 	case 'selectProductoFiltro':
 		require_once "../modelos/Producto.php";
