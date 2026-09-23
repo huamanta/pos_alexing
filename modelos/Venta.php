@@ -2007,172 +2007,222 @@ class Venta extends Helpers
 
     public function listarHistorialCliente($idcliente, $fecha_inicio, $fecha_fin)
     {
-        $currency = Helpers::get_currency_code($_SESSION["idsucursal"]);
-        $sql = "SELECT * FROM venta v WHERE v.idcliente = '$idcliente' AND DATE(v.fecha_hora)>='$fecha_inicio' AND DATE(v.fecha_hora)<='$fecha_fin' AND v.estado IN ('Activado','Por Enviar','Aceptado')";
-        //echo  $sql;
-        $ventas = ejecutarConsulta($sql);
-        $data = array();
-        $list = array();
-        while ($reg = $ventas->fetch_object()) {
-            $currency = Helpers::get_currency_code($reg->idsucursal);
-            if ($reg->ventacredito == 'Si') {
-                $sql1 = "SELECT * FROM detalle_venta dv
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto 
-                LEFT JOIN producto a ON pg.idproducto = a.idproducto
-                WHERE dv.idventa = '$reg->idventa'";
-                $detalles = ejecutarConsulta($sql1);
-                $detalle = array();
-                while ($reg2 = $detalles->fetch_object()) {
-                    $detalle[] = array(
-                        "idproducto" => $reg2->idproducto,
-                        "nombre_producto" => $reg2->idproducto . ' - ' . $reg2->nombre_producto,
-                        "cantidad" => $reg2->cantidad . ' ' . $reg2->contenedor,
-                        "precio_venta" => Helpers::get_currency_symbol($reg2->precio_venta, $currency),
-                    ); # code...
+        $ventas = (new DBQuery($this->pdo))
+            ->select('v.*, cp.nombre as tipo_comprobante')
+            ->from('venta v')
+            ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
+            ->where('v.idcliente', '=', $idcliente)
+            ->whereIn('v.estado', ['Activado', 'Por Enviar', 'Aceptado'])
+            ->whereBetween('DATE(v.fecha_hora)', $fecha_inicio, $fecha_fin)
+            ->get();
+
+        $data = [];
+        $list = [];
+        $currency = null;
+
+        foreach ($ventas as $reg) {
+
+            $currency = Helpers::get_currency_code($reg['idsucursal']);
+
+            if ($reg['ventacredito'] == 'Si') {
+
+                $detalles = (new DBQuery($this->pdo))
+                    ->select('*')
+                    ->from('detalle_venta dv')
+                    ->join('producto a', 'a.idproducto = dv.idproducto')
+                    ->where('dv.idventa', '=', $reg['idventa'])
+                    ->get();
+
+                $detalle = [];
+
+                foreach ($detalles as $reg2) {
+
+                    $detalle[] = [
+                        'idproducto' => $reg2['idproducto'],
+                        'nombre_producto' => $reg2['idproducto'] . ' - ' . $reg2['nombre_producto'],
+                        'cantidad' => $reg2['cantidad'] . ' ' . $reg2['contenedor'],
+                        'precio_venta' => Helpers::get_currency_symbol(
+                            $reg2['precio_venta'],
+                            $currency
+                        ),
+                    ];
                 }
-                $totalrecibido = $reg->totalrecibido + $reg->totaldeposito;
-                $interes = (($reg->total_venta - $totalrecibido) * $reg->interes) / 100;
-                $data[] = array(
-                    "idventa" => $reg->idventa,
-                    "tipo_comprobante" => $reg->tipo_comprobante,
-                    "serie_comprobante" => $reg->serie_comprobante . '-' . $reg->num_comprobante,
-                    "fecha_hora" => $reg->fecha_hora,
-                    "interes" => $interes,
-                    "totalrecibido" => $reg->totalrecibido + $reg->totaldeposito,
-                    "venta_sin_interes" => $reg->total_venta - $totalrecibido,
-                    "total_venta" => $reg->total_venta - $totalrecibido + $interes,
-                    "meses" => $reg->meses,
-                    "detalle" => $detalle,
-                );
+
+                $totalrecibido = $reg['totalrecibido'] + $reg['totaldeposito'];
+
+                $saldo = $reg['total_venta'] - $totalrecibido;
+
+                $interes = ($saldo * $reg['interes']) / 100;
+
+                $data[] = [
+                    'idventa' => $reg['idventa'],
+                    'tipo_comprobante' => $reg['tipo_comprobante'],
+                    'serie_comprobante' => $reg['serie_comprobante'] . '-' . $reg['num_comprobante'],
+                    'fecha_hora' => $reg['fecha_hora'],
+                    'interes' => $interes,
+                    'totalrecibido' => $totalrecibido,
+                    'venta_sin_interes' => $saldo,
+                    'total_venta' => $saldo + $interes,
+                    'meses' => $reg['meses'],
+                    'detalle' => $detalle,
+                ];
             }
 
+            $cuentasxcobrar = (new DBQuery($this->pdo))
+                ->select('*')
+                ->from('cuentas_por_cobrar cc')
+                ->where('cc.idventa', '=', $reg['idventa'])
+                ->where('cc.condicion', '=', 1)
+                ->whereBetween('DATE(cc.fecharegistro)', $fecha_inicio, $fecha_fin)
+                ->get();
 
-            $sql2 = "SELECT * FROM cuentas_por_cobrar cc 
-             WHERE cc.idventa = '$reg->idventa' 
-             AND cc.condicion = 1
-             AND DATE(cc.fecharegistro)>='$fecha_inicio' 
-             AND DATE(cc.fecharegistro)<='$fecha_fin'";
+            foreach ($cuentasxcobrar as $reg3) {
 
-            $cuentasxcobrar = ejecutarConsulta($sql2);
-            $datacuentasxcobrar = array();
-            while ($reg3 = $cuentasxcobrar->fetch_object()) {
+                $detallecuentasxcobrar = (new DBQuery($this->pdo))
+                    ->select('*')
+                    ->from('detalle_cuentas_por_cobrar')
+                    ->where('idcpc', '=', $reg3['idcpc'])
+                    ->get();
 
-                if ($reg3->condicion == 1) {
-                    $sql3 = "SELECT * FROM detalle_cuentas_por_cobrar WHERE idcpc = '$reg3->idcpc'";
-                    $detallecuentasxcobrar = ejecutarConsulta($sql3);
-                    $datadetallecuentasxcobrar = array();
-                    while ($reg4 = $detallecuentasxcobrar->fetch_object()) {
-                        $datadetallecuentasxcobrar[] = array(
-                            "tipo" => 'AMORTIZACION DE CUENTA',
-                            "montopagado" => $reg4->montopagado,
-                            "montotarjeta" => $reg4->montotarjeta,
-                            "total" => $reg4->montopagado + $reg4->montotarjeta,
-                        );
-                    }
+                $datadetallecuentasxcobrar = [];
 
-                    $dias_mora = '';
+                foreach ($detallecuentasxcobrar as $reg4) {
 
-                    if (!empty($reg3->fecha_update_mora)) {
-
-                        $dias = (new DateTime($reg3->fecha_update_mora))
-                            ->diff(new DateTime($reg3->fechavencimiento))
-                            ->days;
-
-                        $dias_mora = "{$dias} días de mora";
-
-                        if ($dias == 1) {
-                            $dias_mora = "{$dias} día de mora";
-                        }
-                    }
-                    $list[] = array(
-                        "fecha_hora" => $reg3->fecharegistro,
-                        "tipo" => 'CUENTA POR COBRAR -' . $reg->serie_comprobante . '-' . $reg->num_comprobante,
-                        "deudatotal" => $reg3->deuda_base,
-                        "interes" => $reg3->interes,
-                        "mora_pagada" => $reg3->mora_pagada,
-                        "dias_mora" => $dias_mora,
-                        "descuento" => $reg3->descuento,
-                        "abonototal" => $reg3->abonototal,
-                        "detalle" => $datadetallecuentasxcobrar,
-                    );
-                }
-            }
-        }
-
-        $sql3 = "SELECT * FROM compra c WHERE idproveedor = '$idcliente' AND DATE(c.fecha_hora)>='$fecha_inicio' AND DATE(c.fecha_hora)<='$fecha_fin'";
-        $compras = ejecutarConsulta($sql3);
-        $data3 = array();
-        $list3 = array();
-        while ($reg3 = $compras->fetch_object()) {
-
-            if ($reg3->compracredito == 'Si') {
-                $sql4 = "SELECT * FROM detalle_compra WHERE idcompra = '$reg3->idcompra'";
-                $detalles4 = ejecutarConsulta($sql4);
-                $detalle4 = array();
-                while ($reg4 = $detalles4->fetch_object()) {
-                    $detalle4[] = array(
-                        "idproducto" => $reg4->idproducto,
-                        "nombre_producto" => $reg4->nombre_producto,
-                        "cantidad" => $reg4->cantidad . ' Unid.',
-                        "precio_venta" => $reg4->precio_venta,
-
-                    ); # code...
+                    $datadetallecuentasxcobrar[] = [
+                        'tipo' => 'AMORTIZACION DE CUENTA',
+                        'montopagado' => $reg4['montopagado'],
+                        'montotarjeta' => $reg4['montotarjeta'],
+                        'total' => $reg4['montopagado'] + $reg4['montotarjeta'],
+                    ];
                 }
 
-                $data3[] = array(
-                    "idventa" => $reg3->idcompra,
-                    "tipo_comprobante" => $reg3->tipo_comprobante,
-                    "serie_comprobante" => $reg3->serie_comprobante . '-' . $reg3->num_comprobante,
-                    "totalrecibido" => $reg3->motoPagado,
-                    "interes" => '0',
-                    "fecha_hora" => $reg3->fecha_hora,
-                    "total_venta" => $reg3->total_compra,
-                    "meses" => '0',
-                    "detalle" => $detalle4,
-                );
-            }
+                $dias_mora = '';
 
+                if (!empty($reg3['fecha_update_mora'])) {
 
-            $sql5 = "SELECT * FROM cuentas_por_pagar cp WHERE cp.idcompra = '$reg3->idcompra' AND cp.condicion = 1 AND DATE(cp.fecharegistro)>='$fecha_inicio' AND DATE(cp.fecharegistro)<='$fecha_fin'";
-            $cuentasxpagar = ejecutarConsulta($sql5);
-            $datacuentasxpagar = array();
-            while ($reg4 = $cuentasxpagar->fetch_object()) {
+                    $dias = (new DateTime($reg3['fecha_update_mora']))
+                        ->diff(new DateTime($reg3['fechavencimiento']))
+                        ->days;
 
-                if ($reg4->condicion == 1) {
-                    $sql5 = "SELECT * FROM detalle_cuentas_por_pagar WHERE idcpp = '$reg4->idcpp'";
-                    $datacuentasxpagar = ejecutarConsulta($sql5);
-                    $datadetallecuentasxpagar = array();
-                    while ($reg5 = $datacuentasxpagar->fetch_object()) {
-                        $datadetallecuentasxpagar[] = array(
-                            "tipo" => 'AMORTIZACION DE PAGO',
-                            "montopagado" => $reg5->montopagado,
-                        );
-                    }
-                    $list3[] = array(
-                        "fecha_hora" => $reg4->fecha_hora,
-                        "tipo" => 'CUENTA POR PAGAR -' . $reg3->serie_comprobante . '-' . $reg3->num_comprobante,
-                        "deudatotal" => $reg4->deudatotal,
-                        "abonototal" => $reg4->abonototal,
-                        "interes" => '0',
-                        "detalle" => $datadetallecuentasxpagar,
-                    );
+                    $dias_mora = $dias . ($dias == 1 ? ' día de mora' : ' días de mora');
                 }
+
+                $list[] = [
+                    'fecha_hora' => $reg3['fecharegistro'],
+                    'tipo' => 'CUENTA POR COBRAR - ' .
+                        $reg['serie_comprobante'] . '-' .
+                        $reg['num_comprobante'],
+                    'deudatotal' => $reg3['deuda_base'],
+                    'interes' => $reg3['interes'],
+                    'mora_pagada' => $reg3['mora_pagada'],
+                    'dias_mora' => $dias_mora,
+                    'descuento' => $reg3['descuento'],
+                    'abonototal' => $reg3['abonototal'],
+                    'detalle' => $datadetallecuentasxcobrar,
+                ];
             }
         }
 
-        if ($currency) {
-            $symbol = Helpers::get_symbol($currency);
-        } else {
-            $symbol = Helpers::get_symbol();
+        $compras = (new DBQuery($this->pdo))
+            ->select('c.*')
+            ->from('compra c')
+            ->where('c.idproveedor', '=', $idcliente)
+            ->whereBetween('DATE(c.fecha_hora)', $fecha_inicio, $fecha_fin)
+            ->get();
+
+        $data3 = [];
+        $list3 = [];
+
+        foreach ($compras as $reg3) {
+
+            if ($reg3['compracredito'] == 'Si') {
+
+                $detalles4 = (new DBQuery($this->pdo))
+                    ->select([
+                        'dc.idproducto',
+                        'dc.nombre_producto',
+                        'dc.cantidad',
+                        'dc.precio_venta'
+                    ])
+                    ->from('detalle_compra dc')
+                    ->where('dc.idcompra', '=', $reg3['idcompra'])
+                    ->get();
+
+                $detalle4 = [];
+
+                foreach ($detalles4 as $reg4) {
+
+                    $detalle4[] = [
+                        'idproducto' => $reg4['idproducto'],
+                        'nombre_producto' => $reg4['nombre_producto'],
+                        'cantidad' => $reg4['cantidad'] . ' Unid.',
+                        'precio_venta' => $reg4['precio_venta'],
+                    ];
+                }
+
+                $data3[] = [
+                    'idventa' => $reg3['idcompra'],
+                    'tipo_comprobante' => $reg3['tipo_comprobante'],
+                    'serie_comprobante' => $reg3['serie_comprobante'] . '-' . $reg3['num_comprobante'],
+                    'totalrecibido' => $reg3['motoPagado'],
+                    'interes' => '0',
+                    'fecha_hora' => $reg3['fecha_hora'],
+                    'total_venta' => $reg3['total_compra'],
+                    'meses' => '0',
+                    'detalle' => $detalle4,
+                ];
+            }
+
+            $cuentasxpagar = (new DBQuery($this->pdo))
+                ->select('*')
+                ->from('cuentas_por_pagar cp')
+                ->where('cp.idcompra', '=', $reg3['idcompra'])
+                ->where('cp.condicion', '=', 1)
+                ->whereBetween('DATE(cp.fecharegistro)', $fecha_inicio, $fecha_fin)
+                ->get();
+
+            foreach ($cuentasxpagar as $reg4) {
+
+                $detallesPago = (new DBQuery($this->pdo))
+                    ->select('*')
+                    ->from('detalle_cuentas_por_pagar')
+                    ->where('idcpp', '=', $reg4['idcpp'])
+                    ->get();
+
+                $datadetallecuentasxpagar = [];
+
+                foreach ($detallesPago as $reg5) {
+
+                    $datadetallecuentasxpagar[] = [
+                        'tipo' => 'AMORTIZACION DE PAGO',
+                        'montopagado' => $reg5['montopagado'],
+                    ];
+                }
+
+                $list3[] = [
+                    'fecha_hora' => $reg4['fecha_hora'],
+                    'tipo' => 'CUENTA POR PAGAR - ' .
+                        $reg3['serie_comprobante'] . '-' .
+                        $reg3['num_comprobante'],
+                    'deudatotal' => $reg4['deudatotal'],
+                    'abonototal' => $reg4['abonototal'],
+                    'interes' => '0',
+                    'detalle' => $datadetallecuentasxpagar,
+                ];
+            }
         }
 
-        return array(
+        $symbol = $currency
+            ? Helpers::get_symbol($currency)
+            : Helpers::get_symbol();
+
+        return Response::json([
             'ventas' => $data,
             'cuentasxcobrar' => $list,
             'compras' => $data3,
             'cuentasxpagar' => $list3,
-            'symbol' => $symbol
-        );
+            'symbol' => $symbol,
+        ]);
     }
 
 

@@ -271,8 +271,10 @@ function calcularCuotasDesdeNumeroMeses() {
 
   let semanal = 1 / 4;
   if (calculoMes) {
-    semanal = 7 / 30;
+    semanal = 1 / 5;
   }
+
+  
 
   const mesesPorCuota = {
     1: 1 / 30,

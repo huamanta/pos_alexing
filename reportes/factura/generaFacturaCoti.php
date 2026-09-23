@@ -23,6 +23,7 @@ $factura = $cotizacion->listarDataCotizacion($idventa);
 $configuracion = $negocio->listar($factura['idsucursal']);
 $detalles = $cotizacion->listarDataDetalleCotizacion($idventa);
 $currency = $helpers->get_currency_code($factura['idsucursal']);
+$calculo30Dias = $helpers->verificarMes30Dias($factura['idsucursal']);
 
 ob_start();
 include(dirname('__FILE__') . '/facturaCoti.php');
