@@ -4225,9 +4225,7 @@ $("#calcular_cuotas").click(function (e) {
 
 function calcularCuotas() {
   // Si no se eligio cuotas manualmente, intentar autocalcular desde N° meses + frecuencia.
-  alert($("#input_cuotas").val());
   if (!$("#input_cuotas").val()) {
-    alert();
     calcularCuotasDesdeNumeroMeses();
   }
 
