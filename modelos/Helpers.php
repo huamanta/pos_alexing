@@ -453,6 +453,43 @@ class Helpers
             ->first();
     }
 
+    public function datosGerencia(int $idsucursal)
+    {
+        return (new DBQuery($this->pdo))
+            ->from('comite_credito cc')
+            ->join('personal p', 'p.idpersonal = cc.idpersonal')
+            ->where('cc.cargo', '=', Constants::GERENTE)
+            ->where('cc.idsucursal', '=', $idsucursal)
+            ->first();
+    }
+
+    public function datosDocumentacion(int $idventa, int $tipo = 1)
+    {
+        return (new DBQuery($this->pdo))
+            ->from('documentacion')
+            ->where('idventa', '=', $idventa)
+            ->where('tipo', '=', $tipo)
+            ->first();
+    }
+
+    public function dataInicioFinPagos(int $idventa)
+    {
+        return (new DBQuery($this->pdo))
+            ->select(
+                '(SELECT deudatotal
+                FROM cuentas_por_cobrar
+                WHERE idventa = ' . (int) $idventa . '
+                ORDER BY fechavencimiento ASC
+                LIMIT 1
+            ) AS deuda,
+            MIN(fechavencimiento) AS fecha_inicio_cuota,
+            MAX(fechavencimiento) AS fecha_fin_cuota'
+            )
+            ->from('cuentas_por_cobrar')
+            ->where('idventa', '=', $idventa)
+            ->first();
+    }
+
     public function getEmpresa($idsucursal): int
     {
         $empresa = (new DBQuery($this->pdo))

@@ -1,96 +1,6 @@
 <?php
-require_once __DIR__ . '/../../configuraciones/bootstrap.php';
-require "../../configuraciones/Conexion.php";
-require "./HelpersService.php";
-$helpers = new HelpersService();
-date_default_timezone_set('America/Lima');
-
-// Obtener ID del contrato desde parámetro encriptado
-$idVenta = isset($_GET['idventa']) ? $helpers->encryptDecrypt('decrypt', $_GET['idventa']) : null;
-// DATOS DINÁMICOS (puedes traerlos de BD basado en $idVenta)
-$sqlNegocio = "SELECT * 
-FROM datos_negocio 
-ORDER BY id_negocio ASC 
-LIMIT 1";
-$resultNegocio = ejecutarConsultaSimpleFila($sqlNegocio);
-
-$sqlVenta = "SELECT v.*, ta.nombre AS nombre_tipo_acompanante, a.nombre AS nombre_acompanante, p.nombre AS nombre_cliente, p.num_documento AS num_documento_cliente, p.direccion AS direccion_cliente, p.telefono AS telefono_cliente, g.nombre AS nombre_garante, g.num_documento AS num_documento_garante 
-             FROM venta v 
-             INNER JOIN persona p ON v.idcliente = p.idpersona 
-             LEFT JOIN persona g ON v.idgarante = g.idpersona 
-             LEFT JOIN persona a ON v.idacompanante = a.idpersona
-             LEFT JOIN tipoacompanante ta ON v.idtipoacompanante = ta.idtipoacompanante
-             WHERE v.idventa = $idVenta";
-$resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
-
-$comprador = $resultVenta['nombre_cliente'] ?? '';
-$dniComprador = $resultVenta['num_documento_cliente'] ?? '';
-$direccionComprador = $resultVenta['direccion_cliente'] ?? '';
-$celularComprador = $resultVenta['telefono_cliente'] ?? '';
-$total = $resultVenta['total_venta'] ?? '';
-$inicial = $resultVenta['totalrecibido'] ?? '';
-$meses = $resultVenta['meses'] ?? '';
-$nombreAcompanante = $resultVenta['nombre_acompanante'] ?? '';
-$nombreTipoAcompanante = $resultVenta['nombre_tipo_acompanante'] ?? '';
-
-$sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $resultVenta['idsucursal'];
-$resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
-$idSucursal = $resultVenta['idsucursal'] ?? 0;
-if (!$idSucursal) {
-    $idSucursal = $resultSucursal['idsucursal'] ?? 0; // Valor por defecto si no se encuentra la sucursal
-}
-$currency = $helpers->getCurrencyCode($idSucursal);
-
-
-// Generación PDF con mPDF (server-side)
-$garante = $resultVenta['nombre_garante'] ?? '';
-$dniGarante = $resultVenta['num_documento_garante'] ?? '';
-$fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
-
-// seleccionar detalle de la venta
-$sqlDetalle = "SELECT dv.*, p.idproducto, p.nombre AS producto_nombre, m.nombre AS marca, mo.nombre AS modelo, ps.color,
-                       ps.numero_serie AS serie, ps.numero_motor, ps.anio_fabricacion AS anio, ps.placa,
-                       ps.clase_vehiculo AS clase, ps.tipo_vehiculo
-                FROM detalle_venta dv
-                LEFT JOIN producto p ON p.idproducto = dv.idproducto
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto_configuracion
-                INNER JOIN producto_serie ps ON ps.idproducto = p.idproducto
-                LEFT JOIN marca m ON m.idmarca = p.idmarca
-                LEFT JOIN modelo mo ON mo.idmodelo = p.idmodelo
-                WHERE dv.idventa = $idVenta";
-$resultDetalle = ejecutarConsulta($sqlDetalle);
-
-$data = [];
-foreach ($resultDetalle as $row) {
-    $data[] = [
-        "idproducto" => $row['idproducto'],
-        'nombre' => $row['producto_nombre'] ?? 'N/A',
-        'marca' => $row['marca'] ?? 'N/A',
-        'modelo' => $row['modelo'] ?? 'N/A',
-        'color' => $row['color'] ?? 'N/A',
-        'serie' => $row['serie'] ?? 'N/A',
-        'motor' => $row['motor'] ?? 'N/A',
-        'anio' => $row['anio'] ?? 'N/A',
-        'placa' => $row['placa'] ?? 'NUEVO',
-        'clase' => $row['clase'] ?? 'N/A',
-        'tipo_vehiculo' => $row['tipo_vehiculo'] ?? 'N/A',
-        "cantidad" => $row['cantidad'],
-        "precio_venta" => $row['precio_venta'],
-        "descuento" => $row['descuento']
-    ];
-}
-
-$cuota = "619.00";
-
-$dataFrecuencia = $helpers->getDataFrecuencia($resultVenta['frecuencia'] ?? '1');
-$frecuenciaSm = $dataFrecuencia->short;
-$frecuenciaTexto = $dataFrecuencia->texto;
-
-// buscar actaentrega
-$sqlActa = "SELECT * FROM documentacion WHERE idventa = $idVenta AND tipo = '1'";
-$resultActa = ejecutarConsultaSimpleFila($sqlActa);
-if (!$resultActa) {
-    echo '
+session_start();
+$errorPage = '
     <style>
         .notfound-container {
             position: fixed;
@@ -160,10 +70,80 @@ if (!$resultActa) {
         </div>
     </div>
     ';
+if (empty($_SESSION['idusuario'])) {
+    echo $errorPage;
+    exit;
+}
+require_once __DIR__ . '/../../configuraciones/bootstrap.php';
+require_once __DIR__ . "/../../configuraciones/Conexion.php";
+require_once __DIR__ . "/HelpersService.php";
+require_once __DIR__ . "/../../modelos/Helpers.php";
+require_once __DIR__ . "/../../modelos/Venta.php";
+$helpersService = new HelpersService();
+$helpers = new Helpers();
+$venta = new Venta();
+date_default_timezone_set('America/Lima');
+
+// Obtener ID del contrato desde parámetro encriptado
+$idVenta = isset($_GET['idventa']) ? $helpersService->encryptDecrypt('decrypt', $_GET['idventa']) : null;
+$resultVenta = $venta->ventaCabeceraContrato($idVenta);
+$comprador = $resultVenta['nombre_cliente'] ?? '';
+$dniComprador = $resultVenta['num_documento_cliente'] ?? '';
+$direccionComprador = $resultVenta['direccion_cliente'] ?? '';
+$celularComprador = $resultVenta['telefono_cliente'] ?? '';
+$total = $resultVenta['total_venta'] ?? '';
+$inicial = $resultVenta['totalrecibido'] ?? '';
+$meses = $resultVenta['meses'] ?? '';
+$nombreAcompanante = $resultVenta['nombre_acompanante'] ?? '';
+$nombreTipoAcompanante = $resultVenta['nombre_tipo_acompanante'] ?? '';
+$resultSucursal = $helpers->dataSucursal($resultVenta['idsucursal']);
+$idSucursal = $resultVenta['idsucursal'] ?? 0;
+if (!$idSucursal) {
+    $idSucursal = $resultSucursal['idsucursal'] ?? 0; // Valor por defecto si no se encuentra la sucursal
+}
+$currency = $helpersService->getCurrencyCode($idSucursal);
+$dataGerencia = $helpers->datosGerencia($idSucursal);
+
+// Generación PDF con mPDF (server-side)
+$garante = $resultVenta['nombre_garante'] ?? '';
+$dniGarante = $resultVenta['num_documento_garante'] ?? '';
+$fecha = $resultSucursal['distrito'] . ", " . $helpersService->fechaLetras($resultVenta['fecha_hora']) ?? '';
+
+// seleccionar detalle de la venta
+$resultDetalle = $venta->ventaDetalleContrato($idVenta);
+
+$data = [];
+foreach ($resultDetalle as $row) {
+    $data[] = [
+        "idproducto" => $row['idproducto'],
+        'nombre' => $row['producto_nombre'] ?? 'N/A',
+        'marca' => $row['marca'] ?? 'N/A',
+        'modelo' => $row['modelo'] ?? 'N/A',
+        'color' => $row['color'] ?? 'N/A',
+        'serie' => $row['serie'] ?? 'N/A',
+        'motor' => $row['motor'] ?? 'N/A',
+        'anio' => $row['anio'] ?? 'N/A',
+        'placa' => $row['placa'] ?? 'NUEVO',
+        'clase' => $row['clase'] ?? 'N/A',
+        'tipo_vehiculo' => $row['tipo_vehiculo'] ?? 'N/A',
+        "cantidad" => $row['cantidad'],
+        "precio_venta" => $row['precio_venta'],
+        "descuento" => $row['descuento']
+    ];
+}
+
+$dataFrecuencia = $helpersService->getDataFrecuencia($resultVenta['frecuencia'] ?? '1');
+$frecuenciaSm = $dataFrecuencia->short;
+$frecuenciaTexto = $dataFrecuencia->texto;
+
+// buscar actaentrega
+$resultActa = $helpers->datosDocumentacion($idVenta, 1);
+if (!$resultActa) {
+    echo $errorPage;
     exit;
 }
 
-$numeroContrato = $helpers->tiposDocumentacion($resultActa['tipo']) . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
+$numeroContrato = $helpersService->tiposDocumentacion($resultActa['tipo']) . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
 
 
 ob_start();
@@ -183,9 +163,7 @@ ob_start();
             color: #000;
         }
 
-        <?php echo HelpersService::getDocumentHeaderStyles(); ?>
-
-        p {
+        <?php echo HelpersService::getDocumentHeaderStyles(); ?>p {
             text-align: justify;
             margin: 5px 0;
             font-size: 13px;
@@ -214,22 +192,25 @@ ob_start();
 
     <?php
     echo HelpersService::renderDocumentHeader(
-        $resultNegocio['nombre'] ?? '',
+        $resultSucursal['razon_social'] ?? '',
         $resultSucursal['ruc'] ?? '',
         'CONTRATO DE VENTA AL CONTADO DE VEHICULO MOTORIZADO',
-        $numeroContrato
+        $numeroContrato,
+        'ALQUILER VENTA DE VEHICULOS MOTORIZADOS',
+        'titulo',
+        $resultSucursal['nombre'] ?? ''
     );
     ?>
 
     <p>
         Conste por el presente documento, el contrato de <b>VENTA AL CONTADO</b> de vehículo <b>NUEVO</b>, que celebran
         de
-        una parte como <b>VENDEDOR</b>, la Empresa "<b><?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?></b>", con RUC
+        una parte como <b>VENDEDOR</b>, la Empresa "<b><?php echo strtoupper($resultSucursal['razon_social'] ?? ''); ?></b>", con RUC
         Nº <?php echo $resultSucursal['ruc']; ?>, representado
-        por su Gerente General el señor <b>JESUS ROBERTO SURCO KACASACA</b>, identificado con DNI Nº <b>43978509</b>,
+        por su Gerente General el señor <b><?php echo $dataGerencia['nombre'] ?? 'ADMINISTRADOR'; ?></b>, identificado con DNI Nº <b><?php echo $dataGerencia['num_documento'] ?? 'S/N'; ?></b>,
         con
-        domicilio en <b>JR. JIMENEZ PIMENTEL NRO. 886, SAN MARTIN - SAN MARTIN - TARAPOTO</b>; con facultades
-        inscrita en la partida electrónica N° 11070911 del registro de personas jurídicas de la Oficina Registral
+        domicilio en <b><?php echo $dataGerencia['direccion'] ?? 'S/N'; ?></b>; con facultades
+        inscrita en la partida electrónica N° <?php echo $dataGerencia['prtida_registral'] ?? 'S/N'; ?> del registro de personas jurídicas de la Oficina Registral
         Tarapoto;
         y de la otra parte como <b>COMPRADOR</b> el(la) señor(a) <b><?php echo strtoupper($comprador); ?></b>,
         identificado con DNI
@@ -239,6 +220,7 @@ ob_start();
         calidad de <b><?php echo strtoupper($nombreTipoAcompanante); ?></b> en los siguientes términos:
     </p>
 
+    <br>
     <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?>, declara ser
         propietario y
         titular registral del vehículo
@@ -261,10 +243,12 @@ ob_start();
         con anterioridad.
     </p>
 
+    <br>
     <p><b class="clausula">SEGUNDO.-</b> El VENDEDOR, deja constancia que el vehículo MOTOCICLETA descrito en la
         cláusula primera, se
         encuentra en perfecto estado de conservación y funcionamiento, por ser este bien mueble en calidad de NUEVO.</p>
 
+    <br>
     <p><b class="clausula">TERCERO.-</b> El VENDEDOR, declara que, el vehículo MOTOCICLETA se encuentra, al momento de
         celebrarse
         este contrato, libre de toda carga, gravamen, derecho real de garantía, medida judicial o extrajudicial,
@@ -273,41 +257,47 @@ ob_start();
         tratarse de un bien mueble en calidad de NUEVO; no obstante a ellos se obliga a la evicción o saneamiento de
         ley; asimismo el alquiler-venta se hace Ad-Corpus.</p>
 
+    <br>
     <p><b class="clausula">CUARTO.-</b> El PRECIO FINAL pactado por ambas partes por la venta del vehículo MOTOCICLETA
         descrito en la
-        cláusula primera, es de <b><?php echo $helpers->monedaFormt($total, $currency); ?></b> (
-        <b><?php echo $helpers->numeroALetrasMoneda($total, $currency); ?></b> ), suma que el COMPRADOR abonará
-        al VENDEDOR en su totalidad de <b><?php echo $helpers->monedaFormt($total, $currency); ?></b> (
-        <b><?php echo $helpers->numeroALetrasMoneda($total, $currency); ?></b> ), importe que deberá ser
+        cláusula primera, es de <b><?php echo $helpers->get_currency_symbol($total, $currency); ?></b> (
+        <b><?php echo $helpersService->numeroALetrasMoneda($total, $currency); ?></b> ), suma que el COMPRADOR abonará
+        al VENDEDOR en su totalidad de <b><?php echo $helpers->get_currency_symbol($total, $currency); ?></b> (
+        <b><?php echo $helpersService->numeroALetrasMoneda($total, $currency); ?></b> ), importe que deberá ser
         cancelado en moneda nacional y en efectivo; asimismo, EL VENDEDOR, se le entregará un recibo por el importe
         pactado.
     </p>
 
+    <br>
     <p><b class="clausula">QUINTO.-</b> EL COMPRADOR acepta que, una vez realizada la compra, no habrá devolución del
         dinero bajo
         ninguna circunstancia. El COMPRADOR entendió que la compra es definitiva y no puede ser cancelada.</p>
 
+    <br>
     <p><b class="clausula">SEXTO.-</b> EL VENDEDOR, garantiza que el vehículo se encuentra en buen estado de
         funcionamiento sin garantías
         ni responsabilidades. EL COMPRADOR, declara haber inspeccionado el vehículo y estar satisfecho con su estado.
     </p>
 
+    <br>
+    <br>
     <p><b class="clausula">SÉPTIMO.-</b> El presente contrato es IRREVOCABLE y no puede ser modificado sin el
         consentimiento por escrito
         de ambas partes.</p>
 
+    <br>
     <p><b class="clausula">OCTAVO.-</b> Cualquier disputa o controversia que surja en la relación con el presente
         contrato será resuelta
         mediante instancias judiciales.
     </p>
-
+    <br>
     <p>
         <b class="clausula">NOVENO.-</b> Los contratantes declaran que existe la más justa y perfecta equivalencia entre
         el precio
         pactado y el
         valor del bien mueble, no teniendo nada que reclamarse al respecto. En fe y señal de conformidad, las partes
         firman el presente contrato en <?php echo $resultSucursal['direccion'] ?? 'Jr. Ex Carretera Yurimaguas S/n'; ?>
-        el día <?php echo $helpers->fechaLetras($resultVenta['fecha_hora']); ?>.
+        el día <?php echo $helpersService->fechaLetras($resultVenta['fecha_hora']); ?>.
     </p>
 
     <br><br>
