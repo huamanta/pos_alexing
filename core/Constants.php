@@ -31,5 +31,6 @@ class Constants {
     const CONTENEDOR_BASE = 1;
     const INGRESO_KARDEX = 1;
     const EGRESO_KARDEX = 2;
+    const GERENTE = 'GERENTE';
     
 }

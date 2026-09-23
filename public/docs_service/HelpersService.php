@@ -44,8 +44,15 @@ class HelpersService
         ';
     }
 
-    public static function renderDocumentHeader($nombreEmpresa, $ruc, $titulo, $numero = '', $subtitulo = 'ALQUILER VENTA DE VEHICULOS MOTORIZADOS', $tituloClasses = 'titulo')
-    {
+    public static function renderDocumentHeader(
+        $nombreEmpresa,
+        $ruc,
+        $titulo,
+        $numero = '',
+        $subtitulo = 'ALQUILER VENTA DE VEHICULOS MOTORIZADOS',
+        $tituloClasses = 'titulo',
+        $sucursal = null
+    ) {
         $empresa = strtoupper(trim((string) $nombreEmpresa));
         $rucTexto = trim((string) $ruc);
         $tituloTexto = trim((string) $titulo);
@@ -55,6 +62,9 @@ class HelpersService
 
         $html = '<div class="header">';
         $html .= '<div class="empresa">' . htmlspecialchars($empresa, ENT_QUOTES, 'UTF-8') . '</div>';
+        if ($sucursal) {
+            $html .= '<div class="subempresa">' . htmlspecialchars($sucursal, ENT_QUOTES, 'UTF-8') . '</div>';
+        }
         $html .= '<div class="subempresa">' . htmlspecialchars($subtituloTexto, ENT_QUOTES, 'UTF-8') . '</div>';
         $html .= '<div class="ruc">R.U.C. ' . htmlspecialchars($rucTexto, ENT_QUOTES, 'UTF-8') . '</div>';
         $html .= '<div class="line"></div>';

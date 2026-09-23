@@ -1,13 +1,17 @@
 <?php
 require_once __DIR__ . '/../../configuraciones/bootstrap.php';
-require "../../configuraciones/Conexion.php";
-require "./HelpersService.php";
-$helpers = new HelpersService();
+require_once __DIR__ . "/../../configuraciones/Conexion.php";
+require_once __DIR__ . "/HelpersService.php";
+require_once __DIR__ . "/../../modelos/Helpers.php";
+require_once __DIR__ . "/../../modelos/Venta.php";
+$helpersService = new HelpersService();
+$helpers = new Helpers();
+$venta = new Venta();
 date_default_timezone_set('America/Lima');
 // Función para encriptar/desencriptar
 
 // Obtener ID del venta desde parámetro encriptado
-$idVenta = isset($_GET['idventa']) ? $helpers->encryptDecrypt('decrypt', $_GET['idventa']) : null;
+$idVenta = isset($_GET['idventa']) ? $helpersService->encryptDecrypt('decrypt', $_GET['idventa']) : null;
 if ($idVenta == null) {
     echo "ID de venta no proporcionado.";
     exit;
@@ -15,23 +19,7 @@ if ($idVenta == null) {
 
 
 // DATOS DINÁMICOS (puedes traerlos de BD basado en $idVenta)
-$sqlNegocio = "SELECT * 
-FROM datos_negocio 
-ORDER BY id_negocio ASC 
-LIMIT 1";
-$resultNegocio = ejecutarConsultaSimpleFila($sqlNegocio);
-
-$sqlVenta = "SELECT v.*, ta.nombre AS nombre_tipo_acompanante,
-             a.nombre AS nombre_acompanante, a.num_documento AS dni_acompanante, a.telefono AS telefono_acompanante,
-             p.nombre AS nombre_cliente, p.num_documento AS num_documento_cliente, p.direccion AS direccion_cliente, p.telefono AS telefono_cliente,
-             g.nombre AS nombre_garante, g.num_documento AS num_documento_garante, g.telefono AS telefono_garante, g.direccion AS direccion_garante
-             FROM venta v
-             INNER JOIN persona p ON v.idcliente = p.idpersona
-             LEFT JOIN persona g ON v.idgarante = g.idpersona
-             LEFT JOIN persona a ON v.idacompanante = a.idpersona
-             LEFT JOIN tipoacompanante ta ON v.idtipoacompanante = ta.idtipoacompanante
-             WHERE v.idventa = $idVenta";
-$resultVenta = ejecutarConsultaSimpleFila($sqlVenta);
+$resultVenta = $venta->ventaCabeceraContrato($idVenta);
 
 
 $comprador = $resultVenta['nombre_cliente'] ?? '';
@@ -48,65 +36,52 @@ $nombreTipoAcompanante = $resultVenta['nombre_tipo_acompanante'] ?? '';
 $telefonoGarante = $resultVenta['telefono_garante'] ?? '';
 $direccionGarante = $resultVenta['direccion_garante'] ?? '';
 
-$sqlSucursal = 'SELECT * FROM sucursal s INNER JOIN empresas e ON s.idempresa = e.idempresa WHERE s.idsucursal = ' . $resultVenta['idsucursal'];
-$resultSucursal = ejecutarConsultaSimpleFila($sqlSucursal);
+$resultSucursal = $helpers->dataSucursal($resultVenta['idsucursal']);
 $idSucursal = $resultVenta['idsucursal'] ?? 0;
 if (!$idSucursal) {
     $idSucursal = $resultSucursal['idsucursal'] ?? 0; // Valor por defecto si no se encuentra la sucursal
 }
-$currency = $helpers->getCurrencyCode($idSucursal);
+$currency = $helpersService->getCurrencyCode($idSucursal);
 
 
 // Generación PDF con mPDF (server-side)
 $garante = $resultVenta['nombre_garante'] ?? '';
 $dniGarante = $resultVenta['num_documento_garante'] ?? '';
-$fecha = $resultSucursal['distrito'] . ", " . $helpers->fechaLetras($resultVenta['fecha_hora']) ?? '';
+$fecha = $resultSucursal['distrito'] . ", " . $helpersService->fechaLetras($resultVenta['fecha_hora']) ?? '';
 
 // Detalle del vehículo vendido
-$sqlDetalle = "SELECT dv.*, p.idproducto, p.nombre AS producto_nombre, m.nombre AS marca, mo.nombre AS modelo, ps.color,
-                       ps.numero_serie AS serie, ps.numero_motor, ps.anio_fabricacion AS anio, ps.placa,
-                       ps.clase_vehiculo AS clase, ps.tipo_vehiculo
-                FROM detalle_venta dv
-                LEFT JOIN producto p ON p.idproducto = dv.idproducto
-                LEFT JOIN producto_configuracion pg ON dv.idproducto = pg.idproducto_configuracion
-                INNER JOIN producto_serie ps ON ps.idproducto = p.idproducto
-                LEFT JOIN marca m ON m.idmarca = p.idmarca
-                LEFT JOIN modelo mo ON mo.idmodelo = p.idmodelo
-                WHERE dv.idventa = $idVenta";
-
-$resultDetalle = ejecutarConsultaSimpleFila($sqlDetalle);
-$marcaProducto = !empty($resultDetalle['marca']) ? $resultDetalle['marca'] : '__________';
-$modeloProducto = !empty($resultDetalle['modelo']) ? $resultDetalle['modelo'] : '__________';
-$serieProducto = !empty($resultDetalle['serie']) ? $resultDetalle['serie'] : '__________';
-$colorProducto = !empty($resultDetalle['color']) ? $resultDetalle['color'] : '__________';
-$motorProducto = !empty($resultDetalle['motor']) ? $resultDetalle['motor'] : '__________';
-$anioProducto = !empty($resultDetalle['anio']) ? $resultDetalle['anio'] : '__________';
-$placaProducto = !empty($resultDetalle['placa']) ? $resultDetalle['placa'] : '__________';
+$resultDetalle = $venta->ventaDetalleContrato($idVenta);
+$data = [];
+foreach ($resultDetalle as $row) {
+    $data[] = [
+        "idproducto" => $row['idproducto'],
+        'nombre' => $row['producto_nombre'] ?? 'N/A',
+        'marca' => $row['marca'] ?? 'N/A',
+        'modelo' => $row['modelo'] ?? 'N/A',
+        'color' => $row['color'] ?? 'N/A',
+        'serie' => $row['serie'] ?? 'N/A',
+        'motor' => $row['motor'] ?? 'N/A',
+        'anio' => $row['anio'] ?? 'N/A',
+        'placa' => $row['placa'] ?? 'NUEVO',
+        'clase' => $row['clase'] ?? 'N/A',
+        'tipo_vehiculo' => $row['tipo_vehiculo'] ?? 'N/A',
+        "cantidad" => $row['cantidad'],
+        "precio_venta" => $row['precio_venta'],
+        "descuento" => $row['descuento']
+    ];
+}
 
 // Cuotas y fechas de inicio/fin
-$sqlCuotas = "SELECT
-    (
-        SELECT deuda
-        FROM cuentas_por_cobrar
-        WHERE idventa = $idVenta
-        ORDER BY fechavencimiento
-        LIMIT 1
-    ) AS deuda,
-    MIN(fechavencimiento) AS fecha_inicio_cuota,
-    MAX(fechavencimiento) AS fecha_fin_cuota
-FROM cuentas_por_cobrar
-WHERE idventa = $idVenta";
-$resultCuotas = ejecutarConsultaSimpleFila($sqlCuotas);
+$resultCuotas = $helpers->dataInicioFinPagos($idVenta);
 $montoCuota = !empty($resultCuotas['deuda']) ? $resultCuotas['deuda'] : 0;
-$fechaInicio = !empty($resultCuotas['fecha_inicio_cuota']) ? $helpers->fechaLetras($resultCuotas['fecha_inicio_cuota']) : '__________';
-$fechaFin = !empty($resultCuotas['fecha_fin_cuota']) ? $helpers->fechaLetras($resultCuotas['fecha_fin_cuota']) : '__________';
+$fechaInicio = !empty($resultCuotas['fecha_inicio_cuota']) ? $helpersService->fechaLetras($resultCuotas['fecha_inicio_cuota']) : '__________';
+$fechaFin = !empty($resultCuotas['fecha_fin_cuota']) ? $helpersService->fechaLetras($resultCuotas['fecha_fin_cuota']) : '__________';
 
-$dataFrecuencia = $helpers->getDataFrecuencia($resultVenta['frecuencia'] ?? '1');
+$dataFrecuencia = $helpersService->getDataFrecuencia($resultVenta['frecuencia'] ?? '1');
 $frecuenciaTexto = $dataFrecuencia->texto;
 
 // buscar actaentrega
-$sqlActa = "SELECT * FROM documentacion WHERE idventa = $idVenta AND tipo = '1'";
-$resultActa = ejecutarConsultaSimpleFila($sqlActa);
+$resultActa = $helpers->datosDocumentacion($idVenta, 1);
 if (!$resultActa) {
     echo '
     <style>
@@ -181,7 +156,7 @@ if (!$resultActa) {
     exit;
 }
 
-$numeroContrato = $helpers->tiposDocumentacion($resultActa['tipo']) . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
+$numeroContrato = $helpersService->tiposDocumentacion($resultActa['tipo']) . str_pad($resultActa['correlativo'], 9, '0', STR_PAD_LEFT);
 
 // Hora dinámica de la venta
 $hora = date('H:i', strtotime($resultVenta['fecha_hora']));
@@ -205,9 +180,7 @@ ob_start();
             color: #000;
         }
 
-        <?php echo HelpersService::getDocumentHeaderStyles(); ?>
-
-        .section-title {
+        <?php echo HelpersService::getDocumentHeaderStyles(); ?>.section-title {
             font-weight: bold;
             text-decoration: underline;
             margin-top: 15px;
@@ -271,16 +244,19 @@ ob_start();
 <body>
     <?php
     echo HelpersService::renderDocumentHeader(
-        $resultNegocio['nombre'] ?? '',
+        $resultSucursal['razon_social'] ?? '',
         $resultSucursal['ruc'] ?? '',
         'ACTA DE ENTREGA Y RECEPCION DE UN VEHICULO TRIMOTO DE PASAJEROS',
-        $numeroContrato
+        $numeroContrato,
+        'ALQUILER VENTA DE VEHICULOS MOTORIZADOS',
+        'titulo',
+        $resultSucursal['nombre'] ?? ''
     );
     ?>
 
     <p>
         Siendo las <strong><?php echo $hora; ?></strong> horas, del día
-        <strong><?php echo $helpers->fechaLetras($resultVenta['fecha_hora']); ?></strong>, en las instalaciones de la
+        <strong><?php echo $helpersService->fechaLetras($resultVenta['fecha_hora']); ?></strong>, en las instalaciones de la
         empresa <strong>"<?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?>"</strong>,
         con RUC Nº <strong><?php echo $resultSucursal['ruc']; ?></strong>,
         sito en
@@ -311,45 +287,47 @@ ob_start();
                 <strong><?php echo strtoupper($direccionGarante); ?></strong><?php endif; ?>
             <?php if (!empty($telefonoGarante)): ?> con celular N°
                 <strong><?php echo $telefonoGarante; ?></strong><?php endif; ?>
-        <?php endif; ?>,
-        la finalidad de suscribir el presente ACTA DE ENTREGA Y RECEPCIÓN DE VEHÍCULO TRIMOTO DE PASAJEROS; acto que se
-        efectúa por el ALQUILER del bien mueble que se encuentra en condición de NUEVO destinado única y exclusivamente
-        para su uso como transporte de pasajeros, el mismo que inicia a partir del
-        <strong><?php echo $fechaInicio; ?></strong> y finaliza indefectiblemente el
-        <strong><?php echo $fechaFin; ?></strong> sin necesidad de aviso previo con una cuota
-        <?php echo $frecuenciaTexto; ?> de
-        <strong><?php echo $helpers->monedaFormt($montoCuota, $currency); ?>
-            (<?php echo $helpers->numeroALetrasMoneda($montoCuota, $currency); ?>)</strong>.
-        Dicho vehículo cuenta con las siguientes características:
+            <?php endif; ?>,
+            la finalidad de suscribir el presente ACTA DE ENTREGA Y RECEPCIÓN DE VEHÍCULO TRIMOTO DE PASAJEROS; acto que se
+            efectúa por el ALQUILER del bien mueble que se encuentra en condición de NUEVO destinado única y exclusivamente
+            para su uso como transporte de pasajeros, el mismo que inicia a partir del
+            <strong><?php echo $fechaInicio; ?></strong> y finaliza indefectiblemente el
+            <strong><?php echo $fechaFin; ?></strong> sin necesidad de aviso previo con una cuota
+            <?php echo $frecuenciaTexto; ?> de
+            <strong><?php echo $helpersService->monedaFormt($montoCuota, $currency); ?>
+                (<?php echo $helpersService->numeroALetrasMoneda($montoCuota, $currency); ?>)</strong>.
+            Dicho vehículo cuenta con las siguientes características:
     </p>
 
-    <p class="section-title">CARACTERÍSTICAS DEL VEHÍCULO:</p>
-    <table class="table-info">
-        <tr>
-            <td>Clase</td>
-            <td>:<?php echo strtoupper($resultDetalle['nombre_producto'] ?? 'TRIMOTO DE PASAJEROS'); ?></td>
-            <td>COLOR</td>
-            <td>:<?php echo strtoupper($colorProducto); ?></td>
-        </tr>
-        <tr>
-            <td>Marca</td>
-            <td>:<?php echo strtoupper($marcaProducto); ?></td>
-            <td>Nº Serie</td>
-            <td>:<?php echo strtoupper($serieProducto); ?></td>
-        </tr>
-        <tr>
-            <td>Modelo</td>
-            <td>:<?php echo strtoupper($modeloProducto); ?></td>
-            <td>Nº Motor</td>
-            <td>:<?php echo strtoupper($motorProducto); ?></td>
-        </tr>
-        <tr>
-            <td>Año</td>
-            <td>:<?php echo strtoupper($anioProducto); ?></td>
-            <td>Placa</td>
-            <td>:<?php echo strtoupper($placaProducto); ?></td>
-        </tr>
-    </table>
+    <?php foreach ($data as $item): ?>
+        <p class="section-title">CARACTERÍSTICAS DEL VEHÍCULO:</p>
+        <table class="table-info">
+            <tr>
+                <td>Clase</td>
+                <td>:<?php echo strtoupper($item['nombre'] ?? 'TRIMOTO DE PASAJEROS'); ?></td>
+                <td>COLOR</td>
+                <td>:<?php echo strtoupper($item['color'] ?? 'N/A'); ?></td>
+            </tr>
+            <tr>
+                <td>Marca</td>
+                <td>:<?php echo strtoupper($item['marca'] ?? 'N/A'); ?></td>
+                <td>Nº Serie</td>
+                <td>:<?php echo strtoupper($item['serie'] ?? 'N/A'); ?></td>
+            </tr>
+            <tr>
+                <td>Modelo</td>
+                <td>:<?php echo strtoupper($item['modelo'] ?? 'N/A'); ?></td>
+                <td>Nº Motor</td>
+                <td>:<?php echo strtoupper($item['motor'] ?? 'N/A'); ?></td>
+            </tr>
+            <tr>
+                <td>Año</td>
+                <td>:<?php echo strtoupper($item['anio'] ?? 'N/A'); ?></td>
+                <td>Placa</td>
+                <td>:<?php echo strtoupper($item['placa'] ?? 'NUEVO'); ?></td>
+            </tr>
+        </table>
+    <?php endforeach; ?>
     <p>
         Que, el propietario otorga la posesión del vehículo TRIMOTO DE PASAJEROS descrito líneas arriba al señor(a)
         <strong><?php echo strtoupper($comprador); ?></strong>, quien declara recibir el vehículo TRIMOTO DE PASAJEROS a
@@ -380,7 +358,7 @@ ob_start();
         </tr>
         <tr>
             <td><strong>ESTRUCTURA COMPLETA</strong></td>
-            <td>nannanan</td>
+            <td></td>
             <td>Nuevo[ ] Semi-Nuevo[ ]</td>
             <td><strong>CARBURADOR</strong></td>
             <td>Original: Si[ ] No[ ]</td>
@@ -584,8 +562,8 @@ ob_start();
         condiciones que fue recibido y todos los
         documentos
         dados a mi custodia, con el simple requerimiento verbal o mediante carta notarial, asimismo, pagar en calidad de
-        penalidad compensatorio un importe ascendente a <?php echo $helpers->monedaFormt(35, $currency); ?>
-        (<?php echo $helpers->numeroALetrasMoneda(35, $currency); ?>), por cada día de demora
+        penalidad compensatorio un importe ascendente a <?php echo $helpersService->monedaFormt(35, $currency); ?>
+        (<?php echo $helpersService->numeroALetrasMoneda(35, $currency); ?>), por cada día de demora
         en la
         entrega del vehículo trimovil. De igual forma, faculto a la empresa
         <strong><?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?></strong>, en caso de
@@ -607,7 +585,7 @@ ob_start();
     <p>
         No habiendo nada más que hacer constar, se da por concluida la entrega y recepción del vehículo TRIMOTO DE
         PASAJEROS a las <strong><?php echo $hora; ?></strong> horas del día
-        <strong><?php echo $helpers->fechaLetras($resultVenta['fecha_hora']); ?></strong>
+        <strong><?php echo $helpersService->fechaLetras($resultVenta['fecha_hora']); ?></strong>
         firmando la presente acta en señal de conformidad, y para
         mayor veracidad se certifica notarialmente mi firma.
     </p>

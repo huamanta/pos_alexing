@@ -543,7 +543,6 @@ class Venta extends Helpers
                     (SELECT stock FROM producto WHERE idproducto = '$id_producto_real' AND idsucursal = '$idsucursal'),
                     1, 'Venta', 'Venta #$num_comprobante', '$fechaActual'
                 )");
-
             } else {
 
                 // =========================
@@ -1467,7 +1466,6 @@ class Venta extends Helpers
                 "=",
                 $idsucursal
             );
-
         }
 
 
@@ -1479,7 +1477,6 @@ class Venta extends Helpers
                 "=",
                 $idpersonal
             );
-
         }
 
 
@@ -1491,7 +1488,6 @@ class Venta extends Helpers
                 "=",
                 $estado
             );
-
         }
 
 
@@ -1508,7 +1504,6 @@ class Venta extends Helpers
                 AND pc.idproducto = '$idproducto'
             )
         ");
-
         }
 
 
@@ -1688,7 +1683,9 @@ class Venta extends Helpers
                 'v.vuelto',
                 'v.estado',
                 'v.observacion',
-                'v.totalrecibido'
+                'v.totalrecibido',
+                'v.meses',
+                'v.idsucursal'
             ])
             ->from('venta v')
             ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
@@ -1698,6 +1695,57 @@ class Venta extends Helpers
             ->where('v.idventa', '=', $idventa);
 
         return $query->first();
+    }
+
+
+    public function ventaCabeceraContrato($idventa)
+    {
+        return (new DBQuery($this->pdo))
+            ->select(
+                'v.*, 
+                ta.nombre AS nombre_tipo_acompanante, 
+                a.nombre AS nombre_acompanante, 
+                p.nombre AS nombre_cliente, 
+                p.num_documento AS num_documento_cliente, 
+                p.direccion AS direccion_cliente, 
+                p.telefono AS telefono_cliente, 
+                g.nombre AS nombre_garante, 
+                g.num_documento AS num_documento_garante'
+            )
+            ->from('venta v')
+            ->join('persona p', 'v.idcliente = p.idpersona')
+            ->leftJoin('persona g', 'v.idgarante = g.idpersona')
+            ->leftJoin('persona a', 'v.idacompanante = a.idpersona')
+            ->leftJoin('tipoacompanante ta', 'v.idtipoacompanante = ta.idtipoacompanante')
+            ->where('v.idventa', '=', $idventa)
+            ->first();
+    }
+
+    public function ventaDetalleContrato($idventa)
+    {
+        return (new DBQuery($this->pdo))
+            ->select('
+                dv.*, 
+                p.idproducto, 
+                p.nombre AS producto_nombre, 
+                m.nombre AS marca, 
+                mo.nombre AS modelo, 
+                ps.color,
+                ps.numero_serie AS serie, 
+                ps.numero_motor, 
+                ps.anio_fabricacion AS anio, 
+                ps.placa,
+                ps.clase_vehiculo AS clase, 
+                ps.tipo_vehiculo'
+            )
+            ->from('detalle_venta dv')
+            ->join('producto p', 'p.idproducto = dv.idproducto')
+            ->leftJoin('producto_configuracion pg', 'dv.idproducto = pg.idproducto_configuracion')
+            ->leftJoin('producto_serie ps', 'ps.idproducto = p.idproducto')
+            ->leftJoin('marca m', 'm.idmarca = p.idmarca')
+            ->leftJoin('modelo mo', 'mo.idmodelo = p.idmodelo')
+            ->where('dv.idventa', '=', $idventa)
+            ->get();
     }
 
 
@@ -2412,8 +2460,7 @@ class Venta extends Helpers
     public function cambiarComprobante($idventa, $nuevo_tipo, $idsucursal)
     {
         // --- 1. DEFINIR PREFIJO ---
-        $prefijo = ($nuevo_tipo == "Factura") ? "F" :
-            (($nuevo_tipo == "Boleta") ? "B" : "P");
+        $prefijo = ($nuevo_tipo == "Factura") ? "F" : (($nuevo_tipo == "Boleta") ? "B" : "P");
 
         // --- 2. OBTENER SERIE DESDE comp_pago ---
         $sqlSerie = "
