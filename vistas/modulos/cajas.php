@@ -34,11 +34,13 @@ date_default_timezone_set('America/Lima');
                                 <div class="row">
                                     <div class="col-md-11">
                                     </div>
-                                    <div class="col-md-1">
-                                        <button type="button" class="btn btn-outline-primary btn-block btn-xs"
-                                            data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i>
-                                            Nuevo</button>
-                                    </div>
+                                    <?php if ($helpers->getUserPermissionAccion('Crear caja')) { ?>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-outline-primary btn-block btn-xs"
+                                                data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i>
+                                                Nuevo</button>
+                                        </div>
+                                    <?php } ?>
                                 </div>
 
                             </div><br>
@@ -342,7 +344,7 @@ date_default_timezone_set('America/Lima');
             </div>
             <form id="formCerrarCaja">
                 <div class="modal-body">
-                    <input id="aperturacajaid" name="aperturacajaid" hidden readonly/>
+                    <input id="aperturacajaid" name="aperturacajaid" hidden readonly />
                     <table class="table table-bordered table-sm">
                         <tbody>
                             <tr>
