@@ -274,7 +274,7 @@ function calcularCuotasDesdeNumeroMeses() {
     semanal = 1 / 5;
   }
 
-  
+
 
   const mesesPorCuota = {
     1: 1 / 30,
@@ -887,25 +887,24 @@ function pintarCotizaciones(data, permissions) {
     let estado = "";
     let editar = "";
     let desistir = "";
+
     if (item.estado == "EN ESPERA") {
       estado = '<span class="badge bg-yellow">EN ESPERA</span>';
       editar = `<button class="btn btn-success btn-xs" onclick="mostrarEditar(${item.idcotizacion})" data-toggle="tooltip" title="" target="blanck" data-original-title="EDITAR COTIZACIÓN"><i class="fas fa-edit"></i></button> `;
       desistir = `<button class="btn btn-danger btn-xs" onclick="desistir(${item.idcotizacion})" data-toggle="tooltip" title="" target="blanck" data-original-title="DESISTIR"><i class="fa fa-times"></i></button>`;
+
+      let now = new Date();
+      let fechaVencimiento = new Date(item.fecha_hora);
+      fechaVencimiento.setDate(fechaVencimiento.getDate() + parseInt(item.nota));
+      if (fechaVencimiento < now) {
+        estado = '<span class="badge bg-gray">VENCIDO</span>';
+      }
     } else if (item.estado == "VENDIDO") {
       estado = '<span class="badge bg-green">VENDIDO</span>';
     } else if (item.estado == "APROBADO") {
       estado = '<span class="badge bg-info">APROBADO</span>';
     } else if (item.estado == "RECHAZADO") {
       estado = '<span class="badge bg-red">RECHAZADO</span>';
-    }
-
-    let fechaVencimiento = new Date(item.fecha_hora);
-    fechaVencimiento.setDate(fechaVencimiento.getDate() + parseInt(item.nota));
-
-    let now = new Date();
-
-    if (fechaVencimiento < now) {
-      estado = '<span class="badge bg-gray">VENCIDO</span>';
     }
 
     html += `
@@ -919,9 +918,9 @@ function pintarCotizaciones(data, permissions) {
                 </td>
                 <td>
                     ${item.formapago === 'Si'
-                    ? `<span class="badge badge-success">${item.formapago}</span>`
-                    : `<span class="badge badge-error">${item.formapago}</span>`
-                  }
+        ? `<span class="badge badge-success">${item.formapago}</span>`
+        : `<span class="badge badge-error">${item.formapago}</span>`
+      }
                 </td>
                 <td>${item.tipo_comprobante}</td>
                 <td>${item.serie_comprobante}-${item.num_comprobante}</td>
@@ -1037,7 +1036,7 @@ function abrirWhatsApp() {
     return;
   }
 
-  
+
   const urlPDF = `${BASE_URL}/reportes/factura/generaFacturaCoti.php?id=${idventa}`;
   const qr = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(urlPDF)}`;
   let mensaje = `🏢 *${nombreEmpresa || "Mi Empresa"}*\n` +
@@ -1240,7 +1239,7 @@ function desistir(idcotizacion) {
           idcotizacion: idcotizacion,
         },
         function (response) {
-          if(!response.success){
+          if (!response.success) {
             Swal.fire("! Error !", response.message, "success");
             return;
           }
