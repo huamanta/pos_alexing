@@ -21,7 +21,6 @@ if (isset($rutaActual)) {
     include "modulos/salirsucursal.php";
     exit;
   }
-
 }
 ?>
 <!DOCTYPE html>
@@ -47,7 +46,7 @@ if (isset($rutaActual)) {
   <link rel="stylesheet" href="./files/dist/css/neon.css">
   <link rel="stylesheet" href="./files/dist/css/tailpanel.css">
   <link rel="stylesheet" href="./files/css/pos.css">
- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/skeleton.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/skeleton.min.css">
   <!-- jQuery -->
   <script src="./files/plugins/jquery/jquery.min.js"></script>
   <!-- Bootstrap 4 -->
@@ -105,7 +104,7 @@ if (isset($rutaActual)) {
   <script src="./files/plugins/fullcalendar/main.min.js"></script>
   <script src="./vistas/js/pagination.js"></script>
   <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
       $('[data-toggle="tooltip"]').tooltip();
     });
   </script>
@@ -165,25 +164,21 @@ if (isset($rutaActual)) {
 
 <body id="body" class="sidebar-mini layout-fixed text-sm">
   <?php
-
-
-
-  if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok" && $_GET["ruta"] != "reset" && $_GET["ruta"] != "recuperar") {
-
+  $rutaUrl = $_GET['ruta'] ?? 'inicio';
+  if (isset($_SESSION["iniciarSesion"]) && $_SESSION["iniciarSesion"] == "ok" && $rutaUrl != "reset" && $rutaUrl != "recuperar") {
 
     echo '<div class="wrapper">     
                 <input type="hidden" value="' . ($_SESSION['monto_impuesto'] ?? '') . '" id="valorImpuestoGlobal"/>';
     /*=============================================
     CABEZOTE
     =============================================*/
-    if ($_GET["ruta"] != 'pos') {
+    if ($rutaUrl != 'pos') {
       include "modulos/cabezote.php";
     }
 
     /*=============================================
     MENU
     =============================================*/
-
     include "modulos/menu.php";
 
     /*=============================================
@@ -192,91 +187,38 @@ if (isset($rutaActual)) {
 
     if (isset($_SESSION['idsucursal']) && !empty($_SESSION['idsucursal'])) {
 
-      if (isset($_GET["ruta"])) {
+      require_once __DIR__ . "/../core/Rutas.php";
+      require_once __DIR__ . "/../modelos/Helpers.php";
 
-        if (
-          $_GET["ruta"] == "inicio" ||
-          $_GET["ruta"] == "unidad-medida" ||
-          $_GET["ruta"] == "rubro" ||
-          $_GET["ruta"] == "recuperar" ||
-          $_GET["ruta"] == "reset" ||
-          $_GET["ruta"] == "procesar" ||
-          $_GET["ruta"] == "reportes-digemid" ||
-          $_GET["ruta"] == "reportes-vencimiento" ||
-          $_GET["ruta"] == "categoria" ||
-          $_GET["ruta"] == "servicio" ||
-          $_GET["ruta"] == "producto" ||
-          $_GET["ruta"] == "traslado" ||
-          $_GET["ruta"] == "restaurant" ||
-          $_GET["ruta"] == "nombres-precios" ||
-          $_GET["ruta"] == "orden-compra" ||
-          $_GET["ruta"] == "compra" ||
-          $_GET["ruta"] == "toma-inventario" ||
-          $_GET["ruta"] == "ajuste-inventario" ||
-          $_GET["ruta"] == "caja-chica" ||
-          $_GET["ruta"] == "caja-chica2" ||
-          $_GET["ruta"] == "conceptos" ||
-          $_GET["ruta"] == "movimientos" ||
-          $_GET["ruta"] == "cuentas-cobrar" ||
-          $_GET["ruta"] == "cuentasxpagar" ||
-          $_GET["ruta"] == "proveedor" ||
-          $_GET["ruta"] == "cotizacion" ||
-          $_GET["ruta"] == "venta" ||
-          $_GET["ruta"] == "cajas" ||
-          $_GET["ruta"] == "pos" ||
-          $_GET["ruta"] == "venta-pos" ||
-          $_GET["ruta"] == "guia" ||
-          $_GET["ruta"] == "service" ||
-          $_GET["ruta"] == "nota-credito" ||
-          $_GET["ruta"] == "cliente" ||
-          $_GET["ruta"] == "asistencia" ||
-          $_GET["ruta"] == "personal" ||
-          $_GET["ruta"] == "usuario" ||
-          $_GET["ruta"] == "permiso" ||
-          $_GET["ruta"] == "negocio" ||
-          $_GET["ruta"] == "sucursal" ||
-          $_GET["ruta"] == "compras-fecha" ||
-          $_GET["ruta"] == "compras-proveedor" ||
-          $_GET["ruta"] == "ventas-cliente" ||
-          $_GET["ruta"] == "ventas-vendedor" ||
-          $_GET["ruta"] == "ventas-producto" ||
-          $_GET["ruta"] == "ventas-credito" ||
-          $_GET["ruta"] == "ventas-servicio" ||
-          $_GET["ruta"] == "detalle-venta-comprobante" ||
-          $_GET["ruta"] == "kardex" ||
-          $_GET["ruta"] == "reporte" ||
-          $_GET["ruta"] == "resumen" ||
-          $_GET["ruta"] == "empresas" ||
-          $_GET["ruta"] == "contrato" ||
-          $_GET["ruta"] == "marca" ||
-          $_GET["ruta"] == "modelo" ||
-          $_GET["ruta"] == "condicionventa" ||
-          $_GET["ruta"] == "salirsucursal" ||
-          $_GET["ruta"] == "solicitudes" ||
-          $_GET["ruta"] == "refinanciamientos" ||
-          $_GET["ruta"] == "configuracion" ||
-          $_GET["ruta"] == "recuperacion-vehiculos" ||
-          $_GET["ruta"] == "orden-trabajo" ||
-          $_GET["ruta"] == "bancos" ||
-          $_GET["ruta"] == "salir"
-        ) {
+      $helpers = new Helpers();
 
-          include "modulos/" . $_GET["ruta"] . ".php";
+      $rutaConfig = Rutas::obtener((string) $rutaUrl);
 
-        } else {
-
-          include "modulos/404.php";
-        }
-      } else {
-
-        include "modulos/inicio.php";
-
+      if ($rutaConfig === null) {
+        include __DIR__ . "/modulos/errores/404.php";
+        exit;
       }
 
+      if ($rutaConfig['submodulo']) {
+        $permiso = $helpers->getUserPermisoModulo(
+          $rutaConfig['permiso'],
+          $rutaConfig['modulo']
+        );
+      } else {
+        $permiso = $helpers->getUserPermisoModulo(
+          $rutaConfig['permiso']
+        );
+      }
+
+      if ($rutaConfig['permiso'] !== null && !$permiso) {
+        include __DIR__ . "/modulos/errores/403.php";
+        exit;
+      }
+
+      include __DIR__ . "/modulos/" . $rutaConfig['url'] . ".php";
     } else {
 
-      include "modulos/elegir-sucursal.php";
-
+      include __DIR__ . "/modulos/elegir-sucursal.php";
     }
 
     /*=============================================
@@ -288,20 +230,18 @@ if (isset($rutaActual)) {
     echo '</div>';
   } else {
 
-    if (isset($_GET["ruta"]) && $_GET["ruta"] == "recuperar") {
+    if (isset($rutaUrl) && $rutaUrl == "recuperar") {
       include "modulos/recuperar.php";
-
-    } elseif (isset($_GET["ruta"]) && $_GET["ruta"] == "reset") {
+    } elseif (isset($rutaUrl) && $rutaUrl == "reset") {
       include "modulos/reset.php";
-
     } else {
       include "modulos/login.php";
     }
 
-    ?>
-  </body>
-
-  </html>
-  <?php
-  }
   ?>
+</body>
+
+</html>
+<?php
+  }
+?>

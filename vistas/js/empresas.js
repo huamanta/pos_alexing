@@ -13,7 +13,7 @@ function init() {
 
     $('#navConfiguracionActive').addClass("treeview active");
     $('#navConfiguracion').addClass("treeview menu-open");
-    $('#navSucursal').addClass("active");
+    $('#navFacturadores').addClass("active");
 
 }
 
