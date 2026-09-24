@@ -1,78 +1,78 @@
 <!-- Content Wrapper. Contains page content -->
 <style>
   /* Estilo base del contenedor */
-.custom-check {
-  display: inline-block;
-  position: relative;
-  padding-left: 28px;
-  cursor: pointer;
-  font-size: 14px;
-  user-select: none;
-}
+  .custom-check {
+    display: inline-block;
+    position: relative;
+    padding-left: 28px;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+  }
 
-/* Ocultamos el checkbox nativo */
-.custom-check input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-}
+  /* Ocultamos el checkbox nativo */
+  .custom-check input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+  }
 
-/* Caja visual */
-.custom-check .checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 18px;
-  width: 18px;
-  background-color: #eee;
-  border-radius: 4px;
-  transition: all 0.2s ease;
-  border: 1px solid #ccc;
-}
+  /* Caja visual */
+  .custom-check .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 18px;
+    width: 18px;
+    background-color: #eee;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    border: 1px solid #ccc;
+  }
 
-/* Hover */
-.custom-check:hover input ~ .checkmark {
-  background-color: #ddd;
-}
+  /* Hover */
+  .custom-check:hover input~.checkmark {
+    background-color: #ddd;
+  }
 
-/* Activo (cuando está checked) */
-.custom-check input:checked ~ .checkmark {
-  background-color: #40c057;
-  border-color: #40c057;
-}
+  /* Activo (cuando está checked) */
+  .custom-check input:checked~.checkmark {
+    background-color: #40c057;
+    border-color: #40c057;
+  }
 
-/* Check (✓) */
-.custom-check .checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-}
+  /* Check (✓) */
+  .custom-check .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
 
-.custom-check input:checked ~ .checkmark:after {
-  display: block;
-}
+  .custom-check input:checked~.checkmark:after {
+    display: block;
+  }
 
-.custom-check .checkmark:after {
-  left: 6px;
-  top: 2px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
+  .custom-check .checkmark:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
 
-/* Deshabilitado */
-.custom-check.disabled .checkmark {
-  background-color: #f5f5f5;
-  border-color: #ddd;
-  cursor: not-allowed;
-}
-.custom-check.disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
-}
+  /* Deshabilitado */
+  .custom-check.disabled .checkmark {
+    background-color: #f5f5f5;
+    border-color: #ddd;
+    cursor: not-allowed;
+  }
 
+  .custom-check.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
 </style>
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
@@ -171,7 +171,7 @@
                 <table id="tbllistado" class="table table-striped">
                   <thead>
                     <tr>
-                      <th><input type="checkbox" id="checkAll"/></th>
+                      <th><input type="checkbox" id="checkAll" /></th>
                       <th>#</th>
                       <th>Producto</th>
                       <th>U. medida</th>
