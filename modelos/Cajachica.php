@@ -72,6 +72,8 @@ class Cajachica extends Helpers
 		int $idsucursal,
 		?array $cajaApertura
 	) {
+		$resumen = [];
+
 		$query = (new DBQuery($this->pdo))
 			->select('m.*, b.nombre AS banco')
 			->from('movimiento m')
@@ -79,11 +81,21 @@ class Cajachica extends Helpers
 			->leftJoin("bancos b", "b.idbanco = m.idbanco")
 			->where('m.idsucursal', '=', $idsucursal)
 			->where('m.tipo', '=', Constants::INGRESOS);
+
 		if ($cajaApertura !== null) {
-			$fechaCierre = !empty($cajaApertura['fecha_cierre']) ? $cajaApertura['fecha_cierre'] : Carbon::now();
-			$query->where('m.idcaja', '=', $cajaApertura['idcaja'])
-				->whereBetween('m.fecha', $cajaApertura['fecha_apertura'], $fechaCierre);
+			$fechaCierre = !empty($cajaApertura['fecha_cierre'])
+				? $cajaApertura['fecha_cierre']
+				: Carbon::now();
+
+			$query
+				->where('m.idcaja', '=', $cajaApertura['idcaja'])
+				->whereBetween(
+					'm.fecha',
+					$cajaApertura['fecha_apertura'],
+					$fechaCierre
+				);
 		}
+
 		$movimientos = $query->get();
 
 		foreach ($movimientos as $item) {
@@ -104,6 +116,7 @@ class Cajachica extends Helpers
 			}
 
 			if ((float) $item['totaldeposito'] > 0) {
+
 				$formaPago = strtoupper(trim($item['formapago'] ?? ''));
 				$banco = strtoupper(trim($item['banco'] ?? ''));
 
@@ -125,27 +138,26 @@ class Cajachica extends Helpers
 				}
 
 				$resumen[$key]['cantidad']++;
-				$resumen[$key]['total'] +=
-					(float) $item['totaldeposito'];
+				$resumen[$key]['total'] += (float) $item['totaldeposito'];
 			}
 		}
 
 		foreach ($resumen as &$item) {
 			$item['total'] = round($item['total'], 2);
-			$item['total_str'] =
-				Helpers::get_currency_symbol($item['total']);
+			$item['total_str'] = Helpers::get_currency_symbol($item['total']);
 		}
 
 		unset($item);
 
 		return array_values($resumen);
-
 	}
 
 	public function resumenEgresos(
 		int $idsucursal,
 		?array $cajaApertura
 	) {
+		$resumen = [];
+
 		$query = (new DBQuery($this->pdo))
 			->select('m.*, b.nombre AS banco')
 			->from('movimiento m')
@@ -153,11 +165,21 @@ class Cajachica extends Helpers
 			->leftJoin("bancos b", "b.idbanco = m.idbanco")
 			->where('m.idsucursal', '=', $idsucursal)
 			->where('m.tipo', '=', Constants::EGRESOS);
+
 		if ($cajaApertura !== null) {
-			$fechaCierre = !empty($cajaApertura['fecha_cierre']) ? $cajaApertura['fecha_cierre'] : Carbon::now();
-			$query->where('m.idcaja', '=', $cajaApertura['idcaja'])
-				->whereBetween('m.fecha', $cajaApertura['fecha_apertura'], $fechaCierre);
+			$fechaCierre = !empty($cajaApertura['fecha_cierre'])
+				? $cajaApertura['fecha_cierre']
+				: Carbon::now();
+
+			$query
+				->where('m.idcaja', '=', $cajaApertura['idcaja'])
+				->whereBetween(
+					'm.fecha',
+					$cajaApertura['fecha_apertura'],
+					$fechaCierre
+				);
 		}
+
 		$movimientos = $query->get();
 
 		foreach ($movimientos as $item) {
@@ -178,6 +200,7 @@ class Cajachica extends Helpers
 			}
 
 			if ((float) $item['totaldeposito'] > 0) {
+
 				$formaPago = strtoupper(trim($item['formapago'] ?? ''));
 				$banco = strtoupper(trim($item['banco'] ?? ''));
 
@@ -199,21 +222,18 @@ class Cajachica extends Helpers
 				}
 
 				$resumen[$key]['cantidad']++;
-				$resumen[$key]['total'] +=
-					(float) $item['totaldeposito'];
+				$resumen[$key]['total'] += (float) $item['totaldeposito'];
 			}
 		}
 
 		foreach ($resumen as &$item) {
 			$item['total'] = round($item['total'], 2);
-			$item['total_str'] =
-				Helpers::get_currency_symbol($item['total']);
+			$item['total_str'] = Helpers::get_currency_symbol($item['total']);
 		}
 
 		unset($item);
 
 		return array_values($resumen);
-
 	}
 
 

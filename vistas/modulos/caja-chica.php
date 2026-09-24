@@ -34,7 +34,7 @@
                     color: #333;
                 }
 
-                
+
 
                 .caja-status {
                     display: flex;
@@ -583,474 +583,474 @@
                 }
             </style>
 
-                <!-- ESTADO DE CAJA -->
-                <div id="estadoCaja" class="box mb-4" style="display:none;">
-                    <div class="box-body">
-                        <div class="caja-status">
-                            <div class="caja-status-icon">
-                                <i class="fa-solid fa-lock"></i>
-                            </div>
+            <!-- ESTADO DE CAJA -->
+            <div id="estadoCaja" class="box mb-4" style="display:none;">
+                <div class="box-body">
+                    <div class="caja-status">
+                        <div class="caja-status-icon">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
 
-                            <div class="caja-status-content">
-                                <h3 id="estadoCajaTitulo">
-                                    Caja no abierta
-                                </h3>
+                        <div class="caja-status-content">
+                            <h3 id="estadoCajaTitulo">
+                                Caja no abierta
+                            </h3>
 
-                                <p id="estadoCajaMensaje">
-                                    No tienes una caja abierta actualmente.
-                                </p>
-                            </div>
+                            <p id="estadoCajaMensaje">
+                                No tienes una caja abierta actualmente.
+                            </p>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- INFORMACIÓN DE LA CAJA -->
-                <div id="informacionCaja" style="display:none;">
+            <!-- INFORMACIÓN DE LA CAJA -->
+            <div id="informacionCaja" style="display:none;">
 
-                    <div class="caja-info-panel">
+                <div class="caja-info-panel">
 
-                        <!-- HEADER -->
-                        <div class="caja-info-header">
+                    <!-- HEADER -->
+                    <div class="caja-info-header">
 
-                            <div class="caja-info-title">
+                        <div class="caja-info-title">
 
-                                <div class="caja-info-icon">
-                                    <i class="fa-solid fa-cash-register"></i>
-                                </div>
-
-                                <div>
-                                    <h3>Información de la caja</h3>
-                                    <span>Detalle de la apertura actual</span>
-                                </div>
-
-                            </div>
-
-                            <div class="caja-estado-abierta">
-                                <span class="caja-estado-punto"></span>
-                                CAJA ABIERTA
-                            </div>
-
-                        </div>
-
-
-                        <!-- DATOS -->
-                        <div class="caja-info-body">
-
-                            <!-- CAJA -->
-                            <div class="caja-dato">
-
-                                <div class="caja-dato-icon caja-icon-blue">
-                                    <i class="fa-solid fa-store"></i>
-                                </div>
-
-                                <div class="caja-dato-content">
-
-                                    <span class="caja-dato-label">
-                                        CAJA
-                                    </span>
-
-                                    <strong id="cajaNombre">
-                                        -
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- APERTURA -->
-                            <div class="caja-dato">
-
-                                <div class="caja-dato-icon caja-icon-purple">
-                                    <i class="fa-solid fa-calendar-days"></i>
-                                </div>
-
-                                <div class="caja-dato-content">
-
-                                    <span class="caja-dato-label">
-                                        FECHA DE APERTURA
-                                    </span>
-
-                                    <strong id="cajaAperturaFecha">
-                                        -
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-                            <!-- MONTO INICIAL -->
-                            <div class="caja-dato caja-monto">
-
-                                <div class="caja-dato-icon caja-icon-orange">
-                                    <i class="fa-solid fa-money-bill-wave"></i>
-                                </div>
-
-                                <div class="caja-dato-content">
-
-                                    <span class="caja-dato-label">
-                                        MONTO INICIAL
-                                    </span>
-
-                                    <strong id="cajaMontoInicial">
-                                        S/ 0.00
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-
-                            <!-- MONTO INICIAL -->
-                            <div class="caja-dato caja-monto">
-
-                                <div class="caja-dato-icon caja-icon-blue">
-                                    <i class="fa-solid fa-money-bill-wave"></i>
-                                </div>
-
-                                <div class="caja-dato-content">
-
-                                    <span class="caja-dato-label">
-                                        MONTO CIERRE
-                                    </span>
-
-                                    <strong id="cajaMontoCierre">
-                                        S/ 0.00
-                                    </strong>
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-                <div class="header">
-                    <div class="filters">
-                        <input type="date">
-                        <input type="date">
-                    </div>
-
-                    <div>
-                        <button class="btn btn-primary" id="btnDescargar"><i class="fa fa-download"></i>
-                            Descargar</button>
-                        <button class="btn btn-info" data-toggle="modal" data-target="#modalResumenCaja"><i
-                                class="fa fa-hand-holding-usd"></i> Caja chica</button>
-                        <button class="btn btn-danger" id="btnCerrarCaja"><i class="fa fa-close"></i> Cerar
-                            caja</button>
-                    </div>
-                </div>
-
-                <div class="cards">
-
-                    <div class="card">
-
-                        <div class="card-top">
-                            <div class="icon blue">
-                                <i class="fa-solid fa-wallet"></i>
+                            <div class="caja-info-icon">
+                                <i class="fa-solid fa-cash-register"></i>
                             </div>
 
                             <div>
-                                <h4>Total Ingresos</h4>
-                                <div class="value caja-total">S/0.00</div>
-                                <div class="subtitle caja-operaciones">0 operaciones</div>
+                                <h3>Información de la caja</h3>
+                                <span>Detalle de la apertura actual</span>
                             </div>
+
+                        </div>
+
+                        <div class="caja-estado-abierta">
+                            <span class="caja-estado-punto"></span>
+                            CAJA ABIERTA
                         </div>
 
                     </div>
 
-                    <div class="card">
 
-                        <div class="card-top">
-                            <div class="icon green">
+                    <!-- DATOS -->
+                    <div class="caja-info-body">
+
+                        <!-- CAJA -->
+                        <div class="caja-dato">
+
+                            <div class="caja-dato-icon caja-icon-blue">
+                                <i class="fa-solid fa-store"></i>
+                            </div>
+
+                            <div class="caja-dato-content">
+
+                                <span class="caja-dato-label">
+                                    CAJA
+                                </span>
+
+                                <strong id="cajaNombre">
+                                    -
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- APERTURA -->
+                        <div class="caja-dato">
+
+                            <div class="caja-dato-icon caja-icon-purple">
+                                <i class="fa-solid fa-calendar-days"></i>
+                            </div>
+
+                            <div class="caja-dato-content">
+
+                                <span class="caja-dato-label">
+                                    FECHA DE APERTURA
+                                </span>
+
+                                <strong id="cajaAperturaFecha">
+                                    -
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+                        <!-- MONTO INICIAL -->
+                        <div class="caja-dato caja-monto">
+
+                            <div class="caja-dato-icon caja-icon-orange">
                                 <i class="fa-solid fa-money-bill-wave"></i>
                             </div>
 
-                            <div>
-                                <h4>Efectivo</h4>
-                                <div class="value caja-efectivo">S/0.00</div>
-                                <div class="subtitle">Efectivo</div>
+                            <div class="caja-dato-content">
+
+                                <span class="caja-dato-label">
+                                    MONTO INICIAL
+                                </span>
+
+                                <strong id="cajaMontoInicial">
+                                    S/ 0.00
+                                </strong>
+
                             </div>
+
                         </div>
 
-                    </div>
 
-                    <div class="card">
+                        <!-- MONTO INICIAL -->
+                        <div class="caja-dato caja-monto">
 
-                        <div class="card-top">
-                            <div class="icon purple">
-                                <i class="fa-solid fa-building-columns"></i>
+                            <div class="caja-dato-icon caja-icon-blue">
+                                <i class="fa-solid fa-money-bill-wave"></i>
                             </div>
 
-                            <div>
-                                <h4>Transferencias</h4>
-                                <div class="value caja-transferencias">S/0.00</div>
-                                <div class="subtitle">Transferencias</div>
-                            </div>
-                        </div>
+                            <div class="caja-dato-content">
 
-                    </div>
+                                <span class="caja-dato-label">
+                                    MONTO CIERRE
+                                </span>
 
-                    <div class="card">
+                                <strong id="cajaMontoCierre">
+                                    S/ 0.00
+                                </strong>
 
-                        <div class="card-top">
-                            <div class="icon orange">
-                                <i class="fa-solid fa-money-check-dollar"></i>
                             </div>
 
-                            <div>
-                                <h4>Depósitos</h4>
-                                <div class="value caja-depositos">S/0.00</div>
-                                <div class="subtitle">Depósitos</div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="card">
-
-                        <div class="card-top">
-                            <div class="icon red">
-                                <i class="fa-solid fa-credit-card"></i>
-                            </div>
-
-                            <div>
-                                <h4>Tarjetas</h4>
-                                <div class="value caja-tarjetas">S/0.00</div>
-                                <div class="subtitle">Tarjetas</div>
-                            </div>
                         </div>
 
                     </div>
 
                 </div>
 
-                <div class="tables">
+            </div>
+            <div class="header">
+                <div class="filters">
+                    <input type="date">
+                    <input type="date">
+                </div>
 
+                <div>
+                    <button class="btn btn-primary" id="btnDescargar"><i class="fa fa-download"></i>
+                        Descargar</button>
+                    <button class="btn btn-info" data-toggle="modal" data-target="#modalResumenCaja"><i
+                            class="fa fa-hand-holding-usd"></i> Caja chica</button>
+                    <button class="btn btn-danger" id="btnCerrarCaja"><i class="fa fa-close"></i> Cerar
+                        caja</button>
+                </div>
+            </div>
+
+            <div class="cards">
+
+                <div class="card">
+
+                    <div class="card-top">
+                        <div class="icon blue">
+                            <i class="fa-solid fa-wallet"></i>
+                        </div>
+
+                        <div>
+                            <h4>Total Ingresos</h4>
+                            <div class="value caja-total">S/0.00</div>
+                            <div class="subtitle caja-operaciones">0 operaciones</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card">
+
+                    <div class="card-top">
+                        <div class="icon green">
+                            <i class="fa-solid fa-money-bill-wave"></i>
+                        </div>
+
+                        <div>
+                            <h4>Efectivo</h4>
+                            <div class="value caja-efectivo">S/0.00</div>
+                            <div class="subtitle">Efectivo</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card">
+
+                    <div class="card-top">
+                        <div class="icon purple">
+                            <i class="fa-solid fa-building-columns"></i>
+                        </div>
+
+                        <div>
+                            <h4>Transferencias</h4>
+                            <div class="value caja-transferencias">S/0.00</div>
+                            <div class="subtitle">Transferencias</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card">
+
+                    <div class="card-top">
+                        <div class="icon orange">
+                            <i class="fa-solid fa-money-check-dollar"></i>
+                        </div>
+
+                        <div>
+                            <h4>Depósitos</h4>
+                            <div class="value caja-depositos">S/0.00</div>
+                            <div class="subtitle">Depósitos</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card">
+
+                    <div class="card-top">
+                        <div class="icon red">
+                            <i class="fa-solid fa-credit-card"></i>
+                        </div>
+
+                        <div>
+                            <h4>Tarjetas</h4>
+                            <div class="value caja-tarjetas">S/0.00</div>
+                            <div class="subtitle">Tarjetas</div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="tables">
+
+                <div class="box">
+
+                    <div class="box-header">
+                        <i class="fa-solid fa-hand-holding-dollar"></i>
+                        Cuentas por Cobrar
+                    </div>
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Forma Pago</th>
+                                <th>Banco</th>
+                                <th>Cantidad</th>
+                                <th>Total</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="tablaCuentasCobrar">
+                        </tbody>
+
+                        <tfoot>
+
+                            <tr>
+
+                                <td colspan="2">TOTAL</td>
+
+                                <td id="cantidadCuentasCobrar">
+                                    0
+                                </td>
+
+                                <td id="totalCuentasCobrar">
+                                    S/0.00
+                                </td>
+
+                            </tr>
+
+                        </tfoot>
+
+                    </table>
+
+                </div>
+
+                <div class="box">
+
+                    <div class="box-header">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        Ventas
+                    </div>
+
+                    <table>
+
+                        <thead>
+
+                            <tr>
+
+                                <th>Forma Pago</th>
+                                <th>Banco</th>
+                                <th>Cantidad</th>
+                                <th>Total</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody id="tablaVentas">
+                        </tbody>
+
+                        <tfoot>
+
+                            <tr>
+
+                                <td colspan="2">TOTAL</td>
+
+                                <td id="cantidadVentas">
+                                    0
+                                </td>
+
+                                <td id="totalVentas">
+                                    S/0.00
+                                </td>
+
+                            </tr>
+
+                        </tfoot>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <div class="summary">
+
+                <div class="card">
+                    <h4>Total General</h4>
+                    <h3 id="summaryTotal">
+                        S/0.00
+                    </h3>
+                </div>
+
+
+                <div class="card">
+                    <h4>Operaciones</h4>
+                    <h3 id="summaryOperaciones">
+                        0
+                    </h3>
+                </div>
+
+
+                <div class="card">
+                    <h4>Promedio</h4>
+                    <h3 id="summaryPromedio">
+                        S/0.00
+                    </h3>
+                </div>
+
+
+                <div class="card">
+                    <h4>Última actualización</h4>
+
+                    <h3 id="summaryFecha" style="font-size:22px">
+                        -
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <div class="row mt-4">
+
+                <div class="col-md-12">
                     <div class="box">
-
                         <div class="box-header">
-                            <i class="fa-solid fa-hand-holding-dollar"></i>
-                            Cuentas por Cobrar
+                            <i class="fa-solid fa-file-invoice"></i>
+                            Resumen de Comprobantes
                         </div>
+                        <div class="box-body p-3">
 
-                        <table>
+                            <div class="row">
 
-                            <thead>
+                                <div class="col-md-4">
+                                    <div class="info-box bg-info">
+                                        <span class="info-box-icon">
+                                            <i class="fa-solid fa-file-lines"></i>
+                                        </span>
 
-                                <tr>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Comprobantes</span>
+                                            <span class="info-box-number" id="cmpCantidad">0</span>
+                                            <small id="cmpTotal">S/ 0.00</small>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                    <th>Forma Pago</th>
-                                    <th>Banco</th>
-                                    <th>Cantidad</th>
-                                    <th>Total</th>
+                                <div class="col-md-4">
+                                    <div class="info-box bg-success">
+                                        <span class="info-box-icon">
+                                            <i class="fa-solid fa-money-bill-wave"></i>
+                                        </span>
 
-                                </tr>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Contado</span>
+                                            <span class="info-box-number" id="cmpContadoCantidad">0</span>
+                                            <small id="cmpContadoTotal">S/ 0.00</small>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            </thead>
+                                <div class="col-md-4">
+                                    <div class="info-box bg-warning">
+                                        <span class="info-box-icon">
+                                            <i class="fa-solid fa-credit-card"></i>
+                                        </span>
 
-                            <tbody id="tablaCuentasCobrar">
-                            </tbody>
+                                        <div class="info-box-content">
+                                            <span class="info-box-text">Crédito</span>
+                                            <span class="info-box-number" id="cmpCreditoCantidad">0</span>
+                                            <small id="cmpCreditoTotal">S/ 0.00</small>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            <tfoot>
+                            </div>
 
-                                <tr>
-
-                                    <td colspan="2">TOTAL</td>
-
-                                    <td id="cantidadCuentasCobrar">
-                                        0
-                                    </td>
-
-                                    <td id="totalCuentasCobrar">
-                                        S/0.00
-                                    </td>
-
-                                </tr>
-
-                            </tfoot>
-
-                        </table>
-
-                    </div>
-
-                    <div class="box">
-
-                        <div class="box-header">
-                            <i class="fa-solid fa-cart-shopping"></i>
-                            Ventas
                         </div>
-
-                        <table>
-
-                            <thead>
-
-                                <tr>
-
-                                    <th>Forma Pago</th>
-                                    <th>Banco</th>
-                                    <th>Cantidad</th>
-                                    <th>Total</th>
-
-                                </tr>
-
-                            </thead>
-
-                            <tbody id="tablaVentas">
-                            </tbody>
-
-                            <tfoot>
-
-                                <tr>
-
-                                    <td colspan="2">TOTAL</td>
-
-                                    <td id="cantidadVentas">
-                                        0
-                                    </td>
-
-                                    <td id="totalVentas">
-                                        S/0.00
-                                    </td>
-
-                                </tr>
-
-                            </tfoot>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-                <div class="summary">
-
-                    <div class="card">
-                        <h4>Total General</h4>
-                        <h3 id="summaryTotal">
-                            S/0.00
-                        </h3>
-                    </div>
-
-
-                    <div class="card">
-                        <h4>Operaciones</h4>
-                        <h3 id="summaryOperaciones">
-                            0
-                        </h3>
-                    </div>
-
-
-                    <div class="card">
-                        <h4>Promedio</h4>
-                        <h3 id="summaryPromedio">
-                            S/0.00
-                        </h3>
-                    </div>
-
-
-                    <div class="card">
-                        <h4>Última actualización</h4>
-
-                        <h3 id="summaryFecha" style="font-size:22px">
-                            -
-                        </h3>
-
-                    </div>
-
-                </div>
-
-
-                <div class="row mt-4">
-
-                    <div class="col-md-12">
                         <div class="box">
                             <div class="box-header">
                                 <i class="fa-solid fa-file-invoice"></i>
                                 Resumen de Comprobantes
                             </div>
-                            <div class="box-body p-3">
 
-                                <div class="row">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Comprobante</th>
+                                        <th>Credito</th>
+                                        <th>Cantidad</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
 
-                                    <div class="col-md-4">
-                                        <div class="info-box bg-info">
-                                            <span class="info-box-icon">
-                                                <i class="fa-solid fa-file-lines"></i>
-                                            </span>
+                                <tbody id="tablaComprobantes"></tbody>
 
-                                            <div class="info-box-content">
-                                                <span class="info-box-text">Comprobantes</span>
-                                                <span class="info-box-number" id="cmpCantidad">0</span>
-                                                <small id="cmpTotal">S/ 0.00</small>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <div class="info-box bg-success">
-                                            <span class="info-box-icon">
-                                                <i class="fa-solid fa-money-bill-wave"></i>
-                                            </span>
-
-                                            <div class="info-box-content">
-                                                <span class="info-box-text">Contado</span>
-                                                <span class="info-box-number" id="cmpContadoCantidad">0</span>
-                                                <small id="cmpContadoTotal">S/ 0.00</small>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-md-4">
-                                        <div class="info-box bg-warning">
-                                            <span class="info-box-icon">
-                                                <i class="fa-solid fa-credit-card"></i>
-                                            </span>
-
-                                            <div class="info-box-content">
-                                                <span class="info-box-text">Crédito</span>
-                                                <span class="info-box-number" id="cmpCreditoCantidad">0</span>
-                                                <small id="cmpCreditoTotal">S/ 0.00</small>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                            </div>
-                            <div class="box">
-                                <div class="box-header">
-                                    <i class="fa-solid fa-file-invoice"></i>
-                                    Resumen de Comprobantes
-                                </div>
-
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Comprobante</th>
-                                            <th>Credito</th>
-                                            <th>Cantidad</th>
-                                            <th>Total</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody id="tablaComprobantes"></tbody>
-
-                                    <tfoot>
-                                        <tr>
-                                            <td colspan="2"><strong>TOTAL</strong></td>
-                                            <td class="text-center" id="cantidadComprobantes">0</td>
-                                            <td class="text-right" id="totalComprobantes">S/0.00</td>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                            </div>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2"><strong>TOTAL</strong></td>
+                                        <td class="text-center" id="cantidadComprobantes">0</td>
+                                        <td class="text-right" id="totalComprobantes">S/0.00</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
                         </div>
                     </div>
-
                 </div>
+
+            </div>
         </div>
     </section>
     <!-- MODAL RESUMEN DE CAJA CHICA -->
@@ -1104,9 +1104,9 @@
                                     </h3>
                                     <p>Total egresos</p>
 
-                                <div class="icon">
-                                    <i class="fa-solid fa-arrow-trend-down"></i>
-                                </div>
+                                    <div class="icon">
+                                        <i class="fa-solid fa-arrow-trend-down"></i>
+                                    </div>
                                 </div>
                             </div>
                         </div>
