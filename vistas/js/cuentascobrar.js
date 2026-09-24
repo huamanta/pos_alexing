@@ -802,7 +802,7 @@ async function guardaryeditar(e) {
 
             const t = res.ticket;
             imprimirConstanciaPagoInicial(t.idcpc);
-            
+
             Swal.fire("Éxito", res.message, "success");
 
             $('#getCodeModal').modal('hide');
@@ -826,29 +826,45 @@ function imprimirConstanciaPagoInicial(idcpc) {
     const url = `reportes/exTicketPagoCuota.php?id=${encodeURIComponent(idcpc)}`;
 
     const iframe = document.createElement("iframe");
+
     iframe.src = url;
     iframe.style.position = "fixed";
-    iframe.style.width = "0";
-    iframe.style.height = "0";
-    iframe.style.left = "-9999px";
-    iframe.style.top = "-9999px";
+    iframe.style.width = "1px";
+    iframe.style.height = "1px";
+    iframe.style.left = "-10000px";
+    iframe.style.top = "-10000px";
     iframe.style.border = "0";
     iframe.style.opacity = "0";
-    iframe.style.pointerEvents = "none";
 
     document.body.appendChild(iframe);
 
     iframe.onload = function () {
         setTimeout(() => {
+            const win = iframe.contentWindow;
+
+            const limpiar = () => {
+                setTimeout(() => {
+                    iframe.remove();
+                }, 1000);
+            };
+
+            win.onafterprint = limpiar;
+
             try {
-                iframe.focus();
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
+                win.focus();
+                win.print();
             } catch (e) {
-                console.warn("No se pudo abrir la impresión del iframe oculto:", e);
+                console.warn("No se pudo abrir la impresión:", e);
+                limpiar();
             }
 
-            setTimeout(() => iframe.remove(), 1200);
+            // Fallback por si onafterprint no se dispara
+            setTimeout(() => {
+                if (document.body.contains(iframe)) {
+                    iframe.remove();
+                }
+            }, 120000);
+
         }, 500);
     };
 }
