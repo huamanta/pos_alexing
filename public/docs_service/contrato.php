@@ -97,6 +97,10 @@ $meses = $resultVenta['meses'] ?? '';
 $nombreAcompanante = $resultVenta['nombre_acompanante'] ?? '';
 $nombreTipoAcompanante = $resultVenta['nombre_tipo_acompanante'] ?? '';
 $resultSucursal = $helpers->dataSucursal($resultVenta['idsucursal']);
+$tipoVenta = 'CRÉDITO';
+if ($resultVenta['ventacredito'] === 'No') {
+    $tipoVenta = 'CONTADO';
+}
 $idSucursal = $resultVenta['idsucursal'] ?? 0;
 if (!$idSucursal) {
     $idSucursal = $resultSucursal['idsucursal'] ?? 0; // Valor por defecto si no se encuentra la sucursal
@@ -113,6 +117,7 @@ $fecha = $resultSucursal['distrito'] . ", " . $helpersService->fechaLetras($resu
 $resultDetalle = $venta->ventaDetalleContrato($idVenta);
 
 $data = [];
+$condicion = 'NUEVO';
 foreach ($resultDetalle as $row) {
     $data[] = [
         "idproducto" => $row['idproducto'],
@@ -130,6 +135,8 @@ foreach ($resultDetalle as $row) {
         "precio_venta" => $row['precio_venta'],
         "descuento" => $row['descuento']
     ];
+
+    $condicion = $row['condicionventa'];
 }
 
 $dataFrecuencia = $helpersService->getDataFrecuencia($resultVenta['frecuencia'] ?? '1');
@@ -163,7 +170,8 @@ ob_start();
             color: #000;
         }
 
-        <?php echo HelpersService::getDocumentHeaderStyles(); ?>p {
+        <?php echo HelpersService::getDocumentHeaderStyles(); ?>
+        p {
             text-align: justify;
             margin: 5px 0;
             font-size: 13px;
@@ -203,14 +211,18 @@ ob_start();
     ?>
 
     <p>
-        Conste por el presente documento, el contrato de <b>VENTA AL CONTADO</b> de vehículo <b>NUEVO</b>, que celebran
+        Conste por el presente documento, el contrato de <b>VENTA AL <?php echo $tipoVenta; ?></b> de vehículo
+        <b><?php echo $condicion; ?></b>, que celebran
         de
-        una parte como <b>VENDEDOR</b>, la Empresa "<b><?php echo strtoupper($resultSucursal['razon_social'] ?? ''); ?></b>", con RUC
+        una parte como <b>VENDEDOR</b>, la Empresa
+        "<b><?php echo strtoupper($resultSucursal['razon_social'] ?? ''); ?></b>", con RUC
         Nº <?php echo $resultSucursal['ruc']; ?>, representado
-        por su Gerente General el señor <b><?php echo $dataGerencia['nombre'] ?? 'ADMINISTRADOR'; ?></b>, identificado con DNI Nº <b><?php echo $dataGerencia['num_documento'] ?? 'S/N'; ?></b>,
+        por su Gerente General el señor <b><?php echo $dataGerencia['nombre'] ?? 'ADMINISTRADOR'; ?></b>, identificado
+        con DNI Nº <b><?php echo $dataGerencia['num_documento'] ?? 'S/N'; ?></b>,
         con
         domicilio en <b><?php echo $dataGerencia['direccion'] ?? 'S/N'; ?></b>; con facultades
-        inscrita en la partida electrónica N° <?php echo $dataGerencia['prtida_registral'] ?? 'S/N'; ?> del registro de personas jurídicas de la Oficina Registral
+        inscrita en la partida electrónica N° <?php echo $dataGerencia['prtida_registral'] ?? 'S/N'; ?> del registro de
+        personas jurídicas de la Oficina Registral
         Tarapoto;
         y de la otra parte como <b>COMPRADOR</b> el(la) señor(a) <b><?php echo strtoupper($comprador); ?></b>,
         identificado con DNI
@@ -221,7 +233,8 @@ ob_start();
     </p>
 
     <br>
-    <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?>, declara ser
+    <p><b class="clausula">PRIMERO.-</b> La Empresa <?php echo strtoupper($resultNegocio['nombre'] ?? ''); ?>, declara
+        ser
         propietario y
         titular registral del vehículo
         <b>MOTOCICLETA</b> con las siguientes características:

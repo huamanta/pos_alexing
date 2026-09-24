@@ -451,7 +451,7 @@ function pintarContratos(data, permissions) {
     `;
 
     // Amortizar
-    if (item.puede_amortizar) {
+    if (item.puede_amortizar && item.ventacredito === 'Si') {
       acciones += `
         <button class="btn btn-warning btn-sm"
           onclick='verCuotasCredito(
@@ -491,7 +491,7 @@ function pintarContratos(data, permissions) {
         <td>${item.documento}</td>
         <td>${item.serie_comprobante}-${item.num_comprobante}</td>
         <td>${estado}</td>
-        <td>${item.formapago}</td>
+        <td>${item.ventacredito === 'Si' ? 'Crédito':'Contado'}</td>
         <td>${item.frecuencia_texto}</td>
         <td>${item.total_venta_formateado}</td>
         <td>${acciones}</td>

@@ -1728,6 +1728,7 @@ class Venta extends Helpers
                 dv.*, 
                 p.idproducto, 
                 p.nombre AS producto_nombre, 
+                cv.nombre AS condicionventa,
                 m.nombre AS marca, 
                 mo.nombre AS modelo, 
                 ps.color,
@@ -1744,6 +1745,7 @@ class Venta extends Helpers
             ->leftJoin('producto_serie ps', 'ps.idproducto = p.idproducto')
             ->leftJoin('marca m', 'm.idmarca = p.idmarca')
             ->leftJoin('modelo mo', 'mo.idmodelo = p.idmodelo')
+            ->leftJoin('condicionventa cv', 'cv.idcondicionventa=p.idcondicionventa')
             ->where('dv.idventa', '=', $idventa)
             ->get();
     }
