@@ -25,6 +25,7 @@ class Contratos extends Helpers
                     c.num_documento,
                     c.direccion,
                     v.formapago,
+                    v.ventacredito,
                     v.num_comprobante,
                     v.serie_comprobante,
                     v.idcomprobante_pago,
@@ -308,28 +309,28 @@ class Contratos extends Helpers
     // }
 
 
-    public function cuentasCobrar($idcliente, $idventa)
-    {
-        $sql = "SELECT
-                    v.idventa,
-                    DATE_FORMAT(v.fecha_hora, '%d/%m/%y | %H:%i:%s %p') AS fecha_venta,
-                    v.idcomprobante_pago,
-                    v.serie_comprobante,
-                    v.num_comprobante,
-                    v.total_venta,
-                    v.nota,
-                    SUM(cc.abonototal) AS total_abonado,
-                    SUM(cc.deuda) AS saldo_pendiente
-                FROM venta v
-                INNER JOIN cuentas_por_cobrar cc ON cc.idventa = v.idventa
-                WHERE v.idcliente = '$idcliente'
-                  AND v.idventa = '$idventa'
-                GROUP BY v.idventa, v.fecha_hora, v.idcomprobante_pago, v.serie_comprobante, v.num_comprobante, v.total_venta
-                ORDER BY v.idventa DESC LIMIT 1";
+    // public function cuentasCobrar($idcliente, $idventa)
+    // {
+    //     $sql = "SELECT
+    //                 v.idventa,
+    //                 DATE_FORMAT(v.fecha_hora, '%d/%m/%y | %H:%i:%s %p') AS fecha_venta,
+    //                 v.idcomprobante_pago,
+    //                 v.serie_comprobante,
+    //                 v.num_comprobante,
+    //                 v.total_venta,
+    //                 v.nota,
+    //                 SUM(cc.abonototal) AS total_abonado,
+    //                 SUM(cc.deuda) AS saldo_pendiente
+    //             FROM venta v
+    //             INNER JOIN cuentas_por_cobrar cc ON cc.idventa = v.idventa
+    //             WHERE v.idcliente = '$idcliente'
+    //               AND v.idventa = '$idventa'
+    //             GROUP BY v.idventa, v.fecha_hora, v.idcomprobante_pago, v.serie_comprobante, v.num_comprobante, v.total_venta
+    //             ORDER BY v.idventa DESC LIMIT 1";
 
-        $data = ejecutarConsultaSimpleFila($sql);
-        return $data;
-    }
+    //     $data = ejecutarConsultaSimpleFila($sql);
+    //     return $data;
+    // }
 
 
     public function verVehiculoVendido($idventa)

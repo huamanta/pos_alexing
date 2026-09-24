@@ -12,8 +12,7 @@ switch ($op) {
         $estado = $_GET['estado'] ?? '';
         $condicion = $_GET['condicion'] ?? '';
         $frecuencia = $_GET['frecuencia'] ?? '';
-        $datos = $contratos->listar($fecha_inicio, $fecha_fin, $idsucursal, $estado, $condicion, $frecuencia);
-        echo $datos;
+        $contratos->listar($fecha_inicio, $fecha_fin, $idsucursal, $estado, $condicion, $frecuencia);
         break;
 
     case 'retener':

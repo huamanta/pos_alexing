@@ -168,10 +168,8 @@ class SisVenta extends Helpers
                 $this->actualizarCotizacion($comprobanteReferencia);
             }
 
-            // Documentación=
-            if ($tipopago == "Si") {
-                $this->crearDocumentacion($idVenta);
-            }
+            // Documentación
+            $this->crearDocumentacion($idVenta);
 
             $this->pdo->commit();
 

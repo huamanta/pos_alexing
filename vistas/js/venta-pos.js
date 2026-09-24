@@ -5512,10 +5512,7 @@ function listarComprobantes(idVenta) {
                                 ${item.banco || ''}
                             </td>
                            <td class="text-end">
-                                ${item.metodo_pago === 'Efectivo'
-              ? ''
-              : item.comprobante
-                ? `
+                                ${item.comprobante ? `
                                             <a
                                                 href="files/ventas/${item.comprobante}"
                                                 target="_blank"
@@ -5524,7 +5521,7 @@ function listarComprobantes(idVenta) {
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         `
-                : `
+              : `
                                             <button
                                                 type="button"
                                                 class="btn btn-sm btn-outline-primary"
