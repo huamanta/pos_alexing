@@ -536,7 +536,7 @@ $helpers = new Helpers();
 
 
         <?php
-        if ($helpers->getUserPermisoModulo('Facturacion y cajas')) {
+        if ($helpers->getUserPermisoModulo('Taller')) {
           ?>
           <li class="nav-item" id="navTaller">
             <a href="#" class="nav-link" id="navTallerActive">
@@ -547,7 +547,7 @@ $helpers = new Helpers();
               </p>
             </a>
             <ul class="nav nav-treeview">
-              <?php if ($helpers->getUserPermisoModulo('Comprobantes', 'Facturacion y cajas')): ?>
+              <?php if ($helpers->getUserPermisoModulo('Orden de trabajo', 'Taller')): ?>
                 <li class="nav-item" style="font-size: 14px">
                   <a href="orden-trabajo" class="nav-link" id="navOrdenTrabajo">
                     <i class="fas fa-file-invoice nav-icon te xt-orange" style="font-size: 14px"></i>
