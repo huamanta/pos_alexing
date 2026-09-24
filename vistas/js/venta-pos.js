@@ -4880,10 +4880,9 @@ function mostrar(idventa) {
       $("#pagoinicial").html('S/. ' + inicial);
       $("#pagocredito").html('S/. ' + totaldeuda);
 
-      if (data.ventacredito === 'Si' && inicial > 0) {
-        $("#imprimirComp").show();
-        $("#ajuntarComp").show();
-      };
+      $("#imprimirComp").show();
+      $("#ajuntarComp").show();
+
 
       // Montos
       let montopagado = parseFloat(data.montopagado) || 0;
