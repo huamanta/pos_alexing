@@ -1568,7 +1568,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'verComprobantes':
-		$idventa = $_GET['idventa'] ?? 138;
+		$idventa = $_GET['idventa'] ?? null;
 		$sisVenta->verComprobantes($idventa);
 		break;
 

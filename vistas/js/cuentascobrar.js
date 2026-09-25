@@ -792,18 +792,18 @@ async function guardaryeditar(e) {
         beforeSend: function () {
             $("#btnGuardarPago").text("Guardando...").prop('disabled', true);
         },
-        success: function (datos) {
-            let res = JSON.parse(datos);
+        success: function (response) {
+            const data = response;
             $("#btnGuardarPago").text("Guardar pago").prop('disabled', false);
-            if (!res.success) {
-                Swal.fire("Error", res.message, "error");
+            if (!data.success) {
+                Swal.fire("Error", data.message, "error");
                 return;
             }
 
-            const t = res.ticket;
+            const t = data.ticket;
             imprimirConstanciaPagoInicial(t.idcpc);
 
-            Swal.fire("Éxito", res.message, "success");
+            Swal.fire("Éxito", data.message, "success");
 
             $('#getCodeModal').modal('hide');
             $("#formulario")[0].reset();
@@ -817,6 +817,7 @@ async function guardaryeditar(e) {
             tablaCuotasCredito.ajax.reload();
         },
         error: function (e) {
+            Swal.fire("Error", e.responseJSON.message, "error");
             $("#btnGuardarPago").text("Guardar pago").prop('disabled', false);
         }
     });
@@ -897,8 +898,8 @@ async function mostrar(idcpc) {
         {
             idcpc: idcpc
         },
-        function (data) {
-            data = JSON.parse(data);
+        function (response) {
+            const data = response;
             var total_venta = parseFloat(data.total_venta);
             var interes = total_venta * (data.interes / 100);
             $('#documento').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
@@ -931,9 +932,9 @@ function mostrarAbonos(idcpc) {
 
     $("#getCodeModal2").modal('show');
 
-    $.post("controladores/cuentascobrar.php?op=mostrar", { idcpc: idcpc }, function (data, status) {
+    $.post("controladores/cuentascobrar.php?op=mostrar", { idcpc: idcpc }, function (response) {
 
-        data = JSON.parse(data);
+        const data = response;
 
         var label = document.querySelector('#abonoTotal2');
         label.textContent = data.deuda;
@@ -943,30 +944,78 @@ function mostrarAbonos(idcpc) {
 
     });
 
-    tabla = $('#tbllistado').dataTable(
-        {
-            //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-            "aProcessing": true,//Activamos el procesamiento del datatables
-            "aServerSide": true,//Paginación y filtrado realizados por el servidor
-            dom: 'Bfrtip',//Definimos los elementos del control de tabla
-            buttons: [
-                'excelHtml5',
-                'pdf'
-            ],
-            "ajax":
-            {
-                url: 'controladores/cuentascobrar.php?op=listarDetalle',
-                data: { idcpc: idcpc },
-                type: "get",
-                dataType: "json",
-                error: function (e) {
-                    console.log(e.responseText);
-                }
-            },
-            "bDestroy": true,
-            "iDisplayLength": 10,//Paginación
-        }).DataTable();
+    $.ajax({
+        url: "controladores/cuentascobrar.php",
+        type: "GET",
+        dataType: "json",
+        data: {
+            op: "listarDetalle",
+            idcpc: idcpc
+        },
+        success: function (response) {
+            let html = "";
 
+            if (!response.length) {
+                html = `
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            No hay comprobantes adjuntos
+                        </td>
+                    </tr>
+                `;
+            } else {
+                response.forEach(function (item) {
+                    html += `
+                        <tr>
+                            <td>${item.created_at}</td>
+                            <td>
+                                ${item.formapago || 'N/A'}
+                            </td>
+                            <td>
+                                ${item.comprobante ? '<i class="fas fa-file-image text-primary"></i>' : ''}
+                                ${item.comprobante || ''}
+                            </td>
+                            <td>
+                                ${item.montopagado}
+                            </td>
+                            <td>
+                                ${item.montotarjeta}
+                            </td>
+                            <td>
+                                ${item.op || ''}
+                            </td>
+                            <td>
+                                ${item.banco || ''}
+                            </td>
+                           <td class="text-end">
+                                ${item.formapago === 'Efectivo' ? '' : item.comprobante ? `
+                                            <a
+                                                href="files/cuentascobrar/${item.comprobante}"
+                                                target="_blank"
+                                                class="btn btn-sm btn-outline-primary"
+                                                title="Ver comprobante">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        `
+                            : `
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-primary"
+                                                onclick="abrirAjuntarComp(${item.idcpc}, ${item.iddcpc})"
+                                                title="Adjuntar comprobante">
+                                                <i class="fas fa-upload"></i>
+                                            </button>
+                                        `
+                        }
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+
+            $("#listaComprobantes").html(html);
+        }
+    });
 }
 
 function toNumber(valor) {
@@ -1713,6 +1762,51 @@ function descragarResumen() {
     });
 
     window.location.href = `modelos/exports/exportar_cuentas_cobrar.php?${params.toString()}`;
+}
+
+function abrirAjuntarComp(idcpc, iddcpc) {
+    $("#modalAjuntarComp").modal("show");
+    $('#comprobanteAdjunto').val('');
+    $("#idcpcShow").val(idcpc);
+    $("#iddcpc").val(iddcpc);
+}
+
+$("#formAdjuntarComp").submit(function (e) {
+    e.preventDefault();
+    const idcpc = $("#idcpcShow").val();
+    const iddcpc = $("#iddcpc").val();
+
+    if (!iddcpc) {
+        Swal.fire('Venta', 'No se ha seleccionado una venta', 'warning');
+    };
+
+    if ($('#comprobanteAdjunto')[0].files.length > 0) {
+        Swal.fire('Venta', 'No se ha seleccionado un documento para subir', 'warning');
+    }
+
+    const formData = new FormData(this);
+    $.ajax({
+        url: `controladores/cuentascobrar.php?op=adjuntarComprobante&iddcpc=${iddcpc}`,
+        type: "POST",
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function (response) {
+            if (!response.success) {
+                Swal.fire('Venta', response?.message || 'Error al guardar comprobante', 'error');
+            };
+            Swal.fire('Venta', response?.message, 'success');
+            $("#modalAjuntarComp").modal("hide");
+            mostrarAbonos(idcpc);
+        },
+        error: function (xhr) {
+            Swal.fire('Venta', xhr?.responseJSON?.message || 'Error al guardar comprobante', 'error');
+        }
+    });
+});
+
+function cerarrAjuntarComp() {
+    $("#modalAjuntarComp").modal("hide");
 }
 
 

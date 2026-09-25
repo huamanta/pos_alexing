@@ -4,181 +4,6 @@ date_default_timezone_set('America/Lima');
 ?>
 
 <style>
-  .modal-header-custom {
-    background: #007bff;
-    color: white;
-    padding: 12px 20px;
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
-  }
-
-  .info-box-custom {
-    background: #eaf7ff;
-    border-left: 5px solid #007bff;
-    padding: 12px 15px;
-    border-radius: 5px;
-    margin-bottom: 15px;
-    font-size: 14px;
-  }
-
-  .section-title {
-    font-size: 15px;
-    font-weight: bold;
-    margin-bottom: 8px;
-    margin-top: 10px;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 4px;
-    color: #444;
-  }
-
-  /* =======================================
-   MODAL DE COBROS – ESTILO PROFESIONAL
-   ======================================= */
-
-  /* --- Título del modal --- */
-  .modal-header-custom {
-    background: linear-gradient(45deg, #007bff, #005fcc);
-    color: white;
-    padding: 14px 22px !important;
-    border-bottom: none !important;
-  }
-
-  .modal-header-custom .modal-title {
-    font-size: 18px;
-    font-weight: 600;
-  }
-
-  .modal-header-custom .close {
-    font-size: 26px;
-    opacity: 1;
-    color: white;
-  }
-
-  /* --- Caja de información --- */
-  .success-box-custom {
-    background: #d3ffdd;
-    border-left: 5px solid #28a745;
-    padding: 14px 18px;
-    border-radius: 6px;
-    box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
-  }
-
-  .info-box-custom {
-    background: #f0f8ff;
-    border-left: 5px solid #007bff;
-    padding: 14px 18px;
-    border-radius: 6px;
-    box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
-  }
-
-  .warning-box-custom {
-    background: #fffef0;
-    border-left: 5px solid #ffb700;
-    padding: 14px 18px;
-    border-radius: 6px;
-    box-shadow: 0px 2px 6px rgb(0 0 0 / 5%);
-  }
-
-  /* --- Secciones del formulario --- */
-  .section-title {
-    background: #fafafa;
-    padding: 6px 10px;
-    font-size: 15px;
-    font-weight: bold;
-    border-left: 4px solid #007bff;
-    margin-top: 18px;
-    margin-bottom: 12px;
-  }
-
-  /* --- Inputs y selects --- */
-  #formulario .form-group label {
-    font-weight: 600;
-    color: #444;
-  }
-
-  #formulario input,
-  #formulario select,
-  #formulario textarea {
-    border-radius: 5px !important;
-    border: 1px solid #c9c9c9 !important;
-  }
-
-  #formulario input:focus,
-  #formulario select:focus,
-  #formulario textarea:focus {
-    border-color: #007bff !important;
-    box-shadow: 0 0 4px #007bff55 !important;
-  }
-
-  /* --- Botones del pie del modal --- */
-  .modal-footer .btn {
-    padding: 10px 22px;
-    font-size: 15px;
-    border-radius: 6px;
-  }
-
-  .btn-primary {
-    background-color: #007bff !important;
-    border: none !important;
-  }
-
-  .btn-primary:hover {
-    background-color: #0069d9 !important;
-  }
-
-  /* --- Botón cerrar --- */
-  .btn-secondary {
-    background-color: #6c757d !important;
-    border: none !important;
-  }
-
-  .btn-secondary:hover {
-    background-color: #5a636b !important;
-  }
-
-  /* --- Animación suave del modal --- */
-  .modal.fade .modal-dialog {
-    transition: transform .2s ease-out;
-    transform: translateY(-20px);
-  }
-
-  .modal.show .modal-dialog {
-    transform: translateY(0);
-  }
-
-  /* --- Mejora visual en selectpicker --- */
-  .bootstrap-select .dropdown-toggle {
-    border-radius: 5px !important;
-    border: 1px solid #c0c0c0 !important;
-  }
-
-  /* --- Colores para montos --- */
-  #montoAdeudado {
-    font-weight: bold;
-    color: #a80000;
-  }
-
-  #deutaTotal {
-    color: #d10000;
-    font-weight: bold;
-  }
-
-  /* --- Mejor espaciado entre elementos --- */
-  .modal-body .row {
-    margin-bottom: 4px;
-  }
-
-  /* --- Scroll elegante si el modal crece --- */
-  .modal-body {
-    max-height: 65vh;
-    overflow-y: auto;
-    padding-right: 15px;
-  }
-
-  #getCodeModal .modal-body {
-    max-height: none !important;
-    overflow-y: visible !important;
-  }
 
   .fila-retenida {
     background-color: #ffe5e5 !important;
@@ -210,6 +35,1205 @@ date_default_timezone_set('America/Lima');
   }
 </style>
 
+
+<style type="text/css">
+  /* =========================================================
+   POS PROFESIONAL - DESIGN SYSTEM
+   ========================================================= */
+
+  :root {
+    --pos-primary: #2563eb;
+    --pos-primary-dark: #1d4ed8;
+    --pos-primary-soft: #eff6ff;
+
+    --pos-success: #16a34a;
+    --pos-danger: #dc2626;
+    --pos-warning: #d97706;
+    --pos-info: #0891b2;
+
+    --pos-bg: #f5f7fb;
+    --pos-card: #ffffff;
+    --pos-border: #e5e7eb;
+    --pos-border-dark: #d1d5db;
+
+    --pos-text: #1f2937;
+    --pos-text-soft: #6b7280;
+    --pos-text-muted: #9ca3af;
+
+    --pos-radius: 10px;
+    --pos-radius-sm: 7px;
+
+    --pos-shadow: 0 2px 8px rgba(15, 23, 42, .05);
+    --pos-shadow-hover: 0 8px 24px rgba(15, 23, 42, .09);
+
+    --pos-font: "Source Sans Pro", -apple-system, BlinkMacSystemFont,
+      "Segoe UI", sans-serif;
+  }
+
+  /* =========================================================
+   BASE
+   ========================================================= */
+
+  body {
+    background: var(--pos-bg);
+    color: var(--pos-text);
+    font-family: var(--pos-font);
+  }
+
+  .content-wrapper {
+    background: var(--pos-bg);
+  }
+
+  .content {
+    padding-bottom: 30px;
+  }
+
+  .content-header {
+    padding: 15px 0 10px;
+  }
+
+  .content-header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+  }
+
+  .breadcrumb {
+    background: transparent;
+    margin: 0;
+    font-size: 12px;
+  }
+
+  .breadcrumb-item a {
+    color: var(--pos-primary);
+  }
+
+  /* =========================================================
+   CARDS
+   ========================================================= */
+
+  .card {
+    border: 1px solid var(--pos-border) !important;
+    border-radius: var(--pos-radius) !important;
+    box-shadow: var(--pos-shadow);
+    background: var(--pos-card);
+  }
+
+  .card-header {
+    border-bottom: 1px solid var(--pos-border);
+  }
+
+  .card-title {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .card-body {
+    background: #fff;
+  }
+
+  .card-footer {
+    background: #fff;
+    border-top: 1px solid var(--pos-border);
+  }
+
+  /* =========================================================
+   FILTROS / LISTADO
+   ========================================================= */
+
+  #header {
+    background: #fff;
+    padding: 14px 16px;
+  }
+
+  #header label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #4b5563;
+    margin-bottom: 4px;
+  }
+
+  #header .form-group {
+    margin-bottom: 0;
+  }
+
+  #header .form-control {
+    height: 34px;
+  }
+
+  #header .input-group-text {
+    height: 34px;
+    background: #f8fafc;
+    border-color: var(--pos-border);
+    color: var(--pos-text-soft);
+  }
+
+  #search {
+    border-radius: 8px;
+  }
+
+  #search:focus {
+    border-color: var(--pos-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+  }
+
+  /* =========================================================
+   INPUTS
+   ========================================================= */
+
+  .form-control {
+    border: 1px solid var(--pos-border-dark);
+    border-radius: var(--pos-radius-sm);
+    color: var(--pos-text);
+    font-size: 13px;
+    transition: border-color .18s ease, box-shadow .18s ease;
+  }
+
+  .form-control:hover {
+    border-color: #b8c0cc;
+  }
+
+  .form-control:focus {
+    border-color: var(--pos-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+  }
+
+  textarea.form-control {
+    resize: vertical;
+  }
+
+  .form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+  }
+
+  .input-group-text {
+    border-radius: var(--pos-radius-sm);
+    background: #f8fafc;
+    border-color: var(--pos-border-dark);
+    color: #64748b;
+  }
+
+  /* =========================================================
+   SELECT2
+   ========================================================= */
+
+  .select2-container {
+    width: 100% !important;
+  }
+
+  .select2-container--default .select2-selection--single {
+    height: 34px !important;
+    border: 1px solid var(--pos-border-dark) !important;
+    border-radius: var(--pos-radius-sm) !important;
+    display: flex;
+    align-items: center;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 32px !important;
+    font-size: 13px;
+    color: var(--pos-text);
+    padding-left: 10px;
+  }
+
+  .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 32px !important;
+  }
+
+  .select2-container--default.select2-container--focus .select2-selection--single {
+    border-color: var(--pos-primary) !important;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, .10);
+  }
+
+  .select2-dropdown {
+    border: 1px solid var(--pos-border) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, .12);
+    overflow: hidden;
+  }
+
+  .select2-results__option {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+
+  .select2-results__option--highlighted {
+    background: var(--pos-primary) !important;
+  }
+
+  /* =========================================================
+   FORMULARIO POS
+   ========================================================= */
+
+  #formularioregistros.pos-form-shell {
+    margin-top: 0px;
+  }
+
+  #formularioregistros.pos-form-shell .row.mb-3 {
+    margin-bottom: 0 !important;
+  }
+
+  #formularioregistros.pos-form-shell .col-lg-6[style*="margin-top: -20px"] {
+    margin-top: 0 !important;
+  }
+
+  #formularioregistros.pos-form-shell .panel-heading {
+    border: none !important;
+  }
+
+  #formularioregistros.pos-form-shell .card.card-outline.card-danger {
+    border: none !important;
+    background: transparent;
+    margin-top: 0 !important;
+    box-shadow: none;
+  }
+
+  #formularioregistros.pos-form-shell .card.shadow.mb-4 {
+    margin-bottom: 12px !important;
+  }
+
+  /* =========================================================
+   ENCABEZADO NUEVA VENTA
+   ========================================================= */
+
+  #formularioregistros .card-header.bg-white {
+    background: #fff !important;
+  }
+
+  #formularioregistros .card-header.bg-white.border-bottom-primary {
+    border-bottom: 1px solid var(--pos-border) !important;
+    background: #fff !important;
+  }
+
+  #formularioregistros .card-title.text-primary {
+    color: #111827 !important;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  #fechaActual {
+    color: var(--pos-text-muted) !important;
+  }
+
+  /* =========================================================
+   BOTONES
+   ========================================================= */
+
+  .btn {
+    border-radius: var(--pos-radius-sm);
+    font-size: 12px;
+    font-weight: 600;
+    transition: all .18s ease;
+  }
+
+  .btn-primary {
+    background: var(--pos-primary);
+    border-color: var(--pos-primary);
+  }
+
+  .btn-primary:hover,
+  .btn-primary:focus {
+    background: var(--pos-primary-dark);
+    border-color: var(--pos-primary-dark);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, .20);
+  }
+
+  .btn-success {
+    background: var(--pos-success);
+    border-color: var(--pos-success);
+  }
+
+  .btn-danger {
+    background: var(--pos-danger);
+    border-color: var(--pos-danger);
+  }
+
+  .btn-outline-info {
+    color: var(--pos-info);
+    border-color: #a5dfe8;
+  }
+
+  .btn-outline-info:hover {
+    background: var(--pos-info);
+    border-color: var(--pos-info);
+    color: #fff;
+  }
+
+  .btn-xs {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .btn-sm {
+    border-radius: 7px;
+  }
+
+  /* =========================================================
+   DATOS CLIENTE
+   ========================================================= */
+
+  #formularioregistros fieldset {
+    border: 1px solid var(--pos-border) !important;
+    background: #fafbfc;
+    border-radius: 9px;
+    padding: 12px !important;
+  }
+
+  #formularioregistros fieldset legend {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--pos-primary) !important;
+    background: #fff;
+    border-radius: 5px;
+  }
+
+  #formularioregistros fieldset label {
+    color: #374151;
+  }
+
+  #formularioregistros fieldset .text-info {
+    color: var(--pos-info) !important;
+    font-size: 11px;
+  }
+
+  #formularioregistros fieldset .text-success {
+    color: var(--pos-success) !important;
+    font-size: 11px;
+  }
+
+  /* =========================================================
+   COLLAPSE DATOS CLIENTE
+   ========================================================= */
+
+  .collapse-section {
+    position: absolute;
+    top: calc(100% + 5px);
+    left: 0;
+    width: 100%;
+    z-index: 1050;
+
+    background: #fff;
+    border: 1px solid var(--pos-border);
+    border-radius: 10px;
+
+    box-shadow: 0 15px 40px rgba(15, 23, 42, .14);
+
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-8px);
+
+    transition:
+      opacity .18s ease,
+      transform .18s ease,
+      visibility .18s ease;
+  }
+
+  .collapse-section.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+
+  /* =========================================================
+   TABLA DETALLE VENTA
+   ========================================================= */
+
+  #detalles-wrapper {
+    max-height: 320px;
+    overflow-y: auto;
+    width: 100%;
+    border: 1px solid var(--pos-border);
+    border-radius: 9px 9px 0px 0px;
+    background: #fff;
+  }
+
+  #detalles {
+    width: 100% !important;
+    min-width: 100% !important;
+    margin: 0 !important;
+    font-size: 11px;
+    table-layout: fixed;
+  }
+
+  #detalles thead {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  #detalles thead th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    border: none !important;
+    border-bottom: 1px solid var(--pos-border) !important;
+    padding: 8px 5px !important;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+  }
+
+  #detalles tbody td {
+    padding: 7px 5px !important;
+    vertical-align: middle;
+    border-color: #f0f2f5;
+  }
+
+  #detalles tbody tr:hover {
+    background: #f8fbff;
+  }
+
+  #detalles tbody .fila-vacia-detalles td {
+    width: 100% !important;
+    padding: 25px 10px !important;
+    color: var(--pos-text-muted);
+    text-align: center;
+  }
+
+  /* Scroll */
+
+  #detalles-wrapper::-webkit-scrollbar,
+  #floating-body::-webkit-scrollbar,
+  #datafechas::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  #detalles-wrapper::-webkit-scrollbar-track,
+  #floating-body::-webkit-scrollbar-track,
+  #datafechas::-webkit-scrollbar-track {
+    background: #f8fafc;
+  }
+
+  #detalles-wrapper::-webkit-scrollbar-thumb,
+  #floating-body::-webkit-scrollbar-thumb,
+  #datafechas::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+
+  #detalles-wrapper::-webkit-scrollbar-thumb:hover,
+  #floating-body::-webkit-scrollbar-thumb:hover,
+  #datafechas::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* =========================================================
+   TABLAS PRODUCTOS
+   ========================================================= */
+
+  #tblarticulos,
+  #tblarticulos2,
+  #tbllistado,
+  #tbllistadoVentas {
+    font-size: 11.5px;
+  }
+
+  #tblarticulos thead th,
+  #tblarticulos2 thead th {
+    background: #f8fafc !important;
+    color: #475569;
+    border-top: none;
+    border-bottom: 1px solid var(--pos-border);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  #tblarticulos td,
+  #tblarticulos th,
+  #tblarticulos2 td,
+  #tblarticulos2 th {
+    padding: 6px 5px;
+    vertical-align: middle;
+  }
+
+  #tblarticulos tbody tr:hover,
+  #tblarticulos2 tbody tr:hover {
+    background: #f8fbff;
+  }
+
+  /* =========================================================
+   TABLA LISTADO DE VENTAS
+   ========================================================= */
+
+  #tbllistado {
+    margin-bottom: 0;
+  }
+
+  #tbllistado thead th,
+  #tbllistadoVentas thead th {
+    background: #f8fafc;
+    color: #475569;
+    border-top: none;
+    border-bottom: 1px solid var(--pos-border);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .25px;
+  }
+
+  #tbllistado tbody td,
+  #tbllistadoVentas tbody td {
+    padding: 7px 6px;
+    vertical-align: middle;
+  }
+
+  #tbllistado tbody tr,
+  #tbllistadoVentas tbody tr {
+    transition: background .15s ease;
+  }
+
+  #tbllistado tbody tr:hover,
+  #tbllistadoVentas tbody tr:hover {
+    background: #f8fbff;
+  }
+
+  /* =========================================================
+   TABS PRODUCTO / SERVICIO
+   ========================================================= */
+
+  .card-tabs .nav-tabs {
+    border-bottom: 1px solid var(--pos-border);
+  }
+
+  .card-tabs .nav-tabs .nav-link {
+    border: none;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 9px 15px;
+    border-bottom: 2px solid transparent;
+  }
+
+  .card-tabs .nav-tabs .nav-link:hover {
+    color: var(--pos-primary);
+  }
+
+  .card-tabs .nav-tabs .nav-link.active {
+    color: var(--pos-primary);
+    background: transparent;
+    border-bottom: 2px solid var(--pos-primary);
+  }
+
+  /* =========================================================
+   BUSCADOR PRODUCTOS
+   ========================================================= */
+
+  #div_search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  #div_search input {
+    height: 36px;
+    border-radius: 8px;
+  }
+
+  #div_search .btn {
+    height: 36px;
+    min-width: 36px;
+  }
+
+  .active-search {
+    background: var(--pos-primary) !important;
+    color: #fff !important;
+    border-color: var(--pos-primary) !important;
+  }
+
+  /* =========================================================
+   TOTALES
+   ========================================================= */
+
+  #formularioregistros .border.rounded.shadow-sm {
+    border: 1px solid var(--pos-border) !important;
+    border-radius: 0px 0px 10px 10px !important;
+    overflow: hidden;
+    box-shadow: none !important;
+    background: #fff;
+  }
+
+  #formularioregistros .border.rounded.shadow-sm .d-flex {
+    border-bottom: 1px solid #f0f2f5;
+  }
+
+  #formularioregistros .border.rounded.shadow-sm .d-flex:last-child {
+    background: #f8fbff;
+    border-bottom: none;
+  }
+
+  #formularioregistros .border.rounded.shadow-sm .fw-bold {
+    font-size: 12px;
+  }
+
+  #sp-impuesto,
+  #sp-subtotal {
+    color: #475569;
+  }
+
+  #total {
+    color: var(--pos-success) !important;
+    font-size: 22px !important;
+    font-weight: 800 !important;
+  }
+
+  /* =========================================================
+   PAGOS
+   ========================================================= */
+
+  #pagosMixtosContainer {
+    background: #f8fafc;
+    border: 1px solid var(--pos-border);
+    border-radius: 9px;
+    padding: 10px 8px 3px;
+  }
+
+  .pagoItem {
+    background: #fff;
+    border: 1px solid var(--pos-border);
+    border-radius: 8px;
+    padding: 8px 4px;
+    margin-bottom: 8px !important;
+  }
+
+  .pagoItem:hover {
+    border-color: #cbd5e1;
+  }
+
+  .pagoItem .form-control {
+    font-size: 11px;
+  }
+
+  /* =========================================================
+   BOTONES FLOTANTES
+   ========================================================= */
+
+  .btn-flotante,
+  .btn-flotante2 {
+    position: fixed;
+    bottom: 22px;
+
+    height: 48px;
+    padding: 0 20px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 10px;
+    border: none;
+
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: .3px;
+
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .18);
+
+    transition:
+      transform .18s ease,
+      box-shadow .18s ease,
+      background .18s ease;
+
+    z-index: 999;
+  }
+
+  .btn-flotante {
+    right: 25px;
+    background: var(--pos-success);
+  }
+
+  .btn-flotante2 {
+    right: 190px;
+    background: #64748b;
+  }
+
+  .btn-flotante:hover,
+  .btn-flotante2:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(15, 23, 42, .22);
+    color: #fff;
+  }
+
+  .btn-flotante:hover {
+    background: #15803d;
+  }
+
+  .btn-flotante2:hover {
+    background: #475569;
+  }
+
+  /* =========================================================
+   HISTORIAL FLOTANTE
+   ========================================================= */
+
+  #floating-history {
+    display: none;
+
+    position: fixed;
+    top: 85px;
+    right: 20px;
+
+    width: 600px;
+    max-width: calc(100vw - 30px);
+
+    background: #fff;
+
+    border: 1px solid var(--pos-border);
+    border-radius: 12px;
+
+    box-shadow: 0 20px 50px rgba(15, 23, 42, .20);
+
+    overflow: hidden;
+
+    z-index: 99999;
+
+    font-family: var(--pos-font);
+
+    will-change: top, left;
+  }
+
+  #floating-header {
+    background: #fff;
+    color: #111827;
+
+    padding: 12px 15px;
+
+    border-bottom: 1px solid var(--pos-border);
+
+    cursor: grab;
+    user-select: none;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  #floating-header:active {
+    cursor: grabbing;
+  }
+
+  #floating-header i {
+    color: var(--pos-primary);
+  }
+
+  #floating-header button {
+    color: #64748b !important;
+  }
+
+  .search-box-historial {
+    padding: 9px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--pos-border);
+  }
+
+  .search-box-historial input {
+    border-radius: 20px !important;
+    padding-left: 14px;
+    border: 1px solid var(--pos-border);
+  }
+
+  #floating-body {
+    max-height: 450px;
+    overflow-y: auto;
+    background: #fff;
+  }
+
+  .table-historial {
+    margin-bottom: 0 !important;
+  }
+
+  .table-historial th {
+    background: #f8fafc;
+    color: #64748b;
+    font-weight: 700;
+    border: none !important;
+    border-bottom: 1px solid var(--pos-border) !important;
+    font-size: 12px;
+    text-transform: uppercase;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .table-historial td {
+    vertical-align: middle !important;
+    font-size: 11px;
+    padding: 7px 5px !important;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .table-historial tbody tr:hover {
+    background: #f8fbff;
+  }
+
+  .resaltado-carrito {
+    background: #fffbeb !important;
+    border-left: 3px solid #f59e0b;
+  }
+
+  .resaltado-carrito td {
+    color: #92400e;
+    font-weight: 600;
+  }
+
+  /* =========================================================
+   MODALES
+   ========================================================= */
+
+  .modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, .20);
+    overflow: hidden;
+  }
+
+  .modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, .12);
+  }
+
+  .modal-title {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .modal-body {
+    background: #fff;
+  }
+
+  .modal-footer {
+    background: #f8fafc;
+    border-top: 1px solid var(--pos-border);
+  }
+
+  /* Modal detalle */
+
+  #getCodeModal22 .card {
+    box-shadow: none;
+    border: 1px solid var(--pos-border) !important;
+  }
+
+  #getCodeModal22 .card-header {
+    background: #f8fafc !important;
+    color: #374151;
+  }
+
+  #getCodeModal22 small.text-muted {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+
+  #getCodeModal22 h5 {
+    font-size: 14px;
+  }
+
+  /* =========================================================
+   MODAL CLIENTES
+   ========================================================= */
+
+  #ModalClientes .modal-header,
+  #ModalPrecios .modal-header,
+  #ModalTipocomprobante .modal-header {
+    background: #fff;
+    color: #111827;
+    border-bottom: 1px solid var(--pos-border);
+  }
+
+  #ModalClientes .modal-title,
+  #ModalPrecios .modal-title,
+  #ModalTipocomprobante .modal-title {
+    color: #111827;
+  }
+
+  /* =========================================================
+   MODAL MOVIMIENTO CAJA
+   ========================================================= */
+
+  #myModal .modal-body {
+    background: #f8fafc !important;
+    border-radius: 0 !important;
+  }
+
+  #myModal .form-group label {
+    font-size: 11px;
+  }
+
+  #myModal input[readonly] {
+    background: #f1f5f9 !important;
+    border-color: var(--pos-border) !important;
+    color: #475569;
+  }
+
+  /* =========================================================
+   APERTURA DE CAJA
+   ========================================================= */
+
+  #aperturarcaja {
+    background: transparent;
+  }
+
+  #aperturarcaja .card {
+    border-radius: 14px !important;
+    box-shadow: 0 10px 35px rgba(15, 23, 42, .08);
+  }
+
+  #aperturarcaja h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: #111827;
+    letter-spacing: .5px;
+  }
+
+  /* =========================================================
+   IMÁGENES PRODUCTO
+   ========================================================= */
+
+  .img-thumbnail {
+    border: 1px solid var(--pos-border);
+    border-radius: 8px;
+  }
+
+  .img-producto {
+    cursor: pointer;
+    transition: transform .2s ease, box-shadow .2s ease;
+  }
+
+  .img-producto:hover {
+    transform: scale(1.04);
+    box-shadow: 0 5px 15px rgba(15, 23, 42, .12);
+  }
+
+  /* =========================================================
+   PRODUCTO DETALLE
+   ========================================================= */
+
+  #modalDetalleProducto .nav-tabs {
+    border-bottom: 1px solid var(--pos-border);
+  }
+
+  #modalDetalleProducto .nav-tabs .nav-link {
+    border: none;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  #modalDetalleProducto .nav-tabs .nav-link.active {
+    color: var(--pos-primary);
+    border-bottom: 2px solid var(--pos-primary);
+  }
+
+  #detalleImagenProducto {
+    padding: 15px;
+  }
+
+  /* =========================================================
+   FECHAS DE CUOTAS
+   ========================================================= */
+
+  #datafechas {
+    display: block;
+    max-height: 300px;
+    overflow-y: auto;
+    width: 100%;
+  }
+
+  #datafechas tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  #datafechas td {
+    width: 25%;
+    font-size: 11px;
+  }
+
+  /* =========================================================
+   SEPARADORES
+   ========================================================= */
+
+  #formularioregistros hr {
+    border: 0;
+    border-top: 1px solid var(--pos-border);
+    margin: 14px 0;
+  }
+
+  /* =========================================================
+   ZOOM GLOBAL
+   ========================================================= */
+
+  .scale-global {
+    zoom: .85;
+    transform-origin: top center;
+  }
+
+  @supports not (zoom: 1) {
+    .scale-global {
+      transform: scale(.85);
+      transform-origin: top center;
+    }
+  }
+
+  /* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+  @media (max-width: 991px) {
+
+    #formularioregistros.pos-form-shell {
+      padding: 10px;
+    }
+
+    #formularioregistros.pos-form-shell #datosgenerales,
+    #formularioregistros.pos-form-shell #datosgenerales2 {
+      padding: 10px !important;
+    }
+
+    #floating-history {
+      width: calc(100vw - 20px);
+      right: 10px;
+      top: 65px;
+    }
+
+    .btn-flotante,
+    .btn-flotante2 {
+      bottom: 15px;
+      height: 44px;
+    }
+
+    .btn-flotante {
+      right: 15px;
+    }
+
+    .btn-flotante2 {
+      right: 165px;
+    }
+  }
+
+  @media (max-width: 600px) {
+
+    .content-header h1 {
+      font-size: 18px;
+    }
+
+    #header {
+      padding: 10px;
+    }
+
+    #detalles-wrapper {
+      max-height: 260px;
+    }
+
+    .btn-flotante,
+    .btn-flotante2 {
+      font-size: 11px;
+      padding: 0 14px;
+    }
+
+    .btn-flotante {
+      right: 10px;
+    }
+
+    .btn-flotante2 {
+      right: 145px;
+    }
+
+    #floating-history {
+      width: calc(100vw - 16px);
+      right: 8px;
+    }
+
+    #total {
+      font-size: 19px !important;
+    }
+  }
+
+  /* =========================================================
+   ESTADOS / BADGES
+   ========================================================= */
+
+  .badge {
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 8px;
+  }
+
+  /* =========================================================
+   UTILIDADES
+   ========================================================= */
+
+  .text-primary {
+    color: var(--pos-primary) !important;
+  }
+
+  .bg-primary {
+    background-color: var(--pos-primary) !important;
+  }
+
+  .text-success {
+    color: var(--pos-success) !important;
+  }
+
+  .text-danger {
+    color: var(--pos-danger) !important;
+  }
+
+  /* =========================================================
+   FOCUS ACCESIBLE
+   ========================================================= */
+
+  button:focus,
+  a:focus,
+  select:focus,
+  input:focus {
+    outline: none;
+  }
+
+  /* =========================================================
+   TABLA RESPONSIVE
+   ========================================================= */
+
+  .table-responsive {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  /* =========================================================
+   EVITAR EXCESO DE MARGENES DEL TEMPLATE
+   ========================================================= */
+
+  #formularioregistros.pos-form-shell .card.card-outline.card-danger .card.shadow {
+    margin-top: 0 !important;
+  }
+
+  #formularioregistros.pos-form-shell .col-lg-6[style*="margin-top"] {
+    margin-top: 0 !important;
+  }
+
+  /* =========================================================
+   TRANSICIONES GENERALES
+   ========================================================= */
+
+  .card,
+  .form-control,
+  .btn,
+  .table tbody tr,
+  .select2-selection {
+    transition: all .18s ease;
+  }
+</style>
 <div class="content-wrapper">
   <!-- Content Header (Page header) -->
   <section class="content-header">
@@ -813,39 +1837,44 @@ date_default_timezone_set('America/Lima');
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title"><span id="titulo-formulario">Lista de</span> Abonos</h4>
+        <h4 class="modal-title"><span id="titulo-formulario">Lista de</span> abonos</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <form class="form-horizontal" role="form" name="formulario" id="formulario" method="POST">
         <div class="modal-body">
-
+          <div class="row">
+            <div class="col-md-12">
+              <div class="alert" style="background: #E0F7FA;">
+                <strong><i class="fa fa-info"></i> Info!</strong> El monto total del documento electrónico es de <label
+                  for="abonoTotal2" id="abonoTotal2"></label>, y se han registrado abonos por un total de <label
+                  for="abonoTotal" id="abonoTotal"></label>.
+              </div>
+            </div>
+          </div>
           <input type="hidden" name="idcpc" id="idcpc">
           <input type="hidden" id="idcaja" name="idcaja">
           <input type="hidden" name="idventa" id="idventa">
 
-          <div class="alert" style="background: #E0F7FA;">
-            <strong><i class="fa fa-info"></i> Info!</strong> El monto total del documento electrónico es de <label
-              for="abonoTotal2" id="abonoTotal2"></label>, y se han registrado abonos por un total de <label
-              for="abonoTotal" id="abonoTotal"></label>.
+          <div class="col-md-12">
+            <div class="table-responsive">
+              <table id="tbllistado" class="table table-striped table-hover" width="100%">
+                <thead>
+                  <th>Fecha</th>
+                  <th>Metodo</th>
+                  <th>Documento</th>
+                  <th>Eectivo</th>
+                  <th>Deposito/trans.</th>
+                  <th>N° op.</th>
+                  <th>Banco</th>
+                  <th>Acciones</th>
+                </thead>
+                <tbody id="listaComprobantes">
+                </tbody>
+              </table>
+            </div>
           </div>
-
-          <table id="tbllistado" class="table table-striped table-bordered table-condensed table-hover" width="100%">
-            <thead>
-              <th style="width: 100px;">Fecha Registro</th>
-              <th style="width: 25px;">Monto Efectivo</th>
-              <th style="width: 25px;">Monto Tarjeta</th>
-              <th style="width: 150px;">Forma de Pago</th>
-            </thead>
-            <tbody>
-            </tbody>
-            <tfoot>
-              <th>Nombre</th>
-              <th>Estado</th>
-              <th>Forma de Pago</th>
-            </tfoot>
-          </table>
 
         </div>
         <div class="modal-footer justify-content-between">
@@ -1092,7 +2121,6 @@ date_default_timezone_set('America/Lima');
     </div>
   </div>
 </div>
-
 
 <!-- MODAL PROGRAMAR VISITA -->
 <div class="modal fade" id="modalProgramarVisita" tabindex="-1" role="dialog">
@@ -1631,6 +2659,51 @@ date_default_timezone_set('America/Lima');
 
   </div>
 
+</div>
+
+<div class="modal fade" id="modalAjuntarComp">
+  <div class="modal-dialog modal-md">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalAjuntarCompLabel">Adjuntar comprobante</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <form id="formAdjuntarComp" enctype="multipart/form-data">
+        <div class="modal-body">
+          <input type="hidden" id="idcpcShow">
+          <input type="hidden" id="iddcpc">
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="comprobanteAdjunto">Documento</label>
+                <input
+                  type="file"
+                  class="form-control"
+                  id="comprobanteAdjunto"
+                  name="comprobante"
+                  accept="image/*,.pdf">
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Adjuntar
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            onclick="cerarrAjuntarComp()">
+            Cerrar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <script type="text/javascript" src="vistas/js/cuentascobrar.js"></script>

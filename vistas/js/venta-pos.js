@@ -5463,6 +5463,10 @@ $("#formAdjuntarComp").submit(function (e) {
     Swal.fire('Venta', 'No se ha seleccionado una venta', 'warning');
   };
 
+  if ($('#comprobanteAdjunto')[0].files.length > 0) {
+    Swal.fire('Venta', 'No se ha seleccionado un documento para subir', 'warning');
+  }
+
   const formData = new FormData(this);
   const idventapago = $("#idventapago").val();
   $.ajax({
@@ -5504,7 +5508,7 @@ function listarComprobantes(idVenta) {
       if (!response.length) {
         html = `
                     <tr>
-                        <td colspan="3" class="text-center text-muted">
+                        <td colspan="7" class="text-center text-muted">
                             No hay comprobantes adjuntos
                         </td>
                     </tr>
@@ -5518,7 +5522,7 @@ function listarComprobantes(idVenta) {
                                 ${item.metodo_pago}
                             </td>
                             <td>
-                                <i class="fas fa-file-image text-primary"></i>
+                                ${item.comprobante ? '<i class="fas fa-file-image text-primary"></i>' : ''}
                                 ${item.comprobante || ''}
                             </td>
                             <td>
@@ -5531,7 +5535,7 @@ function listarComprobantes(idVenta) {
                                 ${item.banco || ''}
                             </td>
                            <td class="text-end">
-                                ${item.comprobante ? `
+                                ${item.metodo_pago === 'Efectivo' ? '' : item.comprobante ? `
                                             <a
                                                 href="files/ventas/${item.comprobante}"
                                                 target="_blank"
@@ -5564,6 +5568,7 @@ function listarComprobantes(idVenta) {
 
 function abrirAjuntarComp(idventapago) {
   $("#modalAjuntarComp").modal("show");
+  $('#comprobanteAdjunto').val('');
   $("#idventapago").val(idventapago);
 }
 

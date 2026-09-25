@@ -75,6 +75,9 @@ files/compras/*
 files/ventas/*
 !files/ventas/.gitkeep
 
+files/cuentascobrar/*
+!files/cuentascobrar/.gitkeep
+
 /reportes/factura/qr/*
 /reportes/factura/qr/.gitkeep
 /reportes/factura/qr/img2.png
