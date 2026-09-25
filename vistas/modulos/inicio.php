@@ -276,256 +276,297 @@ if (session_status() === PHP_SESSION_NONE) {
 
   <section class="content">
     <div class="container-fluid">
+      <?php
+      $puedeVerPaneles = $helpers->getUserPermissionAccion('Ver paneles');
+      $puedeVerGraficos = $helpers->getUserPermissionAccion('Ver graficos');
+      ?>
 
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="card card-default">
-            <div class="card-header d-flex align-items-center">
-              <h3 class="card-title"><i class="fas fa-filter mr-2 text-primary"></i> Filtros de Resumen</h3>
-              <div class="card-tools ml-auto">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                    class="fas fa-minus"></i></button>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="form-group col-lg-3 col-md-3 col-sm-6">
-                  <label class="small text-uppercase font-weight-bold text-muted">Fecha Inicio</label>
-                  <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio"
-                    value="<?php echo date("Y-m-01"); ?>">
-                </div>
-
-                <div class="form-group col-lg-3 col-md-3 col-sm-6">
-                  <label class="small text-uppercase font-weight-bold text-muted">Fecha Fin</label>
-                  <input type="date" class="form-control" name="fecha_fin" id="fecha_fin"
-                    value="<?php echo date("Y-m-d"); ?>">
-                </div>
-
-                <!--div class="form-group col-lg-3 col-md-3 col-sm-6">
-                  <label class="small text-uppercase font-weight-bold text-muted">Almacén</label>
-                  <select id="idsucursal2" name="idsucursal2" class="form-control"></select>
-                </div-->
-
-                <!--div class="form-group col-lg-3 col-md-3 col-sm-6">
-                  <label class="small text-uppercase font-weight-bold text-muted">Vendedor</label>
-                  <div class="input-group">
-                    <select id="idcliente" name="idcliente" class="form-control select2" required></select>
-                    <div class="input-group-append ml-2">
-                      <button type="button" class="btn btn-primary shadow-sm px-3" style="border-radius:10px"
-                        onclick="mostrarInicio()">
-                        <i class="fas fa-search"></i>
-                      </button>
+      <?php if (!$puedeVerPaneles && !$puedeVerGraficos) { ?>
+        <div class="row justify-content-center">
+          <div class="col-xl-9 col-lg-10">
+            <div class="card border-0 shadow-sm" style="border-radius: 16px; overflow: hidden;">
+              <div class="card-body p-0">
+                <div class="row no-gutters">
+                  <div class="col-md-4 d-flex align-items-center justify-content-center" style=" background: linear-gradient(145deg, #4f46e5, #6366f1); min-height: 300px; ">
+                    <div class="text-center text-white px-4">
+                      <div class="mb-4" style=" width: 82px; height: 82px; margin: 0 auto; border-radius: 22px; background: rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,.12); "> <i class="fas fa-layer-group" style="font-size: 2rem;"></i> </div>
+                      <h4 class="font-weight-bold mb-2"> Panel principal </h4>
+                      <p class="mb-0" style=" color: rgba(255,255,255,.78); font-size: .9rem; line-height: 1.6; "> Gestiona las opciones disponibles desde el menú de navegación. </p>
                     </div>
                   </div>
-                </div-->
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-lg-3 col-md-6 mb-4">
-          <div class="tp-card">
-            <div class="tp-card-header">
-              <div>
-                <div class="tp-card-title">Compras Hoy</div>
-                <div class="tp-card-value" id="lblComprasHoy">S/ 0.00</div>
-              </div>
-              <div class="tp-icon tp-indigo"><i class="fas fa-shopping-bag"></i></div>
-            </div>
-            <div class="tp-card-footer">Ver detalle <i class="fas fa-chevron-right ml-1 small"></i></div>
-          </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-          <div class="tp-card">
-            <div class="tp-card-header">
-              <div>
-                <div class="tp-card-title text-danger">Por Pagar</div>
-                <div class="tp-card-value text-danger" id="lblCuentasPagar">S/ 0.00</div>
-              </div>
-              <div class="tp-icon tp-red"><i class="fas fa-file-invoice-dollar"></i></div>
-            </div>
-            <div class="tp-card-footer text-danger">Gestionar <i class="fas fa-chevron-right ml-1 small"></i></div>
-          </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-          <div class="tp-card">
-            <div class="tp-card-header">
-              <div>
-                <div class="tp-card-title text-success">Ventas Contado</div>
-                <div class="tp-card-value text-success" id="lblVentasHoy">S/ 0.00</div>
-              </div>
-              <div class="tp-icon tp-green"><i class="fas fa-cash-register"></i></div>
-            </div>
-            <div class="tp-card-footer text-success">Ver arqueo <i class="fas fa-chevron-right ml-1 small"></i></div>
-          </div>
-        </div>
-
-        <div class="col-lg-3 col-md-6 mb-4">
-          <div class="tp-card">
-            <div class="tp-card-header">
-              <div>
-                <div class="tp-card-title text-primary">Ventas Crédito</div>
-                <div class="tp-card-value text-primary" id="lblTotalVentasC">S/ 0.00</div>
-              </div>
-              <div class="tp-icon tp-indigo"><i class="fas fa-credit-card"></i></div>
-            </div>
-            <div class="tp-card-footer">Ver reporte <i class="fas fa-chevron-right ml-1 small"></i></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-lg-4 col-md-6 mb-4">
-          <div class="tp-card border-left-warning" style="border-left: 4px solid #f59e0b;">
-            <div class="tp-card-header">
-              <div>
-                <div class="tp-card-title">Por Cobrar</div>
-                <div class="tp-card-value" id="lblCuentasCobrar">S/ 0.00</div>
-              </div>
-              <div class="tp-icon tp-yellow"><i class="fas fa-hand-holding-usd"></i></div>
-            </div>
-            <div class="tp-card-footer text-warning">Cobrar ahora <i class="fas fa-arrow-right ml-1"></i></div>
-          </div>
-        </div>
-
-        <div class="col-lg-4 col-md-6 mb-4">
-          <div class="tp-card">
-            <div class="tp-card-header">
-              <div>
-                <div class="tp-card-title">Empleados</div>
-                <div class="tp-card-value" id="lblEmpleados">0</div>
-              </div>
-              <div class="tp-icon tp-gray"><i class="fas fa-user-friends"></i></div>
-            </div>
-            <div class="tp-card-footer text-secondary">Gestionar <i class="fas fa-arrow-right ml-1"></i></div>
-          </div>
-        </div>
-
-        <div class="col-lg-4 col-md-6 mb-4">
-          <div class="tp-card">
-            <div class="tp-card-header">
-              <div>
-                <div class="tp-card-title">Proveedores</div>
-                <div class="tp-card-value" id="lblProveedores">0</div>
-              </div>
-              <div class="tp-icon tp-indigo"><i class="fas fa-truck"></i></div>
-            </div>
-            <div class="tp-card-footer">Ver lista <i class="fas fa-arrow-right ml-1"></i></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row mb-4">
-        <div class="col-md-6 mb-3 mb-md-0">
-          <div class="card border-0 shadow-lg text-white"
-            style="background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); border-radius: 16px;">
-            <div
-              class="card-body p-4 d-flex align-items-center justify-content-between position-relative overflow-hidden">
-              <div style="z-index: 2;">
-                <h6 class="text-white-50 font-weight-bold text-uppercase mb-1">Total Categorías</h6>
-                <h2 class="font-weight-bold m-0" id="lblCategorias">0</h2>
-              </div>
-              <div style="font-size: 4rem; opacity: 0.2; position: absolute; right: 20px; top: 10px;">
-                <i class="far fa-clipboard"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="card border-0 shadow-lg text-white"
-            style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); border-radius: 16px;">
-            <div
-              class="card-body p-4 d-flex align-items-center justify-content-between position-relative overflow-hidden">
-              <div style="z-index: 2;">
-                <h6 class="text-white-50 font-weight-bold text-uppercase mb-1">Total Productos</h6>
-                <h2 class="font-weight-bold m-0" id="lblProductos">0</h2>
-              </div>
-              <div style="font-size: 4rem; opacity: 0.2; position: absolute; right: 20px; top: 10px;">
-                <i class="fas fa-boxes"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-md-6 mb-4">
-          <div class="card card-primary h-100">
-            <div class="card-header d-flex justify-content-between align-items-center pt-3 pb-2">
-              <h3 class="card-title font-weight-bold"><i class="fas fa-chart-line mr-2 text-primary"></i> Utilidades (12
-                Meses)</h3>
-              <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                    class="fas fa-minus"></i></button>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="chart">
-                <canvas id="uti12m" style="min-height: 250px; height: 250px; max-height: 300px; width: 100%;"></canvas>
+                  <div class="col-md-8">
+                    <div class="p-4 p-lg-5">
+                      <div class="d-flex align-items-center mb-4">
+                        <div style=" width: 46px; height: 46px; border-radius: 12px; background: #eef2ff; color: #4f46e5; display: flex; align-items: center; justify-content: center; margin-right: 14px; "> <i class="fas fa-hand-sparkles"></i> </div>
+                        <div>
+                          <div class="text-muted" style="font-size: .8rem;"> ACCESO AL SISTEMA </div>
+                          <h3 class="font-weight-bold text-dark mb-0"> ¡Bienvenido! </h3>
+                        </div>
+                      </div>
+                      <p class="text-dark mb-2" style=" font-size: 1rem; line-height: 1.6; "> Has iniciado sesión correctamente. </p>
+                      <p class="text-muted mb-4" style=" font-size: .9rem; line-height: 1.6; "> Desde el menú lateral podrás acceder a los módulos y funcionalidades habilitados para tu usuario. </p>
+                      <div class="mb-4">
+                        <div class="d-flex align-items-center mb-3">
+                          <div style=" width: 34px; height: 34px; border-radius: 9px; background: #f8fafc; color: #64748b; display: flex; align-items: center; justify-content: center; margin-right: 12px; "> <i class="fas fa-bars"></i> </div>
+                          <div>
+                            <div class="font-weight-bold text-dark" style="font-size: .88rem;"> Menú de navegación </div>
+                            <div class="text-muted" style="font-size: .78rem;"> Consulta las opciones disponibles para tu perfil. </div>
+                          </div>
+                        </div>
+                        <div class="d-flex align-items-center">
+                          <div style=" width: 34px; height: 34px; border-radius: 9px; background: #f8fafc; color: #64748b; display: flex; align-items: center; justify-content: center; margin-right: 12px; "> <i class="fas fa-shield-alt"></i> </div>
+                          <div>
+                            <div class="font-weight-bold text-dark" style="font-size: .88rem;"> Acceso controlado </div>
+                            <div class="text-muted" style="font-size: .78rem;"> Las opciones visibles dependen de los permisos asignados. </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="pt-3" style=" border-top: 1px solid #edf0f5; "> <span class="text-muted" style="font-size: .75rem;"> <i class="fas fa-info-circle mr-1"></i> Selecciona una opción del menú para comenzar. </span> </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="col-md-6 mb-4">
-          <div class="card card-primary h-100">
-            <div class="card-header d-flex justify-content-between align-items-center pt-3 pb-2">
-              <h3 class="card-title font-weight-bold"><i class="fas fa-exchange-alt mr-2 text-success"></i> Flujo
-                Efectivo</h3>
-              <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                    class="fas fa-minus"></i></button>
-              </div>
-            </div>
-            <div class="card-body">
-              <div class="chart">
-                <canvas id="graficoIngresosEgresos"
-                  style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+      <?php } else { ?>
+        <?php if ($puedeVerPaneles || $puedeVerGraficos) { ?>
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="card card-default">
+                <div class="card-header d-flex align-items-center">
+                  <h3 class="card-title"><i class="fas fa-filter mr-2 text-primary"></i> Filtros de Resumen</h3>
+                  <div class="card-tools ml-auto">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
+                        class="fas fa-minus"></i></button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="form-group col-lg-3 col-md-3 col-sm-6">
+                      <label class="small text-uppercase font-weight-bold text-muted">Fecha Inicio</label>
+                      <input type="date" class="form-control" name="fecha_inicio" id="fecha_inicio"
+                        value="<?php echo date("Y-m-01"); ?>">
+                    </div>
+
+                    <div class="form-group col-lg-3 col-md-3 col-sm-6">
+                      <label class="small text-uppercase font-weight-bold text-muted">Fecha Fin</label>
+                      <input type="date" class="form-control" name="fecha_fin" id="fecha_fin"
+                        value="<?php echo date("Y-m-d"); ?>">
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <div class="row">
-        <div class="col-md-6 mb-4">
-          <div class="card card-primary h-100">
-            <div class="card-header d-flex justify-content-between align-items-center pt-3 pb-2">
-              <h3 class="card-title font-weight-bold"><i class="fas fa-chart-area mr-2 text-info"></i> Ventas vs Compras
-              </h3>
-              <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                    class="fas fa-minus"></i></button>
+        <?php } ?>
+        <?php if ($puedeVerPaneles) { ?>
+          <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4">
+              <div class="tp-card">
+                <div class="tp-card-header">
+                  <div>
+                    <div class="tp-card-title">Compras Hoy</div>
+                    <div class="tp-card-value" id="lblComprasHoy">S/ 0.00</div>
+                  </div>
+                  <div class="tp-icon tp-indigo"><i class="fas fa-shopping-bag"></i></div>
+                </div>
+                <div class="tp-card-footer">Ver detalle <i class="fas fa-chevron-right ml-1 small"></i></div>
               </div>
             </div>
-            <div class="card-body">
-              <div class="chart">
-                <div id="areaChart" style="min-height: 250px; height: 250px; max-width: 100%;"></div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+              <div class="tp-card">
+                <div class="tp-card-header">
+                  <div>
+                    <div class="tp-card-title text-danger">Por Pagar</div>
+                    <div class="tp-card-value text-danger" id="lblCuentasPagar">S/ 0.00</div>
+                  </div>
+                  <div class="tp-icon tp-red"><i class="fas fa-file-invoice-dollar"></i></div>
+                </div>
+                <div class="tp-card-footer text-danger">Gestionar <i class="fas fa-chevron-right ml-1 small"></i></div>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+              <div class="tp-card">
+                <div class="tp-card-header">
+                  <div>
+                    <div class="tp-card-title text-success">Ventas Contado</div>
+                    <div class="tp-card-value text-success" id="lblVentasHoy">S/ 0.00</div>
+                  </div>
+                  <div class="tp-icon tp-green"><i class="fas fa-cash-register"></i></div>
+                </div>
+                <div class="tp-card-footer text-success">Ver arqueo <i class="fas fa-chevron-right ml-1 small"></i></div>
+              </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4">
+              <div class="tp-card">
+                <div class="tp-card-header">
+                  <div>
+                    <div class="tp-card-title text-primary">Ventas Crédito</div>
+                    <div class="tp-card-value text-primary" id="lblTotalVentasC">S/ 0.00</div>
+                  </div>
+                  <div class="tp-icon tp-indigo"><i class="fas fa-credit-card"></i></div>
+                </div>
+                <div class="tp-card-footer">Ver reporte <i class="fas fa-chevron-right ml-1 small"></i></div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="col-md-6 mb-4">
-          <div class="card card-danger h-100">
-            <div class="card-header d-flex justify-content-between align-items-center pt-3 pb-2">
-              <h3 class="card-title font-weight-bold"><i class="fas fa-crown mr-2 text-warning"></i> Top Productos</h3>
-              <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
-                    class="fas fa-minus"></i></button>
+          <div class="row">
+            <div class="col-lg-4 col-md-6 mb-4">
+              <div class="tp-card border-left-warning" style="border-left: 4px solid #f59e0b;">
+                <div class="tp-card-header">
+                  <div>
+                    <div class="tp-card-title">Por Cobrar</div>
+                    <div class="tp-card-value" id="lblCuentasCobrar">S/ 0.00</div>
+                  </div>
+                  <div class="tp-icon tp-yellow"><i class="fas fa-hand-holding-usd"></i></div>
+                </div>
+                <div class="tp-card-footer text-warning">Cobrar ahora <i class="fas fa-arrow-right ml-1"></i></div>
               </div>
             </div>
-            <div class="card-body">
-              <div id="productosmasvendido2" style="min-height: 250px; height: 250px; max-width: 100%;"></div>
+
+            <div class="col-lg-4 col-md-6 mb-4">
+              <div class="tp-card">
+                <div class="tp-card-header">
+                  <div>
+                    <div class="tp-card-title">Empleados</div>
+                    <div class="tp-card-value" id="lblEmpleados">0</div>
+                  </div>
+                  <div class="tp-icon tp-gray"><i class="fas fa-user-friends"></i></div>
+                </div>
+                <div class="tp-card-footer text-secondary">Gestionar <i class="fas fa-arrow-right ml-1"></i></div>
+              </div>
+            </div>
+
+            <div class="col-lg-4 col-md-6 mb-4">
+              <div class="tp-card">
+                <div class="tp-card-header">
+                  <div>
+                    <div class="tp-card-title">Proveedores</div>
+                    <div class="tp-card-value" id="lblProveedores">0</div>
+                  </div>
+                  <div class="tp-icon tp-indigo"><i class="fas fa-truck"></i></div>
+                </div>
+                <div class="tp-card-footer">Ver lista <i class="fas fa-arrow-right ml-1"></i></div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
 
+          <div class="row mb-4">
+            <div class="col-md-6 mb-3 mb-md-0">
+              <div class="card border-0 shadow-lg text-white"
+                style="background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); border-radius: 16px;">
+                <div
+                  class="card-body p-4 d-flex align-items-center justify-content-between position-relative overflow-hidden">
+                  <div style="z-index: 2;">
+                    <h6 class="text-white-50 font-weight-bold text-uppercase mb-1">Total Categorías</h6>
+                    <h2 class="font-weight-bold m-0" id="lblCategorias">0</h2>
+                  </div>
+                  <div style="font-size: 4rem; opacity: 0.2; position: absolute; right: 20px; top: 10px;">
+                    <i class="far fa-clipboard"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="card border-0 shadow-lg text-white"
+                style="background: linear-gradient(135deg, #ec4899 0%, #be185d 100%); border-radius: 16px;">
+                <div
+                  class="card-body p-4 d-flex align-items-center justify-content-between position-relative overflow-hidden">
+                  <div style="z-index: 2;">
+                    <h6 class="text-white-50 font-weight-bold text-uppercase mb-1">Total Productos</h6>
+                    <h2 class="font-weight-bold m-0" id="lblProductos">0</h2>
+                  </div>
+                  <div style="font-size: 4rem; opacity: 0.2; position: absolute; right: 20px; top: 10px;">
+                    <i class="fas fa-boxes"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <?php } ?>
+
+        <?php if ($puedeVerGraficos) { ?>
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <div class="card card-primary h-100">
+                <div class="card-header d-flex justify-content-between align-items-center pt-3 pb-2">
+                  <h3 class="card-title font-weight-bold"><i class="fas fa-chart-line mr-2 text-primary"></i> Utilidades (12
+                    Meses)</h3>
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
+                        class="fas fa-minus"></i></button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="chart">
+                    <canvas id="uti12m" style="min-height: 250px; height: 250px; max-height: 300px; width: 100%;"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+              <div class="card card-primary h-100">
+                <div class="card-header d-flex justify-content-between align-items-center pt-3 pb-2">
+                  <h3 class="card-title font-weight-bold"><i class="fas fa-exchange-alt mr-2 text-success"></i> Flujo
+                    Efectivo</h3>
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
+                        class="fas fa-minus"></i></button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="chart">
+                    <canvas id="graficoIngresosEgresos"
+                      style="min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"></canvas>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-4">
+              <div class="card card-primary h-100">
+                <div class="card-header d-flex justify-content-between align-items-center pt-3 pb-2">
+                  <h3 class="card-title font-weight-bold"><i class="fas fa-chart-area mr-2 text-info"></i> Ventas vs Compras
+                  </h3>
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
+                        class="fas fa-minus"></i></button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="chart">
+                    <div id="areaChart" style="min-height: 250px; height: 250px; max-width: 100%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-6 mb-4">
+              <div class="card card-danger h-100">
+                <div class="card-header d-flex justify-content-between align-items-center pt-3 pb-2">
+                  <h3 class="card-title font-weight-bold"><i class="fas fa-crown mr-2 text-warning"></i> Top Productos</h3>
+                  <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i
+                        class="fas fa-minus"></i></button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div id="productosmasvendido2" style="min-height: 250px; height: 250px; max-width: 100%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        <?php } ?>
+      <?php } ?>
     </div>
   </section>
 </div>
@@ -533,117 +574,118 @@ if (session_status() === PHP_SESSION_NONE) {
 <script src="vistas/js/inicio.js"></script>
 <script src="./files/plugins/apexcharts/apexcharts.min.js"></script>
 <script type="text/javascript">
-
   document.addEventListener('DOMContentLoaded', async () => {
     try {
-        const [ventasResponse, comprasResponse] = await Promise.all([
-            fetch("controladores/consultas.php?op=totalVentas"),
-            fetch("controladores/consultas.php?op=totalCompras")
-        ]);
+      const [ventasResponse, comprasResponse] = await Promise.all([
+        fetch("controladores/consultas.php?op=totalVentas"),
+        fetch("controladores/consultas.php?op=totalCompras")
+      ]);
 
-        const ventasData = await ventasResponse.json();
-        const comprasData = await comprasResponse.json();
+      const ventasData = await ventasResponse.json();
+      const comprasData = await comprasResponse.json();
 
-        const periodos = [
-            ...new Set([
-                ...ventasData.map(item => item.fecha),
-                ...comprasData.map(item => item.fecha)
-            ])
-        ];
+      const periodos = [
+        ...new Set([
+          ...ventasData.map(item => item.fecha),
+          ...comprasData.map(item => item.fecha)
+        ])
+      ];
 
-        const ventas = Object.fromEntries(
-            ventasData.map(item => [item.fecha, item])
-        );
+      const ventas = Object.fromEntries(
+        ventasData.map(item => [item.fecha, item])
+      );
 
-        const compras = Object.fromEntries(
-            comprasData.map(item => [item.fecha, item])
-        );
+      const compras = Object.fromEntries(
+        comprasData.map(item => [item.fecha, item])
+      );
 
-        const montosVentas = periodos.map(fecha =>
-            parseFloat(ventas[fecha]?.total || 0)
-        );
+      const montosVentas = periodos.map(fecha =>
+        parseFloat(ventas[fecha]?.total || 0)
+      );
 
-        const montosCompras = periodos.map(fecha =>
-            parseFloat(compras[fecha]?.total || 0)
-        );
+      const montosCompras = periodos.map(fecha =>
+        parseFloat(compras[fecha]?.total || 0)
+      );
 
-        crearGrafico(
-            periodos,
-            montosVentas,
-            montosCompras,
-            ventas,
-            compras
-        );
+      crearGrafico(
+        periodos,
+        montosVentas,
+        montosCompras,
+        ventas,
+        compras
+      );
     } catch (error) {
-        console.error("Error al cargar los datos:", error);
+      console.error("Error al cargar los datos:", error);
     }
-});
+  });
 
-function crearGrafico(
+  function crearGrafico(
     periodos,
     montosVentas,
     montosCompras,
     ventas,
     compras
-) {
+  ) {
     const options = {
-        chart: {
-            type: 'bar',
-            height: 350,
-            toolbar: {
-                show: false
-            },
-            fontFamily: 'Poppins, sans-serif'
+      chart: {
+        type: 'bar',
+        height: 350,
+        toolbar: {
+          show: false
         },
+        fontFamily: 'Poppins, sans-serif'
+      },
 
-        series: [
-            {
-                name: 'Ventas',
-                data: montosVentas
-            },
-            {
-                name: 'Compras',
-                data: montosCompras
-            }
-        ],
-
-        plotOptions: {
-            bar: {
-                horizontal: false,
-                columnWidth: '55%',
-                borderRadius: 4
-            }
+      series: [{
+          name: 'Ventas',
+          data: montosVentas
         },
+        {
+          name: 'Compras',
+          data: montosCompras
+        }
+      ],
 
-        dataLabels: {
-            enabled: false
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '55%',
+          borderRadius: 4
+        }
+      },
+
+      dataLabels: {
+        enabled: false
+      },
+
+      xaxis: {
+        categories: periodos,
+        axisBorder: {
+          show: false
         },
+        axisTicks: {
+          show: false
+        }
+      },
 
-        xaxis: {
-            categories: periodos,
-            axisBorder: {
-                show: false
-            },
-            axisTicks: {
-                show: false
-            }
-        },
+      yaxis: {
+        labels: {
+          formatter: value => value
+        }
+      },
 
-        yaxis: {
-            labels: {
-                formatter: value => value
-            }
-        },
+      tooltip: {
+        custom: function({
+          seriesIndex,
+          dataPointIndex
+        }) {
+          const fecha = periodos[dataPointIndex];
 
-        tooltip: {
-            custom: function({ seriesIndex, dataPointIndex }) {
-                const fecha = periodos[dataPointIndex];
+          const item = seriesIndex === 0 ?
+            ventas[fecha] :
+            compras[fecha];
 
-                const item = seriesIndex === 0
-                    ? ventas[fecha]
-                    : compras[fecha];
-
-                return `
+          return `
                     <div class="px-3 py-2">
                         <strong>${fecha}</strong>
                         <div class="mt-1">
@@ -651,40 +693,40 @@ function crearGrafico(
                         </div>
                     </div>
                 `;
-            }
-        },
-
-        colors: ['#4f46e5', '#f59e0b'],
-
-        legend: {
-            position: 'top',
-            horizontalAlign: 'left'
-        },
-
-        grid: {
-            borderColor: '#f1f5f9'
         }
+      },
+
+      colors: ['#4f46e5', '#f59e0b'],
+
+      legend: {
+        position: 'top',
+        horizontalAlign: 'left'
+      },
+
+      grid: {
+        borderColor: '#f1f5f9'
+      }
     };
 
     new ApexCharts(
-        document.querySelector("#areaChart"),
-        options
+      document.querySelector("#areaChart"),
+      options
     ).render();
-}
+  }
 
 
-$("#cxcAlertLink").on("click", function () {
+  $("#cxcAlertLink").on("click", function() {
 
-  let ids = $(this).data("ids");
-  if (!ids) return;
+    let ids = $(this).data("ids");
+    if (!ids) return;
 
-  $.post(
-    "controladores/cuentascobrar.php?op=marcar_leida",
-    { ids: ids },
-    function () {
-      $("#cxcAlertCount").hide();
-    }
-  );
-});
-
+    $.post(
+      "controladores/cuentascobrar.php?op=marcar_leida", {
+        ids: ids
+      },
+      function() {
+        $("#cxcAlertCount").hide();
+      }
+    );
+  });
 </script>
