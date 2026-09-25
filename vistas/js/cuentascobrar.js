@@ -1016,31 +1016,6 @@ function mostrarAbonos(idcpc) {
             $("#listaComprobantes").html(html);
         }
     });
-
-    /* tabla = $('#tbllistado').dataTable(
-         {
-             //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-             "aProcessing": true,//Activamos el procesamiento del datatables
-             "aServerSide": true,//Paginación y filtrado realizados por el servidor
-             dom: 'Bfrtip',//Definimos los elementos del control de tabla
-             buttons: [
-                 'excelHtml5',
-                 'pdf'
-             ],
-             "ajax":
-             {
-                 url: 'controladores/cuentascobrar.php?op=listarDetalle',
-                 data: { idcpc: idcpc },
-                 type: "get",
-                 dataType: "json",
-                 error: function (e) {
-                     console.log(e.responseText);
-                 }
-             },
-             "bDestroy": true,
-             "iDisplayLength": 10,//Paginación
-         }).DataTable();*/
-
 }
 
 function toNumber(valor) {
