@@ -2749,7 +2749,7 @@ date_default_timezone_set('America/Lima');
                                     <th>Documento</th>
                                     <th>Monto</th>
                                     <th>N° operación</th>
-                                    <th>BAnco</th>
+                                    <th>Banco</th>
                                     <th class="text-end">Acciones</th>
                                 </tr>
                             </thead>

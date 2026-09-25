@@ -79,7 +79,7 @@ class CuentasCobrar extends Helpers
 
             $this->pdo->commit();
 
-            return [
+            return Response::json([
                 "success" => true,
                 "message" => "Pago registrado correctamente.",
                 "ticket" => [
@@ -98,13 +98,10 @@ class CuentasCobrar extends Helpers
                     "operacion" => $op,
                     "observacion" => $observacion
                 ]
-            ];
+            ]);
         } catch (Throwable $e) {
             $this->pdo->rollBack();
-            return [
-                "success" => false,
-                "message" => $e->getMessage()
-            ];
+            return Response::error($e->getMessage());
         }
     }
 
@@ -187,7 +184,7 @@ class CuentasCobrar extends Helpers
                 'observacion' => $observacion
             ])
             ->nullable([
-                'banco',
+                'idbanco',
                 'op',
                 'observacion'
             ])
@@ -597,26 +594,24 @@ class CuentasCobrar extends Helpers
     //Implementar un método para listar los registros
     public function listarDetalle($idcpc)
     {
-        $sql = "SELECT 
-            cc.iddcpc,
-            cc.montopagado,
-            cc.montotarjeta,
-            date_format(cc.fechapago,'%d/%m/%y | %H:%i:%s %p') as fechapago,
-            cc.formapago,
-            b.nombre AS banco,
-            cc.op 
-            FROM detalle_cuentas_por_cobrar cc
-            LEFT JOIN bancos b ON b.idbanco = cc.idbanco
-            WHERE cc.idcpc = '$idcpc'
-            ORDER BY cc.iddcpc asc";
+        $data = (new DBQuery($this->pdo))
+            ->select('cc.*,
+            date_format(cc.fechapago,"%d/%m/%y | %H:%i:%s %p") as fechapago,
+            b.nombre AS banco')
+            ->from('detalle_cuentas_por_cobrar cc')
+            ->leftJoin('bancos b', 'b.idbanco = cc.idbanco')
+            ->where('cc.idcpc', '=', $idcpc)
+            ->orderBy('cc.iddcpc')
+            ->get();
 
-        return ejecutarConsulta($sql);
+        return Response::json($data);
     }
 
     public function mostrar($idcpc)
     {
-        $sql = "SELECT
-            v.idventa,
+
+        $credito = (new DBQuery($this->pdo))
+            ->select('v.idventa,
             v.idsucursal,
             v.total_venta,
             v.interes,
@@ -631,19 +626,15 @@ class CuentasCobrar extends Helpers
             cc.mora_pagada,
             cc.interes AS interes_cuota,
             cc.fechavencimiento AS fecha_vencimiento_bd,
-            DATE_FORMAT(cc.fecharegistro,'%d/%m/%y') AS fecharegistro,
-            DATE_FORMAT(cc.fechavencimiento,'%d/%m/%y') AS fechavencimiento,
-            c.nombre
-        FROM venta v
-        INNER JOIN comp_pago pg ON pg.idcomprobante_pago = v.idcomprobante_pago
-        INNER JOIN cuentas_por_cobrar cc
-            ON v.idventa = cc.idventa
-        INNER JOIN persona c
-            ON c.idpersona = v.idcliente
-        WHERE cc.idcpc = '$idcpc'";
-
-        $credito = ejecutarConsultaSimpleFila($sql);
-
+            DATE_FORMAT(cc.fecharegistro,"%d/%m/%y") AS fecharegistro,
+            DATE_FORMAT(cc.fechavencimiento,"%d/%m/%y") AS fechavencimiento,
+            c.nombre')
+            ->from('venta v')
+            ->join('comp_pago pg', 'pg.idcomprobante_pago = v.idcomprobante_pago')
+            ->join('cuentas_por_cobrar cc', 'v.idventa = cc.idventa')
+            ->join('persona c', 'c.idpersona = v.idcliente')
+            ->where('cc.idcpc', '=', $idcpc)
+            ->first();
         $moraCredito = Helpers::verificarMoraCredito($credito['idsucursal']);
 
         $diasMora = 0;
@@ -689,7 +680,7 @@ class CuentasCobrar extends Helpers
             2
         );
 
-        return json_encode($credito);
+        return Response::json($credito);
     }
 
     public function calcularMora($idcpc)
@@ -1405,7 +1396,7 @@ class CuentasCobrar extends Helpers
         ============================================================ */
 
         foreach ($ventas as $v) {
-            $currency = Helpers::get_currency_code(['idsucursal']);
+            $currency = Helpers::get_currency_code($v['idsucursal']);
 
             $idventa = $v['idventa'];
 
@@ -3242,5 +3233,67 @@ class CuentasCobrar extends Helpers
             ->where('dcpc.idcpc', '=', $idcpc)
             ->orderBy('dcpc.iddcpc', 'DESC')
             ->first();
+    }
+
+
+    public function adjuntarComprobante($iddcpc, $comprobante)
+    {
+        try {
+            if (!$comprobante || $comprobante['error'] !== UPLOAD_ERR_OK) {
+                return [
+                    'success' => false,
+                    'message' => 'No se recibió el comprobante.'
+                ];
+            }
+
+            $permitidos = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
+
+            $extension = strtolower(
+                pathinfo($comprobante['name'], PATHINFO_EXTENSION)
+            );
+
+            if (!in_array($extension, $permitidos, true)) {
+                throw new Exception("El archivo debe ser una imagen JPG, PNG o WEBP.", 1);
+            }
+
+            if ($comprobante['size'] > 5 * 1024 * 1024) {
+                throw new Exception("El comprobante no puede superar los 5 MB.", 1);
+            }
+
+            $directorio = __DIR__ . '/../files/cuentascobrar/';
+
+            if (!is_dir($directorio)) {
+                mkdir($directorio, 0755, true);
+            }
+
+            $nombre = uniqid('comprobante_', true) . '.' . $extension;
+
+            $ruta = $directorio . $nombre;
+
+            if (!move_uploaded_file($comprobante['tmp_name'], $ruta)) {
+                throw new Exception("No se pudo guardar el comprobante.", 1);
+            }
+
+            $ventaComprobante = (new FluentSaver($this->pdo))
+                ->table('detalle_cuentas_por_cobrar')
+                ->primaryKey('iddcpc')
+                ->data([
+                    'iddcpc' => $iddcpc,
+                    'comprobante' => $nombre
+                ])
+                ->update();
+
+            if (!$ventaComprobante) {
+                throw new Exception("Error al guardar el registro", 1);
+            }
+
+            Response::json([
+                'success' => true,
+                'message' => 'Comprobante guardado correctamente.'
+            ]);
+        } catch (\Throwable $th) {
+            Response::error($th->getMessage());
+        }
+
     }
 }

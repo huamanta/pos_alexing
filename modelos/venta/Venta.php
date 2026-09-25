@@ -800,7 +800,7 @@ class SisVenta extends Helpers
                 ];
             }
 
-            $permitidos = ['jpg', 'jpeg', 'png', 'webp'];
+            $permitidos = ['jpg', 'jpeg', 'png', 'webp', 'pdf'];
 
             $extension = strtolower(
                 pathinfo($comprobante['name'], PATHINFO_EXTENSION)

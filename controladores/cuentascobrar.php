@@ -27,6 +27,7 @@ switch ($_GET["op"]) {
 	case 'guardaryeditar':
 
 		$idcaja = isset($_POST['idcaja']) ? limpiarCadena($_POST['idcaja']) : 0;
+		$op = isset($_POST['op']) ? limpiarCadena($_POST['op']) : 0;
 		$idpersonal = $_SESSION["idpersonal"];
 		$idusuario = $_SESSION["idusuario"];
 		$idsucursal = $_SESSION["idsucursal"];
@@ -172,52 +173,11 @@ switch ($_GET["op"]) {
 
 	case 'listarDetalle':
 		$idcpc = $_REQUEST["idcpc"];
-		$rspta = $cuentascobrar->listarDetalle($idcpc);
-		//Vamos a declarar un array
-		$data = array();
-		while ($reg = $rspta->fetch_object()) {
-
-			if ($reg->formapago == 'Efectivo') {
-				$formapago = '-';
-			} else {
-
-				if ($reg->formapago != '' || $reg->formapago != null) {
-
-					$fp = "$reg->formapago - ";
-
-				} else {
-					$fp = '';
-				}
-
-				if ($reg->banco != '' || $reg->banco != null) {
-					$bn = "$reg->banco - OP: $reg->op";
-				} else {
-					$bn = '-';
-				}
-
-				$formapago = $fp . $bn;
-			}
-
-			$data[] = array(
-				"0" => $reg->fechapago,
-				"1" => $reg->montopagado,
-				"2" => $reg->montotarjeta,
-				"3" => $formapago
-			);
-		}
-		$results = array(
-			"sEcho" => 1, //Información para el datatables
-			"iTotalRecords" => count($data), //enviamos el total registros al datatable
-			"iTotalDisplayRecords" => count($data), //enviamos el total registros a visualizar
-			"aaData" => $data
-		);
-		echo json_encode($results);
-
+		$cuentascobrar->listarDetalle($idcpc);
 		break;
 
 	case 'mostrar':
-		$rspta = $cuentascobrar->mostrar($idcpc);
-		echo $rspta;
+		$cuentascobrar->mostrar($idcpc);
 		break;
 
 	case 'amortizar_deuda':
@@ -258,7 +218,7 @@ switch ($_GET["op"]) {
 				$fecha_inicio,
 				$fecha_fin,
 				$formapago,
-				$montopago,
+				$montoEfectivo,
 				$idcaja,
 				$idpersonal
 			);
@@ -416,6 +376,16 @@ switch ($_GET["op"]) {
 		$idventa = isset($_GET["idventa"]) ? limpiarCadena($_GET["idventa"]) : "";
 		$response = $cuentascobrar->calendarioCuotasCredito($idventa);
 		echo $response;
+		break;
+	
+	case "adjuntarComprobante";
+		$iddcpc = $_GET['iddcpc'];
+		$comprobante = $_FILES['comprobante'];
+		$cuentascobrar->adjuntarComprobante($iddcpc, $comprobante);
+		break;
+
+	default:
+		echo "No existe la opción";
 		break;
 }
 
