@@ -518,7 +518,7 @@ class CuentasCobrar extends Helpers
         $data = $query->first();
 
 
-        return json_encode([
+        return Response::json([
             "abonototal" => Helpers::get_currency_symbol($data["abonototal"]),
             "deudatotal" => Helpers::get_currency_symbol($data["deudatotal"]),
             "totalventa" => Helpers::get_currency_symbol($data["totalventa"]),
@@ -2113,7 +2113,7 @@ class CuentasCobrar extends Helpers
         }
         unset($item);
 
-        return json_encode($response);
+        return Response::json($response);
     }
 
     public function amortizarDeudaVenta(

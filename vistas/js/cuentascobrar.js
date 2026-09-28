@@ -241,7 +241,7 @@ function pintarCreditos(data, permissions) {
                     <td>${item.deuda_total_str}</td>
                     <td>${item.total_pagado_str}</td>
                     <td>${item.saldo_pendiente_str}</td>
-                    <td>
+                    <td style="width: 20%; text-align: center">
                         <button class="btn btn-sm btn-success"
                             onclick='verDetalleCliente(${item.idpersona}, ${JSON.stringify(item.cliente)})'>
                             <i class="fas fa-eye"></i> Ver Detalle
