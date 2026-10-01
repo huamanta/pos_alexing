@@ -4,12 +4,7 @@ require_once __DIR__ . "/../modelos/Venta.php";
 require_once __DIR__ . "/../modelos/venta/Venta.php";
 require_once __DIR__ . "/../modelos/Producto.php";
 require_once __DIR__ . "/../modelos/Helpers.php";
-if (!isset($_SESSION['idusuario']) || empty($_SESSION['idusuario'])) {
-	Response::json([
-		'status' => 0,
-		'message' => 'Sesión expirada. Inicie sesión nuevamente para continuar.'
-	]);
-}
+
 $venta = new Venta();
 $sisVenta = new SisVenta();
 $helpers = new Helpers();

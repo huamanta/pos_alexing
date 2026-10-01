@@ -1,7 +1,6 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Negocio.php";
-
 $negocio = new Negocio();
 
 $id_negocio = isset($_POST["id_negocio"]) ? limpiarCadena($_POST["id_negocio"]) : "";
@@ -126,31 +125,8 @@ switch ($_GET["op"]) {
 		echo json_encode($simbolo);
 		break;
 	case 'listar':
-		$rspta = $negocio->listar();
-		$data = array();
-
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = array(
-				"0" => "<img src='reportes/" . $reg->logo . "' height='50px' width='50px'>",
-				"1" => $reg->nombre,
-				"2" => $reg->ndocumento . '-' . $reg->documento,
-				"3" => $reg->direccion,
-				"4" => $reg->telefono,
-				"5" => $reg->email,
-				"6" => $reg->ciudad . '-' . $reg->pais,
-				"7" => $reg->nombre_impuesto . ' ' . $reg->monto_impuesto . ' %',
-				"8" => $reg->simbolo . '- ' . $reg->moneda,
-				"9" => '<button class="btn btn-warning btn-xs" id="btn_lista" onclick="mostrar(' . $reg->id_negocio . ')"><i class="fas fa-edit"></i></button>',
-			);
-		}
-
-		$results = array(
-			"sEcho" => 1, //info para datatables
-			"iTotalRecords" => count($data), //enviamos el total de registros al datatable
-			"iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-			"aaData" => $data
-		);
-		echo json_encode($results);
+		$idsucursal = $_SESSION['idsucursal'];
+		$negocio->listar($idsucursal);
 		break;
 
 	case 'sesions':
@@ -168,6 +144,6 @@ switch ($_GET["op"]) {
 			$data = array("status" => true);
 		}		
 		
-		echo json_encode($data);
+		Response::json($data);
 	    break;
 }

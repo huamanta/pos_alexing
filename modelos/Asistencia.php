@@ -1,6 +1,8 @@
 <?php
 // Incluimos la conexión a la base de datos
 require "../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
+
 class Asistencia
 {
     // Constructor

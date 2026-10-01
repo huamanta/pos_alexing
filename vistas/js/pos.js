@@ -13,8 +13,8 @@ function loadSesionsApp(params) {
     type: "GET",
     contentType: false,
     processData: false,
-    success: function (datos) {
-      var data = JSON.parse(datos);
+    success: function (response) {
+      const data = response;
       if (!data.status) {
         sessionExpired();
       }

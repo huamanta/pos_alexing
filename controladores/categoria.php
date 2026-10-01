@@ -2,12 +2,6 @@
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Categoria.php";
 require_once "../modelos/Helpers.php";
-if (!isset($_SESSION['idusuario']) || empty($_SESSION['idusuario'])) {
-	Response::json([
-		'status' => 0,
-		'message' => 'Sesión expirada. Inicie sesión nuevamente para continuar.'
-	]);
-}
 $categoria=new Categoria();
 
 $idcategoria=isset($_POST["idcategoria"])? limpiarCadena($_POST["idcategoria"]):"";
