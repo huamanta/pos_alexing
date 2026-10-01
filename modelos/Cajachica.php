@@ -726,7 +726,11 @@ class Cajachica extends Helpers
 	public function insertar($tipo, $idsucursal, $idpersonal, $montoEfectivo, $descripcion, $formapago, $montoDeposito, $noperacion, $idconcepto_movimiento, $idusuario, $banco, $fechaDeposito)
 	{
 		try {
+			$this->pdo->beginTransaction();
 			$caja = Helpers::cajaAperturada($idsucursal, $idusuario);
+			if (!$caja) {
+				throw new RuntimeException('No se encontró la apertura de caja.');
+			}
 			$save = (new FluentSaver($this->pdo))
 				->table('movimiento')
 				->nullable([
@@ -770,56 +774,226 @@ class Cajachica extends Helpers
 			}
 
 			if ($montoEfectivo > 0) {
-				$caja = Helpers::cajaAperturada($idsucursal, $idusuario);
-
-				if (!$caja) {
-					throw new Exception("No existe una caja abierta para el usuario.");
-				}
 				if ($tipo == 'Egresos') {
 					$sumarCaja = Helpers::restarCajaApertura($caja['aperturacajaid'], $montoEfectivo);
 				} else {
-
 					$sumarCaja = Helpers::incrementarCajaApertura($caja['aperturacajaid'], $montoEfectivo);
 				}
 				if (!$sumarCaja) {
 					throw new Exception("Error al incrementar/restar el efectivo de la caja.");
 				}
 			}
-
+			$this->pdo->commit();
 			return Response::json(['success' => true, 'message' => 'Movimiento registrado correctamente']);
 		} catch (Exception $e) {
+			if ($this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
 			return Response::error($e->getMessage());
 		}
 	}
 
-	public function editar($idmovimiento, $tipo, $idcaja, $idsucursal, $idpersonal, $monto, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario)
-	{
+	public function editar(
+		$idmovimiento,
+		$opcionEI,
+		$idsucursal,
+		$idpersonal,
+		$montoPagar,
+		$descripcion,
+		$formapago,
+		$totaldeposito,
+		$noperacion,
+		$idconcepto_movimiento,
+		$idusuario,
+		$banco,
+		$fechaDeposito
+	) {
 		try {
+			$this->pdo->beginTransaction();
+
+			// Apertura de caja actual
+			$caja = Helpers::cajaAperturada($idsucursal, $idusuario);
+
+			if (!$caja) {
+				throw new RuntimeException('No se encontró la apertura de caja.');
+			}
+
+			// Movimiento anterior
+			$anterior = (new DBQuery($this->pdo))
+				->select('m.*')
+				->from('movimiento m')
+				->where('m.idmovimiento', '=', $idmovimiento)
+				->first();
+
+			if (!$anterior) {
+				throw new RuntimeException('No se encontró el movimiento.');
+			}
+
+			$aperturacajaid = $caja['aperturacajaid'];
+
+			// ==========================================================
+			// 1. REVERTIR EFECTIVO ANTERIOR
+			// ==========================================================
+
+			$efectivoAnterior = (float) ($anterior['totalefectivo'] ?? 0);
+
+			if ($efectivoAnterior > 0) {
+
+				if ($anterior['tipo'] === 'Egresos') {
+					// Antes salió dinero → devolverlo
+					$resultado = Helpers::incrementarCajaApertura(
+						$aperturacajaid,
+						$efectivoAnterior
+					);
+				} else {
+					// Antes entró dinero → quitarlo
+					$resultado = Helpers::restarCajaApertura(
+						$aperturacajaid,
+						$efectivoAnterior
+					);
+				}
+
+				if (!$resultado) {
+					throw new RuntimeException(
+						'No se pudo revertir el efectivo del movimiento anterior.'
+					);
+				}
+			}
+
+			// ==========================================================
+			// 2. REVERTIR BANCO ANTERIOR
+			// ==========================================================
+
+			$depositoAnterior = (float) ($anterior['totaldeposito'] ?? 0);
+			$bancoAnterior = $anterior['idbanco'] ?? null;
+
+			if ($depositoAnterior > 0 && !empty($bancoAnterior)) {
+
+				if ($anterior['tipo'] === 'Egresos') {
+					// Antes salió del banco → devolverlo
+					$resultado = Helpers::incrementarBanco(
+						(int) $bancoAnterior,
+						$depositoAnterior
+					);
+				} else {
+					// Antes entró al banco → quitarlo
+					$resultado = Helpers::restarBanco(
+						(int) $bancoAnterior,
+						$depositoAnterior
+					);
+				}
+
+				if (!$resultado) {
+					throw new RuntimeException(
+						'No se pudo revertir el saldo del banco anterior.'
+					);
+				}
+			}
+
+			// ==========================================================
+			// 3. APLICAR NUEVO EFECTIVO
+			// ==========================================================
+
+			$nuevoEfectivo = (float) ($montoPagar ?? 0);
+
+			if ($nuevoEfectivo > 0) {
+
+				if ($opcionEI === 'Egresos') {
+					$resultado = Helpers::restarCajaApertura(
+						$aperturacajaid,
+						$nuevoEfectivo
+					);
+				} else {
+					$resultado = Helpers::incrementarCajaApertura(
+						$aperturacajaid,
+						$nuevoEfectivo
+					);
+				}
+
+				if (!$resultado) {
+					throw new RuntimeException(
+						'Fondos insuficientes en la caja.'
+					);
+				}
+			}
+
+			// ==========================================================
+			// 4. APLICAR NUEVO BANCO
+			// ==========================================================
+
+			$nuevoDeposito = (float) ($totaldeposito ?? 0);
+
+			if ($nuevoDeposito > 0 && !empty($banco)) {
+
+				if ($opcionEI === 'Egresos') {
+					$resultado = Helpers::restarBanco(
+						(int) $banco,
+						$nuevoDeposito
+					);
+				} else {
+					$resultado = Helpers::incrementarBanco(
+						(int) $banco,
+						$nuevoDeposito
+					);
+				}
+
+				if (!$resultado) {
+					throw new RuntimeException(
+						'Fondos insuficientes en el banco.'
+					);
+				}
+			}
+
+			// ==========================================================
+			// 5. ACTUALIZAR MOVIMIENTO
+			// ==========================================================
+
 			$update = (new FluentSaver($this->pdo))
 				->table('movimiento')
 				->primaryKey('idmovimiento')
+				->nullable([
+					'idbanco',
+					'idpersonal',
+					'noperacion',
+					'fecha',
+				])
 				->data([
 					'idmovimiento' => $idmovimiento,
-					'tipo' => $tipo,
-					'idcaja' => $idcaja,
+					'tipo' => $opcionEI,
+					'idcaja' => $anterior['idcaja'],
 					'idsucursal' => $idsucursal,
-					'idpersonal' => $idpersonal,
-					'totalefectivo' => $monto,
+					'idpersonal' => $idpersonal ?? null,
+					'idusuario' => $idusuario,
+					'totalefectivo' => $nuevoEfectivo,
 					'descripcion' => $descripcion,
 					'formapago' => $formapago,
-					'totaldeposito' => $totaldeposito,
-					'noperacion' => $noperacion,
+					'idbanco' => $banco ?? null,
+					'totaldeposito' => $nuevoDeposito,
+					'noperacion' => $noperacion ?? null,
 					'idconcepto_movimiento' => $idconcepto_movimiento,
+					'fecha' => $fechaDeposito ?? null,
 				])
 				->update();
 
 			if (!$update) {
-				throw new Exception("Movimiento no se pudo actualizar");
+				throw new RuntimeException(
+					'Movimiento no se pudo actualizar.'
+				);
 			}
 
-			return Response::json(['success' => true, 'message' => 'Movimiento actualizado']);
+			$this->pdo->commit();
 
-		} catch (Exception $e) {
+			return Response::json([
+				'success' => true,
+				'message' => 'Movimiento actualizado correctamente'
+			]);
+
+		} catch (Throwable $e) {
+
+			if ($this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+
 			return Response::error($e->getMessage());
 		}
 	}
@@ -1254,6 +1428,19 @@ class Cajachica extends Helpers
 			->orderBy("p.nombre", "ASC")
 			->orderBy("fecha", "ASC")
 			->get();
+	}
+
+
+	public function getMovimiento(int $idmovimiento)
+	{
+		$data = (new DBQuery($this->pdo))
+			->select('m.*, p.nombre AS trabajador')
+			->from('movimiento m')
+			->join('personal p', 'p.idpersonal = m.idpersonal')
+			->where('m.idmovimiento', '=', $idmovimiento)
+			->first();
+
+		return Response::json($data);
 	}
 
 }

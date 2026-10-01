@@ -11,11 +11,10 @@ use Carbon\Carbon;
 
 class Traslado extends Helpers
 {
-    public PDO $pdo;
     //Implementamos nuestro constructor
     public function __construct()
     {
-        $this->pdo = Conexion::conectar();
+        parent::__construct();
     }
 
     /**
@@ -135,7 +134,7 @@ class Traslado extends Helpers
             }
 
             $this->pdo->commit();
-            return json_encode([
+            return Response::json([
                 'success' => true,
                 'message' => 'Se ha creado el traslado correctamente'
             ]);
@@ -144,7 +143,7 @@ class Traslado extends Helpers
             if (isset($this->pdo) && $this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
-            return json_encode(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
+            return Response::json(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
         }
     }
 
@@ -317,19 +316,12 @@ class Traslado extends Helpers
 
         }
         // 2. Obtener inventario de la sucursal
-        $sql = "SELECT *
-            FROM inventario_producto
-            WHERE idproducto = :idproducto
-              AND idsucursal = :idsucursal
-            FOR UPDATE";
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'idproducto' => $rowProduct['idproducto'],
-            'idsucursal' => $idsucursal
-        ]);
-
-        $inventario = $stmt->fetch(PDO::FETCH_ASSOC);
+        $inventario = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('inventario_producto')
+            ->where('idproducto', '=', $rowProduct['idproducto'])
+            ->where('idsucursal', '=', $idsucursal)
+            ->first();
 
         if (!$inventario) {
             throw new Exception("No existe inventario del producto.");
@@ -350,16 +342,12 @@ class Traslado extends Helpers
             ->update();
 
         // Actualizar kardex si es necesario
-        $config = $this->pdo->prepare("
-            SELECT *
-            FROM producto_configuracion
-            WHERE idproducto = :idproducto
-        ");
-        $config->execute([
-            'idproducto' => $rowProduct['idproducto']
-        ]);
+        $rowConfiguracion = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('producto_configuracion')
+            ->where('idproducto', '=', $rowProduct['idproducto'])
+            ->first();
 
-        $rowConfiguracion = $config->fetch(PDO::FETCH_ASSOC);
         if ($rowProduct['controla_stock'] === 'Si') {
             $nuevo_stock = $rowProduct['stock'] - $cantidad;
             Helpers::updateKardexSucursal(
@@ -449,7 +437,7 @@ class Traslado extends Helpers
                 ->save();
 
             $this->pdo->commit();
-            return json_encode([
+            return Response::json([
                 'success' => true,
                 'message' => 'Se ha creado el traslado correctamente'
             ]);
@@ -458,7 +446,7 @@ class Traslado extends Helpers
             if (isset($this->pdo) && $this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
             }
-            return json_encode(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
+            return Response::json(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
         }
 
     }
@@ -559,7 +547,7 @@ class Traslado extends Helpers
                 (int) $limit
             );
 
-        return json_encode($response);
+        return Response::json($response);
     }
 
 
@@ -572,11 +560,11 @@ class Traslado extends Helpers
 
     public function listarSucursales()
     {
-        $sql = "SELECT * FROM sucursal";
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
-        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return json_encode($rows);
+        $rows = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('sucursal')
+            ->get();
+        return Response::json($rows);
     }
 
     public function listarNotificaciones($idsucursal)
@@ -836,26 +824,18 @@ class Traslado extends Helpers
                 throw new Exception("ID de traslado inválido.");
             }
 
-            $sql = "SELECT t.idtraslado, t.idorigen, t.iddestino, t.estado, t.tipo
-                    FROM traslado t
-                    WHERE t.idtraslado = :idtraslado";
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute([
-                'idtraslado' => $idtraslado
-            ]);
-            $traslado = $stmt->fetch(PDO::FETCH_ASSOC);
+            $traslado = (new DBQuery($this->pdo))
+                ->select('t.idtraslado, t.idorigen, t.iddestino, t.estado, t.tipo')
+                ->from('traslado t')
+                ->where('t.idtraslado', '=', $idtraslado)
+                ->first();
 
-            $sql = "SELECT 
-                    td.*, 
-                    p.nombre
-                FROM traslado_detalle td
-                INNER JOIN producto p ON td.idproducto = p.idproducto
-                WHERE td.idtraslado = :idtraslado";
-            $stmtSolicitud = $this->pdo->prepare($sql);
-            $stmtSolicitud->execute([
-                'idtraslado' => $idtraslado
-            ]);
-            $productos = $stmtSolicitud->fetchAll(PDO::FETCH_ASSOC);
+            $productos = (new DBQuery($this->pdo))
+                ->select('td.*, p.nombre')
+                ->from('traslado_detalle td')
+                ->join('producto p', 'td.idproducto = p.idproducto')
+                ->where('td.idtraslado ', '=', $idtraslado)
+                ->get();
 
             if ((int) $idsucursal === (int) $traslado['idorigen']) {
                 // La sucursal que envía siempre consulta en modo lectura.
@@ -868,9 +848,9 @@ class Traslado extends Helpers
                     $soloLectura = !in_array($traslado['estado'], ['pendiente', 'en_transito'], true);
                 }
             }
-            return json_encode(['success' => true, 'productos' => $productos, 'soloLectura' => $soloLectura]);
+            return Response::json(['success' => true, 'productos' => $productos, 'soloLectura' => $soloLectura]);
         } catch (Throwable $e) {
-            return json_encode(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
+            return Response::json(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
         }
     }
 
@@ -878,12 +858,15 @@ class Traslado extends Helpers
 
     public function obtenerSucursalOrigen($idtraslado)
     {
-        $sql = "SELECT t.idorigen, t.iddestino, s1.nombre AS origen, s2.nombre AS destino
-            FROM traslado t
-            INNER JOIN sucursal s1 ON t.idorigen = s1.idsucursal
-            INNER JOIN sucursal s2 ON t.iddestino = s2.idsucursal
-            WHERE t.idtraslado = '$idtraslado'";
-        return ejecutarConsultaSimpleFila($sql);
+        $data = (new DBQuery($this->pdo))
+            ->select('t.idorigen, t.iddestino, s1.nombre AS origen, s2.nombre AS destino')
+            ->from('traslado t')
+            ->join('sucursal s1', 't.idorigen = s1.idsucursal')
+            ->join('sucursal s2', 't.iddestino = s2.idsucursal')
+            ->where('t.idtraslado', '=', $idtraslado)
+            ->first();
+
+        return Response::json($data);
     }
 
     public function mostrarCabecera($idtraslado)
@@ -933,9 +916,9 @@ class Traslado extends Helpers
             if (!$traslado) {
                 throw new Exception("No se pudo actualizar el traslado.");
             }
-            return json_encode(['success' => true, 'message' => 'Se actualizo corectamente']);
+            return Response::json(['success' => true, 'message' => 'Se actualizo corectamente']);
         } catch (Throwable $e) {
-            return json_encode(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
+            return Response::json(["success" => false, "message" => "Error al guardar los datos: " . $e->getMessage()]);
         }
     }
 

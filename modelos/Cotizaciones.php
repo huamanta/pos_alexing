@@ -64,6 +64,7 @@ class Cotizacion extends Helpers
                     'inicial',
                     'frecuencia',
                     'meses',
+                    'cuotas',
                     'interes'
                 ])
                 ->data([
@@ -116,10 +117,10 @@ class Cotizacion extends Helpers
             $this->pdo->commit();
 
             $clientData = (new DBQuery($this->pdo))
-                    ->select('email, nombre')
-                    ->from('persona')
-                    ->where('idpersona', '=', $idcliente)
-                    ->first();
+                ->select('email, nombre')
+                ->from('persona')
+                ->where('idpersona', '=', $idcliente)
+                ->first();
 
             if ($clientData && !empty($clientData['email'])) {
 
@@ -148,7 +149,7 @@ class Cotizacion extends Helpers
     }
 
 
-    public function enviarCotizacion(int $idcotizacion, array $comprobante, array $clientData, string $fecha_hora, int $idsucursal): bool 
+    public function enviarCotizacion(int $idcotizacion, array $comprobante, array $clientData, string $fecha_hora, int $idsucursal): bool
     {
         $urlPdf = rtrim($_ENV['APP_URL'], '/') . "/reportes/factura/generaFacturaCoti.php?id={$idcotizacion}";
 
@@ -183,7 +184,7 @@ class Cotizacion extends Helpers
             $mensaje,
             $clientData['nombre'],
             [$archivoPdf]
-        );  
+        );
 
         if (file_exists($archivoPdf)) {
             unlink($archivoPdf);
@@ -390,13 +391,13 @@ class Cotizacion extends Helpers
                 ->softDelete($idcotizacion);
 
             if (!$deleted) {
-				throw new Exception("No se pudo eliminar el registro");
-			}
+                throw new Exception("No se pudo eliminar el registro");
+            }
 
-			return Response::json([
-				"success" => true,
-				"message" => "Registro eliminado correctamente"
-			]);
+            return Response::json([
+                "success" => true,
+                "message" => "Registro eliminado correctamente"
+            ]);
         } catch (\Throwable $th) {
             return Response::error($th->getMessage());
         }
@@ -411,18 +412,18 @@ class Cotizacion extends Helpers
 
         $paginator = (new DBQuery($this->pdo))
             ->select([
-                'c.idcotizacion', 
-                'DATE(c.fecha_h) as fecha_hora', 
-                'date_format(c.fecha_h,"%d/%m/%y | %H:%i:%s %p") as fecha', 
+                'c.idcotizacion',
+                'DATE(c.fecha_h) as fecha_hora',
+                'date_format(c.fecha_h,"%d/%m/%y | %H:%i:%s %p") as fecha',
                 'c.idcliente',
                 'p.nombre as cliente',
                 'u.idpersonal',
-                'u.nombre as personal', 
+                'u.nombre as personal',
                 'cp.nombre as tipo_comprobante',
                 'c.serie_comprobante',
                 'c.num_comprobante',
                 'c.total_venta',
-                'c.estado', 
+                'c.estado',
                 'c.nota',
                 'c.formapago'
             ])
@@ -568,7 +569,7 @@ class Cotizacion extends Helpers
         return Response::json($data);
     }
 
-  
+
     public function buscarProducto($codigo)
     {
         $sql = "SELECT * FROM producto WHERE codigo='$codigo'";

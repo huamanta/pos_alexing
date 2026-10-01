@@ -12,11 +12,9 @@ $productos = isset($_POST["productos"]) ? $_POST["productos"] : "";
 switch ($_GET["op"]) {
 	case 'guardaryeditar':
 		if (empty($idtraslado)) {
-			$rspta = $traslado->insertar($idorigen, $iddestino, $fecha, $productos, $idusuario);
-			echo $rspta;
+			$traslado->insertar($idorigen, $iddestino, $fecha, $productos, $idusuario);
 		} else {
-			$rspta = $traslado->editar($idtraslado, $idorigen, $iddestino, $fecha, $idusuario);
-			echo $rspta ? "Traslado actualizado correctamente" : "No se pudo actualizar el traslado";
+			$traslado->editar($idtraslado, $idorigen, $iddestino, $fecha, $idusuario);
 		}
 		break;
 
@@ -24,8 +22,7 @@ switch ($_GET["op"]) {
 		$idtraslado = intval($_POST['idtraslado'] ?? 0);
 		$estado = $_POST['estado'];
 		$idusuario = $_SESSION['idusuario'];
-		$rspta = $traslado->rechazarAnular($idtraslado, $idusuario, $estado);
-		echo $rspta;
+		$traslado->rechazarAnular($idtraslado, $idusuario, $estado);
 		break;
 
 	case 'listarnoti':
@@ -53,9 +50,7 @@ switch ($_GET["op"]) {
 		$tipo = $_REQUEST["tipo"];
 		$idsucursal = $_SESSION['idsucursal'];
 		$origen = !empty($_REQUEST['origen']) ? true : false;
-
-		$rspta = $traslado->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $tipo, $origen);
-		echo $rspta;
+		$traslado->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $tipo, $origen);
 		break;
 
 
@@ -74,14 +69,14 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarSucursales':
-		$rspta = $traslado->listarSucursales();
-		echo $rspta;
+		$traslado->listarSucursales();
 		break;
 
 
 	case 'almacenesDestino':
 		$idsucursal = $_SESSION['idsucursal'];
 		$rspta = $traslado->sucursales($idsucursal);
+		echo '<option value="">Seleccione...</option>';
 		while ($reg = $rspta->fetch_object()) {
 			if ($reg->idsucursal != $idsucursal)
 				echo '<option value="' . $reg->idsucursal . '">' . htmlspecialchars($reg->nombre) . '</option>';
@@ -92,8 +87,7 @@ switch ($_GET["op"]) {
 	case 'sucursal_actual':
 		require_once "../modelos/Categoria.php";
 		$categoria = new Categoria();
-		$rspta = $categoria->mostrarSuc($_SESSION['idsucursal']);
-		echo json_encode($rspta);
+		$categoria->mostrarSuc($_SESSION['idsucursal']);
 		break;
 
 	// Marcar una notificación como leída
@@ -110,8 +104,7 @@ switch ($_GET["op"]) {
 		$iddestino = $_POST['iddestino_solicitud'];
 		$productos = $_POST['productos'];
 		$idusuario = $_SESSION['idusuario'];
-		$rspta = $traslado->guardarSolicitud($idorigen, $iddestino, $productos, $idusuario);
-		echo $rspta;
+		$traslado->guardarSolicitud($idorigen, $iddestino, $productos, $idusuario);
 		break;
 
 	case 'aprobarSolicitud':
@@ -126,23 +119,19 @@ switch ($_GET["op"]) {
 		$idtraslado = $_POST["idtraslado"];
 		$productos = json_decode($_POST["productos"], true); // array con productos aceptados/rechazados
 		$idusuario = $_SESSION['idusuario'];
-
-		$rspta = $traslado->procesarSolicitud($idtraslado, $productos, $idusuario);
-		echo $rspta;
+		$traslado->procesarSolicitud($idtraslado, $productos, $idusuario);
 		break;
 
 
 	case 'verProductosSolicitud':
 		$idsucursal = $_SESSION['idsucursal'];
 		$idtraslado = isset($_POST["idtraslado"]) ? intval($_POST["idtraslado"]) : 0;
-		$rspta = $traslado->verProductosSolicitud($idtraslado, $idsucursal);
-		echo $rspta;
+		$traslado->verProductosSolicitud($idtraslado, $idsucursal);
 		break;
 
 	case 'obtenerSucursalOrigen':
 		$idtraslado = $_POST['idtraslado'];
-		$rspta = $traslado->obtenerSucursalOrigen($idtraslado);
-		echo json_encode($rspta);
+		$traslado->obtenerSucursalOrigen($idtraslado);
 		break;
 
 }

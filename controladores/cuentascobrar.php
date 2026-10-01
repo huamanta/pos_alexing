@@ -38,9 +38,7 @@ switch ($_GET["op"]) {
 		}
 
 		// Registrar abono
-		$rspta = $cuentascobrar->insertar($idcpc, $montopagado, $observacion, $banco, $op, $fechaPago, $formapago, $montoPagarTarjeta, $idcaja, $idpersonal, $idsucursal, $idusuario);
-
-		echo json_encode($rspta);
+		$cuentascobrar->insertar($idcpc, $montopagado, $observacion, $banco, $op, $fechaPago, $formapago, $montoPagarTarjeta, $idcaja, $idpersonal, $idsucursal, $idusuario);
 
 		break;
 
@@ -49,8 +47,7 @@ switch ($_GET["op"]) {
 		$fecha_fin = $_REQUEST["fecha_fin"];
 		$idcliente = $_REQUEST["idcliente"];
 		$idsucursal = $_SESSION["idsucursal"];
-		$rspta = $cuentascobrar->listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal);
-		echo $rspta;
+		$cuentascobrar->listarSaldos($fecha_inicio, $fecha_fin, $idcliente, $idsucursal);
 		break;
 
 	case 'listar':

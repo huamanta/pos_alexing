@@ -902,7 +902,7 @@ switch ($_GET["op"]) {
 		require_once "../modelos/Venta.php";
 		$venta = new Venta();
 
-		$rspta = $venta->listarSucursal2($_SESSION['idpersonal'], $_SESSION['idsucursal']);
+		$rspta = $venta->listarSucursal2($_SESSION['idusuario'], $_SESSION['idsucursal']);
 		$sucursal = isset($_SESSION['idsucursal']) ? $_SESSION['idsucursal'] : 0;
 		while ($reg = $rspta->fetch_object()) {
 			if ($reg->idsucursal == $sucursal) {

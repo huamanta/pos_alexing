@@ -132,7 +132,7 @@ class Producto extends Helpers
 				->save();
 
 			// Configuración
-			$idproducto_configuracion =(new FluentSaver($this->pdo))
+			$idproducto_configuracion = (new FluentSaver($this->pdo))
 				->table("producto_configuracion")
 				->data([
 					'idproducto' => $idproducto,
@@ -176,11 +176,11 @@ class Producto extends Helpers
 				])
 				->save();
 
-			if($stock > $stockMaximo){
+			if ($stock > $stockMaximo) {
 				throw new Exception("El stock actual no puede ser mayor al stock máximo.");
 			}
 
-			if($controla_stock === 'Si' && $stock > 0){
+			if ($controla_stock === 'Si' && $stock > 0) {
 				Helpers::updateKardexSucursal(
 					$idsucursal,
 					$idproducto,
@@ -304,12 +304,12 @@ class Producto extends Helpers
 					'precioC' => $precioC || 0,
 					'precioD' => $precioD || 0,
 					'precioE' => $precioE || 0,
-					'margenpubl' => $margenpubl,
-					'margendes' => $margendes,
-					'margenp1' => $margenp1,
-					'margenp2' => $margenp2,
-					'margendist' => $margendist,
-					'utilprecio' => $utilprecio,
+					'margenpubl' => $margenpubl || 0,
+					'margendes' => $margendes || 0,
+					'margenp1' => $margenp1 || 0,
+					'margenp2' => $margenp2 || 0,
+					'margendist' => $margendist || 0,
+					'utilprecio' => $utilprecio || 0,
 					'descripcion' => $descripcion,
 					'imagen' => $imagen,
 					'alerta_stock' => $alerta_stock,
@@ -1020,16 +1020,16 @@ class Producto extends Helpers
 	{
 		try {
 			$deleted = (new FluentSaver($this->pdo))
-                ->table('producto')
-                ->primaryKey('idproducto')
-                ->softDelete($idcotizacion);
+				->table('producto')
+				->primaryKey('idproducto')
+				->softDelete($idcotizacion);
 
 			if (!$deleted) {
 				throw new Exception("No se pudo eliminar el registro");
 			}
 
 			return Response::json([
-				"success" => true, 
+				"success" => true,
 				"message" => "Registro eliminado correctamente"
 			]);
 		} catch (Throwable $e) {
@@ -2364,6 +2364,7 @@ class Producto extends Helpers
 		return ejecutarConsulta($sql);
 	}
 
+
 	public function buscarStockPorSucursales(
 		$search,
 		$idsucursalFiltro
@@ -2372,62 +2373,47 @@ class Producto extends Helpers
 			if (!$idsucursalFiltro) {
 				throw new Exception("No se ha seleccionado la sucursal");
 			}
-			$sql = "
-					SELECT
-						ps.idserie,
-						p.idproducto,
-						p.nombre,
-						p.codigo,
-						ps.numero_serie,
-						ps.numero_motor,
-						ps.placa,
-						ps.color,
-						ps.idsucursal,
-						s.nombre AS sucursal
-					FROM producto_serie ps
-					INNER JOIN producto p
-						ON p.idproducto = ps.idproducto
-					INNER JOIN sucursal s
-						ON s.idsucursal = ps.idsucursal
-					WHERE
-						ps.estado = 'DISPONIBLE'
-						AND (
-							p.nombre LIKE :search1
-							OR p.codigo LIKE :search2
-						)
-					";
 
-			if (!empty($idsucursalFiltro)) {
-				$sql .= " AND ps.idsucursal = :idsucursal ";
-			}
+			$query = (new DBQuery($this->pdo))
+				->select("
+                ps.idserie,
+                p.idproducto,
+                p.nombre,
+                p.codigo,
+                ps.numero_serie,
+                ps.numero_motor,
+                ps.placa,
+                ps.color,
+                ps.idsucursal,
+                s.nombre AS sucursal
+            ")
+				->from('producto_serie ps')
+				->join(
+					'producto p',
+					'p.idproducto = ps.idproducto'
+				)
+				->join(
+					'sucursal s',
+					's.idsucursal = ps.idsucursal'
+				)
+				->where('ps.estado', '=', 'DISPONIBLE')
+				->search($search, ['p.nombre', 'p.codigo'])
+				->where('ps.idsucursal', '=', $idsucursalFiltro)
+				->orderBy('p.nombre', 'ASC')
+				->orderBy('ps.numero_serie', 'ASC')
+				->limit(20);
 
-			$sql .= "
-					ORDER BY p.nombre, ps.numero_serie
-					LIMIT 20
-				";
-
-			$stmt = $this->pdo->prepare($sql);
-
-			$stmt->bindValue(':search1', "%{$search}%");
-			$stmt->bindValue(':search2', "%{$search}%");
-
-			if (!empty($idsucursalFiltro)) {
-				$stmt->bindValue(':idsucursal', $idsucursalFiltro, PDO::PARAM_INT);
-			}
-
-			$stmt->execute();
-
-			return json_encode([
+			return Response::json([
 				'success' => true,
-				'data' => $stmt->fetchAll(PDO::FETCH_ASSOC)
+				'data' => $query->get()
 			]);
+
 		} catch (Exception $e) {
-			return json_encode([
+			return Response::json([
 				'success' => false,
 				'message' => $e->getMessage()
 			]);
 		}
-
 	}
 
 	public function generarCodigo()

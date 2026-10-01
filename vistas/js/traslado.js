@@ -20,7 +20,7 @@ function init() {
   });
 
   $.get("controladores/traslado.php?op=listarSucursales", function (response) {
-    sucursales = JSON.parse(response);
+    sucursales = response;
     let html = '<option value="Todos">Todos</option>';
     sucursales.map((item, i) => {
       html += `<option value="${item.idsucursal}">${item.nombre}</option>`;
@@ -109,8 +109,8 @@ function guardaryeditar(e) {
     contentType: false,
     processData: false,
     success: function (response) {
-      const data = JSON.parse(response);
-      if (data.success != true) {
+      const data = response;
+      if (!data.success) {
         Swal.fire({ title: "Traslado", icon: "error", text: data.message });
         return;
       }
@@ -120,8 +120,7 @@ function guardaryeditar(e) {
       limpiar();
     },
     error: function (error) {
-      console.log(error.responseText);
-      Swal.fire("Error", "Ocurrió un error en el servidor.", "error");
+      Swal.fire("Error", error.responseJSON.message || "Ocurrió un error en el servidor.", "error");
     },
   });
 }
@@ -222,8 +221,8 @@ function rechazarSolicitud(idtraslado) {
         type: 'POST',
         data: { idtraslado, estado: 'rechazado' },
         success: function (response) {
-          const data = JSON.parse(response);
-          if (data.success != true) {
+          const data = response;
+          if (!data.success) {
             Swal.fire({ title: "Traslado", icon: "error", text: data.message });
             return;
           }
@@ -679,8 +678,8 @@ function enviarSolicitud() {
       iddestino_solicitud: iddestino_solicitud
     },
     success: function (response) {
-      const data = JSON.parse(response);
-      if (data.success != true) {
+      const data = response;
+      if (!data.success) {
         Swal.fire({ title: "Traslado", icon: "error", text: data.message });
         return;
       }
@@ -689,9 +688,8 @@ function enviarSolicitud() {
       paginatorMisSolicitudes.load();
       limpiarSolicitud();
     },
-    error: function (xhr) {
-      console.error("❌ Error en guardarSolicitud:", xhr.responseText);
-      Swal.fire("Error", "Ocurrió un error en el servidor.", "error");
+    error: function (error) {
+      Swal.fire("Error", error.responseJSON.message || "Ocurrió un error en el servidor.", "error");
     },
   });
 }

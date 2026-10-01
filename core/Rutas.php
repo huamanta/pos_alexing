@@ -286,8 +286,8 @@ class Rutas
         [
             'url' => 'caja-chica',
             'modulo' => null,
-            'submodulo' => 'Caja chica',
-            'permiso' => 'Caja chica',
+            'submodulo' => 'Resumen caja',
+            'permiso' => 'Resumen caja',
             'icono' => 'fas fa-wallet',
             'menu' => true
         ],

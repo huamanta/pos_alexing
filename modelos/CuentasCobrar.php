@@ -249,8 +249,8 @@ class CuentasCobrar extends Helpers
 
         $moraNueva = round(
             floatval($fila["deuda"]) *
-                ($config["valor"] / 100) *
-                $dias,
+            ($config["valor"] / 100) *
+            $dias,
             2
         );
 
@@ -295,7 +295,7 @@ class CuentasCobrar extends Helpers
 
         $monto = round(
             Helpers::toFloat($montoEfectivo) +
-                Helpers::toFloat($montoTarjeta),
+            Helpers::toFloat($montoTarjeta),
             2
         );
 
@@ -518,7 +518,7 @@ class CuentasCobrar extends Helpers
         $data = $query->first();
 
 
-        return json_encode([
+        return Response::json([
             "abonototal" => Helpers::get_currency_symbol($data["abonototal"]),
             "deudatotal" => Helpers::get_currency_symbol($data["deudatotal"]),
             "totalventa" => Helpers::get_currency_symbol($data["totalventa"]),
@@ -1407,21 +1407,21 @@ class CuentasCobrar extends Helpers
             $totalDeposito = (float) ($v['totaldeposito'] ?? 0);
 
             /*
-            * Pagos realizados directamente al momento de registrar
-            * la venta.
-            */
+             * Pagos realizados directamente al momento de registrar
+             * la venta.
+             */
             $pagoInicial = $totalRecibido + $totalDeposito;
 
             /*
-            * No permitir que el pago inicial supere la venta.
-            */
+             * No permitir que el pago inicial supere la venta.
+             */
             if ($pagoInicial > $totalVenta) {
                 $pagoInicial = $totalVenta;
             }
 
             /*
-            * Saldo que queda después del pago inicial.
-            */
+             * Saldo que queda después del pago inicial.
+             */
             $saldoVenta = $totalVenta;
 
             if ($saldoVenta < 0) {
@@ -1429,8 +1429,8 @@ class CuentasCobrar extends Helpers
             }
 
             /*
-            * Documento
-            */
+             * Documento
+             */
             $docVenta = "{$v['tipo_comprobante']} " . "{$v['serie_comprobante']}-" . "{$v['num_comprobante']}";
 
             /* ========================================================
@@ -1452,7 +1452,7 @@ class CuentasCobrar extends Helpers
                     <td class='text-right'>" . Helpers::get_currency_symbol($totalVenta, $currency) . "</td>
                     <td class='text-right'>" . Helpers::get_currency_symbol(0, $currency) . "</td>
                     <td class='text-right'>
-                        <b>"  . Helpers::get_currency_symbol($totalVenta, $currency) . "</b>
+                        <b>" . Helpers::get_currency_symbol($totalVenta, $currency) . "</b>
                     </td>
                 </tr>
             ";
@@ -1515,9 +1515,9 @@ class CuentasCobrar extends Helpers
                     ->get();
 
                 /*
-                * Si la cuota no tiene pagos, mostramos la cuota
-                * pendiente.
-                */
+                 * Si la cuota no tiene pagos, mostramos la cuota
+                 * pendiente.
+                 */
                 $totalAbonadoCuota = 0;
 
                 foreach ($abonos as $ab) {
@@ -1535,8 +1535,8 @@ class CuentasCobrar extends Helpers
                     $totalAbonadoCuota += $montoAbono;
 
                     /*
-                    * Descontar del saldo de la venta.
-                    */
+                     * Descontar del saldo de la venta.
+                     */
                     $saldoVenta -= $montoAbono;
 
                     if ($saldoVenta < 0) {
@@ -1563,9 +1563,9 @@ class CuentasCobrar extends Helpers
                 }
 
                 /*
-                * Si no existen abonos para la cuota,
-                * mostrarla como pendiente.
-                */
+                 * Si no existen abonos para la cuota,
+                 * mostrarla como pendiente.
+                 */
                 if ($totalAbonadoCuota <= 0) {
 
                     $montoCuota = (float) ($cc['deudatotal'] ?? 0);
@@ -1934,8 +1934,8 @@ class CuentasCobrar extends Helpers
                         if ($dias > 0) {
                             $moraNueva = round(
                                 floatval($row->deuda) *
-                                    ($config["valor"] / 100) *
-                                    $dias,
+                                ($config["valor"] / 100) *
+                                $dias,
                                 2
                             );
                             $dias_mora = $dias;
@@ -2113,7 +2113,7 @@ class CuentasCobrar extends Helpers
         }
         unset($item);
 
-        return json_encode($response);
+        return Response::json($response);
     }
 
     public function amortizarDeudaVenta(
@@ -2531,8 +2531,8 @@ class CuentasCobrar extends Helpers
 
                         $mora += round(
                             floatval($row["deuda"]) *
-                                ($configMora["valor"] / 100) *
-                                $dias,
+                            ($configMora["valor"] / 100) *
+                            $dias,
                             2
                         );
                     }
@@ -2564,7 +2564,7 @@ class CuentasCobrar extends Helpers
 
                         $descuento = round(
                             floatval($row["deuda"]) *
-                                ($configDescuento["valor"] / 100),
+                            ($configDescuento["valor"] / 100),
                             2
                         );
                     }
@@ -2800,18 +2800,11 @@ class CuentasCobrar extends Helpers
                 if (is_array($archivosEliminar)) {
 
                     foreach ($archivosEliminar as $idadjunto) {
-
-                        $stmt = $this->pdo->prepare("
-                            SELECT *
-                            FROM seguimiento_adjuntos
-                            WHERE idadjunto = :idadjunto
-                        ");
-
-                        $stmt->execute([
-                            'idadjunto' => $idadjunto
-                        ]);
-
-                        $adjunto = $stmt->fetch(PDO::FETCH_ASSOC);
+                        $adjunto = (new DBQuery($this->pdo))
+                            ->select('*')
+                            ->from('seguimiento_adjuntos')
+                            ->where('idadjunto', '=', $idadjunto)
+                            ->first();
 
                         if ($adjunto) {
 
@@ -2823,15 +2816,10 @@ class CuentasCobrar extends Helpers
                                 unlink($rutaArchivo);
                             }
 
-                            $stmt = $this->pdo->prepare("
-                                                        DELETE
-                                                        FROM seguimiento_adjuntos
-                                                        WHERE idadjunto = :idadjunto
-                                                    ");
-
-                            $stmt->execute([
-                                'idadjunto' => $idadjunto
-                            ]);
+                            (new FluentSaver($this->pdo))
+                                ->table('seguimiento_adjuntos')
+                                ->primaryKey('idadjunto')
+                                ->delete($idadjunto);
                         }
                     }
                 }
