@@ -1,13 +1,6 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Cajachica.php";
-
-date_default_timezone_set('America/Lima');
-// Iniciar la sesión solo si aún no está iniciada
-if (session_status() === PHP_SESSION_NONE) {
-	session_start();
-}
-
 $cajachica = new Cajachica();
 
 $idmovimiento = isset($_POST["idmovimiento"]) ? limpiarCadena($_POST["idmovimiento"]) : "";
@@ -58,7 +51,6 @@ switch ($_GET["op"]) {
 		//Codificar el resultado utilizando json
 		echo json_encode($rspta);
 		break;
-		break;
 
 	case 'eliminar':
 		$cajachica->eliminar($idmovimiento);
@@ -98,6 +90,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'guardarPagoDiario':
+		$idcaja = isset($_POST["idcaja"]) ? limpiarCadena($_POST["idcaja"]) : "";
 		if (!$idcaja) {
 			echo json_encode(array(
 				"tipo" => "error",

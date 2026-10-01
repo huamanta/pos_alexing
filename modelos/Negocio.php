@@ -2,7 +2,6 @@
 //incluir la conexion de base de datos
 require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
-require_once __DIR__ . "/../core/Response.php";
 
 class Negocio extends Helpers
 {
@@ -73,6 +72,7 @@ class Negocio extends Helpers
 		$sql = "SELECT s.simbolo FROM sucursal s, empresas e WHERE s.idempresa = e.idempresa AND s.idsucursal='$idsucursal'";
 		return ejecutarConsulta($sql);
 	}
+
 	//listar registros
 	public function listar($idsucursal)
 	{

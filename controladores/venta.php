@@ -205,7 +205,7 @@ switch ($_GET["op"]) {
 				$observaciones,
 				$fecha_pago,
 				$inputInteres,
-				$input_cuotas,
+				$cuotas,
 				$_POST["cantidad_contenedor"],
 				$_POST["contenedor"],
 				$_POST["idp"],
@@ -453,7 +453,7 @@ switch ($_GET["op"]) {
 	//opcion para mostrar la numeracion y la serie_comprobante de la boleta
 	case 'mostrar_num_boleta':
 
-		$idsucursal = $_SESSIOON["idsucursal"];
+		$idsucursal = $_SESSION["idsucursal"];
 
 		//mostrando el numero de boleta de la tabla comprobantes
 		require_once "../modelos/Comprobantes.php";
@@ -1009,7 +1009,7 @@ switch ($_GET["op"]) {
 		while ($reg = $rspta->fetch_object()) {
 			$url1 = 'reportes/exTicket.php?id=';
 			$url2 = 'reportes/factura/generaNotaCredito.php?id=';
-
+			$urlFac = '';
 			if ($reg->tipo_comprobante == 'NC' || $reg->tipo_comprobante == 'NCB') {
 				$urlFac = 'public/FACT_WebService/Facturacion/NotaCredito.php?idnc=' . $reg->idventa . '&codColab=' . $reg->idpersonal . '';
 			}

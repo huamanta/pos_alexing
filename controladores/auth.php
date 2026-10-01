@@ -1,37 +1,52 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
-
-date_default_timezone_set('America/Lima');
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
-require_once __DIR__ . '/../configuraciones/Conexion.php';
+require_once __DIR__ . '/../core/FluentQuery.php';
+require_once __DIR__ . '/../core/FluentSave.php';
+require_once __DIR__ . '/../configuraciones/ConexionPdo.php';
 
-function getClientIP() {
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) return $_SERVER['HTTP_CLIENT_IP'];
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
+function getClientIP()
+{
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        return $_SERVER['HTTP_CLIENT_IP'];
+    }
+
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        return trim(explode(',', $_SERVER['HTTP_X_FORWARDED_FOR'])[0]);
+    }
+
     return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 }
 
 if (!isset($_SESSION['idusuario'])) {
-    echo json_encode(["status" => false]);
-    exit;
+    Response::json(["status" => false]);
 }
 
 $idusuario = $_SESSION['idusuario'];
 $logout = date('Y-m-d H:i:s');
 $ip = getClientIP();
 
-$sql = "UPDATE login_historial
-        SET exito = 0, logout = ?, ip = ?
-        WHERE idusuario = ? AND exito = 1
-        ORDER BY fecha DESC
-        LIMIT 1";
+$pdo = Conexion::conectar();
 
-$stmt = $conexion->prepare($sql);
-$stmt->bind_param("ssi", $logout, $ip, $idusuario);
-$stmt->execute();
+$login = (new DBQuery($pdo))
+    ->from('login_historial')
+    ->where('idusuario', '=', $idusuario)
+    ->where('exito', '=', 1)
+    ->orderBy('fecha', 'DESC')
+    ->first();
+
+if ($login) {
+    (new FluentSaver($pdo))
+        ->table('login_historial')
+        ->where('id', '=', $login['id'])
+        ->data([
+            'exito' => 0,
+            'logout' => $logout,
+            'ip' => $ip
+        ])
+        ->timestamps(false)
+        ->update();
+}
 
 session_destroy();
 
-echo json_encode(["status" => true]);
+Response::json(["status" => true]);

@@ -1,7 +1,7 @@
 <?php 
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Categoria.php";
-
+require_once "../modelos/Helpers.php";
 $categoria=new Categoria();
 
 $idcategoria=isset($_POST["idcategoria"])? limpiarCadena($_POST["idcategoria"]):"";

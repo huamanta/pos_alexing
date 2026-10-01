@@ -1,6 +1,7 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
+require_once __DIR__ . "/../core/Response.php";
 require_once __DIR__ . "/Helpers.php";
 
 class Categoria extends Helpers
@@ -145,27 +146,23 @@ class Categoria extends Helpers
 
 	public function eliminarSucursal($idsucursal)
 	{
-		global $conexion; // Assuming $conexion is globally available as per other functions
-
-		// Start transaction
-		$conexion->begin_transaction();
 		try {
-			// Delete the sucursal record only; comp_pago es por empresa y no debe eliminarse al borrar una sucursal
-			$sql_sucursal = "DELETE FROM sucursal WHERE idsucursal='$idsucursal'";
-			if (!ejecutarConsulta($sql_sucursal)) {
-				throw new Exception("Error al eliminar la sucursal.");
-			}
+            $deleted = (new FluentSaver($this->pdo))
+                ->table('sucursal')
+                ->primaryKey('idsucursal')
+                ->softDelete($idsucursal);
 
-			// Commit transaction
-			$conexion->commit();
-			return true;
-		} catch (Exception $e) {
-			// Rollback transaction on error
-			$conexion->rollback();
-			// Log the error for debugging purposes, if necessary
-			error_log("Error al eliminar sucursal: " . $e->getMessage());
-			return false;
-		}
+            if (!$deleted) {
+                throw new Exception("No se pudo eliminar el registro");
+            }
+
+            return Response::json([
+                "success" => true,
+                "message" => "Registro eliminado correctamente"
+            ]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
 	}
 
 	public function obtenerUltimaSerie()
