@@ -863,13 +863,12 @@ switch ($_GET["op"]) {
 
 
 	case 'listar':
-		$idpersonal = isset($_REQUEST["idpersonal"]) ? $_REQUEST["idpersonal"] : "";
-		$fecha_inicio = $_REQUEST["fecha_inicio"];
-		$fecha_fin = $_REQUEST["fecha_fin"];
-		$estado = $_REQUEST["estado"];
+		$fecha_inicio = $_REQUEST["fecha_inicio"] ?? null;
+		$fecha_fin = $_REQUEST["fecha_fin"] ?? null;
+		$estado = $_REQUEST["estado"] ?? null;
 		$idsucursal = $_SESSION["idsucursal"];
-		$idproducto = isset($_REQUEST["idproducto"]) ? $_REQUEST["idproducto"] : "";
-		$venta->listar($idsucursal, $idpersonal, $fecha_inicio, $fecha_fin, $estado, $idproducto);
+		$idproducto = isset($_REQUEST["idproducto"]) ? $_REQUEST["idproducto"] : null;
+		$venta->listar($idsucursal, $fecha_inicio, $fecha_fin, $estado, $idproducto);
 		break;
 
 
@@ -1149,7 +1148,6 @@ switch ($_GET["op"]) {
 			while ($reg = $rspta->fetch_object()) {
 				echo '<option value="' . (int) $reg->idpersonal . '">' . $reg->nombre . '</option>';
 			}
-
 		} else {
 
 			// Vendedor normal: solo él mismo
@@ -1465,7 +1463,7 @@ switch ($_GET["op"]) {
 		$fecha_inicio = $_GET["fecha_inicio"];
 		$fecha_fin = $_GET["fecha_fin"];
 		$estado = $_GET["estado"];
-		$idsucursal = $_GET["idsucursal"];
+		$idsucursal = $_SESSION["idsucursal"];
 		$idproducto = $_GET["idproducto"];
 
 		$venta->exportarExcel($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto);

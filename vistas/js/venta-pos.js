@@ -2281,7 +2281,7 @@ listarDataVentas = new FluentPaginator({
   tableBody: "#tbody_ventas",
   extraParams: () => ({
     fecha_inicio: $("#fecha_inicio").val() || "",
-    fecha_fin: $("#fecha_inicio").val() || "",
+    fecha_fin: $("#fecha_fin").val() || "",
     estado: $("#estado").val() || "",
     idproducto: $("#idproducto").val() || "",
   }),
@@ -5571,5 +5571,23 @@ function abrirAjuntarComp(idventapago) {
   $('#comprobanteAdjunto').val('');
   $("#idventapago").val(idventapago);
 }
+
+$("#btnExportarExcel").on("click", function () {
+
+  let fecha_inicio = $("#fecha_inicio").val();
+  let fecha_fin = $("#fecha_fin").val();
+  let estado = $("#estado").val();
+  let idsucursal = $("#idsucursal").val();
+  let idproducto = $("#idproducto").val();
+
+  // Construimos la URL con los parámetros
+  let url = `controladores/venta.php?op=exportar_excel`
+    + `&fecha_inicio=${fecha_inicio}`
+    + `&fecha_fin=${fecha_fin}`
+    + `&estado=${estado}`
+    + `&idproducto=${idproducto}`;
+
+  window.open(url, '_blank'); // ⬅ descarga directa
+});
 
 init();
