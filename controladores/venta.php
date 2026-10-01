@@ -1009,7 +1009,7 @@ switch ($_GET["op"]) {
 		while ($reg = $rspta->fetch_object()) {
 			$url1 = 'reportes/exTicket.php?id=';
 			$url2 = 'reportes/factura/generaNotaCredito.php?id=';
-
+			$urlFac = '';
 			if ($reg->tipo_comprobante == 'NC' || $reg->tipo_comprobante == 'NCB') {
 				$urlFac = 'public/FACT_WebService/Facturacion/NotaCredito.php?idnc=' . $reg->idventa . '&codColab=' . $reg->idpersonal . '';
 			}
