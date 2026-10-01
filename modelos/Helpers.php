@@ -19,20 +19,13 @@ class Helpers
 
     public function get_currency_code($idsucursal)
     {
-        $stmt = $this->pdo->prepare("
-            SELECT moneda
-            FROM sucursal
-            WHERE idsucursal = :idsucursal
-            LIMIT 1
-        ");
+        $data = (new DBQuery($this->pdo))
+            ->select('moneda')
+            ->from('sucursal')
+            ->where('idsucursal', '=', $idsucursal)
+            ->first();
 
-        $stmt->execute([
-            ':idsucursal' => $idsucursal
-        ]);
-
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return $result['moneda'] ?? 'PEN';
+        return $data['moneda'] ?? 'PEN';
     }
 
 
@@ -193,20 +186,11 @@ class Helpers
 
     public function verificarMoraCredito($idsucursal): array
     {
-        $stmt = $this->pdo->prepare("
-            SELECT
-                is_mora_credito,
-                valor_mora_credito
-            FROM sucursal_configuracion
-            WHERE idsucursal = :idsucursal
-            LIMIT 1
-        ");
-
-        $stmt->execute([
-            ':idsucursal' => $idsucursal
-        ]);
-
-        $config = $stmt->fetch(PDO::FETCH_ASSOC);
+        $config = (new DBQuery($this->pdo))
+            ->select('is_mora_credito, valor_mora_credito')
+            ->from('sucursal_configuracion')
+            ->where('idsucursal', '=', $idsucursal)
+            ->first();
 
         if (!$config) {
             return [
@@ -224,21 +208,11 @@ class Helpers
 
     public function verificarDecuentoPagoAnticipado($idsucursal): array
     {
-        $stmt = $this->pdo->prepare("
-            SELECT
-                is_descuento_anticipado,
-                valor_descuento_anticipado,
-                dias_anticipacion
-            FROM sucursal_configuracion
-            WHERE idsucursal = :idsucursal
-            LIMIT 1
-        ");
-
-        $stmt->execute([
-            ':idsucursal' => $idsucursal
-        ]);
-
-        $config = $stmt->fetch(PDO::FETCH_ASSOC);
+        $config = (new DBQuery($this->pdo))
+            ->select('is_descuento_anticipado, valor_descuento_anticipado, dias_anticipacion')
+            ->from('sucursal_configuracion')
+            ->where('idsucursal', '=', $idsucursal)
+            ->first();
 
         if (!$config) {
             return [
@@ -258,20 +232,11 @@ class Helpers
 
     public function verificarRefinanciamientos($idsucursal): array
     {
-        $stmt = $this->pdo->prepare("
-            SELECT
-                is_refinanciamiento,
-                maximo_refinanciamientos
-            FROM sucursal_configuracion
-            WHERE idsucursal = :idsucursal
-            LIMIT 1
-        ");
-
-        $stmt->execute([
-            ':idsucursal' => $idsucursal
-        ]);
-
-        $config = $stmt->fetch(PDO::FETCH_ASSOC);
+        $config = (new DBQuery($this->pdo))
+            ->select('is_refinanciamiento,  maximo_refinanciamientos')
+            ->from('sucursal_configuracion')
+            ->where('idsucursal', '=', $idsucursal)
+            ->first();
 
         if (!$config) {
             return [
@@ -311,50 +276,27 @@ class Helpers
 
     public function verificarAperturaCaja($idcaja): array
     {
-        $sql = "
-            SELECT ca.*
-            FROM caja_apertura ca
-            INNER JOIN cajas c ON c.idcaja = ca.idcaja
-            WHERE ca.estado = 1
-            AND ca.idcaja = :idcaja
-            AND ca.fecha_cierre IS NULL
-            LIMIT 1
-        ";
-
-        $stmt = $this->pdo->prepare($sql);
-
-        $stmt->execute([
-            ':idcaja' => $idcaja
-        ]);
-
-        $rpta = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        return [
-            'success' => $rpta !== false
-        ];
+        return (new DBQuery($this->pdo))
+            ->select('ca.*')
+            ->from('caja_apertura ca')
+            ->join('cajas c', 'c.idcaja = ca.idcaja')
+            ->where('ca.estado', '=', 1)
+            ->where('ca.idcaja', '=', $idcaja)
+            ->whereNull('ca.fecha_cierre')
+            ->first();
     }
 
     public function verificarAperturaCajaUsuario(int $idsucursal, int $idusuario): int
     {
-        $sql = "
-            SELECT ca.idcaja
-            FROM caja_apertura ca
-            INNER JOIN cajas c ON c.idcaja = ca.idcaja
-            WHERE ca.estado = 1
-            AND ca.idsucursal = :idsucursal
-            AND ca.idusuario = :idusuario
-            AND ca.fecha_cierre IS NULL
-            LIMIT 1
-        ";
-
-        $stmt = $this->pdo->prepare($sql);
-
-        $stmt->execute([
-            'idsucursal' => $idsucursal,
-            'idusuario' => $idusuario,
-        ]);
-
-        $rpta = $stmt->fetch(PDO::FETCH_ASSOC);
+        $rpta = (new DBQuery($this->pdo))
+            ->select('ca.idcaja')
+            ->from('caja_apertura ca')
+            ->join('cajas c', 'c.idcaja = ca.idcaja')
+            ->where('ca.estado', '=', 1)
+            ->where('ca.idsucursal', '=', $idsucursal)
+            ->where('ca.idusuario', '=', $idusuario)
+            ->whereNull('ca.fecha_cierre')
+            ->first();
 
         return $rpta ? (int) $rpta['idcaja'] : 0;
     }
@@ -399,22 +341,14 @@ class Helpers
     {
         $prefijo = strtoupper($tipo) === 'TRASLADO' ? 'TR' : 'SL';
 
-        $sql = "
-            SELECT COALESCE(MAX(correlativo),0) + 1 AS correlativo
-            FROM traslado
-            WHERE idorigen = :idsucursal
-            AND tipo = :tipo
-        ";
+        $data = (new DBQuery($this->pdo))
+            ->select('COALESCE(MAX(correlativo),0) + 1 AS correlativo')
+            ->from('traslado')
+            ->where('idorigen', '=', $idsucursal)
+            ->where('tipo', '=', $tipo)
+            ->first();
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            'idsucursal' => $idsucursal,
-            'tipo' => $tipo
-        ]);
-
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        $correlativo = (int) $row['correlativo'];
+        $correlativo = (int) $data['correlativo'];
 
         return sprintf('%s-%07d', $prefijo, $correlativo);
     }
@@ -589,30 +523,60 @@ class Helpers
 
     public function incrementarBanco(int $idbanco, float $monto): bool
     {
+        if ($monto <= 0) {
+            throw new InvalidArgumentException('El monto debe ser mayor a cero.');
+        }
+
+        $banco = (new DBQuery($this->pdo))
+            ->select('idbanco')
+            ->from('bancos')
+            ->where('idbanco', '=', $idbanco)
+            ->first();
+
+        if (!$banco) {
+            throw new RuntimeException('No se encontró el banco.');
+        }
+
         $sumarBanco = (new FluentSaver($this->pdo))
             ->table('bancos')
             ->primaryKey('idbanco')
             ->data(['idbanco' => $idbanco])
             ->increment('saldo', $monto);
-        if (!$sumarBanco) {
-            return false;
-        }
-        return true;
+
+        return (bool) $sumarBanco;
     }
 
     public function restarBanco(int $idbanco, float $monto): bool
     {
-        $sumarBanco = (new FluentSaver($this->pdo))
+        if ($monto <= 0) {
+            throw new InvalidArgumentException('El monto debe ser mayor a cero.');
+        }
+
+        $banco = (new DBQuery($this->pdo))
+            ->select('saldo')
+            ->from('bancos')
+            ->where('idbanco', '=', $idbanco)
+            ->first();
+
+        if (!$banco) {
+            throw new RuntimeException('No se encontró el banco.');
+        }
+
+        if ((float) $banco['saldo'] < $monto) {
+            throw new RuntimeException(
+                'Fondos insuficientes. Saldo disponible:' .
+                self::get_currency_symbol((float) $banco['saldo'])
+            );
+        }
+
+        $restarBanco = (new FluentSaver($this->pdo))
             ->table('bancos')
             ->primaryKey('idbanco')
             ->data(['idbanco' => $idbanco])
             ->decrement('saldo', $monto);
-        if (!$sumarBanco) {
-            return false;
-        }
-        return true;
-    }
 
+        return (bool) $restarBanco;
+    }
 
     public function cajaAperturada(
         int $idsucursal,
@@ -635,44 +599,73 @@ class Helpers
 
     public function incrementarCajaApertura(int $aperturacajaid, float $monto): bool
     {
+        if ($monto <= 0) {
+            throw new InvalidArgumentException('El monto debe ser mayor a cero.');
+        }
+
+        $caja = (new DBQuery($this->pdo))
+            ->select('aperturacajaid')
+            ->from('caja_apertura')
+            ->where('aperturacajaid', '=', $aperturacajaid)
+            ->where('estado', '=', 1)
+            ->first();
+
+        if (!$caja) {
+            throw new RuntimeException('No se encontró la apertura de caja.');
+        }
+
         $sumarCaja = (new FluentSaver($this->pdo))
             ->table('caja_apertura')
             ->primaryKey('aperturacajaid')
             ->data(['aperturacajaid' => $aperturacajaid])
             ->increment('efectivo_cierre', $monto);
-        if (!$sumarCaja) {
-            return false;
-        }
-        return true;
+
+        return (bool) $sumarCaja;
     }
 
     public function restarCajaApertura(int $aperturacajaid, float $monto): bool
     {
-        $sumarCaja = (new FluentSaver($this->pdo))
+        if ($monto <= 0) {
+            throw new InvalidArgumentException('El monto debe ser mayor a cero.');
+        }
+
+        $caja = (new DBQuery($this->pdo))
+            ->select('efectivo_cierre')
+            ->from('caja_apertura')
+            ->where('aperturacajaid', '=', $aperturacajaid)
+            ->first();
+
+        if (!$caja) {
+            throw new RuntimeException('No se encontró la apertura de caja.');
+        }
+
+        if ((float) $caja['efectivo_cierre'] < $monto) {
+            throw new RuntimeException(
+                'Fondos insuficientes. Saldo disponible:' .
+                self::get_currency_symbol((float) $caja['efectivo_cierre'])
+            );
+        }
+
+        $restarCaja = (new FluentSaver($this->pdo))
             ->table('caja_apertura')
             ->primaryKey('aperturacajaid')
             ->data(['aperturacajaid' => $aperturacajaid])
             ->decrement('efectivo_cierre', $monto);
-        if (!$sumarCaja) {
-            return false;
+
+        if (!$restarCaja) {
+            throw new RuntimeException('No se pudo actualizar el saldo de caja.');
         }
+
         return true;
     }
 
     public function verificarVentaLotes($idsucursal): array
     {
-        $stmt = $this->pdo->prepare("
-            SELECT is_venta_lotes
-            FROM sucursal_configuracion
-            WHERE idsucursal = :idsucursal
-            LIMIT 1
-        ");
-
-        $stmt->execute([
-            ':idsucursal' => $idsucursal
-        ]);
-
-        $config = $stmt->fetch(PDO::FETCH_ASSOC);
+        $config = (new DBQuery($this->pdo))
+            ->select('is_venta_lotes')
+            ->from('sucursal_configuracion')
+            ->where('idsucursal', '=', $idsucursal)
+            ->first();
 
         if (!$config) {
             return [

@@ -679,13 +679,13 @@ class SisVenta extends Helpers
             throw new Exception("No se pudo guardar el detalle de la venta.");
         }
 
-        $sqlProduct = "SELECT * FROM producto WHERE idproducto=:idproducto AND idsucursal=:idsucursal";
-        $stmtProduct = $this->pdo->prepare($sqlProduct);
-        $stmtProduct->execute([
-            'idproducto' => $idProducto,
-            'idsucursal' => $idsucursal
-        ]);
-        $rowProduct = $stmtProduct->fetch(PDO::FETCH_ASSOC);
+        $rowProduct = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('producto')
+            ->where('idproducto', '=', $idProducto)
+            ->where('idsucursal', '=', $idsucursal)
+            ->first();
+
         $motivo = "Salida generada por la venta #{$idventa}";
         $this->movimientoSalida(
             $idDetalleVenta,

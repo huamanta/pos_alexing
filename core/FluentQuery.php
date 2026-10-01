@@ -555,6 +555,18 @@ class DBQuery
         );
     }
 
+
+    public function whereNotIn(
+        string $column,
+        array $values
+    ): self {
+        return $this->where(
+            $column,
+            'NOT IN',
+            $values
+        );
+    }
+
     public function whereBetween(
         string $column,
         mixed $from,
