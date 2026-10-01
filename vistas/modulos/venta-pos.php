@@ -1227,7 +1227,7 @@ date_default_timezone_set('America/Lima');
                     <div class="card" id="header">
                         <div class="card-header">
                             <div class="row">
-                                <div class="col-md-2 mt-4">
+                                <div class="col-md-1 mt-4">
                                     <button type="button" class="btn btn-outline-primary btn-block" id="btnNuevo"
                                         onclick="mostrarform(true)"><i class="fa fa-plus"></i>
                                         Nuevo</button>
@@ -1288,6 +1288,14 @@ date_default_timezone_set('America/Lima');
                                             <option value="Nota Credito">Nota de Crédito</option>
                                             <option value="Rechazado">Rechazado</option>
                                         </select>
+                                    </div>
+                                </div>
+                                <div class="form-group col-lg-1 col-md-1 col-sm-4 col-xs-12">
+                                    <label>Reporte:</label>
+                                    <div class="input-group">
+                                        <button id="btnExportarExcel" class="btn btn-success btn-sm" title="Exportar a Excel">
+                                            <i class="fa fa-file-excel-o"></i> Exportar Excel
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="col-md-6 d-flex align-items-center mt-3">
@@ -1507,8 +1515,8 @@ date_default_timezone_set('America/Lima');
                                                                 <input type="date" class="form-control text-center"
                                                                     name="fecha" id="fecha"
                                                                     value="<?php echo date('Y-m-d'); ?>" <?php if ($_SESSION['cargo'] !== 'Administrador'): ?>
-                                                                        min="<?php echo date('Y-m-d', strtotime('-1 day')); ?>"
-                                                                        max="<?php echo date('Y-m-d'); ?>" <?php endif; ?>
+                                                                    min="<?php echo date('Y-m-d', strtotime('-1 day')); ?>"
+                                                                    max="<?php echo date('Y-m-d'); ?>" <?php endif; ?>
                                                                     required>
                                                                 <?php if ($_SESSION['cargo'] !== 'Administrador'): ?>
                                                                     <small class="text-muted">Solo puedes seleccionar hoy o
@@ -2739,41 +2747,41 @@ date_default_timezone_set('America/Lima');
                 <h5 class="modal-title" id="modalAjuntarCompLabel">Adjuntar comprobante</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-                <div class="modal-body">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover align-middle mb-0">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Metodo</th>
-                                    <th>Documento</th>
-                                    <th>Monto</th>
-                                    <th>N° operación</th>
-                                    <th>Banco</th>
-                                    <th class="text-end">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="listaComprobantes">
-                                <tr>
-                                    <td colspan="3" class="text-center text-muted">
-                                        No hay comprobantes adjuntos
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Metodo</th>
+                                <th>Documento</th>
+                                <th>Monto</th>
+                                <th>N° operación</th>
+                                <th>Banco</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="listaComprobantes">
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">
+                                    No hay comprobantes adjuntos
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
 
-                <div class="modal-footer">
+            </div>
 
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        onclick="cerarrAjuntarComp()">
-                        Cerrar
-                    </button>
-                </div>
+            <div class="modal-footer">
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    onclick="cerarrAjuntarComp()">
+                    Cerrar
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -2788,7 +2796,7 @@ date_default_timezone_set('America/Lima');
 
             <form id="formAdjuntarComp" enctype="multipart/form-data">
                 <div class="modal-body">
-                    <input type="hidden" id="idventapago">                                
+                    <input type="hidden" id="idventapago">
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
@@ -2798,8 +2806,7 @@ date_default_timezone_set('America/Lima');
                                     class="form-control"
                                     id="comprobanteAdjunto"
                                     name="comprobante"
-                                    accept="image/*,.pdf"
-                                >
+                                    accept="image/*,.pdf">
                             </div>
                         </div>
                     </div>

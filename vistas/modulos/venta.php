@@ -1,13 +1,11 @@
 <style type="text/css">
     .total-compra2 {
         font-size: 1rem;
-        font-weight: ;
         /* Otros estilos según sea necesario */
     }
 
     .valor-rojo {
         color: red;
-        font-weight: ;
 
         /* Otros estilos según sea necesario */
     }

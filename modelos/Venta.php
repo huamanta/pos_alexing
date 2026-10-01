@@ -1400,16 +1400,14 @@ class Venta extends Helpers
 
 
     //listar registros
-    public function listar($idsucursal, $idpersonal, $fecha_inicio, $fecha_fin, $estado, $idproducto)
+    public function listar($idsucursal, $fecha_inicio, $fecha_fin, $estado, $idproducto)
     {
-        $pdo = Conexion::conectar();
-
         $page = (int) ($_GET['page'] ?? 1);
         $limit = (int) ($_GET['limit'] ?? 10);
         $search = trim($_GET['search'] ?? '');
 
 
-        $paginator = (new DBQuery($pdo))
+        $paginator = (new DBQuery($this->pdo))
             ->select("
             v.idventa,
             DATE_FORMAT(v.fecha_hora, '%d/%m/%Y %H:%i:%s') AS fecha,
@@ -1438,56 +1436,19 @@ class Venta extends Helpers
             ->join('personal u', 'v.idpersonal = u.idpersonal')
             ->join('sucursal s', 's.idsucursal = v.idsucursal')
             ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
+            ->where("v.idsucursal", "=", $idsucursal)
             ->whereRaw("v.serie_comprobante <> '-'");
 
 
         // rango fechas
         if (!empty($fecha_inicio) && !empty($fecha_fin)) {
-            $paginator->where(
-                "DATE(v.fecha_hora)",
-                ">=",
-                $fecha_inicio
-            );
-
-            $paginator->where(
-                "DATE(v.fecha_hora)",
-                "<=",
-                $fecha_fin
-            );
-        }
-
-
-
-        // sucursal
-        if (!empty($idsucursal)) {
-
-            $paginator->where(
-                "v.idsucursal",
-                "=",
-                $idsucursal
-            );
-        }
-
-
-        // personal
-        if (!empty($idpersonal)) {
-
-            $paginator->where(
-                "v.idpersonal",
-                "=",
-                $idpersonal
-            );
+            $paginator->whereBetween('DATE(v.fecha_hora)', $fecha_inicio, $fecha_fin);
         }
 
 
         // estado
         if (!empty($estado)) {
-
-            $paginator->where(
-                "v.estado",
-                "=",
-                $estado
-            );
+            $paginator->where("v.estado", "=", $estado);
         }
 
 
@@ -1533,6 +1494,75 @@ class Venta extends Helpers
 
 
         return Response::json($response);
+    }
+
+
+    public function listarVentasReporte($idsucursal, $fecha_inicio, $fecha_fin, $estado, $idproducto)
+    {
+        $query = (new DBQuery($this->pdo))
+            ->select("
+                v.idventa,
+                DATE_FORMAT(v.fecha_hora, '%d/%m/%Y %H:%i:%s') AS fecha,
+                v.idsucursal,
+                s.nombre AS sucursal,
+                DATE_FORMAT(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') AS fecha_kardex,
+                v.idcliente,
+                p.nombre AS cliente,
+                p.num_documento,
+                v.estadoS,
+                u.idpersonal,
+                u.nombre AS personal,
+                v.idcomprobante_pago,
+                cp.nombre AS tipo_comprobante,
+                v.serie_comprobante,
+                v.num_comprobante,
+                (v.total_venta-v.descuento) AS total_venta,
+                v.formapago,
+                v.ventacredito,
+                v.impuesto,
+                v.dov_Nombre,
+                v.estado
+            ")
+            ->from('venta v')
+            ->join('persona p', 'v.idcliente = p.idpersona')
+            ->join('personal u', 'v.idpersonal = u.idpersonal')
+            ->join('sucursal s', 's.idsucursal = v.idsucursal')
+            ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
+            ->where("v.idsucursal", "=", $idsucursal)
+            ->whereRaw("v.serie_comprobante <> '-'");
+
+
+        // rango fechas
+        if (!empty($fecha_inicio) && !empty($fecha_fin)) {
+            $query->whereBetween('DATE(v.fecha_hora)', $fecha_inicio, $fecha_fin);
+        }
+
+
+        // estado
+        if (!empty($estado)) {
+            $query->where("v.estado", "=", $estado);
+        }
+
+
+        // producto
+        if (!empty($idproducto)) {
+            $query->whereRaw("
+            EXISTS(
+                SELECT 1
+                FROM detalle_venta dv
+                INNER JOIN producto_configuracion pc 
+                    ON pc.idproducto = dv.idproducto
+                WHERE dv.idventa = v.idventa
+                AND pc.idproducto = '$idproducto'
+            )
+        ");
+        }
+
+        $response = $query
+            ->orderBy('v.idventa', 'DESC')
+            ->get();
+
+        return $response;
     }
 
 
@@ -1724,7 +1754,8 @@ class Venta extends Helpers
     public function ventaDetalleContrato($idventa)
     {
         return (new DBQuery($this->pdo))
-            ->select('
+            ->select(
+                '
                 dv.*, 
                 p.idproducto, 
                 p.nombre AS producto_nombre, 
@@ -2239,7 +2270,7 @@ class Venta extends Helpers
         // Datos del negocio
         require_once "Negocio.php";
         $negocio = new Negocio();
-        $datos = $negocio->mostrarNombreNegocio();
+        $datos = Helpers::dataSucursal($idsucursal);
 
         // Buscar nombre de sucursal
         $nombre_sucursal = "Todas";
@@ -2315,23 +2346,23 @@ class Venta extends Helpers
         ]);
 
         // OBTENER VENTAS
-        $rs = $this->listar($fecha_inicio, $fecha_fin, $estado, $idsucursal, $idproducto);
+        $ventas = self::listarVentasReporte($idsucursal, $fecha_inicio, $fecha_fin, $estado, $idproducto);
 
         $fila = $filaEnc + 1;
         $total = 0;
 
         // LLENAR FILAS
-        while ($r = $rs->fetch_object()) {
-            $sheet->setCellValue("A{$fila}", $r->fecha);
-            $sheet->setCellValue("B{$fila}", $r->tipo_comprobante);
-            $sheet->setCellValue("C{$fila}", $r->serie_comprobante);
-            $sheet->setCellValue("D{$fila}", $r->num_comprobante);
-            $sheet->setCellValue("E{$fila}", $r->cliente);
-            $sheet->setCellValue("F{$fila}", $r->num_documento);
-            $sheet->setCellValue("G{$fila}", $r->sucursal);
-            $sheet->setCellValue("H{$fila}", $r->total_venta);
+        foreach ($ventas as $venta) {
+            $sheet->setCellValue("A{$fila}", $venta['fecha']);
+            $sheet->setCellValue("B{$fila}", $venta['tipo_comprobante']);
+            $sheet->setCellValue("C{$fila}", $venta['serie_comprobante']);
+            $sheet->setCellValue("D{$fila}", $venta['num_comprobante']);
+            $sheet->setCellValue("E{$fila}", $venta['cliente']);
+            $sheet->setCellValue("F{$fila}", $venta['num_documento']);
+            $sheet->setCellValue("G{$fila}", $venta['sucursal']);
+            $sheet->setCellValue("H{$fila}", $venta['total_venta']);
 
-            $total += $r->total_venta;
+            $total += $venta['total_venta'];
             $fila++;
         }
 
