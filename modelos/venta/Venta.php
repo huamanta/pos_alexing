@@ -432,7 +432,8 @@ class SisVenta extends Helpers
                     'monto' => $monto,
                     'nroOperacion' => !empty($operaciones[$i]) ? $operaciones[$i] : null,
                     'idbanco' => !empty($bancos[$i]) ? $bancos[$i] : null,
-                    'fechaDeposito' => !empty($fechas[$i]) ? $fechas[$i] : null
+                    'fechaDeposito' => !empty($fechas[$i]) ? $fechas[$i] : null,
+                    'idusuario' => $idusuario
                 ])
                 ->save();
 
