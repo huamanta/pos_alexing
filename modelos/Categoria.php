@@ -103,26 +103,6 @@ class Categoria extends Helpers
 		return ejecutarConsultaSimpleFila($sql);
 	}
 
-	public function actualizarComprobantes($idsucursal, $nombre, $serie, $numero)
-	{
-		$empresa = ejecutarConsultaSimpleFila("SELECT idempresa FROM sucursal WHERE idsucursal='$idsucursal'");
-		$fk_column = ($empresa && $empresa['idempresa']) ? 'idempresa' : 'idsucursal';
-		$fk_value = ($empresa && $empresa['idempresa']) ? $empresa['idempresa'] : $idsucursal;
-
-		$sql = "DELETE FROM comp_pago WHERE $fk_column='$fk_value'";
-		ejecutarConsulta($sql);
-
-		$num_elementos = 0;
-		$sw = true;
-		while ($num_elementos < count($nombre)) {
-			$sql = "INSERT INTO comp_pago (nombre,serie_comprobante,num_comprobante,$fk_column,condicion)
-	              VALUES ('$nombre[$num_elementos]','$serie[$num_elementos]','$numero[$num_elementos]','$fk_value','1')";
-			ejecutarConsulta($sql) or $sw = false;
-			$num_elementos++;
-		}
-		return $sw;
-	}
-
 
 	public function mostrarSucursalTi($idsucursal)
 	{
@@ -195,22 +175,6 @@ class Categoria extends Helpers
 		return ejecutarConsultaSimpleFila($sql);
 	}
 
-
-	// public function actualizarComprobantesEmpresa($idempresa, $nombre, $serie, $numero)
-	// {
-	//     $sql="DELETE FROM comp_pago WHERE idempresa='$idempresa'";
-	//     ejecutarConsulta($sql);
-
-	//     $num_elementos=0;
-	//     $sw=true;
-	//     while ($num_elementos < count($nombre)) {
-	//         $sql="INSERT INTO comp_pago (nombre,serie_comprobante,num_comprobante,idempresa,condicion)
-	//               VALUES ('$nombre[$num_elementos]','$serie[$num_elementos]','$numero[$num_elementos]','$idempresa','1')";
-	//         ejecutarConsulta($sql) or $sw=false;
-	//         $num_elementos++;
-	//     }
-	//     return $sw;
-	// }
 
 	public function selectEmpresas()
 	{
