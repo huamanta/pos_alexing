@@ -325,22 +325,17 @@ class Recuperacion extends Helpers
         ]);
     }
 
+
     public function existeRecuperacion($idventa)
     {
-        $sql = "
-    SELECT COUNT(*) total
-    FROM recuperacion_vehiculo
-    WHERE idventa=:idventa
-    AND estado NOT IN ('CERRADO')
-    ";
+        $data = (new DBQuery($this->pdo))
+            ->select('COUNT(*) AS total')
+            ->from('recuperacion_vehiculo')
+            ->where('idventa', '=', $idventa)
+            ->whereNotIn('estado', ['CERRADO'])
+            ->first();
 
-        $stmt = $this->pdo->prepare($sql);
-
-        $stmt->execute([
-            ':idventa' => $idventa
-        ]);
-
-        return $stmt->fetchColumn() > 0;
+        return (int) ($data['total'] ?? 0) > 0;
     }
 
     public function listarRecuperaciones($idsucursal, $estado)
@@ -494,25 +489,15 @@ class Recuperacion extends Helpers
         $estado,
         $observacion = null
     ) {
-
-        $sql = "
-    UPDATE recuperacion_vehiculo
-    SET
-        estado=:estado,
-        observacion=:observacion
-    WHERE idrecuperacion=:id
-    ";
-
-
-        $stmt = $this->pdo->prepare($sql);
-
-
-        return $stmt->execute([
-            ':estado' => $estado,
-            ':observacion' => $observacion,
-            ':id' => $idrecuperacion
-        ]);
-
+        return (new FluentSaver($this->pdo))
+            ->table('recuperacion_vehiculo')
+            ->primaryKey('idrecuperacion')
+            ->data([
+                'idrecuperacion' => $idrecuperacion,
+                'estado' => $estado,
+                'observacion' => $observacion
+            ])
+            ->update();
     }
 
     public function registrarHistorial(
@@ -522,33 +507,19 @@ class Recuperacion extends Helpers
         $usuario
     ) {
 
-        $sql = "
-    INSERT INTO recuperacion_historial
-    (
-        idrecuperacion,
-        accion,
-        comentario,
-        usuario
-    )
-    VALUES
-    (
-        :id,
-        :accion,
-        :comentario,
-        :usuario
-    )
-    ";
-
-        $stmt = $this->pdo->prepare($sql);
-
-        return $stmt->execute([
-            ':id' => $idrecuperacion,
-            ':accion' => $accion,
-            ':comentario' => $comentario,
-            ':usuario' => $usuario
-        ]);
+        return (new FluentSaver($this->pdo))
+            ->table('recuperacion_historial')
+            ->data([
+                'idrecuperacion' => $idrecuperacion,
+                'accion' => $accion,
+                'comentario' => $comentario,
+                'usuario' => $usuario
+            ])
+            ->save();
 
     }
+
+
     public function cumplirCompromiso($id)
     {
         try {

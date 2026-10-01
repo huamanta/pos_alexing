@@ -48,7 +48,7 @@ switch ($_GET["op"]) {
 		if (empty($idmovimiento)) {
 			$cajachica->insertar($opcionEI, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario, $banco, $fechaDeposito);
 		} else {
-			$cajachica->editar($idmovimiento, $opcionEI, $idcaja, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario,);
+			$cajachica->editar($idmovimiento, $opcionEI, $idsucursal, $idpersonal, $montoPagar, $descripcion, $formapago, $totaldeposito, $noperacion, $idconcepto_movimiento, $idusuario, $banco, $fechaDeposito);
 		}
 
 		break;
@@ -78,7 +78,7 @@ switch ($_GET["op"]) {
 		echo '<option value="" selected>Seleccione...</option>';
 
 		foreach ($rspta as $reg) {
-			echo '<option value="'.$reg['idconcepto_movimiento'].'">'.$reg['descripcion'].'</option>';
+			echo '<option value="' . $reg['idconcepto_movimiento'] . '">' . $reg['descripcion'] . '</option>';
 		}
 		break;
 	case 'guardaryeditarConcepto':
@@ -121,135 +121,62 @@ switch ($_GET["op"]) {
 		}
 		break;
 
-		case 'listarAdelantos':
-		    $idpersonal = $_GET['idpersonal'];
-		    $desde = $_GET['desde'];
-		    $hasta = $_GET['hasta'];
+	case 'listarAdelantos':
+		$idpersonal = $_GET['idpersonal'];
+		$desde = $_GET['desde'];
+		$hasta = $_GET['hasta'];
 
-		    $rspta = $cajachica->listarAdelantos($idpersonal, $desde, $hasta);
+		$rspta = $cajachica->listarAdelantos($idpersonal, $desde, $hasta);
 
-		    $total = 0;
-		    $data = [];
+		$total = 0;
+		$data = [];
 
-		    while ($reg = $rspta->fetch_object()) {
-		        $data[] = $reg;
-		        $total += $reg->monto;
-		    }
+		while ($reg = $rspta->fetch_object()) {
+			$data[] = $reg;
+			$total += $reg->monto;
+		}
 
-		    echo json_encode([
-		        "total"   => $total,
-		        "detalle" => $data
-		    ]);
+		echo json_encode([
+			"total" => $total,
+			"detalle" => $data
+		]);
 		break;
 
-		case 'getIdConceptoAdelanto':
-		    $id = $cajachica->obtenerIdConceptoAdelanto();
-		    echo json_encode($id);
+	case 'getIdConceptoAdelanto':
+		$id = $cajachica->obtenerIdConceptoAdelanto();
+		echo json_encode($id);
 		break;
 
-		case 'listarIngresosSemana':
-		    $idpersonal = $_GET["idpersonal"];
-		    $desde = $_GET["desde"];
-		    $hasta = $_GET["hasta"];
+	case 'listarIngresosSemana':
+		$idpersonal = $_GET["idpersonal"];
+		$desde = $_GET["desde"];
+		$hasta = $_GET["hasta"];
 
-		    $rspta = $cajachica->listarIngresosSemana($idpersonal, $desde, $hasta);
+		$rspta = $cajachica->listarIngresosSemana($idpersonal, $desde, $hasta);
 
-		    $total = 0;
-		    $detalle = [];
+		$total = 0;
+		$detalle = [];
 
-		    while ($reg = $rspta->fetch_object()) {
-		        $detalle[] = $reg;
-		        $total += floatval($reg->monto);
-		    }
+		while ($reg = $rspta->fetch_object()) {
+			$detalle[] = $reg;
+			$total += floatval($reg->monto);
+		}
 
-		    echo json_encode([
-		        "total" => $total,
-		        "detalle" => $detalle
-		    ]);
+		echo json_encode([
+			"total" => $total,
+			"detalle" => $detalle
+		]);
 		break;
 
-		case 'getMovimiento':
-    
-		    $idmovimiento = $_GET["idmovimiento"];
-
-		    $sql = "SELECT m.*, p.nombre AS trabajador
-		            FROM movimiento m
-		            LEFT JOIN personal p ON p.idpersonal = m.idpersonal
-		            WHERE m.idmovimiento = '$idmovimiento'";
-
-		    $rspta = ejecutarConsultaSimpleFila($sql);
-
-		    echo json_encode($rspta);
-
+	case 'getMovimiento':
+		$idmovimiento = $_GET["idmovimiento"];
+		$cajachica->getMovimiento($idmovimiento);
 		break;
 
-		case 'reporteAdelantos':
-		    $desde = $_GET['fecha_inicio'] ?? '';
-		    $hasta = $_GET['fecha_fin'] ?? '';
-		    $cajachica->reporteAdelantos($desde, $hasta);
-		    // $detalle = [];
-		    // $total = 0;
-
-		    // while ($reg = $rspta->fetch_object()) {
-		    //     $detalle[] = [
-		    //         'fecha' => $reg->fecha,
-		    //         'trabajador' => $reg->trabajador,
-		    //         'descripcion' => $reg->descripcion,
-		    //         'monto' => floatval($reg->monto)
-		    //     ];
-		    //     $total += floatval($reg->monto);
-		    // }
-
-
-		    // /* ============================
-		    //    2. LISTAR DÍAS TRABAJADOS
-		    // ============================= */
-		    // $rsptaDias = $cajachica->listarDiasTrabajadosPorFechas($desde, $hasta);
-
-		    // $dias_tmp = [];
-
-		    // while ($reg = $rsptaDias->fetch_object()) {
-
-			//     $trabajador = (string)$reg->trabajador;
-			//     $fecha = $reg->fecha;
-			//     $monto_dia  = floatval($reg->monto_dia);
-
-			//     if (!isset($dias_tmp[$trabajador])) {
-			//         $dias_tmp[$trabajador] = [
-			//             'trabajador' => $trabajador,
-			//             'dias' => 0,
-			//             'monto_dia' => $monto_dia,
-			//             'total_pago' => 0,
-			//             'fechas' => []
-			//         ];
-			//     }
-
-			//     // Contar días trabajados
-			//     $dias_tmp[$trabajador]['dias'] += 1;
-
-			//     // Sumar total pagado
-			//     $dias_tmp[$trabajador]['total_pago'] += $monto_dia;
-
-			//     // Mantener el monto por día real (NO promedio)
-			//     $dias_tmp[$trabajador]['monto_dia'] = $monto_dia;
-
-			//     // Guardar fechas trabajadas
-			//     $dias_tmp[$trabajador]['fechas'][] = [
-			// 	    "fecha" => $reg->fecha,
-			// 	    "monto" => $monto_dia
-			// 	];
-			// }
-
-		    // // Convertir a array final
-		    // $dias = array_values($dias_tmp);
-
-		    // echo json_encode([
-		    //     "detalle" => $detalle,
-		    //     "total" => $total,
-		    //     "dias" => $dias
-		    // ]);
-
+	case 'reporteAdelantos':
+		$desde = $_GET['fecha_inicio'] ?? '';
+		$hasta = $_GET['fecha_fin'] ?? '';
+		$cajachica->reporteAdelantos($desde, $hasta);
 		break;
-
 
 }

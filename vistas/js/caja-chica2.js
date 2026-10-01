@@ -1437,9 +1437,9 @@ function cargarIngresosSemana() {
 }
 function abrirRecibo(id) {
 
-    $.get("controladores/cajachica.php?op=getMovimiento&idmovimiento=" + id, function(r){
+    $.get("controladores/cajachica.php?op=getMovimiento&idmovimiento=" + id, function(response){
 
-        let data = JSON.parse(r);
+        let data = response;
 
         let html = `
             <div id="recibo_print" style="font-family: Arial;">

@@ -1398,7 +1398,7 @@ date_default_timezone_set('America/Lima');
                         <th>Deuda total</th>
                         <th>Total pagado</th>
                         <th>Saldo pendiente</th>
-                        <th>Acciones</th>
+                        <th style="width: 20%; text-align: center">Acciones</th>
                       </thead>
                       <tbody>
                       </tbody>
