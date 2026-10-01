@@ -4,7 +4,12 @@ require_once __DIR__ . "/../modelos/Venta.php";
 require_once __DIR__ . "/../modelos/venta/Venta.php";
 require_once __DIR__ . "/../modelos/Producto.php";
 require_once __DIR__ . "/../modelos/Helpers.php";
-
+if (!isset($_SESSION['idusuario']) || empty($_SESSION['idusuario'])) {
+	Response::json([
+		'status' => 0,
+		'message' => 'Sesión expirada. Inicie sesión nuevamente para continuar.'
+	]);
+}
 $venta = new Venta();
 $sisVenta = new SisVenta();
 $helpers = new Helpers();
@@ -205,7 +210,7 @@ switch ($_GET["op"]) {
 				$observaciones,
 				$fecha_pago,
 				$inputInteres,
-				$input_cuotas,
+				$cuotas,
 				$_POST["cantidad_contenedor"],
 				$_POST["contenedor"],
 				$_POST["idp"],
@@ -453,7 +458,7 @@ switch ($_GET["op"]) {
 	//opcion para mostrar la numeracion y la serie_comprobante de la boleta
 	case 'mostrar_num_boleta':
 
-		$idsucursal = $_SESSIOON["idsucursal"];
+		$idsucursal = $_SESSION["idsucursal"];
 
 		//mostrando el numero de boleta de la tabla comprobantes
 		require_once "../modelos/Comprobantes.php";

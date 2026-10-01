@@ -3,11 +3,10 @@ require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once "../modelos/Producto.php";
 require_once "../modelos/Helpers.php";
 if (!isset($_SESSION['idusuario']) || empty($_SESSION['idusuario'])) {
-	echo json_encode([
+	Response::json([
 		'status' => 0,
 		'message' => 'Sesión expirada. Inicie sesión nuevamente para continuar.'
 	]);
-	exit;
 }
 $producto = new Producto();
 
@@ -208,7 +207,7 @@ switch ($_GET["op"]) {
 		}
 		break;
 
-	case 'guardarimagenes':
+	/*case 'guardarimagenes':
 		$idsucursal = $_SESSION['idsucursal'];
 
 		// Primero eliminamos las imágenes anteriores
@@ -222,7 +221,7 @@ switch ($_GET["op"]) {
 			$producto->guardarImagenCatalogo($idsucursal, $nombre_final, $orden++);
 		}
 		echo json_encode(["status" => "ok"]);
-		break;
+		break;*/
 
 	case 'obtenerimagenes':
 		$rspta = $producto->obtenerImagenesCatalogo($_SESSION['idsucursal']);
