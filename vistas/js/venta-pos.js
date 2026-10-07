@@ -4879,8 +4879,9 @@ function mostrar(idventa) {
       const { inicial, totaldeuda } = calcularMontoCredito(data.totalrecibido, data.totaldeposito, data.total_venta, data.interes, data.cuotas);
       $("#pagoinicial").html('S/. ' + inicial);
       $("#pagocredito").html('S/. ' + totaldeuda);
-
-      $("#imprimirComp").show();
+      if (data.ventacredito == "Si") {
+        $("#imprimirComp").show();
+      }
       $("#ajuntarComp").show();
 
 
@@ -5535,15 +5536,14 @@ function listarComprobantes(idVenta) {
                                 ${item.banco || ''}
                             </td>
                            <td class="text-end">
-                                ${item.metodo_pago === 'Efectivo' ? `
-                                  <a
+                              <a
                                       onclick="imprimirConstanciaPagoInicial(${item.idventapago}, 'ticket', true)"
                                       target="_blank"
-                                      class="btn btn-sm btn-outline-primary"
+                                      class="btn btn-sm btn-outline-info"
                                       title="Ver comprobante">
                                       <i class="fas fa-print"></i>
                                   </a>
-                                  ` : item.comprobante ? `
+                                ${item.metodo_pago === 'Efectivo' ? `` : item.comprobante ? `
                                   <a
                                       href="files/ventas/${item.comprobante}"
                                       target="_blank"
