@@ -816,8 +816,8 @@ async function guardaryeditar(e) {
 
             tablaCuotasCredito.ajax.reload();
         },
-        error: function (e) {
-            Swal.fire("Error", e.responseJSON.message, "error");
+        error: function (error) {
+            Swal.fire("Error", error?.responseJSON?.message || "No se pudo guardar el pago", "error");
             $("#btnGuardarPago").text("Guardar pago").prop('disabled', false);
         }
     });

@@ -69,12 +69,13 @@ class CuentasCobrar extends Helpers
                 $fechaPago
             );
 
-            $idCuenta = $this->actualizarCuenta($idcpc, $resultado);
+            $this->actualizarCuenta($idcpc, $resultado);
 
             $this->actualizarEstadoVenta(
                 $cuenta["idventa"],
-                $idCuenta,
-                $resultado["deuda"]
+                $idcpc,
+                $resultado["deuda"],
+                $resultado["mora"]
             );
 
             $this->pdo->commit();
@@ -310,7 +311,6 @@ class CuentasCobrar extends Helpers
 
         $this->pagarCapital($resultado, $monto);
 
-
         return $resultado;
     }
 
@@ -416,10 +416,10 @@ class CuentasCobrar extends Helpers
     private function actualizarEstadoVenta(
         int $idventa,
         int $idcpc,
-        float $deuda
+        float $deuda,
+        float $mora
     ): void {
-
-        $estadoPago = $deuda <= 0 ? 0 : 1;
+        $estadoPago = $deuda <= 0 && $mora <= 0 ? 0 : 1;
 
         $actualizado = (new FluentSaver($this->pdo))
             ->table('cuentas_por_cobrar')
@@ -456,9 +456,9 @@ class CuentasCobrar extends Helpers
 
                 $actualizado = (new FluentSaver($this->pdo))
                     ->table('documentacion')
-                    ->primaryKey('iddocumentacion') // Cambia por la PK real
+                    ->primaryKey('iddocumento')
                     ->data([
-                        'iddocumentacion' => $documento['iddocumentacion'],
+                        'iddocumento' => $documento['iddocumento'],
                         'estado' => 2
                     ])
                     ->update();
@@ -1169,7 +1169,7 @@ class CuentasCobrar extends Helpers
                 'idcpc' => $row['idcpc'],
                 'cliente' => $row['cliente'],
                 'monto' => (float) $row['deudatotal'],
-                'monto_str' => 'S/ ' . number_format((float) $row['deudatotal'], 2),
+                'monto_str' => Helpers::get_currency_symbol((float) $row['deudatotal']),
                 'fecha' => $fecha,
                 'dias_vencido' => $diasVencido,
                 'tipo' => $diasVencido > 0 ? 'vencida' : 'hoy',
@@ -1280,18 +1280,18 @@ class CuentasCobrar extends Helpers
                 <td>' . $r->fecha . '</td>
                 <td>' . $r->documento . '</td>
 
-                <td class="text-right">' . ($r->deuda_base > 0 ? 'S/ ' . number_format($r->deuda_base, 2) : '-') . '</td>
+                <td class="text-right">' . ($r->deuda_base > 0 ? Helpers::get_currency_symbol($r->deuda_base) : '-') . '</td>
 
-                <td class="text-right">' . ($r->interes > 0 ? 'S/ ' . number_format($r->interes, 2) : '-') . '</td>
+                <td class="text-right">' . ($r->interes > 0 ? Helpers::get_currency_symbol($r->interes) : '-') . '</td>
 
-                <td class="text-right">' . ($r->mora > 0 ? 'S/ ' . number_format($r->mora, 2) : '-') . '</td>
+                <td class="text-right">' . ($r->mora > 0 ? Helpers::get_currency_symbol($r->mora) : '-') . '</td>
 
-                <td class="text-right">' . ($r->descuento > 0 ? 'S/ ' . number_format($r->descuento, 2) : '-') . '</td>
+                <td class="text-right">' . ($r->descuento > 0 ? Helpers::get_currency_symbol($r->descuento) : '-') . '</td>
 
-                <td class="text-right">' . ($r->pago > 0 ? 'S/ ' . number_format($r->pago, 2) : '-') . '</td>
+                <td class="text-right">' . ($r->pago > 0 ? Helpers::get_currency_symbol($r->pago) : '-') . '</td>
 
                 <td class="text-right">
-                    <strong>S/ ' . number_format($saldo, 2) . '</strong>
+                    <strong>' . Helpers::get_currency_symbol($saldo) . '</strong>
                 </td>
             </tr>
         ';
@@ -2347,7 +2347,7 @@ class CuentasCobrar extends Helpers
                 }
 
                 // MARCAR COMO PAGADA
-                if ($nuevaDeuda <= 0) {
+                if ($nuevaDeuda <= 0 && (float) $filaAct['mora'] <= 0) {
                     $estadoPago = (new FluentSaver($this->pdo))
                         ->table('cuentas_por_cobrar')
                         ->primaryKey('idcpc')
