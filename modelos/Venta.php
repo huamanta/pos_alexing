@@ -1649,6 +1649,16 @@ class Venta extends Helpers
         return ejecutarConsulta($sql);
     }
 
+    public function ventaPago($idventapago)
+    {
+        $query = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('venta_pago')
+            ->where('idventapago', '=', $idventapago);
+        return $query->first();
+    }
+
+
 
     public function ventacabecera($idventa)
     {

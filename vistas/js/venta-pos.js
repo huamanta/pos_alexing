@@ -4930,11 +4930,11 @@ function formatearMonedaPesos(valor) {
   })}`;
 }
 
-function imprimirConstanciaPagoInicial(ventaData, formato = "ticket") {
-  const idVenta = ventaData.idventa || idVentaGlobal;
+function imprimirConstanciaPagoInicial(idventa, formato = "ticket", particion = false) {
+  const idVenta = idventa;
   const formatoParam = formato === "ticket" ? "ticket" : "a4";
 
-  const url = `reportes/constancia_pago_inicial.php?id=${encodeURIComponent(idVenta)}&formato=${encodeURIComponent(formatoParam)}`;
+  const url = `reportes/constancia_pago_inicial.php?id=${encodeURIComponent(idVenta)}&formato=${encodeURIComponent(formatoParam)}&particion=${encodeURIComponent(particion)}`;
 
   const iframe = document.createElement("iframe");
 
@@ -5441,7 +5441,7 @@ $("#imprimirComp").click(function (e) {
       { idventa: idVentaGlobal },
       function (response) {
         const venta = JSON.parse(response);
-        imprimirConstanciaPagoInicial(venta, formato);
+        imprimirConstanciaPagoInicial(venta.idventa, formato);
       },
     ).fail(function () {
       Swal.fire("Venta", "No se pudo cargar la información de la venta", "error");
@@ -5535,24 +5535,31 @@ function listarComprobantes(idVenta) {
                                 ${item.banco || ''}
                             </td>
                            <td class="text-end">
-                                ${item.metodo_pago === 'Efectivo' ? '' : item.comprobante ? `
-                                            <a
-                                                href="files/ventas/${item.comprobante}"
-                                                target="_blank"
-                                                class="btn btn-sm btn-outline-primary"
-                                                title="Ver comprobante">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                        `
-              : `
-                                            <button
-                                                type="button"
-                                                class="btn btn-sm btn-outline-primary"
-                                                onclick="abrirAjuntarComp(${item.idventapago})"
-                                                title="Adjuntar comprobante">
-                                                <i class="fas fa-upload"></i>
-                                            </button>
-                                        `
+                                ${item.metodo_pago === 'Efectivo' ? `
+                                  <a
+                                      onclick="imprimirConstanciaPagoInicial(${item.idventapago}, 'ticket', true)"
+                                      target="_blank"
+                                      class="btn btn-sm btn-outline-primary"
+                                      title="Ver comprobante">
+                                      <i class="fas fa-print"></i>
+                                  </a>
+                                  ` : item.comprobante ? `
+                                  <a
+                                      href="files/ventas/${item.comprobante}"
+                                      target="_blank"
+                                      class="btn btn-sm btn-outline-primary"
+                                      title="Ver comprobante">
+                                      <i class="fas fa-eye"></i>
+                                  </a>
+                                  `: `
+                                  <button
+                                      type="button"
+                                      class="btn btn-sm btn-outline-primary"
+                                      onclick="abrirAjuntarComp(${item.idventapago})"
+                                      title="Adjuntar comprobante">
+                                      <i class="fas fa-upload"></i>
+                                  </button>
+                              `
             }
                             </td>
                         </tr>

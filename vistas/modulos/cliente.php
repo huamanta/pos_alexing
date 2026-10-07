@@ -158,7 +158,7 @@ date_default_timezone_set('America/Lima');
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Teléfono:</label>
-                <input type="text" class="form-control" name="telefono" id="telefono" maxlength="20"
+                <input type="text" class="form-control" name="telefono" id="telefono" maxlength="50"
                   placeholder="Teléfono">
               </div>
             </div>
