@@ -201,7 +201,6 @@ class Producto extends Helpers
 				'success' => true,
 				'message' => 'Producto registrado correctamente.'
 			]);
-
 		} catch (Exception $e) {
 
 			$this->pdo->rollBack();
@@ -396,15 +395,11 @@ class Producto extends Helpers
 				"success" => true,
 				"message" => "Producto actualizado correctamente"
 			]);
-
-
 		} catch (Exception $e) {
 
 			$this->pdo->rollBack();
 			return Response::error($e->getMessage());
-
 		}
-
 	}
 
 	public function mostrarStockProductoE($idproductoE)
@@ -469,8 +464,6 @@ class Producto extends Helpers
 			$this->pdo->commit();
 
 			return json_encode(array("success" => true, "message" => "Registro desactivado correctamente", "id" => $update));
-
-
 		} catch (Throwable $e) {
 
 			if (isset($this->pdo) && $this->pdo->inTransaction()) {
@@ -502,8 +495,6 @@ class Producto extends Helpers
 			$this->pdo->commit();
 
 			return json_encode(array("success" => true, "message" => "Registro activado correctamente", "id" => $update));
-
-
 		} catch (Throwable $e) {
 
 			if (isset($this->pdo) && $this->pdo->inTransaction()) {
@@ -651,6 +642,8 @@ class Producto extends Helpers
 			->join('categoria c', 'a.idcategoria = c.idcategoria')
 			->where('c.nombre', '!=', 'SERVICIO')
 			->where('ip.stock', '<=', 'ip.stock_minimo')
+			->where('a.controla_stock', '=', 'Si')
+			->where('a.alerta_stock', '=', 'Si')
 			->where('a.idsucursal', '=', $idsucursal)
 			->orderBy('a.fechac', 'DESC')
 			->limit(5)
@@ -1022,7 +1015,7 @@ class Producto extends Helpers
 			$deleted = (new FluentSaver($this->pdo))
 				->table('producto')
 				->primaryKey('idproducto')
-				->softDelete($idcotizacion);
+				->softDelete($idproducto);
 
 			if (!$deleted) {
 				throw new Exception("No se pudo eliminar el registro");
@@ -1542,7 +1535,6 @@ class Producto extends Helpers
 							'idproducto' => $idproducto,
 						])
 						->save();
-
 				} else {
 					$producto_configuracion_id = (new FluentSaver($this->pdo))
 						->table('producto_configuracion')
@@ -1616,7 +1608,6 @@ class Producto extends Helpers
 									'estado' => 1
 								])
 								->update();
-
 						} else {
 
 							(new FluentSaver($this->pdo))
@@ -1640,7 +1631,6 @@ class Producto extends Helpers
 				'status' => true,
 				'msg' => 'Configuraciones guardadas correctamente'
 			];
-
 		} catch (Throwable $e) {
 
 			if ($this->pdo->inTransaction()) {
@@ -1794,7 +1784,6 @@ class Producto extends Helpers
 				->orderBy('il.fecha_vencimiento', 'ASC')
 				->orderBy('il.idinventario_lote', 'ASC')
 				->first();
-
 		} else {
 
 			// Producto sin lotes: stock desde inventario_producto
@@ -1859,7 +1848,7 @@ class Producto extends Helpers
 					'fecha_ingreso' => 'N/A',
 					'fvencimiento' => 'Sin lote',
 					'dias_restantes' =>
-						'<span class="badge bg-secondary">N/A</span>',
+					'<span class="badge bg-secondary">N/A</span>',
 					'cantidad' => number_format($stock, 2),
 					'stock_lote' => $stock > 0
 						? '<span class="badge bg-success">'
@@ -1973,7 +1962,6 @@ class Producto extends Helpers
 
 			if ($stockLote <= 0) {
 				$reg['stock_lote'] = '<span class="badge bg-danger"> Agotado </span>';
-
 			} elseif ($cantidad > 0 && ($stockLote / $cantidad) < 0.3) {
 				$reg['stock_lote'] = '<span class="badge bg-warning">' . number_format($stockLote, 2) . ' Unid.</span>';
 			} else {
@@ -2247,7 +2235,6 @@ class Producto extends Helpers
 						if (!ejecutarConsulta($sqlLote)) {
 							throw new Exception('Error al actualizar lote existente');
 						}
-
 					} else {
 
 						// ➜ CREAR NUEVO LOTE (solo si no eligió lote)
@@ -2302,7 +2289,6 @@ class Producto extends Helpers
 					'stock_nuevo' => $nuevo_stock,
 					'fecha' => $fecha_kardex
 				];
-
 			} catch (Exception $e) {
 				//  Deshacer si algo falla
 				ejecutarConsulta("ROLLBACK");
@@ -2407,7 +2393,6 @@ class Producto extends Helpers
 				'success' => true,
 				'data' => $query->get()
 			]);
-
 		} catch (Exception $e) {
 			return Response::json([
 				'success' => false,
@@ -2740,7 +2725,6 @@ class Producto extends Helpers
 				'productos' => $insertados,
 				'series' => $seriesInsertadas
 			]);
-
 		} catch (Throwable $e) {
 
 			if ($this->pdo->inTransaction()) {
@@ -2810,6 +2794,4 @@ class Producto extends Helpers
 
 		return $idmodelo;
 	}
-
 }
-
