@@ -169,7 +169,7 @@ class SisVenta extends Helpers
             }
 
             // Documentación
-            $this->crearDocumentacion($idVenta);
+            $this->crearDocumentacion($idVenta, $tipopago);
 
             $this->pdo->commit();
 
@@ -193,30 +193,26 @@ class SisVenta extends Helpers
     }
 
     private function crearDocumentacion(
-        int $idventa
+        int $idventa,
+        string $tipopago
     ): bool {
 
         $tipos = [1]; // 1 = contrato crédito
+        $estadoContrato = 1;
+        if ($tipopago != "Si") {
+            $estadoContrato = 2;
+        }
         foreach ($tipos as $tipo) {
 
-            /*
-             * Obtener correlativo siguiente
-             */
+            // Obtener correlativo siguiente
             $row = (new DBQuery($this->pdo))
-                ->query("
-                SELECT 
-                    COALESCE(MAX(correlativo),0) + 1 AS correlativo
-                FROM documentacion
-                WHERE tipo = :tipo
-            ", [
-                    'tipo' => $tipo
-                ])
+                ->select('COALESCE(MAX(correlativo),0) + 1 AS correlativo')
+                ->from('documentacion')
+                ->where('tipo', '=', $tipo)
                 ->first();
 
             $correlativo = $row['correlativo'] ?? 1;
-            /*
-             * Insertar documento
-             */
+            //Crear documento
             $fecha_kardex = Carbon::now();
             $resultado = (new FluentSaver($this->pdo))
                 ->table('documentacion')
@@ -224,7 +220,7 @@ class SisVenta extends Helpers
                     'fecha_contrato' => $fecha_kardex,
                     'tipo' => $tipo,
                     'correlativo' => $correlativo,
-                    'estado' => 1,
+                    'estado' => $estadoContrato,
                     'idventa' => $idventa
                 ])
                 ->save();
