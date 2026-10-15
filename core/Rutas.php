@@ -1,594 +1,385 @@
 <?php
+require_once __DIR__ . "/../modelos/Helpers.php";
+require_once __DIR__ . "/../core/FluentQuery.php";
+require_once __DIR__ . '/../core/Response.php';
 
-class Rutas
+class Rutas extends Helpers
 {
-    const MODULOS = [
-        'Ventas' => 'fas fa-shopping-bag',
-        'Facturacion y cajas' => 'fas fa-store-alt',
-        'Almacen' => 'fas fa-boxes',
-        'Inventario' => 'fas fa-clipboard-list',
-        'Compras' => 'fas fa-dolly',
-        'Cobros' => 'fas fa-hand-holding-usd',
-        'Taller' => 'fas fa-tools',
-        'Personal' => 'fas fa-users-cog',
-        'Configuracion' => 'fas fa-cog',
-        'Consulta compras' => 'fas fa-shopping-cart',
-        'Consultar ventas' => 'fas fa-chart-line',
-    ];
-
-    const LISTA = [
-
-        // INICIO
-        [
-            'url' => 'inicio',
-            'modulo' => null,
-            'submodulo' => 'Inicio',
-            'permiso' => 'inicio',
-            'icono' => 'fas fa-home',
-            'menu' => true
-        ],
-
-        // PROCESOS INTERNOS
-        [
-            'url' => 'procesar',
-            'modulo' => null,
-            'submodulo' => null,
-            'permiso' => 'procesar',
-            'icono' => null,
-            'menu' => false
-        ],
-
-        // VENTAS
-        [
-            'url' => 'contrato',
-            'modulo' => 'Ventas',
-            'submodulo' => 'Contratos',
-            'permiso' => 'Contratos',
-            'icono' => 'fas fa-file-contract',
-            'menu' => true
-        ],
-        [
-            'url' => 'solicitudes',
-            'modulo' => 'Ventas',
-            'submodulo' => 'Solicitudes',
-            'permiso' => 'Solicitudes',
-            'icono' => 'fas fa-file-signature',
-            'menu' => true
-        ],
-        [
-            'url' => 'venta-pos',
-            'modulo' => 'Ventas',
-            'submodulo' => 'Punto de venta',
-            'permiso' => 'Punto de venta',
-            'icono' => 'fas fa-cash-register',
-            'menu' => true
-        ],
-        [
-            'url' => 'guia',
-            'modulo' => 'Ventas',
-            'submodulo' => 'Guia de remision',
-            'permiso' => 'Guia de remision',
-            'icono' => 'fas fa-truck',
-            'menu' => true
-        ],
-        [
-            'url' => 'cotizacion',
-            'modulo' => 'Ventas',
-            'submodulo' => 'Cotizaciones',
-            'permiso' => 'Cotizaciones',
-            'icono' => 'fas fa-file-invoice-dollar',
-            'menu' => true
-        ],
-        [
-            'url' => 'nota-credito',
-            'modulo' => 'Ventas',
-            'submodulo' => 'Notas de credito',
-            'permiso' => 'Notas de credito',
-            'icono' => 'fas fa-file-invoice',
-            'menu' => true
-        ],
-
-        // CLIENTES
-        [
-            'url' => 'cliente',
-            'modulo' => null,
-            'submodulo' => 'Clientes',
-            'permiso' => 'Clientes',
-            'icono' => 'fas fa-users',
-            'menu' => true
-        ],
-
-        // FACTURACION Y CAJAS
-        [
-            'url' => 'venta',
-            'modulo' => 'Facturacion y cajas',
-            'submodulo' => 'Comprobantes',
-            'permiso' => 'Comprobantes',
-            'icono' => 'fas fa-file-invoice',
-            'menu' => true
-        ],
-        [
-            'url' => 'resumen',
-            'modulo' => 'Facturacion y cajas',
-            'submodulo' => 'Resumen diario',
-            'permiso' => 'Resumen diario',
-            'icono' => 'fas fa-calendar-day',
-            'menu' => true
-        ],
-        [
-            'url' => 'bancos',
-            'modulo' => 'Facturacion y cajas',
-            'submodulo' => 'Bancos',
-            'permiso' => 'Bancos',
-            'icono' => 'fas fa-university',
-            'menu' => true
-        ],
-        [
-            'url' => 'conceptos',
-            'modulo' => 'Facturacion y cajas',
-            'submodulo' => 'Conceptos',
-            'permiso' => 'Conceptos',
-            'icono' => 'fas fa-list',
-            'menu' => true
-        ],
-        [
-            'url' => 'movimientos',
-            'modulo' => 'Facturacion y cajas',
-            'submodulo' => 'Movimientos',
-            'permiso' => 'Movimientos',
-            'icono' => 'fas fa-exchange-alt',
-            'menu' => true
-        ],
-        [
-            'url' => 'cajas',
-            'modulo' => 'Facturacion y cajas',
-            'submodulo' => 'Cajas',
-            'permiso' => 'Cajas',
-            'icono' => 'fas fa-cash-register',
-            'menu' => true
-        ],
-
-        // ALMACEN
-        [
-            'url' => 'producto',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Productos',
-            'permiso' => 'Productos',
-            'icono' => 'fas fa-box',
-            'menu' => true
-        ],
-        [
-            'url' => 'servicio',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Servicios',
-            'permiso' => 'Servicios',
-            'icono' => 'fas fa-concierge-bell',
-            'menu' => true
-        ],
-        [
-            'url' => 'nombres-precios',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Nombres Precios',
-            'permiso' => 'Nombres Precios',
-            'icono' => 'fas fa-tags',
-            'menu' => true
-        ],
-        [
-            'url' => 'categoria',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Categorias',
-            'permiso' => 'Categorias',
-            'icono' => 'fas fa-sitemap',
-            'menu' => true
-        ],
-        [
-            'url' => 'marca',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Marcas',
-            'permiso' => 'Marcas',
-            'icono' => 'fas fa-copyright',
-            'menu' => true
-        ],
-        [
-            'url' => 'modelo',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Modelos',
-            'permiso' => 'Modelos',
-            'icono' => 'fas fa-cubes',
-            'menu' => true
-        ],
-        [
-            'url' => 'rubro',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Lineas',
-            'permiso' => 'Lineas',
-            'icono' => 'fas fa-layer-group',
-            'menu' => true
-        ],
-        [
-            'url' => 'condicionventa',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Condicion de venta',
-            'permiso' => 'Condicion de venta',
-            'icono' => 'fas fa-handshake',
-            'menu' => true
-        ],
-        [
-            'url' => 'unidad-medida',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Unidad de medida',
-            'permiso' => 'Unidad de medida',
-            'icono' => 'fas fa-ruler-combined',
-            'menu' => true
-        ],
-        [
-            'url' => 'traslado',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Traslados',
-            'permiso' => 'Traslados',
-            'icono' => 'fas fa-truck-loading',
-            'menu' => true
-        ],
-        [
-            'url' => 'reportes-digemid',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Reportes',
-            'permiso' => 'Reportes',
-            'icono' => 'fas fa-chart-pie',
-            'menu' => true
-        ],
-        [
-            'url' => 'reportes-vencimiento',
-            'modulo' => 'Almacen',
-            'submodulo' => 'Vencimientos',
-            'permiso' => 'Vencimientos',
-            'icono' => 'fas fa-calendar-times',
-            'menu' => true
-        ],
-
-        // INVENTARIO
-        [
-            'url' => 'toma-inventario',
-            'modulo' => 'Inventario',
-            'submodulo' => 'Toma de inventario',
-            'permiso' => 'Toma de inventario',
-            'icono' => 'fas fa-clipboard-check',
-            'menu' => true
-        ],
-        [
-            'url' => 'ajuste-inventario',
-            'modulo' => 'Inventario',
-            'submodulo' => 'Ajuste de inventario',
-            'permiso' => 'Ajuste de inventario',
-            'icono' => 'fas fa-sliders-h',
-            'menu' => true
-        ],
-
-        // COMPRAS
-        [
-            'url' => 'compra',
-            'modulo' => 'Compras',
-            'submodulo' => 'Crear compras',
-            'permiso' => 'Crear compras',
-            'icono' => 'fas fa-cart-plus',
-            'menu' => true
-        ],
-        [
-            'url' => 'proveedor',
-            'modulo' => 'Compras',
-            'submodulo' => 'Proveedores',
-            'permiso' => 'Proveedores',
-            'icono' => 'fas fa-truck',
-            'menu' => true
-        ],
-
-        // CAJA CHICA
-        [
-            'url' => 'caja-chica',
-            'modulo' => null,
-            'submodulo' => 'Resumen caja',
-            'permiso' => 'Resumen caja',
-            'icono' => 'fas fa-wallet',
-            'menu' => true
-        ],
-
-        // COBROS
-        [
-            'url' => 'cuentas-cobrar',
-            'modulo' => 'Cobros',
-            'submodulo' => 'Cuentas por cobrar',
-            'permiso' => 'Cuentas por cobrar',
-            'icono' => 'fas fa-money-bill-wave',
-            'menu' => true
-        ],
-        [
-            'url' => 'refinanciamientos',
-            'modulo' => 'Cobros',
-            'submodulo' => 'Refinanciar creditos',
-            'permiso' => 'Refinanciar creditos',
-            'icono' => 'fas fa-sync-alt',
-            'menu' => true
-        ],
-        [
-            'url' => 'recuperacion-vehiculos',
-            'modulo' => 'Cobros',
-            'submodulo' => 'Recuperacion de vehiculos',
-            'permiso' => 'Recuperacion de vehiculos',
-            'icono' => 'fas fa-car',
-            'menu' => true
-        ],
-
-        // CUENTAS POR PAGAR
-        [
-            'url' => 'cuentasxpagar',
-            'modulo' => null,
-            'submodulo' => 'Cuentas por pagar',
-            'permiso' => 'Cuentas por pagar',
-            'icono' => 'fas fa-file-invoice-dollar',
-            'menu' => true
-        ],
-
-        // KARDEX
-        [
-            'url' => 'kardex',
-            'modulo' => null,
-            'submodulo' => 'Kardex',
-            'permiso' => 'Kardex',
-            'icono' => 'fas fa-book',
-            'menu' => true
-        ],
-
-        // TALLER
-        [
-            'url' => 'orden-trabajo',
-            'modulo' => 'Taller',
-            'submodulo' => 'Orden de trabajo',
-            'permiso' => 'Orden de trabajo',
-            'icono' => 'fas fa-tools',
-            'menu' => true
-        ],
-
-        // PERSONAL
-        [
-            'url' => 'asistencia',
-            'modulo' => 'Personal',
-            'submodulo' => 'Asistencia',
-            'permiso' => 'Asistencia',
-            'icono' => 'fas fa-user-clock',
-            'menu' => true
-        ],
-        [
-            'url' => 'personal',
-            'modulo' => 'Personal',
-            'submodulo' => 'Personal',
-            'permiso' => 'Personal',
-            'icono' => 'fas fa-users',
-            'menu' => true
-        ],
-        [
-            'url' => 'usuario',
-            'modulo' => 'Personal',
-            'submodulo' => 'Usuarios',
-            'permiso' => 'Usuarios',
-            'icono' => 'fas fa-user-cog',
-            'menu' => true
-        ],
-        [
-            'url' => 'permiso',
-            'modulo' => 'Personal',
-            'submodulo' => 'Permisos',
-            'permiso' => 'Permisos',
-            'icono' => 'fas fa-user-shield',
-            'menu' => true
-        ],
-
-        // CONFIGURACION
-        [
-            'url' => 'negocio',
-            'modulo' => 'Configuracion',
-            'submodulo' => 'Datos generales',
-            'permiso' => 'Datos generales',
-            'icono' => 'fas fa-building',
-            'menu' => true
-        ],
-        [
-            'url' => 'empresas',
-            'modulo' => 'Configuracion',
-            'submodulo' => 'Facturadores',
-            'permiso' => 'Facturadores',
-            'icono' => 'fas fa-file-signature',
-            'menu' => true
-        ],
-        [
-            'url' => 'sucursal',
-            'modulo' => 'Configuracion',
-            'submodulo' => 'Sucursales',
-            'permiso' => 'Sucursales',
-            'icono' => 'fas fa-store',
-            'menu' => true
-        ],
-
-        // CONSULTA COMPRAS
-        [
-            'url' => 'compras-fecha',
-            'modulo' => 'Consulta compras',
-            'submodulo' => 'Compras',
-            'permiso' => 'Compras',
-            'icono' => 'fas fa-search-dollar',
-            'menu' => true
-        ],
-        [
-            'url' => 'compras-proveedor',
-            'modulo' => 'Consulta compras',
-            'submodulo' => 'Compras por proveedor',
-            'permiso' => 'Compras por proveedor',
-            'icono' => 'fas fa-truck-loading',
-            'menu' => true
-        ],
-
-        // CONSULTA VENTAS
-        [
-            'url' => 'ventas-cliente',
-            'modulo' => 'Consultar ventas',
-            'submodulo' => 'Ventas por cliente',
-            'permiso' => 'Ventas por cliente',
-            'icono' => 'fas fa-user-tag',
-            'menu' => true
-        ],
-        [
-            'url' => 'ventas-vendedor',
-            'modulo' => 'Consultar ventas',
-            'submodulo' => 'Ventas por vendedor',
-            'permiso' => 'Ventas por vendedor',
-            'icono' => 'fas fa-user-tie',
-            'menu' => true
-        ],
-        [
-            'url' => 'ventas-producto',
-            'modulo' => 'Consultar ventas',
-            'submodulo' => 'Ventas - utilidades',
-            'permiso' => 'Ventas - utilidades',
-            'icono' => 'fas fa-chart-line',
-            'menu' => true
-        ],
-        [
-            'url' => 'ventas-credito',
-            'modulo' => 'Consultar ventas',
-            'submodulo' => 'Creditos - utilidades',
-            'permiso' => 'Creditos - utilidades',
-            'icono' => 'fas fa-credit-card',
-            'menu' => true
-        ],
-        [
-            'url' => 'reporte',
-            'modulo' => 'Consultar ventas',
-            'submodulo' => 'Reporte consolidado',
-            'permiso' => 'Reporte consolidado',
-            'icono' => 'fas fa-chart-bar',
-            'menu' => true
-        ],
-        [
-            'url' => 'ventas-servicio',
-            'modulo' => 'Consultar ventas',
-            'submodulo' => 'Ventas por servicio',
-            'permiso' => 'Ventas por servicio',
-            'icono' => 'fas fa-concierge-bell',
-            'menu' => true
-        ],
-        [
-            'url' => 'detalle-venta-comprobante',
-            'modulo' => 'Consultar ventas',
-            'submodulo' => 'Ventas detalle',
-            'permiso' => 'Ventas detalle',
-            'icono' => 'fas fa-list-alt',
-            'menu' => true
-        ],
-
-        // RUTAS DEL SISTEMA
-        [
-            'url' => 'recuperar',
-            'modulo' => null,
-            'submodulo' => null,
-            'permiso' => null,
-            'icono' => null,
-            'menu' => false
-        ],
-        [
-            'url' => 'reset',
-            'modulo' => null,
-            'submodulo' => null,
-            'permiso' => null,
-            'icono' => null,
-            'menu' => false
-        ],
-        [
-            'url' => 'salirsucursal',
-            'modulo' => null,
-            'submodulo' => null,
-            'permiso' => null,
-            'icono' => null,
-            'menu' => false
-        ],
-        [
-            'url' => 'salir',
-            'modulo' => null,
-            'submodulo' => null,
-            'permiso' => null,
-            'icono' => null,
-            'menu' => false
-        ],
-        [
-            'url' => 'restaurant',
-            'modulo' => null,
-            'submodulo' => null,
-            'permiso' => null,
-            'icono' => null,
-            'menu' => false
-        ],
-        [
-            'url' => 'pos',
-            'modulo' => null,
-            'submodulo' => null,
-            'permiso' => null,
-            'icono' => null,
-            'menu' => false
-        ],
-        [
-            'url' => 'service',
-            'modulo' => null,
-            'submodulo' => null,
-            'permiso' => null,
-            'icono' => null,
-            'menu' => false
-        ],
-        [
-            'url' => 'caja-chica2',
-            'modulo' => null,
-            'submodulo' => null,
-            'permiso' => null,
-            'icono' => null,
-            'menu' => false
-        ],
-        [
-            'url' => 'configuracion',
-            'modulo' => null,
-            'submodulo' => null,
-            'permiso' => 'Configuracion',
-            'icono' => null,
-            'menu' => false
-        ],
-    ];
-
-    public static function obtener(string $url): ?array
+    public function __construct()
     {
-        foreach (self::LISTA as $ruta) {
-            if ($ruta['url'] === $url) {
-                return $ruta;
+        parent::__construct();
+    }
+
+    public function obtener(string $url): ?array
+    {
+        foreach ($this->listaRutas() as $modulo) {
+            if (($modulo['ruta'] ?? null) === $url) {
+                return $modulo;
+            }
+
+            foreach ($modulo['childrens'] ?? [] as $hijo) {
+                if (($hijo['ruta'] ?? null) === $url) {
+                    $hijo['submodulo'] = true;
+                    $hijo['modulo'] = $modulo['nombre'];
+
+                    return $hijo;
+                }
             }
         }
 
         return null;
     }
 
-    public static function obtenerPorModulo(?string $modulo): array
+    public function verificarPermiso(int $id): bool
     {
-        return array_values(
-            array_filter(
-                self::LISTA,
-                fn($ruta) =>
-                    $ruta['menu'] === true &&
-                    $ruta['modulo'] === $modulo
-            )
-        );
+        $idusuario = (int) ($_SESSION['idusuario'] ?? 0);
+
+        if (Helpers::esSuperusuario($idusuario)) {
+            return true;
+        }
+
+        $resultado = (new DBQuery($this->pdo))
+            ->query("
+                    SELECT EXISTS (
+                        SELECT 1
+                        FROM permisos p
+                        WHERE p.modulo_id = :modulo_id
+                            AND p.codigo LIKE '%.ver'
+                            AND (
+                                EXISTS (
+                                    SELECT 1
+                                    FROM rol_permisos rp
+                                    INNER JOIN usuario_roles ur
+                                        ON ur.rol_id = rp.rol_id
+                                    WHERE rp.permiso_id = p.id
+                                        AND ur.idusuario = :usuario_rol
+                                )
+                                OR EXISTS (
+                                    SELECT 1
+                                    FROM usuario_permisos up
+                                    WHERE up.permiso_id = p.id
+                                        AND up.idusuario = :usuario_directo
+                                )
+                            )
+                    ) AS autorizado
+                ", 
+                [
+                'modulo_id' => $id,
+                'usuario_rol' => $idusuario,
+                'usuario_directo' => $idusuario,
+            ])
+            ->first();
+
+        return (bool) ($resultado['autorizado'] ?? false);
     }
 
-    public static function obtenerRutasMenu(): array
+    public function listaRutas(): array
     {
-        return array_values(
-            array_filter(
-                self::LISTA,
-                fn($ruta) => $ruta['menu'] === true
-            )
-        );
+        $modulos = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('modulos')
+            ->where('menu', '=', 1)
+            ->orderBy('orden', 'ASC')
+            ->get();
+
+        $resultado = [];
+        $padres = [];
+        $autorizados = [];
+
+        foreach ($modulos as $modulo) {
+            $id = (int) $modulo['id'];
+
+            $autorizados[$id] = $this->verificarPermiso($id);
+
+            $resultado[$id] = [
+                'id' => $id,
+                'nombre' => $modulo['nombre'],
+                'ruta' => $modulo['ruta'],
+                'icono' => $modulo['icono'],
+                'childrens' => [],
+            ];
+
+            $padres[$id] = !empty($modulo['modulo_padre_id'])
+                ? (int) $modulo['modulo_padre_id']
+                : null;
+        }
+
+        foreach (array_keys($resultado) as $id) {
+            $padreId = $padres[$id];
+
+            if ($padreId !== null && isset($resultado[$padreId])) {
+                $resultado[$padreId]['childrens'][] = $resultado[$id];
+            }
+        }
+
+        $filtrar = function (array $modulo) use (&$filtrar, $autorizados): ?array {
+            $hijosAutorizados = [];
+
+            foreach ($modulo['childrens'] as $hijo) {
+                $hijoFiltrado = $filtrar($hijo);
+
+                if ($hijoFiltrado !== null) {
+                    $hijosAutorizados[] = $hijoFiltrado;
+                }
+            }
+
+            $id = (int) $modulo['id'];
+
+            // Mantener el padre si tiene permiso propio o hijos autorizados.
+            if (!($autorizados[$id] ?? false) && empty($hijosAutorizados)) {
+                return null;
+            }
+
+            $modulo['childrens'] = $hijosAutorizados;
+
+            return $modulo;
+        };
+
+        $rutas = [];
+
+        foreach ($resultado as $id => $modulo) {
+            if ($padres[$id] !== null) {
+                continue;
+            }
+
+            $moduloFiltrado = $filtrar($modulo);
+
+            if ($moduloFiltrado !== null) {
+                $rutas[] = $moduloFiltrado;
+            }
+        }
+
+        return $rutas;
     }
+
+    // public function listaRutas()
+    // {
+    //     return [
+    //         [
+    //             'nombre' => 'Inicio',
+    //             'ruta' => 'inicio',
+    //             'icono' => 'fas fa-home',
+    //             'permiso' => 'inicio',
+    //             'childrens' => [],
+    //         ],
+    //         [
+    //             'nombre' => 'Clientes',
+    //             'ruta' => 'cliente',
+    //             'icono' => 'fas fa-users',
+    //             'permiso' => 'Clientes',
+    //             'childrens' => [],
+    //         ],
+    //         [
+    //             'nombre' => 'Ventas',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-shopping-bag',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Contratos', 'ruta' => 'contrato', 'icono' => 'fas fa-file-contract', 'permiso' => 'Contratos'],
+    //                 ['nombre' => 'Solicitudes', 'ruta' => 'solicitudes', 'icono' => 'fas fa-file-signature', 'permiso' => 'Solicitudes'],
+    //                 ['nombre' => 'Punto de venta', 'ruta' => 'venta-pos', 'icono' => 'fas fa-cash-register', 'permiso' => 'Punto de venta'],
+    //                 ['nombre' => 'Guía de remisión', 'ruta' => 'guia', 'icono' => 'fas fa-truck', 'permiso' => 'Guia de remision'],
+    //                 ['nombre' => 'Cotizaciones', 'ruta' => 'cotizacion', 'icono' => 'fas fa-file-invoice-dollar', 'permiso' => 'Cotizaciones'],
+    //                 ['nombre' => 'Notas de crédito', 'ruta' => 'nota-credito', 'icono' => 'fas fa-file-invoice', 'permiso' => 'Notas de credito'],
+    //             ],
+    //         ],
+    //         [
+    //             'nombre' => 'Resumen caja',
+    //             'ruta' => 'caja-chica',
+    //             'icono' => 'fas fa-wallet',
+    //             'permiso' => 'Resumen caja',
+    //             'childrens' => [],
+    //         ],
+    //         [
+    //             'nombre' => 'Facturacion y cajas',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-store-alt',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Comprobantes', 'ruta' => 'venta', 'icono' => 'fas fa-file-invoice', 'permiso' => 'Comprobantes'],
+    //                 ['nombre' => 'Resumen diario', 'ruta' => 'resumen', 'icono' => 'fas fa-calendar-day', 'permiso' => 'Resumen diario'],
+    //                 ['nombre' => 'Bancos', 'ruta' => 'bancos', 'icono' => 'fas fa-university', 'permiso' => 'Bancos'],
+    //                 ['nombre' => 'Conceptos', 'ruta' => 'conceptos', 'icono' => 'fas fa-list', 'permiso' => 'Conceptos'],
+    //                 ['nombre' => 'Movimientos', 'ruta' => 'movimientos', 'icono' => 'fas fa-exchange-alt', 'permiso' => 'Movimientos'],
+    //                 ['nombre' => 'Cajas', 'ruta' => 'cajas', 'icono' => 'fas fa-cash-register', 'permiso' => 'Cajas'],
+    //             ],
+    //         ],
+    //         [
+    //             'nombre' => 'Almacen',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-boxes',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Productos', 'ruta' => 'producto', 'icono' => 'fas fa-box', 'permiso' => 'Productos'],
+    //                 ['nombre' => 'Servicios', 'ruta' => 'servicio', 'icono' => 'fas fa-concierge-bell', 'permiso' => 'Servicios'],
+    //                 ['nombre' => 'Nombres Precios', 'ruta' => 'nombres-precios', 'icono' => 'fas fa-tags', 'permiso' => 'Nombres Precios'],
+    //                 ['nombre' => 'Categorias', 'ruta' => 'categoria', 'icono' => 'fas fa-sitemap', 'permiso' => 'Categorias'],
+    //                 ['nombre' => 'Marcas', 'ruta' => 'marca', 'icono' => 'fas fa-copyright', 'permiso' => 'Marcas'],
+    //                 ['nombre' => 'Modelos', 'ruta' => 'modelo', 'icono' => 'fas fa-cubes', 'permiso' => 'Modelos'],
+    //                 ['nombre' => 'Lineas', 'ruta' => 'rubro', 'icono' => 'fas fa-layer-group', 'permiso' => 'Lineas'],
+    //                 ['nombre' => 'Condicion de venta', 'ruta' => 'condicionventa', 'icono' => 'fas fa-handshake', 'permiso' => 'Condicion de venta'],
+    //                 ['nombre' => 'Unidad de medida', 'ruta' => 'unidad-medida', 'icono' => 'fas fa-ruler-combined', 'permiso' => 'Unidad de medida'],
+    //                 ['nombre' => 'Traslados', 'ruta' => 'traslado', 'icono' => 'fas fa-truck-loading', 'permiso' => 'Traslados'],
+    //                 ['nombre' => 'Reportes', 'ruta' => 'reportes-digemid', 'icono' => 'fas fa-chart-pie', 'permiso' => 'Reportes'],
+    //                 ['nombre' => 'Vencimientos', 'ruta' => 'reportes-vencimiento', 'icono' => 'fas fa-calendar-times', 'permiso' => 'Vencimientos'],
+    //             ],
+    //         ],
+    //         [
+    //             'nombre' => 'Inventario',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-clipboard-list',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Kardex', 'ruta' => 'kardex', 'icono' => 'fas fa-book', 'permiso' => 'Kardex'],
+    //                 ['nombre' => 'Toma de inventario', 'ruta' => 'toma-inventario', 'icono' => 'fas fa-clipboard-check', 'permiso' => 'Toma de inventario'],
+    //                 ['nombre' => 'Ajuste de inventario', 'ruta' => 'ajuste-inventario', 'icono' => 'fas fa-sliders-h', 'permiso' => 'Ajuste de inventario'],
+    //             ],
+    //         ],
+    //         [
+    //             'nombre' => 'Compras',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-dolly',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Crear compras', 'ruta' => 'compra', 'icono' => 'fas fa-cart-plus', 'permiso' => 'Crear compras'],
+    //                 ['nombre' => 'Proveedores', 'ruta' => 'proveedor', 'icono' => 'fas fa-truck', 'permiso' => 'Proveedores'],
+    //                 ['nombre' => 'Cuentas por pagar', 'ruta' => 'cuentasxpagar', 'icono' => 'fas fa-file-invoice-dollar', 'permiso' => 'Cuentas por pagar'],
+    //             ],
+    //         ],
+    //         [
+    //             'nombre' => 'Cobros',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-hand-holding-usd',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Cuentas por cobrar', 'ruta' => 'cuentas-cobrar', 'icono' => 'fas fa-money-bill-wave', 'permiso' => 'Cuentas por cobrar'],
+    //                 ['nombre' => 'Refinanciar creditos', 'ruta' => 'refinanciamientos', 'icono' => 'fas fa-sync-alt', 'permiso' => 'Refinanciar creditos'],
+    //                 ['nombre' => 'Recuperacion de vehiculos', 'ruta' => 'recuperacion-vehiculos', 'icono' => 'fas fa-car', 'permiso' => 'Recuperacion de vehiculos'],
+    //             ],
+    //         ],
+    //         [
+    //             'nombre' => 'Taller',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-tools',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Orden de trabajo', 'ruta' => 'orden-trabajo', 'icono' => 'fas fa-tools', 'permiso' => 'Orden de trabajo'],
+    //             ],
+    //         ],
+    //         [
+    //             'nombre' => 'Personal',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-users-cog',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Asistencia', 'ruta' => 'asistencia', 'icono' => 'fas fa-user-clock', 'permiso' => 'Asistencia'],
+    //                 ['nombre' => 'Personal', 'ruta' => 'personal', 'icono' => 'fas fa-users', 'permiso' => 'Personal'],
+    //                 ['nombre' => 'Usuarios', 'ruta' => 'usuario', 'icono' => 'fas fa-user-cog', 'permiso' => 'Usuarios'],
+    //                 ['nombre' => 'Permisos', 'ruta' => 'permiso', 'icono' => 'fas fa-user-shield', 'permiso' => 'Permisos'],
+    //             ],
+    //         ],
+    //         [
+    //             'nombre' => 'Configuracion',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-cog',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Datos generales', 'ruta' => 'negocio', 'icono' => 'fas fa-building', 'permiso' => 'Datos generales'],
+    //                 ['nombre' => 'Facturadores', 'ruta' => 'empresas', 'icono' => 'fas fa-file-signature', 'permiso' => 'Facturadores'],
+    //                 ['nombre' => 'Sucursales', 'ruta' => 'sucursal', 'icono' => 'fas fa-store', 'permiso' => 'Sucursales'],
+    //             ],
+    //         ],
+    //         [
+    //             'nombre' => 'Consulta compras',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-shopping-cart',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Compras', 'ruta' => 'compras-fecha', 'icono' => 'fas fa-search-dollar', 'permiso' => 'Compras'],
+    //                 ['nombre' => 'Compras por proveedor', 'ruta' => 'compras-proveedor', 'icono' => 'fas fa-truck-loading', 'permiso' => 'Compras por proveedor'],
+    //             ],
+    //         ],
+    //         [
+    //             'nombre' => 'Consultar ventas',
+    //             'ruta' => null,
+    //             'icono' => 'fas fa-chart-line',
+    //             'permiso' => null,
+    //             'childrens' => [
+    //                 ['nombre' => 'Ventas por cliente', 'ruta' => 'ventas-cliente', 'icono' => 'fas fa-user-tag', 'permiso' => 'Ventas por cliente'],
+    //                 ['nombre' => 'Ventas por vendedor', 'ruta' => 'ventas-vendedor', 'icono' => 'fas fa-user-tie', 'permiso' => 'Ventas por vendedor'],
+    //                 ['nombre' => 'Ventas - utilidades', 'ruta' => 'ventas-producto', 'icono' => 'fas fa-chart-line', 'permiso' => 'Ventas - utilidades'],
+    //                 ['nombre' => 'Creditos - utilidades', 'ruta' => 'ventas-credito', 'icono' => 'fas fa-credit-card', 'permiso' => 'Creditos - utilidades'],
+    //                 ['nombre' => 'Reporte consolidado', 'ruta' => 'reporte', 'icono' => 'fas fa-chart-bar', 'permiso' => 'Reporte consolidado'],
+    //                 ['nombre' => 'Ventas por servicio', 'ruta' => 'ventas-servicio', 'icono' => 'fas fa-concierge-bell', 'permiso' => 'Ventas por servicio'],
+    //                 ['nombre' => 'Ventas detalle', 'ruta' => 'detalle-venta-comprobante', 'icono' => 'fas fa-list-alt', 'permiso' => 'Ventas detalle'],
+    //             ],
+    //         ],
+
+    //         // RUTAS DEL SISTEMA
+
+    //         [
+    //             'nombre' => null,
+    //             'ruta' => 'recuperar',
+    //             'icono' => null,
+    //             'permiso' => null,
+    //             'childrens' => []
+    //         ],
+    //         [
+    //             'nombre' => null,
+    //             'ruta' => 'reset',
+    //             'icono' => null,
+    //             'permiso' => null,
+    //             'childrens' => []
+    //         ],
+    //         [
+    //             'nombre' => null,
+    //             'ruta' => 'salirsucursal',
+    //             'icono' => null,
+    //             'permiso' => null,
+    //             'childrens' => []
+    //         ],
+    //         [
+    //             'nombre' => null,
+    //             'ruta' => 'salir',
+    //             'icono' => null,
+    //             'permiso' => null,
+    //             'childrens' => []
+    //         ],
+    //         [
+    //             'nombre' => null,
+    //             'ruta' => 'restaurant',
+    //             'icono' => null,
+    //             'permiso' => null,
+    //             'childrens' => []
+    //         ],
+    //         [
+    //             'nombre' => null,
+    //             'ruta' => 'pos',
+    //             'icono' => null,
+    //             'permiso' => null,
+    //             'childrens' => []
+    //         ],
+    //         [
+    //             'nombre' => null,
+    //             'ruta' => 'service',
+    //             'icono' => null,
+    //             'permiso' => null,
+    //             'childrens' => []
+    //         ],
+    //         [
+    //             'nombre' => null,
+    //             'ruta' => 'caja-chica2',
+    //             'icono' => null,
+    //             'permiso' => null,
+    //             'childrens' => []
+    //         ],
+    //         [
+    //             'nombre' => null,
+    //             'ruta' => 'configuracion',
+    //             'icono' => null,
+    //             'permiso' => 'Configuracion',
+    //             'childrens' => []
+    //         ]
+    //     ];
+    // }
 }

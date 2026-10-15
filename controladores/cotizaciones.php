@@ -550,7 +550,4 @@ switch ($_GET["op"]) {
 		$is_aprobated = $_GET["is_aprobated"] ?? false;
 		$venta->cotizacionesCliente($idsucursal, $idcliente, $is_aprobated);
 		break;
-
-
-
 }

@@ -85,13 +85,13 @@
                     <div class="col-sm-6">
                       <div class="form-group">
                         <select class="form-control" name="tipo_comprobante" id="tipo_comprobante">
-                          <?php if ($helpers->getUserPermissionAccion('Crear nota de venta')): ?>
+                          <?php if ($helpers->verificarPermisoCodigo('puntoventa.notadeventa')): ?>
                             <option>Nota de Venta</option>
                           <?php endif; ?>
-                          <?php if ($helpers->getUserPermissionAccion('Crear boleta')): ?>
+                          <?php if ($helpers->verificarPermisoCodigo('puntoventa.boleta')): ?>
                             <option>Boleta</option>
                           <?php endif; ?>
-                          <?php if ($helpers->getUserPermissionAccion('Crear factura')): ?>
+                          <?php if ($helpers->verificarPermisoCodigo('puntoventa.factura')): ?>
                             <option>Factura</option>
                           <?php endif; ?>
                         </select>

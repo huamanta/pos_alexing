@@ -874,12 +874,12 @@ date_default_timezone_set('America/Lima');
                                                     <div class="form-group col-lg-3" id="n5">
                                                         <label style="font-size: 11px;">Interes %:</label>
                                                         <div class="input-group">
-                                                            <?php if ($helpers->getUserPermissionAccion('Editar interes credito')): ?>
+                                                            <?php if ($helpers->verificarPermisoCodigo('cotizacion.editarinteres')): ?>
                                                                 <input style="border-color: #FFC7BB; text-align:center"
                                                                     type="text" class="form-control" id="inputInteres"
                                                                     name="inputInteres" value="0">
                                                             <?php endif; ?>
-                                                            <?php if (!$helpers->getUserPermissionAccion('Editar interes credito')): ?>
+                                                            <?php if (!$helpers->verificarPermisoCodigo('cotizacion.editarinteres')): ?>
                                                                 <input style="border-color: #FFC7BB; text-align:center"
                                                                     type="text" class="form-control" id="inputInteres"
                                                                     name="inputInteres" value="0" readonly>

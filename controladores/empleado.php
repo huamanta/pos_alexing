@@ -128,12 +128,12 @@ switch ($_GET["op"]) {
 
 		while ($reg = $rspta->fetch_object()) {
 			$editar = '';
-			if ($helpers->getUserPermissionAccion('Editar personal')) {
+			if ($helpers->verificarPermisoCodigo('personal.editar')) {
 				$editar = '<button class="btn btn-warning btn-xs" onclick="mostrar(' . $reg->idpersonal . ')"><i class="fas fa-edit"></i></button>';
 			}
 
 			$desactivar = "";
-			if ($helpers->getUserPermissionAccion('Activar/desactivar personal')) {
+			if ($helpers->verificarPermisoCodigo('personal.activardesactivar')) {
 				if ($reg->condicion) {
 					$desactivar = ' <button class="btn btn-danger btn-xs" onclick="desactivar(' . $reg->idpersonal . ')"><i class="fas fa-times-circle"></i></button>';
 				} else {

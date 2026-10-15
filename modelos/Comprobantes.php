@@ -114,11 +114,22 @@ class Comprobantes extends Helpers
 
 		foreach ($data as &$item) {
 			$item['selected'] = ($item['nombre'] == "Nota de Venta");
-			$item['status'] = Helpers::getUserPermissionAccion('Crear ' . $item['nombre']);
+			$nombre = $this->normalizarNombre($item['nombre']);
+			$item['status'] = Helpers::verificarPermisoCodigo('puntoventa.' . $nombre);
 		}
 
 		return Response::json($data);
 	}
+
+
+	function normalizarNombre(string $nombre): string
+    {
+        $nombre = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nombre);
+        $nombre = strtolower($nombre);
+
+        return preg_replace('/[^a-z0-9]/', '', $nombre);
+    }
+
 
 	public function mostrar_serie_ticket($idsucursal)
 	{

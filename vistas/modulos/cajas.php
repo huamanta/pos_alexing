@@ -34,7 +34,7 @@ date_default_timezone_set('America/Lima');
                                 <div class="row">
                                     <div class="col-md-11">
                                     </div>
-                                    <?php if ($helpers->getUserPermissionAccion('Crear caja')) { ?>
+                                    <?php if ($helpers->verificarPermisoCodigo('cajas.crear')) { ?>
                                         <div class="col-md-1">
                                             <button type="button" class="btn btn-outline-primary btn-block btn-xs"
                                                 data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i>

@@ -1102,8 +1102,8 @@ class Compra extends Helpers
             ->paginate($page, $limit);
 
         $response['permissions'] = [
-            'editar' => Helpers::getUserPermissionAccion('Editar compra'),
-            'anular' => Helpers::getUserPermissionAccion('Anular compra')
+            'editar' => Helpers::verificarPermisoCodigo('compras.editar'),
+            'anular' => Helpers::verificarPermisoCodigo('compras.anular')
         ];
         return Response::json($response);
     }

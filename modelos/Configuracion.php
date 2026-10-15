@@ -9,6 +9,10 @@ class Configuracion extends Helpers
         parent::__construct();
     }
 
+    public function dataSucursal(int $idsucursal) {
+        return Response::json(Helpers::dataSucursal($idsucursal));
+    }
+
     public function listarConfiguracion(int $idsucursal)
     {
         try {

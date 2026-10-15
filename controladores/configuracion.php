@@ -1,15 +1,26 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
-require '../modelos/Configuracion.php';
+require __DIR__ . '/../modelos/Configuracion.php';
+require_once __DIR__ . "/../modelos/Helpers.php";
+require_once __DIR__ . "/../core/Rutas.php";
+
 $configuracion = new Configuracion();
+$helpers = new Helpers();
+$rutas = new Rutas();
+$idsucursal = $_SESSION['idsucursal'] || null;
 switch ($_GET['op']) {
+    case 'modulos':
+        $idusuario = $_SESSION['idusuario'];
+        echo Response::json($rutas->listaRutas($idusuario));
+        break;
+    case 'dataSucursal':
+        $configuracion->dataSucursal($idsucursal);
+        break;
     case 'listarConfiguracion':
-        $idsucursal = $_SESSION['idsucursal'];
         $configuracion->listarConfiguracion($idsucursal);
         break;
 
     case 'actualizarConfiguracionGeneral':
-        $idsucursal = $_POST['idsucursal'];
         $nombre = $_POST['nombre'];
         $telefono = $_POST['telefono'];
         $direccion = $_POST['direccion'];
@@ -23,7 +34,6 @@ switch ($_GET['op']) {
         break;
 
     case 'actualizarConfiguracionMora':
-        $idsucursal = $_SESSION['idsucursal'];
         $is_mora_credito = !empty($_POST['is_mora_credito']) ? 1 : 0;
         $valor_mora_credito = (float) ($_POST['valor_mora_credito'] ?? 0);
         $dias_gracia = (int) ($_POST['dias_gracia'] ?? 0);
@@ -31,7 +41,6 @@ switch ($_GET['op']) {
         break;
 
     case 'actualizarConfiguracionCreditos':
-        $idsucursal = $_SESSION['idsucursal'];
         $is_notificacion = !empty($_POST['is_notificacion']) ? 1 : 0;
         $is_calculo_mes = !empty($_POST['is_calculo_mes']) ? 1 : 0;
         $interes_defecto = (float) ($_POST['interes_defecto'] ?? 0);
@@ -42,14 +51,12 @@ switch ($_GET['op']) {
         break;
 
     case 'actualizarConfiguracionRefinanciamiento':
-        $idsucursal = $_SESSION['idsucursal'];
         $is_refinanciamiento = !empty($_POST['is_refinanciamiento']) ? 1 : 0;
         $maximo_refinanciamientos = (int) ($_POST['maximo_refinanciamientos'] ?? 0);
         $configuracion->actualizarConfiguracionRefinanciamiento($idsucursal, $is_refinanciamiento, $maximo_refinanciamientos);
         break;
 
     case 'actualizarConfiguracionFacturacion':
-        $idsucursal = $_SESSION['idsucursal'];
         $is_send_sunat = !empty($_POST['is_send_sunat']) ? 1 : 0;
         $ruc = $_POST['ruc'];
         $razon_social = $_POST['razon_social'];
@@ -62,6 +69,6 @@ switch ($_GET['op']) {
         break;
 
     default:
-        # code...
+        echo "No existe la opcion";
         break;
 }

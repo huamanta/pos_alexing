@@ -1,12 +1,3 @@
-<?php
-date_default_timezone_set('America/Lima');
-// Asegúrate de iniciar sesión si no está iniciada
-if (session_status() === PHP_SESSION_NONE) {
-  session_start();
-}
-?>
-
-
 <style type="text/css">
   /* =========================================
            VARIABLES Y CONFIGURACIÓN GLOBAL
@@ -277,8 +268,8 @@ if (session_status() === PHP_SESSION_NONE) {
   <section class="content">
     <div class="container-fluid">
       <?php
-      $puedeVerPaneles = $helpers->getUserPermissionAccion('Ver paneles');
-      $puedeVerGraficos = $helpers->getUserPermissionAccion('Ver graficos');
+      $puedeVerPaneles = $helpers->verificarPermisoCodigo('inicio.paneles');
+      $puedeVerGraficos = $helpers->verificarPermisoCodigo('inicio.graficos');
       ?>
 
       <?php if (!$puedeVerPaneles && !$puedeVerGraficos) { ?>

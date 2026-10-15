@@ -209,7 +209,7 @@
                     <div class="settings-menu">
 
                         <ul class="nav nav-pills nav-stacked">
-                            <?php if ($helpers->getUserPermisoModulo('Configuracion general', 'Configuracion')): ?>
+                            <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.datos')): ?>
                                 <li class="active" id="itemMenuGeneral">
                                     <a href="#general" data-toggle="tab" onclick="activarMenu('itemMenuGeneral')">
                                         <i class="fa fa-home"></i>
@@ -217,7 +217,7 @@
                                     </a>
                                 </li>
                             <?php endif; ?>
-                            <?php if ($helpers->getUserPermisoModulo('Solicitud credito', 'Configuracion')): ?>
+                            <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.solicitudes')): ?>
                                 <li id="itemMenuSolicitud">
                                     <a href="#solicitudes" data-toggle="tab" onclick="activarMenu('itemMenuSolicitud')">
                                         <i class="fa fa-file-contract"></i>
@@ -225,7 +225,7 @@
                                     </a>
                                 </li>
                             <?php endif; ?>
-                            <?php if ($helpers->getUserPermisoModulo('Configuracion credito', 'Configuracion')): ?>
+                            <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.credito')): ?>
                                 <li id="itemMenuCredito">
                                     <a href="#credito" data-toggle="tab" onclick="activarMenu('itemMenuCredito')">
                                         <i class="fa fa-credit-card"></i>
@@ -233,7 +233,7 @@
                                     </a>
                                 </li>
                             <?php endif; ?>
-                            <?php if ($helpers->getUserPermisoModulo('Configuracion mora', 'Configuracion')): ?>
+                            <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.mora')): ?>
                                 <li id="itemMenuMora">
                                     <a href="#mora" data-toggle="tab" onclick="activarMenu('itemMenuMora')">
                                         <i class="fa fa-exclamation-triangle"></i>
@@ -241,7 +241,7 @@
                                     </a>
                                 </li>
                             <?php endif; ?>
-                            <?php if ($helpers->getUserPermisoModulo('Configuracion refinanciamiento', 'Configuracion')): ?>
+                            <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.refinanciamiento')): ?>
                                 <li id="itemMenuRef">
                                     <a href="#ref" data-toggle="tab" onclick="activarMenu('itemMenuRef')">
                                         <i class="fa fa-user"></i>
@@ -250,7 +250,7 @@
                                 </li>
                             <?php endif; ?>
 
-                            <?php if ($helpers->getUserPermisoModulo('Configuracion facturacion', 'Configuracion')): ?>
+                            <?php if ($helpers->verificarPermisoCodigo('configuracion.facturacion')): ?>
                                 <li id="itemMenuFacturacion">
                                     <a href="#facturacion" data-toggle="tab" onclick="activarMenu('itemMenuFacturacion')">
                                         <i class="fa fa-folder-open"></i>
@@ -269,7 +269,7 @@
                 <div class="col-md-9">
 
                     <div class="tab-content">
-                        <?php if ($helpers->getUserPermisoModulo('Configuracion general', 'Configuracion')): ?>
+                        <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.datos')): ?>
                             <div class="tab-pane active" id="general">
                                 <div class="setting-card">
                                     <div class="setting-header">
@@ -427,7 +427,7 @@
                                 </div>
                             </div>
                         <?php endif; ?>
-                        <?php if ($helpers->getUserPermisoModulo('Solicitud credito', 'Configuracion')): ?>
+                        <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.solicitudes')): ?>
                             <div class="tab-pane active" id="solicitudes">
                                 <div class="setting-card">
                                     <div class="setting-header">
@@ -511,7 +511,7 @@
                                 </div>
                             </div>
                         <?php endif; ?>
-                        <?php if ($helpers->getUserPermisoModulo('Configuracion facturacion', 'Configuracion')): ?>
+                        <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.facturacion')): ?>
                             <div class="tab-pane" id="facturacion">
                                 <div class="setting-card">
                                     <div class="setting-header">
@@ -687,7 +687,7 @@
                                 </div>
                             </div>
                         <?php endif; ?>
-                        <?php if ($helpers->getUserPermisoModulo('Configuracion mora', 'Configuracion')): ?>
+                        <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.mora')): ?>
                             <!-- MORA -->
                             <div class="tab-pane" id="mora">
 
@@ -836,7 +836,7 @@
 
                             </div>
                         <?php endif; ?>
-                        <?php if ($helpers->getUserPermisoModulo('Configuracion credito', 'Configuracion')): ?>
+                        <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.credito')): ?>
                             <!-- CREDITO -->
                             <div class="tab-pane" id="credito">
 
@@ -1079,7 +1079,7 @@
 
                             </div>
                         <?php endif; ?>
-                        <?php if ($helpers->getUserPermisoModulo('Configuracion refinanciamiento', 'Configuracion')): ?>
+                        <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.refinanciamiento')): ?>
                             <!-- REFINANCIAMIENTO -->
                             <div class="tab-pane" id="ref">
 

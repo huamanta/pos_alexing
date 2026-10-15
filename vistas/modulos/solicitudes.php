@@ -134,7 +134,7 @@
                     <div class="row">
 
                         <div class="col-md-2">
-                            <?php if ($helpers->getUserPermissionAccion('Crear solicitud')): ?>
+                            <?php if ($helpers->verificarPermisoCodigo('solicitudes.crear')): ?>
                                 <button type="button" class="btn btn-primary btn-block" onclick="nuevaSolicitud()">
 
                                     <i class="fa fa-plus"></i>
