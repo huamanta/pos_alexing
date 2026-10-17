@@ -30,6 +30,7 @@ class Roles extends Helpers
         $modulos = (new DBQuery($this->pdo))
             ->select('*')
             ->from('modulos')
+            ->whereNotNull('nombre')
             ->get();
 
         $permisos = (new DBQuery($this->pdo))

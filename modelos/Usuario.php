@@ -18,7 +18,7 @@ class Usuario extends Helpers
         $modulos = (new DBQuery($this->pdo))
             ->select('*')
             ->from('modulos')
-            ->orderBy('orden', 'ASC')
+            ->whereNotNull('nombre')
             ->get();
 
         $permisos = (new DBQuery($this->pdo))
