@@ -581,7 +581,7 @@ $helpers = new Helpers();
                 </div>
             </div>
         `).join('');
-        $("#stockAlertCount").show();
+            $("#stockAlertCount").show();
         });
     }
 
@@ -620,6 +620,15 @@ $helpers = new Helpers();
                 toastr.info(mensaje);
         }
     }
+
+    function initDataSucursal() {
+        $.get('controladores/configuracion.php', { 'op': 'dataSucursal' }, function (response) {
+            $("#nombreSucursal").text(response.nombre);
+            $("#monedaSucursal").text(response.moneda);
+        })
+    }
+
+    initDataSucursal();
 </script>
 
 <nav class="main-header navbar navbar-expand navbar-white navbar-light sticky-top" id="navbar-global">
@@ -629,14 +638,18 @@ $helpers = new Helpers();
             <a class="nav-link navbar-icon-link" data-widget="pushmenu" role="button"><i
                     class="fas fa-bars fa-lg"></i></a>
         </li>
-        <?php if (!empty($_SESSION['nombre_sucursal'])): ?>
-            <li class="nav-item d-flex align-items-center">
-                <span class="badge user-profile-link px-3 py-2">
-                    <i class="fas fa-store mr-1"></i>
-                    <?php echo $_SESSION['nombre_sucursal']; ?>
-                </span>
-            </li>
-        <?php endif; ?>
+        <li class="nav-item d-flex align-items-center">
+            <span class="badge user-profile-link px-3 py-2">
+                <i class="fas fa-store mr-1"></i>
+                <span id="nombreSucursal"></span>
+            </span>
+        </li>
+        <li class="nav-item d-flex align-items-center">
+            <span class="badge user-profile-link px-3 py-2">
+                <i class="fas fa-money-bill-wave mr-1"></i>
+                <span id="monedaSucursal"></span>
+            </span>
+        </li>
     </ul>
     <ul class="navbar-nav ml-auto align-items-center">
 
@@ -646,7 +659,7 @@ $helpers = new Helpers();
                     <i class="fas fa-expand-arrows-alt"></i>
                 </a>
             </li>
-            <?php if ($helpers->getUserPermissionAccion('Puede ver calendario')): ?>
+            <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.vercalendario')): ?>
                 <li class="nav-item">
                     <a class="nav-link navbar-icon-link" role="button" title="Ver calendario" onclick="verEventos()">
                         <i class="fas fa-calendar"></i>
@@ -688,7 +701,8 @@ $helpers = new Helpers();
             <li class="nav-item dropdown mr-2" id="stockbajito">
                 <a class="nav-link position-relative text-secondary" data-toggle="dropdown" href="#" id="stockAlertLink">
                     <i class="fas fa-bell fa-lg"></i>
-                    <span class="badge badge-warning badge-notify navbar-badge-custom" id="stockAlertCount" style="display:none;">0</span>
+                    <span class="badge badge-warning badge-notify navbar-badge-custom" id="stockAlertCount"
+                        style="display:none;">0</span>
                 </a>
                 <div
                     class="dropdown-menu dropdown-menu-lg dropdown-menu-right shadow-lg border-0 rounded-lg mt-2 p-0 stock-alert-dropdown">
@@ -758,8 +772,8 @@ $helpers = new Helpers();
                             Cambiar sucursal
                         </a>
                     <?php endif; ?>
-                    <?php if ($helpers->getUserPermisoModulo('Configuracion general')): ?>
-                        <a href="configuracion"
+                    <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.ver')): ?>
+                        <a href="configuraciongeneral"
                             class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
                             <i class="fas fa-cog"></i>
                             Configuracion

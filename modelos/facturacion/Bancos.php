@@ -27,6 +27,12 @@ class Bancos extends Helpers
             ->orderBy('nombre')
             ->paginate($page, $limit);
 
+        $data['permissions'] = [
+			'editar' => Helpers::verificarPermisoCodigo('bancos.editar'),
+			'detalle' => Helpers::verificarPermisoCodigo('bancos.detalle'),
+			'eliminar' => Helpers::verificarPermisoCodigo('bancos.eliminar')
+		];
+
         return Response::json($data);
     }
 

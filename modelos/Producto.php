@@ -998,12 +998,12 @@ class Producto extends Helpers
 			->paginate((int) $page, (int) $limit);
 
 		$response['permissions'] = [
-			'editar' => Helpers::getUserPermissionAccion('Editar productos'),
-			'movimientos' => Helpers::getUserPermissionAccion('Movimientos productos'),
-			'configurar' => Helpers::getUserPermissionAccion('Configurar productos'),
-			'vencimientos' => Helpers::getUserPermissionAccion('Listar vencimientos'),
-			'desactivar' => Helpers::getUserPermissionAccion('Desactivar productos'),
-			'eliminar' => Helpers::getUserPermissionAccion('Eliminar productos')
+			'editar' => Helpers::verificarPermisoCodigo('productos.editar'),
+			'movimientos' => Helpers::verificarPermisoCodigo('productos.movimientos'),
+			'configurar' => Helpers::verificarPermisoCodigo('productos.configurar'),
+			'vencimientos' => Helpers::verificarPermisoCodigo('productos.vencimientos'),
+			'desactivar' => Helpers::verificarPermisoCodigo('productos.activardesactivar'),
+			'eliminar' => Helpers::verificarPermisoCodigo('productos.eliminar')
 		];
 
 		return Response::json($response);

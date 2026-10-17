@@ -11,16 +11,15 @@ $login = isset($_POST["login"]) ? limpiarCadena($_POST["login"]) : "";
 $clave = isset($_POST["clave"]) ? limpiarCadena($_POST["clave"]) : "";
 if (isset($_POST["idsucursal"])) {
 	if (is_array($_POST["idsucursal"])) {
-		$idsucursal = $_POST["idsucursal"]; // viene como array desde el select multiple
+		$idsucursal = $_POST["idsucursal"];
 	} else {
-		$idsucursal = [$_POST["idsucursal"]]; // si es una sola, la convertimos en array
+		$idsucursal = [$_POST["idsucursal"]];
 	}
 } else {
 	$idsucursal = [];
 }
-$permisos = isset($_POST['permiso']) ? $_POST['permiso'] : [];
-$subpermisos = isset($_POST['subpermisos']) ? $_POST['subpermisos'] : [];
-$acciones = isset($_POST['acciones']) ? $_POST['acciones'] : [];
+$roles = isset($_POST['roles']) ? $_POST['roles'] : [];
+$permisos = isset($_POST['permisos']) ? $_POST['permisos'] : [];
 
 switch ($_GET["op"]) {
 
@@ -34,9 +33,9 @@ switch ($_GET["op"]) {
 		}
 
 		if (empty($idusuario)) {
-			$usuario->insertar($idpersonal, $login, $clavehash, $idsucursal, $permisos, $subpermisos, $acciones);
+			$usuario->insertar($idpersonal, $login, $clavehash, $idsucursal, $roles, $permisos);
 		} else {
-			$usuario->editar($idusuario, $idpersonal, $login, $clavehash, $idsucursal, $permisos, $subpermisos, $acciones);
+			$usuario->editar($idusuario, $idpersonal, $login, $clavehash, $idsucursal, $roles, $permisos);
 		}
 		break;
 
@@ -134,142 +133,11 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'permisos':
-		require_once "../modelos/Permiso.php";
-
-		$permiso = new Permiso();
-		$rspta = $permiso->listarPermisos();
-
-		$id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
-		$marcados = $usuario->listarmarcados($id);
-
-		$permisosMarcados = [];
-		$subpermisosMarcados = [];
-
-		foreach ($marcados as $per) {
-			if (!empty($per['idsubpermiso'])) {
-				$subpermisosMarcados[] = intval($per['idsubpermiso']);
-			} else {
-				$permisosMarcados[] = intval($per['idpermiso']);
-			}
+		$id = isset($_GET['id']) ? filter_var($_GET['id'], FILTER_VALIDATE_INT) : 0;
+		if ($id === false || $id < 0) {
+		Response::error('ID de usuario inválido.', 400);
 		}
-
-		$accionesMarcadas = [];
-
-		$rsptaAcciones = $usuario->listaraccionesmarcadas($id);
-
-		foreach ($rsptaAcciones as $act) {
-			$accionesMarcadas[] = intval($act['idaccion_permiso']);
-		}
-
-		$subpermisos = [];
-		$rs_sub = $permiso->listarSubPermisos();
-		foreach ($rs_sub as $row) {
-			$subpermisos[$row['idpermiso']][] = $row;
-		}
-
-		$acciones = [];
-
-		$rs_acc = $permiso->listarAccionesPermiso();
-		foreach ($rs_acc as $row) {
-			$acciones[$row['idsubpermiso']][] = $row;
-		}
-
-		foreach ($rspta as $perm) {
-
-			$idPermiso = intval($perm['idpermiso']);
-			$nombrePermiso = htmlspecialchars($perm['nombre'], ENT_QUOTES, 'UTF-8');
-
-			$checked = in_array(
-				$idPermiso,
-				$permisosMarcados
-			) ? 'checked' : '';
-
-			echo "
-			<div class='permiso-card'>
-
-				<label class='permiso-title'>
-					<input
-						type='checkbox'
-						name='permiso[]'
-						value='{$idPermiso}'
-						{$checked}
-					>
-					{$nombrePermiso}
-				</label>
-			";
-
-			if (isset($subpermisos[$idPermiso])) {
-
-				foreach ($subpermisos[$idPermiso] as $sub) {
-
-					$idSubPermiso = intval($sub['idsubpermiso']);
-					$nombreSubPermiso = htmlspecialchars(
-						$sub['nombre'],
-						ENT_QUOTES,
-						'UTF-8'
-					);
-
-					$sub_checked = in_array(
-						$idSubPermiso,
-						$subpermisosMarcados
-					) ? 'checked' : '';
-
-					echo "
-					<div class='subpermiso'>
-
-						<label>
-							<input
-								type='checkbox'
-								name='subpermisos[]'
-								value='{$idSubPermiso}'
-								{$sub_checked}
-							>
-							{$nombreSubPermiso}
-						</label>
-					";
-
-					if (isset($acciones[$idSubPermiso])) {
-
-						foreach ($acciones[$idSubPermiso] as $accion) {
-
-							$idAccion = intval($accion['idaccion_permiso']);
-							$nombreAccion = htmlspecialchars(
-								$accion['nombre'],
-								ENT_QUOTES,
-								'UTF-8'
-							);
-
-							$accion_checked = in_array(
-								$idAccion,
-								$accionesMarcadas
-							) ? 'checked' : '';
-
-							echo "
-							<div class='accion'>
-
-								<label>
-									<input
-										type='checkbox'
-										name='acciones[]'
-										value='{$idAccion}'
-										{$accion_checked}
-									>
-									{$nombreAccion}
-								</label>
-
-							</div>
-							";
-						}
-					}
-
-					echo "</div>";
-				}
-			}
-
-			echo "</div>";
-		}
-
+		Response::json($usuario->obtenerDatosPermisos($id));
 		break;
 
 

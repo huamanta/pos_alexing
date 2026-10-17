@@ -5,135 +5,184 @@ require_once __DIR__ . "/../core/Response.php";
 
 class Permiso extends Helpers
 {
-    public function insertar($nombre)
-    {
-        $sql = "INSERT INTO permiso (nombre) VALUES ('$nombre')";
-        return ejecutarConsulta($sql);
-    }
-
-    public function editar($idpermiso, $nombre)
-    {
-        $sql = "UPDATE permiso SET nombre = '$nombre' WHERE idpermiso = '$idpermiso'";
-        return ejecutarConsulta($sql);
-    }
-
-    public function eliminar($idpermiso)
-    {
-        $sql = "DELETE FROM permiso WHERE idpermiso = '$idpermiso'";
-        return ejecutarConsulta($sql);
-    }
-
-    public function mostrar($idpermiso)
-    {
-        $sql = "SELECT * FROM permiso WHERE idpermiso = '$idpermiso'";
-        return ejecutarConsultaSimpleFila($sql);
-    }
-
-    public function listarPermisos()
+    public function listarPermisosNuevos(): array
     {
         return (new DBQuery($this->pdo))
-            ->select('*')
-            ->from('permiso')
+            ->query("
+                SELECT
+                    p.id,
+                    p.modulo_id,
+                    p.codigo,
+                    p.nombre,
+                    m.nombre AS modulo_nombre
+                FROM permisos p
+                INNER JOIN modulos m ON m.id = p.modulo_id
+                ORDER BY m.orden, m.nombre, p.nombre
+            ")
             ->get();
     }
 
-    public function listarSubPermisos()
+    public function listarModulosNuevos(): array
     {
         return (new DBQuery($this->pdo))
-            ->select('*')
-            ->from('subpermiso')
-            ->orderBy('idpermiso')
-            ->orderBy('idsubpermiso')
+            ->select(['id', 'nombre', 'modulo_padre_id'])
+            ->from('modulos')
+            ->orderBy('orden')
+            ->orderBy('nombre')
             ->get();
     }
 
-    public function listarAccionesPermiso() {
-        return (new DBQuery($this->pdo))
-            ->select('*')
-            ->from('accion_permiso')
-            ->orderBy('idsubpermiso')
-            ->orderBy('idaccion_permiso')
-            ->get();
-    }
-
-    public function listar()
+    public function obtenerPermisoNuevo(int $id): ?array
     {
-        $query = (new DBQuery($this->pdo))
-            ->select('*')
-            ->from('permiso')
-            ->get();
+        if ($id < 1) {
+            throw new InvalidArgumentException('ID de permiso inválido.');
+        }
 
-        $data = [];
-        foreach ($query as $row) {
-            $data[] = [
-                "0" => $row['nombre'],
-                "1" => '<button class="btn btn-warning" onclick="mostrar(' . $row['idpermiso'] . ')"><i class="fas fa-edit"></i></button>' .
-                    ' <button class="btn btn-danger" onclick="eliminar(' . $row['idpermiso'] . ')"><i class="fa fa-trash"></i></button>',
+        $permiso = (new DBQuery($this->pdo))
+            ->select(['id', 'modulo_id', 'codigo', 'nombre'])
+            ->from('permisos')
+            ->where('id', '=', $id)
+            ->first();
 
+        if (!$permiso) {
+            throw new InvalidArgumentException('El permiso seleccionado no existe.');
+        }
+
+        return $permiso;
+    }
+
+    public function guardarPermisoNuevo(
+        string $nombre,
+        string $codigo,
+        int $moduloId,
+        ?int $id = null
+    ): array {
+        $nombre = trim($nombre);
+        $codigo = trim($codigo);
+
+        if ($nombre === '') {
+            throw new InvalidArgumentException('El nombre del permiso es obligatorio.');
+        }
+        if ($codigo === '') {
+            throw new InvalidArgumentException('El código del permiso es obligatorio.');
+        }
+        if ($moduloId < 1) {
+            throw new InvalidArgumentException('Seleccione un módulo válido.');
+        }
+
+        $modulo = (new DBQuery($this->pdo))
+            ->select('id')
+            ->from('modulos')
+            ->where('id', '=', $moduloId)
+            ->first();
+        if (!$modulo) {
+            throw new InvalidArgumentException('El módulo seleccionado no existe.');
+        }
+
+        $duplicado = (new DBQuery($this->pdo))
+            ->select('id')
+            ->from('permisos')
+            ->where('codigo', '=', $codigo);
+        if ($id !== null) {
+            $duplicado->where('id', '!=', $id);
+        }
+        if ($duplicado->exists()) {
+            throw new InvalidArgumentException('Ya existe un permiso con ese código.');
+        }
+
+        if ($id !== null) {
+            $actual = (new DBQuery($this->pdo))
+                ->select('id')
+                ->from('permisos')
+                ->where('id', '=', $id)
+                ->first();
+            if (!$actual) {
+                throw new InvalidArgumentException('El permiso seleccionado no existe.');
+            }
+
+            $actualizado = (new FluentSaver($this->pdo))
+                ->table('permisos')
+                ->primaryKey('id')
+                ->timestamps(false)
+                ->data([
+                    'id' => $id,
+                    'modulo_id' => $moduloId,
+                    'codigo' => $codigo,
+                    'nombre' => $nombre,
+                ])
+                ->update();
+            if (!$actualizado) {
+                throw new RuntimeException('No se pudo actualizar el permiso.');
+            }
+
+            return [
+                'id' => $id,
+                'message' => 'Permiso actualizado correctamente.',
             ];
         }
-        $results = [
-            "sEcho" => 1,
-            "iTotalRecords" => count($data),
-            "iTotalDisplayRecords" => count($data),
-            "aaData" => $data
+
+        $newId = (new FluentSaver($this->pdo))
+            ->table('permisos')
+            ->timestamps(false)
+            ->data([
+                'modulo_id' => $moduloId,
+                'codigo' => $codigo,
+                'nombre' => $nombre,
+            ])
+            ->save();
+
+        if (!$newId) {
+            throw new RuntimeException('No se pudo registrar el permiso.');
+        }
+
+        return [
+            'id' => $newId,
+            'message' => 'Permiso registrado correctamente.',
         ];
-
-        return Response::json($results);
     }
-    // ================= SUBPERMISOS ==================
 
-    // Insertar subpermiso
-    public function insertarSubpermiso($idpermiso, $nombre)
+    public function eliminarPermisoNuevo(int $id): void
     {
-        $sql = "INSERT INTO subpermiso (idpermiso, nombre) VALUES ('$idpermiso', '$nombre')";
-        return ejecutarConsulta($sql) ? "Subpermiso registrado" : "Error al registrar";
+        if ($id < 1) {
+            throw new InvalidArgumentException('ID de permiso inválido.');
+        }
+
+        $this->pdo->beginTransaction();
+        try {
+            $permiso = (new DBQuery($this->pdo))
+                ->select('id')
+                ->from('permisos')
+                ->where('id', '=', $id)
+                ->first();
+            if (!$permiso) {
+                throw new InvalidArgumentException('El permiso seleccionado no existe.');
+            }
+
+            (new FluentSaver($this->pdo))
+                ->table('rol_permisos')
+                ->where('permiso_id', '=', $id)
+                ->deleteWhere();
+
+            (new FluentSaver($this->pdo))
+                ->table('usuario_permisos')
+                ->where('permiso_id', '=', $id)
+                ->deleteWhere();
+
+            $eliminado = (new FluentSaver($this->pdo))
+                ->table('permisos')
+                ->primaryKey('id')
+                ->delete($id);
+            if (!$eliminado) {
+                throw new RuntimeException('No se pudo eliminar el permiso.');
+            }
+
+            $this->pdo->commit();
+        } catch (\Throwable $th) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            throw $th;
+        }
     }
-
-    public function listarSubpermiso($idpermiso)
-    {
-        $sql = "SELECT s.idsubpermiso, s.nombre, p.nombre as modulo
-                FROM subpermiso s
-                INNER JOIN permiso p ON s.idpermiso = p.idpermiso
-                WHERE s.idpermiso = '$idpermiso'";
-        return ejecutarConsulta($sql);
-    }
-
-    public function eliminarSubpermiso($idsubpermiso)
-    {
-        $sql = "DELETE FROM subpermiso WHERE idsubpermiso = '$idsubpermiso'";
-        return ejecutarConsulta($sql) ? "Subpermiso eliminado" : "Error al eliminar";
-    }
-
-    // ================= ACCIONES ==================
-
-    public function insertarAccion($idsubpermiso, $nombre, $descripcion = '')
-    {
-        $sql = "INSERT INTO accion_permiso (idsubpermiso, nombre, descripcion) 
-                VALUES ('$idsubpermiso', '$nombre', '$descripcion')";
-        return ejecutarConsulta($sql) ? "Acción registrada" : "Error al registrar acción";
-    }
-
-    public function listarAcciones($idsubpermiso)
-    {
-        $sql = "SELECT * FROM accion_permiso WHERE idsubpermiso = '$idsubpermiso'";
-        return ejecutarConsulta($sql);
-    }
-
-    public function eliminarAccion($idaccion_permiso)
-    {
-        // Primero eliminar dependencias en usuario_accion
-        $sql1 = "DELETE FROM usuario_accion WHERE idaccion_permiso = '$idaccion_permiso'";
-        $ok1 = ejecutarConsulta($sql1);
-
-        // Luego eliminar de accion_permiso
-        $sql2 = "DELETE FROM accion_permiso WHERE idaccion_permiso = '$idaccion_permiso'";
-        $ok2 = ejecutarConsulta($sql2);
-
-        return ($ok1 && $ok2) ? "Acción eliminada" : "Error al eliminar acción";
-    }
-
-
 
 }
-?>

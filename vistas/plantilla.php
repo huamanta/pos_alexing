@@ -104,7 +104,7 @@ if (isset($rutaActual)) {
   <script src="./files/plugins/fullcalendar/main.min.js"></script>
   <script src="./vistas/js/pagination.js"></script>
   <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
       $('[data-toggle="tooltip"]').tooltip();
     });
   </script>
@@ -191,31 +191,23 @@ if (isset($rutaActual)) {
       require_once __DIR__ . "/../modelos/Helpers.php";
 
       $helpers = new Helpers();
+      $rutas = new Rutas();
 
-      $rutaConfig = Rutas::obtener((string) $rutaUrl);
+      $rutaConfig = $rutas->obtener((string) $rutaUrl);
 
       if ($rutaConfig === null) {
         include __DIR__ . "/modulos/errores/404.php";
         exit;
       }
 
-      if ($rutaConfig['submodulo']) {
-        $permiso = $helpers->getUserPermisoModulo(
-          $rutaConfig['permiso'],
-          $rutaConfig['modulo']
-        );
-      } else {
-        $permiso = $helpers->getUserPermisoModulo(
-          $rutaConfig['permiso']
-        );
-      }
+      $permiso = $rutas->verificarPermiso($rutaConfig['id']);
 
-      if ($rutaConfig['permiso'] !== null && !$permiso) {
+      if (!$permiso) {
         include __DIR__ . "/modulos/errores/403.php";
         exit;
       }
 
-      include __DIR__ . "/modulos/" . $rutaConfig['url'] . ".php";
+      include __DIR__ . "/modulos/" . $rutaConfig['ruta'] . ".php";
     } else {
 
       include __DIR__ . "/modulos/elegir-sucursal.php";
@@ -238,10 +230,10 @@ if (isset($rutaActual)) {
       include "modulos/login.php";
     }
 
-  ?>
-</body>
+    ?>
+  </body>
 
-</html>
-<?php
+  </html>
+  <?php
   }
-?>
+  ?>

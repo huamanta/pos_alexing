@@ -157,7 +157,7 @@ class Cajas extends Helpers
         while ($reg = $rspta->fetch_object()) {
 
             $supeUsuario = Helpers::esSuperusuario();
-            $pemisoUsuario = Helpers::getUserPermissionAccion('Cerrar caja');
+            $pemisoUsuario = Helpers::verificarPermisoCodigo('cajas.cerrarcaja');
             $puedeCerrarCaja = $supeUsuario || ($pemisoUsuario && $reg->idusuario == $_SESSION['idusuario']);
 
             $data[] = [

@@ -1486,10 +1486,10 @@ class Venta extends Helpers
 
 
         $response['permissions'] = [
-            'anular' => Helpers::getUserPermissionAccion('Anular venta'),
-            'ver' => Helpers::getUserPermissionAccion('Ver venta'),
-            'editar' => Helpers::getUserPermissionAccion('Editar venta'),
-            'imprimir' => Helpers::getUserPermissionAccion('Imprimir venta')
+            'anular' => Helpers::verificarPermisoCodigo('puntoventa.anular'),
+            'ver' => Helpers::verificarPermisoCodigo('puntoventa.verventa'),
+            'editar' => Helpers::verificarPermisoCodigo('puntoventa.editar'),
+            'imprimir' => Helpers::verificarPermisoCodigo('puntoventa.imprimir')
         ];
 
 

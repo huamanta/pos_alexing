@@ -86,67 +86,47 @@ class Helpers
         return trim(preg_replace('/[0-9\.\,\s]/', '', $formatted));
     }
 
-    public function getUserPermissionAccion(string $nombre_permiso): bool
+    public function verificarPermisoCodigo(string $codigo): bool
     {
-        $idusuario = $_SESSION['idusuario'] ?? null;
+        $idusuario = (int) ($_SESSION['idusuario'] ?? 0);
 
-        if ($idusuario === null || empty($nombre_permiso)) {
-            return false;
-        }
-
-        $esSuperusuario = self::esSuperusuario($idusuario);
-
-        if ($esSuperusuario) {
+        if (Helpers::esSuperusuario($idusuario)) {
             return true;
         }
 
-        // 2. Verificar permisos por usuario
-        return (new DBQuery($this->pdo))
-            ->select('ua.*')
-            ->from('usuario_accion ua')
-            ->join('accion_permiso ap', 'ua.idaccion_permiso = ap.idaccion_permiso')
-            ->softDeletes('ua.deleted_at')
-            ->where('ua.idusuario', '=', $idusuario)
-            ->where('ap.nombre', '=', $nombre_permiso)
-            ->exists();
+        $resultado = (new DBQuery($this->pdo))
+            ->query("
+            SELECT EXISTS (
+                SELECT 1
+                FROM permisos p
+                WHERE p.codigo = :codigo
+                    AND (
+                        EXISTS (
+                            SELECT 1
+                            FROM rol_permisos rp
+                            INNER JOIN usuario_roles ur
+                                ON ur.rol_id = rp.rol_id
+                            WHERE rp.permiso_id = p.id
+                                AND ur.idusuario = :usuario_rol
+                        )
+                        OR EXISTS (
+                            SELECT 1
+                            FROM usuario_permisos up
+                            WHERE up.permiso_id = p.id
+                                AND up.idusuario = :usuario_directo
+                        )
+                    )
+            ) AS autorizado
+        ", [
+                'codigo' => $codigo,
+                'usuario_rol' => $idusuario,
+                'usuario_directo' => $idusuario,
+            ])
+            ->first();
+
+        return (bool) ($resultado['autorizado'] ?? false);
     }
 
-
-
-    public function getUserPermisoModulo(string $modulo, ?string $modulo_parent = null): bool
-    {
-        $idusuario = $_SESSION['idusuario'] ?? null;
-
-        if ($idusuario === null || empty($modulo)) {
-            return false;
-        }
-
-        $esSuperusuario = self::esSuperusuario($idusuario);
-
-        if ($esSuperusuario) {
-            return true;
-        }
-
-        if ($modulo_parent === null) {
-            return (new DBQuery($this->pdo))
-                ->select('up.*')
-                ->from('usuario_permiso up')
-                ->join('permiso p', 'up.idpermiso = p.idpermiso')
-                ->softDeletes('up.deleted_at')
-                ->where('up.idusuario', '=', $idusuario)
-                ->where('p.nombre', '=', $modulo)
-                ->exists();
-        }
-
-        return (new DBQuery($this->pdo))
-            ->select('up.*')
-            ->from('usuario_permiso up')
-            ->join('subpermiso sp', 'up.idsubpermiso = sp.idsubpermiso')
-            ->softDeletes('up.deleted_at')
-            ->where('up.idusuario', '=', $idusuario)
-            ->where('sp.nombre', '=', $modulo)
-            ->exists();
-    }
 
 
     public function esSuperusuario($idusuario = null): bool

@@ -79,9 +79,9 @@ class Solicitudes extends Persona
                 ->paginate($page, $limit);
 
             $response['permissions'] = [
-                'aprobar' => Helpers::getUserPermissionAccion('Aprobar solicitudes'),
-                'pasos' => Helpers::getUserPermissionAccion('Ver flujo de pasos'),
-                'archivos' => Helpers::getUserPermissionAccion('Ver archivos de solicitud')
+                'aprobar' => Helpers::verificarPermisoCodigo('solicitudes.aprobar'),
+                'pasos' => Helpers::verificarPermisoCodigo('solicitudes.pasos'),
+                'archivos' => Helpers::verificarPermisoCodigo('solicitudes.archivos')
             ];
 
             return json_encode($response);
@@ -233,6 +233,15 @@ class Solicitudes extends Persona
         }
     }
 
+
+    function normalizarNombre(string $nombre): string
+    {
+        $nombre = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $nombre);
+        $nombre = strtolower($nombre);
+
+        return preg_replace('/[^a-z0-9]/', '', $nombre);
+    }
+
     public function mostrar($idsolicitud)
     {
         $sql = "SELECT
@@ -267,8 +276,9 @@ class Solicitudes extends Persona
         $resultPasos = [];
 
         foreach ($datapasos as $paso) {
-            $permisoNombre = "Puede realizar " . mb_strtolower($paso['nombre'], 'UTF-8');
-            $tienePermiso = Helpers::getUserPermissionAccion($permisoNombre);
+            $nombre = $this->normalizarNombre($paso['nombre']);
+            $permisoNombre = "solicitudes." . $nombre;
+            $tienePermiso = Helpers::verificarPermisoCodigo($permisoNombre);
             if (!$tienePermiso) {
                 continue;
             }
@@ -284,7 +294,7 @@ class Solicitudes extends Persona
             'data' => $resultado
         ];
 
-        return json_encode($response);
+        return Response::json($response);
     }
 
     private function insertarWorkflow($idsolicitud, $idpaso, $observacion, $idusuario, $estadoPaso = 'PENDIENTE', $fechaFin = null)

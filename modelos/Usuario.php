@@ -13,9 +13,96 @@ class Usuario extends Helpers
         parent::__construct();
     }
 
-    //Implementamos un método para insertar registros
-    public function insertar($idpersonal, $login, $clave, $idsucursal, $permisos, $subpermisos, $acciones)
+    public function obtenerDatosPermisos(int $idusuario = 0): array
     {
+        $modulos = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('modulos')
+            ->whereNotNull('nombre')
+            ->get();
+
+        $permisos = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('permisos')
+            ->get();
+
+        $permisosPorModulo = [];
+        foreach ($permisos as $permiso) {
+            $permiso['id'] = (int) $permiso['id'];
+            $permisosPorModulo[(int) $permiso['modulo_id']][] = $permiso;
+        }
+
+        $modulosPorId = [];
+        foreach ($modulos as $modulo) {
+            $modulo['id'] = (int) $modulo['id'];
+            $modulo['modulo_padre_id'] = isset($modulo['modulo_padre_id'])
+                ? (int) $modulo['modulo_padre_id']
+                : null;
+            $modulo['childrens'] = [];
+            $modulo['permisos'] = $permisosPorModulo[$modulo['id']] ?? [];
+            $modulosPorId[$modulo['id']] = $modulo;
+        }
+
+        $arbolModulos = [];
+        foreach (array_keys($modulosPorId) as $moduloId) {
+            $padreId = $modulosPorId[$moduloId]['modulo_padre_id'];
+            if ($padreId !== null && isset($modulosPorId[$padreId])) {
+                $modulosPorId[$padreId]['childrens'][] = &$modulosPorId[$moduloId];
+            } else {
+                $arbolModulos[] = &$modulosPorId[$moduloId];
+            }
+        }
+        unset($moduloId);
+
+        $roles = (new DBQuery($this->pdo))
+            ->select(['id', 'nombre', 'descripcion'])
+            ->from('roles')
+            ->orderBy('nombre')
+            ->get();
+
+        $rolesSeleccionados = [];
+        $permisosSeleccionados = [];
+        if ($idusuario > 0) {
+            $rolesSeleccionados = (new DBQuery($this->pdo))
+                ->select('rol_id')
+                ->from('usuario_roles')
+                ->where('idusuario', '=', $idusuario)
+                ->get();
+            $rolesSeleccionados = array_map(
+                'intval',
+                array_column($rolesSeleccionados, 'rol_id')
+            );
+
+            $permisosSeleccionados = (new DBQuery($this->pdo))
+                ->select('permiso_id')
+                ->from('usuario_permisos')
+                ->where('idusuario', '=', $idusuario)
+                ->get();
+            $permisosSeleccionados = array_map(
+                'intval',
+                array_column($permisosSeleccionados, 'permiso_id')
+            );
+        }
+
+        return [
+            'roles' => $roles,
+            'modulos' => $arbolModulos,
+            'seleccionados' => [
+                'roles' => $rolesSeleccionados,
+                'permisos' => $permisosSeleccionados,
+            ],
+        ];
+    }
+
+    //Implementamos un método para insertar registros
+    public function insertar(
+        $idpersonal,
+        $login,
+        $clave,
+        $idsucursal,
+        $roles = [],
+        $permisos = []
+    ) {
         try {
             $this->pdo->beginTransaction();
             $usuario = (new FluentSaver($this->pdo))
@@ -31,7 +118,6 @@ class Usuario extends Helpers
                 throw new Exception('Error al crear el usuario');
             }
 
-            // Insertar usuario sucursal
             foreach ($idsucursal as $suc) {
                 $usuario_sucursal = (new FluentSaver($this->pdo))
                     ->table('usuario_sucursal')
@@ -40,56 +126,9 @@ class Usuario extends Helpers
                 if (!$usuario_sucursal) {
                     throw new Exception('Error al crear el usuario sucursal');
                 }
-
             }
 
-            // Insertar permisos
-            foreach ($permisos as $permiso) {
-                $usuario_permiso = (new FluentSaver($this->pdo))
-                    ->table('usuario_permiso')
-                    ->data(['idusuario' => $usuario, 'idpermiso' => $permiso])
-                    ->save();
-                if (!$usuario_permiso) {
-                    throw new Exception('Error al crear el usuario permiso');
-                }
-            }
-
-            // Insertar subpermisos
-            foreach ($subpermisos as $subpermiso) {
-                $permiso = (new DBQuery($this->pdo))
-                    ->select('idpermiso')
-                    ->from('subpermiso')
-                    ->where('idsubpermiso', '=', $subpermiso)
-                    ->first();
-                if ($permiso) {
-                    $idpermiso = $permiso['idpermiso'];
-                    $usuario_sub_permiso = (new FluentSaver($this->pdo))
-                        ->table('usuario_permiso')
-                        ->data([
-                            'idusuario' => $usuario,
-                            'idpermiso' => $idpermiso,
-                            'idsubpermiso' => $subpermiso
-                        ])
-                        ->save();
-                    if (!$usuario_sub_permiso) {
-                        throw new Exception('Error al crear el usuario sub permiso');
-                    }
-                }
-            }
-
-            // Insertar acciones
-            foreach ($acciones as $accion) {
-                $usuario_accion = (new FluentSaver($this->pdo))
-                    ->table('usuario_accion')
-                    ->data([
-                        'idusuario' => $usuario,
-                        'idaccion_permiso' => $accion,
-                    ])
-                    ->save();
-                if (!$usuario_accion) {
-                    throw new Exception('Error al crear el usuario accion');
-                }
-            }
+            $this->sincronizarRolesPermisos($usuario, $roles, $permisos);
 
             $this->pdo->commit();
             return Response::json([
@@ -105,8 +144,78 @@ class Usuario extends Helpers
         }
     }
 
+    private function sincronizarRolesPermisos(int $idusuario, array $roles = [], array $permisos = []): void
+    {
+        $roles = array_values(array_unique(array_filter(array_map('intval', $roles ?? []), fn($rol) => $rol > 0)));
+        $permisos = array_values(array_unique(array_filter(array_map('intval', $permisos ?? []), fn($permiso) => $permiso > 0)));
 
-    public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $permisos, $subpermisos, $acciones)
+        if ($roles) {
+            $rolesExistentes = (new DBQuery($this->pdo))
+                ->select('id')
+                ->from('roles')
+                ->whereIn('id', $roles)
+                ->get();
+
+            $rolesValidos = array_map('intval', array_column($rolesExistentes, 'id'));
+            sort($rolesValidos);
+            sort($roles);
+
+            if ($rolesValidos !== $roles) {
+                throw new InvalidArgumentException('Uno o más roles seleccionados no existen.');
+            }
+        }
+
+        if ($permisos) {
+            $permisosExistentes = (new DBQuery($this->pdo))
+                ->select('id')
+                ->from('permisos')
+                ->whereIn('id', $permisos)
+                ->get();
+
+            $permisosValidos = array_map('intval', array_column($permisosExistentes, 'id'));
+            sort($permisosValidos);
+            sort($permisos);
+
+            if ($permisosValidos !== $permisos) {
+                throw new InvalidArgumentException('Uno o más permisos seleccionados no existen.');
+            }
+        }
+
+        (new FluentSaver($this->pdo))
+            ->table('usuario_roles')
+            ->where('idusuario', '=', $idusuario)
+            ->deleteWhere();
+
+        foreach ($roles as $rolId) {
+            (new FluentSaver($this->pdo))
+                ->table('usuario_roles')
+                ->timestamps(false)
+                ->data([
+                    'idusuario' => $idusuario,
+                    'rol_id' => $rolId,
+                ])
+                ->save();
+        }
+
+        (new FluentSaver($this->pdo))
+            ->table('usuario_permisos')
+            ->where('idusuario', '=', $idusuario)
+            ->deleteWhere();
+
+        foreach ($permisos as $permisoId) {
+            (new FluentSaver($this->pdo))
+                ->table('usuario_permisos')
+                ->timestamps(false)
+                ->data([
+                    'idusuario' => $idusuario,
+                    'permiso_id' => $permisoId,
+                ])
+                ->save();
+        }
+    }
+
+
+    public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $roles = [], $permisos = [])
     {
         try {
             $this->pdo->beginTransaction();
@@ -205,255 +314,10 @@ class Usuario extends Helpers
                 }
             }
 
-            // OBTENER PERMISOS ACTUALES
-            $permisos = array_map('intval', $permisos ?? []);
-            $permisos = array_values(array_unique($permisos));
+            $roles = array_values(array_unique(array_filter(array_map('intval', $roles ?? []), fn($rol) => $rol > 0)));
+            $permisos = array_values(array_unique(array_filter(array_map('intval', $permisos ?? []), fn($permiso) => $permiso > 0)));
 
-            $subpermisos = array_map('intval', $subpermisos ?? []);
-            $subpermisos = array_values(array_unique($subpermisos));
-
-            $acciones = array_map('intval', $acciones ?? []);
-            $acciones = array_values(array_unique($acciones));
-
-            // PERMISOS PRINCIPALES
-            $permisosActuales = (new DBQuery($this->pdo))
-                ->select([
-                    'idusuario_permiso',
-                    'idpermiso',
-                    'idsubpermiso',
-                    'deleted_at'
-                ])
-                ->from('usuario_permiso')
-                ->where('idusuario', '=', $idusuario)
-                ->get();
-
-            // Reactivar / insertar permisos principales
-            foreach ($permisos as $idPermiso) {
-
-                $encontrado = null;
-
-                foreach ($permisosActuales as $permiso) {
-
-                    if (
-                        (int) $permiso['idpermiso'] === $idPermiso &&
-                        empty($permiso['idsubpermiso'])
-                    ) {
-                        $encontrado = $permiso;
-                        break;
-                    }
-                }
-
-                if ($encontrado) {
-                    $actualizado = (new FluentSaver($this->pdo))
-                        ->table('usuario_permiso')
-                        ->primaryKey('idusuario_permiso')
-                        ->data([
-                            'idusuario_permiso' => $encontrado['idusuario_permiso'],
-                            'deleted_at' => null
-                        ])
-                        ->update();
-
-                    if (!$actualizado) {
-                        throw new Exception(
-                            "No se pudo activar el permiso {$idPermiso}."
-                        );
-                    }
-
-                } else {
-
-                    $insertado = (new FluentSaver($this->pdo))
-                        ->table('usuario_permiso')
-                        ->data([
-                            'idusuario' => $idusuario,
-                            'idpermiso' => $idPermiso,
-                            'deleted_at' => null
-                        ])
-                        ->save();
-
-                    if (!$insertado) {
-                        throw new Exception(
-                            "No se pudo asignar el permiso {$idPermiso}."
-                        );
-                    }
-                }
-            }
-
-            // Marcar permisos principales que ya no vienen
-            foreach ($permisosActuales as $permiso) {
-
-                if (!empty($permiso['idsubpermiso'])) {
-                    continue;
-                }
-
-                $idPermiso = (int) $permiso['idpermiso'];
-
-                if (!in_array($idPermiso, $permisos)) {
-
-                    (new FluentSaver($this->pdo))
-                        ->table('usuario_permiso')
-                        ->primaryKey('idusuario_permiso')
-                        ->data([
-                            'idusuario_permiso' => $permiso['idusuario_permiso'],
-                            'deleted_at' => date('Y-m-d H:i:s')
-                        ])
-                        ->update();
-                }
-            }
-
-            // Cada subpermiso pertenece a un permiso principal.
-            foreach ($subpermisos as $idSubpermiso) {
-
-                $subpermiso = (new DBQuery($this->pdo))
-                    ->select(['idpermiso'])
-                    ->from('subpermiso')
-                    ->where('idsubpermiso', '=', $idSubpermiso)
-                    ->first();
-
-                if (!$subpermiso) {
-                    throw new Exception(
-                        "El subpermiso {$idSubpermiso} no existe."
-                    );
-                }
-
-                $idPermiso = (int) $subpermiso['idpermiso'];
-
-                $existente = null;
-
-                foreach ($permisosActuales as $permiso) {
-
-                    if (
-                        (int) $permiso['idpermiso'] === $idPermiso &&
-                        (int) $permiso['idsubpermiso'] === $idSubpermiso
-                    ) {
-                        $existente = $permiso;
-                        break;
-                    }
-                }
-
-                if ($existente) {
-
-                    (new FluentSaver($this->pdo))
-                        ->table('usuario_permiso')
-                        ->primaryKey('idusuario_permiso')
-                        ->data([
-                            'idusuario_permiso' => $existente['idusuario_permiso'],
-                            'deleted_at' => null
-                        ])
-                        ->update();
-
-                } else {
-
-                    (new FluentSaver($this->pdo))
-                        ->table('usuario_permiso')
-                        ->data([
-                            'idusuario' => $idusuario,
-                            'idpermiso' => $idPermiso,
-                            'idsubpermiso' => $idSubpermiso,
-                            'deleted_at' => null
-                        ])
-                        ->save();
-                }
-            }
-
-            // Desactivar subpermisos que ya no vienen
-            foreach ($permisosActuales as $permiso) {
-
-                if (empty($permiso['idsubpermiso'])) {
-                    continue;
-                }
-
-                $idSubpermiso = (int) $permiso['idsubpermiso'];
-
-                if (!in_array($idSubpermiso, $subpermisos)) {
-
-                    (new FluentSaver($this->pdo))
-                        ->table('usuario_permiso')
-                        ->primaryKey('idusuario_permiso')
-                        ->data([
-                            'idusuario_permiso' => $permiso['idusuario_permiso'],
-                            'deleted_at' => date('Y-m-d H:i:s')
-                        ])
-                        ->update();
-                }
-            }
-
-            // ACCIONES
-            $accionesActuales = (new DBQuery($this->pdo))
-                ->select([
-                    'idusuario_accion',
-                    'idaccion_permiso',
-                    'deleted_at'
-                ])
-                ->from('usuario_accion')
-                ->where('idusuario', '=', $idusuario)
-                ->get();
-
-            // Reactivar / insertar acciones
-            foreach ($acciones as $idAccion) {
-
-                $existente = null;
-
-                foreach ($accionesActuales as $accion) {
-
-                    if ((int) $accion['idaccion_permiso'] === $idAccion) {
-                        $existente = $accion;
-                        break;
-                    }
-                }
-
-                if ($existente) {
-
-                    $actualizado = (new FluentSaver($this->pdo))
-                        ->table('usuario_accion')
-                        ->primaryKey('idusuario_accion')
-                        ->data([
-                            'idusuario_accion' => $existente['idusuario_accion'],
-                            'deleted_at' => null
-                        ])
-                        ->update();
-
-                    if (!$actualizado) {
-                        throw new Exception(
-                            "No se pudo activar la acción {$idAccion}."
-                        );
-                    }
-
-                } else {
-
-                    $insertado = (new FluentSaver($this->pdo))
-                        ->table('usuario_accion')
-                        ->data([
-                            'idusuario' => $idusuario,
-                            'idaccion_permiso' => $idAccion,
-                            'deleted_at' => null
-                        ])
-                        ->save();
-
-                    if (!$insertado) {
-                        throw new Exception(
-                            "No se pudo asignar la acción {$idAccion}."
-                        );
-                    }
-                }
-            }
-
-            //  Desactivar acciones que ya no vienen
-            foreach ($accionesActuales as $accion) {
-
-                $idAccion = (int) $accion['idaccion_permiso'];
-
-                if (!in_array($idAccion, $acciones)) {
-
-                    (new FluentSaver($this->pdo))
-                        ->table('usuario_accion')
-                        ->primaryKey('idusuario_accion')
-                        ->data([
-                            'idusuario_accion' => $accion['idusuario_accion'],
-                            'deleted_at' => date('Y-m-d H:i:s')
-                        ])
-                        ->update();
-                }
-            }
+            $this->sincronizarRolesPermisos($idusuario, $roles, $permisos);
 
             // CONFIRMAR
             $this->pdo->commit();
@@ -583,18 +447,6 @@ class Usuario extends Helpers
     }
 
 
-    //Implementar un método para listar los permisos marcados
-    public function listarmarcados($idusuario)
-    {
-        return (new DBQuery($this->pdo))
-            ->select('idpermiso, idsubpermiso')
-            ->from('usuario_permiso')
-            ->softDeletes()
-            ->where('idusuario', '=', $idusuario)
-            ->get();
-    }
-
-
     //Función para verificar el acceso al sistema
     public function verificar($login, $clave)
     {
@@ -645,40 +497,6 @@ class Usuario extends Helpers
             return Response::error($th->getMessage());
         }
     }
-
-    public function listarsubpermisos($idusuario)
-    {
-        $sql = "SELECT sp.idpermiso, sp.nombre 
-	            FROM usuario_permiso up
-	            INNER JOIN subpermiso sp ON up.idsubpermiso = sp.idsubpermiso
-	            WHERE up.idusuario = '$idusuario'";
-        return ejecutarConsulta($sql);
-    }
-
-    public function listaraccionesmarcadas($idusuario)
-    {
-        return (new DBQuery($this->pdo))
-            ->select('idaccion_permiso')
-            ->from('usuario_accion')
-            ->softDeletes()
-            ->where('idusuario', '=', $idusuario)
-            ->get();
-    }
-
-    public function listaracciones($idusuario)
-    {
-        $sql = "SELECT 
-	                p.nombre AS modulo,
-	                sp.nombre AS submodulo,
-	                ap.nombre AS accion
-	            FROM usuario_accion ua
-	            INNER JOIN accion_permiso ap ON ua.idaccion_permiso = ap.idaccion_permiso
-	            INNER JOIN subpermiso sp ON ap.idsubpermiso = sp.idsubpermiso
-	            INNER JOIN permiso p ON sp.idpermiso = p.idpermiso
-	            WHERE ua.idusuario = '$idusuario'";
-        return ejecutarConsulta($sql);
-    }
-
 
     public function registrarHistorial($idusuario, $ip, $user_agent, $exito)
     {

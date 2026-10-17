@@ -1,93 +1,78 @@
 <?php
 require_once __DIR__ . '/../configuraciones/bootstrap.php';
-require_once "../modelos/Permiso.php";
+require_once __DIR__ . '/../modelos/Permiso.php';
 
 $permiso = new Permiso();
+$operacion = $_GET['op'] ?? '';
 
-$idpermiso = isset($_POST["idpermiso"]) ? limpiarCadena($_POST["idpermiso"]) : "";
-$nombre = isset($_POST["nombre"]) ? limpiarCadena($_POST["nombre"]) : "";
+try {
+    switch ($operacion) {
+        case 'listarNuevos':
+            Response::json([
+                'data' => $permiso->listarPermisosNuevos(),
+            ]);
+            break;
 
-switch ($_GET["op"]) {
-    case 'guardaryeditar':
-        if (empty($idpermiso)) {
-            echo $permiso->insertar($nombre) ? "Permiso registrado" : "No se pudo registrar";
-        } else {
-            echo $permiso->editar($idpermiso, $nombre) ? "Permiso actualizado" : "No se pudo actualizar";
-        }
-        break;
+        case 'listarModulosNuevos':
+            Response::json($permiso->listarModulosNuevos());
+            break;
 
-    case 'eliminar':
-        echo $permiso->eliminar($idpermiso) ? "Permiso eliminado" : "No se pudo eliminar";
-        break;
+        case 'mostrarNuevo':
+            $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+            if (!$id) {
+                Response::error('ID de permiso inválido.');
+            }
+            Response::json($permiso->obtenerPermisoNuevo($id));
+            break;
 
-    case 'mostrar':
-        echo json_encode($permiso->mostrar($idpermiso));
-        break;
+        case 'guardarNuevo':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                Response::error('Método no permitido.', 405);
+            }
 
-    case 'listar':
-        $permiso->listar();
-        break;
+            $id = isset($_POST['id']) && $_POST['id'] !== ''
+                ? filter_var($_POST['id'], FILTER_VALIDATE_INT)
+                : null;
+            if (isset($_POST['id']) && $_POST['id'] !== '' && !$id) {
+                Response::error('ID de permiso inválido.');
+            }
 
-    // ================= SUBPERMISOS ==================
+            $moduloId = filter_var($_POST['modulo_id'] ?? null, FILTER_VALIDATE_INT);
+            if (!$moduloId) {
+                Response::error('Seleccione un módulo válido.');
+            }
 
-    case 'insertarsubpermiso':
-    $idpermiso = isset($_POST["idpermiso"]) ? limpiarCadena($_POST["idpermiso"]) : null;
-    $nombre = isset($_POST["nombre"]) ? limpiarCadena($_POST["nombre"]) : null;
+            Response::json($permiso->guardarPermisoNuevo(
+                $_POST['nombre'] ?? '',
+                $_POST['codigo'] ?? '',
+                $moduloId,
+                $id
+            ));
+            break;
 
-    if ($idpermiso && $nombre) {
-        echo $permiso->insertarSubpermiso($idpermiso, $nombre);
-    } else {
-        echo "Error: Faltan datos (idpermiso o nombre)";
+        case 'eliminarNuevo':
+            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+                Response::error('Método no permitido.', 405);
+            }
+
+            $id = filter_var($_POST['id'] ?? null, FILTER_VALIDATE_INT);
+            if (!$id) {
+                Response::error('ID de permiso inválido.');
+            }
+
+            $permiso->eliminarPermisoNuevo($id);
+            Response::json([
+                'success' => true,
+                'message' => 'Permiso eliminado correctamente.',
+            ]);
+            break;
+
+        default:
+            Response::error('Operación de permisos no válida.', 404);
     }
-    break;
-
-
-    case 'listarsubpermiso':
-        $rspta = $permiso->listarSubpermiso($_POST["idpermiso"]);
-        $data = array();
-        while ($reg = $rspta->fetch_object()) {
-            $data[] = [
-                "idsubpermiso" => $reg->idsubpermiso,
-                "modulo" => $reg->modulo,
-                "nombre" => $reg->nombre
-            ];
-        }
-        echo json_encode($data);
-        break;
-
-    case 'eliminarsubpermiso':
-        echo $permiso->eliminarSubpermiso($_POST["idsubpermiso"]);
-        break;
-
-    case 'insertaraccion':
-        $idsubpermiso = isset($_POST["idsubpermiso"]) ? limpiarCadena($_POST["idsubpermiso"]) : null;
-        $nombre = isset($_POST["nombre"]) ? limpiarCadena($_POST["nombre"]) : null;
-        $descripcion = isset($_POST["descripcion"]) ? limpiarCadena($_POST["descripcion"]) : '';
-
-        if ($idsubpermiso && $nombre) {
-            echo $permiso->insertarAccion($idsubpermiso, $nombre, $descripcion);
-        } else {
-            echo "Error: Faltan datos (idsubpermiso o nombre)";
-        }
-        break;
-
-    case 'listaracciones':
-        $rspta = $permiso->listarAcciones($_POST["idsubpermiso"]);
-        $data = array();
-        while ($reg = $rspta->fetch_object()) {
-            $data[] = [
-                "idaccion_permiso" => $reg->idaccion_permiso,
-                "nombre" => $reg->nombre,
-                "descripcion" => $reg->descripcion
-            ];
-        }
-        echo json_encode($data);
-        break;
-
-    case 'eliminaraccion':
-        echo $permiso->eliminarAccion($_POST["idaccion_permiso"]);
-        break;
-
-
+} catch (\Throwable $th) {
+    Response::error(
+        $th->getMessage(),
+        $th instanceof InvalidArgumentException ? 400 : 500
+    );
 }
-?>

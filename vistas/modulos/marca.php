@@ -29,7 +29,7 @@
               <h3 class="card-title"> </h3>
 
               <div class="row">
-                <?php if ($helpers->getUserPermissionAccion('Crear marca')) { ?>
+                <?php if ($helpers->verificarPermisoCodigo('marcas.crear')) { ?>
                 <div class="col-md-1">
                   <button type="button" class="btn btn-outline-primary btn-block btn-xs" data-toggle="modal" data-target="#myModal"><i class="fa fa-plus"></i> Nueva Marca</button>
                 </div>

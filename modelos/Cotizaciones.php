@@ -455,6 +455,13 @@ class Cotizacion extends Helpers
             ->orderBy('c.idcotizacion', 'DESC')
             ->paginate($page, $limit);
 
+        $response['permissions'] = [
+			'editar' => Helpers::verificarPermisoCodigo('cotizacion.editar'),
+			'detalle' => Helpers::verificarPermisoCodigo('cotizacion.detalle'),
+			'imprimir' => Helpers::verificarPermisoCodigo('cotizacion.imprimir'),
+			'enviar' => Helpers::verificarPermisoCodigo('cotizacion.enviar')
+		];
+
         return Response::json($response);
     }
 

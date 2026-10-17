@@ -262,14 +262,14 @@
       <div class="card">
         <div class="card-header">
           <div class="row">
-            <?php if ($helpers->getUserPermissionAccion('Crear producto')) { ?>
+            <?php if ($helpers->verificarPermisoCodigo('productos.crear')) { ?>
               <div class="col-lg-1 col-md-6 col-sm-12">
                 <button type="button" class="btn btn-primary btn-block float-right btn-xs" onclick="nuevo()"><i
                     class="fa fa-plus"></i> Nuevo</button>
               </div>
             <?php } ?>
 
-            <?php if ($helpers->getUserPermissionAccion('Catalago')) { ?>
+            <?php if ($helpers->verificarPermisoCodigo('productos.catalago')) { ?>
               <div class="col-lg-1 col-md-6 col-sm-12">
                 <button type="button" class="btn btn-success btn-block float-right btn-xs" data-toggle="modal"
                   data-target="#modalCatalogoConfig">
@@ -279,14 +279,14 @@
             <?php } ?>
 
 
-            <?php if ($helpers->getUserPermissionAccion('Traslados')) { ?>
+            <?php if ($helpers->verificarPermisoCodigo('productos.traslados')) { ?>
               <div class="col-md-1">
                 <button type="button" class="btn btn-success btn-block btn-xs" data-toggle="modal"
                   data-target="#myModalTraslados"><i class="fas fa-file"></i> Traslados</button>
               </div>
             <?php } ?>
 
-            <?php if ($helpers->getUserPermissionAccion('Empaque')) { ?>
+            <?php if ($helpers->verificarPermisoCodigo('productos.desempacar')) { ?>
               <div class="col-md-1">
                 <button type="button" class="btn btn-warning btn-block btn-xs" data-toggle="modal"
                   data-target="#myModalDesempaquetar" onclick="llenarProductos()"><i class="fas fa-file"></i>
@@ -294,14 +294,14 @@
               </div>
             <?php } ?>
 
-            <?php if ($helpers->getUserPermissionAccion('Inversion por producto')) { ?>
+            <?php if ($helpers->verificarPermisoCodigo('productos.inversion')) { ?>
               <div class="col-md-1">
                 <a href="reportes/rptproductoscompra.php" target="_blank"><button type="button"
                     class="btn btn-info btn-block btn-xs"><i class="fas fa-file"></i> Inversión</button></a>
               </div>
             <?php } ?>
 
-            <?php if ($helpers->getUserPermissionAccion('Consultar producto sucursal')) { ?>
+            <?php if ($helpers->verificarPermisoCodigo('productos.productosucursal')) { ?>
               <div class="col-md-2">
                 <button class="btn btn-info btn-block btn-xs" onclick="abrirModalStockSucursales()">
                   <i class="fas fa-search-location"></i> Ver en otras sucursales

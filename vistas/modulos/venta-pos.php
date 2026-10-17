@@ -1196,11 +1196,6 @@
         transition: all .18s ease;
     }
 </style>
-<?php
-date_default_timezone_set('America/Lima');
-?>
-
-
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
@@ -1227,11 +1222,15 @@ date_default_timezone_set('America/Lima');
                     <div class="card" id="header">
                         <div class="card-header">
                             <div class="row">
-                                <div class="col-md-1 mt-4">
-                                    <button type="button" class="btn btn-outline-primary btn-block" id="btnNuevo"
-                                        onclick="mostrarform(true)"><i class="fa fa-plus"></i>
-                                        Nuevo</button>
-                                </div>
+                                <?php if ($helpers->verificarPermisoCodigo('puntoventa.crear')): ?>
+                                    <div class="col-md-1 mt-4">
+                                        <button type="button" class="btn btn-outline-primary btn-block" id="btnNuevo"
+                                            onclick="mostrarform(true)">
+                                            <i class="fa fa-plus"></i>
+                                            Nuevo
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
                                 <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Fecha Inicio:</label>
                                     <div class="input-group">
@@ -1290,14 +1289,17 @@ date_default_timezone_set('America/Lima');
                                         </select>
                                     </div>
                                 </div>
-                                <div class="form-group col-lg-1 col-md-1 col-sm-4 col-xs-12">
-                                    <label>Reporte:</label>
-                                    <div class="input-group">
-                                        <button id="btnExportarExcel" class="btn btn-success btn-sm" title="Exportar a Excel">
-                                            <i class="fa fa-file-excel-o"></i> Exportar Excel
-                                        </button>
+                                <?php if ($helpers->verificarPermisoCodigo('puntoventa.exportar')): ?>
+                                    <div class="form-group col-lg-1 col-md-1 col-sm-4 col-xs-12">
+                                        <label>Reporte:</label>
+                                        <div class="input-group">
+                                            <button id="btnExportarExcel" class="btn btn-success btn-md"
+                                                title="Exportar a Excel">
+                                                <i class="fas fa-file-excel"></i> Exportar
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
+                                <?php endif; ?>
                                 <div class="col-md-6 d-flex align-items-center mt-3">
                                     <span class="mr-2">Mostrar</span>
                                     <select id="limit" class="form-control" style="width:100px"
@@ -1515,8 +1517,8 @@ date_default_timezone_set('America/Lima');
                                                                 <input type="date" class="form-control text-center"
                                                                     name="fecha" id="fecha"
                                                                     value="<?php echo date('Y-m-d'); ?>" <?php if ($_SESSION['cargo'] !== 'Administrador'): ?>
-                                                                    min="<?php echo date('Y-m-d', strtotime('-1 day')); ?>"
-                                                                    max="<?php echo date('Y-m-d'); ?>" <?php endif; ?>
+                                                                        min="<?php echo date('Y-m-d', strtotime('-1 day')); ?>"
+                                                                        max="<?php echo date('Y-m-d'); ?>" <?php endif; ?>
                                                                     required>
                                                                 <?php if ($_SESSION['cargo'] !== 'Administrador'): ?>
                                                                     <small class="text-muted">Solo puedes seleccionar hoy o
@@ -2775,10 +2777,7 @@ date_default_timezone_set('America/Lima');
 
             <div class="modal-footer">
 
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    onclick="cerarrAjuntarComp()">
+                <button type="button" class="btn btn-secondary" onclick="cerarrAjuntarComp()">
                     Cerrar
                 </button>
             </div>
@@ -2801,11 +2800,7 @@ date_default_timezone_set('America/Lima');
                         <div class="col-md-12">
                             <div class="form-group">
                                 <label for="comprobanteAdjunto">Documento</label>
-                                <input
-                                    type="file"
-                                    class="form-control"
-                                    id="comprobanteAdjunto"
-                                    name="comprobante"
+                                <input type="file" class="form-control" id="comprobanteAdjunto" name="comprobante"
                                     accept="image/*,.pdf">
                             </div>
                         </div>
@@ -2818,10 +2813,7 @@ date_default_timezone_set('America/Lima');
                         <i class="fas fa-upload"></i> Adjuntar
                     </button>
 
-                    <button
-                        type="button"
-                        class="btn btn-secondary"
-                        onclick="cerarrAjuntarComp()">
+                    <button type="button" class="btn btn-secondary" onclick="cerarrAjuntarComp()">
                         Cerrar
                     </button>
                 </div>

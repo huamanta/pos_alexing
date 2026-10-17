@@ -870,32 +870,51 @@ function pintarCotizaciones(data, permissions) {
   let html = "";
 
   if (data.length === 0) {
-    html = `
-            <tr>
-                <td colspan="10" class="text-center">
-                    No se encontraron registros
-                </td>
-            </tr>
-        `;
-
-    $("#tbllistado tbody").html(html);
+    $("#tbllistado tbody").html(`
+      <tr>
+        <td colspan="10" class="text-center">No se encontraron registros</td>
+      </tr>
+    `);
     return;
   }
 
   data.forEach((item) => {
-    const url2 = `reportes/factura/generaFacturaCoti.php?id=${item.idcotizacion}`;
+    const id = item.idcotizacion;
+    const url2 = `reportes/factura/generaFacturaCoti.php?id=${id}`;
+
     let estado = "";
     let editar = "";
     let desistir = "";
 
     if (item.estado == "EN ESPERA") {
       estado = '<span class="badge bg-yellow">EN ESPERA</span>';
-      editar = `<button class="btn btn-success btn-xs" onclick="mostrarEditar(${item.idcotizacion})" data-toggle="tooltip" title="" target="blanck" data-original-title="EDITAR COTIZACIÓN"><i class="fas fa-edit"></i></button> `;
-      desistir = `<button class="btn btn-danger btn-xs" onclick="desistir(${item.idcotizacion})" data-toggle="tooltip" title="" target="blanck" data-original-title="DESISTIR"><i class="fa fa-times"></i></button>`;
+
+      if (permissions.editar) {
+        editar = `
+          <button class="btn btn-success btn-xs"
+            onclick="mostrarEditar(${id})"
+            data-toggle="tooltip"
+            title="EDITAR COTIZACIÓN">
+            <i class="fas fa-edit"></i>
+          </button>
+        `;
+      }
+
+      desistir = `
+        <button class="btn btn-danger btn-xs"
+          onclick="desistir(${id})"
+          data-toggle="tooltip"
+          title="DESISTIR">
+          <i class="fa fa-times"></i>
+        </button>
+      `;
 
       let now = new Date();
       let fechaVencimiento = new Date(item.fecha_hora);
-      fechaVencimiento.setDate(fechaVencimiento.getDate() + parseInt(item.nota));
+      fechaVencimiento.setDate(
+        fechaVencimiento.getDate() + parseInt(item.nota || 0)
+      );
+
       if (fechaVencimiento < now) {
         estado = '<span class="badge bg-gray">VENCIDO</span>';
       }
@@ -907,41 +926,69 @@ function pintarCotizaciones(data, permissions) {
       estado = '<span class="badge bg-red">RECHAZADO</span>';
     }
 
+    const botonVer = permissions.detalle
+      ? `
+        <button class="btn btn-warning btn-xs"
+          onclick="mostrar(${id})"
+          data-toggle="tooltip"
+          title="VER">
+          <i class="fa fa-eye"></i>
+        </button>
+      `
+      : "";
+
+    const botonImprimir = permissions.imprimir
+      ? `
+        <a target="_blank" href="${url2}"
+          data-toggle="tooltip" title="PDF">
+          <button type="button" class="btn btn-info btn-xs">
+            <i class="fa fa-file"></i>
+          </button>
+        </a>
+      `
+      : "";
+
+    const botonEnviar = permissions.enviar
+      ? `
+        <button type="button" class="btn btn-success btn-xs"
+          onclick="EnviarComprobante(${id})"
+          data-toggle="tooltip" title="ENVIAR COMPROBANTE">
+          <i class="fab fa-whatsapp"></i>
+        </button>
+      `
+      : "";
+
     html += `
-            <tr>
-                <td>
-                ${item.fecha}
-                </td>
-                <td>${item.cliente || "-"}</td>
-                <td style="text-align:left;">
-                    <strong>${item.personal || ""}</strong>
-                </td>
-                <td>
-                    ${item.formapago === 'Si'
+      <tr>
+        <td>${item.fecha}</td>
+        <td>${item.cliente || "-"}</td>
+        <td style="text-align:left;">
+          <strong>${item.personal || ""}</strong>
+        </td>
+        <td>
+          ${item.formapago === "Si"
         ? `<span class="badge badge-success">${item.formapago}</span>`
         : `<span class="badge badge-error">${item.formapago}</span>`
       }
-                </td>
-                <td>${item.tipo_comprobante}</td>
-                <td>${item.serie_comprobante}-${item.num_comprobante}</td>
-                <td>S/ ${parseFloat(item.total_venta).toFixed(2)}</td>
-                <td>
-                    ${estado}
-                </td>
-                <td>
-                    <button class="btn btn-warning btn-xs" onclick="mostrar(${item.idcotizacion})" data-toggle="tooltip" title="" target="blanck" data-original-title="VER"><i class="fa fa-eye"></i></button>
-					${editar}
-					<a target="_blank" href="${url2}" data-toggle="tooltip" title="" target="blanck" data-original-title="PDF"> <button class="btn btn-info btn-xs"><i class="fa fa-file"></i></button></a>
-					<a target="_blank" data-toggle="tooltip" title="" target="blanck" data-original-title="ENVIAR COMPROBANTE"> <button class="btn btn-success btn-xs" onclick="EnviarComprobante(${item.idcotizacion})"><i class="fab fa-whatsapp"></i></button></a>
-					${desistir}
-                </td>
-
-            </tr>
-        `;
+        </td>
+        <td>${item.tipo_comprobante}</td>
+        <td>${item.serie_comprobante}-${item.num_comprobante}</td>
+        <td>S/ ${parseFloat(item.total_venta).toFixed(2)}</td>
+        <td>${estado}</td>
+        <td>
+          ${botonVer}
+          ${editar}
+          ${botonImprimir}
+          ${botonEnviar}
+          ${desistir}
+        </td>
+      </tr>
+    `;
   });
 
   $("#tbllistado tbody").html(html);
 }
+
 
 
 function EnviarComprobante(idcotizacion) {

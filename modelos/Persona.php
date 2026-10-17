@@ -231,9 +231,9 @@ class Persona extends Helpers
 				$limit
 			);
 		$response['permissions'] = [
-			'editar' => Helpers::getUserPermissionAccion('Editar proveedor'),
-			'historial' => Helpers::getUserPermissionAccion('Historial proveedor'),
-			'eliminar' => Helpers::getUserPermissionAccion('Eliminar proveedor')
+			'editar' => Helpers::verificarPermisoCodigo('proveedor.editar'),
+			'historial' => Helpers::verificarPermisoCodigo('proveedor.historial'),
+			'eliminar' => Helpers::verificarPermisoCodigo('proveedor.eliminar')
 		];
 		return Response::json($response);
 	}
@@ -283,16 +283,17 @@ class Persona extends Helpers
 			);
 
 		$response['permissions'] = [
-			'editar' => Helpers::getUserPermissionAccion('Editar cliente'),
-			'historial' => Helpers::getUserPermissionAccion('Historial cliente'),
-			'puntuacion' => Helpers::getUserPermissionAccion('Puntuacion cliente'),
-			'eliminar' => Helpers::getUserPermissionAccion('Eliminar cliente')
+			'editar' => Helpers::verificarPermisoCodigo('cliente.editar'),
+			'historial' => Helpers::verificarPermisoCodigo('cliente.historial'),
+			'puntuacion' => Helpers::verificarPermisoCodigo('cliente.puntuacion'),
+			'eliminar' => Helpers::verificarPermisoCodigo('cliente.eliminar')
 		];
 
 		return Response::json($response);
 	}
 
-	public function listarTransportista(){
+	public function listarTransportista()
+	{
 		$page = (int) ($_GET['page'] ?? 1);
 		$limit = (int) ($_GET['limit'] ?? 10);
 		$search = trim($_GET['search'] ?? '');
@@ -320,7 +321,8 @@ class Persona extends Helpers
 		return Response::json($response);
 	}
 
-	public function listarPersonal(){
+	public function listarPersonal()
+	{
 		$page = (int) ($_GET['page'] ?? 1);
 		$limit = (int) ($_GET['limit'] ?? 10);
 		$search = trim($_GET['search'] ?? '');

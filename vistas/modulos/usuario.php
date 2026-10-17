@@ -23,48 +23,17 @@
   }
 
 
-  #myModal .permiso-container {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    width: 100%;
-    height: 360px;
+  #permisos {
+    max-height: 440px;
     overflow-y: auto;
-    padding: 5px;
   }
 
-  #myModal .permiso-card {
-    width: auto;
-    background: #fff;
-    border: 1px solid #e5e7eb;
-    border-left: 4px solid #007bff;
-    border-radius: 8px;
-    padding: 12px 14px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
-    transition: all .2s ease;
+  #permisos .modulo-card-usuario > .card-header {
+    background: #f8f9fa;
   }
 
-  #myModal .permiso-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, .10);
-    transform: translateY(-1px);
-  }
-
-  #myModal .permiso-title {
-    font-weight: 600;
+  #permisos .modulo-card-usuario .btn-link {
     color: #343a40;
-    margin-bottom: 8px;
-  }
-
-  #myModal .subpermiso {
-    margin-left: 10px;
-    margin-top: 8px;
-  }
-
-  #myModal .accion {
-    margin-left: 22px;
-    font-size: 13px;
-    color: #6c757d;
-    margin-top: 4px;
   }
 
   #myModal input[type="checkbox"] {
@@ -76,16 +45,9 @@
     padding: 14px 20px;
   }
 
-  @media (max-width: 1200px) {
-    #myModal .permiso-container {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
   @media (max-width: 768px) {
-    #myModal .permiso-container {
-      grid-template-columns: repeat(1, 1fr);
-      height: 300px;
+    #permisos {
+      max-height: 360px;
     }
   }
 </style>
@@ -356,8 +318,7 @@
 
               <div class="border rounded bg-light p-3">
 
-                <ul style="list-style:none;" id="permisos" class="permiso-container mb-0">
-                </ul>
+                <div id="permisos" class="mb-0"></div>
 
               </div>
 
@@ -400,4 +361,4 @@
   </div>
 </div>
 
-<script src="vistas/js/usuario.js"></script>
+<script src="vistas/js/usuario.js?v=3"></script>

@@ -1743,7 +1743,7 @@ class CuentasCobrar extends Helpers
                         <i class='fas fa-list'></i>
                     </button> ";
 
-            if ($saldoPendiente > 0 && Helpers::getUserPermissionAccion('Amortizar deuda')) {
+            if ($saldoPendiente > 0 && Helpers::verificarPermisoCodigo('cuentascobrar.amortizardeuda')) {
 
                 $buttons .= "<button class='btn btn-sm btn-primary'
                             title='Amortizar deuda'
@@ -1891,7 +1891,7 @@ class CuentasCobrar extends Helpers
 
             if ($saldo > 0 && $estadoRetension !== true) {
 
-                if (Helpers::getUserPermissionAccion('Crear abono')) {
+                if (Helpers::verificarPermisoCodigo('cuentascobrar.crearabono')) {
 
                     $acciones .= "
                     <button
@@ -1903,7 +1903,7 @@ class CuentasCobrar extends Helpers
                     </button>";
                 }
 
-                if (Helpers::getUserPermissionAccion('Programar visita')) {
+                if (Helpers::verificarPermisoCodigo('cuentascobrar.programarevento')) {
 
                     $acciones .= "
                             <button
@@ -1916,7 +1916,7 @@ class CuentasCobrar extends Helpers
                 }
 
                 if (
-                    Helpers::getUserPermissionAccion('Programar compromiso de pago') &&
+                    Helpers::verificarPermisoCodigo('cuentascobrar.compromisopago') &&
                     $row->fecha_venc_raw < date('Y-m-d')
                 ) {
                     $config = Helpers::verificarMoraCredito($row->idsucursal);
@@ -1953,7 +1953,7 @@ class CuentasCobrar extends Helpers
                 }
             }
 
-            if (Helpers::getUserPermissionAccion('Ver abonos')) {
+            if (Helpers::verificarPermisoCodigo('cuentascobrar.verabonos')) {
 
                 $acciones .= "
                 <button
@@ -1965,7 +1965,7 @@ class CuentasCobrar extends Helpers
                 </button>";
             }
 
-            if (Helpers::getUserPermissionAccion('Ver estado de cuenta')) {
+            if (Helpers::verificarPermisoCodigo('cuentascobrar.estadocuenta')) {
 
                 $acciones .= "
                 <button

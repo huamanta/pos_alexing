@@ -24,7 +24,7 @@
                         <div class="card-header">
                             <h3 class="card-title"> </h3>
                             <div class="row">
-                                <?php if ($helpers->getUserPermissionAccion('Crear banco')) { ?>
+                                <?php if ($helpers->verificarPermisoCodigo('bancos.crear')) { ?>
                                 <div class="col-md-1">
                                 <button type="button" class="btn btn-outline-primary btn-block btn-xs" id="btnNuevo"><i class="fa fa-plus"></i> Nuevo</button>
                                 </div>
