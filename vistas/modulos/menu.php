@@ -70,8 +70,11 @@ $modulos = $rutas->listaRutas();
     <nav class="mt-2">
       <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
         <?php foreach ($modulos as $modulo): ?>
-
+  
           <?php
+          if($modulo['menu'] != 1){
+            continue;
+          }
           $nombreModulo = $modulo['nombre'] ?? null;
 
           // Las rutas internas no se muestran en el menú

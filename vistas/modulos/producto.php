@@ -286,7 +286,7 @@
               </div>
             <?php } ?>
 
-            <?php if ($helpers->verificarPermisoCodigo('productos.empaque')) { ?>
+            <?php if ($helpers->verificarPermisoCodigo('productos.desempacar')) { ?>
               <div class="col-md-1">
                 <button type="button" class="btn btn-warning btn-block btn-xs" data-toggle="modal"
                   data-target="#myModalDesempaquetar" onclick="llenarProductos()"><i class="fas fa-file"></i>

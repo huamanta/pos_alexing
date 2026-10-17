@@ -20,8 +20,6 @@ if (isset($_POST["idsucursal"])) {
 }
 $roles = isset($_POST['roles']) ? $_POST['roles'] : [];
 $permisos = isset($_POST['permisos']) ? $_POST['permisos'] : [];
-$subpermisos = isset($_POST['subpermisos']) ? $_POST['subpermisos'] : [];
-$acciones = isset($_POST['acciones']) ? $_POST['acciones'] : [];
 
 switch ($_GET["op"]) {
 
@@ -35,9 +33,9 @@ switch ($_GET["op"]) {
 		}
 
 		if (empty($idusuario)) {
-			$usuario->insertar($idpersonal, $login, $clavehash, $idsucursal, $roles, $permisos, $subpermisos, $acciones);
+			$usuario->insertar($idpersonal, $login, $clavehash, $idsucursal, $roles, $permisos);
 		} else {
-			$usuario->editar($idusuario, $idpersonal, $login, $clavehash, $idsucursal, $roles, $permisos, $subpermisos, $acciones);
+			$usuario->editar($idusuario, $idpersonal, $login, $clavehash, $idsucursal, $roles, $permisos);
 		}
 		break;
 

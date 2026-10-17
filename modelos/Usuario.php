@@ -101,9 +101,7 @@ class Usuario extends Helpers
         $clave,
         $idsucursal,
         $roles = [],
-        $permisos = [],
-        $subpermisos = [],
-        $acciones = []
+        $permisos = []
     ) {
         try {
             $this->pdo->beginTransaction();
@@ -217,7 +215,7 @@ class Usuario extends Helpers
     }
 
 
-    public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $roles = [], $permisos = [], $subpermisos = [], $acciones = [])
+    public function editar($idusuario, $idpersonal, $login, $clave, $idsucursal, $roles = [], $permisos = [])
     {
         try {
             $this->pdo->beginTransaction();
@@ -449,18 +447,6 @@ class Usuario extends Helpers
     }
 
 
-    //Implementar un método para listar los permisos marcados
-    public function listarmarcados($idusuario)
-    {
-        return (new DBQuery($this->pdo))
-            ->select('idpermiso, idsubpermiso')
-            ->from('usuario_permiso')
-            ->softDeletes()
-            ->where('idusuario', '=', $idusuario)
-            ->get();
-    }
-
-
     //Función para verificar el acceso al sistema
     public function verificar($login, $clave)
     {
@@ -511,40 +497,6 @@ class Usuario extends Helpers
             return Response::error($th->getMessage());
         }
     }
-
-    public function listarsubpermisos($idusuario)
-    {
-        $sql = "SELECT sp.idpermiso, sp.nombre 
-	            FROM usuario_permiso up
-	            INNER JOIN subpermiso sp ON up.idsubpermiso = sp.idsubpermiso
-	            WHERE up.idusuario = '$idusuario'";
-        return ejecutarConsulta($sql);
-    }
-
-    public function listaraccionesmarcadas($idusuario)
-    {
-        return (new DBQuery($this->pdo))
-            ->select('idaccion_permiso')
-            ->from('usuario_accion')
-            ->softDeletes()
-            ->where('idusuario', '=', $idusuario)
-            ->get();
-    }
-
-    public function listaracciones($idusuario)
-    {
-        $sql = "SELECT 
-	                p.nombre AS modulo,
-	                sp.nombre AS submodulo,
-	                ap.nombre AS accion
-	            FROM usuario_accion ua
-	            INNER JOIN accion_permiso ap ON ua.idaccion_permiso = ap.idaccion_permiso
-	            INNER JOIN subpermiso sp ON ap.idsubpermiso = sp.idsubpermiso
-	            INNER JOIN permiso p ON sp.idpermiso = p.idpermiso
-	            WHERE ua.idusuario = '$idusuario'";
-        return ejecutarConsulta($sql);
-    }
-
 
     public function registrarHistorial($idusuario, $ip, $user_agent, $exito)
     {

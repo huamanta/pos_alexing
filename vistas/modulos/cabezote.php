@@ -773,7 +773,7 @@ $helpers = new Helpers();
                         </a>
                     <?php endif; ?>
                     <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.ver')): ?>
-                        <a href="configuracion"
+                        <a href="configuraciongeneral"
                             class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">
                             <i class="fas fa-cog"></i>
                             Configuracion

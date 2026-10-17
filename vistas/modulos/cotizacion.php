@@ -226,7 +226,7 @@ date_default_timezone_set('America/Lima');
         font-weight: bold;
     }
 
-    
+
 
     /* =========================================================
    TABLA DETALLE VENTA
@@ -460,10 +460,13 @@ date_default_timezone_set('America/Lima');
                     <div class="card" id="listadoregistros">
                         <div class="card-header">
                             <div class="row">
-                                <div class="col-md-2 mt-4">
-                                    <button type="button" class="btn btn-outline-primary btn-block" id="btnNuevo"
-                                        onclick="mostrarform(true)"><i class="fa fa-plus"></i> Nuevo</button>
-                                </div>
+                                <?php if ($helpers->verificarPermisoCodigo('cotizacion.crear')): ?>
+                                    <div class="col-md-2 mt-4">
+                                        <button type="button" class="btn btn-outline-primary btn-block" id="btnNuevo"
+                                            onclick="mostrarform(true)"><i class="fa fa-plus"></i> Nuevo</button>
+                                    </div>
+                                <?php endif; ?>
+
                                 <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Fecha Inicio:</label>
                                     <div class="input-group">

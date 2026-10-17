@@ -250,7 +250,7 @@
                                 </li>
                             <?php endif; ?>
 
-                            <?php if ($helpers->verificarPermisoCodigo('configuracion.facturacion')): ?>
+                            <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.facturacion')): ?>
                                 <li id="itemMenuFacturacion">
                                     <a href="#facturacion" data-toggle="tab" onclick="activarMenu('itemMenuFacturacion')">
                                         <i class="fa fa-folder-open"></i>

@@ -10,59 +10,75 @@ function pintarBancos(data, permissions) {
     let html = "";
 
     if (data.length === 0) {
-
-        html = `
+        $("#tbllistado tbody").html(`
             <tr>
                 <td colspan="10" class="text-center">
                     No se encontraron registros
                 </td>
             </tr>
-        `;
-
-        $("#tbllistado tbody").html(html);
+        `);
         return;
     }
 
     data.forEach(item => {
+        const botonEditar = permissions.editar
+            ? `
+                <button
+                    type="button"
+                    class="btn btn-info btn-xs"
+                    onclick='mostar(${JSON.stringify(item)})'
+                    data-toggle="tooltip"
+                    title="Editar banco">
+                    <i class="fa fa-edit"></i>
+                </button>
+            `
+            : "";
+
+        const botonMovimientos = permissions.detalle
+            ? `
+                <button
+                    type="button"
+                    class="btn btn-dark btn-xs"
+                    onclick='verMovimientos(${JSON.stringify(item)})'
+                    data-toggle="tooltip"
+                    title="Ver movimientos">
+                    <i class="fa fa-list"></i>
+                </button>
+            `
+            : "";
+
+        const botonEliminar = permissions.eliminar
+            ? `
+                <button
+                    type="button"
+                    class="btn btn-danger btn-xs"
+                    onclick='eliminar(${item.idbanco})'
+                    data-toggle="tooltip"
+                    title="Eliminar banco">
+                    <i class="fa fa-trash"></i>
+                </button>
+            `
+            : "";
+
         html += `
-                <tr>
-                    <td>${item.nombre}</td>
-                    <td>${item.descripcion || '-'}</td>
-                    <td>${item.cuenta || '-'}</td>
-                    <td>${item.cci || '-'}</td>
-                    <td>${item.saldo || '0'}</td>
-                    <td>
-                        <button
-                            class="btn btn-info btn-xs"
-                            onclick='mostar(${JSON.stringify(item)})'
-                            data-toggle="tooltip"
-                            title="editar movimiento"
-                            >
-                            <i class="fa fa-edit"></i>
-                            </button>
-                        <button
-                            class="btn btn-dark btn-xs"
-                            onclick='verMovimientos(${JSON.stringify(item)})'
-                            data-toggle="tooltip"
-                            title="Ver movimientos"
-                        >
-                            <i class="fa fa-list"></i>
-                        </button>
-                        <button
-                            class="btn btn-danger btn-xs"
-                            onclick='eliminar(${item.idbanco})'
-                            data-toggle="tooltip"
-                            title="Eliminar movimiento"
-                        >
-                            <i class="fa fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `;
+            <tr>
+                <td>${item.nombre}</td>
+                <td>${item.descripcion || "-"}</td>
+                <td>${item.cuenta || "-"}</td>
+                <td>${item.cci || "-"}</td>
+                <td>${item.saldo || "0"}</td>
+                <td>
+                    ${botonEditar}
+                    ${botonMovimientos}
+                    ${botonEliminar}
+                </td>
+            </tr>
+        `;
     });
 
     $("#tbllistado tbody").html(html);
 }
+
 
 listarBancos = new FluentPaginator({
     url: "controladores/bancos.php?op=listar",
@@ -205,7 +221,7 @@ function mostar(data) {
 
 function eliminar(idbanco) {
     console.log(idbanco);
-    
+
     Swal.fire({
         title: '¿Desactivar?',
         text: "¿Está seguro Que Desea Desactivar la Categoría?",
