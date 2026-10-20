@@ -1810,4 +1810,111 @@ function cerarrAjuntarComp() {
 }
 
 
+function notificarCuota(row) {
+    // Mostrar el modal para ingresar el número de celular
+    $("#modalCelular").modal("show");
+    // Si hay teléfono registrado, precargarlo en el modal
+    if (row.telefono) {
+        document.getElementById("numeroCelular").value = row.telefono;
+    }
+
+    // Mostrar los datos del comprobante en el modal
+    document.getElementById("cliente").value = row.nombre;
+    document.getElementById("saldo").value = row.saldo;
+    document.getElementById("diasMora").value = row.dias_mora;
+    document.getElementById("mora").value = row.mora;
+}
+
+function abrirWhatsApp() {
+    const nombreEmpresa = dataSucursal.razon_social || "MI EMPRESA";
+    const telefonoEmpresa = dataSucursal.telefono || "999 999 999";
+
+    let telefono = document.getElementById("numeroCelular").value.trim();
+    const cliente = document.getElementById("cliente").value.trim();
+    const saldo = parseFloat(document.getElementById("saldo").value) || 0;
+    const diasMora = parseInt(document.getElementById("diasMora").value, 10) || 0;
+    const mora = parseFloat(document.getElementById("mora").value) || 0;
+    const total = saldo + mora;
+
+    if (!telefono) {
+        Swal.fire({
+            icon: "warning",
+            title: "Número requerido",
+            text: "Ingrese el número de celular del cliente."
+        });
+        return;
+    }
+
+    telefono = telefono.replace(/\D/g, "");
+
+    if (telefono.startsWith("00")) {
+        telefono = telefono.substring(2);
+    }
+
+    if (telefono.startsWith("51")) {
+        telefono = telefono.substring(2);
+    }
+
+    if (!/^9\d{8}$/.test(telefono)) {
+        Swal.fire({
+            icon: "warning",
+            title: "Número inválido",
+            text: "Ingrese un celular peruano válido de 9 dígitos."
+        });
+        return;
+    }
+
+    telefono = "51" + telefono;
+
+    if (saldo <= 0) {
+        Swal.fire({
+            icon: "info",
+            title: "Cuota cancelada",
+            text: "El saldo pendiente no registra deuda."
+        });
+        return;
+    }
+
+    const formatoMoneda = valor =>
+        valor.toLocaleString("es-PE", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+    const mensaje =
+        `🏢 *${nombreEmpresa}*\n\n` +
+        `Estimado/a *${cliente || "cliente"}*, reciba un cordial saludo.\n\n` +
+        `Le informamos que su cuota se encuentra vencida y registra un saldo pendiente de pago.\n\n` +
+        `📋 *DETALLE DE LA CUOTA*\n` +
+        `💰 Saldo pendiente: S/ ${formatoMoneda(saldo)}\n` +
+        `📅 Días de atraso: ${diasMora}\n` +
+        `⚠️ Mora acumulada: S/ ${formatoMoneda(mora)}\n` +
+        `💵 *TOTAL PENDIENTE: S/ ${formatoMoneda(total)}*\n\n` +
+        `Le agradeceremos regularizar su pago a la brevedad posible.\n\n` +
+        `Si ya realizó el pago, por favor, haga caso omiso a este mensaje y comuníquenoslo para verificarlo.\n\n` +
+        `Si necesita coordinar el pago, estamos a su disposición.\n\n` +
+        `Gracias por su atención.\n` +
+        `*${nombreEmpresa}*\n` +
+        `📞 ${telefonoEmpresa}`;
+
+    const urlWhatsApp =
+        `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+
+    window.open(urlWhatsApp, "_blank");
+
+    $("#modalCelular").modal("hide");
+}
+
+function cancelarmodalCelular() {
+    // Limpiar el campo de número celular
+    $("#numeroCelular").val("");
+
+    // Resetear otros posibles estados (por ejemplo, eliminar clases activas o desactivar botones)
+    $("#modalCelular").find(".is-invalid").removeClass("is-invalid"); // Si hay alguna validación
+    $("#modalCelular").find(".is-valid").removeClass("is-valid"); // Si hay alguna validación
+
+    // Cerrar el modal
+    $("#modalCelular").modal("hide");
+}
+
 init();
