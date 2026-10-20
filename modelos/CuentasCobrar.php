@@ -1921,43 +1921,43 @@ class CuentasCobrar extends Helpers
                             </button>";
                 }
 
+                $config = Helpers::verificarMoraCredito($row->idsucursal);
+                $mora = 0;
+                $dias_mora = 0;
+                if ($config["activo"] || floatval($row->deuda) > 0) {
+                    $hoy = new DateTime();
+                    $ultimaFecha = !empty($row->fecha_update_mora)
+                        ? $row->fecha_update_mora
+                        : $row->fechavencimiento;
+                    $fechaInicio = new DateTime($ultimaFecha);
+                    $dias = $fechaInicio->diff($hoy)->days;
+
+
+                    if ($dias > 0) {
+                        $moraNueva = round(
+                            floatval($row->deuda) *
+                                ($config["valor"] / 100) *
+                                $dias,
+                            2
+                        );
+                        $dias_mora = $dias;
+                        $mora = $moraNueva;
+                    }
+                }
+
+                $row->dias_mora = $dias_mora;
+                $row->mora = $mora;
+                $row->saldo = $saldo;
+                $rowJson = htmlspecialchars(
+                    json_encode($row, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP),
+                    ENT_QUOTES,
+                    'UTF-8'
+                );
+
                 if (
                     Helpers::verificarPermisoCodigo('cuentascobrar.compromisopago') &&
                     $row->fecha_venc_raw < date('Y-m-d')
                 ) {
-                    $config = Helpers::verificarMoraCredito($row->idsucursal);
-                    $mora = 0;
-                    $dias_mora = 0;
-                    if ($config["activo"] || floatval($row->deuda) > 0) {
-                        $hoy = new DateTime();
-                        $ultimaFecha = !empty($row->fecha_update_mora)
-                            ? $row->fecha_update_mora
-                            : $row->fechavencimiento;
-                        $fechaInicio = new DateTime($ultimaFecha);
-                        $dias = $fechaInicio->diff($hoy)->days;
-
-
-                        if ($dias > 0) {
-                            $moraNueva = round(
-                                floatval($row->deuda) *
-                                    ($config["valor"] / 100) *
-                                    $dias,
-                                2
-                            );
-                            $dias_mora = $dias;
-                            $mora = $moraNueva;
-                        }
-                    }
-
-                    $row->dias_mora = $dias_mora;
-                    $row->mora = $mora;
-                    $row->saldo = $saldo;
-                    $rowJson = htmlspecialchars(
-                        json_encode($row, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP),
-                        ENT_QUOTES,
-                        'UTF-8'
-                    );
-                    
                     $acciones .= "
                                 <button
                                     type='button'
@@ -1966,7 +1966,9 @@ class CuentasCobrar extends Helpers
                                     title='Programar compromiso de pago'>
                                     <i class='fas fa-file-signature'></i>
                                 </button>";
+                }
 
+                if ($row->fecha_venc_raw < date('Y-m-d')) {
                     $acciones .= "
                                 <button
                                     type='button'
