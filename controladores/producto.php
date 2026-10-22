@@ -913,12 +913,7 @@ switch ($_GET["op"]) {
 
 		$producto = new Producto();
 
-		$data = $producto->buscarStockPorSucursales(
-			$search,
-			$idsucursalFiltro
-		);
-
-		echo $data;
+		$producto->buscarStockPorSucursales($search, $idsucursalFiltro);
 
 		break;
 

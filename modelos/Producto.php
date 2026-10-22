@@ -2530,7 +2530,7 @@ class Producto extends Helpers
 	{
 		try {
 
-			$jsonFile = __DIR__ . '/../productos.json';
+			$jsonFile = __DIR__ . '/../productos_jimenez.json';
 
 			if (!file_exists($jsonFile)) {
 				throw new Exception('No existe el archivo productos.json');
