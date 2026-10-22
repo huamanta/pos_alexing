@@ -428,7 +428,7 @@
                             </div>
                         <?php endif; ?>
                         <?php if ($helpers->verificarPermisoCodigo('configuraciongeneral.solicitudes')): ?>
-                            <div class="tab-pane active" id="solicitudes">
+                            <div class="tab-pane" id="solicitudes">
                                 <div class="setting-card">
                                     <div class="setting-header">
                                         <h3>
