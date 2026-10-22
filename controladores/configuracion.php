@@ -7,11 +7,11 @@ require_once __DIR__ . "/../core/Rutas.php";
 $configuracion = new Configuracion();
 $helpers = new Helpers();
 $rutas = new Rutas();
-$idsucursal = $_SESSION['idsucursal'] || null;
+$idsucursal = $_SESSION['idsucursal'] ?? 0;
 switch ($_GET['op']) {
     case 'modulos':
         $idusuario = $_SESSION['idusuario'];
-        echo Response::json($rutas->listaRutas($idusuario));
+        Response::json($rutas->listaRutas($idusuario));
         break;
     case 'dataSucursal':
         $configuracion->dataSucursal($idsucursal);
