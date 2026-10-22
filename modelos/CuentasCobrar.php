@@ -250,8 +250,8 @@ class CuentasCobrar extends Helpers
 
         $moraNueva = round(
             floatval($fila["deuda"]) *
-            ($config["valor"] / 100) *
-            $dias,
+                ($config["valor"] / 100) *
+                $dias,
             2
         );
 
@@ -296,7 +296,7 @@ class CuentasCobrar extends Helpers
 
         $monto = round(
             Helpers::toFloat($montoEfectivo) +
-            Helpers::toFloat($montoTarjeta),
+                Helpers::toFloat($montoTarjeta),
             2
         );
 
@@ -1814,9 +1814,13 @@ class CuentasCobrar extends Helpers
                     DATE_FORMAT(cc.fechavencimiento, '%d/%m/%y') AS fecha_vencimiento,
                     DATE(cc.fechavencimiento) AS fecha_venc_raw,
                     v.idcliente,
-                    v.idsucursal
+                    v.idsucursal,
+                    p.direccion,
+                    p.nombre,
+                    p.telefono
                 FROM cuentas_por_cobrar cc
                 INNER JOIN venta v ON v.idventa = cc.idventa
+                LEFT JOIN persona p ON p.idpersona = v.idcliente
                 WHERE cc.idventa = '$idventa'
                   AND cc.idrefinanciamiento = '{$ref["idref"]}'
                   AND cc.condicion = '1'
@@ -1831,7 +1835,9 @@ class CuentasCobrar extends Helpers
                     DATE(cc.fechavencimiento) AS fecha_venc_raw,
                     v.idcliente,
                     v.idsucursal,
-                    p.direccion
+                    p.direccion,
+                    p.nombre,
+                    p.telefono
                 FROM cuentas_por_cobrar cc
                 INNER JOIN venta v ON v.idventa = cc.idventa
                 LEFT JOIN persona p ON p.idpersona = v.idcliente
@@ -1915,41 +1921,62 @@ class CuentasCobrar extends Helpers
                             </button>";
                 }
 
+                $config = Helpers::verificarMoraCredito($row->idsucursal);
+                $mora = 0;
+                $dias_mora = 0;
+                if ($config["activo"] || floatval($row->deuda) > 0) {
+                    $hoy = new DateTime();
+                    $ultimaFecha = !empty($row->fecha_update_mora)
+                        ? $row->fecha_update_mora
+                        : $row->fechavencimiento;
+                    $fechaInicio = new DateTime($ultimaFecha);
+                    $dias = $fechaInicio->diff($hoy)->days;
+
+
+                    if ($dias > 0) {
+                        $moraNueva = round(
+                            floatval($row->deuda) *
+                                ($config["valor"] / 100) *
+                                $dias,
+                            2
+                        );
+                        $dias_mora = $dias;
+                        $mora = $moraNueva;
+                    }
+                }
+
+                $row->dias_mora = $dias_mora;
+                $row->mora = $mora;
+                $row->saldo = $saldo;
+                $rowJson = htmlspecialchars(
+                    json_encode($row, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP),
+                    ENT_QUOTES,
+                    'UTF-8'
+                );
+
                 if (
                     Helpers::verificarPermisoCodigo('cuentascobrar.compromisopago') &&
                     $row->fecha_venc_raw < date('Y-m-d')
                 ) {
-                    $config = Helpers::verificarMoraCredito($row->idsucursal);
-                    $mora = 0;
-                    $dias_mora = 0;
-                    if ($config["activo"] || floatval($row->deuda) > 0) {
-                        $hoy = new DateTime();
-                        $ultimaFecha = !empty($row->fecha_update_mora)
-                            ? $row->fecha_update_mora
-                            : $row->fechavencimiento;
-                        $fechaInicio = new DateTime($ultimaFecha);
-                        $dias = $fechaInicio->diff($hoy)->days;
-
-
-                        if ($dias > 0) {
-                            $moraNueva = round(
-                                floatval($row->deuda) *
-                                ($config["valor"] / 100) *
-                                $dias,
-                                2
-                            );
-                            $dias_mora = $dias;
-                            $mora = $moraNueva;
-                        }
-                    }
                     $acciones .= "
-                <button
-                    type='button'
-                    class='btn btn-sm btn-danger'
-                    onclick='programarCompromiso({$row->idcpc}, {$row->idventa}, {$row->idcliente}, {$saldo}, {$dias_mora}, {$mora})'
-                    title='Programar compromiso de pago'>
-                    <i class='fas fa-file-signature'></i>
-                </button>";
+                                <button
+                                    type='button'
+                                    class='btn btn-sm btn-danger'
+                                    onclick='programarCompromiso({$row->idcpc}, {$row->idventa}, {$row->idcliente}, {$saldo}, {$dias_mora}, {$mora})'
+                                    title='Programar compromiso de pago'>
+                                    <i class='fas fa-file-signature'></i>
+                                </button>";
+                }
+
+                if ($row->fecha_venc_raw < date('Y-m-d')) {
+                    $acciones .= "
+                                <button
+                                    type='button'
+                                    class='btn btn-sm btn-success'
+                                    onclick='notificarCuota($rowJson)'
+                                    title='Enviar notificación al cliente'>
+                                    <i class='fab fa-whatsapp'></i>
+                                </button>";
                 }
             }
 
@@ -2531,8 +2558,8 @@ class CuentasCobrar extends Helpers
 
                         $mora += round(
                             floatval($row["deuda"]) *
-                            ($configMora["valor"] / 100) *
-                            $dias,
+                                ($configMora["valor"] / 100) *
+                                $dias,
                             2
                         );
                     }
@@ -2564,7 +2591,7 @@ class CuentasCobrar extends Helpers
 
                         $descuento = round(
                             floatval($row["deuda"]) *
-                            ($configDescuento["valor"] / 100),
+                                ($configDescuento["valor"] / 100),
                             2
                         );
                     }
@@ -3282,6 +3309,5 @@ class CuentasCobrar extends Helpers
         } catch (\Throwable $th) {
             Response::error($th->getMessage());
         }
-
     }
 }
