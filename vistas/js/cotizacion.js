@@ -309,28 +309,52 @@ function obtenerFechaHoyISO() {
 
 function parseFecha(fecha) {
   if (fecha instanceof Date) {
-    return new Date(fecha);
+    return new Date(
+      fecha.getFullYear(),
+      fecha.getMonth(),
+      fecha.getDate(),
+      fecha.getHours(),
+      fecha.getMinutes(),
+      fecha.getSeconds()
+    );
   }
 
   if (typeof fecha !== "string") {
     return new Date(fecha);
   }
 
-  let texto = fecha.trim();
-  if (!texto) {
-    return new Date();
+  const texto = fecha.trim();
+  if (!texto) return new Date();
+
+  // Fecha ISO o MySQL: 2026-11-27 o 2026-11-27 14:30:00
+  let partes = texto.match(
+    /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}):(\d{2}))?$/
+  );
+
+  if (partes) {
+    const [, anio, mes, dia, hora = 0, minuto = 0, segundo = 0] = partes;
+
+    return new Date(
+      Number(anio),
+      Number(mes) - 1,
+      Number(dia),
+      Number(hora),
+      Number(minuto),
+      Number(segundo)
+    );
   }
 
-  // MySQL datetime: 2024-05-17 14:30:00
-  if (/^\d{4}-\d{2}-\d{2}(\s+\d{2}:\d{2}:\d{2})?$/.test(texto)) {
-    return new Date(texto.replace(" ", "T"));
-  }
+  // Fecha con barras: 27/11/2026
+  partes = texto.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
 
-  // Fecha con barras: 17/05/2024
-  const partes = texto.split("/");
-  if (partes.length === 3) {
-    const [d, m, y] = partes;
-    return new Date(`${y}-${m}-${d}`);
+  if (partes) {
+    const [, dia, mes, anio] = partes;
+
+    return new Date(
+      Number(anio),
+      Number(mes) - 1,
+      Number(dia)
+    );
   }
 
   return new Date(texto);
@@ -437,7 +461,8 @@ function calcularCuotas() {
   if ($("#formapago").val() === "Si") {
   }
 
-  let fechaOperacion = ("" + $("#fechaOperacion").val() || "").trim();
+  let fechaOperacion = ($("#fechaOperacion").val() || "").trim();
+
   if (!fechaOperacion) {
     fechaOperacion = obtenerFechaHoyISO();
     $("#fechaOperacion").val(fechaOperacion);
@@ -511,31 +536,19 @@ function sumarFrecuencia(fecha, frecuencia) {
   let nuevaFecha = new Date(fecha);
   frecuencia = parseInt(frecuencia, 10);
 
-  switch (frecuencia) {
-    case 1:
-      nuevaFecha.setDate(nuevaFecha.getDate() + 1);
-      break;
-    case 2:
-      nuevaFecha.setDate(nuevaFecha.getDate() + 7);
-      break;
-    case 3:
-      nuevaFecha.setDate(nuevaFecha.getDate() + 15);
-      break;
-    case 4:
-      nuevaFecha.setMonth(nuevaFecha.getMonth() + 1);
-      break;
-    case 5:
-      nuevaFecha.setMonth(nuevaFecha.getMonth() + 2);
-      break;
-    case 6:
-      nuevaFecha.setMonth(nuevaFecha.getMonth() + 3);
-      break;
-    case 7:
-      nuevaFecha.setMonth(nuevaFecha.getMonth() + 6);
-      break;
-    case 8:
-      nuevaFecha.setFullYear(nuevaFecha.getFullYear() + 1);
-      break;
+  const dias = {
+    1: 1,
+    2: 7,
+    3: 15,
+    4: 30,
+    5: 60,
+    6: 90,
+    7: 180,
+    8: 360
+  };
+
+  if (dias[frecuencia] !== undefined) {
+    nuevaFecha.setDate(nuevaFecha.getDate() + dias[frecuencia]);
   }
 
   return nuevaFecha;
@@ -897,8 +910,6 @@ function mostrarEditar(idcotizacion) {
 function validateDataCotizacion() {
   const idcliente = parseInt($("#idcliente").val());
   const tipopago = $("#formapago").val().trim();
-  console.log(idcliente);
-  console.log(CLIENTE_GENERAL);
   if ((idcliente === CLIENTE_GENERAL || idcliente.length === 0) && tipopago === "Si") {
     Swal.fire(
       "Selecciona un cliente para realizar una venta a credito",
@@ -1278,15 +1289,12 @@ function agregarDetalle(
   precioCotizacion = null
 ) {
 
-  console.log(producto);
-
   if (articuloAdd.indexOf(idproducto_configuracion) != -1) {
     let cantInputs = document.getElementsByName("cantidad[]");
     let idpInputs = document.getElementsByName("idp[]");
     for (var i = 0; i < cantInputs.length; i++) {
       if (idpInputs[i].value == idproducto_configuracion) {
         let currentCant = parseFloat(cantInputs[i].value);
-        console.log(((currentCant + 1) * cantidad_contenedor));
 
         if (stock < ((currentCant + 1) * cantidad_contenedor)) {
           Swal.fire("Alerta", "No hay suficiente stock!", "error");
@@ -1300,7 +1308,6 @@ function agregarDetalle(
   }
 
   let cantidad = cant;
-  console.log();
 
   if (stock < cantidad * cantidad_contenedor) {
     Swal.fire("Alerta", "No hay suficiente stock!", "error");
