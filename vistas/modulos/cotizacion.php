@@ -756,7 +756,7 @@ date_default_timezone_set('America/Lima');
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-12" style="margin-top: -17px;">
+                                            <div class="col-md-12" style="margin-top: -17px; margin-bottom: 20px">
                                                 <input type="hidden" name="idcotizacion" id="idcotizacion">
                                                 <table id="detalles" class="table table-striped table-responsive-sm">
                                                     <thead class="bg-info">
@@ -808,12 +808,13 @@ date_default_timezone_set('America/Lima');
                                                 <hr style="border: 1 px solid #007bff;" />
                                                 <div class="row col-md-12 mt-4">
                                                     <div class="form-group col-lg-3">
-                                                        <label for="">Pago inicial:</label>
-                                                        <input type="text" class="form-control" name="inicial"
-                                                            id="inicial">
-                                                        <div class="alert alert-info py-2 mt-2 mb-0">
-                                                            <small>Porcentaje de inicial</small>
-                                                            <strong class="d-block" id="porcentajeInicial">0.00%</strong>
+                                                        <label for="inicial">Pago inicial:</label>
+                                                        <div class="d-flex align-items-center" style="gap: 10px;">
+                                                            <input type="text" class="form-control" name="inicial" id="inicial">
+                                                            <div class="alert alert-info py-0 px-0 mb-0 text-center" style="min-width: 100px;">
+                                                                <small>Porcentaje</small>
+                                                                <strong class="d-block" id="porcentajeInicial">0.00%</strong>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div class="form-group col-lg-3" id="n1">
@@ -892,7 +893,6 @@ date_default_timezone_set('America/Lima');
                                                                     name="inputInteres" value="0" readonly>
                                                             <?php endif; ?>
                                                         </div>
-
                                                     </div>
 
                                                     <div class="form-group col-lg-3" id="b1">

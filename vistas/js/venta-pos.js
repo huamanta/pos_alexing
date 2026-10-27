@@ -478,10 +478,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                      " " +
-                      dat.apellidoPaterno +
-                      " " +
-                      dat.apellidoMaterno,
+                    " " +
+                    dat.apellidoPaterno +
+                    " " +
+                    dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -491,7 +491,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         } else {
@@ -535,7 +535,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () {},
+              error: function () { },
             });
           }
         }
@@ -891,7 +891,7 @@ function EnviarSunat(tipoc, idventa, idcol) {
         icon: "success",
         text: resp,
         timerProgressBar: true,
-        onClose: function () {},
+        onClose: function () { },
       });
 
       listarDataVentas.load();
@@ -1168,14 +1168,14 @@ $(document).ready(function () {
       const opcionesBancos = `
             <option value="">Seleccione banco</option>
             ${bancos
-              .map(
-                (banco) => `
+          .map(
+            (banco) => `
                 <option value="${banco.idbanco}">
                     ${banco.nombre}
                 </option>
             `,
-              )
-              .join("")}
+          )
+          .join("")}
         `;
 
       // Cargar bancos en el select de ESTA fila
@@ -1610,8 +1610,8 @@ function verificarProductosDisponibles() {
           Swal.fire(
             "Advertencia",
             "El producto con ID " +
-              idproducto +
-              " no existe en el almacén seleccionado.",
+            idproducto +
+            " no existe en el almacén seleccionado.",
             "warning",
           );
         });
@@ -2241,35 +2241,32 @@ function pintarVentas(data, permissions) {
 
                     <div class="dropdown-menu">
 
-                        ${
-                          permissions.editar
-                            ? `<a class="dropdown-item"
+                        ${permissions.editar
+          ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="generarComprobante(${item.idventa})">
                                 Editar
                             </a>`
-                            : ""
-                        }
+          : ""
+        }
 
-                        ${
-                          permissions.eliminar
-                            ? `<a class="dropdown-item"
+                        ${permissions.eliminar
+          ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="anularComprobante(${item.idventa})">
                                 Eliminar
                             </a>`
-                            : ""
-                        }
+          : ""
+        }
 
-                        ${
-                          item.tipo_comprobante === "Nota de Venta"
-                            ? `<a class="dropdown-item"
+                        ${item.tipo_comprobante === "Nota de Venta"
+          ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="cambiarComprobante(${item.idventa},${item.idsucursal})">
                                 Cambiar a Boleta/Factura
                             </a>`
-                            : ""
-                        }
+          : ""
+        }
 
                     </div>
 
@@ -2317,11 +2314,10 @@ function pintarVentas(data, permissions) {
                 </td>
 
                 <td align="center">
-                    ${
-                      item.ventacredito === "Si"
-                        ? '<span class="badge badge-neon neon-red">Crédito</span>'
-                        : '<span class="badge badge-neon neon-blue">Contado</span>'
-                    }
+                    ${item.ventacredito === "Si"
+        ? '<span class="badge badge-neon neon-red">Crédito</span>'
+        : '<span class="badge badge-neon neon-blue">Contado</span>'
+      }
                 </td>
 
                 <td>
@@ -2473,16 +2469,15 @@ $("#comprobanteReferencia").select2({
                     ${item.cliente || "Sin cliente"}
                 </div>
 
-                ${
-                  item.total
-                    ? `
+                ${item.total
+        ? `
                     <small class="text-success">
                         <i class="fas fa-money-bill-wave mr-1"></i>
                         S/ ${parseFloat(item.total).toFixed(2)}
                     </small>
                 `
-                    : ""
-                }
+        : ""
+      }
             </div>
         `);
   },
@@ -3349,14 +3344,14 @@ function agregarDetalle(
       Swal.fire(
         "Stock insuficiente",
         "Stock disponible: " +
-          disponible +
-          " unidades.<br>" +
-          "Está intentando agregar: " +
-          stockNuevo +
-          " unidades.<br>" +
-          "Stock total solicitado: " +
-          stockTotal +
-          " unidades.",
+        disponible +
+        " unidades.<br>" +
+        "Está intentando agregar: " +
+        stockNuevo +
+        " unidades.<br>" +
+        "Stock total solicitado: " +
+        stockTotal +
+        " unidades.",
         "error",
       );
 
@@ -3539,8 +3534,8 @@ function agregarDetalle(
         (modoEditar
           ? ""
           : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' +
-            cont +
-            ')"></i>') +
+          cont +
+          ')"></i>') +
         '<textarea class="form-control nombre-producto" ' +
         'name="nombreProducto[]" ' +
         'oninput="autoResize(this)" onfocus="this.select()" >' +
@@ -3983,32 +3978,21 @@ function formatearFecha(fecha) {
 
 function sumarFrecuencia(fecha, frecuencia) {
   let nuevaFecha = new Date(fecha);
+  frecuencia = parseInt(frecuencia, 10);
 
-  switch (frecuencia) {
-    case 1:
-      nuevaFecha.setDate(nuevaFecha.getDate() + 1);
-      break;
-    case 2:
-      nuevaFecha.setDate(nuevaFecha.getDate() + 7);
-      break;
-    case 3:
-      nuevaFecha.setDate(nuevaFecha.getDate() + 15);
-      break;
-    case 4:
-      nuevaFecha.setMonth(nuevaFecha.getMonth() + 1);
-      break;
-    case 5:
-      nuevaFecha.setMonth(nuevaFecha.getMonth() + 2);
-      break;
-    case 6:
-      nuevaFecha.setMonth(nuevaFecha.getMonth() + 3);
-      break;
-    case 7:
-      nuevaFecha.setMonth(nuevaFecha.getMonth() + 6);
-      break;
-    case 8:
-      nuevaFecha.setFullYear(nuevaFecha.getFullYear() + 1);
-      break;
+  const dias = {
+    1: 1,
+    2: 7,
+    3: 15,
+    4: 30,
+    5: 60,
+    6: 90,
+    7: 180,
+    8: 360
+  };
+
+  if (dias[frecuencia] !== undefined) {
+    nuevaFecha.setDate(nuevaFecha.getDate() + dias[frecuencia]);
   }
 
   return nuevaFecha;
@@ -4075,6 +4059,60 @@ $("#calcular_cuotas").click(function (e) {
   }, 50);
 });
 
+function parseFecha(fecha) {
+  if (fecha instanceof Date) {
+    return new Date(
+      fecha.getFullYear(),
+      fecha.getMonth(),
+      fecha.getDate(),
+      fecha.getHours(),
+      fecha.getMinutes(),
+      fecha.getSeconds()
+    );
+  }
+
+  if (typeof fecha !== "string") {
+    return new Date(fecha);
+  }
+
+  const texto = fecha.trim();
+  if (!texto) return new Date();
+
+  // Fecha ISO o MySQL: 2026-11-27 o 2026-11-27 14:30:00
+  let partes = texto.match(
+    /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}):(\d{2}))?$/
+  );
+
+  if (partes) {
+    const [, anio, mes, dia, hora = 0, minuto = 0, segundo = 0] = partes;
+
+    return new Date(
+      Number(anio),
+      Number(mes) - 1,
+      Number(dia),
+      Number(hora),
+      Number(minuto),
+      Number(segundo)
+    );
+  }
+
+  // Fecha con barras: 27/11/2026
+  partes = texto.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+
+  if (partes) {
+    const [, dia, mes, anio] = partes;
+
+    return new Date(
+      Number(anio),
+      Number(mes) - 1,
+      Number(dia)
+    );
+  }
+
+  return new Date(texto);
+}
+
+
 function calcularCuotas() {
   // Si no se eligio cuotas manualmente, intentar autocalcular desde N° meses + frecuencia.
   if (!$("#input_cuotas").val()) {
@@ -4096,7 +4134,7 @@ function calcularCuotas() {
     frecuencia: parseInt($("#input_frecuencia").val()),
     interes: parseFloat($("#inputInteres").val()),
     deuda: parseFloat($("#montoDeuda").val()),
-    fechaBase: new Date(fechaOperacion),
+    fechaBase: parseFecha(fechaOperacion),
   };
 
   if (!validarDatos(data)) return;
@@ -4751,11 +4789,11 @@ function mostrar(idventa) {
       $("#tipo_comprobantem").html(
         data.tipo_comprobante == "Boleta"
           ? '<span class="badge badge-primary">' +
-              data.tipo_comprobante +
-              "</span>"
+          data.tipo_comprobante +
+          "</span>"
           : '<span class="badge badge-info">' +
-              data.tipo_comprobante +
-              "</span>",
+          data.tipo_comprobante +
+          "</span>",
       );
       $("#correlativo").text(
         data.serie_comprobante + " - " + data.num_comprobante,
@@ -5466,11 +5504,10 @@ function listarComprobantes(idVenta) {
                                       title="Ver comprobante">
                                       <i class="fas fa-print"></i>
                                   </a>
-                                ${
-                                  item.metodo_pago === "Efectivo"
-                                    ? ``
-                                    : item.comprobante
-                                      ? `
+                                ${item.metodo_pago === "Efectivo"
+              ? ``
+              : item.comprobante
+                ? `
                                   <a
                                       href="files/ventas/${item.comprobante}"
                                       target="_blank"
@@ -5479,7 +5516,7 @@ function listarComprobantes(idVenta) {
                                       <i class="fas fa-eye"></i>
                                   </a>
                                   `
-                                      : `
+                : `
                                   <button
                                       type="button"
                                       class="btn btn-sm btn-outline-primary"
@@ -5488,7 +5525,7 @@ function listarComprobantes(idVenta) {
                                       <i class="fas fa-upload"></i>
                                   </button>
                               `
-                                }
+            }
                             </td>
                         </tr>
                     `;

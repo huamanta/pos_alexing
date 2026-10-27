@@ -1517,8 +1517,8 @@
                                                                 <input type="date" class="form-control text-center"
                                                                     name="fecha" id="fecha"
                                                                     value="<?php echo date('Y-m-d'); ?>" <?php if ($_SESSION['cargo'] !== 'Administrador'): ?>
-                                                                        min="<?php echo date('Y-m-d', strtotime('-1 day')); ?>"
-                                                                        max="<?php echo date('Y-m-d'); ?>" <?php endif; ?>
+                                                                    min="<?php echo date('Y-m-d', strtotime('-1 day')); ?>"
+                                                                    max="<?php echo date('Y-m-d'); ?>" <?php endif; ?>
                                                                     required>
                                                                 <?php if ($_SESSION['cargo'] !== 'Administrador'): ?>
                                                                     <small class="text-muted">Solo puedes seleccionar hoy o
@@ -1827,11 +1827,16 @@
                                                     <div class="form-group col-lg-2" style="display: none;" id="n5">
 
                                                         <label style="font-size: 11px;">Interes %:</label>
-                                                        <div class="input-group">
+                                                        <?php if ($helpers->verificarPermisoCodigo('puntoventa.editarinteres')): ?>
                                                             <input style="border-color: #FFC7BB; text-align:center"
                                                                 type="text" class="form-control" id="inputInteres"
                                                                 name="inputInteres" value="0">
-                                                        </div>
+                                                        <?php endif; ?>
+                                                        <?php if (!$helpers->verificarPermisoCodigo('puntoventa.editarinteres')): ?>
+                                                            <input style="border-color: #FFC7BB; text-align:center"
+                                                                type="text" class="form-control" id="inputInteres"
+                                                                name="inputInteres" value="0" readonly>
+                                                        <?php endif; ?>
 
                                                     </div>
 

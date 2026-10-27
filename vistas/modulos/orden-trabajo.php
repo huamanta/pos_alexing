@@ -118,6 +118,10 @@
                                 transition: all 0.2s ease;
                             }
 
+                            .wizard-step.clickable {
+                                cursor: pointer;
+                            }
+
                             .wizard-step.active {
                                 border-color: #2563eb;
                                 background: #eff6ff;
@@ -346,7 +350,7 @@
                                                             <th>Nombre</th>
                                                             <th>Rol</th>
                                                             <th>Horas</th>
-                                                            <th>Costo/h</th>
+                                                            <th>Costo/h (editable)</th>
                                                             <th>Subtotal</th>
                                                             <th></th>
                                                         </tr>
@@ -406,7 +410,7 @@
                                                 <i class="fas fa-cog me-2"></i> Para órdenes de ensamblaje, esta sección
                                                 permite incluir todas las piezas necesarias para montar una motocicleta.
                                             </div>
-
+                                            <small class="form-text text-muted mb-2">El costo por hora se calcula según el salario mensual (salario ÷ 240) y puede ajustarse manualmente.</small>
                                             <div class="table-responsive">
                                                 <table class="table align-middle">
                                                     <thead class="table-light">
