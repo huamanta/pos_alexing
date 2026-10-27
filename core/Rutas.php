@@ -39,7 +39,8 @@ class Rutas extends Helpers
         }
 
         $resultado = (new DBQuery($this->pdo))
-            ->query("
+            ->query(
+                "
                     SELECT EXISTS (
                         SELECT 1
                         FROM permisos p
@@ -62,12 +63,13 @@ class Rutas extends Helpers
                                 )
                             )
                     ) AS autorizado
-                ", 
+                ",
                 [
-                'modulo_id' => $id,
-                'usuario_rol' => $idusuario,
-                'usuario_directo' => $idusuario,
-            ])
+                    'modulo_id' => $id,
+                    'usuario_rol' => $idusuario,
+                    'usuario_directo' => $idusuario,
+                ]
+            )
             ->first();
 
         return (bool) ($resultado['autorizado'] ?? false);
@@ -150,5 +152,13 @@ class Rutas extends Helpers
         }
 
         return $rutas;
+    }
+
+    public function asset($ruta)
+    {
+        $archivo = $_SERVER['DOCUMENT_ROOT'] . $ruta;
+        $version = file_exists($archivo) ? filemtime($archivo) : time();
+
+        return $ruta . '?v=' . $version;
     }
 }
