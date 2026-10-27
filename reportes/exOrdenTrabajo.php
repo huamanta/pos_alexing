@@ -58,12 +58,28 @@ $vehiculoNombre = !empty($orden['productoRelacionado']['nombre']) ? $orden['prod
 $observaciones = !empty($orden['observaciones']) ? $orden['observaciones'] : (!empty($orden['observaciones_costos']) ? $orden['observaciones_costos'] : 'Sin observaciones');
 
 $listaMecanicos = '';
+$subtotalManoObra = 0;
+$fechaInicioCalculo = strtotime(substr((string) ($orden['fecha_inicio'] ?? ''), 0, 10));
+$fechaFinCalculo = strtotime(substr((string) ($orden['fecha_fin'] ?? $orden['fecha_inicio'] ?? ''), 0, 10));
+$horasCalculadas = ($fechaInicioCalculo && $fechaFinCalculo)
+    ? max(1, (int) floor(($fechaFinCalculo - $fechaInicioCalculo) / 86400) + 1) * 8
+    : 8;
 if (!empty($mecanicos)) {
     foreach ($mecanicos as $m) {
-        $listaMecanicos .= '<tr><td>' . htmlspecialchars($m['nombre_personal'] ?? $m['nombre'] ?? '---', ENT_QUOTES, 'UTF-8') . '</td></tr>';
+        $horas = (float) ($m['horas'] ?? 0) ?: $horasCalculadas;
+        $costoHora = (float) ($m['costo_hora'] ?? 0);
+        if (!isset($m['costo_hora'])) {
+            $costoHora = (float) ($m['salario_personal'] ?? 0) / 240;
+        }
+        $subtotal = (float) ($m['subtotal'] ?? 0);
+        if (!isset($m['subtotal'])) {
+            $subtotal = $horas * $costoHora;
+        }
+        $subtotalManoObra += $subtotal;
+        $listaMecanicos .= '<tr><td>' . htmlspecialchars($m['nombre_personal'] ?? $m['nombre'] ?? '---', ENT_QUOTES, 'UTF-8') . '</td><td class="amount">' . htmlspecialchars(number_format($horas, 2), ENT_QUOTES, 'UTF-8') . '</td><td class="amount">' . htmlspecialchars($helpers->get_currency_symbol($costoHora), ENT_QUOTES, 'UTF-8') . '</td><td class="amount">' . htmlspecialchars($helpers->get_currency_symbol($subtotal), ENT_QUOTES, 'UTF-8') . '</td></tr>';
     }
 } else {
-    $listaMecanicos = '<tr><td>Sin mecánicos asignados</td></tr>';
+    $listaMecanicos = '<tr><td colspan="4">Sin mecánicos asignados</td></tr>';
 }
 
 $listaRepuestos = '';
@@ -85,7 +101,7 @@ if (!empty($repuestos)) {
 }
 
 $otrosGastos = (float) ($orden['otros_gastos'] ?? 0) + (float) ($orden['servicios_externos'] ?? 0) + (float) ($orden['pintura'] ?? 0) + (float) ($orden['transporte'] ?? 0) + (float) ($orden['lavado'] ?? 0);
-$manoObra = 0;
+$manoObra = $subtotalManoObra;
 $totalEstimado = $subtotalRepuestos + $manoObra + $otrosGastos;
 
 $subtotalRepuestosFmt = $helpers->get_currency_symbol($subtotalRepuestos);
@@ -328,6 +344,9 @@ $html = '
             <thead>
                 <tr>
                     <th>Nombre del mecánico</th>
+                    <th style="width: 60px; text-align:right;">Horas</th>
+                    <th style="width: 95px; text-align:right;">Costo/h</th>
+                    <th style="width: 100px; text-align:right;">Subtotal</th>
                 </tr>
             </thead>
             <tbody>

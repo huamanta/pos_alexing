@@ -129,14 +129,20 @@ class OrdenTrabajo extends Helpers
                     ->table('orden_trabajo_mecanico')
                     ->cast([
                         'idorden' => 'int',
-                        'idpersonal' => 'int'
+                        'idpersonal' => 'int',
+                        'horas' => 'float',
+                        'costo_hora' => 'float',
+                        'subtotal' => 'float'
                     ])
                     ->data([
                         'idorden' => $idOrdenTrabajo,
-                        'idpersonal' => $mecanico['id'],
-                        'rol' => 'PRINCIPAL', // Puedes ajustar esto según tu lógica
+                        'idpersonal' => $mecanico['idpersonal'] ?? $mecanico['id'],
+                        'rol' => 'PRINCIPAL',
                         'fecha_inicio' => $fecha ?: date('Y-m-d H:i:s'),
                         'fecha_fin' => $fechaCompromiso ?: null,
+                        'horas' => $mecanico['hours'] ?? 0,
+                        'costo_hora' => $mecanico['rate'] ?? 0,
+                        'subtotal' => $mecanico['subtotal'] ?? 0,
                     ])
                     ->save();
             }
@@ -217,17 +223,29 @@ class OrdenTrabajo extends Helpers
 
             foreach ($mecanicos as $mecanico) {
                 $idMecanico = empty($mecanico['id']) ? null : (int) $mecanico['id'];
-                $idpersonal = (int) $mecanico['idpersonal'];
+                $idpersonal = (int) ($mecanico['idpersonal'] ?? $mecanico['id']);
+                $horas = $mecanico['hours'] ?? 0;
+                $costoHora = $mecanico['rate'] ?? 0;
+                $subtotalManoObra = $mecanico['subtotal'] ?? 0;
                 if ($idMecanico) {
                     (new FluentSaver($this->pdo))
                         ->table('orden_trabajo_mecanico')
                         ->primaryKey('id')
+                        ->cast([
+                            'idpersonal' => 'int',
+                            'horas' => 'float',
+                            'costo_hora' => 'float',
+                            'subtotal' => 'float'
+                        ])
                         ->data([
                             'id' => $idMecanico,
                             'idpersonal' => $idpersonal,
                             'rol' => 'PRINCIPAL',
                             'fecha_inicio' => $fecha ?: date('Y-m-d H:i:s'),
                             'fecha_fin' => $fechaCompromiso ?: null,
+                            'horas' => $horas,
+                            'costo_hora' => $costoHora,
+                            'subtotal' => $subtotalManoObra,
                             'deleted_at' => null
                         ])
                         ->update();
@@ -236,14 +254,20 @@ class OrdenTrabajo extends Helpers
                         ->table('orden_trabajo_mecanico')
                         ->cast([
                             'idorden' => 'int',
-                            'idpersonal' => 'int'
+                            'idpersonal' => 'int',
+                            'horas' => 'float',
+                            'costo_hora' => 'float',
+                            'subtotal' => 'float'
                         ])
                         ->data([
                             'idorden' => $idOrdenTrabajo,
                             'idpersonal' => $idpersonal,
                             'rol' => 'PRINCIPAL',
                             'fecha_inicio' => $fecha ?: date('Y-m-d H:i:s'),
-                            'fecha_fin' => $fechaCompromiso ?: null
+                            'fecha_fin' => $fechaCompromiso ?: null,
+                            'horas' => $horas,
+                            'costo_hora' => $costoHora,
+                            'subtotal' => $subtotalManoObra
                         ])
                         ->save();
                 }
@@ -346,7 +370,7 @@ class OrdenTrabajo extends Helpers
 
         // Obtener mecánicos asociados
         $mecanicos = (new DBQuery($this->pdo))
-            ->select('m.*, per.nombre as nombre_personal')
+            ->select('m.*, per.nombre as nombre_personal, per.salario as salario_personal')
             ->from('orden_trabajo_mecanico m')
             ->leftJoin('personal per', 'm.idpersonal = per.idpersonal')
             ->where('m.idorden', '=', $idOrdenTrabajo)
@@ -396,7 +420,7 @@ class OrdenTrabajo extends Helpers
 
         // Obtener mecánicos asociados
         $mecanicos = (new DBQuery($this->pdo))
-            ->select('m.*, per.nombre as nombre_personal')
+            ->select('m.*, per.nombre as nombre_personal, per.salario as salario_personal')
             ->from('orden_trabajo_mecanico m')
             ->leftJoin('personal per', 'm.idpersonal = per.idpersonal')
             ->where('m.idorden', '=', $idOrdenTrabajo)
