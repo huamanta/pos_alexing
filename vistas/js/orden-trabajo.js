@@ -88,14 +88,16 @@ function regresarPanel() {
 
 function crearOrden() {
     const fecha = new Date();
+    idOrdenTrabajo = null;
+    wizardSteps.removeClass('clickable');
 
     const dia = String(fecha.getDate()).padStart(2, "0");
     const mes = String(fecha.getMonth() + 1).padStart(2, "0");
     const anio = fecha.getFullYear();
     const fechaFormateada = `${anio}-${mes}-${dia}`;
-    $("#fecha_registro").val(fechaFormateada);
 
     orderForm[0].reset();
+    $("#fecha_registro").val(fechaFormateada);
     orderState.vehicle = null;
     orderState.mechanics = [];
     orderState.parts = [];
@@ -231,7 +233,7 @@ function populateMechanicSelect() {
     personal.forEach((empleado) => {
         const photo = empleado.imagen ? './files/personal/' + empleado.imagen : 'https://via.placeholder.com/44';
         const label = `${empleado.nombre} - ${empleado.cargo || 'Personal'}`;
-        select.append(`<option value="${empleado.idpersonal}" data-id="${empleado.idpersonal}" data-name="${empleado.nombre}" data-role="${empleado.cargo || 'Personal'}" data-rate="${Number(empleado.salario || 30).toFixed(2)}" data-photo="${photo}">${label}</option>`);
+        select.append(`<option value="${empleado.idpersonal}" data-id="${empleado.idpersonal}" data-name="${empleado.nombre}" data-role="${empleado.cargo || 'Personal'}" data-rate="${(Number(empleado.salario || 0) / 240).toFixed(2)}" data-photo="${photo}">${label}</option>`);
     });
 }
 
@@ -408,9 +410,13 @@ function renderMechanics() {
                 <td>${m.name}</td>
                 <td><span class="badge bg-info">${m.role}</span></td>
                 <td>${m.hours} Aprox</td>
-                <td>S/. ${m.rate}</td>
+                <td>
+                    <input type="number" class="form-control form-control-sm mechanic-rate"
+                        min="0" step="0.01" value="${Number(m.rate || 0).toFixed(2)}"
+                        data-id="${m.idpersonal || m.id}" aria-label="Costo por hora de ${m.name}">
+                </td>
                 <td><strong>S/. ${m.subtotal}</strong></td>
-                <td><button type="button" class="btn btn-sm btn-outline-danger btn-delete-mechanic" data-id="${m.id}"><i class="fas fa-trash"></i></button></td>
+                <td><button type="button" class="btn btn-sm btn-outline-danger btn-delete-mechanic" data-id="${m.idpersonal || m.id}"><i class="fas fa-trash"></i></button></td>
             </tr>`;
     }).join('');
 
@@ -435,7 +441,11 @@ function renderParts() {
                         min="0.01" step="0.01" value="${p.cantidad}"
                         data-code="${p.codigo}">
                 </td>
-                <td>S/. ${p.precio}</td>
+                <td>
+                    <input type="number" class="form-control form-control-sm part-price"
+                        min="0" step="0.01" value="${p.precio}"
+                        data-code="${p.codigo}" aria-label="Precio unitario de ${p.producto}">
+                </td>
                 <td>${p.descuento}%</td>
                 <td><strong>S/. ${p.subtotal}</strong></td>
                 <td><button type="button" class="btn btn-sm btn-outline-danger btn-delete-part" data-code="${p.codigo}"><i class="fas fa-trash"></i></button></td>
@@ -457,17 +467,18 @@ function addMechanic() {
 
     const personal = selectedOption.data;
 
-    if (orderState.mechanics.some((mechanic) => mechanic.id == personal.idpersonal)) {
+    if (orderState.mechanics.some((mechanic) => Number(mechanic.idpersonal || mechanic.id) === Number(personal.idpersonal))) {
         Swal.fire('Orden trabajo', 'Ese mecánico ya está agregado.', 'info');
         return;
     }
 
-    const salary = Number(personal.salario || 30);
-    const hourlyRate = salary / 30 / 8;
+    const salary = Number(personal.salario || 0);
+    const hourlyRate = Number((salary / 240).toFixed(2));
     const hours = calculateWorkHours();
 
     orderState.mechanics.push({
-        id: personal.idpersonal,
+        id: null,
+        idpersonal: personal.idpersonal,
         name: personal.nombre,
         role: personal.cargo,
         document: personal.num_documento,
@@ -512,7 +523,7 @@ function addPart() {
 }
 
 function removeMechanic(id) {
-    orderState.mechanics = orderState.mechanics.filter((m) => m.id !== Number(id));
+    orderState.mechanics = orderState.mechanics.filter((m) => Number(m.idpersonal || m.id) !== Number(id));
     renderMechanics();
     syncPayload();
 }
@@ -535,6 +546,36 @@ function updatePartQuantity(input) {
     part.cantidad = quantity;
     part.subtotal = Number((quantity * Number(part.precio || 0)).toFixed(2));
     renderParts();
+    syncPayload();
+}
+
+function updatePartPrice(input) {
+    const code = String($(input).data('code'));
+    const price = Number($(input).val());
+    const part = orderState.parts.find((item) => item.codigo === code);
+
+    if (!part || !Number.isFinite(price) || price < 0) {
+        return;
+    }
+
+    part.precio = Number(price.toFixed(2));
+    part.subtotal = Number((Number(part.cantidad) * part.precio).toFixed(2));
+    renderParts();
+    syncPayload();
+}
+
+function updateMechanicRate(input) {
+    const id = Number($(input).data('id'));
+    const rate = Number($(input).val());
+    const mechanic = orderState.mechanics.find((item) => Number(item.idpersonal || item.id) === id);
+
+    if (!mechanic || !Number.isFinite(rate) || rate < 0) {
+        return;
+    }
+
+    mechanic.rate = Number(rate.toFixed(2));
+    mechanic.subtotal = Number((Number(mechanic.hours || 0) * mechanic.rate).toFixed(2));
+    renderMechanics();
     syncPayload();
 }
 
@@ -615,6 +656,20 @@ partsTableBody.on('click', '.btn-delete-part', function () {
 
 partsTableBody.on('change', '.part-quantity', function () {
     updatePartQuantity(this);
+});
+
+partsTableBody.on('change', '.part-price', function () {
+    updatePartPrice(this);
+});
+
+mechanicsTableBody.on('change', '.mechanic-rate', function () {
+    updateMechanicRate(this);
+});
+
+wizardSteps.on('click', function () {
+    if (idOrdenTrabajo !== null) {
+        renderWizard($(this).data('step'));
+    }
 });
 
 $('.prev-step').on('click', function () {
@@ -791,8 +846,8 @@ function mapMechanicFromApi(item) {
     const idpersonal = Number(item.idpersonal);
     const name = item.nombre_personal || item.nombre || 'Mecánico';
     const role = item.rol || item.cargo || 'Personal';
-    const salary = Number(item.salario ?? item.sueldo ?? 30);
-    const hourlyRate = salary / 30 / 8;
+    const salary = Number(item.salario ?? item.sueldo ?? 0);
+    const hourlyRate = Number((salary / 240).toFixed(2));
     const hours = Number(item.horas ?? item.hours ?? 4);
     const subtotal = Number((hours * hourlyRate).toFixed(2));
 
@@ -807,8 +862,8 @@ function mapMechanicFromApi(item) {
         percentage: Number(item.porcentaje || 0),
         salary,
         hours,
-        rate: hourlyRate,
-        subtotal,
+        rate: Number(item.costo_hora ?? item.rate ?? hourlyRate),
+        subtotal: Number(item.subtotal ?? subtotal),
         photo: item.imagen ? `files/personal/${item.imagen}` : 'files/personal/user.png',
         data: item
     };
@@ -834,6 +889,7 @@ function mapPartFromApi(item) {
 
 function mostrar(idorden) {
     idOrdenTrabajo = idorden;
+    wizardSteps.addClass('clickable');
     $.get("controladores/ordentrabajo.php", { op: "mostrar", idOrdenTrabajo: idOrdenTrabajo }, function (response) {
         const data = response || {};
         const orden = data.ordenTrabajo || {};
