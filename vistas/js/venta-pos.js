@@ -720,6 +720,7 @@ $("#tipopago").change(function () {
     $("#datafechas").html(
       '<tr><td colspan="4" class="text-center">No se han calculado las fechas de pago</td></tr>',
     );
+    $("#resumenCuotas").empty();
     document.getElementById("input_cuotas").selectedIndex = 0;
     document.getElementById("input_frecuencia").selectedIndex = 0;
     $("#numeroMeses").val("");
@@ -782,6 +783,7 @@ $("#tipopago").change(function () {
     $("#datafechas").html(
       '<tr><td colspan="4" class="text-center">No se han calculado las fechas de pago</td></tr>',
     );
+    $("#resumenCuotas").empty();
     document.getElementById("input_cuotas").selectedIndex = 0;
     document.getElementById("input_frecuencia").selectedIndex = 0;
     $("#numeroMeses").val("");
@@ -1023,6 +1025,7 @@ function guardaryeditar(e) {
       resetearPagos();
       listarDataVentas.load();
       $("#datafechas").empty();
+      $("#resumenCuotas").empty();
       // cargarItemsAlSelect();
       seleccionarCliente("Publico general", CLIENTE_GENERAL);
     },
@@ -1382,6 +1385,7 @@ function recalcularPagos() {
 //Función limpiar
 function limpiardatafecha() {
   $("#datafechas").val("");
+  $("#resumenCuotas").empty();
 }
 
 function imprimirBoleta(id, status = false) {
@@ -4010,6 +4014,24 @@ function calcularMontos(deuda, interes, cuotas) {
   };
 }
 
+function generarResumenCuotas(deuda, interes, cuotas, frecuencia) {
+  const capital = Number(deuda) || 0;
+  const interesPorCuota = Number(
+    (capital * (obtenerInteresPorPeriodo(interes, frecuencia) / 100)).toFixed(2),
+  );
+  const interesTotal = interesPorCuota * cuotas;
+  const total = capital + interesTotal;
+  const formato = (valor) => `S/ ${valor.toFixed(2)}`;
+
+  return `
+    <tr>
+      <td style="width:130px"><strong>Cuotas: ${cuotas}</strong></td>
+      <td><strong>${formato(capital)}</strong></td>
+      <td><strong>${formato(interesTotal)}</strong></td>
+      <td><strong>${formato(total)}</strong></td>
+    </tr>`;
+}
+
 function validarDatos({ cuotas, frecuencia, deuda }) {
   if (!frecuencia) {
     Swal.fire("Selecciona frecuencia de pago", "", "warning");
@@ -4158,6 +4180,14 @@ function calcularCuotas() {
   );
 
   $("#datafechas").html(html);
+  $("#resumenCuotas").html(
+    generarResumenCuotas(
+      data.deuda,
+      data.interes,
+      data.cuotas,
+      data.frecuencia,
+    ),
+  );
 }
 
 function calcularDeuda() {
