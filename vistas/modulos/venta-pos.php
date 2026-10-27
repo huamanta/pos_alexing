@@ -1963,6 +1963,9 @@
                                                             </tr>
                                                         </tbody>
                                                     </table>
+                                                    <table class="table" style="width:100%;">
+                                                        <tbody id="resumenCuotas"></tbody>
+                                                    </table>
                                                 </div>
                                                 <div id="fechasHiddenContainer" style="display:none;"></div>
                                             </div>
