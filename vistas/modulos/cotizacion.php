@@ -811,6 +811,10 @@ date_default_timezone_set('America/Lima');
                                                         <label for="">Pago inicial:</label>
                                                         <input type="text" class="form-control" name="inicial"
                                                             id="inicial">
+                                                        <div class="alert alert-info py-2 mt-2 mb-0">
+                                                            <small>Porcentaje de inicial</small>
+                                                            <strong class="d-block" id="porcentajeInicial">0.00%</strong>
+                                                        </div>
                                                     </div>
                                                     <div class="form-group col-lg-3" id="n1">
                                                         <label style="font-size: 11px;">Monto Deuda:</label>
@@ -1273,6 +1277,13 @@ date_default_timezone_set('America/Lima');
                             <div class="info-box-credit">
                                 <h6>Inicial</h6>
                                 <p id="textInicial">S/ 0.00</p>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3 mb-3">
+                            <div class="info-box-credit">
+                                <h6>Porcentaje inicial</h6>
+                                <p id="textPorcentajeInicial">0.00%</p>
                             </div>
                         </div>
 

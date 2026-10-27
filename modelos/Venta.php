@@ -687,7 +687,7 @@ class Venta extends Helpers
     }
 
 
-    public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $tipopago, $formapago, $nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido, $totaldeposito, $vuelto, $tipo, $banco, $idproducto, $nombre, $cantidad, $precio_venta, $descuento, $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, $idmotivo, $observaciones, $fecha_pago, $interes, $input_cuotas, $cantidad_contenedor, $contenedor, $idp, $check_precio, $id_fifo_lote = array(), $idcategoria = array(), $idgarante = '', $idacompanante = '', $idtipoacompanante = '')
+    public function editar($idventa, $idsucursal, $idcliente, $idpersonal, $idcaja, $tipo_comprobante, $serie_comprobante, $num_comprobante, $fecha_hora, $impuesto, $total_venta, $tipopago, $formapago, $nroOperacion, $fechaDepostivo, $porcentaje, $totalrecibido, $totaldeposito, $vuelto, $tipo, $banco, $idproducto, $nombre, $cantidad, $precio_venta, $descuento, $fechaOperacion, $montoDeuda, $montoPagado, $comprobanteReferencia, $idmotivo, $observaciones, $fecha_pago, $interes, $input_cuotas, $cantidad_contenedor, $contenedor, $idp, $check_precio, $id_fifo_lote = array(), $idcategoria = array(), $idgarante = '', $idacompanante = '', $idtipoacompanante = '', $input_frecuencia = 4)
     {
         $fechaActual = date('Y-m-d H:i:s');
 
@@ -755,13 +755,37 @@ class Venta extends Helpers
 
         // Registrar nuevas cuentas por cobrar si aplica
         if ($tipopago == 'Si') {
-            // Usar interes como en insertar()
-            $monto_cuota = round(($montoDeuda * ($interes / 100) + $montoDeuda) / $input_cuotas, 1);
+            $mesesPorPeriodo = 1;
+            switch ((int) $input_frecuencia) {
+                case 1:
+                    $mesesPorPeriodo = 1 / 30;
+                    break;
+                case 2:
+                    $mesesPorPeriodo = 1 / ($this->verificarMes30Dias($idsucursal) ? 5 : 4);
+                    break;
+                case 3:
+                    $mesesPorPeriodo = 1 / 2;
+                    break;
+                case 5:
+                    $mesesPorPeriodo = 2;
+                    break;
+                case 6:
+                    $mesesPorPeriodo = 3;
+                    break;
+                case 7:
+                    $mesesPorPeriodo = 6;
+                    break;
+                case 8:
+                    $mesesPorPeriodo = 12;
+                    break;
+            }
+            $interesCuota = round($montoDeuda * (($interes * $mesesPorPeriodo) / 100), 2);
+            $monto_cuota = round(($montoDeuda / max((int) $input_cuotas, 1)) + $interesCuota, 2);
 
             for ($c = 0; $c < count($fecha_pago); $c++) {
                 $sql_cpc = "INSERT INTO cuentas_por_cobrar
                         (idventa, fecharegistro, deudatotal, fechavencimiento, abonototal, deuda, interes)
-                        VALUES ('$idventa', '$fecha_hora', '$monto_cuota', '{$fecha_pago[$c]}', 0, '$monto_cuota', '$interes')";
+                        VALUES ('$idventa', '$fecha_hora', '$monto_cuota', '{$fecha_pago[$c]}', 0, '$monto_cuota', '$interesCuota')";
                 ejecutarConsulta($sql_cpc);
             }
         }
@@ -804,6 +828,8 @@ class Venta extends Helpers
         fechadeposito='$fechaDepostivo',
         totalrecibido='$totalrecibido',
         totaldeposito='$totaldeposito',
+        interes='$interes',
+        frecuencia='$input_frecuencia',
         meses='$input_cuotas',
         vuelto='$vuelto',
         fecha_hora='$fecha_hora',
@@ -1252,7 +1278,7 @@ class Venta extends Helpers
         $sql = "SELECT v.idventa, DATE(v.fecha_hora) as fecha, DATE(v.fecha_kardex) as fechahora, c.idcaja as caja, s.idsucursal as sucursal,
                    v.idcliente, p.nombre as cliente, u.idpersonal, u.nombre as personal, p.telefono,
                    v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, v.total_venta, v.impuesto,
-                   v.ventacredito, v.formapago, v.meses, v.observacion, v.descuento, v.totalrecibido,
+                   v.ventacredito, v.formapago, v.frecuencia, v.interes, v.meses, v.observacion, v.descuento, v.totalrecibido,
                    cpc.deudatotal, SUM(dcpc.montopagado) as montopagado, v.vuelto, v.numoperacion,
                    DATE(v.fechadeposito) as fechadeposito, v.estado, cpc.fecharegistro, cpc.deudatotal as cpc_deudatotal
             FROM venta v

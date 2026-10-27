@@ -367,6 +367,67 @@ function calcularMontos(deuda, interes, cuotas) {
   };
 }
 
+function obtenerInteresPorPeriodo(interes, frecuencia) {
+  const semanasPorMes = calculoMes ? 5 : 4;
+  const mesesPorPeriodo = {
+    1: 1 / 30,
+    2: 1 / semanasPorMes,
+    3: 1 / 2,
+    4: 1,
+    5: 2,
+    6: 3,
+    7: 6,
+    8: 12,
+  }[parseInt(frecuencia, 10)];
+
+  return (Number(interes) || 0) * (mesesPorPeriodo || 1);
+}
+
+function obtenerPorcentajeInicial(inicial, total) {
+  const montoTotal = Number(total) || 0;
+  if (montoTotal <= 0) return 0;
+
+  return ((Number(inicial) || 0) / montoTotal) * 100;
+}
+
+function obtenerInteresSegunPorcentajeInicial(porcentajeInicial) {
+  if (porcentajeInicial < 30) return 4.5;
+  if (porcentajeInicial < 50) return 4;
+  if (porcentajeInicial < 60) return 3.5;
+  if (porcentajeInicial < 70) return 3;
+  if (porcentajeInicial < 80) return 2.5;
+  return 2;
+}
+
+function actualizarDatosInicial() {
+  const total = Number($("#total_venta").val()) || 0;
+  let inicial = Number(String($("#inicial").val() || "0").replace(",", ".")) || 0;
+  inicial = Math.max(inicial, 0);
+  if (total > 0 && inicial > total) {
+    inicial = total;
+    $("#inicial").val(total.toFixed(2));
+  }
+  const porcentajeInicial = obtenerPorcentajeInicial(inicial, total);
+
+  $("#porcentajeInicial, #textPorcentajeInicial").text(
+    `${porcentajeInicial.toFixed(2)}%`,
+  );
+  $("#textInicial").text(`S/ ${inicial.toFixed(2)}`);
+
+  if (total > 0) {
+    const interes = obtenerInteresSegunPorcentajeInicial(porcentajeInicial);
+    $("#inputInteres").val(interes.toFixed(2));
+    $("#textInteres").text(`${interes}%`);
+  }
+
+  const deuda = Math.max(total - inicial, 0);
+  $("#montoDeuda").val(deuda.toFixed(2));
+
+  if ($("#formapago").val() === "Si" && $("#datafechas tr").length > 0) {
+    calcularCuotas();
+  }
+}
+
 function calcularCuotas() {
   // Si no se eligio cuotas manualmente, intentar autocalcular desde N° meses + frecuencia.
   if (!$("#input_cuotas").val()) {
@@ -403,12 +464,16 @@ function calcularCuotas() {
   );
 
   $("#datafechas").html(html);
-  $("#resumenCuotas").html(generarResumenCuotas(data.deuda, data.interes, data.cuotas));
+  $("#resumenCuotas").html(
+    generarResumenCuotas(data.deuda, data.interes, data.cuotas, data.frecuencia),
+  );
 }
 
-function generarResumenCuotas(deuda, interes, cuotas) {
+function generarResumenCuotas(deuda, interes, cuotas, frecuencia) {
   const capital = Number(deuda) || 0;
-  const interesPorCuota = Number((capital * (Number(interes) || 0) / 100).toFixed(2));
+  const interesPorCuota = Number(
+    (capital * (obtenerInteresPorPeriodo(interes, frecuencia) / 100)).toFixed(2),
+  );
   const interesTotal = interesPorCuota * cuotas;
   const total = capital + interesTotal;
   const formato = (valor) => `S/ ${valor.toFixed(2)}`;
@@ -424,7 +489,22 @@ function generarResumenCuotas(deuda, interes, cuotas) {
 
 $("#calcular_cuotas").click(function (e) {
   e.preventDefault();
-  calcularCuotas();
+
+  const boton = $(this);
+  if (boton.prop("disabled")) return;
+
+  const contenidoOriginal = boton.html();
+  boton
+    .prop("disabled", true)
+    .html('<i class="fa fa-spinner fa-spin" aria-hidden="true"></i> Calculando...');
+
+  window.setTimeout(function () {
+    try {
+      calcularCuotas();
+    } finally {
+      boton.prop("disabled", false).html(contenidoOriginal);
+    }
+  }, 50);
 });
 
 function sumarFrecuencia(fecha, frecuencia) {
@@ -493,7 +573,9 @@ function generarTabla(
   let html = "";
   frecuencia = parseInt(frecuencia, 10);
   let fechaTemp = parseFecha(fechaBase);
-  const interesTotal = Number((deuda * (interes / 100)).toFixed(2));
+  const interesTotal = Number(
+    (deuda * (obtenerInteresPorPeriodo(interes, frecuencia) / 100)).toFixed(2),
+  );
   const montoBase = Number((deuda / cuotas).toFixed(2));
   const interesPorCuota = interesTotal;
   let capitalAcumulado = 0;
@@ -524,16 +606,14 @@ function generarTabla(
   return html;
 }
 
-$("#inicial").keyup(function () {
-  var texto = parseFloat($(this).val() || 0);
-  var total = parseFloat($("#total_venta").val()) || 0;
-  if (texto > total) {
+$("#inicial").on("input change", function () {
+  let inicial = Number(String($(this).val() || "0").replace(",", ".")) || 0;
+  const total = Number($("#total_venta").val()) || 0;
+  if (inicial > total) {
+    inicial = total;
     $(this).val(total.toFixed(2));
-    texto = total;
   }
-
-  var restante = total - texto;
-  $("#montoDeuda").val(restante.toFixed(2));
+  actualizarDatosInicial();
 });
 
 $("#formapago").change(function () {
@@ -623,7 +703,9 @@ function mostrar(idcotizacion) {
 
         let total = parseFloat(data.total_venta) || 0;
         let inicial = parseFloat(data.inicial) || 0;
-        let interes = parseFloat(data.interes) || 0;
+        const porcentajeInicial = obtenerPorcentajeInicial(inicial, total);
+        const interes = obtenerInteresSegunPorcentajeInicial(porcentajeInicial);
+        $("#inputInteres").val(interes.toFixed(2));
 
         let deuda = total - inicial;
 
@@ -648,10 +730,13 @@ function mostrar(idcotizacion) {
         );
         $("#textCredito").text(`S/ ${deuda.toFixed(2)}`);
         $("#textInicial").text(`S/ ${inicial.toFixed(2)}`);
+        $("#textPorcentajeInicial").text(`${porcentajeInicial.toFixed(2)}%`);
         $("#textInteres").text(`${interes}%`);
         $("#textCuotas").text(`${cuotas}`);
         $("#dataCuotasCredito").html(tabla);
-        $("#resumenCuotasCredito").html(generarResumenCuotas(deuda, interes, cuotas));
+        $("#resumenCuotasCredito").html(
+          generarResumenCuotas(deuda, interes, cuotas, data.frecuencia),
+        );
       } else {
         $("#dataCuotasCredito").html("");
         $("#resumenCuotasCredito").html("");
@@ -1493,7 +1578,7 @@ function modificarSubtotales() {
   $("#total_venta").val(total.toFixed(2));
   $("#most_total2").val(total.toFixed(2));
   $("#most_total").html(total.toFixed(2));
-  $("#montoDeuda").val(total.toFixed(2));
+  actualizarDatosInicial();
   evaluar();
 }
 

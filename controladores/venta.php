@@ -214,7 +214,8 @@ switch ($_GET["op"]) {
 				$_POST["idcategoria"],
 				$idgarante,
 				$idacompanante,
-				$idtipoacompanante
+				$idtipoacompanante,
+				$input_frecuencia
 			);
 			echo $rspta;
 		}

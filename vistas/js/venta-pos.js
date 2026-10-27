@@ -11,6 +11,7 @@ let listarDataVentas = null;
 let calculoMes = false;
 let bancos = [];
 let idVentaGlobal = null;
+let tokenImportacionCotizacion = 0;
 
 function actualizarResumenVenta(total, subtotal, impuestoCalculado) {
   const totalFmt = (parseFloat(total) || 0).toFixed(2);
@@ -44,9 +45,9 @@ function actualizarFilaVaciaDetalles() {
 }
 
 function listarBancos() {
-  $.get('controladores/consultas.php?op=listarBancos', function (response) {
+  $.get("controladores/consultas.php?op=listarBancos", function (response) {
     bancos = response || [];
-  })
+  });
 }
 
 const listarConfiguracionCreditos = () => {
@@ -65,7 +66,6 @@ const listarConfiguracionCreditos = () => {
     },
   });
 };
-
 
 // Función para limpiar y reiniciar completamente el carrito
 function limpiarCarrito() {
@@ -120,23 +120,28 @@ function init() {
     $("#idpersonal02").select2("");
   });
 
-  $.get("controladores/venta.php?op=selectTipoAcompanante", function (response) {
-    const data = response;
+  $.get(
+    "controladores/venta.php?op=selectTipoAcompanante",
+    function (response) {
+      const data = response;
 
-    let html = `
+      let html = `
         <option value="">Seleccione...</option>
     `;
 
-    html += data.map(item => {
-      return `
+      html += data
+        .map((item) => {
+          return `
             <option value="${item.idtipoacompanante}">
                 ${item.nombre}
             </option>
         `;
-    }).join('');
+        })
+        .join("");
 
-    $("#idtipoacompanante").html(html);
-  });
+      $("#idtipoacompanante").html(html);
+    },
+  );
 
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
     $("#idsucursal02").html(r);
@@ -151,17 +156,18 @@ function init() {
 
   //cargamos los items al celect comprobantes
   $.post("controladores/venta.php?op=selectComprobante", function (response) {
-
     const data = response;
 
-    let html = data.map(item => {
-      if (!item.status) return ''; // Omitir sin permisos
-      return `
-            <option value="${item.idcomprobante_pago}" ${item.selected ? 'selected' : ''}>
+    let html = data
+      .map((item) => {
+        if (!item.status) return ""; // Omitir sin permisos
+        return `
+            <option value="${item.idcomprobante_pago}" ${item.selected ? "selected" : ""}>
                 ${item.nombre}
             </option>
         `;
-    }).join('');
+      })
+      .join("");
 
     $("#tipo_comprobante").html(html);
   });
@@ -394,7 +400,7 @@ $("#numeroMeses").on("input", calcularCuotasDesdeNumeroMeses);
 $("#input_frecuencia").on("change", calcularCuotasDesdeNumeroMeses);
 
 $("#comprobanteReferencia").on("change", function () {
-  if (!$(this).val()) return; // prevenir ejecución automática
+  if (!$(this).val()) return;
   mostrarE();
 });
 
@@ -411,7 +417,6 @@ function cargarSucursales() {
     $("#idsucursalVentas").select2("");
   });
 }
-
 
 //Función limpiar
 function limpiarCliente() {
@@ -473,10 +478,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                    " " +
-                    dat.apellidoPaterno +
-                    " " +
-                    dat.apellidoMaterno,
+                      " " +
+                      dat.apellidoPaterno +
+                      " " +
+                      dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -486,7 +491,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         } else {
@@ -530,7 +535,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         }
@@ -661,6 +666,48 @@ function obtenerMontoTotalPagar() {
   return 0;
 }
 
+function obtenerPorcentajeInicial(inicial, total) {
+  const montoTotal = Number(total) || 0;
+  if (montoTotal <= 0) return 0;
+
+  return ((Number(inicial) || 0) / montoTotal) * 100;
+}
+
+function obtenerInteresSegunPorcentajeInicial(porcentajeInicial) {
+  if (porcentajeInicial < 30) return 4.5;
+  if (porcentajeInicial < 50) return 4;
+  if (porcentajeInicial < 60) return 3.5;
+  if (porcentajeInicial < 70) return 3;
+  if (porcentajeInicial < 80) return 2.5;
+  return 2;
+}
+
+function obtenerInteresPorPeriodo(interes, frecuencia) {
+  const semanasPorMes = calculoMes ? 5 : 4;
+  const mesesPorPeriodo = {
+    1: 1 / 30,
+    2: 1 / semanasPorMes,
+    3: 1 / 2,
+    4: 1,
+    5: 2,
+    6: 3,
+    7: 6,
+    8: 12,
+  }[parseInt(frecuencia, 10)];
+
+  return (Number(interes) || 0) * (mesesPorPeriodo || 1);
+}
+
+function actualizarInteresCredito(montoInicial) {
+  const total = Number($("#total_venta").val()) || 0;
+  const inicial = Math.max(Number(montoInicial) || 0, 0);
+  const porcentajeInicial = obtenerPorcentajeInicial(inicial, total);
+  const interes = obtenerInteresSegunPorcentajeInicial(porcentajeInicial);
+
+  $("#porcentajeInicial").text(`${porcentajeInicial.toFixed(2)}%`);
+  $("#inputInteres").val(interes.toFixed(2));
+}
+
 $("#tipopago").change(function () {
   if ($("#tipopago").val() == "Si") {
     if (detalles <= 0) {
@@ -687,6 +734,7 @@ $("#tipopago").change(function () {
     $("#n3").show();
     $("#n4").show();
     $("#n5").show();
+    $("#panelPorcentajeInicial").show();
     $("#panel1").show();
 
     // Mostrar solo deuda a crédito
@@ -728,6 +776,7 @@ $("#tipopago").change(function () {
     document.getElementById("n3").style.display = "none";
     document.getElementById("n4").style.display = "none";
     document.getElementById("n5").style.display = "none";
+    $("#panelPorcentajeInicial").hide();
 
     // Limpiar cuotas calculadas y resetear campos de crédito
     $("#datafechas").html(
@@ -842,7 +891,7 @@ function EnviarSunat(tipoc, idventa, idcol) {
         icon: "success",
         text: resp,
         timerProgressBar: true,
-        onClose: function () { },
+        onClose: function () {},
       });
 
       listarDataVentas.load();
@@ -860,15 +909,24 @@ function validateDataVenta() {
   }
 
   const idcliente = parseInt($("#idcliente").val());
+  const tipo_comprobante = parseInt($("#tipo_comprobante").val());
   const tipopago = $("#tipopago").val().trim();
   const lista = $("#datafechas");
 
-  if ((idcliente === CLIENTE_GENERAL || idcliente.length === 0) && tipopago === "Si") {
+  if (
+    (idcliente === CLIENTE_GENERAL || idcliente.length === 0) &&
+    tipopago === "Si"
+  ) {
     Swal.fire(
       "Selecciona un cliente para realizar una venta a credito",
       "",
       "warning",
     );
+    return false;
+  }
+
+  if (tipo_comprobante === '' || tipo_comprobante.length === 0) {
+    Swal.fire("Selecciona un tipo de documento comprobante", "", "warning");
     return false;
   }
 
@@ -942,7 +1000,6 @@ function guardaryeditar(e) {
       ventaAGenerarSunat = null;
       if (data.enviar_sunat) {
         if ($("#tipo_comprobante").val() !== "Nota de Venta") {
-          console.log();
           ventaAGenerarSunat = {
             idventa: data.id_venta,
             tipo: $("#tipo_comprobante").val() == "Boleta" ? BOLETA : FACTURA,
@@ -967,7 +1024,7 @@ function guardaryeditar(e) {
       listarDataVentas.load();
       $("#datafechas").empty();
       // cargarItemsAlSelect();
-      seleccionarCliente('Publico general', CLIENTE_GENERAL);
+      seleccionarCliente("Publico general", CLIENTE_GENERAL);
     },
     error: function () {
       Swal.fire(
@@ -1104,19 +1161,21 @@ $(document).ready(function () {
   );
 
   $(document).on("change", ".metodoPago", function () {
-
     let metodo = $(this).val();
     let fila = $(this).closest(".pagoItem");
 
     if (metodo != "Efectivo") {
-
       const opcionesBancos = `
             <option value="">Seleccione banco</option>
-            ${bancos.map(banco => `
+            ${bancos
+              .map(
+                (banco) => `
                 <option value="${banco.idbanco}">
                     ${banco.nombre}
                 </option>
-            `).join("")}
+            `,
+              )
+              .join("")}
         `;
 
       // Cargar bancos en el select de ESTA fila
@@ -1124,9 +1183,7 @@ $(document).ready(function () {
 
       // Mostrar banco y fecha
       fila.find(".bancoContainer, .fechaContainer").show();
-
     } else {
-
       // Ocultar
       fila.find(".bancoContainer, .fechaContainer").hide();
 
@@ -1297,10 +1354,23 @@ function recalcularPagos() {
   // Si en modo crédito, actualiza el monto restante automáticamente usando todos los pagos mixtos
   if ($("#tipopago").val() === "Si") {
     let montoOriginalDeuda = parseFloat($("#total_venta").val()) || 0;
-    let montoPagado = totalPagadoCliente;
+    let montoPagado = Math.min(
+      Math.max(totalPagadoCliente, 0),
+      montoOriginalDeuda,
+    );
     let montoRestante = montoOriginalDeuda - montoPagado;
-    if (montoRestante < 0) montoRestante = 0;
+    $("#montoPagado").val(montoPagado.toFixed(2));
     $("#montoDeuda").val(montoRestante.toFixed(2));
+    actualizarInteresCredito(montoPagado);
+
+    if (
+      $("#datafechas input[name='fecha_pago[]']").length > 0 &&
+      $("#input_frecuencia").val() &&
+      $("#input_cuotas").val() &&
+      montoRestante > 0
+    ) {
+      calcularCuotas();
+    }
   }
 
   // Calcular vuelto
@@ -1405,7 +1475,7 @@ function limpiar() {
   var month = ("0" + (now.getMonth() + 1)).slice(-2);
   var today = now.getFullYear() + "-" + month + "-" + day;
   $("#fecha").val(today);
-  seleccionarCliente('Publico general', CLIENTE_GENERAL);
+  seleccionarCliente("Publico general", CLIENTE_GENERAL);
   // let firstOption = $("#tipo_comprobante option:first").val();
   // if (firstOption) {
   //   $("#tipo_comprobante").val(firstOption).trigger("change");
@@ -1432,6 +1502,7 @@ function limpiar() {
   $("#n4").hide();
   $("#f1").hide();
   $("#n5").hide();
+  $("#panelPorcentajeInicial").hide();
   // $("#n6").hide();
   $("#fechadeposito").hide();
   $("#banco").hide();
@@ -1539,8 +1610,8 @@ function verificarProductosDisponibles() {
           Swal.fire(
             "Advertencia",
             "El producto con ID " +
-            idproducto +
-            " no existe en el almacén seleccionado.",
+              idproducto +
+              " no existe en el almacén seleccionado.",
             "warning",
           );
         });
@@ -1669,7 +1740,7 @@ function pintarProductos(data, permissions) {
                     onclick="agregarDetalle(
                         ${item.idproducto_configuracion},
                         ${item.idproducto},
-                        '${item.nombre} ${item.marca || ''} ${item.modelo || ''}',
+                        '${item.nombre} ${item.marca || ""} ${item.modelo || ""}',
                         1,
                         0,
                         ${item.precio_venta},
@@ -1691,7 +1762,7 @@ function pintarProductos(data, permissions) {
                 </button>
                 <td>${item.codigo || ""}</td>
                 <td style="text-align:left;">
-                    <strong>${item.nombre || ""} ${item.marca || ''} ${item.modelo || ''} </strong> <span class="badge bg-blue">${item.contenedor} x ${item.cantidad_contenedor}</span><br>
+                    <strong>${item.nombre || ""} ${item.marca || ""} ${item.modelo || ""} </strong> <span class="badge bg-blue">${item.contenedor} x ${item.cantidad_contenedor}</span><br>
                     <small>
                         <strong>Motor:</strong> ${item.numero_motor || "-"} &nbsp;&nbsp;|&nbsp;&nbsp;
                         <strong>Serie:</strong> ${item.numero_serie || "-"}
@@ -1719,7 +1790,6 @@ listarProductos = new FluentPaginator({
   paginationId: "#paginationProductos",
 });
 
-
 function selectTab(index) {
   if (index == 1) {
     $("#div_search").attr("hidden", false);
@@ -1729,7 +1799,6 @@ function selectTab(index) {
     $("#div_search").attr("hidden", true);
   }
 }
-
 
 function listarArticulos2() {
   var idsucursal = $("#idsucursal").val();
@@ -1845,7 +1914,6 @@ function listarArticulos2() {
     })
     .DataTable();
 }
-
 
 function pintarVentas(data, permissions) {
   let html = "";
@@ -2173,32 +2241,35 @@ function pintarVentas(data, permissions) {
 
                     <div class="dropdown-menu">
 
-                        ${permissions.editar
-          ? `<a class="dropdown-item"
+                        ${
+                          permissions.editar
+                            ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="generarComprobante(${item.idventa})">
                                 Editar
                             </a>`
-          : ""
-        }
+                            : ""
+                        }
 
-                        ${permissions.eliminar
-          ? `<a class="dropdown-item"
+                        ${
+                          permissions.eliminar
+                            ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="anularComprobante(${item.idventa})">
                                 Eliminar
                             </a>`
-          : ""
-        }
+                            : ""
+                        }
 
-                        ${item.tipo_comprobante === "Nota de Venta"
-          ? `<a class="dropdown-item"
+                        ${
+                          item.tipo_comprobante === "Nota de Venta"
+                            ? `<a class="dropdown-item"
                                 style="cursor:pointer;"
                                 onclick="cambiarComprobante(${item.idventa},${item.idsucursal})">
                                 Cambiar a Boleta/Factura
                             </a>`
-          : ""
-        }
+                            : ""
+                        }
 
                     </div>
 
@@ -2246,10 +2317,11 @@ function pintarVentas(data, permissions) {
                 </td>
 
                 <td align="center">
-                    ${item.ventacredito === "Si"
-        ? '<span class="badge badge-neon neon-red">Crédito</span>'
-        : '<span class="badge badge-neon neon-blue">Contado</span>'
-      }
+                    ${
+                      item.ventacredito === "Si"
+                        ? '<span class="badge badge-neon neon-red">Crédito</span>'
+                        : '<span class="badge badge-neon neon-blue">Contado</span>'
+                    }
                 </td>
 
                 <td>
@@ -2362,7 +2434,7 @@ $("#comprobanteReferencia").select2({
     data: function (params) {
       return {
         is_aprobated: 1,
-        search: params.term || ""
+        search: params.term || "",
       };
     },
     processResults: function (response) {
@@ -2373,12 +2445,12 @@ $("#comprobanteReferencia").select2({
             text: `${item.tipo_comprobante} ${item.serie_comprobante}-${item.num_comprobante}`,
             cliente: item.cliente,
             fecha: item.fecha,
-            total: item.total_venta
+            total: item.total_venta,
           };
-        })
+        }),
       };
     },
-    cache: true
+    cache: true,
   },
   templateResult: function (item) {
     if (!item.id) {
@@ -2401,18 +2473,22 @@ $("#comprobanteReferencia").select2({
                     ${item.cliente || "Sin cliente"}
                 </div>
 
-                ${item.total ? `
+                ${
+                  item.total
+                    ? `
                     <small class="text-success">
                         <i class="fas fa-money-bill-wave mr-1"></i>
                         S/ ${parseFloat(item.total).toFixed(2)}
                     </small>
-                ` : ""}
+                `
+                    : ""
+                }
             </div>
         `);
   },
   templateSelection: function (item) {
     return item.text || "Buscar cotización...";
-  }
+  },
 });
 
 //Función mostrar formulario
@@ -2645,7 +2721,6 @@ function verificarCajaPorSucursal() {
 }
 
 function listarCajas() {
-
   $.ajax({
     url: "controladores/venta.php?op=listar_cajas",
     type: "GET",
@@ -2873,13 +2948,12 @@ function mostrar_impuesto() {
 
 // Función unificada para número y serie
 function cargarNumeroSerie(tipoComprobante, idsucursal) {
-
   // Obtener número de comprobante
   $.ajax({
     url: "controladores/cotizaciones.php?op=mostrar_s_ticket",
     type: "get",
     data: {
-      idtipo_comprobante: tipoComprobante
+      idtipo_comprobante: tipoComprobante,
     },
     dataType: "json",
     success: function (s) {
@@ -2908,7 +2982,6 @@ function handlePrecioChange(input, idpc) {
 
   const valorInput = input.value.trim();
   if (valorInput === "") return;
-
 
   const precioNuevo = parseFloat(valorInput);
   if (isNaN(precioNuevo) || precioNuevo <= 0) {
@@ -3081,22 +3154,15 @@ function aplicarPrecioSegunPago() {
 function obtenerStockComprometido(idproducto) {
   let total = 0;
 
-  const filas = document.querySelectorAll(
-    "#detalles tbody tr.filas"
-  );
+  const filas = document.querySelectorAll("#detalles tbody tr.filas");
 
   filas.forEach(function (fila) {
+    const inputIdProducto = fila.querySelector('input[name="idproducto[]"]');
 
-    const inputIdProducto = fila.querySelector(
-      'input[name="idproducto[]"]'
-    );
-
-    const inputCantidad = fila.querySelector(
-      'input[name="cantidad[]"]'
-    );
+    const inputCantidad = fila.querySelector('input[name="cantidad[]"]');
 
     const inputCantidadContenedor = fila.querySelector(
-      'input[name="cantidad_contenedor[]"]'
+      'input[name="cantidad_contenedor[]"]',
     );
 
     if (!inputIdProducto || !inputCantidad) {
@@ -3104,18 +3170,12 @@ function obtenerStockComprometido(idproducto) {
     }
 
     // Solo sumar configuraciones del mismo producto
-    if (
-      parseInt(inputIdProducto.value) ===
-      parseInt(idproducto)
-    ) {
+    if (parseInt(inputIdProducto.value) === parseInt(idproducto)) {
+      const cantidad = Number(inputCantidad.value) || 0;
 
-      const cantidad =
-        Number(inputCantidad.value) || 0;
-
-      const cantidadContenedor =
-        inputCantidadContenedor
-          ? Number(inputCantidadContenedor.value) || 1
-          : 1;
+      const cantidadContenedor = inputCantidadContenedor
+        ? Number(inputCantidadContenedor.value) || 1
+        : 1;
 
       // Cantidad real de unidades consumidas
       total += cantidad * cantidadContenedor;
@@ -3124,7 +3184,6 @@ function obtenerStockComprometido(idproducto) {
 
   return total;
 }
-
 
 function agregarDetalle(
   idproducto_configuracion,
@@ -3149,15 +3208,13 @@ function agregarDetalle(
   id_detalle_compra_lote = "",
   fabricante = "",
   modelo = "",
-  color = ""
+  color = "",
 ) {
-
   // =========================================================
   // VALIDACIÓN PRECIO
   // =========================================================
 
   if (precio_venta == 0) {
-
     Swal.fire({
       title: "Alerta",
       text: "El precio de venta no puede ser 0. Por favor, modifica el precio.",
@@ -3173,8 +3230,7 @@ function agregarDetalle(
         content: "swal-content",
       },
       willClose: () => {
-        const popup =
-          document.querySelector(".swal2-popup");
+        const popup = document.querySelector(".swal2-popup");
 
         if (popup) {
           popup.classList.add("fade-out");
@@ -3183,65 +3239,45 @@ function agregarDetalle(
     });
   }
 
-
   // =========================================================
   // PRECIOS
   // =========================================================
 
   if ($("#tipo_comprobante").val() != "Nota de Venta") {
-
     precio_venta = precio_venta;
 
     if (precioB != "") {
-      precioB =
-        (precioB * 1.18).toFixed(2);
+      precioB = (precioB * 1.18).toFixed(2);
     }
 
     if (precioC != "") {
-      precioC =
-        (precioC * 1.18).toFixed(2);
+      precioC = (precioC * 1.18).toFixed(2);
     }
 
     if (precioD != "") {
-      precioD =
-        (precioD * 1.18).toFixed(2);
+      precioD = (precioD * 1.18).toFixed(2);
     }
-
   } else {
-
     precio_venta = precio_venta;
   }
 
+  const precioNormal = parseFloat(precio_venta) || 0;
 
-  const precioNormal =
-    parseFloat(precio_venta) || 0;
+  const precioCredito = parseFloat(precio_credito) || precioNormal;
 
-  const precioCredito =
-    parseFloat(precio_credito) ||
-    precioNormal;
+  const usarCredito = $("#tipopago").val() === "Si";
 
-  const usarCredito =
-    $("#tipopago").val() === "Si";
-
-  const precioSeleccionado =
-    usarCredito
-      ? precioCredito
-      : precioNormal;
-
+  const precioSeleccionado = usarCredito ? precioCredito : precioNormal;
 
   // =========================================================
   // DATOS NUMÉRICOS
   // =========================================================
 
-  const cantidadNueva =
-    Number(cant) || 1;
+  const cantidadNueva = Number(cant) || 1;
 
-  const cantidadContenedorNueva =
-    Number(cantidad_contenedor) || 1;
+  const cantidadContenedorNueva = Number(cantidad_contenedor) || 1;
 
-  const stockReal =
-    Number(stock) || 0;
-
+  const stockReal = Number(stock) || 0;
 
   // =========================================================
   // ¿YA EXISTE ESTA CONFIGURACIÓN?
@@ -3250,10 +3286,7 @@ function agregarDetalle(
   const existeProducto = articuloAdd
     .split("-")
     .filter(Boolean)
-    .includes(
-      String(idproducto_configuracion)
-    );
-
+    .includes(String(idproducto_configuracion));
 
   // =========================================================
   // VALIDACIÓN DE STOCK
@@ -3274,161 +3307,85 @@ function agregarDetalle(
   // Total consumido = 56
   // =========================================================
 
-  if (
-    idcategoria != 1 &&
-    controla_stock == "Si"
-  ) {
-
+  if (idcategoria != 1 && controla_stock == "Si") {
     // Stock que ya está comprometido
     // en TODAS las configuraciones
     // del mismo producto.
-    const stockComprometido =
-      obtenerStockComprometido(idproducto);
-
+    const stockComprometido = obtenerStockComprometido(idproducto);
 
     // Lo que se intenta agregar ahora
-    const stockNuevo =
-      cantidadNueva *
-      cantidadContenedorNueva;
-
+    const stockNuevo = cantidadNueva * cantidadContenedorNueva;
 
     // Total que quedaría comprometido
-    const stockTotal =
-      stockComprometido +
-      stockNuevo;
+    const stockTotal = stockComprometido + stockNuevo;
 
+    console.log("========== VALIDACIÓN STOCK ==========");
 
-    console.log(
-      "========== VALIDACIÓN STOCK =========="
-    );
+    console.log("ID Producto:", idproducto);
 
-    console.log(
-      "ID Producto:",
-      idproducto
-    );
+    console.log("ID Configuración:", idproducto_configuracion);
 
-    console.log(
-      "ID Configuración:",
-      idproducto_configuracion
-    );
+    console.log("Stock real:", stockReal);
 
-    console.log(
-      "Stock real:",
-      stockReal
-    );
+    console.log("Stock comprometido:", stockComprometido);
 
-    console.log(
-      "Stock comprometido:",
-      stockComprometido
-    );
+    console.log("Cantidad nueva:", cantidadNueva);
 
-    console.log(
-      "Cantidad nueva:",
-      cantidadNueva
-    );
+    console.log("Cantidad contenedor:", cantidadContenedorNueva);
 
-    console.log(
-      "Cantidad contenedor:",
-      cantidadContenedorNueva
-    );
+    console.log("Stock nuevo:", stockNuevo);
 
-    console.log(
-      "Stock nuevo:",
-      stockNuevo
-    );
+    console.log("Stock total:", stockTotal);
 
-    console.log(
-      "Stock total:",
-      stockTotal
-    );
-
-    console.log(
-      "======================================"
-    );
-
+    console.log("======================================");
 
     // =====================================================
     // VALIDAR
     // =====================================================
 
     if (stockTotal > stockReal) {
-
-      const disponible =
-        Math.max(
-          stockReal -
-          stockComprometido,
-          0
-        );
-
+      const disponible = Math.max(stockReal - stockComprometido, 0);
 
       Swal.fire(
         "Stock insuficiente",
         "Stock disponible: " +
-        disponible +
-        " unidades.<br>" +
-        "Está intentando agregar: " +
-        stockNuevo +
-        " unidades.<br>" +
-        "Stock total solicitado: " +
-        stockTotal +
-        " unidades.",
-        "error"
+          disponible +
+          " unidades.<br>" +
+          "Está intentando agregar: " +
+          stockNuevo +
+          " unidades.<br>" +
+          "Stock total solicitado: " +
+          stockTotal +
+          " unidades.",
+        "error",
       );
 
       return false;
     }
   }
 
-
   // =========================================================
   // SI YA EXISTE LA MISMA CONFIGURACIÓN
   // =========================================================
 
   if (existeProducto) {
-
-    const inputsCantidad =
-      document.getElementsByName(
-        "cantidad[]"
-      );
+    const inputsCantidad = document.getElementsByName("cantidad[]");
 
     // IMPORTANTE:
     // idp[] = idproducto_configuracion
-    const inputsIdConfiguracion =
-      document.getElementsByName(
-        "idp[]"
-      );
+    const inputsIdConfiguracion = document.getElementsByName("idp[]");
 
-
-    for (
-      let i = 0;
-      i < inputsCantidad.length;
-      i++
-    ) {
-
+    for (let i = 0; i < inputsCantidad.length; i++) {
       if (
-        parseInt(
-          inputsIdConfiguracion[i].value
-        ) ===
-        parseInt(
-          idproducto_configuracion
-        )
+        parseInt(inputsIdConfiguracion[i].value) ===
+        parseInt(idproducto_configuracion)
       ) {
+        const cantidadActual = Number(inputsCantidad[i].value) || 0;
 
-        const cantidadActual =
-          Number(
-            inputsCantidad[i].value
-          ) || 0;
-
-
-        const nuevaCantidad =
-          cantidadActual +
-          cantidadNueva;
-
+        const nuevaCantidad = cantidadActual + cantidadNueva;
 
         // Actualizar cantidad
-        inputsCantidad[i].value =
-          nuevaCantidad;
-
+        inputsCantidad[i].value = nuevaCantidad;
 
         modificarSubtotales();
 
@@ -3437,16 +3394,11 @@ function agregarDetalle(
     }
   }
 
-
   // =========================================================
   // NUEVA CONFIGURACIÓN
   // =========================================================
-
   else {
-
-    var cantidad =
-      cantidadNueva;
-
+    var cantidad = cantidadNueva;
 
     // =====================================================
     // DETALLE DE CONFIGURACIÓN
@@ -3454,26 +3406,18 @@ function agregarDetalle(
 
     var detail = "";
 
-    if (
-      cantidad_contenedor != undefined &&
-      unidadmedida != undefined
-    ) {
-
+    if (cantidad_contenedor != undefined && unidadmedida != undefined) {
       detail =
         unidadmedida +
         ' <span style="color:#d9534f;font-weight:bold;padding:0 3px;">x</span> ' +
         cantidad_contenedor;
     }
 
-
-    var descuento =
-      desc;
-
+    var descuento = desc;
 
     var cad = "";
 
     var select = "";
-
 
     // =====================================================
     // INPUT PRECIO
@@ -3500,7 +3444,6 @@ function agregarDetalle(
       precioSeleccionado.toFixed(2) +
       '">';
 
-
     // =====================================================
     // BOTÓN VER PRECIOS
     // =====================================================
@@ -3515,86 +3458,43 @@ function agregarDetalle(
       'title="Mostrar precios">' +
       "</i>";
 
-
     // =====================================================
     // PRECIOS B/C/D
     // =====================================================
 
-    if (
-      precioB != "0.00" ||
-      precioC != "0.00" ||
-      precioD != "0.00"
-    ) {
-
+    if (precioB != "0.00" || precioC != "0.00" || precioD != "0.00") {
       cad =
-        '<option value="' +
-        precio_venta +
-        '">' +
-        precio_venta +
-        "</option>";
-
+        '<option value="' + precio_venta + '">' + precio_venta + "</option>";
 
       if (precioB != "0.00") {
-
-        cad =
-          cad +
-          '<option value="' +
-          precioB +
-          '">' +
-          precioB +
-          "</option>";
+        cad = cad + '<option value="' + precioB + '">' + precioB + "</option>";
       }
-
 
       if (precioC != "0.00") {
-
-        cad =
-          cad +
-          '<option value="' +
-          precioC +
-          '">' +
-          precioC +
-          "</option>";
+        cad = cad + '<option value="' + precioC + '">' + precioC + "</option>";
       }
-
 
       if (precioD != "0.00") {
-
-        cad =
-          cad +
-          '<option value="' +
-          precioD +
-          '">' +
-          precioD +
-          "</option>";
+        cad = cad + '<option value="' + precioD + '">' + precioD + "</option>";
       }
-
 
       select =
         '<input class="form-control" style="text-align:center; width: 80px;" type="number" step="0.01" oninput="modificarSubtotales()" name="precio_venta[]" id="precio_venta[]" value="' +
         precio_venta +
         '">';
-
     } else {
-
       select =
         '<input class="form-control" style="text-align:center; width: 80px;" type="number" step="0.01" oninput="modificarSubtotales()" name="precio_venta[]" id="precio_venta[]" value="' +
         precio_venta +
         '">';
     }
 
-
     // =====================================================
     // CREAR FILA
     // =====================================================
 
-    if (
-      idproducto_configuracion !== ""
-    ) {
-
-      contador =
-        contador + 1;
-
+    if (idproducto_configuracion !== "") {
+      contador = contador + 1;
 
       var fila =
         '<tr class="filas custom-row" id="fila' +
@@ -3604,113 +3504,75 @@ function agregarDetalle(
         '" data-precio-credito="' +
         precioCredito.toFixed(2) +
         '" style="margin-bottom:-10px;border-radius:10px;box-shadow:0 0 5px rgba(0,0,0,0.3);">' +
-
-
         // =================================================
         // PRODUCTO
         // =================================================
 
         '<td style="text-align:center;vertical-align:middle;">' +
-
         '<input type="hidden" name="contenedor[]" value="' +
         contenedor +
         '">' +
-
         '<input type="hidden" name="cantidad_contenedor[]" value="' +
         cantidad_contenedor +
         '">' +
-
         // ID CONFIGURACIÓN
         '<input type="hidden" name="idp[]" value="' +
         idproducto_configuracion +
         '">' +
-
         '<input type="hidden" name="check_precio[]" id="check_precio_' +
         idproducto_configuracion +
         '" value="0">' +
-
         // ID PRODUCTO
         '<input type="hidden" name="idproducto[]" value="' +
         idproducto +
         '">' +
-
         '<input type="hidden" name="idserie[]" value="' +
         idserie +
         '">' +
-
         '<input type="hidden" name="idcategoria[]" value="' +
         idcategoria +
         '">' +
-
         '<input type="hidden" name="id_detalle_compra_lote[]" value="' +
         id_detalle_compra_lote +
         '">' +
-
-
         '<div style="display:flex;align-items:center;justify-content:center;gap:5px;">' +
-
-        (
-          modoEditar
-            ? ""
-            : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' +
+        (modoEditar
+          ? ""
+          : '<i class="fa fa-trash" style="color:red;cursor:pointer;" onclick="eliminarDetalle(' +
             cont +
-            ')"></i>'
-        ) +
-
-
+            ')"></i>') +
         '<textarea class="form-control nombre-producto" ' +
         'name="nombreProducto[]" ' +
         'oninput="autoResize(this)" onfocus="this.select()" >' +
-
         producto +
-
         "</textarea>" +
-
         "</div>" +
-
         "</td>" +
-
-
         // =================================================
         // CONFIGURACIÓN
         // =================================================
 
         '<td style="text-align:center;vertical-align:middle;">' +
-
         '<span class="badge bg-green" style="white-space:nowrap;font-size:11px;">' +
-
         detail +
-
         "</span>" +
-
         "</td>" +
-
-
         // =================================================
         // PRECIO
         // =================================================
 
         '<td class="text-center align-middle">' +
-
         '<div style="position:relative;display:inline-block;">' +
-
         precioInput +
-
         btnVerPrecios +
-
         "</div>" +
-
         "</td>" +
-
-
         // =================================================
         // CHECK PRECIO
         // =================================================
 
         '<td style="text-align:center;vertical-align:middle;">' +
-
         '<div style="display:flex; justify-content:center; align-items:center; width:100%;">' +
-
         '<input type="checkbox" ' +
         'id="chkPrecioSegunCantidad-' +
         idproducto_configuracion +
@@ -3718,22 +3580,16 @@ function agregarDetalle(
         'onchange="toggleCheckPrecio(' +
         idproducto_configuracion +
         ', this)">' +
-
         "</div>" +
-
         "</td>" +
-
-
         // =================================================
         // CANTIDAD
         // =================================================
 
         '<td style="text-align:center;vertical-align:middle;">' +
-
         '<input class="form-control" ' +
         'style="text-align:center;width:80px;background-color:transparent;color:blue;font-weight:bold;" ' +
         'type="number" step="0.001" min="0" ' +
-
         'oninput="validarCantidad(this,' +
         stock +
         "," +
@@ -3741,85 +3597,58 @@ function agregarDetalle(
         ", '" +
         controla_stock +
         "');modificarSubtotales()\" " +
-
         'name="cantidad[]" value="' +
         cantidad +
         '">' +
-
         "</td>" +
-
-
         // =================================================
         // DESCUENTO
         // =================================================
 
         '<td style="text-align:center;vertical-align:middle;">' +
-
         '<input class="form-control" ' +
         'style="text-align:center;width:70px;background-color:#fff3cd;font-weight:bold;" ' +
         'type="number" step="0.01" ' +
-
         'oninput="modificarSubtotales(' +
         cont +
         ')" ' +
-
         'name="descuento[]" value="' +
         descuento +
         '">' +
-
         "</td>" +
-
-
         // =================================================
         // STOCK
         // =================================================
 
         '<td style="display:none;text-align:center;vertical-align:middle;">' +
-
         '<input type="hidden" name="stock[]" value="' +
         stock +
         '">' +
-
         '<span class="btn btn-warning" style="font-size:12px;font-weight:bold;">' +
-
         stock +
-
         "</span>" +
-
         "</td>" +
-
-
         // =================================================
         // SUBTOTAL
         // =================================================
 
         '<td style="text-align:center;vertical-align:middle;width:100px;">' +
-
         'S/. <span id="subtotal' +
         cont +
         '" name="subtotal" style="font-size:14px;font-weight:bold;"></span>' +
-
         "</td>" +
-
-
         // =================================================
         // IGV
         // =================================================
 
         '<td style="display:none;">' +
-
         '<span id="proigv' +
         cont +
         '" name="proigv">' +
-
         proigv +
-
         "</span>" +
-
         "</td>" +
-
         "</tr>";
-
 
       // =====================================================
       // AGREGAR FILA
@@ -3827,34 +3656,22 @@ function agregarDetalle(
 
       cont++;
 
-      detalles =
-        detalles + 1;
+      detalles = detalles + 1;
 
-      articuloAdd +=
-        idproducto_configuracion + "-";
+      articuloAdd += idproducto_configuracion + "-";
 
-
-      $("#detalles tbody").append(
-        fila
-      );
-
+      $("#detalles tbody").append(fila);
 
       actualizarFilaVaciaDetalles();
 
       modificarSubtotales();
 
       evaluar();
-
     } else {
-
-      alert(
-        "Error al ingresar el detalle, revisar los datos del artículo"
-      );
+      alert("Error al ingresar el detalle, revisar los datos del artículo");
     }
   }
 }
-
-
 
 function autoResize(textarea) {
   textarea.style.height = "auto";
@@ -4059,7 +3876,9 @@ function modificarSubtotales(e) {
 
 function calcularTotales() {
   const sub = document.querySelectorAll('#detalles span[name="subtotal"]');
-  const proigvNodes = document.querySelectorAll('#detalles span[name="proigv"]');
+  const proigvNodes = document.querySelectorAll(
+    '#detalles span[name="proigv"]',
+  );
 
   let total = 0;
   let totalGravado = 0;
@@ -4076,12 +3895,16 @@ function calcularTotales() {
   }
 
   // IGV solo de los productos gravados
-  const igv = totalGravado * (parseFloat(impuesto) / (100 + parseFloat(impuesto)));
+  const igv =
+    totalGravado * (parseFloat(impuesto) / (100 + parseFloat(impuesto)));
 
   // Base imponible gravada
   const subtotalGravado = total - igv;
 
   actualizarResumenVenta(total, esnulo(subtotalGravado), esnulo(igv));
+  if ($("#tipopago").val() === "Si") {
+    recalcularPagos();
+  }
   evaluar();
 }
 
@@ -4106,20 +3929,32 @@ function evaluar() {
   }
 }
 
-function generarTabla(cuotas, frecuencia, fechaBase, deuda, interes) {
+function generarTabla(
+  cuotas,
+  frecuencia,
+  fechaBase,
+  deuda,
+  interes,
+  fechasExistentes = [],
+) {
   let html = "";
   let fechaTemp = new Date(fechaBase);
 
-  const interesPorCuota = Number((deuda * (interes / 100)).toFixed(2));
+  const interesPorCuota = Number(
+    (deuda * (obtenerInteresPorPeriodo(interes, frecuencia) / 100)).toFixed(2),
+  );
   const montoBase = Number((deuda / cuotas).toFixed(2));
   let capitalAcumulado = 0;
 
   for (let i = 1; i <= cuotas; i++) {
-    fechaTemp = sumarFrecuencia(fechaTemp, frecuencia);
+    if (fechasExistentes[i - 1]) {
+      fechaTemp = new Date(`${fechasExistentes[i - 1]}T00:00:00`);
+    } else {
+      fechaTemp = sumarFrecuencia(fechaTemp, frecuencia);
+    }
     let fecha = formatearFecha(fechaTemp);
-    const capitalCuota = i === cuotas
-      ? Number((deuda - capitalAcumulado).toFixed(2))
-      : montoBase;
+    const capitalCuota =
+      i === cuotas ? Number((deuda - capitalAcumulado).toFixed(2)) : montoBase;
     const totalCuota = capitalCuota + interesPorCuota;
 
     html += `
@@ -4182,7 +4017,7 @@ function sumarFrecuencia(fecha, frecuencia) {
 function calcularMontos(deuda, interes, cuotas) {
   let interesTotal = deuda * (interes / 100);
   let deudaTotal = deuda + interesTotal;
-  let montoCuota = ((deuda / cuotas) + interesTotal).toFixed(2);
+  let montoCuota = (deuda / cuotas + interesTotal).toFixed(2);
 
   return {
     interesTotal,
@@ -4220,7 +4055,24 @@ function obtenerFechaHoyISO() {
 
 $("#calcular_cuotas").click(function (e) {
   e.preventDefault();
-  calcularCuotas();
+
+  const boton = $(this);
+  if (boton.prop("disabled")) return;
+
+  const contenidoOriginal = boton.html();
+  boton
+    .prop("disabled", true)
+    .html(
+      '<i class="fa fa-spinner fa-spin" aria-hidden="true"></i> Calculando...',
+    );
+
+  window.setTimeout(function () {
+    try {
+      calcularCuotas();
+    } finally {
+      boton.prop("disabled", false).html(contenidoOriginal);
+    }
+  }, 50);
 });
 
 function calcularCuotas() {
@@ -4249,14 +4101,22 @@ function calcularCuotas() {
 
   if (!validarDatos(data)) return;
 
-  let { montoCuota } = calcularMontos(data.deuda, data.interes, data.cuotas);
+  actualizarInteresCredito($("#montoPagado").val());
+  data.interes = parseFloat($("#inputInteres").val());
 
+  let { montoCuota } = calcularMontos(data.deuda, data.interes, data.cuotas);
+  const fechasExistentes = $("#datafechas input[name='fecha_pago[]']")
+    .map(function () {
+      return $(this).val();
+    })
+    .get();
   let html = generarTabla(
     data.cuotas,
     data.frecuencia,
     data.fechaBase,
     data.deuda,
     data.interes,
+    fechasExistentes,
   );
 
   $("#datafechas").html(html);
@@ -4495,10 +4355,16 @@ function generarComprobante(idventa) {
         $("#fecha").val(data.fecha);
 
         if (data.ventacredito === "Si") {
-          $("#n0, #n1, #n2, #n3, #n4, #n5, #b1, #panel1").show();
+          $(
+            "#n0, #n1, #n2, #n3, #n4, #n5, #b1, #panel1, #panelPorcentajeInicial",
+          ).show();
           $("#input_cuotas").val(data.meses);
+          $("#input_frecuencia").val(data.frecuencia);
+          $("#inputInteres").val(data.interes);
         } else {
-          $("#n0, #n1, #n2, #n3, #n4, #n5, #b1, #panel1").hide();
+          $(
+            "#n0, #n1, #n2, #n3, #n4, #n5, #b1, #panel1, #panelPorcentajeInicial",
+          ).hide();
         }
 
         setTimeout(function () {
@@ -4591,62 +4457,74 @@ function generarComprobante(idventa) {
 }
 
 function mostrarE() {
-  let idcotizacion = $("#comprobanteReferencia").val();
-  console.log(idcotizacion);
+  const idcotizacion = $("#comprobanteReferencia").val();
+  if (!idcotizacion) return;
 
-  let cotizacionData = null;
+  const token = ++tokenImportacionCotizacion;
+  const $selector = $("#comprobanteReferencia").prop("disabled", true);
+  const cargar = (operacion) =>
+    $.ajax({
+      url: `controladores/cotizaciones.php?op=${operacion}`,
+      data: { idcotizacion },
+      dataType: "json",
+    });
 
-  if (!idcotizacion) {
-    return;
-  }
-  $.get(
-    "controladores/cotizaciones.php?op=mostrar",
-    {
-      idcotizacion: idcotizacion,
-    },
-    function (response) {
-      cotizacionData =
-        typeof response === "string" ? JSON.parse(response) : response;
+  $.when(cargar("mostrar"), cargar("listarDetalleCotizacion"))
+    .done(function (cabeceraResponse, detalleResponse) {
+      if (token !== tokenImportacionCotizacion) return;
 
-      if (cotizacionData && cotizacionData.idcliente) {
-        $("#idcliente").empty().trigger("change");
-        const texto = `${cotizacionData.cliente} - ${cotizacionData.num_documento || ""}`;
-        if (
-          $("#idcliente option[value='" + cotizacionData.idcliente + "']")
-            .length === 0
-        ) {
-          const option = new Option(
-            texto,
-            cotizacionData.idcliente,
-            true,
-            true,
-          );
-          $("#idcliente").append(option);
-        }
-        $("#idcliente").val(cotizacionData.idcliente).trigger("change");
-      } else {
-        console.error("No se recibió idcliente:", cotizacionData);
-      }
-    },
-  );
-  $.get(
-    "controladores/cotizaciones.php?op=listarDetalleCotizacion",
-    {
-      idcotizacion: idcotizacion,
-    },
-    function (response, status) {
-      const data =
-        typeof response === "string" ? JSON.parse(response) : response;
-
-      for (var y = 0; y < contador; y++) {
-        eliminarDetalle(y);
+      const cotizacion = cabeceraResponse[0];
+      const productos = detalleResponse[0];
+      if (
+        !cotizacion ||
+        !cotizacion.idcotizacion ||
+        !Array.isArray(productos)
+      ) {
+        Swal.fire(
+          "Error al importar",
+          "La cotización no tiene datos válidos o no se pudieron cargar sus productos.",
+          "error",
+        );
+        return;
       }
 
-      data.forEach((item) => {
+      const esCredito = String(cotizacion.formapago || "").trim() === "Si";
+      const inicialCotizada = Math.max(Number(cotizacion.inicial) || 0, 0);
+
+      $("#detalles tbody tr.filas").remove();
+      contador = 0;
+      cont = 0;
+      detalles = 0;
+      articuloAdd = "";
+      actualizarResumenVenta(0, 0, 0);
+      resetearPagos();
+
+      $("#tipopago").val(esCredito ? "Si" : "No");
+      $("#formapago").val("Efectivo");
+      $("#tipo_comprobante")
+        .val(cotizacion.idcomprobante_pago)
+        .trigger("change");
+      $("#montoPagado").val(esCredito ? inicialCotizada.toFixed(2) : "0.00");
+      $("#input_frecuencia").val(esCredito ? cotizacion.frecuencia || "" : "");
+      $("#inputInteres").val(esCredito ? cotizacion.interes || "0" : "0");
+      $("#numeroMeses").val(esCredito ? cotizacion.meses || "" : "");
+      $("#input_cuotas").val(esCredito ? cotizacion.cuotas || "" : "");
+      $("#fechaOperacion").val(obtenerFechaHoyISO());
+      $("#observaciones").val(cotizacion.observacion || "");
+
+      const $cliente = $("#idcliente");
+      const textoCliente = `${cotizacion.cliente} - ${cotizacion.num_documento || ""}`;
+      $cliente.empty();
+      $cliente.append(
+        new Option(textoCliente, cotizacion.idcliente, true, true),
+      );
+      $cliente.trigger("change");
+
+      productos.forEach((item) => {
         agregarDetalle(
           item.idproducto_configuracion,
           item.idproducto,
-          item.nombre + " " + item.marca || "" + " " + (item.modelo || ""),
+          [item.nombre, item.marca, item.modelo].filter(Boolean).join(" "),
           item.cantidad,
           item.descuento,
           item.precio_venta,
@@ -4664,35 +4542,50 @@ function mostrarE() {
         );
       });
 
-      detalles = data.length;
-      if (String(cotizacionData?.formapago || "").trim() === "Si") {
-        $("#tipopago").val("Si");
-        aplicarPrecioSegunPago();
-        $("#input_frecuencia").val(cotizacionData.frecuencia || "");
-        $("#inputInteres").val(cotizacionData.interes || "0");
-        $("#numeroMeses").val(cotizacionData.meses || "");
-        $("#montoPagado").val(cotizacionData.inicial || "0");
-        const deuda = Math.max(
-          0,
-          parseFloat(cotizacionData.total_venta || 0) -
-          parseFloat(cotizacionData.inicial || 0),
-        );
-        $("#montoDeuda").val(deuda.toFixed(2));
+      detalles = productos.length;
+      aplicarPrecioSegunPago();
 
+      const totalVenta = Number($("#total_venta").val()) || 0;
+      const inicial = esCredito
+        ? Math.min(inicialCotizada, totalVenta)
+        : totalVenta;
+      $("#montoPagado").val(esCredito ? inicial.toFixed(2) : "0.00");
+      $(".pagoItem:first .montoPago, .pagoItem:first .montoRealPago").val(
+        inicial.toFixed(2),
+      );
+      $(".pagoItem").slice(1).find(".montoPago, .montoRealPago").val("0.00");
+
+      recalcularPagos();
+      verificarTipoPago();
+      $("#panelPorcentajeInicial").toggle(esCredito);
+
+      if (esCredito) {
+        if (!$("#input_cuotas").val()) {
+          calcularCuotasDesdeNumeroMeses();
+        }
         calcularCuotas();
-      } else {
-        $("#tipopago").val("No");
       }
 
-      verificarTipoPago();
-    },
-  );
-
-  Swal.fire(
-    "Ventas",
-    "La cotizacion se ha cargado correctamente",
-    "success",
-  );
+      actualizarFilaVaciaDetalles();
+      Swal.fire(
+        "Ventas",
+        "La cotización se ha cargado correctamente.",
+        "success",
+      );
+    })
+    .fail(function () {
+      if (token !== tokenImportacionCotizacion) return;
+      Swal.fire(
+        "Error al importar",
+        "No se pudo cargar la cotización. Verifica tu conexión e inténtalo nuevamente.",
+        "error",
+      );
+    })
+    .always(function () {
+      if (token === tokenImportacionCotizacion) {
+        $selector.prop("disabled", false);
+      }
+    });
 }
 
 function anularComprobante(idventa) {
@@ -4858,11 +4751,11 @@ function mostrar(idventa) {
       $("#tipo_comprobantem").html(
         data.tipo_comprobante == "Boleta"
           ? '<span class="badge badge-primary">' +
-          data.tipo_comprobante +
-          "</span>"
+              data.tipo_comprobante +
+              "</span>"
           : '<span class="badge badge-info">' +
-          data.tipo_comprobante +
-          "</span>",
+              data.tipo_comprobante +
+              "</span>",
       );
       $("#correlativo").text(
         data.serie_comprobante + " - " + data.num_comprobante,
@@ -4876,14 +4769,19 @@ function mostrar(idventa) {
       $("#impuestom").text(data.impuesto);
       $("#observaciones").text(data.observacion);
       $("#formapagom").html(data.ventacredito);
-      const { inicial, totaldeuda } = calcularMontoCredito(data.totalrecibido, data.totaldeposito, data.total_venta, data.interes, data.cuotas);
-      $("#pagoinicial").html('S/. ' + inicial);
-      $("#pagocredito").html('S/. ' + totaldeuda);
+      const { inicial, totaldeuda } = calcularMontoCredito(
+        data.totalrecibido,
+        data.totaldeposito,
+        data.total_venta,
+        data.interes,
+        data.cuotas,
+      );
+      $("#pagoinicial").html("S/. " + inicial);
+      $("#pagocredito").html("S/. " + totaldeuda);
       if (data.ventacredito == "Si") {
         $("#imprimirComp").show();
       }
       $("#ajuntarComp").show();
-
 
       // Montos
       let montopagado = parseFloat(data.montopagado) || 0;
@@ -4892,7 +4790,9 @@ function mostrar(idventa) {
       $("#deuda").text(
         data.ventacredito == "Si" ? "S/. " + deuda.toFixed(2) : "---",
       );
-      $("#subtotalm").text(parseFloat(data.total_venta - data.impuesto || 0).toFixed(2));
+      $("#subtotalm").text(
+        parseFloat(data.total_venta - data.impuesto || 0).toFixed(2),
+      );
       $("#impuestom").text(parseFloat(data.impuesto || 0).toFixed(2));
       $("#totalm").text(parseFloat(data.total_venta || 0).toFixed(2));
     },
@@ -4907,7 +4807,13 @@ function mostrar(idventa) {
   );
 }
 
-function calcularMontoCredito(ttlrecibido, ttldeposito, totalventa, valinteres, cuotas) {
+function calcularMontoCredito(
+  ttlrecibido,
+  ttldeposito,
+  totalventa,
+  valinteres,
+  cuotas,
+) {
   const recibido = parseFloat(ttlrecibido) || 0;
   const deposito = parseFloat(ttldeposito) || 0;
   const venta = parseFloat(totalventa) || 0;
@@ -4931,7 +4837,11 @@ function formatearMonedaPesos(valor) {
   })}`;
 }
 
-function imprimirConstanciaPagoInicial(idventa, formato = "ticket", particion = false) {
+function imprimirConstanciaPagoInicial(
+  idventa,
+  formato = "ticket",
+  particion = false,
+) {
   const idVenta = idventa;
   const formatoParam = formato === "ticket" ? "ticket" : "a4";
 
@@ -4979,7 +4889,6 @@ function imprimirConstanciaPagoInicial(idventa, formato = "ticket", particion = 
           iframe.remove();
         }
       }, 120000);
-
     }, 500);
   };
 }
@@ -5412,7 +5321,6 @@ function cancelarmodalDetalle() {
   $("#getCodeModal22").modal("hide");
 }
 
-
 $("#imprimirComp").click(function (e) {
   e.preventDefault();
 
@@ -5445,7 +5353,11 @@ $("#imprimirComp").click(function (e) {
         imprimirConstanciaPagoInicial(venta.idventa, formato);
       },
     ).fail(function () {
-      Swal.fire("Venta", "No se pudo cargar la información de la venta", "error");
+      Swal.fire(
+        "Venta",
+        "No se pudo cargar la información de la venta",
+        "error",
+      );
     });
   });
 });
@@ -5456,16 +5368,19 @@ $("#ajuntarComp").click(function (e) {
   listarComprobantes(idVentaGlobal);
 });
 
-
 $("#formAdjuntarComp").submit(function (e) {
   e.preventDefault();
 
   if (!idVentaGlobal) {
-    Swal.fire('Venta', 'No se ha seleccionado una venta', 'warning');
-  };
+    Swal.fire("Venta", "No se ha seleccionado una venta", "warning");
+  }
 
-  if ($('#comprobanteAdjunto')[0].files.length > 0) {
-    Swal.fire('Venta', 'No se ha seleccionado un documento para subir', 'warning');
+  if ($("#comprobanteAdjunto")[0].files.length > 0) {
+    Swal.fire(
+      "Venta",
+      "No se ha seleccionado un documento para subir",
+      "warning",
+    );
   }
 
   const formData = new FormData(this);
@@ -5478,15 +5393,23 @@ $("#formAdjuntarComp").submit(function (e) {
     contentType: false,
     success: function (response) {
       if (!response.success) {
-        Swal.fire('Venta', response?.message || 'Error al guardar comprobante', 'error');
-      };
-      Swal.fire('Venta', response?.message, 'success');
+        Swal.fire(
+          "Venta",
+          response?.message || "Error al guardar comprobante",
+          "error",
+        );
+      }
+      Swal.fire("Venta", response?.message, "success");
       $("#modalAjuntarComp").modal("hide");
       listarComprobantes(idVentaGlobal);
     },
     error: function (xhr) {
-      Swal.fire('Venta', xhr?.responseJSON?.message || 'Error al guardar comprobante', 'error');
-    }
+      Swal.fire(
+        "Venta",
+        xhr?.responseJSON?.message || "Error al guardar comprobante",
+        "error",
+      );
+    },
   });
 });
 
@@ -5501,7 +5424,7 @@ function listarComprobantes(idVenta) {
     dataType: "json",
     data: {
       op: "verComprobantes",
-      idventa: idVenta
+      idventa: idVenta,
     },
     success: function (response) {
       let html = "";
@@ -5523,17 +5446,17 @@ function listarComprobantes(idVenta) {
                                 ${item.metodo_pago}
                             </td>
                             <td>
-                                ${item.comprobante ? '<i class="fas fa-file-image text-primary"></i>' : ''}
-                                ${item.comprobante || ''}
+                                ${item.comprobante ? '<i class="fas fa-file-image text-primary"></i>' : ""}
+                                ${item.comprobante || ""}
                             </td>
                             <td>
                                 ${item.monto}
                             </td>
                             <td>
-                                ${item.nroOperacion || ''}
+                                ${item.nroOperacion || ""}
                             </td>
                             <td>
-                                ${item.banco || ''}
+                                ${item.banco || ""}
                             </td>
                            <td class="text-end">
                               <a
@@ -5543,7 +5466,11 @@ function listarComprobantes(idVenta) {
                                       title="Ver comprobante">
                                       <i class="fas fa-print"></i>
                                   </a>
-                                ${item.metodo_pago === 'Efectivo' ? `` : item.comprobante ? `
+                                ${
+                                  item.metodo_pago === "Efectivo"
+                                    ? ``
+                                    : item.comprobante
+                                      ? `
                                   <a
                                       href="files/ventas/${item.comprobante}"
                                       target="_blank"
@@ -5551,7 +5478,8 @@ function listarComprobantes(idVenta) {
                                       title="Ver comprobante">
                                       <i class="fas fa-eye"></i>
                                   </a>
-                                  `: `
+                                  `
+                                      : `
                                   <button
                                       type="button"
                                       class="btn btn-sm btn-outline-primary"
@@ -5560,7 +5488,7 @@ function listarComprobantes(idVenta) {
                                       <i class="fas fa-upload"></i>
                                   </button>
                               `
-            }
+                                }
                             </td>
                         </tr>
                     `;
@@ -5568,19 +5496,17 @@ function listarComprobantes(idVenta) {
       }
 
       $("#listaComprobantes").html(html);
-    }
+    },
   });
 }
 
-
 function abrirAjuntarComp(idventapago) {
   $("#modalAjuntarComp").modal("show");
-  $('#comprobanteAdjunto').val('');
+  $("#comprobanteAdjunto").val("");
   $("#idventapago").val(idventapago);
 }
 
 $("#btnExportarExcel").on("click", function () {
-
   let fecha_inicio = $("#fecha_inicio").val();
   let fecha_fin = $("#fecha_fin").val();
   let estado = $("#estado").val();
@@ -5588,13 +5514,14 @@ $("#btnExportarExcel").on("click", function () {
   let idproducto = $("#idproducto").val();
 
   // Construimos la URL con los parámetros
-  let url = `controladores/venta.php?op=exportar_excel`
-    + `&fecha_inicio=${fecha_inicio}`
-    + `&fecha_fin=${fecha_fin}`
-    + `&estado=${estado}`
-    + `&idproducto=${idproducto}`;
+  let url =
+    `controladores/venta.php?op=exportar_excel` +
+    `&fecha_inicio=${fecha_inicio}` +
+    `&fecha_fin=${fecha_fin}` +
+    `&estado=${estado}` +
+    `&idproducto=${idproducto}`;
 
-  window.open(url, '_blank'); // ⬅ descarga directa
+  window.open(url, "_blank"); // ⬅ descarga directa
 });
 
 init();

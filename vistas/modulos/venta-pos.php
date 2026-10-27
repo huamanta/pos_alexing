@@ -1535,8 +1535,7 @@
                                                                 </label>
                                                                 <select id="comprobanteReferencia"
                                                                     name="comprobanteReferencia"
-                                                                    class="form-control select2"
-                                                                    onchange="mostrarE();"></select>
+                                                                    class="form-control select2"></select>
                                                             </div>
 
                                                             <!-- Observaciones -->
@@ -1805,6 +1804,13 @@
                                                                 value="0" onkeyup="calcularDeuda();">
                                                         </div>
 
+                                                    </div>
+
+                                                    <div class="form-group col-lg-3" id="panelPorcentajeInicial"
+                                                        style="display:none;">
+                                                        <label style="font-size: 11px;">Porcentaje de inicial:</label>
+                                                        <div class="alert alert-info py-2 mb-0"
+                                                            id="porcentajeInicial">0.00%</div>
                                                     </div>
 
                                                     <div class="form-group col-lg-2" style="display: none;" id="n4">

@@ -221,7 +221,7 @@ class Cotizacion extends Helpers
         $meses,
         $cuotas,
         $interes,
-        $isderie
+        $idserie
     ) {
         try {
 

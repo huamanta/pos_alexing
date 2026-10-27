@@ -160,7 +160,16 @@ class SisVenta extends Helpers
             //=========================
             // Crédito
             if ($tipopago == "Si") {
-                $this->crearCredito($idVenta, $fechaActual, $montoDeuda, $interes, $cuotas, $fecha_pago);
+                $this->crearCredito(
+                    $idVenta,
+                    $fechaActual,
+                    $montoDeuda,
+                    $interes,
+                    $cuotas,
+                    $fecha_pago,
+                    (int) $input_frecuencia,
+                    $this->verificarMes30Dias($idsucursal)
+                );
             }
 
             // Cotización
@@ -261,7 +270,9 @@ class SisVenta extends Helpers
         float $montoDeuda,
         float $interes,
         int $cantidadCuotas,
-        array $fechasPago
+        array $fechasPago,
+        int $frecuencia,
+        bool $calculoMes
     ): bool {
 
 
@@ -269,7 +280,32 @@ class SisVenta extends Helpers
             $cantidadCuotas = 1;
         }
 
-        $interesTotal = round($montoDeuda * ($interes / 100), 2);
+        $mesesPorPeriodo = 1;
+        switch ($frecuencia) {
+            case 1:
+                $mesesPorPeriodo = 1 / 30;
+                break;
+            case 2:
+                $mesesPorPeriodo = 1 / ($calculoMes ? 5 : 4);
+                break;
+            case 3:
+                $mesesPorPeriodo = 1 / 2;
+                break;
+            case 5:
+                $mesesPorPeriodo = 2;
+                break;
+            case 6:
+                $mesesPorPeriodo = 3;
+                break;
+            case 7:
+                $mesesPorPeriodo = 6;
+                break;
+            case 8:
+                $mesesPorPeriodo = 12;
+                break;
+        }
+
+        $interesTotal = round($montoDeuda * (($interes * $mesesPorPeriodo) / 100), 2);
         $capitalCuotaBase = round($montoDeuda / $cantidadCuotas, 2);
         $interesCuotaBase = $interesTotal;
         $capitalAcumulado = 0;
