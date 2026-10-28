@@ -12,14 +12,22 @@ $cotizacion = new Cotizacion();
 $negocio = new Negocio();
 $helpers = new Helpers();
 
-if (empty($_GET["id"])) {
+if (empty($_GET["id"]) || !ctype_digit((string) $_GET["id"])) {
+    http_response_code(400);
     echo "No es posible generar la factura.";
     exit();
 }
 
-$idventa = $_GET["id"];
+$idventa = (int) $_GET["id"];
 $anulada = '';
 $factura = $cotizacion->listarDataCotizacion($idventa);
+
+if (empty($factura)) {
+    http_response_code(404);
+    echo "Cotización no encontrada.";
+    exit();
+}
+
 $configuracion = $negocio->listar($factura['idsucursal']);
 $detalles = $cotizacion->listarDataDetalleCotizacion($idventa);
 $currency = $helpers->get_currency_code($factura['idsucursal']);

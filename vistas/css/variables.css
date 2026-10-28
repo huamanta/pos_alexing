@@ -1,0 +1,30 @@
+:root {
+    /* Marca principal */
+    --color-primary: #0d47a1;
+    --color-primary-hover: #5F1722;
+    --color-primary-light: #F7E9EC;
+
+    /* Colores de estado */
+    --color-success: #198754;
+    --color-warning: #F0AD4E;
+    --color-danger: #DC3545;
+    --color-info: #0D6EFD;
+
+    /* Fondos y superficies */
+    --color-background: #F5F6FA;
+    --color-surface: #FFFFFF;
+    --color-sidebar: #252A34;
+    --color-header: #FFFFFF;
+
+    /* Textos */
+    --color-text: #212529;
+    --color-text-secondary: #6C757D;
+    --color-text-inverse: #FFFFFF;
+
+    /* Bordes */
+    --color-border: #DEE2E6;
+
+    /* Elementos interactivos */
+    --color-link: var(--color-primary);
+    --color-focus: #B94A5B;
+}

@@ -229,11 +229,11 @@ date_default_timezone_set('America/Lima');
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
-                                    <th>Cliente</th>
-                                    <th>Almacen</th>
+                                    <th>Responsable</th>
                                     <th>Comprobante</th>
-                                    <th>Total</th>
-                                    <th>Pago</th>
+                                    <th>Cliente</th>
+                                    <th>Pagos</th>
+                                    <th>Tipo</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
@@ -252,9 +252,10 @@ date_default_timezone_set('America/Lima');
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
+                                    <th>Responsable</th>
                                     <th>Descripción</th>
                                     <th>Tipo</th>
-                                    <th>Forma Pago</th>
+                                    <th>Cliente</th>
                                     <th>Ingresos</th>
                                     <th>Salidas</th>
                                 </tr>

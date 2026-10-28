@@ -164,27 +164,7 @@ switch ($_GET['op']) {
 
     case 'listarVentas2':
         $aperturacajaid = isset($_GET["aperturacajaid"]) ? limpiarCadena($_GET["aperturacajaid"]) : "";
-        $rpta = $pos->listarVentas2($aperturacajaid);
-        $data = array();
-
-        while ($reg = $rpta->fetch_object()) {
-            $data[] = array(
-                "0" => $reg->fecha_kardex,
-                "1" => $reg->cliente . ' - ' . $reg->num_documento,
-                "2" => $reg->sucursal,
-                "3" => $reg->tipo_comprobante . ' - ' . $reg->serie_comprobante . ' - ' . $reg->num_comprobante,
-                "4" => '<span class="badge bg-purple">'.$reg->pagos.'</span>',
-                "5" => ($reg->ventacredito == 'Si') ? '<center><span class="badge bg-red">Crédito</span></center>' : '<center><span class="badge bg-primary">Contado</span></center>',
-               	"6" => '<span class="badge bg-green">'.$reg->estado.'</span>',
-            );
-        }
-        $results = array(
-            "sEcho" => 1, //info para datatables
-            "iTotalRecords" => count($data), //enviamos el total de registros al datatable
-            "iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
-            "aaData" => $data
-        );
-        echo json_encode($results);
+        $pos->listarVentas2($aperturacajaid);
         break;
 
 
@@ -202,16 +182,6 @@ switch ($_GET['op']) {
         }
         echo json_encode($info);
         break;
-
-     case 'showEfectivo':
-        $idcaja = isset($_GET["idcaja"]) ? limpiarCadena($_GET["idcaja"]) : "";
-        $idsucursal = $_SESSION["idsucursal"];
-        $idusuario = $_SESSION["idusuario"];
-        $rpta = $pos->showEfectivo($idcaja, $idsucursal, $idusuario);
-        echo $rpta;
-        # code...
-        break;
-
 
     case 'cerrarCaja':
         $aperturacajaid = isset($_POST["aperturacajaid"]) ? limpiarCadena($_POST["aperturacajaid"]) : "";

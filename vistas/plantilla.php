@@ -42,6 +42,7 @@ if (isset($rutaActual)) {
   <link rel="stylesheet" href="./files/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="./files/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="./vistas/css/variables.css">
   <link href="./files/css/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="./files/dist/css/neon.css">
   <link rel="stylesheet" href="./files/dist/css/tailpanel.css">

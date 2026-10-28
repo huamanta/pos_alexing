@@ -69,6 +69,7 @@ $total = 0;
 	<meta charset="UTF-8">
 	<title><?php echo $factura['tipo_comprobante']; ?></title>
 
+	<link rel="stylesheet" href="../../vistas/css/variables.css">
 	<link rel="stylesheet" href="style.css">
 
 	<style>
@@ -165,14 +166,14 @@ $total = 0;
 		}
 
 		.document-box {
-			border: 1.5px solid #0d47a1;
+			border: 1.5px solid var(--color-primary);
 			border-radius: 10px;
 			overflow: hidden;
 			text-align: center;
 		}
 
 		.document-ruc {
-			background: #0d47a1;
+			background: var(--color-primary);
 			color: #fff;
 			font-size: 12px;
 			font-weight: bold;
