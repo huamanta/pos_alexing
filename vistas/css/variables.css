@@ -1,7 +1,7 @@
 :root {
     /* Marca principal */
-    --color-primary: #0d47a1;
-    --color-primary-hover: #5F1722;
+    --color-primary: rgb(2 97 205);
+    --color-primary-hover: rgb(42, 107, 182);
     --color-primary-light: #F7E9EC;
 
     /* Colores de estado */
@@ -17,8 +17,8 @@
     --color-header: #FFFFFF;
 
     /* Textos */
-    --color-text: #212529;
-    --color-text-secondary: #6C757D;
+    --color-text: rgb(0 0 0);
+    --color-text-secondary: rgb(152 152 152);
     --color-text-inverse: #FFFFFF;
 
     /* Bordes */
