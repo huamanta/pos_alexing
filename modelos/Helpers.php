@@ -267,6 +267,16 @@ class Helpers
             ->first();
     }
 
+
+    public function verDataAperturaCaja(int $aperturacajaid)
+    {
+        return (new DBQuery($this->pdo))
+            ->select('fecha_apertura, fecha_cierre, idcaja ')
+            ->from('caja_apertura')
+            ->where('aperturacajaid', '=', $aperturacajaid)
+            ->first();
+    }
+
     public function verificarAperturaCajaUsuario(int $idsucursal, int $idusuario): int
     {
         $rpta = (new DBQuery($this->pdo))

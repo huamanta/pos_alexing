@@ -77,7 +77,6 @@ class Cajas extends Helpers
             }
 
             return json_encode(['success' => true, 'message' => 'La caja se desactivo con exito']);
-
         } catch (Exception $e) {
             return json_encode(['success' => false, 'message' => $e->getMessage()]);
         }
@@ -182,42 +181,57 @@ class Cajas extends Helpers
         ];
     }
 
-    public function listarPorApertura($aperturacajaid)
+
+    public function listarPorApertura(int $aperturacajaid)
     {
-        $sqlap = "SELECT fecha_apertura, fecha_cierre, idcaja 
-              FROM caja_apertura 
-              WHERE aperturacajaid = '$aperturacajaid'
-              LIMIT 1";
+        $caja = Helpers::verDataAperturaCaja($aperturacajaid);
+        if (!$caja)
+            return Response::json([
+                "sEcho" => 1,
+                "iTotalRecords" => 0,
+                "iTotalDisplayRecords" => 0,
+                "aaData" => []
+            ]);
 
-        $ap = ejecutarConsulta($sqlap)->fetch_object();
+        $inicio = $caja['fecha_apertura'];
+        $fin = !empty($caja['fecha_cierre']) ? $caja['fecha_cierre'] : date('Y-m-d H:i:s');
+        $idcaja = $caja['idcaja'];
 
-        if (!$ap)
-            return [];
-        $inicio = $ap->fecha_apertura;
-        $fin = !empty($ap->fecha_cierre) ? $ap->fecha_cierre : date('Y-m-d H:i:s');
-        $idcaja = $ap->idcaja;
-        $sql = "SELECT m.*
-            FROM movimiento m
-            WHERE m.idcaja = '$idcaja'
-            AND m.totalefectivo > 0 
-              AND m.fecha BETWEEN '$inicio' AND '$fin'
-            ORDER BY m.idmovimiento DESC";
+        $movimientos = (new DBQuery($this->pdo))
+            ->select([
+                'm.*',
+                'm.fecha AS fecha',
+                'm.tipo AS tipo',
+                'm.totaldeposito AS monto',
+                'p.nombre AS responsable',
+                "'Movimientos' AS origen",
+                "CONCAT(pe.nombre, ' <span class=\"badge badge-primary\">Personal</span>') AS cliente",
+                "CONCAT('Movimiento por ', m.descripcion) AS descripcion",
+            ])
+            ->from('movimiento m')
+            ->join('usuario u', 'u.idusuario = m.idusuario')
+            ->join('personal p', 'p.idpersonal = u.idpersonal')
+            ->join('personal pe', 'pe.idpersonal = m.idpersonal')
+            ->where('m.idcaja', '=', $idcaja)
+            ->where('m.totalefectivo', '>', 0)
+            ->orderBy('m.idmovimiento', 'DESC')
+            ->get();
 
-        $rspta = ejecutarConsulta($sql);
         $data = array();
 
-        while ($reg = $rspta->fetch_object()) {
+        foreach ($movimientos as $reg) {
             $data[] = array(
-                "0" => $reg->fecha,
-                "1" => $reg->descripcion,
-                "2" => ($reg->tipo == 'Egresos') ? '<span class="badge bg-red">EGRESO</span>' : '<span class="badge bg-green">INGRESO</span>',
-                "3" => $reg->formapago,
-                "4" => $reg->tipo === Constants::INGRESOS ? Helpers::get_currency_symbol($reg->totalefectivo) : '-',
-                "5" => $reg->tipo === Constants::EGRESOS ? Helpers::get_currency_symbol($reg->totalefectivo) : '-',
+                "0" => $reg['fecha'],
+                "1" => $reg['responsable'],
+                "2" => $reg['descripcion'],
+                "3" => ($reg['tipo'] == 'Egresos') ? '<span class="badge bg-red">EGRESO</span>' : '<span class="badge bg-green">INGRESO</span>',
+                "4" => $reg['cliente'],
+                "5" => $reg['tipo'] === Constants::INGRESOS ? Helpers::get_currency_symbol($reg['totalefectivo']) : '-',
+                "6" => $reg['tipo'] === Constants::EGRESOS ? Helpers::get_currency_symbol($reg['totalefectivo']) : '-',
             );
         }
 
-        return json_encode([
+        return Response::json([
             "sEcho" => 1,
             "iTotalRecords" => count($data),
             "iTotalDisplayRecords" => count($data),
@@ -225,62 +239,60 @@ class Cajas extends Helpers
         ]);
     }
 
-    public function listarCobrrosPorApertura($aperturacajaid)
+    public function listarCobrosPorApertura(int $aperturacajaid)
     {
-        $sqlap = "SELECT fecha_apertura, fecha_cierre, idcaja 
-              FROM caja_apertura 
-              WHERE aperturacajaid = '$aperturacajaid'
-              LIMIT 1";
+        $caja = Helpers::verDataAperturaCaja($aperturacajaid);
+        if (!$caja)
+            return Response::json([
+                "sEcho" => 1,
+                "iTotalRecords" => 0,
+                "iTotalDisplayRecords" => 0,
+                "aaData" => []
+            ]);
 
-        $ap = ejecutarConsulta($sqlap)->fetch_object();
+        $inicio = $caja['fecha_apertura'];
+        $fin = !empty($caja['fecha_cierre']) ? $caja['fecha_cierre'] : date('Y-m-d H:i:s');
+        $idcaja = $caja['idcaja'];
 
-        if (!$ap)
-            return [];
-        $inicio = $ap->fecha_apertura;
-        $fin = !empty($ap->fecha_cierre) ? $ap->fecha_cierre : date('Y-m-d H:i:s');
-        $idcaja = $ap->idcaja;
-
-       $sql = "SELECT
-            dcc.*,
-            CONVERT(CONCAT(
-                'Pago aplicado a cuota N° ',
-                (
-                    SELECT COUNT(*)
-                    FROM cuentas_por_cobrar cc2
-                    WHERE cc2.idventa = cc.idventa
-                      AND cc2.idcpc <= cc.idcpc
-                ),
-                ' de la venta N° ',
-                v.serie_comprobante, '-', v.num_comprobante
-            ) USING utf8mb4) COLLATE utf8mb4_spanish_ci AS descripcion
-        FROM detalle_cuentas_por_cobrar dcc
-        INNER JOIN cuentas_por_cobrar cc
-            ON cc.idcpc = dcc.idcpc
-        INNER JOIN venta v
-            ON v.idventa = cc.idventa
-        WHERE dcc.idcaja = '$idcaja'
-          AND dcc.montopagado > 0
-          AND dcc.created_at BETWEEN '$inicio' AND '$fin'
-        ORDER BY dcc.iddcpc DESC";
-
-        $rspta = ejecutarConsulta($sql);
-
+        $cuentas = (new DBQuery($this->pdo))
+            ->select("dcc.*,
+                CONCAT(
+                    'Pago aplicado a cuota N° ',
+                    (
+                        SELECT COUNT(*)
+                        FROM cuentas_por_cobrar cc2
+                        WHERE cc2.idventa = cc.idventa
+                        AND cc2.idcpc <= cc.idcpc
+                    ),
+                    ' de la venta N° ',
+                    v.serie_comprobante, '-', v.num_comprobante
+                ) AS descripcion")
+            ->from('detalle_cuentas_por_cobrar dcc')
+            ->join('cuentas_por_cobrar cc', 'cc.idcpc = dcc.idcpc')
+            ->join('venta v', 'v.idventa = cc.idventa')
+            ->where('dcc.montopagado', '>', 0)
+            ->whereBetween('dcc.created_at', $inicio, $fin)
+            ->where('dcc.idcaja ', '=', $idcaja)
+            ->orderBy('dcc.iddcpc', 'DESC')
+            ->get();
         $data = array();
-        while ($reg = $rspta->fetch_object()) {
+        foreach ($cuentas as $reg) {
             $data[] = array(
-                "0" => $reg->fechapago,
-                "1" => $this->getClienteVenta($reg->idcpc),
-                "2" => $reg->formapago,
-                "3" => $reg->descripcion,
-                "4" => $reg->montopagado,
+                "0" => $reg['fechapago'],
+                "1" => $this->getClienteVenta($reg['idcpc']),
+                "2" => $reg['formapago'],
+                "3" => $reg['descripcion'],
+                "4" => Helpers::get_currency_symbol($reg['montopagado']),
             );
         }
 
-        return array(
-            "sEcho" => 1,
-            "iTotalRecords" => count($data),
-            "iTotalDisplayRecords" => count($data),
-            "aaData" => $data
+        return Response::json(
+            [
+                "sEcho" => 1,
+                "iTotalRecords" => count($data),
+                "iTotalDisplayRecords" => count($data),
+                "aaData" => $data
+            ]
         );
     }
 
@@ -353,5 +365,4 @@ class Cajas extends Helpers
 
         return $data['nombre'];
     }
-
 }

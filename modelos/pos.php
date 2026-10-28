@@ -89,61 +89,81 @@ final class Pos extends Helpers
 
     public function listarVentas2($aperturacajaid)
     {
-        $sqlap = "SELECT * FROM caja_apertura WHERE aperturacajaid = '$aperturacajaid'";
-        $apertura = ejecutarConsulta($sqlap)->fetch_object();
+        $apertura = Helpers::verDataAperturaCaja($aperturacajaid);
 
         if (!$apertura)
-            return [];
+            return Response::json([
+                "sEcho" => 1,
+                "iTotalRecords" => 0,
+                "iTotalDisplayRecords" => 0,
+                "aaData" => []
+            ]);
 
-        $fecha_apertura = $apertura->fecha_apertura;
-        $fecha_cierre = $apertura->fecha_cierre;
-        $idcaja = $apertura->idcaja;
+        $fecha_apertura = $apertura['fecha_apertura'];
+        $fecha_cierre = !empty($apertura['fecha_cierre']) ? $apertura['fecha_cierre'] : date('Y-m-d H:i:s');
+        $idcaja = $apertura['idcaja'];
 
-        // 🔥 SI NO HAY CIERRE, USA FECHA ACTUAL
-        if (empty($fecha_cierre)) {
-            $fecha_cierre = date('Y-m-d H:i:s');
+        $ventas = (new DBQuery($this->pdo))
+            ->select([
+                    'v.idventa',
+                    'v.idcliente',
+                    'p.nombre AS cliente',
+                    'p.num_documento',
+                    'v.estadoS',
+                    'u.idpersonal',
+                    'u.nombre AS personal',
+                    'cp.nombre AS tipo_comprobante',
+                    'v.serie_comprobante',
+                    'v.num_comprobante',
+                    'v.ventacredito',
+                    'v.impuesto',
+                    'v.dov_Nombre',
+                    'v.estado',
+                    "DATE(v.fecha_hora) AS fecha,
+                    s.nombre AS sucursal,
+                    DATE_FORMAT(v.fecha_kardex, '%d/%m/%y | %H:%i:%s %p') AS fecha_kardex,
+                    (v.total_venta - v.descuento) AS total_venta,
+                    GROUP_CONCAT(
+                        CASE
+                            WHEN vp.metodo_pago = 'Efectivo' THEN
+                                CONCAT('S/. ', FORMAT(COALESCE(vp.monto, 0), 2))
+                        END
+                        SEPARATOR ' | '
+                    ) AS pagos"
+            ])
+            ->from('venta v')
+            ->leftJoin('venta_pago vp', 'v.idventa = vp.idventa')
+            ->join('persona p', 'v.idcliente = p.idpersona')
+            ->join('personal u', 'v.idpersonal = u.idpersonal')
+            ->join('sucursal s', 's.idsucursal = v.idsucursal')
+            ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
+            ->where('v.idcaja', '=', $idcaja)
+            ->whereBetween('v.fecha_hora', $fecha_apertura, $fecha_cierre)
+            ->groupBy('v.idventa')
+            ->orderBy('v.idventa', 'DESC')
+            ->get();
+
+        $data = array();
+
+        foreach ($ventas as $reg) {
+            $data[] = array(
+                "0" => $reg['fecha_kardex'],
+                "1" => $reg['personal'],
+                "2" => $reg['tipo_comprobante'] . ' - ' . $reg['serie_comprobante'] . ' - ' . $reg['num_comprobante'],
+                "3" => $reg['cliente'] . ' - ' . $reg['num_documento'],
+                "4" => '<span class="badge bg-purple">' . $reg['pagos'] . '</span>',
+                "5" => ($reg['ventacredito'] == 'Si') ? '<center><span class="badge bg-red">Crédito</span></center>' : '<center><span class="badge bg-primary">Contado</span></center>',
+                "6" => '<span class="badge bg-green">' . $reg['estado'] . '</span>',
+            );
         }
+        $results = array(
+            "sEcho" => 1, //info para datatables
+            "iTotalRecords" => count($data), //enviamos el total de registros al datatable
+            "iTotalDisplayRecords" => count($data), //enviamos el total de registros a visualizar
+            "aaData" => $data
+        );
 
-        $sql = "
-    SELECT 
-        v.idventa,
-        DATE(v.fecha_hora) as fecha,
-        s.nombre as sucursal,
-        DATE_FORMAT(v.fecha_kardex,'%d/%m/%y | %H:%i:%s %p') as fecha_kardex,
-        v.idcliente,
-        p.nombre as cliente,
-        p.num_documento,
-        v.estadoS,
-        u.idpersonal,
-        u.nombre as personal, 
-        cp.nombre AS tipo_comprobante,
-        v.serie_comprobante,
-        v.num_comprobante,
-        (v.total_venta - v.descuento) as total_venta,
-        v.ventacredito,
-        v.impuesto,
-        v.dov_Nombre,
-        v.estado,
-        GROUP_CONCAT(
-            CASE
-                WHEN vp.metodo_pago = 'Efectivo' THEN
-                    CONCAT('S/. ', FORMAT(COALESCE(vp.monto, 0), 2))
-            END
-            SEPARATOR ' | '
-        ) AS pagos
-    FROM venta v
-    LEFT JOIN venta_pago vp ON v.idventa = vp.idventa 
-    INNER JOIN persona p ON v.idcliente = p.idpersona 
-    INNER JOIN personal u ON v.idpersonal = u.idpersonal 
-    INNER JOIN sucursal s ON s.idsucursal = v.idsucursal
-    INNER JOIN comp_pago cp ON cp.idcomprobante_pago = v.idcomprobante_pago
-    WHERE v.idcaja = '$idcaja' 
-        AND v.fecha_hora BETWEEN '$fecha_apertura' AND '$fecha_cierre'
-    GROUP BY v.idventa
-    ORDER BY v.idventa DESC
-";
-
-        return ejecutarConsulta($sql);
+        return Response::json($results);
     }
 
 
@@ -218,7 +238,6 @@ final class Pos extends Helpers
                 "idcaja" => $idcaja,
                 "message" => "La caja se ha cerrado correctamente."
             ]);
-
         } catch (Exception $e) {
 
             ejecutarConsulta("ROLLBACK");
@@ -332,7 +351,6 @@ final class Pos extends Helpers
                 "total_movimientos_egreso_deposito" => Helpers::get_currency_symbol($total_movimientos_egreso_deposito),
                 "efectivo_esperado" => $efectivoEsperado
             ]);
-
         } catch (Exception $e) {
             return json_encode([
                 'success' => false,
@@ -801,7 +819,6 @@ final class Pos extends Helpers
             // Confirmar venta
             ejecutarConsulta("COMMIT");
             return ['status' => 1, 'idventa' => $idventanew];
-
         } catch (Exception $e) {
             //  Revertir en caso de error
             ejecutarConsulta("ROLLBACK");

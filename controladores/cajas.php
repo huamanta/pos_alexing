@@ -15,9 +15,8 @@ $idusuario = $_SESSION['idusuario'];
 switch ($_GET["op"]) {
 
     case 'guardaryeditar':
-        // 🔒 Forzar sucursal desde la sesión
+        // Forzar sucursal desde la sesión
         $idsucursal = $_SESSION['idsucursal'];
-
         if (empty($idcaja)) {
             $rspta = $caja->insertar($nombre, $numero, $idsucursal);
             echo $rspta ? "Caja registrada correctamente" : "No se pudo registrar la caja";
@@ -95,15 +94,13 @@ switch ($_GET["op"]) {
 
     case 'listarMovimientosPorApertura':
         $aperturacajaid = $_REQUEST["aperturacajaid"];
-        $rspta = $caja->listarPorApertura($aperturacajaid);
-        echo $rspta;
+        $caja->listarPorApertura($aperturacajaid);
         break;
 
 
     case 'listarCobrosPorApertura':
         $aperturacajaid = $_REQUEST["aperturacajaid"];
-        $rspta = $caja->listarCobrrosPorApertura($aperturacajaid);
-        echo json_encode($rspta);
+        $caja->listarCobrosPorApertura($aperturacajaid);
         break;
 
     case 'listarPagosPorApertura':
