@@ -674,7 +674,7 @@ class Cotizacion extends Helpers
         return Response::json($response);
     }
 
-    public function listarDataCotizacion($idcotizacion): array
+    public function listarDataCotizacion($idcotizacion): ?array
     {
         $query = (new DBQuery($this->pdo))
             ->select('v.idcotizacion,

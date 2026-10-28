@@ -1,20 +1,23 @@
 <?php
 require_once __DIR__ . '/../core/Response.php';
+
 $controlador = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
 $operacion = $_GET['op'] ?? '';
 
 $rutasPublicas = [
-    'usuario.php' => [
-        'verificar'
-    ]
+    'usuario.php' => ['verificar'],
+    'generaFacturaCoti.php' => true
 ];
 
-$esRutaPublica = isset($rutasPublicas[$controlador])
-    && in_array($operacion, $rutasPublicas[$controlador], true);
+$esRutaPublica = $rutasPublicas[$controlador] ?? false;
+
+if (is_array($esRutaPublica)) {
+    $esRutaPublica = in_array($operacion, $esRutaPublica, true);
+}
 
 if (
     !$esRutaPublica &&
-    (!isset($_SESSION['idusuario']) || empty($_SESSION['idusuario']))
+    empty($_SESSION['idusuario'])
 ) {
     Response::json([
         'status' => 0,
