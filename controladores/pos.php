@@ -173,7 +173,7 @@ switch ($_GET['op']) {
                 "1" => $reg->cliente . ' - ' . $reg->num_documento,
                 "2" => $reg->sucursal,
                 "3" => $reg->tipo_comprobante . ' - ' . $reg->serie_comprobante . ' - ' . $reg->num_comprobante,
-                "4" => '<span class="badge bg-purple">'.'S/ '.$reg->pagos.'</span>',
+                "4" => '<span class="badge bg-purple">'.$reg->pagos.'</span>',
                 "5" => ($reg->ventacredito == 'Si') ? '<center><span class="badge bg-red">Crédito</span></center>' : '<center><span class="badge bg-primary">Contado</span></center>',
                	"6" => '<span class="badge bg-green">'.$reg->estado.'</span>',
             );

@@ -1,5 +1,6 @@
 <?php
-class Constants {
+class Constants
+{
     const CLIENTE_DEFAULT = 1;
     const MAX_USUARIOS = 100;
     const MESES_RECUPERACION = 3;
@@ -32,5 +33,5 @@ class Constants {
     const INGRESO_KARDEX = 1;
     const EGRESO_KARDEX = 2;
     const GERENTE = 'GERENTE';
-    
+
 }

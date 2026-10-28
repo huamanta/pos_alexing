@@ -255,9 +255,8 @@ date_default_timezone_set('America/Lima');
                                     <th>Descripción</th>
                                     <th>Tipo</th>
                                     <th>Forma Pago</th>
-                                    <th>Efectivo</th>
-                                    <th>Transferencia</th>
-                                    <th>Total</th>
+                                    <th>Ingresos</th>
+                                    <th>Salidas</th>
                                 </tr>
                             </thead>
 
@@ -278,8 +277,7 @@ date_default_timezone_set('America/Lima');
                                     <th>Cliente</th>
                                     <th>Forma Pago</th>
                                     <th>Descripcion</th>
-                                    <th>Efectivo</th>
-                                    <th>Credito</th>
+                                    <th>Monto</th>
                                 </tr>
                             </thead>
 

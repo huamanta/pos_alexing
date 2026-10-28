@@ -193,15 +193,14 @@ class Cajas extends Helpers
 
         if (!$ap)
             return [];
-
         $inicio = $ap->fecha_apertura;
         $fin = !empty($ap->fecha_cierre) ? $ap->fecha_cierre : date('Y-m-d H:i:s');
         $idcaja = $ap->idcaja;
-
         $sql = "SELECT m.*
             FROM movimiento m
             WHERE m.idcaja = '$idcaja'
-              AND m.created_at BETWEEN '$inicio' AND '$fin'
+            AND m.totalefectivo > 0 
+              AND m.fecha BETWEEN '$inicio' AND '$fin'
             ORDER BY m.idmovimiento DESC";
 
         $rspta = ejecutarConsulta($sql);
@@ -211,13 +210,10 @@ class Cajas extends Helpers
             $data[] = array(
                 "0" => $reg->fecha,
                 "1" => $reg->descripcion,
-                "2" => ($reg->tipo == 'Egresos')
-                    ? '<span class="badge bg-red">EGRESO</span>'
-                    : '<span class="badge bg-green">INGRESO</span>',
+                "2" => ($reg->tipo == 'Egresos') ? '<span class="badge bg-red">EGRESO</span>' : '<span class="badge bg-green">INGRESO</span>',
                 "3" => $reg->formapago,
-                "4" => Helpers::get_currency_symbol($reg->totalefectivo),
-                "5" => Helpers::get_currency_symbol($reg->totaldeposito),
-                "6" => Helpers::get_currency_symbol($reg->totalefectivo + $reg->totaldeposito)
+                "4" => $reg->tipo === Constants::INGRESOS ? Helpers::get_currency_symbol($reg->totalefectivo) : '-',
+                "5" => $reg->tipo === Constants::EGRESOS ? Helpers::get_currency_symbol($reg->totalefectivo) : '-',
             );
         }
 
@@ -240,7 +236,6 @@ class Cajas extends Helpers
 
         if (!$ap)
             return [];
-
         $inicio = $ap->fecha_apertura;
         $fin = !empty($ap->fecha_cierre) ? $ap->fecha_cierre : date('Y-m-d H:i:s');
         $idcaja = $ap->idcaja;
@@ -248,7 +243,8 @@ class Cajas extends Helpers
         $sql = "SELECT dcc.*
             FROM detalle_cuentas_por_cobrar dcc
             WHERE dcc.idcaja = '$idcaja'
-              AND dcc.fechapago BETWEEN '$inicio' AND '$fin'
+                AND dcc.montopagado > 0
+              AND dcc.created_at BETWEEN '$inicio' AND '$fin'
             ORDER BY dcc.iddcpc DESC";
 
         $rspta = ejecutarConsulta($sql);
@@ -261,7 +257,6 @@ class Cajas extends Helpers
                 "2" => $reg->formapago,
                 "3" => $reg->observacion,
                 "4" => $reg->montopagado,
-                "5" => $reg->montotarjeta,
             );
         }
 

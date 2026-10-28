@@ -127,6 +127,9 @@ function pintarBancoMovimientos(data, permissions) {
             <tr>
                 <td>${item.fecha}</td>
                 <td>${item.responsable || '-'}</td>
+                <td>${item.origen || '-'}</td>
+                <td>${item.cliente || '-'}</td>
+                <td>${item.descripcion || '-'}</td>
                 <td class="${item.tipo === 'Ingresos' ? 'text-success' : ''}">
                     ${item.tipo === 'Ingresos' ? item.monto : '-'}
                 </td>

@@ -176,12 +176,15 @@
                             <div class="table-responsive">
                                 <table
                                     id="tbllistadoMovimientos"
-                                    class="table table-striped table-bordered"
+                                    class="table table-striped table-hovered"
                                 >
                                     <thead>
                                         <tr>
                                             <th>Fecha</th>
                                             <th>Responsable</th>
+                                            <th>Origen</th>
+                                            <th>Cliente</th>
+                                            <th>Descripcion</th>
                                             <th>Ingreso</th>
                                             <th>Salida</th>
                                         </tr>

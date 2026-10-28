@@ -9,9 +9,9 @@ final class Pos extends Helpers
 {
     //Implementamos nuestro constructor
     public function __construct()
-	{
-		parent::__construct();
-	}
+    {
+        parent::__construct();
+    }
 
 
     public function listarVentas($idcaja, $idsucursal, $idusuario, $estado)
@@ -125,12 +125,12 @@ final class Pos extends Helpers
         v.dov_Nombre,
         v.estado,
         GROUP_CONCAT(
-            CONCAT(
-                COALESCE(vp.metodo_pago,'SIN PAGO'),
-                ': S/. ',
-                FORMAT(COALESCE(vp.monto,0),2)
-            ) SEPARATOR ' | '
-        ) as pagos
+            CASE
+                WHEN vp.metodo_pago = 'Efectivo' THEN
+                    CONCAT('S/. ', FORMAT(COALESCE(vp.monto, 0), 2))
+            END
+            SEPARATOR ' | '
+        ) AS pagos
     FROM venta v
     LEFT JOIN venta_pago vp ON v.idventa = vp.idventa 
     INNER JOIN persona p ON v.idcliente = p.idpersona 
