@@ -240,12 +240,28 @@ class Cajas extends Helpers
         $fin = !empty($ap->fecha_cierre) ? $ap->fecha_cierre : date('Y-m-d H:i:s');
         $idcaja = $ap->idcaja;
 
-        $sql = "SELECT dcc.*
-            FROM detalle_cuentas_por_cobrar dcc
-            WHERE dcc.idcaja = '$idcaja'
-                AND dcc.montopagado > 0
-              AND dcc.created_at BETWEEN '$inicio' AND '$fin'
-            ORDER BY dcc.iddcpc DESC";
+       $sql = "SELECT
+            dcc.*,
+            CONVERT(CONCAT(
+                'Pago aplicado a cuota N° ',
+                (
+                    SELECT COUNT(*)
+                    FROM cuentas_por_cobrar cc2
+                    WHERE cc2.idventa = cc.idventa
+                      AND cc2.idcpc <= cc.idcpc
+                ),
+                ' de la venta N° ',
+                v.serie_comprobante, '-', v.num_comprobante
+            ) USING utf8mb4) COLLATE utf8mb4_spanish_ci AS descripcion
+        FROM detalle_cuentas_por_cobrar dcc
+        INNER JOIN cuentas_por_cobrar cc
+            ON cc.idcpc = dcc.idcpc
+        INNER JOIN venta v
+            ON v.idventa = cc.idventa
+        WHERE dcc.idcaja = '$idcaja'
+          AND dcc.montopagado > 0
+          AND dcc.created_at BETWEEN '$inicio' AND '$fin'
+        ORDER BY dcc.iddcpc DESC";
 
         $rspta = ejecutarConsulta($sql);
 
@@ -255,7 +271,7 @@ class Cajas extends Helpers
                 "0" => $reg->fechapago,
                 "1" => $this->getClienteVenta($reg->idcpc),
                 "2" => $reg->formapago,
-                "3" => $reg->observacion,
+                "3" => $reg->descripcion,
                 "4" => $reg->montopagado,
             );
         }
