@@ -14,7 +14,7 @@ $helpers = new Helpers();
 
 if (empty($_GET["id"]) || !ctype_digit((string) $_GET["id"])) {
     http_response_code(400);
-    echo "No es posible generar la factura.";
+    require_once 'errores/cotizacion_no_encontrada.php';
     exit();
 }
 
@@ -24,8 +24,17 @@ $factura = $cotizacion->listarDataCotizacion($idventa);
 
 if (empty($factura)) {
     http_response_code(404);
-    echo "Cotización no encontrada.";
+    require_once 'errores/cotizacion_no_encontrada.php';
     exit();
+}
+
+if (!empty($factura['nota']) && empty($_SESSION['idusuario'])) {
+    $fechaVencimiento = date('Y-m-d', strtotime($factura['fecha_h'] . ' +' . (int)$factura['nota'] . ' days'));
+    if (date('Y-m-d') <= $fechaVencimiento) {
+        http_response_code(404);
+        require_once 'errores/cotizacion_no_encontrada.php';
+        exit;
+    }
 }
 
 $configuracion = $negocio->listar($factura['idsucursal']);
