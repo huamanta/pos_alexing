@@ -341,7 +341,7 @@
                                                                 <div class="form-group">
                                                                     <label for="email" class="control-label">Email:</label>
                                                                     <input type="email" class="form-control" name="email"
-                                                                        id="email" maxlength="50" required="" value="">
+                                                                        id="email" maxlength="50" value="">
                                                                 </div>
                                                             </div>
                                                         </div>
