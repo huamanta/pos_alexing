@@ -266,6 +266,7 @@
             <thead>
               <th>#</th>
               <th>Tipo</th>
+              <th>Responsable</th>
               <th>Descripcion</th>
               <th>Detalle</th>
               <th>Fecha programada</th>
@@ -274,16 +275,6 @@
               <th>Acciones</th>
             </thead>
             <tbody></tbody>
-            <tfoot>
-              <th>#</th>
-              <th>Tipo</th>
-              <th>Descripcion</th>
-              <th>Detalle</th>
-              <th>Fecha programada</th>
-              <th>Estado</th>
-              <th>Prioridad</th>
-              <th>Acciones</th>
-            </tfoot>
           </table>
         </div>
       </div>
@@ -909,6 +900,7 @@
 
         <div class="modal-body">
 
+          <input type="hidden" name="id" id="idseguimiento">
           <input type="hidden" name="idcpc" id="idcpc_visita">
           <input type="hidden" name="idventa" id="idventa_visita">
           <input type="hidden" name="idcliente" id="idcliente_visita">

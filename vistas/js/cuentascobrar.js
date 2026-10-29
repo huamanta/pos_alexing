@@ -10,215 +10,222 @@ let listaCreditos = null;
 
 //Función que se ejecuta al inicio
 function init() {
-    // listar();
+  // listar();
+  listaCreditos.load();
+  listarSaldos();
+  enviarRecordatoriosAutomatico();
+  $("#body").addClass("sidebar-collapse sidebar-mini");
+
+  $("#getCodeModal").on("submit", function (e) {
+    guardaryeditar(e);
+  });
+
+  $("#fecha_inicio").change(function (e) {
+    e.preventDefault();
     listaCreditos.load();
     listarSaldos();
-    enviarRecordatoriosAutomatico();
-    $("#body").addClass("sidebar-collapse sidebar-mini");
+  });
+  $("#fecha_fin").change(function (e) {
+    e.preventDefault();
+    listaCreditos.load();
+    listarSaldos();
+  });
+  $("#idcliente").change(function (e) {
+    e.preventDefault();
+    listaCreditos.load();
+    listarSaldos();
+    toggleBtnEstadoCuenta();
+  });
 
-    $("#getCodeModal").on("submit", function (e) {
-        guardaryeditar(e);
-    })
+  $("#navCobros").addClass("treeview menu-open");
+  $("#navCobrosActive").addClass("treeview active");
+  $("#navCuentasPorCobrar").addClass("active");
 
-    $("#fecha_inicio").change(function (e) {
-        e.preventDefault();
-        listaCreditos.load();
-        listarSaldos();
-    });
-    $("#fecha_fin").change(function (e) {
-        e.preventDefault();
-        listaCreditos.load();
-        listarSaldos();
-    });
-    $("#idcliente").change(function (e) {
-        e.preventDefault();
-        listaCreditos.load();
-        listarSaldos();
-        toggleBtnEstadoCuenta();
-    });
+  //cargamos los items al select almacen
+  $.post("controladores/venta.php?op=selectSucursal3", function (r) {
+    $("#idsucursal2").html(r);
+    $("#idsucursal2").select2("");
+  });
 
+  $("#btnEstadoCuentaAccion").on("click", function () {
+    let idcliente = $("#idcliente").val();
+    let fecha_inicio = $("#fecha_inicio").val();
+    let fecha_fin = $("#fecha_fin").val();
 
-    $('#navCobros').addClass("treeview menu-open");
-    $('#navCobrosActive').addClass("treeview active");
-    $('#navCuentasPorCobrar').addClass("active");
+    if (!idcliente || idcliente === "Todos") {
+      alert("Seleccione un cliente válido");
+      return;
+    }
 
+    verEstadoCuentaCliente(idcliente, fecha_inicio, fecha_fin);
+  });
 
-    //cargamos los items al select almacen
-    $.post("controladores/venta.php?op=selectSucursal3", function (r) {
-        $("#idsucursal2").html(r);
-        $('#idsucursal2').select2('');
-    });
-
-    $("#btnEstadoCuentaAccion").on("click", function () {
-        let idcliente = $("#idcliente").val();
-        let fecha_inicio = $("#fecha_inicio").val();
-        let fecha_fin = $("#fecha_fin").val();
-
-        if (!idcliente || idcliente === "Todos") {
-            alert("Seleccione un cliente válido");
-            return;
-        }
-
-        verEstadoCuentaCliente(idcliente, fecha_inicio, fecha_fin);
-    });
-
-    listarBancos();
+  listarBancos();
 }
 
 function listarBancos() {
-    $.get('controladores/consultas.php?op=listarBancos', function (response) {
-        const bancos = response || [];
-        let html = '<option value="">Seleccione...</option>';
-        html += bancos.map(banco => `
+  $.get("controladores/consultas.php?op=listarBancos", function (response) {
+    const bancos = response || [];
+    let html = '<option value="">Seleccione...</option>';
+    html += bancos
+      .map(
+        (banco) => `
                 <option value="${banco.idbanco}">
                     ${banco.nombre}
                 </option>
-            `).join("");
-        $("#banco").html(html);
-        $("#bancoAmortizar").html(html);
-    })
+            `,
+      )
+      .join("");
+    $("#banco").html(html);
+    $("#bancoAmortizar").html(html);
+  });
 }
 
 $("#idcliente").select2({
-    placeholder: "Buscar cliente...",
-    allowClear: true,
-    minimumInputLength: 2,
+  placeholder: "Buscar cliente...",
+  allowClear: true,
+  minimumInputLength: 2,
 
-    ajax: {
-        url: "controladores/venta.php?op=selectCliente2",
-        type: "GET",
-        dataType: "json",
-        delay: 250,
+  ajax: {
+    url: "controladores/venta.php?op=selectCliente2",
+    type: "GET",
+    dataType: "json",
+    delay: 250,
 
-        data: function (params) {
-            return {
-                search: params.term,
-                page: params.page || 1,
-                only_client: 1
-            };
+    data: function (params) {
+      return {
+        search: params.term,
+        page: params.page || 1,
+        only_client: 1,
+      };
+    },
+
+    processResults: function (data, params) {
+      params.page = params.page || 1;
+
+      return {
+        results: data.data.map(function (item) {
+          return {
+            id: item.idpersona,
+            text: item.nombre + " - " + item.num_documento,
+          };
+        }),
+
+        pagination: {
+          more: data.meta.current_page < data.meta.last_page,
         },
+      };
+    },
 
-        processResults: function (data, params) {
-
-            params.page = params.page || 1;
-
-            return {
-                results: data.data.map(function (item) {
-                    return {
-                        id: item.idpersona,
-                        text: item.nombre + " - " + item.num_documento
-                    };
-                }),
-
-                pagination: {
-                    more: data.meta.current_page < data.meta.last_page
-                }
-            };
-        },
-
-        cache: true
-    }
+    cache: true,
+  },
 });
 
 function toggleBtnEstadoCuenta() {
-    let idcliente = $("#idcliente").val();
+  let idcliente = $("#idcliente").val();
 
-    if (idcliente && idcliente !== "Todos") {
-        $("#btnEstadoCuenta").show();
-    } else {
-        $("#btnEstadoCuenta").hide();
-    }
+  if (idcliente && idcliente !== "Todos") {
+    $("#btnEstadoCuenta").show();
+  } else {
+    $("#btnEstadoCuenta").hide();
+  }
 }
 
-
-
-document.getElementById('formapago').addEventListener('change', function () {
-    const montoInput = document.getElementById('montoPagarTarjeta');
-    if (this.value !== 'Efectivo') {
-        montoInput.removeAttribute('readonly');
-    } else {
-        montoInput.setAttribute('readonly', true);
-        montoInput.value = ''; // Opcional: limpiar el campo al volver a "Efectivo"
-    }
+document.getElementById("formapago").addEventListener("change", function () {
+  const montoInput = document.getElementById("montoPagarTarjeta");
+  if (this.value !== "Efectivo") {
+    montoInput.removeAttribute("readonly");
+  } else {
+    montoInput.setAttribute("readonly", true);
+    montoInput.value = ""; // Opcional: limpiar el campo al volver a "Efectivo"
+  }
 });
 
 function enviarRecordatoriosMasivo() {
-    Swal.fire({
-        title: '¿Enviar recordatorios a todas las cuotas vencidas?',
-        text: 'Se notificará a todos los clientes con cuotas vencidas.',
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, enviar',
-        cancelButtonText: 'Cancelar',
-        reverseButtons: true
-    }).then((result) => {
-        if (!result.isConfirmed) return;
+  Swal.fire({
+    title: "¿Enviar recordatorios a todas las cuotas vencidas?",
+    text: "Se notificará a todos los clientes con cuotas vencidas.",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Sí, enviar",
+    cancelButtonText: "Cancelar",
+    reverseButtons: true,
+  }).then((result) => {
+    if (!result.isConfirmed) return;
 
-        const $btn = $('#btnEnviarRecordatorioSemana');
-        const originalHtml = $btn.html();
-        $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Enviando...');
+    const $btn = $("#btnEnviarRecordatorioSemana");
+    const originalHtml = $btn.html();
+    $btn
+      .prop("disabled", true)
+      .html('<i class="fas fa-spinner fa-spin"></i> Enviando...');
 
-        $.ajax({
-            url: 'controladores/cuentascobrar.php?op=enviar_recordatorio',
-            method: 'POST',
-            dataType: 'json',
-            success: function (res) {
-                $btn.prop('disabled', false).html(originalHtml);
+    $.ajax({
+      url: "controladores/cuentascobrar.php?op=enviar_recordatorio",
+      method: "POST",
+      dataType: "json",
+      success: function (res) {
+        $btn.prop("disabled", false).html(originalHtml);
 
-                if (!res || !res.success) {
-                    let errorMsg = res && res.response ? res.response : 'No se pudo completar el envío. Revisa los logs del servidor.';
-                    Swal.fire('Error', 'Ocurrió un error: ' + errorMsg, 'error');
-                    return;
-                }
+        if (!res || !res.success) {
+          let errorMsg =
+            res && res.response
+              ? res.response
+              : "No se pudo completar el envío. Revisa los logs del servidor.";
+          Swal.fire("Error", "Ocurrió un error: " + errorMsg, "error");
+          return;
+        }
 
-                let html = `<p>Total recordatorios enviados: <strong>${res.message.split(' ')[0]}</strong></p>`;
-                html += `<p>Se enviaron a todas las cuotas vencidas automáticamente.</p>`;
+        let html = `<p>Total recordatorios enviados: <strong>${res.message.split(" ")[0]}</strong></p>`;
+        html += `<p>Se enviaron a todas las cuotas vencidas automáticamente.</p>`;
 
-                // Mostrar respuesta completa del API (opcional, útil para depuración)
-                html += `<pre>Respuesta API: ${JSON.stringify(res.response, null, 2)}</pre>`;
+        // Mostrar respuesta completa del API (opcional, útil para depuración)
+        html += `<pre>Respuesta API: ${JSON.stringify(res.response, null, 2)}</pre>`;
 
-                $('#recordatorioResultadosContenido').html(html);
-                $('#modalRecordatorioResultados').modal('show');
+        $("#recordatorioResultadosContenido").html(html);
+        $("#modalRecordatorioResultados").modal("show");
 
-                // Recargar tabla si existe
-                if (typeof tabla !== 'undefined') tabla.ajax.reload(null, false);
-            },
-            error: function (xhr, status, err) {
-                $btn.prop('disabled', false).html(originalHtml);
-                Swal.fire('Error', 'Ocurrió un error durante el envío: ' + err, 'error');
-            }
-        });
+        // Recargar tabla si existe
+        if (typeof tabla !== "undefined") tabla.ajax.reload(null, false);
+      },
+      error: function (xhr, status, err) {
+        $btn.prop("disabled", false).html(originalHtml);
+        Swal.fire(
+          "Error",
+          "Ocurrió un error durante el envío: " + err,
+          "error",
+        );
+      },
     });
+  });
 }
 
 $("#btnEnviarRecordatorioSemana").on("click", function (e) {
-    e.preventDefault();
-    enviarRecordatoriosMasivo();
+  e.preventDefault();
+  enviarRecordatoriosMasivo();
 });
 
 function enviarRecordatoriosAutomatico() {
-    $.ajax({
-        url: 'controladores/cuentascobrar.php?op=enviar_recordatorio',
-        method: 'POST',
-        dataType: 'json',
-        success: function (res) {
-            if (!res || !res.success) return;
-        },
-        error: function (xhr, status, err) {
-            console.error('Error envío automático:', xhr.responseText);
-        }
-    });
+  $.ajax({
+    url: "controladores/cuentascobrar.php?op=enviar_recordatorio",
+    method: "POST",
+    dataType: "json",
+    success: function (res) {
+      if (!res || !res.success) return;
+    },
+    error: function (xhr, status, err) {
+      console.error("Error envío automático:", xhr.responseText);
+    },
+  });
 }
 
 function pintarCreditos(data, permissions) {
-    $('#vistaListaClientes').show();
-    $('#vistaCreditosCliente').hide();
-    $('#panelSuperiorCxC').show();
-    let html = "";
+  $("#vistaListaClientes").show();
+  $("#vistaCreditosCliente").hide();
+  $("#panelSuperiorCxC").show();
+  let html = "";
 
-    if (data.length === 0) {
-
-        html = `
+  if (data.length === 0) {
+    html = `
             <tr>
                 <td colspan="10" class="text-center">
                     No se encontraron registros
@@ -226,18 +233,17 @@ function pintarCreditos(data, permissions) {
             </tr>
         `;
 
-        $("#tbllistadocuentasxcobrar tbody").html(html);
-        return;
-    }
+    $("#tbllistadocuentasxcobrar tbody").html(html);
+    return;
+  }
 
-    data.forEach((item, i) => {
-
-        html += `
+  data.forEach((item, i) => {
+    html += `
                 <tr>
                     <td>${i + 1}</td>
                     <td>${item.cliente}</td>
-                    <td>${item.num_documento || ''}</td>
-                    <td>${item.total_creditos || ''}</td>
+                    <td>${item.num_documento || ""}</td>
+                    <td>${item.total_creditos || ""}</td>
                     <td>${item.deuda_total_str}</td>
                     <td>${item.total_pagado_str}</td>
                     <td>${item.saldo_pendiente_str}</td>
@@ -259,158 +265,165 @@ function pintarCreditos(data, permissions) {
                     </td>
                 </tr>
                 `;
-    });
+  });
 
-    $("#tbllistadocuentasxcobrar tbody").html(html);
-
+  $("#tbllistadocuentasxcobrar tbody").html(html);
 }
 
-
 listaCreditos = new FluentPaginator({
-    url: "controladores/cuentascobrar.php?op=listaCreditos",
-    renderTabla: pintarCreditos,
-    tableBody: "#tbodyCreditos",
-    extraParams: () => ({
-        fecha_inicio: $("#fecha_inicio").val() || "",
-        fecha_fin: $("#fecha_fin").val() || "",
-        idcliente: $("#idcliente").val() || ""
-    })
+  url: "controladores/cuentascobrar.php?op=listaCreditos",
+  renderTabla: pintarCreditos,
+  tableBody: "#tbodyCreditos",
+  extraParams: () => ({
+    fecha_inicio: $("#fecha_inicio").val() || "",
+    fecha_fin: $("#fecha_fin").val() || "",
+    idcliente: $("#idcliente").val() || "",
+  }),
 });
 
-
 function listarSaldos() {
-    var fecha_inicio = $("#fecha_inicio").val();
-    var fecha_fin = $("#fecha_fin").val();
-    var idcliente = $("#idcliente").val();
-    var idsucursal = $("#idsucursal2").val();
+  var fecha_inicio = $("#fecha_inicio").val();
+  var fecha_fin = $("#fecha_fin").val();
+  var idcliente = $("#idcliente").val();
+  var idsucursal = $("#idsucursal2").val();
 
-    // Verificar si fecha de inicio es mayor que fecha de fin
-    var fechaInicio = new Date(fecha_inicio);
-    var fechaFin = new Date(fecha_fin);
+  // Verificar si fecha de inicio es mayor que fecha de fin
+  var fechaInicio = new Date(fecha_inicio);
+  var fechaFin = new Date(fecha_fin);
 
-    if (fechaInicio > fechaFin) {
-        // Establecer fecha de fin en la fecha actual
-        var hoy = new Date();
-        var dd = String(hoy.getDate()).padStart(2, '0');
-        var mm = String(hoy.getMonth() + 1).padStart(2, '0');
-        var yyyy = hoy.getFullYear();
+  if (fechaInicio > fechaFin) {
+    // Establecer fecha de fin en la fecha actual
+    var hoy = new Date();
+    var dd = String(hoy.getDate()).padStart(2, "0");
+    var mm = String(hoy.getMonth() + 1).padStart(2, "0");
+    var yyyy = hoy.getFullYear();
 
-        fecha_fin = yyyy + '-' + mm + '-' + dd;
-        $("#fecha_fin").val(fecha_fin);
-    }
+    fecha_fin = yyyy + "-" + mm + "-" + dd;
+    $("#fecha_fin").val(fecha_fin);
+  }
 
-    $.ajax({
-        url: 'controladores/cuentascobrar.php?op=listar_saldos',
-        data: { fecha_inicio: fecha_inicio, fecha_fin: fecha_fin, idcliente: idcliente, idsucursal: idsucursal },
-        type: "get",
-        dataType: "json",
-        success: function (data) {
-            $("#saldos").text(data.deudatotal);
-            $("#abonos").text(data.abonototal);
-            $("#deudas").text(data.saldo);
-            $('#panel_amortizar').html('<i class="fas fa-money-bill fa-lg" style="font-size: 20px !important"></i>');
-
-        },
-        error: function (e) {
-            console.log(e.responseText);
-        }
-    });
+  $.ajax({
+    url: "controladores/cuentascobrar.php?op=listar_saldos",
+    data: {
+      fecha_inicio: fecha_inicio,
+      fecha_fin: fecha_fin,
+      idcliente: idcliente,
+      idsucursal: idsucursal,
+    },
+    type: "get",
+    dataType: "json",
+    success: function (data) {
+      $("#saldos").text(data.deudatotal);
+      $("#abonos").text(data.abonototal);
+      $("#deudas").text(data.saldo);
+      $("#panel_amortizar").html(
+        '<i class="fas fa-money-bill fa-lg" style="font-size: 20px !important"></i>',
+      );
+    },
+    error: function (e) {
+      console.log(e.responseText);
+    },
+  });
 }
 
 async function amortizarDeuda(deuda, idcliente, fecha_inicio, fecha_fin) {
-    // Verificamos la caja abierta
-    const idcaja = await verificarCaja();
-    alert();
-    if (!idcaja) {
-        Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
-        return;
-    }
+  // Verificamos la caja abierta
+  const idcaja = await verificarCaja();
+  alert();
+  if (!idcaja) {
+    Swal.fire(
+      "Error",
+      "Debe tener una caja abierta para realizar la amortización",
+      "error",
+    );
+    return;
+  }
 
-    $('#idcaja').val(idcaja); // Cargamos idcaja en el modal
-    $('#modalAmortizar').modal('show');
-    $('#montoAdeudadoAmortizar').val(parseFloat(deuda).toFixed(2));
-    $('#deudaTotalAmortizar').html(parseFloat(deuda).toFixed(2));
-    $('#idcliente_amortizar').val(idcliente);
-    $('#idventa_amortizar').val('');
-    $('#fecha_inicio_amortizar').val(fecha_inicio);
-    $('#fecha_fin_amortizar').val(fecha_fin);
+  $("#idcaja").val(idcaja); // Cargamos idcaja en el modal
+  $("#modalAmortizar").modal("show");
+  $("#montoAdeudadoAmortizar").val(parseFloat(deuda).toFixed(2));
+  $("#deudaTotalAmortizar").html(parseFloat(deuda).toFixed(2));
+  $("#idcliente_amortizar").val(idcliente);
+  $("#idventa_amortizar").val("");
+  $("#fecha_inicio_amortizar").val(fecha_inicio);
+  $("#fecha_fin_amortizar").val(fecha_fin);
 }
 
 function amortizarCuotasCredito(idventa, saldoPendiente, documento, nota) {
-    $('#idventacuentacobrar').val(idventa);
-    ventaActualCuotas = idventa;
-    saldoActualCuotas = toNumber(saldoPendiente);
-    $('#tituloCreditoCuotas').text(documento ? documento : '');
-    amortizar(idventa);
+  $("#idventacuentacobrar").val(idventa);
+  ventaActualCuotas = idventa;
+  saldoActualCuotas = toNumber(saldoPendiente);
+  $("#tituloCreditoCuotas").text(documento ? documento : "");
+  amortizar(idventa);
 }
 
 function calendarioCuotasCredito(idventa, saldoPendiente, documento, nota) {
-    $("#modalCalendario").modal('show');
-    var calendarEl = document.getElementById("calendario");
+  $("#modalCalendario").modal("show");
+  var calendarEl = document.getElementById("calendario");
 
-    if (calendar) {
-        calendar.destroy();
-    }
+  if (calendar) {
+    calendar.destroy();
+  }
 
-    calendar = new FullCalendar.Calendar(calendarEl, {
-        locale: "es",
-        initialView: "dayGridMonth",
-        height: "auto",
+  calendar = new FullCalendar.Calendar(calendarEl, {
+    locale: "es",
+    initialView: "dayGridMonth",
+    height: "auto",
 
-        events: function (info, successCallback, failureCallback) {
-            $.ajax({
-                url: "controladores/cuentascobrar.php",
-                data: {
-                    op: "calendarioCuotasCredito",
-                    idventa: idventa
-                },
-                dataType: "json",
-                success: successCallback,
-                error: failureCallback
-            });
+    events: function (info, successCallback, failureCallback) {
+      $.ajax({
+        url: "controladores/cuentascobrar.php",
+        data: {
+          op: "calendarioCuotasCredito",
+          idventa: idventa,
         },
+        dataType: "json",
+        success: successCallback,
+        error: failureCallback,
+      });
+    },
 
-        eventClick: function (info) {
-            console.log(info.event);
-            console.log(info.event.title);
-            console.log(info.event.start);
-            console.log(info.event.extendedProps);
-        }
-    });
+    eventClick: function (info) {
+      console.log(info.event);
+      console.log(info.event.title);
+      console.log(info.event.start);
+      console.log(info.event.extendedProps);
+    },
+  });
 
-    setTimeout(function () {
-        calendar.render();
-    }, 300);
+  setTimeout(function () {
+    calendar.render();
+  }, 300);
 }
 
+function historialCreditoRefinanciamiento(
+  idventa,
+  saldoPendiente,
+  documento,
+  nota,
+) {
+  $.getJSON(
+    "controladores/refinanciamiento.php",
+    {
+      op: "historialCreditoRefinanciamiento",
+      idventa: idventa,
+    },
+    function (r) {
+      if (!r.estado) {
+        alert(r.mensaje);
+        return;
+      }
 
-function historialCreditoRefinanciamiento(idventa, saldoPendiente, documento, nota) {
+      $("#hisCliente").val(r.venta.cliente);
+      $("#hisDocumento").val(r.venta.documento);
+      $("#hisFecha").val(r.venta.fecha_hora);
+      $("#hisTotal").val("S/ " + parseFloat(r.venta.total_venta).toFixed(2));
 
-    $.getJSON(
-        "controladores/refinanciamiento.php",
-        {
-            op: "historialCreditoRefinanciamiento",
-            idventa: idventa
-        },
-        function (r) {
+      let html = "";
 
-            if (!r.estado) {
-                alert(r.mensaje);
-                return;
-            }
-
-            $("#hisCliente").val(r.venta.cliente);
-            $("#hisDocumento").val(r.venta.documento);
-            $("#hisFecha").val(r.venta.fecha_hora);
-            $("#hisTotal").val("S/ " + parseFloat(r.venta.total_venta).toFixed(2));
-
-            let html = "";
-
-            $.each(r.historial, function (i, h) {
-
-                if (h.tipo == "ORIGINAL") {
-
-                    html += `
+      $.each(r.historial, function (i, h) {
+        if (h.tipo == "ORIGINAL") {
+          html += `
                     <div class="box box-primary">
 
                         <div class="box-header with-border bg-light-blue">
@@ -460,10 +473,8 @@ function historialCreditoRefinanciamiento(idventa, saldoPendiente, documento, no
 
                     </div>
                     `;
-
-                } else {
-
-                    html += `
+        } else {
+          html += `
 
                     <div class="text-center" style="margin:15px 0">
                         <i class="fa fa-arrow-down fa-2x text-warning"></i>
@@ -585,25 +596,18 @@ function historialCreditoRefinanciamiento(idventa, saldoPendiente, documento, no
                     </div>
 
                     `;
-
-                }
-
-            });
-
-            $("#timelineCredito").html(html);
-
-            $("#modalHistorialCredito").modal("show");
-
         }
-    );
+      });
 
+      $("#timelineCredito").html(html);
+
+      $("#modalHistorialCredito").modal("show");
+    },
+  );
 }
 
-
-
 function tablaCuotas(cuotas) {
-
-    let html = `
+  let html = `
 
     <table class="table table-bordered table-striped table-hover">
 
@@ -626,31 +630,28 @@ function tablaCuotas(cuotas) {
 
     `;
 
-    $.each(cuotas, function (i, c) {
+  $.each(cuotas, function (i, c) {
+    let badge = "";
+    let clase = "";
 
-        let badge = "";
-        let clase = "";
+    switch (c.estado) {
+      case "PAGADA":
+        badge = '<span class="label label-success">Pagada</span>';
+        clase = "success";
+        break;
 
-        switch (c.estado) {
+      case "PENDIENTE":
+        badge = '<span class="label label-warning">Pendiente</span>';
+        clase = "warning";
+        break;
 
-            case "PAGADA":
-                badge = '<span class="label label-success">Pagada</span>';
-                clase = "success";
-                break;
+      case "REFINANCIADA":
+        badge = '<span class="label label-info">Refinanciada</span>';
+        clase = "info";
+        break;
+    }
 
-            case "PENDIENTE":
-                badge = '<span class="label label-warning">Pendiente</span>';
-                clase = "warning";
-                break;
-
-            case "REFINANCIADA":
-                badge = '<span class="label label-info">Refinanciada</span>';
-                clase = "info";
-                break;
-
-        }
-
-        html += `
+    html += `
 
             <tr class="${clase}">
 
@@ -677,10 +678,9 @@ function tablaCuotas(cuotas) {
             </tr>
 
         `;
+  });
 
-    });
-
-    html += `
+  html += `
 
         </tbody>
 
@@ -688,292 +688,303 @@ function tablaCuotas(cuotas) {
 
     `;
 
-    return html;
-
+  return html;
 }
 
-$('#formulario-amortizar').submit(async function (e) {
-    e.preventDefault();
+$("#formulario-amortizar").submit(async function (e) {
+  e.preventDefault();
 
-    // Verificamos la caja abierta antes de enviar
-    const idcaja = await verificarCaja();
-    if (!idcaja) {
-        Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
-        return;
-    }
+  // Verificamos la caja abierta antes de enviar
+  const idcaja = await verificarCaja();
+  if (!idcaja) {
+    Swal.fire(
+      "Error",
+      "Debe tener una caja abierta para realizar la amortización",
+      "error",
+    );
+    return;
+  }
 
-    var formData = new FormData(this);
-    formData.set('idcaja', idcaja); // Aseguramos que idcaja esté en los datos enviados
+  var formData = new FormData(this);
+  formData.set("idcaja", idcaja); // Aseguramos que idcaja esté en los datos enviados
 
-    $.ajax({
-        url: 'controladores/cuentascobrar.php?op=amortizar_deuda',
-        data: formData,
-        type: "POST",
-        contentType: false,
-        processData: false,
-        beforeSend: function () {
-            $("#btnAmortizarDeuda")
-                .prop("disabled", true)
-                .html('Guardando...');
-        },
-        success: function (data) {
-            var data = JSON.parse(data);
-            if (data.success) {
-                Swal.fire('Éxito', data.message, 'success');
-                listarSaldos();
-                tablaCreditosCliente.ajax.reload();
-                if (tablaCuotasCredito) {
-                    tablaCuotasCredito.ajax.reload();
-                }
-                $('#modalAmortizar').modal('hide');
-                $('#montoAdeudadoAmortizar').val('');
-                $('#deudaTotalAmortizar').html('');
-                $('#idcliente_amortizar').val('');
-                $('#idventa_amortizar').val('');
-                $('#fecha_inicio_amortizar').val('');
-                $('#fecha_fin_amortizar').val('');
-            } else {
-                Swal.fire('Error', data.message, 'error');
-            }
-
-            $("#btnAmortizarDeuda")
-                .prop("disabled", false)
-                .html('Guardar');
-        },
-        error: function (e) {
-            console.log(e.responseText);
-            $("#btnAmortizarDeuda")
-                .prop("disabled", false)
-                .html('Guardar');
+  $.ajax({
+    url: "controladores/cuentascobrar.php?op=amortizar_deuda",
+    data: formData,
+    type: "POST",
+    contentType: false,
+    processData: false,
+    beforeSend: function () {
+      $("#btnAmortizarDeuda").prop("disabled", true).html("Guardando...");
+    },
+    success: function (data) {
+      var data = JSON.parse(data);
+      if (data.success) {
+        Swal.fire("Éxito", data.message, "success");
+        listarSaldos();
+        tablaCreditosCliente.ajax.reload();
+        if (tablaCuotasCredito) {
+          tablaCuotasCredito.ajax.reload();
         }
-    });
+        $("#modalAmortizar").modal("hide");
+        $("#montoAdeudadoAmortizar").val("");
+        $("#deudaTotalAmortizar").html("");
+        $("#idcliente_amortizar").val("");
+        $("#idventa_amortizar").val("");
+        $("#fecha_inicio_amortizar").val("");
+        $("#fecha_fin_amortizar").val("");
+      } else {
+        Swal.fire("Error", data.message, "error");
+      }
+
+      $("#btnAmortizarDeuda").prop("disabled", false).html("Guardar");
+    },
+    error: function (e) {
+      console.log(e.responseText);
+      $("#btnAmortizarDeuda").prop("disabled", false).html("Guardar");
+    },
+  });
 });
 
-
 function verificarCaja() {
-    return new Promise((resolve, reject) => {
-        $.ajax({
-            url: "controladores/venta.php?op=verificar_caja",
-            type: "get",
-            dataType: "json",
-            success: function (response) {
-                if (response.success) {
-                    resolve(response.idcaja); // Devuelve el id de la caja abierta
-                } else {
-                    resolve(null); // No hay caja abierta
-                }
-            },
-            error: function (error) {
-                reject(error);
-            }
-        });
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: "controladores/venta.php?op=verificar_caja",
+      type: "get",
+      dataType: "json",
+      success: function (response) {
+        if (response.success) {
+          resolve(response.idcaja); // Devuelve el id de la caja abierta
+        } else {
+          resolve(null); // No hay caja abierta
+        }
+      },
+      error: function (error) {
+        reject(error);
+      },
     });
+  });
 }
 
-
 async function guardaryeditar(e) {
-    e.preventDefault();
+  e.preventDefault();
 
-    const idcaja = await verificarCaja(); // Verifica caja abierta antes de enviar
-    if (!idcaja) {
-        Swal.fire('Error', 'Debe tener una caja abierta para realizar abonos', 'error');
+  const idcaja = await verificarCaja(); // Verifica caja abierta antes de enviar
+  if (!idcaja) {
+    Swal.fire(
+      "Error",
+      "Debe tener una caja abierta para realizar abonos",
+      "error",
+    );
+    return;
+  }
+
+  var formData = new FormData($("#formulario")[0]);
+  formData.append("idcaja", idcaja);
+
+  $.ajax({
+    url: "controladores/cuentascobrar.php?op=guardaryeditar",
+    type: "POST",
+    data: formData,
+    contentType: false,
+    processData: false,
+    beforeSend: function () {
+      $("#btnGuardarPago").text("Guardando...").prop("disabled", true);
+    },
+    success: function (response) {
+      const data = response;
+      $("#btnGuardarPago").text("Guardar pago").prop("disabled", false);
+      if (!data.success) {
+        Swal.fire("Error", data.message, "error");
         return;
-    }
+      }
 
-    var formData = new FormData($("#formulario")[0]);
-    formData.append('idcaja', idcaja);
+      const t = data.ticket;
+      imprimirConstanciaPagoInicial(t.idcpc);
 
-    $.ajax({
-        url: "controladores/cuentascobrar.php?op=guardaryeditar",
-        type: "POST",
-        data: formData,
-        contentType: false,
-        processData: false,
-        beforeSend: function () {
-            $("#btnGuardarPago").text("Guardando...").prop('disabled', true);
-        },
-        success: function (response) {
-            const data = response;
-            $("#btnGuardarPago").text("Guardar pago").prop('disabled', false);
-            if (!data.success) {
-                Swal.fire("Error", data.message, "error");
-                return;
-            }
+      Swal.fire("Éxito", data.message, "success");
 
-            const t = data.ticket;
-            imprimirConstanciaPagoInicial(t.idcpc);
+      $("#getCodeModal").modal("hide");
+      $("#formulario")[0].reset();
 
-            Swal.fire("Éxito", data.message, "success");
+      limpiar();
 
-            $('#getCodeModal').modal('hide');
-            $("#formulario")[0].reset();
+      listarSaldos();
 
-            limpiar();
+      tablaCreditosCliente.ajax.reload();
 
-            listarSaldos();
-
-            tablaCreditosCliente.ajax.reload();
-
-            tablaCuotasCredito.ajax.reload();
-        },
-        error: function (error) {
-            Swal.fire("Error", error?.responseJSON?.message || "No se pudo guardar el pago", "error");
-            $("#btnGuardarPago").text("Guardar pago").prop('disabled', false);
-        }
-    });
+      tablaCuotasCredito.ajax.reload();
+    },
+    error: function (error) {
+      Swal.fire(
+        "Error",
+        error?.responseJSON?.message || "No se pudo guardar el pago",
+        "error",
+      );
+      $("#btnGuardarPago").text("Guardar pago").prop("disabled", false);
+    },
+  });
 }
 
 function imprimirConstanciaPagoInicial(idcpc) {
-    const url = `reportes/exTicketPagoCuota.php?id=${encodeURIComponent(idcpc)}`;
+  const url = `reportes/exTicketPagoCuota.php?id=${encodeURIComponent(idcpc)}`;
 
-    const iframe = document.createElement("iframe");
+  const iframe = document.createElement("iframe");
 
-    iframe.src = url;
-    iframe.style.position = "fixed";
-    iframe.style.width = "1px";
-    iframe.style.height = "1px";
-    iframe.style.left = "-10000px";
-    iframe.style.top = "-10000px";
-    iframe.style.border = "0";
-    iframe.style.opacity = "0";
+  iframe.src = url;
+  iframe.style.position = "fixed";
+  iframe.style.width = "1px";
+  iframe.style.height = "1px";
+  iframe.style.left = "-10000px";
+  iframe.style.top = "-10000px";
+  iframe.style.border = "0";
+  iframe.style.opacity = "0";
 
-    document.body.appendChild(iframe);
+  document.body.appendChild(iframe);
 
-    iframe.onload = function () {
+  iframe.onload = function () {
+    setTimeout(() => {
+      const win = iframe.contentWindow;
+
+      const limpiar = () => {
         setTimeout(() => {
-            const win = iframe.contentWindow;
+          iframe.remove();
+        }, 1000);
+      };
 
-            const limpiar = () => {
-                setTimeout(() => {
-                    iframe.remove();
-                }, 1000);
-            };
+      win.onafterprint = limpiar;
 
-            win.onafterprint = limpiar;
+      try {
+        win.focus();
+        win.print();
+      } catch (e) {
+        console.warn("No se pudo abrir la impresión:", e);
+        limpiar();
+      }
 
-            try {
-                win.focus();
-                win.print();
-            } catch (e) {
-                console.warn("No se pudo abrir la impresión:", e);
-                limpiar();
-            }
-
-            // Fallback por si onafterprint no se dispara
-            setTimeout(() => {
-                if (document.body.contains(iframe)) {
-                    iframe.remove();
-                }
-            }, 120000);
-
-        }, 500);
-    };
+      // Fallback por si onafterprint no se dispara
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          iframe.remove();
+        }
+      }, 120000);
+    }, 500);
+  };
 }
-
 
 function limpiar() {
-    // Aquí deberías implementar la lógica para limpiar los campos del formulario
-    // Puedes resetear campos, ocultar/mostrar elementos, etc.
-    // Por ejemplo, si tienes campos específicos, podrías hacer algo como:
-    // $('#campo1').val('');
-    // $('#campo2').val('');
+  // Aquí deberías implementar la lógica para limpiar los campos del formulario
+  // Puedes resetear campos, ocultar/mostrar elementos, etc.
+  // Por ejemplo, si tienes campos específicos, podrías hacer algo como:
+  // $('#campo1').val('');
+  // $('#campo2').val('');
 }
-
 
 async function mostrar(idcpc) {
-    $('#panelMora').hide();
-    $('#panelDescuento').hide();
-    const idcaja = await verificarCaja(); // Verifica la caja abierta
+  $("#panelMora").hide();
+  $("#panelDescuento").hide();
+  const idcaja = await verificarCaja(); // Verifica la caja abierta
 
-    if (!idcaja) {
-        Swal.fire('Error', 'Debe tener una caja abierta para realizar abonos', 'error');
-        return;
-    }
+  if (!idcaja) {
+    Swal.fire(
+      "Error",
+      "Debe tener una caja abierta para realizar abonos",
+      "error",
+    );
+    return;
+  }
 
-    $("#idcaja").val(idcaja);
-    $("#getCodeModal").modal('show');
+  $("#idcaja").val(idcaja);
+  $("#getCodeModal").modal("show");
 
-    // 🔹 2. Obtener datos actualizados
-    $.post("controladores/cuentascobrar.php?op=mostrar",
-        {
-            idcpc: idcpc
-        },
-        function (response) {
-            const data = response;
-            var total_venta = parseFloat(data.total_venta);
-            var interes = total_venta * (data.interes / 100);
-            $('#documento').text(data.tipo_comprobante + " : " + data.serie_comprobante + " - " + data.num_comprobante);
-            $("#deutaTotal").text(parseFloat(data.deuda).toFixed(2));
-            $("#valorVenta").text(total_venta.toFixed(2));
-            $("#valorInteres").text(interes.toFixed(2));
-            $("#montoAdeudado").val(parseFloat(data.total_pagar).toFixed(2));
-            $("#idcpc").val(data.idcpc);
-            if (data.dias_mora) {
-                $('#panelMora').show();
-            }
-            $("#montoMora").text(data.mora_total);
-            $("#montoMoraPagar").text(data.mora);
-            $("#diasRetraso").text(data.dias_mora);
-            if (data.descuento_total > 0) {
-                $('#panelDescuento').show();
-            }
-            $("#porcentajeDescuento").text(data.porcentaje_descuento);
-            $("#montoDescuento").text(data.descuento_total);
-            $("#diasAnticipacion").text(data.dias_descuento);
+  // 🔹 2. Obtener datos actualizados
+  $.post(
+    "controladores/cuentascobrar.php?op=mostrar",
+    {
+      idcpc: idcpc,
+    },
+    function (response) {
+      const data = response;
+      var total_venta = parseFloat(data.total_venta);
+      var interes = total_venta * (data.interes / 100);
+      $("#documento").text(
+        data.tipo_comprobante +
+          " : " +
+          data.serie_comprobante +
+          " - " +
+          data.num_comprobante,
+      );
+      $("#deutaTotal").text(parseFloat(data.deuda).toFixed(2));
+      $("#valorVenta").text(total_venta.toFixed(2));
+      $("#valorInteres").text(interes.toFixed(2));
+      $("#montoAdeudado").val(parseFloat(data.total_pagar).toFixed(2));
+      $("#idcpc").val(data.idcpc);
+      if (data.dias_mora) {
+        $("#panelMora").show();
+      }
+      $("#montoMora").text(data.mora_total);
+      $("#montoMoraPagar").text(data.mora);
+      $("#diasRetraso").text(data.dias_mora);
+      if (data.descuento_total > 0) {
+        $("#panelDescuento").show();
+      }
+      $("#porcentajeDescuento").text(data.porcentaje_descuento);
+      $("#montoDescuento").text(data.descuento_total);
+      $("#diasAnticipacion").text(data.dias_descuento);
 
-            $("#idventa").val(data.idventa);
-            $("#fechavencimiento").text(data.fechavencimiento);
-
-        });
+      $("#idventa").val(data.idventa);
+      $("#fechavencimiento").text(data.fechavencimiento);
+    },
+  );
 }
 
-
 function mostrarAbonos(idcpc) {
+  $("#getCodeModal2").modal("show");
 
-    $("#getCodeModal2").modal('show');
+  $.post(
+    "controladores/cuentascobrar.php?op=mostrar",
+    { idcpc: idcpc },
+    function (response) {
+      const data = response;
 
-    $.post("controladores/cuentascobrar.php?op=mostrar", { idcpc: idcpc }, function (response) {
+      var label = document.querySelector("#abonoTotal2");
+      label.textContent = data.deuda;
 
-        const data = response;
+      var label = document.querySelector("#abonoTotal");
+      label.textContent = data.abonototal;
+    },
+  );
 
-        var label = document.querySelector('#abonoTotal2');
-        label.textContent = data.deuda;
+  $.ajax({
+    url: "controladores/cuentascobrar.php",
+    type: "GET",
+    dataType: "json",
+    data: {
+      op: "listarDetalle",
+      idcpc: idcpc,
+    },
+    success: function (response) {
+      let html = "";
 
-        var label = document.querySelector('#abonoTotal');
-        label.textContent = data.abonototal;
-
-    });
-
-    $.ajax({
-        url: "controladores/cuentascobrar.php",
-        type: "GET",
-        dataType: "json",
-        data: {
-            op: "listarDetalle",
-            idcpc: idcpc
-        },
-        success: function (response) {
-            let html = "";
-
-            if (!response.length) {
-                html = `
+      if (!response.length) {
+        html = `
                     <tr>
                         <td colspan="7" class="text-center text-muted">
                             No hay comprobantes adjuntos
                         </td>
                     </tr>
                 `;
-            } else {
-                response.forEach(function (item) {
-                    html += `
+      } else {
+        response.forEach(function (item) {
+          html += `
                         <tr>
                             <td>${item.created_at}</td>
                             <td>
-                                ${item.formapago || 'N/A'}
+                                ${item.formapago || "N/A"}
                             </td>
                             <td>
-                                ${item.comprobante ? '<i class="fas fa-file-image text-primary"></i>' : ''}
-                                ${item.comprobante || ''}
+                                ${item.comprobante ? '<i class="fas fa-file-image text-primary"></i>' : ""}
+                                ${item.comprobante || ""}
                             </td>
                             <td>
                                 ${item.montopagado}
@@ -982,13 +993,17 @@ function mostrarAbonos(idcpc) {
                                 ${item.montotarjeta}
                             </td>
                             <td>
-                                ${item.op || ''}
+                                ${item.op || ""}
                             </td>
                             <td>
-                                ${item.banco || ''}
+                                ${item.banco || ""}
                             </td>
                            <td class="text-end">
-                                ${item.formapago === 'Efectivo' ? '' : item.comprobante ? `
+                                ${
+                                  item.formapago === "Efectivo"
+                                    ? ""
+                                    : item.comprobante
+                                      ? `
                                             <a
                                                 href="files/cuentascobrar/${item.comprobante}"
                                                 target="_blank"
@@ -997,7 +1012,7 @@ function mostrarAbonos(idcpc) {
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         `
-                            : `
+                                      : `
                                             <button
                                                 type="button"
                                                 class="btn btn-sm btn-outline-primary"
@@ -1006,278 +1021,300 @@ function mostrarAbonos(idcpc) {
                                                 <i class="fas fa-upload"></i>
                                             </button>
                                         `
-                        }
+                                }
                             </td>
                         </tr>
                     `;
-                });
-            }
+        });
+      }
 
-            $("#listaComprobantes").html(html);
-        }
-    });
+      $("#listaComprobantes").html(html);
+    },
+  });
 }
 
 function toNumber(valor) {
-    if (valor === null || valor === undefined) return 0;
-    return parseFloat((valor + '').replace(/,/g, '')) || 0;
+  if (valor === null || valor === undefined) return 0;
+  return parseFloat((valor + "").replace(/,/g, "")) || 0;
 }
 
 function verDetalleCliente(idcliente, nombreCliente) {
-    var fecha_inicio = $("#fecha_inicio").val();
-    var fecha_fin = $("#fecha_fin").val();
-    var idsucursal = $("#idsucursal2").val();
+  var fecha_inicio = $("#fecha_inicio").val();
+  var fecha_fin = $("#fecha_fin").val();
+  var idsucursal = $("#idsucursal2").val();
 
-    if (!nombreCliente || nombreCliente === "Todos") {
-        nombreCliente = "Cliente";
-    }
+  if (!nombreCliente || nombreCliente === "Todos") {
+    nombreCliente = "Cliente";
+  }
 
-    $("#detalleClienteTitulo").text(nombreCliente);
-    $('#panelSuperiorCxC').hide();
-    $('#vistaListaClientes').hide();
-    $('#vistaCreditosCliente').show();
+  $("#detalleClienteTitulo").text(nombreCliente);
+  $("#panelSuperiorCxC").hide();
+  $("#vistaListaClientes").hide();
+  $("#vistaCreditosCliente").show();
 
-    tablaCreditosCliente = $("#tbllistadoCreditosCliente").dataTable({
-        "aProcessing": true,
-        "aServerSide": false,
-        "responsive": true,
-        "lengthChange": false,
-        "autoWidth": false,
-        "ajax": {
-            url: "controladores/cuentascobrar.php?op=listar_creditos_cliente",
-            data: {
-                idcliente: idcliente,
-                fecha_inicio: fecha_inicio,
-                fecha_fin: fecha_fin,
-                idsucursal: idsucursal
-            },
-            type: "get",
-            dataType: "json",
-            dataSrc: function (json) {
-                return json && json.aaData ? json.aaData : [];
-            },
-            error: function (e) {
-                console.log(e.responseText);
-            }
+  tablaCreditosCliente = $("#tbllistadoCreditosCliente")
+    .dataTable({
+      aProcessing: true,
+      aServerSide: false,
+      responsive: true,
+      lengthChange: false,
+      autoWidth: false,
+      ajax: {
+        url: "controladores/cuentascobrar.php?op=listar_creditos_cliente",
+        data: {
+          idcliente: idcliente,
+          fecha_inicio: fecha_inicio,
+          fecha_fin: fecha_fin,
+          idsucursal: idsucursal,
         },
-        "bDestroy": true,
-        "iDisplayLength": 10
-    }).DataTable();
+        type: "get",
+        dataType: "json",
+        dataSrc: function (json) {
+          return json && json.aaData ? json.aaData : [];
+        },
+        error: function (e) {
+          console.log(e.responseText);
+        },
+      },
+      bDestroy: true,
+      iDisplayLength: 10,
+    })
+    .DataTable();
 }
 
 function volverListaClientes() {
-    $('#vistaCreditosCliente').hide();
-    $('#vistaListaClientes').show();
-    $('#panelSuperiorCxC').show();
-    listaCreditos.load();
+  $("#vistaCreditosCliente").hide();
+  $("#vistaListaClientes").show();
+  $("#panelSuperiorCxC").show();
+  listaCreditos.load();
 }
-
 
 function listarHistorialSeguimiento(idventa) {
-    $('#modalComentario').modal('show');
-    tbllistadohistorial = $("#tbllistadohistorial").dataTable({
-        "aProcessing": true,
-        "aServerSide": false,
-        "responsive": true,
-        "lengthChange": false,
-        "autoWidth": false,
-        "ajax": {
-            url: "controladores/cuentascobrar.php?op=listarHistorialSeguimiento",
-            data: {
-                idventa: idventa
-            },
-            type: "get",
-            dataType: "json",
-            dataSrc: function (json) {
-                return json && json.aaData ? json.aaData : [];
-            },
-            error: function (e) {
-                console.log(e.responseText);
-            }
+  $("#modalComentario").modal("show");
+  tbllistadohistorial = $("#tbllistadohistorial")
+    .dataTable({
+      aProcessing: true,
+      aServerSide: false,
+      responsive: true,
+      lengthChange: false,
+      autoWidth: false,
+      ajax: {
+        url: "controladores/cuentascobrar.php?op=listarHistorialSeguimiento",
+        data: {
+          idventa: idventa,
         },
-        "bDestroy": true,
-        "iDisplayLength": 10
-    }).DataTable();
+        type: "get",
+        dataType: "json",
+        dataSrc: function (json) {
+          return json && json.aaData ? json.aaData : [];
+        },
+        error: function (e) {
+          console.log(e.responseText);
+        },
+      },
+      bDestroy: true,
+      iDisplayLength: 10,
+    })
+    .DataTable();
 }
 
-
 function listarHistorialIncidncias(idventa) {
-    $('#modalIncidencias').modal('show');
-    tbllistadohistorial = $("#tbllistadohistorialIncidencias").dataTable({
-        "aProcessing": true,
-        "aServerSide": false,
-        "responsive": true,
-        "lengthChange": false,
-        "autoWidth": false,
-        "ajax": {
-            url: "controladores/cuentascobrar.php?op=listarHistorialIncidencias",
-            data: {
-                idventa: idventa
-            },
-            type: "get",
-            dataType: "json",
-            dataSrc: function (json) {
-                return json && json.aaData ? json.aaData : [];
-            },
-            error: function (e) {
-                console.log(e.responseText);
-            }
+  $("#modalIncidencias").modal("show");
+  tbllistadohistorial = $("#tbllistadohistorialIncidencias")
+    .dataTable({
+      aProcessing: true,
+      aServerSide: false,
+      responsive: true,
+      lengthChange: false,
+      autoWidth: false,
+      ajax: {
+        url: "controladores/cuentascobrar.php?op=listarHistorialIncidencias",
+        data: {
+          idventa: idventa,
         },
-        "bDestroy": true,
-        "iDisplayLength": 10
-    }).DataTable();
+        type: "get",
+        dataType: "json",
+        dataSrc: function (json) {
+          return json && json.aaData ? json.aaData : [];
+        },
+        error: function (e) {
+          console.log(e.responseText);
+        },
+      },
+      bDestroy: true,
+      iDisplayLength: 10,
+    })
+    .DataTable();
 }
 
 function guardarComentarioCredito() {
-    let comentario = $('#comentarioCredito').val();
+  let comentario = $("#comentarioCredito").val();
 
-    if (comentario === '') {
-        notificacionToast('warning', 'Escribe un comentario');
-        return;
-    }
+  if (comentario === "") {
+    notificacionToast("warning", "Escribe un comentario");
+    return;
+  }
 
-    $.post("controladores/cuentascobrar.php?op=guardar_comentario", {
-        idventacuentacobrar: $('#idventacuentacobrar').val(),
-        comentario: comentario
-    }, function (response) {
-        var data = JSON.parse(response);
-        if (data.status) {
-            notificacionToast('success', data.mensaje);
-            $('#modalComentario').modal('hide');
-            $('#comentarioCredito').val('');
-            verCuotasCredito(data.idventa, data.saldoPendiente, data.documento, data.nota)
-        } else {
-            notificacionToast('error', data.mensaje);
-        }
-
-    });
+  $.post(
+    "controladores/cuentascobrar.php?op=guardar_comentario",
+    {
+      idventacuentacobrar: $("#idventacuentacobrar").val(),
+      comentario: comentario,
+    },
+    function (response) {
+      var data = JSON.parse(response);
+      if (data.status) {
+        notificacionToast("success", data.mensaje);
+        $("#modalComentario").modal("hide");
+        $("#comentarioCredito").val("");
+        verCuotasCredito(
+          data.idventa,
+          data.saldoPendiente,
+          data.documento,
+          data.nota,
+        );
+      } else {
+        notificacionToast("error", data.mensaje);
+      }
+    },
+  );
 }
 
 function verCuotasCredito(idventa, saldoPendiente, documento, nota) {
-    let comentario = nota;
-    $('#idventacuentacobrar').val(idventa);
-    ventaActualCuotas = idventa;
-    $('#tituloCreditoCuotas').text(documento ? documento : '');
+  let comentario = nota;
+  $("#idventacuentacobrar").val(idventa);
+  ventaActualCuotas = idventa;
+  $("#tituloCreditoCuotas").text(documento ? documento : "");
 
-    $("#modalCuotasCredito").modal("show");
+  $("#modalCuotasCredito").modal("show");
 
-    let botones = [
-        {
-            text: '<i class="fas fa-comment-dots"></i> Fechas programadas',
-            className: 'btn btn-info btn-sm btn-comment',
-            action: function () {
-                listarHistorialSeguimiento(idventa);
-            }
-        },
-        {
-            text: '<i class="fas fa-comment-dots"></i> Incidencias',
-            className: 'btn btn-info btn-sm btn-incidencias',
-            action: function () {
-                listarHistorialIncidncias(idventa);
-            }
-        },
-        {
-            text: '<i class="fas fa-download"></i> Descargar informe',
-            className: 'btn btn-warning btn-sm btn-descargar',
-            action: function () {
-                dscargarHistorial(idventa);
-            }
-        }
-    ];
+  let botones = [
+    {
+      text: '<i class="fas fa-comment-dots"></i> Fechas programadas',
+      className: "btn btn-info btn-sm btn-comment",
+      action: function () {
+        listarHistorialSeguimiento(idventa);
+      },
+    },
+    {
+      text: '<i class="fas fa-comment-dots"></i> Incidencias',
+      className: "btn btn-info btn-sm btn-incidencias",
+      action: function () {
+        listarHistorialIncidncias(idventa);
+      },
+    },
+    {
+      text: '<i class="fas fa-download"></i> Descargar informe',
+      className: "btn btn-warning btn-sm btn-descargar",
+      action: function () {
+        dscargarHistorial(idventa);
+      },
+    },
+  ];
 
-    if (saldoActualCuotas > 0) {
-        botones.push({
-            text: '<i class="fas fa-hand-holding-usd"></i> Amortizar',
-            className: 'btn btn-success btn-sm btn-amortiar',
-            action: function () {
-                amortizar(idventa);
-            }
-        });
-    }
-
-    tablaCuotasCredito = $("#tbllistadoCuotasCredito").DataTable({
-        aProcessing: true,
-        aServerSide: true,
-        responsive: true,
-        lengthChange: false,
-        autoWidth: true,
-
-        dom:
-            '<"row mb-1"' +
-            '<"col-md-12 msgComentario">' +
-            '>' +
-            '<"row"' +
-            '<"col-md-7"B>' +
-            '<"col-md-5 text-right"f>' +
-            '>' +
-            't' +
-            '<"row"' +
-            '<"col-md-6"i>' +
-            '<"col-md-6"p>' +
-            '>',
-        buttons: botones,
-        ajax: {
-            url: "controladores/cuentascobrar.php?op=listar_cuotas_credito",
-            data: { idventa: idventa },
-            type: "get",
-            dataType: "json"
-        },
-
-        bDestroy: true,
-        iDisplayLength: 10,
+  if (saldoActualCuotas > 0) {
+    botones.push({
+      text: '<i class="fas fa-hand-holding-usd"></i> Amortizar',
+      className: "btn btn-success btn-sm btn-amortiar",
+      action: function () {
+        amortizar(idventa);
+      },
     });
+  }
+
+  tablaCuotasCredito = $("#tbllistadoCuotasCredito").DataTable({
+    aProcessing: true,
+    aServerSide: true,
+    responsive: true,
+    lengthChange: false,
+    autoWidth: true,
+
+    dom:
+      '<"row mb-1"' +
+      '<"col-md-12 msgComentario">' +
+      ">" +
+      '<"row"' +
+      '<"col-md-7"B>' +
+      '<"col-md-5 text-right"f>' +
+      ">" +
+      "t" +
+      '<"row"' +
+      '<"col-md-6"i>' +
+      '<"col-md-6"p>' +
+      ">",
+    buttons: botones,
+    ajax: {
+      url: "controladores/cuentascobrar.php?op=listar_cuotas_credito",
+      data: { idventa: idventa },
+      type: "get",
+      dataType: "json",
+    },
+
+    bDestroy: true,
+    iDisplayLength: 10,
+  });
 }
 let inicialCuota = 0;
 
 function encrypt_decrypt(action, string) {
-    if (action === 'encrypt') {
-        // Encriptación simple pero efectiva para este caso
-        const encoded = btoa(string);
-        return encoded.replace(/=/g, '').replace(/\//g, '_').replace(/\+/g, '-');
-    }
-    return string;
+  if (action === "encrypt") {
+    // Encriptación simple pero efectiva para este caso
+    const encoded = btoa(string);
+    return encoded.replace(/=/g, "").replace(/\//g, "_").replace(/\+/g, "-");
+  }
+  return string;
 }
 
 function dscargarHistorial(idventa) {
-    const encryptedId = encrypt_decrypt('encrypt', idventa);
-    const url = 'public/docs_service/cronograma_pagos?idventa=' + encryptedId;
-    const win = window.open(url, '_blank');
-    if (!win) {
-        alert('Por favor habilita ventanas emergentes o descarga manualmente: ' + url);
-        return;
-    }
+  const encryptedId = encrypt_decrypt("encrypt", idventa);
+  const url = "public/docs_service/cronograma_pagos?idventa=" + encryptedId;
+  const win = window.open(url, "_blank");
+  if (!win) {
+    alert(
+      "Por favor habilita ventanas emergentes o descarga manualmente: " + url,
+    );
+    return;
+  }
 }
 
 $("#formapagoAmortizar").change(function (e) {
-    if ($(this).val() != 'Efectivo') {
-        $("#panelTransferencia").show();
-    } else {
-        $("#panelTransferencia").hide();
-    }
+  if ($(this).val() != "Efectivo") {
+    $("#panelTransferencia").show();
+  } else {
+    $("#panelTransferencia").hide();
+  }
 });
 
 async function amortizar(idventa) {
-    const idcaja = await verificarCaja();
-    $("#panelDescuentoAmortizar").hide();
-    if (!idcaja) {
-        Swal.fire('Error', 'Debe tener una caja abierta para realizar la amortización', 'error');
+  const idcaja = await verificarCaja();
+  $("#panelDescuentoAmortizar").hide();
+  if (!idcaja) {
+    Swal.fire(
+      "Error",
+      "Debe tener una caja abierta para realizar la amortización",
+      "error",
+    );
+    return;
+  }
+
+  $.ajax({
+    url: "controladores/cuentascobrar.php?op=cuotasPorPagar",
+    data: { idventa: idventa },
+    type: "GET",
+    success: function (response) {
+      let cuotas = JSON.parse(response);
+      let tieneMora = cuotas.some((c) => parseFloat(c.mora_calculada || 0) > 0);
+      if (tieneMora) {
+        Swal.fire(
+          "Error",
+          "No se puede amortizar porque existen cuotas con mora.",
+          "error",
+        );
         return;
-    }
+      }
+      let totalCuotas = cuotas.length;
 
-    $.ajax({
-        url: 'controladores/cuentascobrar.php?op=cuotasPorPagar',
-        data: { idventa: idventa },
-        type: "GET",
-        success: function (response) {
-            let cuotas = JSON.parse(response);
-            let tieneMora = cuotas.some(c => parseFloat(c.mora_calculada || 0) > 0);
-            if (tieneMora) {
-                Swal.fire('Error', 'No se puede amortizar porque existen cuotas con mora.', 'error');
-                return;
-            }
-            let totalCuotas = cuotas.length;
-
-            $("#contenedorRange").html(`
+      $("#contenedorRange").html(`
                 <input type="range"
                     id="rangeCuotas"
                     min="1"
@@ -1286,100 +1323,109 @@ async function amortizar(idventa) {
                     step="1">
             `);
 
-            function calcularTotal(cantidad) {
+      function calcularTotal(cantidad) {
+        let total = 0;
+        let descuento = 0;
 
-                let total = 0;
-                let descuento = 0;
-
-                for (let i = 0; i < cantidad; i++) {
-                    total += parseFloat(cuotas[i].deuda);
-                    descuento += parseFloat(cuotas[i].descuento_calculado || 0);
-                }
-
-                let final = total - descuento;
-                if (descuento > 0) {
-                    $("#panelDescuentoAmortizar").show();
-                }
-                $("#montoDescuentoAmortizar").html(descuento.toFixed(2));
-                $("#cantidadSeleccionada").val(cantidad);
-                $("#totalPagar").text(final.toFixed(2));
-                $("#montoPagarAmortizar").val(final.toFixed(2));
-            }
-
-            // INIT
-            calcularTotal(totalCuotas);
-
-            $("#rangeCuotas").off("input").on("input", function () {
-                let cantidad = parseInt($(this).val());
-
-                calcularTotal(cantidad);
-            });
-
-            // INPUT manual (si quieres permitirlo)
-            $("#cantidadSeleccionada").off("input").on("input", function () {
-                let cantidad = parseInt($(this).val());
-
-                if (!cantidad || cantidad < 1) return;
-
-                if (cantidad > totalCuotas) {
-                    cantidad = totalCuotas;
-                }
-
-                $("#rangeCuotas").val(cantidad); // 🔥 sincroniza slider
-                calcularTotal(cantidad);
-            });
-
-            $('#modalAmortizar').modal('show');
+        for (let i = 0; i < cantidad; i++) {
+          total += parseFloat(cuotas[i].deuda);
+          descuento += parseFloat(cuotas[i].descuento_calculado || 0);
         }
-    })
 
-    $('#idcaja').val(idcaja);
-    $('#idventa_amortizar').val(ventaActualCuotas);
-    $('#idcliente_amortizar').val('');
-    $('#fecha_inicio_amortizar').val('');
-    $('#fecha_fin_amortizar').val('');
-    $('#montoPagarAmortizar').val('');
-    $('#montoAdeudadoAmortizar').val(saldoActualCuotas.toFixed(2));
-    $('#deudaTotalAmortizar').html(saldoActualCuotas.toFixed(2));
-};
-
-
-function verEstadoCuenta(idcpc) {
-    $.get(
-        "controladores/cuentascobrar.php?op=estado_cuenta",
-        { idcpc: idcpc },
-        function (data) {
-            $("#estadoCuentaContenido").html(data);
-            $("#modalEstadoCuenta").modal("show");
+        let final = total - descuento;
+        if (descuento > 0) {
+          $("#panelDescuentoAmortizar").show();
         }
-    );
+        $("#montoDescuentoAmortizar").html(descuento.toFixed(2));
+        $("#cantidadSeleccionada").val(cantidad);
+        $("#totalPagar").text(final.toFixed(2));
+        $("#montoPagarAmortizar").val(final.toFixed(2));
+      }
+
+      // INIT
+      calcularTotal(totalCuotas);
+
+      $("#rangeCuotas")
+        .off("input")
+        .on("input", function () {
+          let cantidad = parseInt($(this).val());
+
+          calcularTotal(cantidad);
+        });
+
+      // INPUT manual (si quieres permitirlo)
+      $("#cantidadSeleccionada")
+        .off("input")
+        .on("input", function () {
+          let cantidad = parseInt($(this).val());
+
+          if (!cantidad || cantidad < 1) return;
+
+          if (cantidad > totalCuotas) {
+            cantidad = totalCuotas;
+          }
+
+          $("#rangeCuotas").val(cantidad); // 🔥 sincroniza slider
+          calcularTotal(cantidad);
+        });
+
+      $("#modalAmortizar").modal("show");
+    },
+  });
+
+  $("#idcaja").val(idcaja);
+  $("#idventa_amortizar").val(ventaActualCuotas);
+  $("#idcliente_amortizar").val("");
+  $("#fecha_inicio_amortizar").val("");
+  $("#fecha_fin_amortizar").val("");
+  $("#montoPagarAmortizar").val("");
+  $("#montoAdeudadoAmortizar").val(saldoActualCuotas.toFixed(2));
+  $("#deudaTotalAmortizar").html(saldoActualCuotas.toFixed(2));
 }
 
+function verEstadoCuenta(idcpc) {
+  $.get(
+    "controladores/cuentascobrar.php?op=estado_cuenta",
+    { idcpc: idcpc },
+    function (data) {
+      $("#estadoCuentaContenido").html(data);
+      $("#modalEstadoCuenta").modal("show");
+    },
+  );
+}
 
 // programar compromiso de pago
 const tomorrow = new Date();
 tomorrow.setDate(tomorrow.getDate() + 1);
 
-document.getElementById("fecha_compromiso").min =
-    tomorrow.toISOString().split("T")[0];
+document.getElementById("fecha_compromiso").min = tomorrow
+  .toISOString()
+  .split("T")[0];
 
-function programarCompromiso(idcpc, idventa, idcliente, saldo, dias_mora, mora) {
-    // 1. Limpiar por si el modal ya se había abierto antes
-    $("#contenedorMensajeMora").empty();
+function programarCompromiso(
+  idcpc,
+  idventa,
+  idcliente,
+  saldo,
+  dias_mora,
+  mora,
+) {
+  // 1. Limpiar por si el modal ya se había abierto antes
+  $("#contenedorMensajeMora").empty();
 
-    // 2. Llenar los campos ocultos
-    $("#idcpcProgramado").val(idcpc);
-    $("#idventaProgramado").val(idventa);
-    $("#idclienteProgramado").val(idcliente);
-    $("#monto").val(saldo);
-    $("#fecha_compromiso").val('');
-    $("#observacion").val('');
+  // 2. Llenar los campos ocultos
+  $("#idcpcProgramado").val(idcpc);
+  $("#idventaProgramado").val(idventa);
+  $("#idclienteProgramado").val(idcliente);
+  $("#monto").val(saldo);
+  $("#fecha_compromiso").val("");
+  $("#observacion").val("");
 
-    // 3. Construir el mensaje de alerta (Usando clases de Bootstrap)
-    // Formateamos la mora a 2 decimales asumiendo que es una moneda (ej. Soles/Dólares)
-    let moraFormateada = parseFloat(mora).toFixed(2);
+  // 3. Construir el mensaje de alerta (Usando clases de Bootstrap)
+  // Formateamos la mora a 2 decimales asumiendo que es una moneda (ej. Soles/Dólares)
+  let moraFormateada = parseFloat(mora).toFixed(2);
 
-    let htmlAlerta = `
+  let htmlAlerta = `
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <h5 class="alert-heading"><i class="fas fa-exclamation-triangle mr-2"></i>¡Cuenta Pendiente con Mora!</h5>
             <p class="mb-0">
@@ -1393,248 +1439,237 @@ function programarCompromiso(idcpc, idventa, idcliente, saldo, dias_mora, mora) 
         </div>
     `;
 
-    // 4. Inyectar el mensaje en el modal
-    $("#contenedorMensajeMora").html(htmlAlerta);
+  // 4. Inyectar el mensaje en el modal
+  $("#contenedorMensajeMora").html(htmlAlerta);
 
-    // 5. Abrir el modal
-    $("#modalCompromisoPago").modal("show");
+  // 5. Abrir el modal
+  $("#modalCompromisoPago").modal("show");
 }
 
 $("#formCompromisoPago").submit(function (e) {
+  e.preventDefault();
+  if ($("#fecha_compromiso").val() === "") {
+    return Swal.fire("Error", "Seleccione una fecha", "warning");
+  }
 
-    e.preventDefault();
-    if ($("#fecha_compromiso").val() === "") {
-        return Swal.fire("Error", "Seleccione una fecha", "warning");
-    }
+  if ($("#monto").val() <= 0) {
+    return Swal.fire("Error", "Ingrese un monto válido", "warning");
+  }
+  const data = new FormData(this);
 
-    if ($("#monto").val() <= 0) {
-        return Swal.fire("Error", "Ingrese un monto válido", "warning");
-    }
-    const data = new FormData(this);
+  $.ajax({
+    url: "controladores/cuentascobrar.php?op=guardarCompromisoPago",
+    type: "POST",
+    data: data,
+    contentType: false,
+    processData: false,
 
-    $.ajax({
-        url: "controladores/cuentascobrar.php?op=guardarCompromisoPago",
-        type: "POST",
-        data: data,
-        contentType: false,
-        processData: false,
-
-        beforeSend: function () {
-
-            Swal.fire({
-                title: 'Guardando...',
-                text: 'Espere un momento',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
+    beforeSend: function () {
+      Swal.fire({
+        title: "Guardando...",
+        text: "Espere un momento",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
         },
+      });
+    },
 
-        success: function (response) {
+    success: function (response) {
+      Swal.close();
 
-            Swal.close();
+      let r = JSON.parse(response);
 
-            let r = JSON.parse(response);
+      if (r.status) {
+        Swal.fire({
+          icon: "success",
+          title: "Correcto",
+          text: r.msg,
+        });
 
-            if (r.status) {
+        $("#modalCompromisoPago").modal("hide");
+        $("#formCompromisoPago")[0].reset();
 
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Correcto',
-                    text: r.msg
-                });
+        tabla.ajax.reload(null, false);
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: r.msg,
+        });
+      }
+    },
 
-                $("#modalCompromisoPago").modal("hide");
-                $("#formCompromisoPago")[0].reset();
+    error: function () {
+      Swal.close();
 
-                tabla.ajax.reload(null, false);
-
-            } else {
-
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: r.msg
-                });
-
-            }
-
-        },
-
-        error: function () {
-
-            Swal.close();
-
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Ocurrió un error al procesar la solicitud'
-            });
-
-        }
-
-    });
-
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Ocurrió un error al procesar la solicitud",
+      });
+    },
+  });
 });
 
 function verEstadoCuentaCliente(idcliente, fecha_inicio, fecha_fin) {
+  $("#estadoCuentaContenido").html(
+    "<div class='text-center'><i class='fas fa-spinner fa-spin'></i> Cargando...</div>",
+  );
 
-    $("#estadoCuentaContenido").html(
-        "<div class='text-center'><i class='fas fa-spinner fa-spin'></i> Cargando...</div>"
-    );
+  $("#modalEstadoCuenta").modal("show");
 
-    $("#modalEstadoCuenta").modal("show");
-
-    $.get(
-        "controladores/cuentascobrar.php?op=estado_cuenta_cliente",
-        {
-            idcliente: idcliente,
-            fecha_inicio: fecha_inicio,
-            fecha_fin: fecha_fin
-        },
-        function (data) {
-            $("#estadoCuentaContenido").html(data);
-        }
-    );
+  $.get(
+    "controladores/cuentascobrar.php?op=estado_cuenta_cliente",
+    {
+      idcliente: idcliente,
+      fecha_inicio: fecha_inicio,
+      fecha_fin: fecha_fin,
+    },
+    function (data) {
+      $("#estadoCuentaContenido").html(data);
+    },
+  );
 }
 
 // Ajuste para modales apilados: asegura que el modal nuevo quede al frente.
-$(document).on('show.bs.modal', '.modal', function () {
-    var zIndex = 1040 + (10 * $('.modal:visible').length);
-    $(this).css('z-index', zIndex);
-    setTimeout(function () {
-        $('.modal-backdrop').not('.modal-stack')
-            .css('z-index', zIndex - 1)
-            .addClass('modal-stack');
-    }, 0);
+$(document).on("show.bs.modal", ".modal", function () {
+  var zIndex = 1040 + 10 * $(".modal:visible").length;
+  $(this).css("z-index", zIndex);
+  setTimeout(function () {
+    $(".modal-backdrop")
+      .not(".modal-stack")
+      .css("z-index", zIndex - 1)
+      .addClass("modal-stack");
+  }, 0);
 });
 
-$(document).on('hidden.bs.modal', '.modal', function () {
-    if ($('.modal:visible').length) {
-        $('body').addClass('modal-open');
-    }
+$(document).on("hidden.bs.modal", ".modal", function () {
+  if ($(".modal:visible").length) {
+    $("body").addClass("modal-open");
+  }
 });
 
 function verUbicacionCliente(latitude, longitude, direccion) {
-    if (!latitude && !longitude) {
-        notificacionToast('warning', 'El cliente no tiene ubicacion configurada');
-        return;
-    };
+  if (!latitude && !longitude) {
+    notificacionToast("warning", "El cliente no tiene ubicacion configurada");
+    return;
+  }
 
-    if (direccion) {
+  if (direccion) {
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
 
-        const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`;
+    window.open(url, "_blank");
+  }
 
-        window.open(url, '_blank');
-    }
+  const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
 
-    const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
-
-    window.open(url, '_blank');
+  window.open(url, "_blank");
 }
 
 function programarVisita(idcpc, idventa, idcliente, direccion) {
-    $("#idcpc_visita").val(idcpc);
-    $("#idventa_visita").val(idventa);
-    $("#idcliente_visita").val(idcliente);
-    $("#direccion").val(direccion);
+  archivosSeleccionados = [];
+  $("#idcpc_visita").val(idcpc);
+  $("#idventa_visita").val(idventa);
+  $("#idcliente_visita").val(idcliente);
+  $("#direccion").val(direccion);
 
-    $("#modalProgramarVisita").modal("show");
-    $.post("controladores/usuario.php?op=selectEmpleado", function (r) {
-        $("#idpersonal").html(r);
-        $('#idpersonal').select2();
-    });
+  $("#id").val("");
+  $("#tipo_visita").val("");
+  $("#prioridad").val("");
+  $("#estado").val("");
+  $("#fecha_programada").val("");
+  $("#fecha_final").val("");
+  $("#descripcion").val("");
+
+  $("#modalProgramarVisita").modal("show");
+  $.post("controladores/usuario.php?op=selectEmpleado", function (r) {
+    $("#idpersonal").html(r);
+    $("#idpersonal").select2();
+  });
+
+  setTimeout(function () {
+    renderArchivos();
+  }, 300);
 }
 
-
 $("#formProgramarVisita").submit(function (e) {
+  e.preventDefault();
+  const idventa = $("#idventa_visita").val() || null;
+  var formData = new FormData(this);
 
-    e.preventDefault();
+  archivosSeleccionados.forEach(function (file) {
+    formData.append("adjuntos[]", file);
+  });
 
-    var formData = new FormData(this);
+  $.ajax({
+    url: "controladores/cuentascobrar.php?op=guardarVisita",
+    type: "POST",
+    data: formData,
+    contentType: false,
+    processData: false,
 
-    archivosSeleccionados.forEach(function (file) {
-        formData.append('adjuntos[]', file);
-    });
-
-    $.ajax({
-        url: "controladores/cuentascobrar.php?op=guardarVisita",
-        type: "POST",
-        data: formData,
-        contentType: false,
-        processData: false,
-
-        success: function (response) {
-            const data = JSON.parse(response);
-            if (!data.success) {
-                Swal.fire({
-                    title: "Cliente",
-                    icon: "error",
-                    text: data.message,
-                });
-                return;
-            }
-            Swal.fire({
-                title: "Cliente",
-                icon: "success",
-                text: data.message,
-            });
-            $("#formProgramarVisita")[0].reset();
-            $("#modalProgramarVisita").modal("hide");
-            tabla.ajax.reload();
-        }
-    });
-
+    success: function (response) {
+      const data = JSON.parse(response);
+      if (!data.success) {
+        Swal.fire({
+          title: "Cliente",
+          icon: "error",
+          text: data.message,
+        });
+        return;
+      }
+      Swal.fire({
+        title: "Cliente",
+        icon: "success",
+        text: data.message,
+      });
+      $("#formProgramarVisita")[0].reset();
+      $("#modalProgramarVisita").modal("hide");
+      tbllistadohistorial.ajax.reload();
+      if (idventa) {
+        listarHistorialSeguimiento(idventa);
+      }
+    },
+  });
 });
 
 $("#adjuntos").on("change", function (e) {
+  let nuevosArchivos = Array.from(e.target.files);
 
-    let nuevosArchivos = Array.from(e.target.files);
+  nuevosArchivos.forEach((file) => {
+    archivosSeleccionados.push(file);
+  });
 
-    nuevosArchivos.forEach(file => {
+  renderArchivos();
 
-        archivosSeleccionados.push(file);
-
-    });
-
-    renderArchivos();
-
-    $("#adjuntos").val("");
+  $("#adjuntos").val("");
 });
 
 function renderArchivos() {
+  $("#previewArchivos").html("");
 
-    $("#previewArchivos").html("");
+  archivosSeleccionados.forEach((archivo, index) => {
+    let nombre = archivo.name || archivo.archivo || archivo.nombre;
+    let size = (archivo.size / 1024 / 1024).toFixed(2);
 
-    archivosSeleccionados.forEach((archivo, index) => {
+    let icono = "fa-file";
 
-        let nombre = archivo.name;
-        let size = (archivo.size / 1024 / 1024).toFixed(2);
+    if (nombre.match(/\.(jpg|jpeg|png|webp)$/i)) {
+      icono = "fa-file-image text-primary";
+    } else if (nombre.match(/\.(pdf)$/i)) {
+      icono = "fa-file-pdf text-danger";
+    } else if (nombre.match(/\.(doc|docx)$/i)) {
+      icono = "fa-file-word text-info";
+    } else if (nombre.match(/\.(xls|xlsx)$/i)) {
+      icono = "fa-file-excel text-success";
+    } else if (nombre.match(/\.(mp4)$/i)) {
+      icono = "fa-file-video text-warning";
+    } else if (nombre.match(/\.(mp3)$/i)) {
+      icono = "fa-file-audio text-secondary";
+    }
 
-        let icono = "fa-file";
-
-        if (nombre.match(/\.(jpg|jpeg|png|webp)$/i)) {
-            icono = "fa-file-image text-primary";
-        }
-        else if (nombre.match(/\.(pdf)$/i)) {
-            icono = "fa-file-pdf text-danger";
-        }
-        else if (nombre.match(/\.(doc|docx)$/i)) {
-            icono = "fa-file-word text-info";
-        }
-        else if (nombre.match(/\.(xls|xlsx)$/i)) {
-            icono = "fa-file-excel text-success";
-        }
-        else if (nombre.match(/\.(mp4)$/i)) {
-            icono = "fa-file-video text-warning";
-        }
-        else if (nombre.match(/\.(mp3)$/i)) {
-            icono = "fa-file-audio text-secondary";
-        }
-
-        $("#previewArchivos").append(`
+    $("#previewArchivos").append(`
             <div class="col-md-12 archivo-item-${index}">
                 
                 <div class="preview-item">
@@ -1670,251 +1705,290 @@ function renderArchivos() {
 
             </div>
         `);
-
-    });
-
+  });
 }
 
 function eliminarArchivo(index) {
+  archivosSeleccionados.splice(index, 1);
 
-    archivosSeleccionados.splice(index, 1);
-
-    renderArchivos();
+  renderArchivos();
 }
 
 function verArchivosAdjuntos(data) {
+  if (typeof data === "string") {
+    data = JSON.parse(data);
+  }
 
-    if (typeof data === 'string') {
-        data = JSON.parse(data);
-    }
+  let html = "";
 
-    let html = '';
-
-    if (data.length === 0) {
-
-        html = `
+  if (data.length === 0) {
+    html = `
             <div class="alert alert-warning mb-0">
                 No existen archivos adjuntos.
             </div>
         `;
+  } else {
+    data.forEach(function (item) {
+      let extension = item.archivo.split(".").pop().toLowerCase();
 
-    } else {
+      let icono = "fa-file";
 
-        data.forEach(function (item) {
+      if (["pdf"].includes(extension)) {
+        icono = "fa-file-pdf text-danger";
+      } else if (["doc", "docx"].includes(extension)) {
+        icono = "fa-file-word text-primary";
+      } else if (["xls", "xlsx"].includes(extension)) {
+        icono = "fa-file-excel text-success";
+      } else if (["jpg", "jpeg", "png", "webp"].includes(extension)) {
+        icono = "fa-file-image text-info";
+      } else if (["mp4"].includes(extension)) {
+        icono = "fa-file-video text-warning";
+      }
 
-            let extension = item.archivo.split('.').pop().toLowerCase();
-
-            let icono = 'fa-file';
-
-            if (['pdf'].includes(extension)) {
-                icono = 'fa-file-pdf text-danger';
-            }
-            else if (['doc', 'docx'].includes(extension)) {
-                icono = 'fa-file-word text-primary';
-            }
-            else if (['xls', 'xlsx'].includes(extension)) {
-                icono = 'fa-file-excel text-success';
-            }
-            else if (['jpg', 'jpeg', 'png', 'webp'].includes(extension)) {
-                icono = 'fa-file-image text-info';
-            }
-            else if (['mp4'].includes(extension)) {
-                icono = 'fa-file-video text-warning';
-            }
-
-            html += `
+      html += `
                 <div class="card mb-2">
-                    <div class="card-body d-flex justify-content-between align-items-center">
+                    <div class="card-body row d-flex justify-content-between align-items-center">
 
-                        <div>
+                        <div class="col-md-10">
                             <i class="fas ${icono} fa-lg mr-2"></i>
                             ${item.nombre_original}
                         </div>
-
+<div class="col-md-2">
                         <a href="files/seguimientos/${item.archivo}"
                            target="_blank"
                            class="btn btn-sm btn-primary">
 
                             <i class="fa fa-eye"></i> Ver
                         </a>
-
+ </div>
                     </div>
                 </div>
             `;
-        });
-    }
+    });
+  }
 
-    $("#contenidoAdjuntos").html(html);
+  $("#contenidoAdjuntos").html(html);
 
-    $("#modalAdjuntos").modal("show");
+  $("#modalAdjuntos").modal("show");
 }
 
 function descragarResumen() {
-    const idcliente = $("#idcliente").val() || '';
-    const fecha_inicio = $("#fecha_inicio").val();
-    const fecha_fin = $("#fecha_fin").val();
-    console.log(fecha_inicio, fecha_fin);
+  const idcliente = $("#idcliente").val() || "";
+  const fecha_inicio = $("#fecha_inicio").val();
+  const fecha_fin = $("#fecha_fin").val();
+  console.log(fecha_inicio, fecha_fin);
 
-    const params = new URLSearchParams({
-        idcliente: idcliente,
-        fecha_inicio: fecha_inicio,
-        fecha_fin: fecha_fin
-    });
+  const params = new URLSearchParams({
+    idcliente: idcliente,
+    fecha_inicio: fecha_inicio,
+    fecha_fin: fecha_fin,
+  });
 
-    window.location.href = `modelos/exports/exportar_cuentas_cobrar.php?${params.toString()}`;
+  window.location.href = `modelos/exports/exportar_cuentas_cobrar.php?${params.toString()}`;
 }
 
 function abrirAjuntarComp(idcpc, iddcpc) {
-    $("#modalAjuntarComp").modal("show");
-    $('#comprobanteAdjunto').val('');
-    $("#idcpcShow").val(idcpc);
-    $("#iddcpc").val(iddcpc);
+  $("#modalAjuntarComp").modal("show");
+  $("#comprobanteAdjunto").val("");
+  $("#idcpcShow").val(idcpc);
+  $("#iddcpc").val(iddcpc);
 }
 
 $("#formAdjuntarComp").submit(function (e) {
-    e.preventDefault();
-    const idcpc = $("#idcpcShow").val();
-    const iddcpc = $("#iddcpc").val();
+  e.preventDefault();
+  const idcpc = $("#idcpcShow").val();
+  const iddcpc = $("#iddcpc").val();
 
-    if (!iddcpc) {
-        Swal.fire('Venta', 'No se ha seleccionado una venta', 'warning');
-    };
+  if (!iddcpc) {
+    Swal.fire("Venta", "No se ha seleccionado una venta", "warning");
+  }
 
-    if ($('#comprobanteAdjunto')[0].files.length > 0) {
-        Swal.fire('Venta', 'No se ha seleccionado un documento para subir', 'warning');
-    }
+  if ($("#comprobanteAdjunto")[0].files.length > 0) {
+    Swal.fire(
+      "Venta",
+      "No se ha seleccionado un documento para subir",
+      "warning",
+    );
+  }
 
-    const formData = new FormData(this);
-    $.ajax({
-        url: `controladores/cuentascobrar.php?op=adjuntarComprobante&iddcpc=${iddcpc}`,
-        type: "POST",
-        data: formData,
-        processData: false,
-        contentType: false,
-        success: function (response) {
-            if (!response.success) {
-                Swal.fire('Venta', response?.message || 'Error al guardar comprobante', 'error');
-            };
-            Swal.fire('Venta', response?.message, 'success');
-            $("#modalAjuntarComp").modal("hide");
-            mostrarAbonos(idcpc);
-        },
-        error: function (xhr) {
-            Swal.fire('Venta', xhr?.responseJSON?.message || 'Error al guardar comprobante', 'error');
-        }
-    });
+  const formData = new FormData(this);
+  $.ajax({
+    url: `controladores/cuentascobrar.php?op=adjuntarComprobante&iddcpc=${iddcpc}`,
+    type: "POST",
+    data: formData,
+    processData: false,
+    contentType: false,
+    success: function (response) {
+      if (!response.success) {
+        Swal.fire(
+          "Venta",
+          response?.message || "Error al guardar comprobante",
+          "error",
+        );
+      }
+      Swal.fire("Venta", response?.message, "success");
+      $("#modalAjuntarComp").modal("hide");
+      mostrarAbonos(idcpc);
+    },
+    error: function (xhr) {
+      Swal.fire(
+        "Venta",
+        xhr?.responseJSON?.message || "Error al guardar comprobante",
+        "error",
+      );
+    },
+  });
 });
 
 function cerarrAjuntarComp() {
-    $("#modalAjuntarComp").modal("hide");
+  $("#modalAjuntarComp").modal("hide");
 }
 
-
 function notificarCuota(row) {
-    // Mostrar el modal para ingresar el número de celular
-    $("#modalCelular").modal("show");
-    // Si hay teléfono registrado, precargarlo en el modal
-    if (row.telefono) {
-        document.getElementById("numeroCelular").value = row.telefono;
-    }
+  // Mostrar el modal para ingresar el número de celular
+  $("#modalCelular").modal("show");
+  // Si hay teléfono registrado, precargarlo en el modal
+  if (row.telefono) {
+    document.getElementById("numeroCelular").value = row.telefono;
+  }
 
-    // Mostrar los datos del comprobante en el modal
-    document.getElementById("cliente").value = row.nombre;
-    document.getElementById("saldo").value = row.saldo;
-    document.getElementById("diasMora").value = row.dias_mora;
-    document.getElementById("mora").value = row.mora;
+  // Mostrar los datos del comprobante en el modal
+  document.getElementById("cliente").value = row.nombre;
+  document.getElementById("saldo").value = row.saldo;
+  document.getElementById("diasMora").value = row.dias_mora;
+  document.getElementById("mora").value = row.mora;
 }
 
 function abrirWhatsApp() {
-    const nombreEmpresa = dataSucursal.razon_social || "MI EMPRESA";
-    const telefonoEmpresa = dataSucursal.telefono || "999 999 999";
+  const nombreEmpresa = dataSucursal.razon_social || "MI EMPRESA";
+  const telefonoEmpresa = dataSucursal.telefono || "999 999 999";
 
-    let telefono = document.getElementById("numeroCelular").value.trim();
-    const cliente = document.getElementById("cliente").value.trim();
-    const saldo = parseFloat(document.getElementById("saldo").value) || 0;
-    const diasMora = parseInt(document.getElementById("diasMora").value, 10) || 0;
-    const mora = parseFloat(document.getElementById("mora").value) || 0;
-    const total = saldo + mora;
+  let telefono = document.getElementById("numeroCelular").value.trim();
+  const cliente = document.getElementById("cliente").value.trim();
+  const saldo = parseFloat(document.getElementById("saldo").value) || 0;
+  const diasMora = parseInt(document.getElementById("diasMora").value, 10) || 0;
+  const mora = parseFloat(document.getElementById("mora").value) || 0;
+  const total = saldo + mora;
 
-    if (!telefono) {
-        Swal.fire({
-            icon: "warning",
-            title: "Número requerido",
-            text: "Ingrese el número de celular del cliente."
-        });
-        return;
-    }
+  if (!telefono) {
+    Swal.fire({
+      icon: "warning",
+      title: "Número requerido",
+      text: "Ingrese el número de celular del cliente.",
+    });
+    return;
+  }
 
-    telefono = telefono.replace(/\D/g, "");
+  telefono = telefono.replace(/\D/g, "");
 
-    if (telefono.startsWith("00")) {
-        telefono = telefono.substring(2);
-    }
+  if (telefono.startsWith("00")) {
+    telefono = telefono.substring(2);
+  }
 
-    if (telefono.startsWith("51")) {
-        telefono = telefono.substring(2);
-    }
+  if (telefono.startsWith("51")) {
+    telefono = telefono.substring(2);
+  }
 
-    if (!/^9\d{8}$/.test(telefono)) {
-        Swal.fire({
-            icon: "warning",
-            title: "Número inválido",
-            text: "Ingrese un celular peruano válido de 9 dígitos."
-        });
-        return;
-    }
+  if (!/^9\d{8}$/.test(telefono)) {
+    Swal.fire({
+      icon: "warning",
+      title: "Número inválido",
+      text: "Ingrese un celular peruano válido de 9 dígitos.",
+    });
+    return;
+  }
 
-    telefono = "51" + telefono;
+  telefono = "51" + telefono;
 
-    if (saldo <= 0) {
-        Swal.fire({
-            icon: "info",
-            title: "Cuota cancelada",
-            text: "El saldo pendiente no registra deuda."
-        });
-        return;
-    }
+  if (saldo <= 0) {
+    Swal.fire({
+      icon: "info",
+      title: "Cuota cancelada",
+      text: "El saldo pendiente no registra deuda.",
+    });
+    return;
+  }
 
-    const formatoMoneda = valor =>
-        valor.toLocaleString("es-PE", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+  const formatoMoneda = (valor) =>
+    valor.toLocaleString("es-PE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
 
-    const mensaje =
-        `🏢 *${nombreEmpresa}*\n\n` +
-        `Estimado/a *${cliente || "cliente"}*, reciba un cordial saludo.\n\n` +
-        `Le informamos que su cuota se encuentra vencida y registra un saldo pendiente de pago.\n\n` +
-        `📋 *DETALLE DE LA CUOTA*\n` +
-        `💰 Saldo pendiente: S/ ${formatoMoneda(saldo)}\n` +
-        `📅 Días de atraso: ${diasMora}\n` +
-        `⚠️ Mora acumulada: S/ ${formatoMoneda(mora)}\n` +
-        `💵 *TOTAL PENDIENTE: S/ ${formatoMoneda(total)}*\n\n` +
-        `Le agradeceremos regularizar su pago a la brevedad posible.\n\n` +
-        `Si ya realizó el pago, por favor, haga caso omiso a este mensaje y comuníquenoslo para verificarlo.\n\n` +
-        `Si necesita coordinar el pago, estamos a su disposición.\n\n` +
-        `Gracias por su atención.\n` +
-        `*${nombreEmpresa}*\n` +
-        `📞 ${telefonoEmpresa}`;
+  const mensaje =
+    `🏢 *${nombreEmpresa}*\n\n` +
+    `Estimado/a *${cliente || "cliente"}*, reciba un cordial saludo.\n\n` +
+    `Le informamos que su cuota se encuentra vencida y registra un saldo pendiente de pago.\n\n` +
+    `📋 *DETALLE DE LA CUOTA*\n` +
+    `💰 Saldo pendiente: S/ ${formatoMoneda(saldo)}\n` +
+    `📅 Días de atraso: ${diasMora}\n` +
+    `⚠️ Mora acumulada: S/ ${formatoMoneda(mora)}\n` +
+    `💵 *TOTAL PENDIENTE: S/ ${formatoMoneda(total)}*\n\n` +
+    `Le agradeceremos regularizar su pago a la brevedad posible.\n\n` +
+    `Si ya realizó el pago, por favor, haga caso omiso a este mensaje y comuníquenoslo para verificarlo.\n\n` +
+    `Si necesita coordinar el pago, estamos a su disposición.\n\n` +
+    `Gracias por su atención.\n` +
+    `*${nombreEmpresa}*\n` +
+    `📞 ${telefonoEmpresa}`;
 
-    const urlWhatsApp =
-        `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
+  const urlWhatsApp = `https://api.whatsapp.com/send?phone=${telefono}&text=${encodeURIComponent(mensaje)}`;
 
-    window.open(urlWhatsApp, "_blank");
+  window.open(urlWhatsApp, "_blank");
 
-    $("#modalCelular").modal("hide");
+  $("#modalCelular").modal("hide");
 }
 
 function cancelarmodalCelular() {
-    // Limpiar el campo de número celular
-    $("#numeroCelular").val("");
+  // Limpiar el campo de número celular
+  $("#numeroCelular").val("");
 
-    // Resetear otros posibles estados (por ejemplo, eliminar clases activas o desactivar botones)
-    $("#modalCelular").find(".is-invalid").removeClass("is-invalid"); // Si hay alguna validación
-    $("#modalCelular").find(".is-valid").removeClass("is-valid"); // Si hay alguna validación
+  // Resetear otros posibles estados (por ejemplo, eliminar clases activas o desactivar botones)
+  $("#modalCelular").find(".is-invalid").removeClass("is-invalid"); // Si hay alguna validación
+  $("#modalCelular").find(".is-valid").removeClass("is-valid"); // Si hay alguna validación
 
-    // Cerrar el modal
-    $("#modalCelular").modal("hide");
+  // Cerrar el modal
+  $("#modalCelular").modal("hide");
+}
+
+function listarDatosExtra(idpersonal, only_personal) {
+  $.post(
+    "controladores/usuario.php?op=selectEmpleado",
+    { only_personal: only_personal, idpersonal: idpersonal },
+    function (r) {
+      $("#idpersonal").html(r);
+      $("#idpersonal").select2();
+      if (idpersonal) {
+        $("#idpersonal").val(idpersonal).trigger("change");
+      }
+    },
+  );
+}
+
+function editarSeguimiento(data, only_personal) {
+  archivosSeleccionados = [];
+  listarDatosExtra(data.idpersonal, only_personal);
+  $("#idseguimiento").val(data.idseguimiento);
+  $("#idcpc_visita").val(data.idcpc);
+  $("#idventa_visita").val(data.idventa);
+  $("#idcliente_visita").val(data.idcliente);
+  $("#tipo_visita").val(data.tipo);
+  $("#prioridad").val(data.prioridad);
+  $("#estado").val(data.estado);
+  $("#fecha_programada").val(data.fecha_proxima);
+  $("#fecha_final").val(data.fecha_final);
+  $("#direccion").val(data.direccion);
+  $("#descripcion").val(data.descripcion);
+  $("#modalProgramarVisita").modal("show");
+  if (data.archivos) {
+    if (typeof data.archivos === "string") {
+      archivosSeleccionados = JSON.parse(data.archivos);
+    } else {
+      archivosSeleccionados = data.archivos;
+    }
+  }
+  setTimeout(function () {
+    renderArchivos();
+  }, 300);
 }
 
 init();

@@ -336,8 +336,7 @@ switch ($_GET["op"]) {
 
 	case 'listarHistorialSeguimiento':
 		$idventa = isset($_GET["idventa"]) ? limpiarCadena($_GET["idventa"]) : "";
-		$rspta = $cuentascobrar->listarHistorialSeguimiento($idventa);
-		echo $rspta;
+		$cuentascobrar->listarHistorialSeguimiento($idventa);
 		break;
 
 	case 'listarHistorialIncidencias':

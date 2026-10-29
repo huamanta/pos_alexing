@@ -250,8 +250,8 @@ class CuentasCobrar extends Helpers
 
         $moraNueva = round(
             floatval($fila["deuda"]) *
-                ($config["valor"] / 100) *
-                $dias,
+            ($config["valor"] / 100) *
+            $dias,
             2
         );
 
@@ -296,7 +296,7 @@ class CuentasCobrar extends Helpers
 
         $monto = round(
             Helpers::toFloat($montoEfectivo) +
-                Helpers::toFloat($montoTarjeta),
+            Helpers::toFloat($montoTarjeta),
             2
         );
 
@@ -1936,8 +1936,8 @@ class CuentasCobrar extends Helpers
                     if ($dias > 0) {
                         $moraNueva = round(
                             floatval($row->deuda) *
-                                ($config["valor"] / 100) *
-                                $dias,
+                            ($config["valor"] / 100) *
+                            $dias,
                             2
                         );
                         $dias_mora = $dias;
@@ -2558,8 +2558,8 @@ class CuentasCobrar extends Helpers
 
                         $mora += round(
                             floatval($row["deuda"]) *
-                                ($configMora["valor"] / 100) *
-                                $dias,
+                            ($configMora["valor"] / 100) *
+                            $dias,
                             2
                         );
                     }
@@ -2591,7 +2591,7 @@ class CuentasCobrar extends Helpers
 
                         $descuento = round(
                             floatval($row["deuda"]) *
-                                ($configDescuento["valor"] / 100),
+                            ($configDescuento["valor"] / 100),
                             2
                         );
                     }
@@ -2974,26 +2974,39 @@ class CuentasCobrar extends Helpers
 
     public function listarHistorialSeguimiento($idventa)
     {
-        $sql = "SELECT * FROM seguimiento_clientes WHERE idventa = $idventa AND deleted_at IS NULL";
-        $rspta = ejecutarConsulta($sql);
+        $seguimiento_clientes = (new DBQuery($this->pdo))
+            ->select('sc.*, p.nombre')
+            ->from('seguimiento_clientes sc')
+            ->join('personal p', 'p.idpersonal = sc.idpersonal')
+            ->where('sc.idventa', '=', $idventa)
+            ->softDeletes('sc.deleted_at')
+            ->get();
 
         $data = array();
-
         $count = 1;
-        while ($reg = $rspta->fetch_object()) {
-            $credito = $this->obtenerCredito($reg->idventa, $reg->idcpc);
-            $archivos_adjuntos = Helpers::dataArchivosAdjuntos($reg->idseguimiento);
+        foreach ($seguimiento_clientes as $reg) {
+            $credito = $this->obtenerCredito($reg['idventa'], $reg['idcpc']);
+            $archivos_adjuntos = Helpers::dataArchivosAdjuntos($reg['idseguimiento']);
+            $reg['archivos'] = $archivos_adjuntos;
             $data[] = array(
                 "0" => $count++,
-                "1" => $reg->tipo,
-                "2" => "Corresponde a cuota " . $credito['numero_cuota'] . " de " . $credito['total_cuotas'],
-                "3" => $reg->descripcion,
-                "4" => $reg->fecha_proxima,
-                "5" => $reg->estado,
-                "6" => $reg->prioridad,
-                "7" => '<button class="btn btn-primary" onclick=\'verArchivosAdjuntos(' . json_encode($archivos_adjuntos) . ')\'>
-                        <i class="fa fa-eye"></i> Adjuntos
-                        </button>'
+                "1" => $reg['tipo'],
+                "2" => $reg['nombre'],
+                "3" => "Corresponde a cuota " . $credito['numero_cuota'] . " de " . $credito['total_cuotas'],
+                "4" => $reg['descripcion'],
+                "5" => $reg['fecha_proxima'],
+                "6" => $reg['estado'],
+                "7" => $reg['prioridad'],
+                "8" => '<button class="btn btn-primary" onclick="editarSeguimiento(' .
+                    htmlspecialchars(json_encode($reg, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8') .
+                    ', true)">
+                        <i class="fa fa-edit"></i>
+                    </button>
+                    <button class="btn btn-success" onclick="verArchivosAdjuntos(' .
+                                    htmlspecialchars(json_encode($reg['archivos'], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8') .
+                                    ')">
+                        <i class="fa fa-eye"></i>
+                    </button>'
             );
         }
 
@@ -3004,7 +3017,7 @@ class CuentasCobrar extends Helpers
             "aaData" => $data
         );
 
-        return json_encode($results);
+        return Response::json($results);
     }
 
 
