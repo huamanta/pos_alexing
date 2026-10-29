@@ -209,17 +209,23 @@ switch ($_GET["op"]) {
 				$fechadeposito
 			);
 		} else {
-			$rspta = $cuentascobrar->amortizarDeuda(
-				$deuda,
-				$idcliente,
-				$fecha_inicio,
-				$fecha_fin,
-				$formapago,
-				$montoEfectivo,
-				$idcaja,
-				$idpersonal
-			);
+			$rspta = [
+				'success' => false,
+                'message' => 'No se realizó ninguna amortización'
+			];
 		}
+		//else {
+		//	$rspta = $cuentascobrar->amortizarDeuda(
+		//		$deuda,
+		//		$idcliente,
+		//		$fecha_inicio,
+		//		$fecha_fin,
+		//		$formapago,
+		//		$montoEfectivo,
+		//		$idcaja,
+		//		$idpersonal
+		//	);
+		//}
 		echo json_encode($rspta);
 		break;
 
@@ -341,8 +347,7 @@ switch ($_GET["op"]) {
 
 	case 'listarHistorialIncidencias':
 		$idventa = isset($_GET["idventa"]) ? limpiarCadena($_GET["idventa"]) : "";
-		$rspta = $cuentascobrar->listarHistorialIncidencias($idventa);
-		echo $rspta;
+		$cuentascobrar->listarHistorialIncidencias($idventa);
 		break;
 
 	case 'mostrarSeguimiento':
@@ -357,14 +362,20 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'guardarCompromisoPago':
+		$idcompromiso_pago = isset($_POST["idcompromiso_pago"]) ? limpiarCadena($_POST["idcompromiso_pago"]) : "";
 		$idcpc = isset($_POST["idcpc"]) ? limpiarCadena($_POST["idcpc"]) : "";
 		$idventa = isset($_POST["idventa"]) ? limpiarCadena($_POST["idventa"]) : "";
 		$idcliente = isset($_POST["idcliente"]) ? limpiarCadena($_POST["idcliente"]) : "";
 		$fecha_compromiso = isset($_POST["fecha_compromiso"]) ? limpiarCadena($_POST["fecha_compromiso"]) : "";
+		$fecha_cumplimiento = isset($_POST["fecha_cumplimiento"]) ? limpiarCadena($_POST["fecha_cumplimiento"]) : "";
 		$monto = isset($_POST["monto"]) ? limpiarCadena($_POST["monto"]) : "";
 		$observacion = isset($_POST["observacion"]) ? limpiarCadena($_POST["observacion"]) : "";
 		$idusuario = $_SESSION["idusuario"];
-		$response = $cuentascobrar->guardarCompromisoPago($idcpc, $idventa, $idcliente, $fecha_compromiso, $monto, $observacion, $idusuario);
+		if (empty($idcompromiso_pago)) {
+			$response = $cuentascobrar->guardarCompromisoPago($idcpc, $idventa, $idcliente, $fecha_compromiso, $monto, $observacion, $idusuario);
+		}else{
+			$response = $cuentascobrar->editarCompromisoPago($idcompromiso_pago, $fecha_compromiso, $fecha_cumplimiento, $monto, $observacion);
+		}
 		echo $response;
 		break;
 
