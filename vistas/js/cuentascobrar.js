@@ -909,10 +909,10 @@ async function mostrar(idcpc) {
       var interes = total_venta * (data.interes / 100);
       $("#documento").text(
         data.tipo_comprobante +
-          " : " +
-          data.serie_comprobante +
-          " - " +
-          data.num_comprobante,
+        " : " +
+        data.serie_comprobante +
+        " - " +
+        data.num_comprobante,
       );
       $("#deutaTotal").text(parseFloat(data.deuda).toFixed(2));
       $("#valorVenta").text(total_venta.toFixed(2));
@@ -999,11 +999,10 @@ function mostrarAbonos(idcpc) {
                                 ${item.banco || ""}
                             </td>
                            <td class="text-end">
-                                ${
-                                  item.formapago === "Efectivo"
-                                    ? ""
-                                    : item.comprobante
-                                      ? `
+                                ${item.formapago === "Efectivo"
+              ? ""
+              : item.comprobante
+                ? `
                                             <a
                                                 href="files/cuentascobrar/${item.comprobante}"
                                                 target="_blank"
@@ -1012,7 +1011,7 @@ function mostrarAbonos(idcpc) {
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                         `
-                                      : `
+                : `
                                             <button
                                                 type="button"
                                                 class="btn btn-sm btn-outline-primary"
@@ -1021,7 +1020,7 @@ function mostrarAbonos(idcpc) {
                                                 <i class="fas fa-upload"></i>
                                             </button>
                                         `
-                                }
+            }
                             </td>
                         </tr>
                     `;
@@ -1394,13 +1393,7 @@ function verEstadoCuenta(idcpc) {
   );
 }
 
-// programar compromiso de pago
-const tomorrow = new Date();
-tomorrow.setDate(tomorrow.getDate() + 1);
 
-document.getElementById("fecha_compromiso").min = tomorrow
-  .toISOString()
-  .split("T")[0];
 
 function programarCompromiso(
   idcpc,
@@ -1410,19 +1403,24 @@ function programarCompromiso(
   dias_mora,
   mora,
 ) {
-  // 1. Limpiar por si el modal ya se había abierto antes
-  $("#contenedorMensajeMora").empty();
+  // programar compromiso de pago
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById("fecha_compromiso").min = tomorrow
+    .toISOString()
+    .split("T")[0];
 
-  // 2. Llenar los campos ocultos
+  $("#contenedorMensajeMora").empty();
+  $("#panelFechaPago").hide();
+  $("#idcompromiso_pago").val('');
   $("#idcpcProgramado").val(idcpc);
   $("#idventaProgramado").val(idventa);
   $("#idclienteProgramado").val(idcliente);
   $("#monto").val(saldo);
   $("#fecha_compromiso").val("");
-  $("#observacion").val("");
+  $("#observacionCompromiso").val("");
+  $("#fecha_cumplimiento").val("");
 
-  // 3. Construir el mensaje de alerta (Usando clases de Bootstrap)
-  // Formateamos la mora a 2 decimales asumiendo que es una moneda (ej. Soles/Dólares)
   let moraFormateada = parseFloat(mora).toFixed(2);
 
   let htmlAlerta = `
@@ -1439,10 +1437,8 @@ function programarCompromiso(
         </div>
     `;
 
-  // 4. Inyectar el mensaje en el modal
   $("#contenedorMensajeMora").html(htmlAlerta);
 
-  // 5. Abrir el modal
   $("#modalCompromisoPago").modal("show");
 }
 
@@ -1456,7 +1452,8 @@ $("#formCompromisoPago").submit(function (e) {
     return Swal.fire("Error", "Ingrese un monto válido", "warning");
   }
   const data = new FormData(this);
-
+  const idventa = $('#idventaProgramado').val() || null;
+  const idcompromiso_pago = $('#idcompromiso_pago').val() || null;
   $.ajax({
     url: "controladores/cuentascobrar.php?op=guardarCompromisoPago",
     type: "POST",
@@ -1477,32 +1474,30 @@ $("#formCompromisoPago").submit(function (e) {
 
     success: function (response) {
       Swal.close();
-
-      let r = JSON.parse(response);
-
-      if (r.status) {
-        Swal.fire({
-          icon: "success",
-          title: "Correcto",
-          text: r.msg,
-        });
-
-        $("#modalCompromisoPago").modal("hide");
-        $("#formCompromisoPago")[0].reset();
-
-        tabla.ajax.reload(null, false);
-      } else {
+      const data = response;
+      if (!data.status) {
         Swal.fire({
           icon: "error",
           title: "Error",
-          text: r.msg,
+          text: data.message,
         });
+      }
+
+      Swal.fire({
+        icon: "success",
+        title: "Correcto",
+        text: data.message,
+      });
+
+      $("#modalCompromisoPago").modal("hide");
+      $("#formCompromisoPago")[0].reset();
+      if (idventa && idcompromiso_pago) {
+        listarHistorialIncidncias(idventa);
       }
     },
 
     error: function () {
       Swal.close();
-
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -1569,6 +1564,7 @@ function verUbicacionCliente(latitude, longitude, direccion) {
 
 function programarVisita(idcpc, idventa, idcliente, direccion) {
   archivosSeleccionados = [];
+  $("#idseguimiento").val('');
   $("#idcpc_visita").val(idcpc);
   $("#idventa_visita").val(idventa);
   $("#idcliente_visita").val(idcliente);
@@ -1595,6 +1591,7 @@ function programarVisita(idcpc, idventa, idcliente, direccion) {
 
 $("#formProgramarVisita").submit(function (e) {
   e.preventDefault();
+  const idseguimiento = $("#idseguimiento").val() || null;
   const idventa = $("#idventa_visita").val() || null;
   var formData = new FormData(this);
 
@@ -1627,7 +1624,7 @@ $("#formProgramarVisita").submit(function (e) {
       $("#formProgramarVisita")[0].reset();
       $("#modalProgramarVisita").modal("hide");
       tbllistadohistorial.ajax.reload();
-      if (idventa) {
+      if (idventa && idseguimiento) {
         listarHistorialSeguimiento(idventa);
       }
     },
@@ -1989,6 +1986,21 @@ function editarSeguimiento(data, only_personal) {
   setTimeout(function () {
     renderArchivos();
   }, 300);
+}
+
+function editarCompromisoPago(data) {
+  $("#contenedorMensajeMora").empty();
+  $("#panelFechaPago").show();
+  const inputFecha = document.getElementById("fecha_compromiso");
+  inputFecha.removeAttribute("min");
+  $("#idcompromiso_pago").val(data.idcompromiso_pago);
+  $("#idcpcProgramado").val(data.idcpc);
+  $("#idventaProgramado").val(data.idventa);
+  $("#monto").val(data.monto);
+  $("#fecha_compromiso").val(data.fecha_compromiso);
+  $("#fecha_cumplimiento").val(data.fecha_cumplimiento);
+  $("#observacionCompromiso").val(data.observacion);
+  $("#modalCompromisoPago").modal("show");
 }
 
 init();

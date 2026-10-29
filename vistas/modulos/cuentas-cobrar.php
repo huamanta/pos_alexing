@@ -1173,7 +1173,7 @@
       <form id="formCompromisoPago">
 
         <div class="modal-body">
-
+          <input type="hidden" id="idcompromiso_pago" name="idcompromiso_pago">
           <input type="hidden" id="idcpcProgramado" name="idcpc">
           <input type="hidden" id="idventaProgramado" name="idventa">
           <input type="hidden" id="idclienteProgramado" name="idcliente">
@@ -1183,6 +1183,13 @@
               Fecha de Compromiso <span class="text-danger">*</span>
             </label>
             <input type="date" class="form-control" id="fecha_compromiso" name="fecha_compromiso" required>
+          </div>
+
+          <div class="form-group" id="panelFechaPago">
+            <label>
+              Fecha de cumplimiento
+            </label>
+            <input type="date" class="form-control" id="fecha_cumplimiento" name="fecha_cumplimiento">
           </div>
 
           <div class="form-group">
@@ -1195,7 +1202,7 @@
 
           <div class="form-group">
             <label>Observación</label>
-            <textarea class="form-control" id="observacion" name="observacion" rows="4"
+            <textarea class="form-control" id="observacionCompromiso" name="observacion" rows="4"
               placeholder="Detalle del compromiso realizado con el cliente"></textarea>
           </div>
 
@@ -1467,31 +1474,31 @@
 
 <!-- Modal para registrar número de celular -->
 <div class="modal fade" id="modalCelular" tabindex="-1" role="dialog" aria-labelledby="modalCelularLabel"
-    aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalCelularLabel">Registrar Número de Celular</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <label for="numeroCelular">Número de Celular:</label>
-                <input type="text" name="numeroCelular" id="numeroCelular" class="form-control"
-                    placeholder="Ingrese número de celular">
-                <!-- Campos ocultos para tipo de comprobante, serie y número -->
-                <input type="hidden" id="cliente">
-                <input type="hidden" id="saldo">
-                <input type="hidden" id="diasMora">
-                <input type="hidden" id="mora">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="cancelarmodalCelular()">Cerrar</button>
-                <button type="button" class="btn btn-primary" onclick="abrirWhatsApp()">Abrir WhatsApp</button>
-            </div>
-        </div>
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalCelularLabel">Registrar Número de Celular</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <label for="numeroCelular">Número de Celular:</label>
+        <input type="text" name="numeroCelular" id="numeroCelular" class="form-control"
+          placeholder="Ingrese número de celular">
+        <!-- Campos ocultos para tipo de comprobante, serie y número -->
+        <input type="hidden" id="cliente">
+        <input type="hidden" id="saldo">
+        <input type="hidden" id="diasMora">
+        <input type="hidden" id="mora">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="cancelarmodalCelular()">Cerrar</button>
+        <button type="button" class="btn btn-primary" onclick="abrirWhatsApp()">Abrir WhatsApp</button>
+      </div>
     </div>
+  </div>
 </div>
 
 <script type="text/javascript" src="<?= $rutas->asset('vistas/js/cuentascobrar.js') ?>"></script>

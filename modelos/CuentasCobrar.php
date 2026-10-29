@@ -35,7 +35,6 @@ class CuentasCobrar extends Helpers
         $idusuario
     ) {
 
-
         try {
             $this->pdo->beginTransaction();
 
@@ -62,14 +61,21 @@ class CuentasCobrar extends Helpers
                 $idusuario
             );
 
+            $monto = round(
+                Helpers::toFloat($montopagado) +
+                    Helpers::toFloat($montoPagarTarjeta),
+                2
+            );
+
             $resultado = $this->procesarPago(
                 $cuenta,
-                $montopagado,
-                $montoPagarTarjeta,
+                $monto,
                 $fechaPago
             );
 
             $this->actualizarCuenta($idcpc, $resultado);
+
+            $this->verificarCompromisoPago($idcpc, $monto);
 
             $this->actualizarEstadoVenta(
                 $cuenta["idventa"],
@@ -104,6 +110,31 @@ class CuentasCobrar extends Helpers
             $this->pdo->rollBack();
             return Response::error($e->getMessage());
         }
+    }
+
+    public function verificarCompromisoPago($idcpc, $monto)
+    {
+        $compromiso = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('compromiso_pago')
+            ->where('idcpc', '=', $idcpc)
+            ->whereDate('fecha_compromiso', Carbon::today())
+            ->first();
+
+        if (!$compromiso || $compromiso['monto'] > $monto) {
+            return false;
+        }
+
+        (new FluentSaver($this->pdo))
+            ->primaryKey('idcompromiso_pago')
+            ->table('compromiso_pago')
+            ->data([
+                'idcompromiso_pago' => $compromiso['idcompromiso_pago'],
+                'fecha_cumplimiento' => Carbon::today()->toDateString()
+            ])
+            ->update();
+
+        return true;
     }
 
     public function obtenerNumeroCuota($idventa, $idcpc)
@@ -250,8 +281,8 @@ class CuentasCobrar extends Helpers
 
         $moraNueva = round(
             floatval($fila["deuda"]) *
-            ($config["valor"] / 100) *
-            $dias,
+                ($config["valor"] / 100) *
+                $dias,
             2
         );
 
@@ -275,7 +306,7 @@ class CuentasCobrar extends Helpers
         return $fila;
     }
 
-    private function procesarPago($fila, $montoEfectivo, $montoTarjeta, $fechaPago)
+    private function procesarPago($fila, $monto, $fechaPago)
     {
         $resultado = [
 
@@ -293,12 +324,6 @@ class CuentasCobrar extends Helpers
 
             "descuento" => 0
         ];
-
-        $monto = round(
-            Helpers::toFloat($montoEfectivo) +
-            Helpers::toFloat($montoTarjeta),
-            2
-        );
 
         $monto = $this->pagarMora($resultado, $monto);
 
@@ -1936,8 +1961,8 @@ class CuentasCobrar extends Helpers
                     if ($dias > 0) {
                         $moraNueva = round(
                             floatval($row->deuda) *
-                            ($config["valor"] / 100) *
-                            $dias,
+                                ($config["valor"] / 100) *
+                                $dias,
                             2
                         );
                         $dias_mora = $dias;
@@ -2206,7 +2231,7 @@ class CuentasCobrar extends Helpers
             $pagoRestante = $pagoTotal;
 
             $totalAmortizado = 0;
-            $data = false;
+            $flag = false;
 
             // Acumuladores para evitar diferencias de redondeo
             $efectivoDistribuido = 0;
@@ -2395,7 +2420,7 @@ class CuentasCobrar extends Helpers
                 $pagoRestante = round($pagoRestante - $capitalPagado, 2);
                 $totalAmortizado = round($totalAmortizado + $capitalPagado + $descuento, 2);
 
-                $data = true;
+                $flag = true;
             }
 
             // VERIFICAR CUOTAS PENDIENTES
@@ -2430,9 +2455,9 @@ class CuentasCobrar extends Helpers
             $this->pdo->commit();
 
             return [
-                'success' => $data,
+                'success' => $flag,
 
-                'message' => $data
+                'message' => $flag
                     ? 'Se amortizó correctamente S/ ' .
                     number_format(
                         $totalAmortizado,
@@ -2558,8 +2583,8 @@ class CuentasCobrar extends Helpers
 
                         $mora += round(
                             floatval($row["deuda"]) *
-                            ($configMora["valor"] / 100) *
-                            $dias,
+                                ($configMora["valor"] / 100) *
+                                $dias,
                             2
                         );
                     }
@@ -2591,7 +2616,7 @@ class CuentasCobrar extends Helpers
 
                         $descuento = round(
                             floatval($row["deuda"]) *
-                            ($configDescuento["valor"] / 100),
+                                ($configDescuento["valor"] / 100),
                             2
                         );
                     }
@@ -3003,8 +3028,8 @@ class CuentasCobrar extends Helpers
                         <i class="fa fa-edit"></i>
                     </button>
                     <button class="btn btn-success" onclick="verArchivosAdjuntos(' .
-                                    htmlspecialchars(json_encode($reg['archivos'], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8') .
-                                    ')">
+                    htmlspecialchars(json_encode($reg['archivos'], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8') .
+                    ')">
                         <i class="fa fa-eye"></i>
                     </button>'
             );
@@ -3043,7 +3068,7 @@ class CuentasCobrar extends Helpers
                 "3" => Helpers::get_currency_symbol($reg->monto),
                 "4" => $reg->fecha_cumplimiento,
                 "5" => $reg->observacion,
-                "6" => '<button class="btn btn-primary" onclick="verArchivosAdjuntos(' . $reg->idcompromiso_pago . ')">
+                "6" => '<button class="btn btn-primary" onclick="editarCompromisoPago(' . htmlspecialchars(json_encode($reg, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8') . ')">
                         <i class="fa fa-edit"></i>
                         </button>'
             );
@@ -3056,7 +3081,7 @@ class CuentasCobrar extends Helpers
             "aaData" => $data
         );
 
-        return json_encode($results);
+        return Response::json($results);
     }
 
     public function mostrarSeguimiento($idseguimiento)
@@ -3150,55 +3175,84 @@ class CuentasCobrar extends Helpers
         $observacion,
         $idusuario
     ) {
+        try {
+            // Obtener datos para generar el detalle
+            $cuota = (new DBQuery($this->pdo))
+                ->select('COUNT(*) AS cuota')
+                ->from('cuentas_por_cobrar')
+                ->where('idventa', '=', $idventa)
+                ->where('idcpc', '=', $idcpc)
+                ->first();
 
-        // Obtener datos para generar el detalle
-        $sqlCuota = "SELECT COUNT(*) AS cuota
-             FROM cuentas_por_cobrar
-             WHERE idventa = '$idventa'
-               AND idcpc <= '$idcpc'";
-        $cuota = ejecutarConsultaSimpleFila($sqlCuota);
+            $cliente = (new DBQuery($this->pdo))
+                ->select('*')
+                ->from('persona')
+                ->where('idpersona', '=', $idcliente)
+                ->first();
 
-        $sqlCliente = "SELECT * FROM persona WHERE idpersona = '$idcliente'";
-        $cliente = ejecutarConsultaSimpleFila($sqlCliente);
+            $detalle = sprintf(
+                "Compromiso de pago de la cuota %d del cliente %s para el %s por un monto de %s.",
+                $cuota['cuota'],
+                $cliente['nombre'],
+                date('d/m/Y', strtotime($fecha_compromiso)),
+                Helpers::get_currency_symbol($monto)
+            );
 
-        $detalle = sprintf(
-            "Compromiso de pago de la cuota %d del cliente %s para el %s por un monto de %s.",
-            $cuota['cuota'],
-            $cliente['nombre'],
-            date('d/m/Y', strtotime($fecha_compromiso)),
-            Helpers::get_currency_symbol($monto)
-        );
+            $insert = (new FluentSaver($this->pdo))
+                ->table('compromiso_pago')
+                ->data([
+                    'idcpc' => $idcpc,
+                    'fecha_compromiso' => $fecha_compromiso,
+                    'monto' => $monto,
+                    'detalle' => $detalle,
+                    'observacion' => $observacion,
+                    'idusuario' => $idusuario
+                ])
+                ->save();
 
-        $sql = "INSERT INTO compromiso_pago(
-                idcpc,
-                fecha_compromiso,
-                monto,
-                detalle,
-                observacion,
-                idusuario
-            )
-            VALUES(
-                '$idcpc',
-                '$fecha_compromiso',
-                '$monto',
-                '$detalle',
-                '$observacion',
-                '$idusuario'
-            )";
+            if (!$insert) {
+                throw new Exception("No se guardó el compromiso de pago.");
+            }
 
-        $rspta = ejecutarConsulta($sql);
-
-        if (!$rspta) {
-            return json_encode([
-                "status" => false,
-                "msg" => "No se guardó el compromiso de pago."
+            return Response::json([
+                "status" => true,
+                "msg" => "El compromiso de pago se ha guardado correctamente."
             ]);
+        } catch (\Throwable $th) {
+            Response::error($th->getMessage());
         }
+    }
 
-        return json_encode([
-            "status" => true,
-            "msg" => "El compromiso de pago se ha guardado correctamente."
-        ]);
+
+    public function editarCompromisoPago($idcompromiso_pago, $fecha_compromiso, $fecha_cumplimiento, $monto, $observacion)
+    {
+        try {
+            $update = (new FluentSaver($this->pdo))
+                ->table('compromiso_pago')
+                ->primaryKey('idcompromiso_pago')
+                ->nullable([
+                    'fecha_cumplimiento'
+                ])
+                ->data([
+                    'idcompromiso_pago' => $idcompromiso_pago,
+                    'fecha_compromiso' => $fecha_compromiso,
+                    'fecha_cumplimiento' => $fecha_cumplimiento,
+                    'monto' => $monto,
+                    'observacion' => $observacion,
+                ])
+                ->update();
+
+            if (!$update) {
+                throw new Exception("No se actualizo el compromiso de pago.");
+            }
+
+            return Response::json([
+                "status" => true,
+                "msg" => "El compromiso de pago se ha actualizado correctamente."
+            ]);
+        } catch (\Throwable $th) {
+            Response::error($th->getMessage());
+        }
     }
 
 
