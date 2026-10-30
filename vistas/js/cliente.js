@@ -56,7 +56,6 @@ function buscarDireccion() {
         document.getElementById("latitude").value = lat;
         document.getElementById("longitude").value = lng;
         document.getElementById("direccion").value = address;
-
       } else {
         alert("No se encontró la dirección");
       }
@@ -129,8 +128,10 @@ function mostrar(idpersona) {
       $("#telefono").val(data.telefono);
       $("#email").val(data.email);
       $("#idpersona").val(data.idpersona);
-      $("#latitude").val(data.latitude ? data.latitude : '-6.487595468705555');
-      $("#longitude").val(data.longitude ? data.longitude : '-76.3601303100586');
+      $("#latitude").val(data.latitude ? data.latitude : "-6.487595468705555");
+      $("#longitude").val(
+        data.longitude ? data.longitude : "-76.3601303100586",
+      );
       if (data.isproveedor == 1) {
         $("#proveedor").prop("checked", true);
       } else {
@@ -175,7 +176,7 @@ function guardaryeditar(e) {
     },
     complete: function () {
       $("#btnGuardar").prop("disabled", false).text("Guardar");
-    }
+    },
   });
   limpiar();
 }
@@ -229,10 +230,10 @@ function BuscarCliente() {
                   //$('#nombre').val(dat.success[0]);
                   $("#nombre").val(
                     dat.nombres +
-                    " " +
-                    dat.apellidoPaterno +
-                    " " +
-                    dat.apellidoMaterno,
+                      " " +
+                      dat.apellidoPaterno +
+                      " " +
+                      dat.apellidoMaterno,
                   );
                   $("#Buscar_Cliente").hide();
                   $("#cargando").hide();
@@ -242,7 +243,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         } else {
@@ -287,7 +288,7 @@ function BuscarCliente() {
                 $("#Buscar_Cliente").show();
                 $("#cargando").hide();
               },
-              error: function () { },
+              error: function () {},
             });
           }
         }
@@ -297,7 +298,6 @@ function BuscarCliente() {
 }
 
 function pintarPersonas(data, permissions) {
-
   let html = "";
 
   if (data.length === 0) {
@@ -310,39 +310,34 @@ function pintarPersonas(data, permissions) {
     return;
   }
 
-  data.forEach(item => {
-
+  data.forEach((item) => {
     html += `
             <tr>
-                <td>${item.nombre ?? ''}</td>
-                <td>${item.tipo_documento ?? ''}</td>
-                <td>${item.num_documento ?? ''}</td>
-                <td>${item.telefono ?? ''}</td>
-                <td>${item.email ?? ''}</td>
+                <td>${item.nombre ?? ""}</td>
+                <td>${item.tipo_documento ?? ""}</td>
+                <td>${item.num_documento ?? ""}</td>
+                <td>${item.telefono ?? ""}</td>
+                <td>${item.email ?? ""}</td>
                 <td>
-                  ${permissions.editar ? `<button class="btn btn-warning btn-xs" onclick="mostrar(${item.idpersona})"><i class="fas fa-edit"></i></button>` : ''}
-                  ${permissions.historial ? `<button class="btn btn-info btn-xs" onclick="ListarReportesClientes(${item.idpersona})"><i class="fa fa-list"></i></button>` : ''}
-                  ${permissions.puntuacion ? `<button class="btn btn-info btn-xs" onclick="ScoreCrediticioCliente(${item.idpersona})"><i class="fa fa-star"></i></button>` : ''}
-                  ${permissions.eliminar ? `<button class="btn btn-danger btn-xs" onclick="eliminar(${item.idpersona})"><i class="fa fa-trash"></i></button>` : ''}
+                  ${permissions.editar ? `<button class="btn btn-warning btn-xs" onclick="mostrar(${item.idpersona})"><i class="fas fa-edit"></i></button>` : ""}
+                  ${permissions.historial ? `<button class="btn btn-info btn-xs" onclick="ListarReportesClientes(${item.idpersona})"><i class="fa fa-list"></i></button>` : ""}
+                  ${permissions.puntuacion ? `<button class="btn btn-info btn-xs" onclick="ScoreCrediticioCliente(${item.idpersona})"><i class="fa fa-star"></i></button>` : ""}
+                  ${permissions.eliminar ? `<button class="btn btn-danger btn-xs" onclick="eliminar(${item.idpersona})"><i class="fa fa-trash"></i></button>` : ""}
                 </td>
             </tr>
         `;
-
   });
-
 
   $("#tbody_personas").html(html);
 }
 
 //Función Listar
 
-
 listarPersonas = new FluentPaginator({
   url: "controladores/persona.php?op=listarc",
   tableBody: "#tbody_personas",
-  renderTabla: pintarPersonas
+  renderTabla: pintarPersonas,
 });
-
 
 //Función cancelarform
 function cancelarform() {
@@ -359,7 +354,7 @@ function eliminar(idpersona) {
     confirmButtonColor: "#3085d6",
     cancelButtonColor: "#d33",
     confirmButtonText: "Si",
-    reverseButtons: true
+    reverseButtons: true,
   }).then((result) => {
     if (result.isConfirmed) {
       $.post(
@@ -382,7 +377,7 @@ function eliminar(idpersona) {
           });
           $("#myModal").modal("hide");
           listarPersonas.load();
-        }
+        },
       );
     } else {
       Swal.fire("Aviso!", "Se Cancelo la eliminación del Cliente", "info");
@@ -518,7 +513,6 @@ $("#fecha_fin").change(function () {
 });
 
 function ListarReportesClientes(idcliente) {
-
   $("#data_compras").html("");
   $("#data_cuentas_pagar").html("");
   $("#data_proveedor").html("");
@@ -543,7 +537,6 @@ function ListarReportesClientes(idcliente) {
     processData: false,
 
     success: function (response) {
-
       const data = response;
       const symbol = data.symbol || "";
 
@@ -598,7 +591,6 @@ function ListarReportesClientes(idcliente) {
       `;
 
       if (ventas.length === 0) {
-
         htmlVentas += `
           <tr>
             <td colspan="8">
@@ -606,11 +598,8 @@ function ListarReportesClientes(idcliente) {
             </td>
           </tr>
         `;
-
       } else {
-
         $.each(ventas, function (i, venta) {
-
           const ventaSinInteres = number(venta.venta_sin_interes);
           const pagado = number(venta.totalrecibido);
           const interes = number(venta.interes);
@@ -644,7 +633,6 @@ function ListarReportesClientes(idcliente) {
           `;
 
           if (detalle.length === 0) {
-
             detalleHtml += `
               <tr>
                 <td colspan="3" class="text-center text-muted">
@@ -652,11 +640,8 @@ function ListarReportesClientes(idcliente) {
                 </td>
               </tr>
             `;
-
           } else {
-
             $.each(detalle, function (a, item) {
-
               detalleHtml += `
                 <tr>
                   <td>
@@ -672,7 +657,6 @@ function ListarReportesClientes(idcliente) {
                   </td>
                 </tr>
               `;
-
             });
           }
 
@@ -772,7 +756,6 @@ function ListarReportesClientes(idcliente) {
 
       $("#data_compras").html(htmlVentas);
 
-
       /* =========================================================
          2. CUENTAS POR COBRAR
       ========================================================= */
@@ -806,7 +789,6 @@ function ListarReportesClientes(idcliente) {
       `;
 
       if (cuentasxcobrar.length === 0) {
-
         htmlCobrar += `
           <tr>
             <td colspan="8">
@@ -814,11 +796,8 @@ function ListarReportesClientes(idcliente) {
             </td>
           </tr>
         `;
-
       } else {
-
         $.each(cuentasxcobrar, function (i, cuenta) {
-
           const deuda = number(cuenta.deudatotal);
           const interes = number(cuenta.interes);
           const mora = number(cuenta.mora_pagada);
@@ -857,7 +836,6 @@ function ListarReportesClientes(idcliente) {
           `;
 
           if (detalle.length === 0) {
-
             detalleHtml += `
               <tr>
                 <td colspan="4" class="text-center text-muted">
@@ -865,11 +843,8 @@ function ListarReportesClientes(idcliente) {
                 </td>
               </tr>
             `;
-
           } else {
-
             $.each(detalle, function (a, item) {
-
               detalleHtml += `
                 <tr>
                   <td>${item.tipo}</td>
@@ -884,7 +859,6 @@ function ListarReportesClientes(idcliente) {
                   </td>
                 </tr>
               `;
-
             });
           }
 
@@ -905,8 +879,9 @@ function ListarReportesClientes(idcliente) {
               <td>
                 ${badge(cuenta.tipo, "info")}
 
-                ${cuenta.dias_mora
-              ? `<i
+                ${
+                  cuenta.dias_mora
+                    ? `<i
                         class="fa fa-info-circle text-danger ml-1"
                         data-toggle="popover"
                         data-trigger="hover"
@@ -914,8 +889,8 @@ function ListarReportesClientes(idcliente) {
                         data-content="${cuenta.dias_mora}"
                         style="cursor:pointer;"
                       ></i>`
-              : ""
-            }
+                    : ""
+                }
               </td>
 
               <td class="text-right font-weight-bold">
@@ -926,8 +901,9 @@ function ListarReportesClientes(idcliente) {
                 ${money(interes)}
               </td>
 
-              <td class="text-right ${mora > 0 ? "text-danger font-weight-bold" : ""
-            }">
+              <td class="text-right ${
+                mora > 0 ? "text-danger font-weight-bold" : ""
+              }">
                 ${money(mora)}
               </td>
 
@@ -1008,7 +984,6 @@ function ListarReportesClientes(idcliente) {
 
       $("#data_cuentas_pagar").html(htmlCobrar);
 
-
       /* =========================================================
          3. COMPRAS A PROVEEDORES
       ========================================================= */
@@ -1039,7 +1014,6 @@ function ListarReportesClientes(idcliente) {
       `;
 
       if (compras.length === 0) {
-
         htmlCompras += `
           <tr>
             <td colspan="7">
@@ -1047,11 +1021,8 @@ function ListarReportesClientes(idcliente) {
             </td>
           </tr>
         `;
-
       } else {
-
         $.each(compras, function (i, compra) {
-
           const importe = number(compra.totalrecibido);
           const interes = number(compra.interes);
           const total = number(compra.total_venta);
@@ -1085,7 +1056,6 @@ function ListarReportesClientes(idcliente) {
           `;
 
           if (detalle.length === 0) {
-
             detalleHtml += `
               <tr>
                 <td colspan="3" class="text-center text-muted">
@@ -1093,11 +1063,8 @@ function ListarReportesClientes(idcliente) {
                 </td>
               </tr>
             `;
-
           } else {
-
             $.each(detalle, function (a, item) {
-
               detalleHtml += `
                 <tr>
                   <td>${item.nombre_producto}</td>
@@ -1107,7 +1074,6 @@ function ListarReportesClientes(idcliente) {
                   </td>
                 </tr>
               `;
-
             });
           }
 
@@ -1205,7 +1171,6 @@ function ListarReportesClientes(idcliente) {
 
       $("#data_proveedor").html(htmlCompras);
 
-
       /* =========================================================
          4. CUENTAS POR PAGAR
       ========================================================= */
@@ -1236,7 +1201,6 @@ function ListarReportesClientes(idcliente) {
       `;
 
       if (cuentasxpagar.length === 0) {
-
         htmlPagar += `
           <tr>
             <td colspan="7">
@@ -1244,11 +1208,8 @@ function ListarReportesClientes(idcliente) {
             </td>
           </tr>
         `;
-
       } else {
-
         $.each(cuentasxpagar, function (i, cuenta) {
-
           const deuda = number(cuenta.deudatotal);
           const interes = number(cuenta.interes);
           const abonado = number(cuenta.abonototal);
@@ -1280,7 +1241,6 @@ function ListarReportesClientes(idcliente) {
           `;
 
           if (detalle.length === 0) {
-
             detalleHtml += `
               <tr>
                 <td colspan="2" class="text-center text-muted">
@@ -1288,11 +1248,8 @@ function ListarReportesClientes(idcliente) {
                 </td>
               </tr>
             `;
-
           } else {
-
             $.each(detalle, function (a, item) {
-
               const monto = number(item.montopagado);
 
               totalPagadoPagar += monto;
@@ -1305,7 +1262,6 @@ function ListarReportesClientes(idcliente) {
                   </td>
                 </tr>
               `;
-
             });
           }
 
@@ -1342,10 +1298,10 @@ function ListarReportesClientes(idcliente) {
 
               <td class="text-right text-success font-weight-bold">
                 ${money(
-            detalle.reduce(function (total, item) {
-              return total + number(item.montopagado);
-            }, 0)
-          )}
+                  detalle.reduce(function (total, item) {
+                    return total + number(item.montopagado);
+                  }, 0),
+                )}
               </td>
 
               <td class="text-center">
@@ -1410,80 +1366,121 @@ function ListarReportesClientes(idcliente) {
 
       $("#data_proveedor_pagar").html(htmlPagar);
 
-
       /* =========================================================
          POPOVERS
       ========================================================= */
 
       $('[data-toggle="popover"]').popover({
         trigger: "hover",
-        container: "body"
+        container: "body",
       });
-
     },
 
     error: function () {
-
       $("#data_compras").html(
-        empty("No se pudo obtener el historial del cliente")
+        empty("No se pudo obtener el historial del cliente"),
       );
 
       $("#data_cuentas_pagar").html("");
       $("#data_proveedor").html("");
       $("#data_proveedor_pagar").html("");
-
-    }
+    },
   });
 }
 
-
 function ScoreCrediticioCliente(idcliente) {
-
   $("#scoreCliente").modal("show");
 
-  $("#scoreNumero").html(
-    '<i class="fa fa-spinner fa-spin"></i>'
-  );
+  $("#scoreNumero").html('<i class="fa fa-spinner fa-spin"></i>');
 
   $.ajax({
-
     url:
-      "controladores/persona.php?op=scorecrediticiocliente&idcliente="
-      + idcliente,
+      "controladores/persona.php?op=scorecrediticiocliente&idcliente=" +
+      idcliente,
 
     type: "GET",
 
-    success: function (r) {
-
-      let data = JSON.parse(r);
-
-      let score = parseInt(data.score);
+    success: function (response) {
+      const data = response;
+      const score = parseInt(data.score);
+      const number = function (value) {
+        return Number(value || 0);
+      };
+      const percent = function (value) {
+        return number(value).toFixed(2) + "%";
+      };
+      const money = function (value) {
+        return "S/ " + number(value).toFixed(2);
+      };
 
       $("#scoreNumero").text(score);
-
       $("#scoreBar")
         .css("width", score + "%")
         .text(score + " / 100");
 
-      $("#totalCreditos").text(
-        data.total_creditos
+      $("#totalCreditos").text(number(data.total_creditos));
+      $("#cuotasVencidas").text(number(data.cuotas_vencidas));
+      $("#diasAtraso").text(number(data.dias_atraso_actual));
+      $("#diasAtrasoActual").text(number(data.dias_atraso_actual) + " días");
+      $("#fechaAtraso").text(
+        data.vencimiento_mas_antiguo
+          ? "Vencimiento: " + data.vencimiento_mas_antiguo
+          : "Sin vencimientos pendientes",
+      );
+      $("#fechasVencimiento").text(
+        data.vencimiento_mas_antiguo || data.vencimiento_mas_reciente
+          ? (data.vencimiento_mas_antiguo || "-") + " / " +
+            (data.vencimiento_mas_reciente || "-")
+          : "-",
       );
 
-      $("#cuotasVencidas").text(
-        data.cuotas_pagadas_tarde
-      );
+      $("#totalCuotas").text(number(data.total_cuotas));
+      $("#cuotasPagadas").text(number(data.cuotas_pagadas));
+      $("#cuotasPendientes").text(number(data.cuotas_pendientes));
+      $("#cuotasPendientesNoVencidas").text(number(data.cuotas_pendientes_no_vencidas));
+      $("#cuotasPuntuales").text(number(data.cuotas_pagadas_puntualmente));
+      $("#cuotasTarde").text(number(data.cuotas_pagadas_tarde));
+      $("#porcentajeCumplimiento").text(percent(data.porcentaje_cumplimiento));
+      $("#diasAtrasoHistorico").text(number(data.dias_atraso_historico) + " días");
 
-      $("#diasAtraso").text(
-        data.dias_atraso_historico
-      );
+      $("#montoTotalCreditos").text(money(data.monto_total_creditos));
+      $("#deudaPendiente").text(money(data.deuda_pendiente));
+      $("#totalPagado").text(money(data.total_pagado));
+      $("#montoCuotasVencidas").text(money(data.monto_cuotas_vencidas));
+      $("#montoCuotasNoVencidas").text(money(data.monto_cuotas_pendientes_no_vencidas));
+      $("#exposicionCrediticia").text(money(data.exposicion_crediticia));
+      $("#porcentajeDeudaPagada").text(percent(data.porcentaje_deuda_pagada));
+      $("#porcentajeDeudaPendiente").text(percent(data.porcentaje_deuda_pendiente));
+      $("#porcentajePagado").text(percent(data.porcentaje_pagado));
 
-      $("#moraTotal").text(
-        "S/ " + parseFloat(data.mora_total)
-          .toFixed(2)
-      );
+      $("#moraTotal").text(money(data.mora_actual));
+      $("#moraAcumulada").text(money(data.mora_total));
 
-      $("#porcentajePagado").text(
-        data.porcentaje_pagado + "%"
+      $("#seguimientosNoResponde").text(number(data.seguimientos_no_responde));
+      $("#seguimientosReprogramados").text(number(data.seguimientos_reprogramados));
+      $("#gestionesRealizadas").text(number(data.gestiones_realizadas));
+      $("#compromisosTotales").text(number(data.compromisos_totales));
+      $("#compromisosCumplidos").text(number(data.compromisos_cumplidos));
+      $("#compromisosIncumplidos").text(number(data.compromisos_incumplidos));
+
+      const alertLabels = {
+        SIN_HISTORIA_CREDITICIA: "Sin historial crediticio",
+        CUOTAS_VENCIDAS: "Tiene cuotas vencidas",
+        MORA_ACUMULADA: "Presenta mora acumulada",
+        ANTECEDENTES_INCUMPLIMIENTO: "Tiene antecedentes de incumplimiento",
+        COMPROMISOS_INCUMPLIDOS: "Tiene compromisos de pago incumplidos",
+      };
+      const alerts = Array.isArray(data.alertas) ? data.alertas : [];
+      $("#alertasScore").html(
+        alerts.length
+          ? alerts
+              .map(function (alert) {
+                return '<span class="badge badge-danger mr-1 mb-1">' +
+                  (alertLabels[alert] || alert) +
+                  "</span>";
+              })
+              .join("")
+          : '<span class="text-success"><i class="fas fa-check-circle"></i> Sin alertas independientes</span>',
       );
 
       let badge = "";
@@ -1491,84 +1488,42 @@ function ScoreCrediticioCliente(idcliente) {
       let colorBar = "";
 
       switch (data.riesgo) {
-
         case "BAJO":
-
-          badge =
-            '<span class="badge badge-success p-2">RIESGO BAJO</span>';
-
+          badge = '<span class="badge badge-success p-2">RIESGO BAJO</span>';
           colorBar = "bg-success";
-
-          recomendacion =
-            "Cliente con excelente comportamiento de pago.";
-
+          recomendacion = "Cliente con excelente comportamiento de pago.";
           break;
-
-        case "MEDIO":
-
-          badge =
-            '<span class="badge badge-warning p-2">RIESGO MEDIO</span>';
-
-          colorBar = "bg-warning";
-
-          recomendacion =
-            "Se recomienda seguimiento preventivo.";
-
+        case "MODERADO":
+          badge = '<span class="badge badge-info p-2">RIESGO MODERADO</span>';
+          colorBar = "bg-info";
+          recomendacion = "Se recomienda seguimiento preventivo.";
           break;
-
         case "ALTO":
-
-          badge =
-            '<span class="badge badge-danger p-2">RIESGO ALTO</span>';
-
+          badge = '<span class="badge badge-danger p-2">RIESGO ALTO</span>';
           colorBar = "bg-danger";
-
-          recomendacion =
-            "Cliente requiere gestión de cobranza.";
-
+          recomendacion = "Cliente requiere gestión de cobranza.";
           break;
-
         case "CRITICO":
-
-          badge =
-            '<span class="badge badge-dark p-2">RIESGO CRÍTICO</span>';
-
+          badge = '<span class="badge badge-dark p-2">RIESGO CRÍTICO</span>';
           colorBar = "bg-dark";
-
-          recomendacion =
-            "No se recomienda otorgar nuevos créditos.";
-
+          recomendacion = "No se recomienda otorgar nuevos créditos.";
           break;
-
         default:
-
-          badge =
-            '<span class="badge badge-dark p-2">SIN HISTORIAL</span>';
-
-          colorBar = "bg-dark";
-
-          recomendacion =
-            "El cliente no tiene historial de créditos.";
-
+          badge = '<span class="badge badge-secondary p-2">SIN HISTORIAL</span>';
+          colorBar = "bg-secondary";
+          recomendacion = "El cliente no tiene historial de créditos.";
           break;
       }
 
       $("#scoreBar")
-        .removeClass(
-          "bg-success bg-warning bg-danger bg-dark"
-        )
+        .removeClass("bg-success bg-info bg-warning bg-danger bg-dark bg-secondary")
         .addClass(colorBar);
 
       $("#riesgoBadge").html(badge);
 
-      $("#recomendacionScore").html(
-        recomendacion
-      );
-
-    }
-
+      $("#recomendacionScore").html(recomendacion);
+    },
   });
-
 }
 
 init();

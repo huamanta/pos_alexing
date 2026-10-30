@@ -49,20 +49,17 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarp':
-		$rspta = $persona->listarp();
-		echo $rspta;
+		$persona->listarp();
 		break;
 
 	case 'listarc':
-		$rspta = $persona->listarc($tipo_documento = "", $excluirId = true);
-		echo $rspta;
+		$persona->listarc($tipo_documento = "", $excluirId = true);
 		break;
 
 
 	case 'scorecrediticiocliente':
 		$idcliente = $_GET["idcliente"];
-		$rspta = $persona->scoreCrediticioCliente($idcliente);
-		echo $rspta;
+		$persona->scoreCrediticioCliente($idcliente);
 		break;
 
 }

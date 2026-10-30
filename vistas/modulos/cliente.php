@@ -377,6 +377,7 @@ date_default_timezone_set('America/Lima');
               <div class="inner">
                 <h3 id="diasAtraso">0</h3>
                 <p>Días atraso</p>
+                <small id="fechaAtraso">Sin vencimientos pendientes</small>
               </div>
               <div class="icon">
                 <i class="fas fa-clock"></i>
@@ -388,7 +389,7 @@ date_default_timezone_set('America/Lima');
             <div class="small-box bg-success">
               <div class="inner">
                 <h3 id="porcentajePagado">0%</h3>
-                <p>Pagado</p>
+                <p>Deuda pagada</p>
               </div>
               <div class="icon">
                 <i class="fas fa-check-circle"></i>
@@ -399,23 +400,66 @@ date_default_timezone_set('America/Lima');
         </div>
 
         <div class="row">
-
-          <div class="col-md-6">
-
-            <div class="card card-outline card-danger">
-              <div class="card-header">
-                Mora acumulada
+          <div class="col-md-12">
+            <div class="card card-outline card-primary">
+              <div class="card-header"><b>Comportamiento de pago</b></div>
+              <div class="card-body">
+                <div class="row text-center">
+                  <div class="col-md-2"><b id="totalCuotas">0</b><br><small>Total cuotas</small></div>
+                  <div class="col-md-2"><b id="cuotasPagadas">0</b><br><small>Cuotas pagadas</small></div>
+                  <div class="col-md-2"><b id="cuotasPendientes">0</b><br><small>Cuotas pendientes</small></div>
+                  <div class="col-md-2"><b id="cuotasPendientesNoVencidas">0</b><br><small>Pendientes no vencidas</small></div>
+                  <div class="col-md-2"><b id="cuotasPuntuales">0</b><br><small>Pagadas puntualmente</small></div>
+                  <div class="col-md-2"><b id="cuotasTarde">0</b><br><small>Pagadas tarde</small></div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                  <div class="col-md-3"><b id="porcentajeCumplimiento">0%</b><br><small>Cumplimiento puntual</small></div>
+                  <div class="col-md-3"><b id="diasAtrasoHistorico">0</b><br><small>Máximo atraso histórico</small></div>
+                  <div class="col-md-3"><b id="diasAtrasoActual">0</b><br><small>Atraso actual</small></div>
+                  <div class="col-md-3">
+                    <b id="fechasVencimiento">-</b><br><small>Vencimientos pendiente</small>
+                  </div>
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
 
+        <div class="row">
+          <div class="col-md-12">
+            <div class="card card-outline card-success">
+              <div class="card-header"><b>Exposición crediticia</b></div>
+              <div class="card-body">
+                <div class="row text-center">
+                  <div class="col-md-2"><b id="montoTotalCreditos">S/ 0.00</b><br><small>Monto total créditos</small></div>
+                  <div class="col-md-2"><b id="deudaPendiente">S/ 0.00</b><br><small>Deuda pendiente</small></div>
+                  <div class="col-md-2"><b id="totalPagado">S/ 0.00</b><br><small>Total pagado</small></div>
+                  <div class="col-md-2"><b id="montoCuotasVencidas">S/ 0.00</b><br><small>Cuotas vencidas</small></div>
+                  <div class="col-md-2"><b id="montoCuotasNoVencidas">S/ 0.00</b><br><small>Cuotas no vencidas</small></div>
+                  <div class="col-md-2"><b id="exposicionCrediticia">S/ 0.00</b><br><small>Exposición actual</small></div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                  <div class="col-md-6"><b id="porcentajeDeudaPagada">0%</b><br><small>Porcentaje de deuda pagada</small></div>
+                  <div class="col-md-6"><b id="porcentajeDeudaPendiente">0%</b><br><small>Porcentaje de deuda pendiente</small></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card card-outline card-danger">
+              <div class="card-header">Mora actual</div>
               <div class="card-body text-center">
-
                 <h2 id="moraTotal">
                   S/ 0.00
                 </h2>
-
+                <small>Mora acumulada: <b id="moraAcumulada">S/ 0.00</b></small>
               </div>
             </div>
-
           </div>
 
           <div class="col-md-6">
@@ -434,6 +478,26 @@ date_default_timezone_set('America/Lima');
 
           </div>
 
+          <div class="row">
+            <div class="col-md-12">
+              <div class="card card-outline card-warning">
+                <div class="card-header"><b>Historial de cobranza</b></div>
+                <div class="card-body">
+                  <div class="row text-center">
+                    <div class="col-md-2"><b id="seguimientosNoResponde">0</b><br><small>No respondió</small></div>
+                    <div class="col-md-2"><b id="seguimientosReprogramados">0</b><br><small>Reprogramó</small></div>
+                    <div class="col-md-2"><b id="gestionesRealizadas">0</b><br><small>Gestiones realizadas</small></div>
+                    <div class="col-md-2"><b id="compromisosTotales">0</b><br><small>Compromisos</small></div>
+                    <div class="col-md-2"><b id="compromisosCumplidos">0</b><br><small>Cumplidos</small></div>
+                    <div class="col-md-2"><b id="compromisosIncumplidos">0</b><br><small>Incumplidos</small></div>
+                  </div>
+                  <hr>
+                  <div id="alertasScore" class="text-center text-muted">Sin alertas independientes</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
       </div>
@@ -450,4 +514,4 @@ date_default_timezone_set('America/Lima');
 <script async
   src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEfzrVHyxezdBMPmKlF8Hs-of68DzrRFY&callback=initMap">
   </script>
-<script src="vistas/js/cliente.js"></script>
+<script type="text/javascript" src="<?= $rutas->asset('vistas/js/cliente.js') ?>"></script>

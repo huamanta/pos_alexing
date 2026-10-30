@@ -419,43 +419,62 @@ class Persona extends Helpers
 	public function scoreCrediticioCliente($idcliente)
 	{
 		$credito = $this->obtenerDatosCredito($idcliente);
+		$seguimiento = $this->obtenerSeguimientosCrediticios($idcliente);
 
-		if (!$credito || $credito['total_creditos'] == 0) {
-			return json_encode(
-				$this->respuestaSinHistorial()
-			);
+		if (!$credito || (int) $credito['total_creditos'] === 0) {
+			return Response::json($this->respuestaSinHistorial());
 		}
 
-
-		$seguimientos = $this->obtenerSeguimientos($idcliente);
-
-
-		$porcentaje_pagado = $this->calcularPorcentajePago(
-			$credito['deuda_total'],
-			$credito['total_pagado']
-		);
-
-		$creditos = $this->obtenerCuotasCreditoCliente($idcliente);
-
-		$moraCliente = $this->calcularMoraCliente($creditos);
-
-		$score = $this->calcularScoreCredito(
-			$credito,
-			$seguimientos,
-			$porcentaje_pagado,
-			$moraCliente
-		);
-
-
+		$score = $this->calcularScoreCredito($credito, $seguimiento);
 		$riesgo = $this->clasificarRiesgo($score);
+		$alertas = $this->obtenerAlertas($credito, $seguimiento);
 
-		return json_encode([
-			"score" => $score,
-			"riesgo" => $riesgo['riesgo'],
-			"color" => $riesgo['color'],
-			...$credito,
-			"mora_total" => round($moraCliente['mora_total'], 2),
-			"porcentaje_pagado" => round($porcentaje_pagado, 2)
+		$deudaTotal = (float) $credito['deuda_total'];
+		$totalPagado = (float) $credito['total_pagado'];
+		$porcentajePagado = $deudaTotal > 0
+			? min(100, round(($totalPagado / $deudaTotal) * 100, 2))
+			: 0;
+		$porcentajePendiente = $deudaTotal > 0
+			? min(100, round((((float) $credito['deuda_pendiente'] / $deudaTotal) * 100), 2))
+			: 0;
+
+		return Response::json([
+			'score' => $score,
+			'riesgo' => $riesgo['riesgo'],
+			'color' => $riesgo['color'],
+			'total_creditos' => (int) $credito['total_creditos'],
+			'total_cuotas' => (int) $credito['total_cuotas'],
+			'cuotas_pagadas' => (int) $credito['cuotas_pagadas'],
+			'cuotas_pendientes' => (int) $credito['cuotas_pendientes'],
+			'cuotas_vencidas' => (int) $credito['cuotas_vencidas'],
+			'cuotas_pendientes_no_vencidas' => (int) $credito['cuotas_pendientes_no_vencidas'],
+			'cuotas_pagadas_puntualmente' => (int) $credito['cuotas_pagadas_puntualmente'],
+			'cuotas_pagadas_tarde' => (int) $credito['cuotas_pagadas_tarde'],
+			'porcentaje_cumplimiento' => (float) $credito['porcentaje_cumplimiento'],
+			'dias_atraso_historico' => (int) $credito['dias_atraso_historico'],
+			'dias_atraso_actual' => (int) $credito['dias_atraso_actual'],
+			'vencimiento_mas_antiguo' => $credito['vencimiento_mas_antiguo'],
+			'vencimiento_mas_reciente' => $credito['vencimiento_mas_reciente'],
+			'monto_total_creditos' => (float) $credito['monto_total_creditos'],
+			'deuda_total' => round($deudaTotal, 2),
+			'total_pagado' => round($totalPagado, 2),
+			'monto_cuotas_vencidas' => (float) $credito['monto_cuotas_vencidas'],
+			'monto_cuotas_pendientes_no_vencidas' => (float) $credito['monto_cuotas_pendientes_no_vencidas'],
+			'mora_total' => (float) $credito['mora_total'],
+			'mora_actual' => (float) $credito['mora_actual'],
+			'porcentaje_pagado' => $porcentajePagado,
+			'porcentaje_deuda_pagada' => $porcentajePagado,
+			'porcentaje_deuda_pendiente' => $porcentajePendiente,
+			'deuda_pendiente' => round((float) $credito['deuda_pendiente'], 2),
+			'exposicion_crediticia' => round((float) $credito['deuda_pendiente'] + (float) $credito['mora_actual'], 2),
+			'mora_crediticia' => round((float) $credito['mora_actual'], 2),
+			'seguimientos_no_responde' => (int) $seguimiento['no_responde'],
+			'seguimientos_reprogramados' => (int) $seguimiento['reprogramados'],
+			'gestiones_realizadas' => (int) $seguimiento['gestiones'],
+			'compromisos_totales' => (int) $seguimiento['compromisos_totales'],
+			'compromisos_cumplidos' => (int) $seguimiento['compromisos_cumplidos'],
+			'compromisos_incumplidos' => (int) $seguimiento['compromisos_incumplidos'],
+			'alertas' => $alertas
 		]);
 	}
 
@@ -463,365 +482,288 @@ class Persona extends Helpers
 	{
 		return (new DBQuery($this->pdo))
 			->query("
-            SELECT
-                COUNT(DISTINCT v.idventa) AS total_creditos,
-
-                COALESCE(SUM(c.deudatotal),0) AS deuda_total,
-
-                COALESCE(SUM(c.abonototal),0) AS total_pagado,
-
-
-                -- cuotas pendientes vencidas actualmente
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN c.estado_pago = 1
-                            AND c.fechavencimiento < CURDATE()
-                            THEN 1
-                            ELSE 0
-                        END
-                    ),0
-                ) AS cuotas_vencidas,
-
-
-                -- cuotas pagadas después de vencer
-                COALESCE(
-                    SUM(
-                        CASE
-                            WHEN c.estado_pago = 0
-                            AND p.ultimo_pago > c.fechavencimiento
-                            THEN 1
-                            ELSE 0
-                        END
-                    ),0
-                ) AS cuotas_pagadas_tarde,
-
-
-                -- días de atraso actual
-                COALESCE(
-                    MAX(
-                        CASE
-                            WHEN c.estado_pago = 1
-                            AND c.fechavencimiento < CURDATE()
-                            THEN DATEDIFF(
-                                CURDATE(),
-                                c.fechavencimiento
-                            )
-                            ELSE 0
-                        END
-                    ),0
-                ) AS dias_atraso_actual,
-
-
-                -- máximo atraso histórico
-                COALESCE(
-                    MAX(
-                        CASE
-                            WHEN c.estado_pago = 0
-                            AND p.ultimo_pago > c.fechavencimiento
-                            THEN DATEDIFF(
-                                p.ultimo_pago,
-                                c.fechavencimiento
-                            )
-                            ELSE 0
-                        END
-                    ),0
-                ) AS dias_atraso_historico
-
-
-            FROM venta v
-
-            INNER JOIN cuentas_por_cobrar c
-                ON c.idventa = v.idventa
-
-
-            LEFT JOIN (
-                SELECT
-                    idcpc,
-                    MAX(fechapago) AS ultimo_pago
-                FROM detalle_cuentas_por_cobrar
-                GROUP BY idcpc
-            ) p
-                ON p.idcpc = c.idcpc
-
-
-            WHERE v.idcliente = :idcliente
-            AND v.ventacredito = 'Si'
-			AND c.idrefinanciamiento IS NULL
-        ",
-				[
-					'idcliente' => $idcliente
-				]
-			)
-			->first();
+				SELECT
+					COUNT(DISTINCT v.idventa) AS total_creditos,
+					COUNT(DISTINCT c.idcpc) AS total_cuotas,
+					SUM(CASE WHEN c.estado_pago = 0
+						AND COALESCE(c.deuda, 0) <= 0
+						AND COALESCE(c.mora, 0) <= 0
+						AND p.effective_payments > 0 THEN 1 ELSE 0 END) AS cuotas_pagadas,
+					SUM(CASE WHEN NOT (c.estado_pago = 0
+						AND COALESCE(c.deuda, 0) <= 0
+						AND COALESCE(c.mora, 0) <= 0
+						AND p.effective_payments > 0) THEN 1 ELSE 0 END) AS cuotas_pendientes,
+					SUM(CASE WHEN NOT (c.estado_pago = 0
+						AND COALESCE(c.deuda, 0) <= 0
+						AND COALESCE(c.mora, 0) <= 0
+						AND p.effective_payments > 0)
+						AND c.fechavencimiento < CURDATE()
+						AND GREATEST(COALESCE(c.deuda, GREATEST(c.deudatotal - c.abonototal, 0)), 0) > 0
+						THEN 1 ELSE 0 END) AS cuotas_vencidas,
+					SUM(CASE WHEN NOT (c.estado_pago = 0
+						AND COALESCE(c.deuda, 0) <= 0
+						AND COALESCE(c.mora, 0) <= 0
+						AND p.effective_payments > 0)
+						AND c.fechavencimiento >= CURDATE()
+						THEN 1 ELSE 0 END) AS cuotas_pendientes_no_vencidas,
+					SUM(CASE WHEN c.estado_pago = 0
+						AND COALESCE(c.deuda, 0) <= 0
+						AND COALESCE(c.mora, 0) <= 0
+						AND p.effective_payments > 0
+						AND DATE(p.ultimo_pago) <= c.fechavencimiento THEN 1 ELSE 0 END) AS cuotas_pagadas_puntualmente,
+					SUM(CASE WHEN c.estado_pago = 0
+						AND COALESCE(c.deuda, 0) <= 0
+						AND COALESCE(c.mora, 0) <= 0
+						AND p.effective_payments > 0
+						AND DATE(p.ultimo_pago) > c.fechavencimiento THEN 1 ELSE 0 END) AS cuotas_pagadas_tarde,
+					COALESCE(MAX(CASE WHEN c.estado_pago = 0
+						AND p.effective_payments > 0
+						AND COALESCE(c.deuda, 0) <= 0
+						AND COALESCE(c.mora, 0) <= 0
+						AND DATE(p.ultimo_pago) > c.fechavencimiento
+						THEN DATEDIFF(DATE(p.ultimo_pago), c.fechavencimiento) ELSE 0 END), 0) AS dias_atraso_historico,
+					COALESCE(MAX(CASE WHEN NOT (c.estado_pago = 0
+						AND COALESCE(c.deuda, 0) <= 0
+						AND COALESCE(c.mora, 0) <= 0
+						AND p.effective_payments > 0)
+						AND c.fechavencimiento < CURDATE()
+						THEN DATEDIFF(CURDATE(), c.fechavencimiento) ELSE 0 END), 0) AS dias_atraso_actual,
+					MIN(CASE WHEN NOT (c.estado_pago = 0
+						AND COALESCE(c.deuda, 0) <= 0
+						AND COALESCE(c.mora, 0) <= 0
+						AND p.effective_payments > 0) THEN c.fechavencimiento ELSE NULL END) AS vencimiento_mas_antiguo,
+					MAX(CASE WHEN NOT (c.estado_pago = 0
+						AND COALESCE(c.deuda, 0) <= 0
+						AND COALESCE(c.mora, 0) <= 0
+						AND p.effective_payments > 0) THEN c.fechavencimiento ELSE NULL END) AS vencimiento_mas_reciente,
+					SUM(c.deudatotal) AS deuda_total,
+					SUM(CASE WHEN NOT (c.estado_pago = 0 AND COALESCE(c.deuda,0) <= 0 AND COALESCE(c.mora,0) <= 0)
+						THEN GREATEST(COALESCE(c.deuda, GREATEST(c.deudatotal-c.abonototal,0)),0)
+						ELSE 0 END) AS deuda_pendiente,
+					SUM(c.abonototal) AS total_pagado,
+					SUM(CASE WHEN c.fechavencimiento < CURDATE()
+						AND NOT (c.estado_pago = 0 AND COALESCE(c.deuda,0) <= 0 AND COALESCE(c.mora,0) <= 0)
+						THEN GREATEST(COALESCE(c.deuda, GREATEST(c.deudatotal-c.abonototal,0)),0) ELSE 0 END) AS monto_cuotas_vencidas,
+					SUM(CASE WHEN c.fechavencimiento >= CURDATE()
+						AND NOT (c.estado_pago = 0 AND COALESCE(c.deuda,0) <= 0 AND COALESCE(c.mora,0) <= 0)
+						THEN GREATEST(COALESCE(c.deuda, GREATEST(c.deudatotal-c.abonototal,0)),0) ELSE 0 END) AS monto_cuotas_pendientes_no_vencidas,
+					CASE WHEN
+						SUM(CASE WHEN c.estado_pago=0 AND COALESCE(c.deuda,0)<=0 AND COALESCE(c.mora,0)<=0 AND p.effective_payments>0 THEN 1 ELSE 0 END)>0
+						THEN ROUND(
+							SUM(CASE WHEN c.estado_pago=0 AND COALESCE(c.deuda,0)<=0 AND COALESCE(c.mora,0)<=0 AND p.effective_payments>0 AND DATE(p.ultimo_pago)<=c.fechavencimiento THEN 1 ELSE 0 END) * 100 /
+							SUM(CASE WHEN c.estado_pago=0 AND COALESCE(c.deuda,0)<=0 AND COALESCE(c.mora,0)<=0 AND p.effective_payments>0 THEN 1 ELSE 0 END),
+						2)
+						ELSE 100 END AS porcentaje_cumplimiento,
+					SUM(COALESCE(c.mora,0) + COALESCE(c.mora_pagada,0)) AS mora_total,
+					SUM(COALESCE(c.mora,0)) AS mora_actual,
+					COALESCE((SELECT SUM(x.total_venta) FROM venta x
+						WHERE x.idcliente=:idcliente AND x.ventacredito='Si'
+						AND x.deleted_at IS NULL), 0) AS monto_total_creditos
+				FROM venta v
+				INNER JOIN cuentas_por_cobrar c ON c.idventa=v.idventa AND c.deleted_at IS NULL
+				LEFT JOIN (
+					SELECT idcpc, MAX(fechapago) AS ultimo_pago,
+						SUM(montopagado+montotarjeta) AS effective_payments
+					FROM detalle_cuentas_por_cobrar
+					WHERE deleted_at IS NULL
+					GROUP BY idcpc
+				) p ON p.idcpc=c.idcpc
+				WHERE v.idcliente=:idcliente
+					AND v.ventacredito='Si'
+					AND v.deleted_at IS NULL
+					AND c.condicion=1
+					AND c.idrefinanciamiento_origen IS NULL
+					AND c.estado_pago != 2
+					AND (
+						c.idrefinanciamiento IS NOT NULL
+						AND c.idrefinanciamiento=(
+							SELECT MAX(vigente.idrefinanciamiento)
+							FROM cuentas_por_cobrar vigente
+							WHERE vigente.idventa=c.idventa
+								AND vigente.deleted_at IS NULL
+								AND vigente.idrefinanciamiento IS NOT NULL
+						)
+						OR NOT EXISTS (
+							SELECT 1
+							FROM cuentas_por_cobrar vigente
+							WHERE vigente.idventa=c.idventa
+								AND vigente.deleted_at IS NULL
+								AND vigente.idrefinanciamiento IS NOT NULL
+						)
+					)
+			", ['idcliente' => $idcliente])->first();
 	}
 
-	private function obtenerSeguimientos($idcliente)
+	private function obtenerSeguimientosCrediticios($idcliente)
 	{
-		return (new DBQuery($this->pdo))
-			->select([
-				'estado',
-				'COUNT(*) AS cantidad'
-			])
-			->from('seguimiento_clientes')
-			->where(
-				'idcliente',
-				'=',
-				$idcliente
-			)
-			->whereNull('deleted_at')
-			->groupBy('estado')
-			->get();
+		$row = (new DBQuery($this->pdo))->query("
+			SELECT
+				COALESCE(SUM(CASE WHEN sc.estado='NO_RESPONDE' THEN 1 ELSE 0 END),0) AS no_responde,
+				COALESCE(SUM(CASE WHEN sc.estado='REPROGRAMADO' THEN 1 ELSE 0 END),0) AS reprogramados,
+				COUNT(sc.idseguimiento) AS gestiones
+			FROM seguimiento_clientes sc
+			WHERE sc.idcliente=:idcliente AND sc.deleted_at IS NULL
+		", ['idcliente' => $idcliente])->first() ?: [
+			'no_responde' => 0,
+			'reprogramados' => 0,
+			'gestiones' => 0
+		];
+		$compromisos = (new DBQuery($this->pdo))->query("
+			SELECT
+				COUNT(cp.idcompromiso_pago) AS compromisos_totales,
+				COALESCE(SUM(CASE WHEN cp.fecha_cumplimiento IS NOT NULL
+					AND DATE(cp.fecha_cumplimiento)<=cp.fecha_compromiso THEN 1 ELSE 0 END),0) AS compromisos_cumplidos,
+				COALESCE(SUM(CASE WHEN cp.fecha_cumplimiento IS NULL
+					AND cp.fecha_compromiso<CURDATE() THEN 1 ELSE 0 END),0) AS compromisos_incumplidos
+			FROM compromiso_pago cp
+			INNER JOIN cuentas_por_cobrar c ON c.idcpc=cp.idcpc AND c.deleted_at IS NULL
+			INNER JOIN venta v ON v.idventa=c.idventa AND v.deleted_at IS NULL
+			WHERE v.idcliente=:idcliente AND cp.deleted_at IS NULL
+		", ['idcliente' => $idcliente])->first() ?: [];
+		$row['compromisos_totales'] = (int) ($compromisos['compromisos_totales'] ?? 0);
+		$row['compromisos_cumplidos'] = (int) ($compromisos['compromisos_cumplidos'] ?? 0);
+		$row['compromisos_incumplidos'] = (int) ($compromisos['compromisos_incumplidos'] ?? 0);
+		return $row;
 	}
 
-	private function calcularPorcentajePago(
-		float $deuda,
-		float $pagado
-	) {
-		if ($deuda <= 0) {
-			return 0;
-		}
-
-		return ($pagado / $deuda) * 100;
+	private function getScoreWeights()
+	{
+		return [
+			'overdue_one' => 12,
+			'overdue_many' => 20,
+			'overdue_severe' => 30,
+			'historical_late' => 12,
+			'historical_delay_30' => 6,
+			'historical_delay_60' => 12,
+			'mora_500' => 6,
+			'mora_1000' => 12,
+			'no_response' => 3,
+			'no_response_recurrence' => 10,
+			'reprogramacion' => 2,
+			'reprogramacion_recurrence' => 8,
+			'compromiso_incumplido' => 8
+		];
 	}
 
-	private function calcularScoreCredito(
-		array $credito,
-		array $seguimientos,
-		float $porcentaje_pagado,
-		array $moraCliente
-	) {
+	private function calcularScoreCredito(array $credito, array $seguimiento)
+	{
+		$weights = $this->getScoreWeights();
+		$score = 100;
 
-		$score = 0;
+		$overdue = (int) $credito['cuotas_vencidas'];
+		if ($overdue > 5)
+			$score -= $weights['overdue_severe'];
+		elseif ($overdue >= 3)
+			$score -= $weights['overdue_many'];
+		elseif ($overdue >= 1)
+			$score -= $weights['overdue_one'];
 
+		$paidLate = (int) $credito['cuotas_pagadas_tarde'];
+		$penaltyLate = max($weights['historical_late'] * $this->boundedRatio($paidLate, 3), 0);
+		$totalPaid = (int) $credito['cuotas_pagadas'];
+		$totalFinished = $totalPaid + $paidLate;
+		$punctual = (int) $credito['cuotas_pagadas_puntualmente'];
+		$compliance = $totalFinished > 0 ? round(($punctual / $totalFinished) * 100, 2) : 100;
+		$penaltyCompliance = $compliance < 60 ? 15 : ($compliance < 80 ? 8 : ($compliance < 95 ? 4 : 0));
+		$score -= max($penaltyLate, $penaltyCompliance);
 
-		// cuotas vencidas
-		$cuotas = $credito['cuotas_vencidas'];
+		$days = (int) $credito['dias_atraso_historico'];
+		if ($days > 60)
+			$score -= $weights['historical_delay_60'];
+		elseif ($days > 30)
+			$score -= $weights['historical_delay_30'];
 
-		if ($cuotas > 5) {
-			$score += 30;
-		} elseif ($cuotas > 2) {
-			$score += 20;
-		} elseif ($cuotas > 0) {
-			$score += 10;
-		}
+		$mora = (float) $credito['mora_actual'];
+		if ($mora > 1000)
+			$score -= $weights['mora_1000'];
+		elseif ($mora > 500)
+			$score -= $weights['mora_500'];
 
+		$noResponse = (int) $seguimiento['no_responde'];
+		$score -= min(12, $noResponse * $weights['no_response']);
+		if ($noResponse >= 3)
+			$score -= $weights['no_response_recurrence'];
 
+		$reprogramado = (int) $seguimiento['reprogramados'];
+		$score -= min(8, $reprogramado * $weights['reprogramacion']);
+		if ($reprogramado >= 3)
+			$score -= $weights['reprogramacion_recurrence'];
 
-		// atraso
-		$dias = $credito['dias_atraso_historico'];
-
-		if ($dias > 60) {
-			$score += 40;
-		} elseif ($dias > 30) {
-			$score += 20;
-		} elseif ($dias > 15) {
-			$score += 10;
-		}
-
-
-
-		// mora
-		if ($moraCliente['mora_total'] > 1000) {
-			$score += 20;
-		} elseif ($moraCliente['mora_total'] > 500) {
-			$score += 10;
-		}
-
-
-
-		// pagos
-
-		if ($porcentaje_pagado >= 90) {
-
-			$score -= 20;
-
-		} elseif ($porcentaje_pagado >= 70) {
-
-			$score -= 10;
-
-		} elseif ($porcentaje_pagado <= 30) {
-
-			$score += 15;
-		}
-
-
-
-		// cantidad créditos
-
-		$creditos = $credito['total_creditos'];
-
-		if ($creditos >= 10) {
-
-			$score -= 15;
-
-		} elseif ($creditos >= 5) {
-
-			$score -= 10;
-
-		} elseif ($creditos >= 3) {
-
-			$score -= 5;
-		}
-
-
-
-		// seguimientos
-
-		foreach ($seguimientos as $seg) {
-
-			switch ($seg['estado']) {
-
-				case 'NO_RESPONDE':
-					$score += $seg['cantidad'] * 5;
-					break;
-
-
-				case 'REPROGRAMADO':
-					$score += $seg['cantidad'] * 2;
-					break;
-
-
-				case 'REALIZADO':
-					$score -= $seg['cantidad'];
-					break;
-			}
-		}
-
+		$incumplidos = (int) $seguimiento['compromisos_incumplidos'];
+		$score -= min(16, $incumplidos * $weights['compromiso_incumplido']);
 
 		return max(0, min(100, $score));
 	}
 
+	private function boundedRatio($value, $base)
+	{
+		return min(1, $value / $base);
+	}
+
 	private function clasificarRiesgo($score)
 	{
+		if ($score >= 80)
+			return ['riesgo' => 'BAJO', 'color' => 'success'];
+		if ($score >= 60)
+			return ['riesgo' => 'MODERADO', 'color' => 'info'];
+		if ($score >= 40)
+			return ['riesgo' => 'ALTO', 'color' => 'warning'];
+		return ['riesgo' => 'CRITICO', 'color' => 'danger'];
+	}
 
-		if ($score <= 20) {
-
-			return [
-				"riesgo" => "BAJO",
-				"color" => "success"
-			];
-
-		} elseif ($score <= 50) {
-
-			return [
-				"riesgo" => "MEDIO",
-				"color" => "warning"
-			];
-
-		} elseif ($score <= 80) {
-
-			return [
-				"riesgo" => "ALTO",
-				"color" => "danger"
-			];
-
-		}
-
-
-		return [
-			"riesgo" => "CRITICO",
-			"color" => "dark"
-		];
+	private function obtenerAlertas(array $credito, array $seguimiento)
+	{
+		$alertas = [];
+		if ((int) $credito['cuotas_vencidas'] > 0)
+			$alertas[] = 'CUOTAS_VENCIDAS';
+		if ((float) $credito['mora_actual'] > 0)
+			$alertas[] = 'MORA_ACUMULADA';
+		if ((int) $credito['cuotas_pagadas_tarde'] > 0)
+			$alertas[] = 'ANTECEDENTES_INCUMPLIMIENTO';
+		if ((int) $seguimiento['compromisos_incumplidos'] > 0)
+			$alertas[] = 'COMPROMISOS_INCUMPLIDOS';
+		return $alertas;
 	}
 
 	private function respuestaSinHistorial()
 	{
 		return [
-			"score" => 0,
-			"riesgo" => "BAJO",
-			"color" => "secondary",
-			"total_creditos" => 0,
-			"cuotas_vencidas" => 0,
-			"porcentaje_pagado" => 0,
-			"deuda_total" => 0,
-			"total_pagado" => 0,
-			"cuotas_pagadas_tarde" => 0,
-			"dias_atraso_actual" => 0,
-			"dias_atraso_historico" => 0,
-			"mora_total" => 0,
-		];
-	}
-
-	private function obtenerCuotasCreditoCliente($idcliente)
-	{
-		return (new DBQuery($this->pdo))
-			->query("
-            SELECT
-                c.idcpc,
-                c.estado_pago,
-                c.mora_pagada,
-                c.fecha_update_mora,
-                c.fechavencimiento,
-                v.idsucursal
-
-            FROM cuentas_por_cobrar c
-
-            INNER JOIN venta v
-                ON v.idventa = c.idventa
-
-            WHERE v.idcliente = :idcliente
-            AND c.idrefinanciamiento IS NULL
-        ",
-				[
-					'idcliente' => $idcliente
-				]
-			)
-			->get();
-	}
-
-
-	private function calcularMoraCliente(array $cuotas): array
-	{
-		$moraPagada = 0;
-		$moraPendiente = 0;
-
-		foreach ($cuotas as $cuota) {
-
-			// Mora que ya fue pagada siempre queda como historial
-			$moraPagada += (float) $cuota['mora_pagada'];
-
-
-			// Verificar si la sucursal cobra mora
-			$config = $this->verificarMoraCredito(
-				$cuota['idsucursal']
-			);
-
-
-			if (!$config['activo']) {
-				continue;
-			}
-
-
-			// Solo cuotas abiertas generan mora nueva
-			if ((int) $cuota['estado_pago'] === 1) {
-
-
-				$fechaInicio = !empty($cuota['fecha_update_mora'])
-					? $cuota['fecha_update_mora']
-					: $cuota['fechavencimiento'];
-
-
-				$fechaInicio = new DateTime($fechaInicio);
-				$hoy = new DateTime();
-
-
-				if ($fechaInicio < $hoy) {
-
-					$dias = $fechaInicio->diff($hoy)->days;
-
-
-					$moraPendiente +=
-						$dias * (float) $config['valor'];
-				}
-			}
-		}
-
-
-		return [
-			'mora_pagada' => $moraPagada,
-			'mora_pendiente' => $moraPendiente,
-			'mora_total' => $moraPagada + $moraPendiente
+			'score' => 50,
+			'riesgo' => 'ALTO',
+			'color' => 'warning',
+			'total_creditos' => 0,
+			'total_cuotas' => 0,
+			'cuotas_pagadas' => 0,
+			'cuotas_pendientes' => 0,
+			'cuotas_vencidas' => 0,
+			'cuotas_pendientes_no_vencidas' => 0,
+			'cuotas_pagadas_puntualmente' => 0,
+			'cuotas_pagadas_tarde' => 0,
+			'porcentaje_cumplimiento' => 0,
+			'dias_atraso_historico' => 0,
+			'dias_atraso_actual' => 0,
+			'vencimiento_mas_antiguo' => null,
+			'vencimiento_mas_reciente' => null,
+			'monto_total_creditos' => 0,
+			'deuda_total' => 0,
+			'deuda_pendiente' => 0,
+			'total_pagado' => 0,
+			'monto_cuotas_vencidas' => 0,
+			'monto_cuotas_pendientes_no_vencidas' => 0,
+			'mora_total' => 0,
+			'mora_actual' => 0,
+			'porcentaje_pagado' => 0,
+			'porcentaje_deuda_pagada' => 0,
+			'porcentaje_deuda_pendiente' => 0,
+			'exposicion_crediticia' => 0,
+			'mora_crediticia' => 0,
+			'seguimientos_no_responde' => 0,
+			'seguimientos_reprogramados' => 0,
+			'gestiones_realizadas' => 0,
+			'compromisos_totales' => 0,
+			'compromisos_cumplidos' => 0,
+			'compromisos_incumplidos' => 0,
+			'alertas' => ['SIN_HISTORIA_CREDITICIA']
 		];
 	}
 

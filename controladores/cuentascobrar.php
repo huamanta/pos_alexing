@@ -372,11 +372,10 @@ switch ($_GET["op"]) {
 		$observacion = isset($_POST["observacion"]) ? limpiarCadena($_POST["observacion"]) : "";
 		$idusuario = $_SESSION["idusuario"];
 		if (empty($idcompromiso_pago)) {
-			$response = $cuentascobrar->guardarCompromisoPago($idcpc, $idventa, $idcliente, $fecha_compromiso, $monto, $observacion, $idusuario);
+			$cuentascobrar->guardarCompromisoPago($idcpc, $idventa, $idcliente, $fecha_compromiso, $monto, $observacion, $idusuario);
 		}else{
-			$response = $cuentascobrar->editarCompromisoPago($idcompromiso_pago, $fecha_compromiso, $fecha_cumplimiento, $monto, $observacion);
+			$cuentascobrar->editarCompromisoPago($idcompromiso_pago, $fecha_compromiso, $fecha_cumplimiento, $monto, $observacion);
 		}
-		echo $response;
 		break;
 
 	case 'calendarioCuotasCredito':
