@@ -422,7 +422,7 @@ class Persona extends Helpers
 		$seguimiento = $this->obtenerSeguimientosCrediticios($idcliente);
 
 		if (!$credito || (int) $credito['total_creditos'] === 0) {
-			return Response::json($this->respuestaSinHistorial());
+			return $this->respuestaSinHistorial();
 		}
 
 		$score = $this->calcularScoreCredito($credito, $seguimiento);
@@ -438,7 +438,7 @@ class Persona extends Helpers
 			? min(100, round((((float) $credito['deuda_pendiente'] / $deudaTotal) * 100), 2))
 			: 0;
 
-		return Response::json([
+		return [
 			'score' => $score,
 			'riesgo' => $riesgo['riesgo'],
 			'color' => $riesgo['color'],
@@ -475,7 +475,7 @@ class Persona extends Helpers
 			'compromisos_cumplidos' => (int) $seguimiento['compromisos_cumplidos'],
 			'compromisos_incumplidos' => (int) $seguimiento['compromisos_incumplidos'],
 			'alertas' => $alertas
-		]);
+		];
 	}
 
 	private function obtenerDatosCredito($idcliente)

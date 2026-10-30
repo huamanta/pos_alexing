@@ -122,10 +122,7 @@ class Solicitudes extends Persona
 
             $codigo = "SOL-" . date('YmdHis');
 
-            $scoreCrediticio = json_decode(
-                $this->scorecrediticiocliente($idcliente),
-                true
-            );
+            $scoreCrediticio = $this->scorecrediticiocliente($idcliente);
 
             $score = $scoreCrediticio['score'];
             $riesgo = $scoreCrediticio['riesgo'];

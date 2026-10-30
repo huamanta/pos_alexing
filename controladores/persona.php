@@ -59,7 +59,7 @@ switch ($_GET["op"]) {
 
 	case 'scorecrediticiocliente':
 		$idcliente = $_GET["idcliente"];
-		$persona->scoreCrediticioCliente($idcliente);
+		Response::json($persona->scoreCrediticioCliente($idcliente));
 		break;
 
 }
