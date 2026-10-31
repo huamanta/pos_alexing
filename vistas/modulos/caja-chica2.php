@@ -1,6 +1,5 @@
 <!-- Content Wrapper. Contains page content -->
 <?php
-date_default_timezone_set('America/Lima');
 $idcajaSesion = isset($_SESSION['idcaja']) ? $_SESSION['idcaja'] : '';
 ?>
 

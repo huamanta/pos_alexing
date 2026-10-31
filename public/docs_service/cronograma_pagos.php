@@ -4,7 +4,6 @@ require "../../configuraciones/Conexion.php";
 require "./HelpersService.php";
 use Carbon\Carbon;
 $helpers = new  HelpersService();
-date_default_timezone_set('America/Lima');
 
 // Obtener ID del venta desde parámetro encriptado
 $idVenta = isset($_GET['idventa']) ? $helpers->encryptDecrypt('decrypt', $_GET['idventa']) : null;

@@ -3,7 +3,6 @@ require_once __DIR__ . '/../../configuraciones/bootstrap.php';
 require "../../configuraciones/Conexion.php";
 require "./HelpersService.php";
 $helpers = new HelpersService();
-date_default_timezone_set('America/Lima');
 // Función para encriptar/desencriptar
 
 // Obtener ID del venta desde parámetro encriptado

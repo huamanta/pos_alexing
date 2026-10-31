@@ -4,7 +4,6 @@ require_once __DIR__ . '/src/Util.php';
 
 use Greenter\Ws\Services\SunatEndpoints;
 
-date_default_timezone_set('America/Lima');
 
 function savedFile(string $filename, ?string $content): void {
     $fileDir = __DIR__ . '/files/'; // Changed from /cdrs/ to /files/

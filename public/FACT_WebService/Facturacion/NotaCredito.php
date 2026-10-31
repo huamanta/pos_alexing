@@ -18,7 +18,6 @@ use Greenter\Model\Sale\Legend;
 
 use Greenter\Ws\Services\SunatEndpoints;
 
-date_default_timezone_set('America/Lima');
 
 $idNc = $_GET['idnc'];
 $codColab = $_GET['codColab'];

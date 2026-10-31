@@ -10,7 +10,6 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 
-date_default_timezone_set('America/Lima');
 
 $inicio = $_GET['fecha_inicio'] ?? '';
 $fin = $_GET['fecha_fin'] ?? '';

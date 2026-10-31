@@ -5,7 +5,6 @@ require_once __DIR__ . "/../configuraciones/ConexionPdo.php";
 require_once __DIR__ . "/Helpers.php";
 require_once __DIR__ . "/../core/Response.php";
 require_once __DIR__ . "/../core/Constants.php";
-date_default_timezone_set('America/Lima');
 
 class Producto extends Helpers
 {
@@ -2050,7 +2049,6 @@ class Producto extends Helpers
 		$precio_venta = null,
 		$idfifo = 0
 	) {
-		date_default_timezone_set('America/Lima'); // Zona horaria de Lima
 
 		// Normalizar entradas
 		$idproducto = intval($idproducto);

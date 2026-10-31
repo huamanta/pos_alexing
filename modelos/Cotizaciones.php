@@ -6,8 +6,6 @@ require_once __DIR__ . "/../core/Constants.php";
 require_once __DIR__ . "/../core/Response.php";
 require_once __DIR__ . "/../core/Email.php";
 
-date_default_timezone_set('America/Lima');
-
 class Cotizacion extends Helpers
 {
 

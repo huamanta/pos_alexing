@@ -1,5 +1,4 @@
 <?php
-date_default_timezone_set('America/Lima');
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
 

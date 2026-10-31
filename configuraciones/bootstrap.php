@@ -1,5 +1,4 @@
 <?php
-
 require_once __DIR__ . '/../vendor/autoload.php';
 require_once __DIR__ . '/../core/FluentQuery.php';
 require_once __DIR__ . '/../core/FluentSave.php';
@@ -8,6 +7,9 @@ $dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
 $dotenv->safeLoad();
 
 require_once __DIR__ . '/env.php';
+
+$timezone = env('APP_TIMEZONE', 'America/Lima');
+date_default_timezone_set($timezone);
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

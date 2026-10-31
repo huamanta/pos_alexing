@@ -1,6 +1,5 @@
 <?php
 // No iniciar sesión aquí - ya debería estar iniciada desde plantilla.php
-date_default_timezone_set('America/Lima');
 
 // Función para obtener IP real
 function getClientIP() {

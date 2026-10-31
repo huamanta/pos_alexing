@@ -7,7 +7,6 @@ require_once __DIR__ . "/../../modelos/Venta.php";
 $helpersService = new HelpersService();
 $helpers = new Helpers();
 $venta = new Venta();
-date_default_timezone_set('America/Lima');
 // Función para encriptar/desencriptar
 
 // Obtener ID del venta desde parámetro encriptado

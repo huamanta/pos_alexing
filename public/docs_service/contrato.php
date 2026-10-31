@@ -82,7 +82,6 @@ require_once __DIR__ . "/../../modelos/Venta.php";
 $helpersService = new HelpersService();
 $helpers = new Helpers();
 $venta = new Venta();
-date_default_timezone_set('America/Lima');
 
 // Obtener ID del contrato desde parámetro encriptado
 $idVenta = isset($_GET['idventa']) ? $helpersService->encryptDecrypt('decrypt', $_GET['idventa']) : null;

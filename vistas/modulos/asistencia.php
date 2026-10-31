@@ -1,5 +1,4 @@
 <?php
-date_default_timezone_set('America/Lima');
 ?>
 
 <!-- Content Wrapper. Contains page content -->

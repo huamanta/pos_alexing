@@ -2,7 +2,6 @@
 //Incluímos inicialmente la conexión a la base de datos
 require __DIR__ . "/../configuraciones/Conexion.php";
 require __DIR__ . "/Helpers.php";
-date_default_timezone_set('America/Lima');
 
 class Compra extends Helpers
 {

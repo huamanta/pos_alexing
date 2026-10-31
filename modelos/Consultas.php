@@ -5,8 +5,6 @@ require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
 require_once __DIR__ . "/../core/Response.php";
 
-date_default_timezone_set('America/Lima');
-
 class Consultas extends Helpers
 {
 	//Implementamos nuestro constructor

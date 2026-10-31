@@ -17,7 +17,6 @@ use Greenter\Model\Sale\Invoice;
 use Greenter\Model\Sale\SaleDetail;
 use Greenter\Model\Sale\Legend;
 
-date_default_timezone_set('America/Lima');
 
 $pdo = Conexion::conectar();
 

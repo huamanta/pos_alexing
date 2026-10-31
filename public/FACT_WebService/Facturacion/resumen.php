@@ -6,7 +6,6 @@ use Greenter\Model\Summary\Summary;
 use Greenter\Model\Summary\SummaryDetail;
 use Greenter\Ws\Services\SunatEndpoints;
 
-date_default_timezone_set('America/Lima');
 
 $util = Util::getInstance();
 $conexion = $util->abrirConexion();

@@ -1,6 +1,5 @@
 <?php
 // Agrega la siguiente línea al principio del script PHP
-date_default_timezone_set('America/Lima');
 ?>
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">

@@ -2,7 +2,6 @@
 //Incluímos inicialmente la conexión a la base de datos
 require "../configuraciones/Conexion.php";
 
-date_default_timezone_set('America/Lima');
 require_once 'Helpers.php';
 
 final class Pos extends Helpers

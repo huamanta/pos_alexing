@@ -63,7 +63,7 @@ class CuentasCobrar extends Helpers
 
             $monto = round(
                 Helpers::toFloat($montopagado) +
-                    Helpers::toFloat($montoPagarTarjeta),
+                Helpers::toFloat($montoPagarTarjeta),
                 2
             );
 
@@ -281,8 +281,8 @@ class CuentasCobrar extends Helpers
 
         $moraNueva = round(
             floatval($fila["deuda"]) *
-                ($config["valor"] / 100) *
-                $dias,
+            ($config["valor"] / 100) *
+            $dias,
             2
         );
 
@@ -1961,8 +1961,8 @@ class CuentasCobrar extends Helpers
                     if ($dias > 0) {
                         $moraNueva = round(
                             floatval($row->deuda) *
-                                ($config["valor"] / 100) *
-                                $dias,
+                            ($config["valor"] / 100) *
+                            $dias,
                             2
                         );
                         $dias_mora = $dias;
@@ -2583,8 +2583,8 @@ class CuentasCobrar extends Helpers
 
                         $mora += round(
                             floatval($row["deuda"]) *
-                                ($configMora["valor"] / 100) *
-                                $dias,
+                            ($configMora["valor"] / 100) *
+                            $dias,
                             2
                         );
                     }
@@ -2616,7 +2616,7 @@ class CuentasCobrar extends Helpers
 
                         $descuento = round(
                             floatval($row["deuda"]) *
-                                ($configDescuento["valor"] / 100),
+                            ($configDescuento["valor"] / 100),
                             2
                         );
                     }
@@ -3015,14 +3015,15 @@ class CuentasCobrar extends Helpers
             $reg['archivos'] = $archivos_adjuntos;
             $data[] = array(
                 "0" => $count++,
-                "1" => $reg['tipo'],
-                "2" => $reg['nombre'],
-                "3" => "Corresponde a cuota " . $credito['numero_cuota'] . " de " . $credito['total_cuotas'],
-                "4" => $reg['descripcion'],
-                "5" => $reg['fecha_proxima'],
-                "6" => $reg['estado'],
-                "7" => $reg['prioridad'],
-                "8" => '<button class="btn btn-primary" onclick="editarSeguimiento(' .
+                "1" => Carbon::parse($reg['created_at'])->format('d/m/Y h:i A'),
+                "2" => $reg['tipo'],
+                "3" => $reg['nombre'],
+                "4" => "Corresponde a cuota " . $credito['numero_cuota'] . " de " . $credito['total_cuotas'],
+                "5" => $reg['descripcion'],
+                "6" => $reg['fecha_proxima'],
+                "7" => $reg['estado'],
+                "8" => $reg['prioridad'],
+                "9" => '<button class="btn btn-primary" onclick="editarSeguimiento(' .
                     htmlspecialchars(json_encode($reg, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8') .
                     ', true)">
                         <i class="fa fa-edit"></i>
@@ -3048,27 +3049,28 @@ class CuentasCobrar extends Helpers
 
     public function listarHistorialIncidencias($idventa)
     {
-        $sql = "SELECT cp.*, cc.idventa, cc.idcpc
-        FROM compromiso_pago cp
-        INNER JOIN cuentas_por_cobrar cc
-            ON cc.idcpc = cp.idcpc
-        WHERE cc.idventa = $idventa
-          AND cp.deleted_at IS NULL
-          AND cc.deleted_at IS NULL";
-        $rspta = ejecutarConsulta($sql);
+        $compromisos_pago = (new DBQuery($this->pdo))
+            ->select('cp.*, cc.idventa, cc.idcpc')
+            ->from('compromiso_pago cp')
+            ->join('cuentas_por_cobrar cc', 'cc.idcpc = cp.idcpc')
+            ->where('cc.idventa', '=', $idventa)
+            ->whereNull('cp.deleted_at')
+            ->whereNull('cc.deleted_at')
+            ->get();
 
         $data = array();
 
         $count = 1;
-        while ($reg = $rspta->fetch_object()) {
+        foreach ($compromisos_pago as $reg) {
             $data[] = array(
                 "0" => $count++,
-                "1" => $reg->detalle,
-                "2" => $reg->fecha_compromiso,
-                "3" => Helpers::get_currency_symbol($reg->monto),
-                "4" => $reg->fecha_cumplimiento,
-                "5" => $reg->observacion,
-                "6" => '<button class="btn btn-primary" onclick="editarCompromisoPago(' . htmlspecialchars(json_encode($reg, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8') . ')">
+                "1" => Carbon::parse($reg['created_at'])->format('d/m/Y h:i A'),
+                "2" => $reg['detalle'],
+                "3" => $reg['fecha_compromiso'],
+                "4" => Helpers::get_currency_symbol($reg['monto']),
+                "5" => $reg['fecha_cumplimiento'],
+                "6" => $reg['observacion'],
+                "7" => '<button class="btn btn-primary" onclick="editarCompromisoPago(' . htmlspecialchars(json_encode($reg, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP), ENT_QUOTES, 'UTF-8') . ')">
                         <i class="fa fa-edit"></i>
                         </button>'
             );

@@ -3,7 +3,6 @@ require_once __DIR__ . '/../../configuraciones/bootstrap.php';
 require "../../configuraciones/Conexion.php";
 require "./HelpersService.php";
 $helpers = new HelpersService();
-date_default_timezone_set('America/Lima');
 
 // Obtener ID del contrato desde parámetro encriptado
 $idVenta = isset($_GET['idventa']) ? $helpers->encryptDecrypt('decrypt', $_GET['idventa']) : null;

@@ -265,6 +265,7 @@
           <table id="tbllistadohistorial" class="table table-striped table-bordered" width="100%">
             <thead>
               <th>#</th>
+              <th>F. registro</th>
               <th>Tipo</th>
               <th>Responsable</th>
               <th>Descripcion</th>
@@ -294,6 +295,7 @@
           <table id="tbllistadohistorialIncidencias" class="table table-striped table-bordered" width="100%">
             <thead>
               <th>#</th>
+              <th>F.registro</th>
               <th style="width: 300px;">Detalle</th>
               <th>F. compromiso</th>
               <th>Monto</th>
