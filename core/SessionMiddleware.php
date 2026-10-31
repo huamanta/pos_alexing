@@ -18,6 +18,7 @@ if (is_array($esRutaPublica)) {
 
 if (
     !$esRutaPublica &&
+    PHP_SAPI !== 'cli' &&
     empty($_SESSION['idusuario'])
 ) {
     Response::json([

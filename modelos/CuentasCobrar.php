@@ -7,6 +7,8 @@ require_once __DIR__ . "/../configuraciones/ConexionPdo.php";
 require_once __DIR__ . "/../core/FluentQuery.php";
 require_once __DIR__ . "/../core/FluentSave.php";
 require_once __DIR__ . "/../core/Email.php";
+require_once __DIR__ . "/../core/Queue.php";
+require_once __DIR__ . "/../jobs/EnviarComprobantePago.php";
 
 use Carbon\Carbon;
 
@@ -94,19 +96,23 @@ class CuentasCobrar extends Helpers
             $comprobante = $cuenta['serie_comprobante'] . '-' . $cuenta['num_comprobante'];
             $this->pdo->commit();
             if ($clientData && !empty($clientData['email'])) {
-
-                $enviado = self::enviarComprobantePago($idcpc, $comprobante, $monto, $clientData, $fechaPago, $idsucursal);
-
-                if (!$enviado) {
-                    return Response::json([
-                        'success' => true,
-                        'message' => 'Pago registrada correctamente, pero no se pudo enviar el correo electrónico.',
-                        "ticket" => [
-                            "idcpc" => $idcpc,
-                        ]
-                    ]);
+                try {
+                    Queue::dispatch(new EnviarComprobantePago(
+                        $idcpc,
+                        $comprobante,
+                        (float) $monto,
+                        $clientData,
+                        $fechaPago,
+                        $idsucursal
+                    ))
+                        ->onQueue('emails')
+                        ->dispatch();
+                } catch (Throwable $e) {
+                    error_log(
+                        "No se pudo encolar el comprobante del pago {$idcpc}: "
+                        . $e->getMessage()
+                    );
                 }
-
             }
 
             return Response::json([
@@ -161,12 +167,13 @@ class CuentasCobrar extends Helpers
         $sucursal = Helpers::dataSucursal($idsucursal);
         $numero = $comprobante;
         $fecha = date('d/m/Y', strtotime($fecha_hora));
+        $currency = $sucursal['moneda'] ?? 'PEN';
 
         $mensaje = Email::plantilla('ticket_pago', [
             'cliente' => $clientData['nombre'],
             'numero' => $numero,
             'fecha' => $fecha,
-            'monto' => Helpers::get_currency_symbol($monto),
+            'monto' => Helpers::get_currency_symbol($monto, $currency),
             'empresa' => $sucursal['nombre'] ?? 'Sistema'
         ]);
 

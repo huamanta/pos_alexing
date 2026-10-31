@@ -9,6 +9,7 @@
         "greenter/lite": "^5.3",
         "nesbot/carbon": "^3.13",
         "chillerlan/php-qrcode": "^6.0",
-        "phpmailer/phpmailer": "^7.1"
+        "phpmailer/phpmailer": "^7.1",
+        "predis/predis": "^3.7"
     }
 }

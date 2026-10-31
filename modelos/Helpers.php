@@ -39,11 +39,13 @@ class Helpers
     }
 
 
-    public function get_currency_symbol($monto, $currency = null, $locale = "es_PE")
+    public static function get_currency_symbol($monto, $currency = null, $locale = "es_PE")
     {
         if (!$currency) {
-            $sucursal = $_SESSION['idsucursal'];
-            $currency = self::get_currency_code($sucursal);
+            $idsucursal = $_SESSION['idsucursal'] ?? null;
+            $currency = $idsucursal
+                ? (new self())->get_currency_code((int) $idsucursal)
+                : 'PEN';
         }
         // Validar monto
         if (!is_numeric($monto)) {
