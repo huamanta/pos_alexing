@@ -153,6 +153,11 @@ class Cotizacion extends Helpers
             return false;
         }
 
+        if (substr($pdf, 0, 4) !== '%PDF') {
+            error_log("El reporte de comprobante de pago {$idcotizacion} no devolvió un PDF válido.");
+            return false;
+        }
+
         $archivoPdf = sys_get_temp_dir() . "/cotizacion_{$idcotizacion}.pdf";
 
         if (file_put_contents($archivoPdf, $pdf) === false) {
@@ -182,10 +187,6 @@ class Cotizacion extends Helpers
             $clientData['nombre'],
             [$archivoPdf]
         );
-
-        if (!$enviado) {
-            return false;
-        }
 
         if (file_exists($archivoPdf)) {
             unlink($archivoPdf);

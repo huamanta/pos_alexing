@@ -147,6 +147,11 @@ class CuentasCobrar extends Helpers
             return false;
         }
 
+        if (substr($pdf, 0, 4) !== '%PDF') {
+            error_log("El reporte de comprobante de pago {$idcpc} no devolvió un PDF válido.");
+            return false;
+        }
+
         $archivoPdf = sys_get_temp_dir() . "/ticket_{$idcpc}.pdf";
 
         if (file_put_contents($archivoPdf, $pdf) === false) {
@@ -178,15 +183,11 @@ class CuentasCobrar extends Helpers
             [$archivoPdf]
         );
 
-        if (!$enviado) {
-            return false;
-        }
-
         if (file_exists($archivoPdf)) {
             unlink($archivoPdf);
         }
 
-        return true;
+        return $enviado;
     }
 
     public function verificarCompromisoPago($idcpc, $monto)

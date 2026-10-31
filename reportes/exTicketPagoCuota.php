@@ -36,7 +36,7 @@ $negocio = new Negocio();
 $pago = $cuentaCobrar->obtenerCuentaPorCobrar($idpago);
 $venta = $venta->ventacabecera($pago['idventa']);
 $detalle = $cuentaCobrar->obtenerUltimoPagoCuota($pago['idcpc']);
-
+$currency = $helpers->get_currency_code($venta['idsucursal']);
 if (!$pago) {
     http_response_code(404);
     echo 'No se encontró el pago.';
@@ -605,7 +605,7 @@ $dompdf = new Dompdf($options);
             </div>
 
             <div class="importe">
-                <?php echo $helpers->get_currency_symbol($pago_cuota); ?>
+                <?php echo $helpers->get_currency_symbol($pago_cuota, $currency); ?>
             </div>
 
         </div>
@@ -695,7 +695,7 @@ $dompdf = new Dompdf($options);
                     </td>
 
                     <td class="right">
-                        <?php echo $helpers->get_currency_symbol($totalVenta); ?>
+                        <?php echo $helpers->get_currency_symbol($totalVenta, $currency); ?>
                     </td>
 
                 </tr>
@@ -709,7 +709,7 @@ $dompdf = new Dompdf($options);
                 </td>
 
                 <td class="right">
-                    <?php echo $helpers->get_currency_symbol($importe); ?>
+                    <?php echo $helpers->get_currency_symbol($importe, $currency); ?>
                 </td>
 
             </tr>
@@ -721,7 +721,7 @@ $dompdf = new Dompdf($options);
                 </td>
 
                 <td class="right saldo-actual">
-                    <?php echo $helpers->get_currency_symbol($saldoActual); ?>
+                    <?php echo $helpers->get_currency_symbol($saldoActual, $currency); ?>
                 </td>
 
             </tr>
