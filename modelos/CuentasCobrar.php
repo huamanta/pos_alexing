@@ -38,7 +38,10 @@ class CuentasCobrar extends Helpers
         try {
             $this->pdo->beginTransaction();
 
-            Helpers::verificarAperturaCajaUsuario($idsucursal, $idusuario);
+            $verificar_caja = Helpers::verificarAperturaCajaUsuario($idsucursal, $idusuario);
+            if (!$verificar_caja) {
+                throw new Exception("No se encontro caja abierta");
+            }
 
             $fechaPago = $this->obtenerFechaPago($fechaPago);
 
@@ -156,15 +159,6 @@ class CuentasCobrar extends Helpers
             : $fechaPago;
     }
 
-    private function validarCaja($idsucursal, $idusuario)
-    {
-
-        $sql = "SELECT * FROM caja_apertura WHERE idusuario = '$idusuario' AND idsucursal = '$idsucursal' AND estado = 1 AND fecha_cierre IS NULL";
-        $apertura = ejecutarConsulta($sql)->fetch_object();
-        if (!$apertura) {
-            throw new Exception("La caja está cerrada.");
-        }
-    }
 
     public function obtenerCuentaPorCobrar(int $idcpc): array
     {
@@ -2181,10 +2175,12 @@ class CuentasCobrar extends Helpers
         $numero_operacion,
         $fechadeposito
     ) {
-        $this->pdo->beginTransaction();
         try {
-
-            $this->validarCaja($idsucursal, $idusuario);
+            $this->pdo->beginTransaction();
+            $verificar_caja = Helpers::verificarAperturaCajaUsuario($idsucursal, $idusuario);
+            if (!$verificar_caja) {
+                throw new Exception("No se encontro caja abierta");
+            }
 
             $configDescuento = Helpers::verificarDecuentoPagoAnticipado($idsucursal);
 
@@ -3260,44 +3256,43 @@ class CuentasCobrar extends Helpers
 
     public function calendarioCuotasCredito($idventa)
     {
-        $sql = "SELECT
-                idcpc,
+        $cuentas = (new DBQuery($this->pdo))
+            ->select('idcpc,
                 fechavencimiento,
                 deudatotal,
-                estado_pago
-            FROM cuentas_por_cobrar
-            WHERE idventa = '$idventa'
-            ORDER BY fechavencimiento";
-
-        $rspta = ejecutarConsulta($sql);
+                estado_pago')
+            ->from('cuentas_por_cobrar')
+            ->where('idventa', '=', $idventa)
+            ->orderBy('fechavencimiento')
+            ->get();
 
         $eventos = [];
-        $hoy = new DateTime();
+        $hoy = Carbon::now();
         $cuota = 1;
 
-        while ($row = $rspta->fetch_object()) {
+        foreach ($cuentas as $row) {
 
-            $fechaVencimiento = new DateTime($row->fechavencimiento);
+            $fechaVencimiento = new DateTime($row['fechavencimiento']);
 
-            if ($row->estado_pago == 1) {
+            if ($row['estado_pago'] == 1) {
                 $color = '#28a745';
             } elseif ($fechaVencimiento < $hoy) {
                 $color = '#dc3545';
             } else {
                 $color = '#ffc107';
             }
-            $deudatotal = Helpers::get_currency_symbol($row->deudatotal);
+            $deudatotal = Helpers::get_currency_symbol($row['deudatotal']);
             $eventos[] = [
-                "id" => $row->idcpc,
+                "id" => $row['idcpc'],
                 "title" => "Cuota {$cuota} - {$deudatotal}",
-                "start" => $row->fechavencimiento,
+                "start" => $row['fechavencimiento'],
                 "allDay" => true,
                 "backgroundColor" => $color,
                 "borderColor" => $color,
                 "textColor" => "#fff",
                 "extendedProps" => [
                     "cuota" => $cuota,
-                    "estado" => $row->estado_pago,
+                    "estado" => $row['estado_pago'],
                     "monto" => $deudatotal
                 ]
             ];
@@ -3305,7 +3300,7 @@ class CuentasCobrar extends Helpers
             $cuota++;
         }
 
-        return json_encode($eventos);
+        return Response::json($eventos);
     }
 
     public function obtenerUltimoPagoCuota($idcpc)

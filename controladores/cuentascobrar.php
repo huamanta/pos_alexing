@@ -380,8 +380,7 @@ switch ($_GET["op"]) {
 
 	case 'calendarioCuotasCredito':
 		$idventa = isset($_GET["idventa"]) ? limpiarCadena($_GET["idventa"]) : "";
-		$response = $cuentascobrar->calendarioCuotasCredito($idventa);
-		echo $response;
+		$cuentascobrar->calendarioCuotasCredito($idventa);
 		break;
 	
 	case "adjuntarComprobante";
