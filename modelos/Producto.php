@@ -634,6 +634,9 @@ class Producto extends Helpers
 
 	public function listarstock22($idsucursal)
 	{
+		if (!$idsucursal){
+			return Response::json([]);
+		}
 		$data = (new DBQuery($this->pdo))
 			->select('a.idproducto, a.nombre, ip.stock, a.imagen, c.nombre AS categoria')
 			->from('producto a')

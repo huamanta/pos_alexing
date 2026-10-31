@@ -253,7 +253,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'obtener_notificaciones':
-		$idsucursal = $_SESSION['idsucursal'];
+		$idsucursal = $_SESSION['idsucursal'] ?? null;
 		$cuentascobrar->generarNotificaciones($idsucursal);
 		break;
 

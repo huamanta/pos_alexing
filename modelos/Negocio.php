@@ -29,6 +29,9 @@ class Negocio extends Helpers
 
 	public function mostrarNombreNegocio($idsucursal)
 	{
+		if (!$idsucursal){
+			return Response::json([]);
+		}
 		$sucursal = Helpers::dataSucursal($idsucursal);
 		$sucursal['baseUrl'] = rtrim(env('APP_URL'), '/');
 

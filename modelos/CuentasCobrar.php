@@ -1,11 +1,12 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
-require "../configuraciones/Conexion.php";
-require "Contratos.php";
-require_once "Helpers.php";
-require_once "../configuraciones/ConexionPdo.php";
-require_once "../core/FluentQuery.php";
-require_once "../core/FluentSave.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/Contratos.php";
+require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../configuraciones/ConexionPdo.php";
+require_once __DIR__ . "/../core/FluentQuery.php";
+require_once __DIR__ . "/../core/FluentSave.php";
+require_once __DIR__ . "/../core/Email.php";
 
 use Carbon\Carbon;
 
@@ -87,7 +88,26 @@ class CuentasCobrar extends Helpers
                 $resultado["mora"]
             );
 
+
+
+            $clientData = Helpers::clienteData($cuenta['idcliente']);
+            $comprobante = $cuenta['serie_comprobante'] . '-' . $cuenta['num_comprobante'];
             $this->pdo->commit();
+            if ($clientData && !empty($clientData['email'])) {
+
+                $enviado = self::enviarComprobantePago($idcpc, $comprobante, $monto, $clientData, $fechaPago, $idsucursal);
+
+                if (!$enviado) {
+                    return Response::json([
+                        'success' => true,
+                        'message' => 'Pago registrada correctamente, pero no se pudo enviar el correo electrónico.',
+                        "ticket" => [
+                            "idcpc" => $idcpc,
+                        ]
+                    ]);
+                }
+
+            }
 
             return Response::json([
                 "success" => true,
@@ -110,9 +130,63 @@ class CuentasCobrar extends Helpers
                 ]
             ]);
         } catch (Throwable $e) {
-            $this->pdo->rollBack();
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
             return Response::error($e->getMessage());
         }
+    }
+
+
+    public function enviarComprobantePago($idcpc, $comprobante, $monto, $clientData, $fecha_hora, $idsucursal)
+    {
+        $urlPdf = rtrim($_ENV['APP_URL'], '/') . "/reportes/exTicketPagoCuota.php?id={$idcpc}";
+        $pdf = @file_get_contents($urlPdf);
+
+        if ($pdf === false) {
+            return false;
+        }
+
+        $archivoPdf = sys_get_temp_dir() . "/ticket_{$idcpc}.pdf";
+
+        if (file_put_contents($archivoPdf, $pdf) === false) {
+            return false;
+        }
+
+        $sucursal = Helpers::dataSucursal($idsucursal);
+        $numero = $comprobante;
+        $fecha = date('d/m/Y', strtotime($fecha_hora));
+
+        $mensaje = Email::plantilla('ticket_pago', [
+            'cliente' => $clientData['nombre'],
+            'numero' => $numero,
+            'fecha' => $fecha,
+            'monto' => Helpers::get_currency_symbol($monto),
+            'empresa' => $sucursal['nombre'] ?? 'Sistema'
+        ]);
+
+        $origen = !empty(trim($sucursal['email'] ?? ''))
+            ? trim($sucursal['email'])
+            : ($_ENV['MAIL_FROM_ADDRESS'] ?? $_SERVER['MAIL_FROM_ADDRESS'] ?? getenv('MAIL_FROM_ADDRESS') ?: '');
+
+        $enviado = Email::enviarEmail(
+            $origen,
+            $clientData['email'],
+            "Nuevo pago Registrada",
+            $mensaje,
+            $clientData['nombre'],
+            [$archivoPdf]
+        );
+
+        if (!$enviado) {
+            return false;
+        }
+
+        if (file_exists($archivoPdf)) {
+            unlink($archivoPdf);
+        }
+
+        return true;
     }
 
     public function verificarCompromisoPago($idcpc, $monto)
@@ -166,7 +240,10 @@ class CuentasCobrar extends Helpers
             ->from('cuentas_por_cobrar cc')
             ->select([
                 'cc.*',
-                'v.idsucursal'
+                'v.idsucursal',
+                'v.idcliente',
+                'v.num_comprobante',
+                'v.serie_comprobante'
             ])
             ->join('venta v', 'v.idventa = cc.idventa')
             ->where('cc.idcpc', '=', $idcpc)
@@ -1157,7 +1234,10 @@ class CuentasCobrar extends Helpers
 
     public function generarNotificaciones($idsucursal)
     {
-        $hoy = date('Y-m-d');
+        if (!$idsucursal) {
+            return Response::json([]);
+        }
+        $hoy = Carbon::now();
 
         $query = (new DBQuery($this->pdo))
             ->select("

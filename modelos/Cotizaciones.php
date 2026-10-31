@@ -114,11 +114,7 @@ class Cotizacion extends Helpers
 
             $this->pdo->commit();
 
-            $clientData = (new DBQuery($this->pdo))
-                ->select('email, nombre')
-                ->from('persona')
-                ->where('idpersona', '=', $idcliente)
-                ->first();
+            $clientData = Helpers::clienteData($idcliente);
 
             if ($clientData && !empty($clientData['email'])) {
 
@@ -154,13 +150,13 @@ class Cotizacion extends Helpers
         $pdf = @file_get_contents($urlPdf);
 
         if ($pdf === false) {
-            throw new Exception("No se pudo generar el PDF de la cotización.");
+            return false;
         }
 
         $archivoPdf = sys_get_temp_dir() . "/cotizacion_{$idcotizacion}.pdf";
 
         if (file_put_contents($archivoPdf, $pdf) === false) {
-            throw new Exception("No se pudo guardar temporalmente el PDF.");
+            return false;
         }
 
         $sucursal = Helpers::dataSucursal($idsucursal);
@@ -174,15 +170,22 @@ class Cotizacion extends Helpers
             'empresa' => $sucursal['nombre'] ?? 'Sistema'
         ]);
 
+        $origen = !empty(trim($sucursal['email'] ?? ''))
+            ? trim($sucursal['email'])
+            : ($_ENV['MAIL_FROM_ADDRESS'] ?? $_SERVER['MAIL_FROM_ADDRESS'] ?? getenv('MAIL_FROM_ADDRESS') ?: '');
 
         $enviado = Email::enviarEmail(
-            $sucursal['email'] ?? $_ENV['MAIL_FROM_ADDRESS'],
+            $origen,
             $clientData['email'],
             "Nueva Cotización Registrada",
             $mensaje,
             $clientData['nombre'],
             [$archivoPdf]
         );
+
+        if (!$enviado) {
+            return false;
+        }
 
         if (file_exists($archivoPdf)) {
             unlink($archivoPdf);
@@ -454,11 +457,11 @@ class Cotizacion extends Helpers
             ->paginate($page, $limit);
 
         $response['permissions'] = [
-			'editar' => Helpers::verificarPermisoCodigo('cotizacion.editar'),
-			'detalle' => Helpers::verificarPermisoCodigo('cotizacion.detalle'),
-			'imprimir' => Helpers::verificarPermisoCodigo('cotizacion.imprimir'),
-			'enviar' => Helpers::verificarPermisoCodigo('cotizacion.enviar')
-		];
+            'editar' => Helpers::verificarPermisoCodigo('cotizacion.editar'),
+            'detalle' => Helpers::verificarPermisoCodigo('cotizacion.detalle'),
+            'imprimir' => Helpers::verificarPermisoCodigo('cotizacion.imprimir'),
+            'enviar' => Helpers::verificarPermisoCodigo('cotizacion.enviar')
+        ];
 
         return Response::json($response);
     }

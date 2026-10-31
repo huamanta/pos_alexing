@@ -287,7 +287,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarStockBajoAlert':
-		$idsucursal = $_SESSION['idsucursal'];
+		$idsucursal = $_SESSION['idsucursal'] ?? null;
 		$producto->listarstock22($idsucursal);
 		break;
 

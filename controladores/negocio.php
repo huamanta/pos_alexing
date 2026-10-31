@@ -61,7 +61,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'mostrarNombreNegocio':
-		$idsucursal = $_SESSION['idsucursal'];
+		$idsucursal = $_SESSION['idsucursal'] ?? null;
 		$negocio->mostrarNombreNegocio($idsucursal);
 		break;
 

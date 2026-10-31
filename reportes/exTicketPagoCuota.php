@@ -203,6 +203,7 @@ $metodoPago = $metodoPago ?: 'EFECTIVO';
 |--------------------------------------------------------------------------
 */
 
+$pago_cuota = (float) ($detalle['montopagado'] ?? 0 + $detalle['montotarjeta'] ?? 0);
 $importe = (float) ($pago['abonototal'] ?? 0);
 $totalVenta = (float) ($pago['deudatotal'] ?? 0);
 $saldoActual = (float) ($pago['deuda'] ?? max($totalVenta - $importe, 0));
@@ -604,7 +605,7 @@ $dompdf = new Dompdf($options);
             </div>
 
             <div class="importe">
-                <?php echo $helpers->get_currency_symbol($importe); ?>
+                <?php echo $helpers->get_currency_symbol($pago_cuota); ?>
             </div>
 
         </div>

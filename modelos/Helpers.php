@@ -18,6 +18,15 @@ class Helpers
             : Constants::CLIENTE_DEFAULT;
     }
 
+    public function clienteData($idcliente)
+    {
+        return (new DBQuery($this->pdo))
+            ->select('email, nombre')
+            ->from('persona')
+            ->where('idpersona', '=', $idcliente)
+            ->first();
+    }
+
     public function get_currency_code($idsucursal)
     {
         $data = (new DBQuery($this->pdo))
