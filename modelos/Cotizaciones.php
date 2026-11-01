@@ -5,6 +5,8 @@ require_once __DIR__ . "/Helpers.php";
 require_once __DIR__ . "/../core/Constants.php";
 require_once __DIR__ . "/../core/Response.php";
 require_once __DIR__ . "/../core/Email.php";
+require_once __DIR__ . "/../core/Queue.php";
+require_once __DIR__ . "/../jobs/EnviarCotizacion.php";
 
 class Cotizacion extends Helpers
 {
@@ -117,16 +119,22 @@ class Cotizacion extends Helpers
             $clientData = Helpers::clienteData($idcliente);
 
             if ($clientData && !empty($clientData['email'])) {
-
-                $enviado = self::enviarCotizacion($idcotizacion, $comprobante, $clientData, $fecha_hora, $idsucursal);
-
-                if (!$enviado) {
-                    return Response::json([
-                        'success' => true,
-                        'message' => 'Cotización registrada correctamente, pero no se pudo enviar el correo electrónico.'
-                    ]);
+                try {
+                    Queue::dispatch(new EnviarCotizacion(
+                        $idcotizacion,
+                        $comprobante,
+                        $clientData,
+                        $fecha_hora,
+                        $idsucursal
+                    ))
+                        ->onQueue('emails')
+                        ->dispatch();
+                } catch (Throwable $e) {
+                    error_log(
+                        "No se pudo encolar la cotización {$idcotizacion}: "
+                        . $e->getMessage()
+                    );
                 }
-
             }
 
             return Response::json([
