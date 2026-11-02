@@ -13,7 +13,7 @@ function init() {
   // listar();
   listaCreditos.load();
   listarSaldos();
-  enviarRecordatoriosAutomatico();
+  //enviarRecordatoriosAutomatico();
   $("#body").addClass("sidebar-collapse sidebar-mini");
 
   $("#getCodeModal").on("submit", function (e) {

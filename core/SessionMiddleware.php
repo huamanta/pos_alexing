@@ -7,7 +7,8 @@ $operacion = $_GET['op'] ?? '';
 $rutasPublicas = [
     'usuario.php' => ['verificar'],
     'generaFacturaCoti.php' => true,
-    'exTicketPagoCuota.php' => true
+    'exTicketPagoCuota.php' => true,
+    'enviar_sms.php' => true,
 ];
 
 $esRutaPublica = $rutasPublicas[$controlador] ?? false;

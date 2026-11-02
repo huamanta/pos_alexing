@@ -679,4 +679,16 @@ class Helpers
             'activo' => (int) $config['is_venta_lotes'] === 1
         ];
     }
+
+    public function sucursalesNotification()
+    {
+        $config = (new DBQuery($this->pdo))
+            ->select('idsucursal')
+            ->from('sucursal_configuracion')
+            ->where('is_notificacion', '=', 1)
+            ->whereNull('deleted_at')
+            ->get();
+
+        return $config;
+    }
 }

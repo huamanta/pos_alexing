@@ -167,7 +167,7 @@ class CuentasCobrar extends Helpers
         $sucursal = Helpers::dataSucursal($idsucursal);
         $numero = $comprobante;
         $fecha = date('d/m/Y', strtotime($fecha_hora));
-        $currency = $sucursal['moneda'] ?? 'PEN';
+        $currency = Helpers::get_currency_code($idsucursal);
 
         $mensaje = Email::plantilla('ticket_pago', [
             'cliente' => $clientData['nombre'],
@@ -3461,5 +3461,97 @@ class CuentasCobrar extends Helpers
         } catch (\Throwable $th) {
             Response::error($th->getMessage());
         }
+    }
+
+    public function listaCuotasVencidas(int $idsucursal)
+    {
+        $data = (new DBQuery($this->pdo))
+            ->select('
+            cc.idcpc,
+            cc.idventa,
+            cc.deuda,
+            cc.fechavencimiento,
+            v.serie_comprobante,
+            v.num_comprobante,
+            p.idpersona,
+            p.nombre AS cliente,
+            p.telefono,
+            (
+                SELECT COUNT(*)
+                FROM cuentas_por_cobrar cc2
+                WHERE cc2.idventa = cc.idventa
+                AND cc2.idcpc <= cc.idcpc
+                AND cc2.deleted_at IS NULL
+            ) AS numero_cuota'
+            )
+            ->from('cuentas_por_cobrar cc')
+            ->join('venta v', 'v.idventa = cc.idventa')
+            ->join('persona p', 'p.idpersona = v.idcliente')
+            ->where('cc.deuda', '>', 0)
+            ->where('v.idsucursal', '=', $idsucursal)
+            ->where('cc.estado_pago', '=', 1)
+            ->whereRaw('DATE(cc.fechavencimiento) <= CURDATE()')
+            ->where('p.telefono', '<>', '')
+            ->whereNull('cc.deleted_at')
+            ->whereNull('v.deleted_at')
+            ->whereNull('p.deleted_at')
+            ->whereNotNull('p.telefono')
+            ->get();
+
+        return $data;
+    }
+
+    public function registrarRecordatorio($idcpc, $canal, $destinatario, $mensaje)
+    {
+        $verificar = (new DBQuery($this->pdo))
+            ->select('id')
+            ->from('recordatorios_cobranza')
+            ->where('idcpc', '=', $idcpc)
+            ->where('canal', '=', $canal)
+            ->where('fecha_recordatorio', '=', date('Y-m-d'))
+            ->whereIn('estado', ['PENDIENTE', 'ENVIADO'])
+            ->first();
+
+        error_log('000');
+        if ($verificar) {
+            return false;
+        }
+        error_log('111');
+
+        $enviado = (new FluentSaver($this->pdo))
+            ->table('recordatorios_cobranza')
+            ->data([
+                'idcpc' => $idcpc,
+                'canal' => $canal,
+                'destinatario' => $destinatario,
+                'mensaje' => $mensaje,
+                'fecha_recordatorio' => date('Y-m-d H:i:s'),
+                'estado' => 'PENDIENTE',
+                'intentos' => 1,
+            ])
+            ->save();
+
+        return $enviado;
+    }
+
+    public function actualizarEstadoRecordatorio($id, $estado, $respuesta = null, $referencia = null)
+    {
+        $update = (new FluentSaver($this->pdo))
+            ->table('recordatorios_cobranza')
+            ->primaryKey('id')
+            ->data([
+                'id' => $id,
+                'estado' => $estado,
+                'respuesta' => $respuesta,
+                'referencia_externa' => $referencia,
+                'fecha_envio' => ($estado === 'ENVIADO') ? date('Y-m-d H:i:s') : null
+            ])
+            ->update();
+
+        if (!$update) {
+            return false;
+        }
+
+        return $update;
     }
 }
