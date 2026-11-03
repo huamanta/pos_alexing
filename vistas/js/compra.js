@@ -2,6 +2,9 @@ var tabla;
 var sucursalActual;
 let listarArticulos = null;
 let listarCompras = null;
+let GOOGLE_MAPS_API_KEY = null;
+let GOOGLE_MAPS_API_URL = null;
+let APIS_PERU_API_URL = null;
 let APIS_PERU_API_KEY = null;
 
 function initProveedor() {
@@ -10,6 +13,9 @@ function initProveedor() {
     type: "POST",
     success: function (response) {
       const data = response;
+	  GOOGLE_MAPS_API_KEY = data.maps_api_key || null;
+	  GOOGLE_MAPS_API_URL = data.maps_api_url || null;
+	  APIS_PERU_API_URL = data.apis_peru_api_url || null;
 	  APIS_PERU_API_KEY = data.apis_peru_api_key || null;
       const tipo_documento = data.tipo_documento || [];
       $("#idtipo_documento").html(
@@ -345,7 +351,7 @@ function BuscarCliente() {
                 } else {
                     $('#Buscar_Cliente').hide();
                     var numdni = $('#num_documento').val();
-                    var url = `https://dniruc.apisperu.com/api/v1/dni/${numdni}?token=${APIS_PERU_API_KEY}`;
+                    var url = `${APIS_PERU_API_URL}/dni/${numdni}?token=${APIS_PERU_API_KEY}`;
 
                     $('#cargando').show();
                     $.ajax({
@@ -383,12 +389,12 @@ function BuscarCliente() {
                     Swal.fire({
                         title: 'Falta Números en el RUC',
                         icon: 'info',
-                        text: 'El DNI debe tener 11 Carácteres'
+                        text: 'El RUC debe tener 11 Carácteres'
                     });
                 } else {
                     $('#Buscar_Cliente').hide();
                     var numruc = $('#num_documento').val();
-                    var url = `https://dniruc.apisperu.com/api/v1/ruc/${numruc}?token=${APIS_PERU_API_KEY}`;
+                    var url = `${APIS_PERU_API_URL}/ruc/${numruc}?token=${APIS_PERU_API_KEY}`;
                     $('#cargando').show();
                     $.ajax({
                         type: 'GET',

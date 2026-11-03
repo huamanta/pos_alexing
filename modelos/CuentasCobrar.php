@@ -3391,15 +3391,20 @@ class CuentasCobrar extends Helpers
         return Response::json($eventos);
     }
 
-    public function obtenerUltimoPagoCuota($idcpc)
+    public function obtenerUltimoPagoCuota(int $idcpc, ?int $iddcpc = 0)
     {
-        return (new DBQuery($this->pdo))
+        $query = (new DBQuery($this->pdo))
             ->select('dcpc.*, b.nombre AS banco')
             ->from('detalle_cuentas_por_cobrar dcpc')
             ->leftJoin('bancos b', 'b.idbanco=dcpc.idbanco')
             ->where('dcpc.idcpc', '=', $idcpc)
-            ->orderBy('dcpc.iddcpc', 'DESC')
-            ->first();
+            ->orderBy('dcpc.iddcpc', 'DESC');
+
+        if ($iddcpc !== 0) {
+            $query->where('dcpc.iddcpc', '=', $iddcpc);
+        }
+
+        return $query->first();
     }
 
 
