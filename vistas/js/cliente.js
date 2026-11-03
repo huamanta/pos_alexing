@@ -1,6 +1,6 @@
 var tabla;
-const API_KEY = "AIzaSyAEfzrVHyxezdBMPmKlF8Hs-of68DzrRFY";
-
+let API_KEY = null;
+let APIS_PERU_API_KEY = null;
 let map;
 let marker;
 let listarPersonas = null;
@@ -76,6 +76,22 @@ function placeMarker(location) {
   getAddressFromCoords(location.lat, location.lng);
 }
 
+function initCliente() {
+  $.ajax({
+    url: "controladores/persona.php?op=initCliente",
+    type: "POST",
+    success: function (response) {
+      const data = response;
+      API_KEY = data.maps_api_key;
+      APIS_PERU_API_KEY = data.apis_peru_api_key || null;
+      const tipo_documento = data.tipo_documento || [];
+      $("#idtipo_documento").html(
+        tipo_documento.map((item) => `<option value="${item.idtipo_documento}">${item.nombre}</option>`).join(""),
+      );
+    }
+  });
+}
+
 function getAddressFromCoords(lat, lng) {
   fetch(
     `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`,
@@ -92,6 +108,7 @@ function getAddressFromCoords(lat, lng) {
 //Función que se ejecuta al inicio
 function init() {
   limpiar();
+  initCliente();
   listarPersonas.load();
   $("#myModal").on("submit", function (e) {
     guardaryeditar(e);
@@ -122,7 +139,7 @@ function mostrar(idpersona) {
       $("#myModal").modal("show");
 
       $("#nombre").val(data.nombre);
-      $("#tipo_documento").val(data.tipo_documento);
+      $("#idtipo_documento").val(data.idtipo_documento);
       $("#num_documento").val(data.num_documento);
       $("#direccion").val(data.direccion);
       $("#telefono").val(data.telefono);
@@ -198,8 +215,7 @@ function BuscarCliente() {
 
         $("#num_documento").val("");
       } else {
-        if ($("#tipo_documento").val() == "DNI") {
-          var cod = $.trim($("#tipo_documento").val());
+        if (parseInt($("#idtipo_documento").val()) === 1) {
           $numero = $("#num_documento").val();
           if ($numero.length < 8) {
             Swal.fire({
@@ -210,11 +226,7 @@ function BuscarCliente() {
           } else {
             $("#Buscar_Cliente").hide();
             var numdni = $("#num_documento").val();
-            var url =
-              "https://dniruc.apisperu.com/api/v1/dni/" +
-              numdni +
-              "?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo";
-
+            var url =`https://dniruc.apisperu.com/api/v1/dni/${numdni}?token=${APIS_PERU_API_KEY}`;
             $("#cargando").show();
             $.ajax({
               type: "GET",
@@ -247,7 +259,7 @@ function BuscarCliente() {
             });
           }
         } else {
-          var cod = $.trim($("#tipo_documento").val());
+          var cod = $.trim($("#idtipo_documento").val());
           $numero = $("#num_documento").val();
           if ($numero.length < 11) {
             Swal.fire({
@@ -257,11 +269,8 @@ function BuscarCliente() {
             });
           } else {
             $("#Buscar_Cliente").hide();
-            var numdni = $("#num_documento").val();
-            var url =
-              "https://dniruc.apisperu.com/api/v1/ruc/" +
-              numdni +
-              "?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo";
+            var numruc = $("#num_documento").val();
+            var url =`https://dniruc.apisperu.com/api/v1/ruc/${numruc}?token=${APIS_PERU_API_KEY}`;
             $("#cargando").show();
             $.ajax({
               type: "GET",

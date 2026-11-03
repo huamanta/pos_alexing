@@ -56,7 +56,8 @@
                 <div class="col-md-6">
                   <input type="text" id="search" class="form-control" placeholder="Buscar...">
                 </div>
-                <div class="col-md-12">
+
+                <div class="col-md-12 mt-2">
                   <div class="table-responsive">
                     <table id="tbllistado" class="table table-hover table-striped table-md">
                       <thead>
@@ -115,7 +116,7 @@
             <div class="col-sm-6">
               <div class="form-group">
                 <label for="name" class="control-label">Tipo Documento:</label>
-                <select class="form-control select-picker" name="tipo_documento" id="tipo_documento" required>
+                <select class="form-control select-picker" name="idtipo_documento" id="idtipo_documento" required>
                   <option value="DNI">DNI</option>
                   <option value="RUC">RUC</option>
                   <option value="CEDULA">CEDULA</option>
@@ -514,8 +515,6 @@
 
 </div>
 
-
-<script async
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAEfzrVHyxezdBMPmKlF8Hs-of68DzrRFY&callback=initMap">
-  </script>
+<script async src="https://maps.googleapis.com/maps/api/js?key=<?= $_ENV['GOOGLE_MAPS_API_KEY'] ?>&callback=initMap">
+</script>
 <script type="text/javascript" src="<?= $rutas->asset('vistas/js/cliente.js') ?>"></script>

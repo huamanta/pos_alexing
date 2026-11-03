@@ -1351,11 +1351,8 @@
                         <div class="col-sm-6">
                             <div class="form-group">
                                 <label for="name" class="control-label">Tipo Documento:</label>
-                                <select class="form-control select-picker" name="tipo_documento" id="tipo_documento"
+                                <select class="form-control select-picker" name="idtipo_documento" id="idtipo_documento"
                                     required>
-                                    <option value="DNI">DNI</option>
-                                    <option value="RUC">RUC</option>
-                                    <option value="CEDULA">CEDULA</option>
                                 </select>
                             </div>
                         </div>

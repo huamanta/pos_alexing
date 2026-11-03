@@ -7,6 +7,7 @@ var updateTimeout;
 let listarCotizaciones = null;
 let listarProductos = null;
 let calculoMes = false;
+let APIS_PERU_API_KEY = null;
 $("#formularioregistros").hide();
 
 $("#formularioClientes").on("submit", function (e) {
@@ -67,7 +68,23 @@ function seleccionarCliente(nombre, idcliente) {
   $("#idcliente").append(cliente).trigger("change");
 }
 
+function initCliente() {
+  $.ajax({
+    url: "controladores/persona.php?op=initCliente",
+    type: "POST",
+    success: function (response) {
+      const data = response;
+      APIS_PERU_API_KEY = data.apis_peru_api_key || null;
+      const tipo_documento = data.tipo_documento || [];
+      $("#idtipo_documento").html(
+        tipo_documento.map((item) => `<option value="${item.idtipo_documento}">${item.nombre}</option>`).join(""),
+      );
+    }
+  });
+}
+
 function init() {
+  initCliente();
   $("#body").addClass("sidebar-collapse sidebar-mini");
   mostrarform(false);
   listarCotizaciones.load();
@@ -1662,8 +1679,7 @@ function BuscarCliente() {
 
         $("#num_documento").val("");
       } else {
-        if ($("#tipo_documento").val() == "DNI") {
-          var cod = $.trim($("#tipo_documento").val());
+        if (parseInt($("#idtipo_documento").val()) === 1) {
           $numero = $("#num_documento").val();
           if ($numero.length < 8) {
             Swal.fire({
@@ -1674,10 +1690,7 @@ function BuscarCliente() {
           } else {
             $("#Buscar_Cliente").hide();
             var numdni = $("#num_documento").val();
-            var url =
-              "https://dniruc.apisperu.com/api/v1/dni/" +
-              numdni +
-              "?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo";
+            var url =`https://dniruc.apisperu.com/api/v1/dni/${numdni}?token=${APIS_PERU_API_KEY}`;
 
             $("#cargando").show();
             $.ajax({
@@ -1711,21 +1724,17 @@ function BuscarCliente() {
             });
           }
         } else {
-          var cod = $.trim($("#tipo_documento").val());
           $numero = $("#num_documento").val();
           if ($numero.length < 11) {
             Swal.fire({
               title: "Falta Números en el RUC",
               icon: "info",
-              text: "El DNI debe tener 11 Carácteres",
+              text: "El RUC debe tener 11 Carácteres",
             });
           } else {
             $("#Buscar_Cliente").hide();
-            var numdni = $("#num_documento").val();
-            var url =
-              "https://dniruc.apisperu.com/api/v1/ruc/" +
-              numdni +
-              "?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6Ik1hbnVlbF8xM18xOTk4QGhvdG1haWwuY29tIn0.pNHFyJ3fT4JgofrxzINaJWlqh3_fC9bCzfwSP4N_dMo";
+            var numruc= $("#num_documento").val();
+            var url =`https://dniruc.apisperu.com/api/v1/ruc/${numruc}?token=${APIS_PERU_API_KEY}`;
             $("#cargando").show();
             $.ajax({
               type: "GET",

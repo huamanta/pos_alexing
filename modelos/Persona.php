@@ -15,11 +15,24 @@ class Persona extends Helpers
 		parent::__construct();
 	}
 
+	public function initCliente()
+	{
+		$tipo_documento = (new DBQuery($this->pdo))
+			->select('*')
+			->from('tipos_documento')
+			->get();
+		Response::json([
+			'maps_api_key' => $_ENV['GOOGLE_MAPS_API_KEY'] ?? '',
+			'apis_peru_api_key' => $_ENV['APIS_PERU_API_KEY'] ?? '',
+			'tipo_documento' => $tipo_documento,
+		]);
+	}
+
 	//Implementamos un método para insertar registros
 	public function insertar(
 		$tipo_persona,
 		$nombre,
-		$tipo_documento,
+		$idtipo_documento,
 		$num_documento,
 		$direccion,
 		$telefono,
@@ -47,7 +60,7 @@ class Persona extends Helpers
 
 					'tipo_persona' => $tipo_persona,
 					'nombre' => $nombre,
-					'tipo_documento' => $tipo_documento,
+					'idtipo_documento' => $idtipo_documento,
 					'num_documento' => $num_documento,
 					'direccion' => $direccion,
 					'telefono' => $telefono,
@@ -72,7 +85,7 @@ class Persona extends Helpers
 	}
 
 	//Implementamos un método para editar registros
-	public function editar($idpersona, $tipo_persona, $nombre, $tipo_documento, $num_documento, $direccion, $telefono, $email, $fecha_hora, $latitude, $longitude)
+	public function editar($idpersona, $tipo_persona, $nombre, $idtipo_documento, $num_documento, $direccion, $telefono, $email, $fecha_hora, $latitude, $longitude)
 	{
 		try {
 
@@ -93,7 +106,7 @@ class Persona extends Helpers
 					'idpersona' => $idpersona,
 					'tipo_persona' => $tipo_persona,
 					'nombre' => $nombre,
-					'tipo_documento' => $tipo_documento,
+					'idtipo_documento' => $idtipo_documento,
 					'num_documento' => $num_documento,
 					'direccion' => $direccion,
 					'telefono' => $telefono,
@@ -206,11 +219,12 @@ class Persona extends Helpers
 		$limit = (int) ($_GET['limit'] ?? 10);
 		$search = trim($_GET['search'] ?? '');
 		$response = (new DBQuery($this->pdo))
-			->select('*')
-			->from('persona')
+			->select('p.*, td.nombre as tipo_documento')
+			->from('persona p')
+			->join('tipos_documento td', 'p.idtipo_documento=td.idtipo_documento')
 			->softDeletes()
 			->whereRaw(
-				"(tipo_persona = :tipo OR isproveedor = :proveedor)",
+				"(p.tipo_persona = :tipo OR p.isproveedor = :proveedor)",
 				[
 					'tipo' => 'Proveedor',
 					'proveedor' => 1
@@ -219,13 +233,13 @@ class Persona extends Helpers
 			->search(
 				$search,
 				[
-					'nombre',
-					'num_documento',
-					'telefono',
-					'email'
+					'p.nombre',
+					'p.num_documento',
+					'p.telefono',
+					'p.email'
 				]
 			)
-			->orderBy('idpersona', 'DESC')
+			->orderBy('p.idpersona', 'DESC')
 			->paginate(
 				$page,
 				$limit
@@ -247,13 +261,14 @@ class Persona extends Helpers
 		$search = trim($_GET['search'] ?? '');
 
 		$paginator = (new DBQuery($this->pdo))
-			->select('*')
-			->from('persona')
-			->where('tipo_persona', '=', 'Cliente');
+			->select('p.*, td.nombre as tipo_documento')
+			->from('persona p')
+			->join('tipos_documento td', 'p.idtipo_documento=td.idtipo_documento')
+			->where('p.tipo_persona', '=', 'Cliente');
 
 		if ($tipo_documento !== '') {
 			$paginator->where(
-				"tipo_documento",
+				"td.nombre",
 				"=",
 				$tipo_documento
 			);
@@ -261,7 +276,7 @@ class Persona extends Helpers
 
 		if ($excluirId !== false) {
 			$paginator->where(
-				"idpersona",
+				"p.idpersona",
 				"<>",
 				$excluirId
 			);
@@ -272,11 +287,11 @@ class Persona extends Helpers
 			->search(
 				$search,
 				[
-					'nombre',
-					'num_documento'
+					'p.nombre',
+					'p.num_documento'
 				]
 			)
-			->orderBy('idpersona', 'DESC')
+			->orderBy('p.idpersona', 'DESC')
 			->paginate(
 				$page,
 				$limit
