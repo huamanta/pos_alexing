@@ -22,7 +22,9 @@ class Persona extends Helpers
 			->from('tipos_documento')
 			->get();
 		Response::json([
+			'maps_api_url' => $_ENV['GOOGLE_MAPS_API_URL'] ?? '',
 			'maps_api_key' => $_ENV['GOOGLE_MAPS_API_KEY'] ?? '',
+			'apis_peru_api_url' => $_ENV['APIS_PERU_API_URL'] ?? '',
 			'apis_peru_api_key' => $_ENV['APIS_PERU_API_KEY'] ?? '',
 			'tipo_documento' => $tipo_documento,
 		]);

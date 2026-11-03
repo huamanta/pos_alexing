@@ -1,5 +1,7 @@
 var tabla;
-let API_KEY = null;
+let GOOGLE_MAPS_API_KEY = null;
+let GOOGLE_MAPS_API_URL = null;
+let APIS_PERU_API_URL = null;
 let APIS_PERU_API_KEY = null;
 let map;
 let marker;
@@ -37,7 +39,7 @@ function buscarDireccion() {
   }
 
   fetch(
-    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(direccion)}&key=${API_KEY}`,
+    `${GOOGLE_MAPS_API_URL}/geocode/json?address=${encodeURIComponent(direccion)}&key=${GOOGLE_MAPS_API_KEY}`,
   )
     .then((res) => res.json())
     .then((data) => {
@@ -82,7 +84,9 @@ function initCliente() {
     type: "POST",
     success: function (response) {
       const data = response;
-      API_KEY = data.maps_api_key;
+      GOOGLE_MAPS_API_KEY = data.maps_api_key;
+      GOOGLE_MAPS_API_URL = data.maps_api_url || null;
+      APIS_PERU_API_URL = data.apis_peru_api_url || null;
       APIS_PERU_API_KEY = data.apis_peru_api_key || null;
       const tipo_documento = data.tipo_documento || [];
       $("#idtipo_documento").html(
@@ -94,7 +98,7 @@ function initCliente() {
 
 function getAddressFromCoords(lat, lng) {
   fetch(
-    `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${API_KEY}`,
+    `${GOOGLE_MAPS_API_URL}/geocode/json?latlng=${lat},${lng}&key=${GOOGLE_MAPS_API_KEY}`,
   )
     .then((res) => res.json())
     .then((data) => {
@@ -226,7 +230,7 @@ function BuscarCliente() {
           } else {
             $("#Buscar_Cliente").hide();
             var numdni = $("#num_documento").val();
-            var url =`https://dniruc.apisperu.com/api/v1/dni/${numdni}?token=${APIS_PERU_API_KEY}`;
+            var url =`${APIS_PERU_API_URL}/dni/${numdni}?token=${APIS_PERU_API_KEY}`;
             $("#cargando").show();
             $.ajax({
               type: "GET",
@@ -265,12 +269,12 @@ function BuscarCliente() {
             Swal.fire({
               title: "Falta Números en el RUC",
               icon: "info",
-              text: "El DNI debe tener 11 Carácteres",
+              text: "El RUC debe tener 11 Carácteres",
             });
           } else {
             $("#Buscar_Cliente").hide();
             var numruc = $("#num_documento").val();
-            var url =`https://dniruc.apisperu.com/api/v1/ruc/${numruc}?token=${APIS_PERU_API_KEY}`;
+            var url =`${APIS_PERU_API_URL}/ruc/${numruc}?token=${APIS_PERU_API_KEY}`;
             $("#cargando").show();
             $.ajax({
               type: "GET",

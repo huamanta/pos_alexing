@@ -19,7 +19,9 @@ if (empty($_GET['id'])) {
 }
 
 $idpago = (int) $_GET['id'];
-
+$iddcpc = (int) ($_GET['iddcpc'] ?? 0);
+error_log("ID Pago: " . $idpago);
+error_log("ID DCPC: " . $iddcpc);
 $venta = new Venta();
 $cuentaCobrar = new CuentasCobrar();
 $negocio = new Negocio();
@@ -35,7 +37,7 @@ $negocio = new Negocio();
 
 $pago = $cuentaCobrar->obtenerCuentaPorCobrar($idpago);
 $venta = $venta->ventacabecera($pago['idventa']);
-$detalle = $cuentaCobrar->obtenerUltimoPagoCuota($pago['idcpc']);
+$detalle = $cuentaCobrar->obtenerUltimoPagoCuota($pago['idcpc'], $iddcpc);
 $currency = $helpers->get_currency_code($venta['idsucursal']);
 if (!$pago) {
     http_response_code(404);
@@ -205,6 +207,9 @@ $metodoPago = $metodoPago ?: 'EFECTIVO';
 error_log("Detalle: " . print_r($detalle, true));
 $pago_cuota = (float) ($detalle['montopagado'] ?? 0) + (float) ($detalle['montotarjeta'] ?? 0);
 $importe = (float) ($pago['abonototal'] ?? 0);
+if ($iddcpc === 0) {
+    $pago_cuota = $importe;
+}
 $totalVenta = (float) ($pago['deudatotal'] ?? 0);
 $saldoActual = (float) ($pago['deuda'] ?? max($totalVenta - $importe, 0));
 

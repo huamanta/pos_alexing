@@ -800,7 +800,7 @@ async function guardaryeditar(e) {
       }
 
       const t = data.ticket;
-      imprimirConstanciaPagoInicial(t.idcpc);
+      imprimirConstanciaPagoInicial(t.idcpc, '');
 
       Swal.fire("Éxito", data.message, "success");
 
@@ -826,8 +826,8 @@ async function guardaryeditar(e) {
   });
 }
 
-function imprimirConstanciaPagoInicial(idcpc) {
-  const url = `reportes/exTicketPagoCuota.php?id=${encodeURIComponent(idcpc)}`;
+function imprimirConstanciaPagoInicial(idcpc, iddcpc) {
+  const url = `reportes/exTicketPagoCuota.php?id=${encodeURIComponent(idcpc)}&iddcpc=${encodeURIComponent(iddcpc)}`;
 
   const iframe = document.createElement("iframe");
 
@@ -1021,6 +1021,13 @@ function mostrarAbonos(idcpc) {
                                             </button>
                                         `
             }
+            <button
+                                                type="button"
+                                                class="btn btn-sm btn-outline-success"
+                                                onclick="imprimirConstanciaPagoInicial(${item.idcpc}, ${item.iddcpc})"
+                                                title="Imprimir constancia">
+                                                <i class="fas fa-print"></i>
+                                            </button>
                             </td>
                         </tr>
                     `;
@@ -2001,6 +2008,91 @@ function editarCompromisoPago(data) {
   $("#fecha_cumplimiento").val(data.fecha_cumplimiento);
   $("#observacionCompromiso").val(data.observacion);
   $("#modalCompromisoPago").modal("show");
+}
+
+
+function imprimirEstadoCuenta() {
+  const contenido = document.getElementById('estadoCuentaContenido');
+
+  if (!contenido) {
+    alert('No se encontró el contenido para imprimir');
+    return;
+  }
+
+  const ventana = window.open('', '_blank', 'width=1100,height=800');
+
+  const estilos = [...document.querySelectorAll('link[rel="stylesheet"], style')]
+    .map(el => el.outerHTML)
+    .join('\n');
+
+  ventana.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Estado de Cuenta</title>
+            ${estilos}
+            <style>
+                @page {
+                    size: A4;
+                    margin: 10mm;
+                }
+
+                body {
+                    font-family: Arial, sans-serif;
+                    font-size: 12px;
+                    color: #000;
+                    background: #fff;
+                }
+
+                #estadoCuentaContenido {
+                    width: 100%;
+                }
+
+                table {
+                    width: 100% !important;
+                    border-collapse: collapse !important;
+                }
+
+                .table th,
+                .table td {
+                    border: 1px solid #dee2e6 !important;
+                    padding: 6px !important;
+                    color: #000 !important;
+                }
+
+                .table thead th {
+                    background-color: #e9ecef !important;
+                    font-weight: bold;
+                }
+
+                .no-print,
+                button {
+                    display: none !important;
+                }
+
+                tr {
+                    page-break-inside: avoid;
+                }
+
+                * {
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+            </style>
+        </head>
+        <body>
+            ${contenido.outerHTML}
+        </body>
+        </html>
+    `);
+
+  ventana.document.close();
+
+  ventana.onload = function () {
+    ventana.focus();
+    ventana.print();
+    ventana.close();
+  };
 }
 
 init();

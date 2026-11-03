@@ -7,6 +7,9 @@ var updateTimeout;
 let listarCotizaciones = null;
 let listarProductos = null;
 let calculoMes = false;
+let GOOGLE_MAPS_API_KEY = null;
+let GOOGLE_MAPS_API_URL = null;
+let APIS_PERU_API_URL = null;
 let APIS_PERU_API_KEY = null;
 $("#formularioregistros").hide();
 
@@ -74,7 +77,10 @@ function initCliente() {
     type: "POST",
     success: function (response) {
       const data = response;
+      GOOGLE_MAPS_API_KEY = data.maps_api_key || null;
+      GOOGLE_MAPS_API_URL = data.maps_api_url || null;
       APIS_PERU_API_KEY = data.apis_peru_api_key || null;
+      APIS_PERU_API_URL = data.apis_peru_api_url || null;
       const tipo_documento = data.tipo_documento || [];
       $("#idtipo_documento").html(
         tipo_documento.map((item) => `<option value="${item.idtipo_documento}">${item.nombre}</option>`).join(""),
@@ -1690,7 +1696,7 @@ function BuscarCliente() {
           } else {
             $("#Buscar_Cliente").hide();
             var numdni = $("#num_documento").val();
-            var url =`https://dniruc.apisperu.com/api/v1/dni/${numdni}?token=${APIS_PERU_API_KEY}`;
+            var url =`${APIS_PERU_API_URL}/dni/${numdni}?token=${APIS_PERU_API_KEY}`;
 
             $("#cargando").show();
             $.ajax({
@@ -1734,7 +1740,7 @@ function BuscarCliente() {
           } else {
             $("#Buscar_Cliente").hide();
             var numruc= $("#num_documento").val();
-            var url =`https://dniruc.apisperu.com/api/v1/ruc/${numruc}?token=${APIS_PERU_API_KEY}`;
+            var url =`${APIS_PERU_API_URL}/ruc/${numruc}?token=${APIS_PERU_API_KEY}`;
             $("#cargando").show();
             $.ajax({
               type: "GET",
