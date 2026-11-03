@@ -698,7 +698,7 @@ class Cotizacion extends Helpers
             v.saludo,
             DATE_FORMAT(v.fecha_h,"%d/%m/%y") as fecha_h,
             p.direccion,
-            p.tipo_documento,
+            td.nombre AS tipo_documento,
             p.num_documento,
             p.email,
             p.telefono,
@@ -724,6 +724,7 @@ class Cotizacion extends Helpers
             ->from('cotizacion v')
             ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
             ->join('persona p', 'v.idcliente=p.idpersona')
+            ->join('tipos_documento td', 'td.idtipo_documento = p.idtipo_documento')
             ->join('personal u', ' v.idpersonal=u.idpersonal')
             ->join('sucursal s', 'v.idsucursal=s.idsucursal')
             ->where('v.idcotizacion', '=', $idcotizacion);

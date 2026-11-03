@@ -1725,7 +1725,7 @@ class Venta extends Helpers
                 'p.nombre AS cliente',
                 's.nombre AS sucursal',
                 'p.direccion',
-                'p.tipo_documento',
+                'td.nombre AS tipo_documento',
                 'p.num_documento',
                 'p.email',
                 'p.telefono',
@@ -1755,6 +1755,7 @@ class Venta extends Helpers
             ->from('venta v')
             ->join('comp_pago cp', 'cp.idcomprobante_pago = v.idcomprobante_pago')
             ->join('persona p', 'p.idpersona = v.idcliente')
+            ->join('tipos_documento td', 'td.idtipo_documento = p.idtipo_documento')
             ->join('personal u', 'u.idpersonal = v.idpersonal')
             ->join('sucursal s', 's.idsucursal = v.idsucursal')
             ->where('v.idventa', '=', $idventa);

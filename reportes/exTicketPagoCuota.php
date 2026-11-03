@@ -202,8 +202,8 @@ $metodoPago = $metodoPago ?: 'EFECTIVO';
 | MONTOS
 |--------------------------------------------------------------------------
 */
-
-$pago_cuota = (float) ($detalle['montopagado'] ?? 0 + $detalle['montotarjeta'] ?? 0);
+error_log("Detalle: " . print_r($detalle, true));
+$pago_cuota = (float) ($detalle['montopagado'] ?? 0) + (float) ($detalle['montotarjeta'] ?? 0);
 $importe = (float) ($pago['abonototal'] ?? 0);
 $totalVenta = (float) ($pago['deudatotal'] ?? 0);
 $saldoActual = (float) ($pago['deuda'] ?? max($totalVenta - $importe, 0));
