@@ -29,9 +29,9 @@ class HistorialPagos extends Helpers
                     " - Cuota N° ",
                     (
                         SELECT COUNT(*)
-                        FROM detalle_cuentas_por_cobrar dc2
-                        WHERE dc2.idcpc = dcpc.idcpc
-                        AND dc2.iddcpc <= dcpc.iddcpc
+                        FROM cuentas_por_cobrar cpc2
+                        WHERE cpc2.idventa = cpc.idventa
+                        AND cpc2.idcpc <= cpc.idcpc
                     )
                 ) AS descripcion,
                 b.nombre AS banco
