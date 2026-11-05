@@ -33,5 +33,10 @@ class Constants
     const INGRESO_KARDEX = 1;
     const EGRESO_KARDEX = 2;
     const GERENTE = 'GERENTE';
-
+    const PUBLICOS = [
+        'usuario.php' => ['verificar'],
+        'generaFacturaCoti.php' => true,
+        'exTicketPagoCuota.php' => true,
+        'enviar_sms.php' => true,
+    ];
 }

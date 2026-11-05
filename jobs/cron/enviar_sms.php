@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../../configuraciones/bootstrap.php';
-require_once __DIR__ . '/../../core/Queue.php';
+require_once __DIR__ . '/../../core/redis/Queue.php';
 require_once __DIR__ . '/../../jobs/EnviarSms.php';
 require_once __DIR__ . '/../../modelos/CuentasCobrar.php';
 require_once __DIR__ . '/../../modelos/Helpers.php';
