@@ -7,7 +7,7 @@ require_once __DIR__ . "/../configuraciones/ConexionPdo.php";
 require_once __DIR__ . "/../core/FluentQuery.php";
 require_once __DIR__ . "/../core/FluentSave.php";
 require_once __DIR__ . "/../core/Email.php";
-require_once __DIR__ . "/../core/Queue.php";
+require_once __DIR__ . "/../core/redis/Queue.php";
 require_once __DIR__ . "/../jobs/EnviarComprobantePago.php";
 
 use Carbon\Carbon;

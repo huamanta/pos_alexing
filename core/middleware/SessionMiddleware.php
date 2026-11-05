@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../Constants.php";
 
 class SessionMiddleware
 {
@@ -57,12 +58,8 @@ class SessionMiddleware
 
         $controlador = basename($_SERVER['SCRIPT_FILENAME'] ?? '');
         $operacion = $_GET['op'] ?? '';
-        $publicos = [
-            'usuario.php' => ['verificar'],
-            'generaFacturaCoti.php' => true,
-            'exTicketPagoCuota.php' => true,
-            'enviar_sms.php' => true,
-        ];
+        
+        $publicos = Constants::PUBLICOS;
 
         if (!array_key_exists($controlador, $publicos)) {
             return false;

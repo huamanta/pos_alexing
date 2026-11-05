@@ -1,6 +1,4 @@
 <?php
-
-require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once __DIR__ . '/Queue.php';
 
 $queueName = $argv[1] ?? 'default';

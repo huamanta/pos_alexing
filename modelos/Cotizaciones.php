@@ -5,7 +5,7 @@ require_once __DIR__ . "/Helpers.php";
 require_once __DIR__ . "/../core/Constants.php";
 require_once __DIR__ . "/../core/Response.php";
 require_once __DIR__ . "/../core/Email.php";
-require_once __DIR__ . "/../core/Queue.php";
+require_once __DIR__ . "/../core/redis/Queue.php";
 require_once __DIR__ . "/../jobs/EnviarCotizacion.php";
 
 class Cotizacion extends Helpers
