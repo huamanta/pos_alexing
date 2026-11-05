@@ -1,5 +1,4 @@
 <?php
-require_once __DIR__ . '/../core/SessionMiddleware.php';
 require_once __DIR__ . '/../configuraciones/ConexionPdo.php';
 require_once __DIR__ . '/../core/Constants.php';
 class Helpers

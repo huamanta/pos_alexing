@@ -195,6 +195,13 @@ function guardaryeditar(e) {
       $("#myModal").modal("hide");
       listarPersonas.load();
     },
+    error: function (xhr, status, error) {
+      Swal.fire({
+        title: "Error",
+        icon: "error",
+        text: xhr?.responseJSON?.message || "Ocurrió un error al guardar el cliente. Por favor, inténtelo de nuevo.",
+      });
+    },
     complete: function () {
       $("#btnGuardar").prop("disabled", false).text("Guardar");
     },
