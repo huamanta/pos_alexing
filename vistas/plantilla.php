@@ -105,7 +105,7 @@ if (isset($rutaActual)) {
   <script src="./files/plugins/fullcalendar/main.min.js"></script>
   <script src="./vistas/js/pagination.js"></script>
   <script>
-    $(document).ready(function () {
+    $(document).ready(function() {
       $('[data-toggle="tooltip"]').tooltip();
     });
   </script>
@@ -231,10 +231,10 @@ if (isset($rutaActual)) {
       include "modulos/login.php";
     }
 
-    ?>
-  </body>
-
-  </html>
-  <?php
-  }
   ?>
+</body>
+
+</html>
+<?php
+  }
+?>

@@ -47,3 +47,12 @@ if (!file_exists($logFile)) {
 }
 
 ini_set('error_log', $logFile);
+
+/*
+|--------------------------------------------------------------------------
+| Middleware de autenticación
+|--------------------------------------------------------------------------
+*/
+require_once __DIR__ . '/../core/middleware/SessionMiddleware.php';
+
+SessionMiddleware::verificarSesion();

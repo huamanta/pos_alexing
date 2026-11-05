@@ -202,6 +202,7 @@ $helpers = new Helpers();
     }
 
     // ==================== Sesión ====================
+    /*
     var status = true;
     var sessionChecker = setInterval(() => {
         if (Boolean(status) === true) {
@@ -249,7 +250,7 @@ $helpers = new Helpers();
                 }
             });
         });
-    }
+    } */
 
     // ==================== Comprobantes Pendientes ====================
     function checkComprobantesPendientes() {
