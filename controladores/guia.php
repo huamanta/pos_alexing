@@ -142,7 +142,7 @@ switch ($_GET["op"]) {
     break;
 
   case 'send_sunat':
-    $idguia = $_G['idguia'];
+    $idguia = $_GET['idguia'];
     $url = env('APP_URL') . '/public/FACT_WebService/Facturacion/guia.php?idguia=' . $idguia;
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $url);
@@ -212,7 +212,7 @@ switch ($_GET["op"]) {
 
   case 'selectComprobante':
     $idsucursal = $_SESSION['idsucursal'];
-    echo $comprobante->selectComprobantesGuia($idsucursal);
+    $comprobante->selectComprobantesGuia($idsucursal);
     break;
 
   case 'get_numeracion':
