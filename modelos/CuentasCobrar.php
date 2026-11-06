@@ -69,7 +69,7 @@ class CuentasCobrar extends Helpers
 
             $monto = round(
                 Helpers::toFloat($montopagado) +
-                Helpers::toFloat($montoPagarTarjeta),
+                    Helpers::toFloat($montoPagarTarjeta),
                 2
             );
 
@@ -110,7 +110,7 @@ class CuentasCobrar extends Helpers
                 } catch (Throwable $e) {
                     error_log(
                         "No se pudo encolar el comprobante del pago {$idcpc}: "
-                        . $e->getMessage()
+                            . $e->getMessage()
                     );
                 }
             }
@@ -360,8 +360,8 @@ class CuentasCobrar extends Helpers
 
         $moraNueva = round(
             floatval($fila["deuda"]) *
-            ($config["valor"] / 100) *
-            $dias,
+                ($config["valor"] / 100) *
+                $dias,
             2
         );
 
@@ -1242,19 +1242,20 @@ class CuentasCobrar extends Helpers
 
     public function generarNotificaciones($idsucursal)
     {
-        if (!$idsucursal) {
+        if (empty($idsucursal)) {
             return Response::json([]);
         }
-        $hoy = Carbon::now();
 
-        $query = (new DBQuery($this->pdo))
+        $hoy = Carbon::today()->toDateString();
+
+        $response = (new DBQuery($this->pdo))
             ->select("
-            cc.idcpc,
-            c.nombre AS cliente,
-            cc.deudatotal,
-            cc.fechavencimiento,
-            DATEDIFF(CURDATE(), cc.fechavencimiento) AS dias_vencido
-        ")
+                cc.idcpc,
+                c.nombre AS cliente,
+                cc.deudatotal,
+                cc.fechavencimiento,
+                DATEDIFF(CURDATE(), cc.fechavencimiento) AS dias_vencido
+            ")
             ->from('cuentas_por_cobrar cc')
             ->join('venta v', 'v.idventa = cc.idventa')
             ->join('persona c', 'c.idpersona = v.idcliente')
@@ -1262,22 +1263,21 @@ class CuentasCobrar extends Helpers
             ->where('cc.condicion', '=', 1)
             ->where('v.idsucursal', '=', $idsucursal)
             ->where('cc.fechavencimiento', '<=', $hoy)
-            ->orderBy('cc.fechavencimiento', 'ASC');
-
-        $response = $query->get();
+            ->orderBy('cc.fechavencimiento', 'ASC')
+            ->get();
 
         $notificaciones = [];
 
         foreach ($response as $row) {
             $diasVencido = (int) $row['dias_vencido'];
-            $fecha = date('d/m/Y', strtotime($row['fechavencimiento']));
+            $monto = (float) $row['deudatotal'];
 
             $notificaciones[] = [
                 'idcpc' => $row['idcpc'],
                 'cliente' => $row['cliente'],
-                'monto' => (float) $row['deudatotal'],
-                'monto_str' => Helpers::get_currency_symbol((float) $row['deudatotal']),
-                'fecha' => $fecha,
+                'monto' => $monto,
+                'monto_str' => Helpers::get_currency_symbol($monto),
+                'fecha' => date('d/m/Y', strtotime($row['fechavencimiento'])),
                 'dias_vencido' => $diasVencido,
                 'tipo' => $diasVencido > 0 ? 'vencida' : 'hoy',
             ];
@@ -2043,8 +2043,8 @@ class CuentasCobrar extends Helpers
                     if ($dias > 0) {
                         $moraNueva = round(
                             floatval($row->deuda) *
-                            ($config["valor"] / 100) *
-                            $dias,
+                                ($config["valor"] / 100) *
+                                $dias,
                             2
                         );
                         $dias_mora = $dias;
@@ -2667,8 +2667,8 @@ class CuentasCobrar extends Helpers
 
                         $mora += round(
                             floatval($row["deuda"]) *
-                            ($configMora["valor"] / 100) *
-                            $dias,
+                                ($configMora["valor"] / 100) *
+                                $dias,
                             2
                         );
                     }
@@ -2700,7 +2700,7 @@ class CuentasCobrar extends Helpers
 
                         $descuento = round(
                             floatval($row["deuda"]) *
-                            ($configDescuento["valor"] / 100),
+                                ($configDescuento["valor"] / 100),
                             2
                         );
                     }
@@ -3471,7 +3471,8 @@ class CuentasCobrar extends Helpers
     public function listaCuotasVencidas(int $idsucursal)
     {
         $data = (new DBQuery($this->pdo))
-            ->select('
+            ->select(
+                '
             cc.idcpc,
             cc.idventa,
             cc.deuda,
