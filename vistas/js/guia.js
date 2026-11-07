@@ -112,8 +112,7 @@ $("#idcomprobante").change(function () {
     "controladores/guia.php?op=getComprobante",
     { idventa: idventa },
     function (response) {
-      console.log(response);
-
+      
       const data = response;
 
       // ==============================
@@ -275,7 +274,7 @@ $("#idcomprobante").select2({
         results: data.data.map(function (item) {
           return {
             id: item.idventa,
-            text: item.nombre + " " + item.serie_comprobante + " - " + item.num_comprobante,
+            text: item.nombre + " " + item.serie_comprobante + "-" + item.num_comprobante,
           };
         }),
         pagination: {
@@ -928,7 +927,7 @@ function agregarDetalle(detalle) {
                 <button
                     type="button"
                     class="btn btn-danger btn-sm"
-                    onclick="eliminarDetalle(${cont})"
+                    onclick="eliminarDetalle(this)"
                 >
                     <i class="fa fa-trash"></i>
                 </button>
@@ -944,13 +943,30 @@ function agregarDetalle(detalle) {
   detalles++;
 }
 function eliminarDetalle(indice) {
-  tablaDetalles.row($('#fila' + indice)).remove().draw(false);
-  detalles--;
+  const fila = $(indice).closest("tr");
+
+  if (fila.length === 0) {
+    return;
+  }
+
+  fila.remove();
+
+  $("#tabla_detalles tbody tr").each(function (i) {
+    $(this).find("td:first").text(i + 1);
+  });
+
+  detalles = $("#tabla_detalles tbody tr").length;
 }
 
 function limpiar() {
+  if ($("#formulario")[0]) {
+    $("#formulario")[0].reset();
+  }
+
   $("#idguia").val("");
-  $("#idcliente").val("");
+  $("#idcliente").val(null);
+  $("#idcomprobante").val(null).trigger("change");
+  $("#tipo_transporte").val("0");
   $("#serie_comprobante").val("");
   $("#num_comprobante").val("");
   $("#fecha_emision").val("");
@@ -958,6 +974,7 @@ function limpiar() {
   $("#factura_ref").val("");
   $("#fecha_factura_ref").val("");
   $("#idtransportista").val("");
+  $("#motivo_traslado_otro").val("").hide();
   $("#peso").val("");
   $("#punto_partida").val("");
   $("#ubigeo_partida").val("");
@@ -970,6 +987,9 @@ function limpiar() {
   $("#ord_compra").val("");
   $("#ord_pedido").val("");
   $("#observacion").val("");
+  $("#searchProductos").val("");
+  $("#tabla_detalles tbody").empty();
+  $("#btnGuardar").prop("disabled", false);
 
   cont = 0; // Reset counter
   detalles = 0; // Reset details count
@@ -982,6 +1002,24 @@ function limpiar() {
   $("#distrito_llegada").val("");
   $("#punto_partida").val("");
   $("#punto_llegada").val("");
+  $("#ubigeo_partida").val("");
+  $("#ubigeo_llegada").val("");
+
+  $("#provincia_partida, #distrito_partida, #provincia_llegada, #distrito_llegada")
+    .html('<option value="">Seleccione</option>');
+
+  $(
+    "#idcliente, #idcomprobante, #tipo_transporte, #idtransportista, #idtrabajador, " +
+    "#idmotivo, #departamento_partida, #provincia_partida, #distrito_partida, " +
+    "#departamento_llegada, #provincia_llegada, #distrito_llegada"
+  ).trigger("change.select2");
+
+  validarMotivoOtro();
+  $("#datos-generales-tab").tab("show");
+
+  if ($("#modalProductos").hasClass("show")) {
+    $("#modalProductos").modal("hide");
+  }
 }
 
 init();

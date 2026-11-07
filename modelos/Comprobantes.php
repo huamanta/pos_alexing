@@ -283,7 +283,7 @@ class Comprobantes extends Helpers
 		return $num;
 	}
 
-	public function selectComprobantesGuia($idsucursal)
+	public function selectComprobantesGuia(int $idsucursal)
 	{
 		$page = (int) ($_GET['page'] ?? 1);
 		$limit = (int) ($_GET['limit'] ?? 10);
@@ -301,7 +301,6 @@ class Comprobantes extends Helpers
 		->join('persona p','v.idcliente = p.idpersona')
 		->join('comp_pago cp','cp.idcomprobante_pago = v.idcomprobante_pago')
 		->where('v.idsucursal', '=', $idsucursal)
-		->where('v.estado', '=', 'Aceptado')
 		->whereIn('cp.nombre', ['Boleta', 'Factura'])
 		->search($search, ['cp.nombre', 'v.serie_comprobante', 'v.num_comprobante'])
 		->paginate($page, $limit);
