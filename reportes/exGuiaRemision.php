@@ -82,11 +82,11 @@ $html = ob_get_clean();
 
 // ================== RENDERIZAR PDF IGUAL QUE FACTURA ==================
 $options = new Options();
-$options->setIsRemoteEnabled(true);
-$options->setChroot(realpath(__DIR__ . '/../../'));
+$options->setIsRemoteEnabled(false);
+$options->setChroot(realpath(__DIR__ . '/../'));
 
 $dompdf = new Dompdf($options);
-$dompdf->loadHtml($html);
+$dompdf->loadHtml($html, 'UTF-8');
 $dompdf->setPaper('A4', 'portrait');
 $dompdf->render();
 
