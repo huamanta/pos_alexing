@@ -141,6 +141,7 @@ INSERT INTO `permisos` (`id`, `modulo_id`, `codigo`, `nombre`) VALUES
 (140, 74, 'configuraciongeneral.credito', 'Ver item coniguración de creditos'),
 (141, 74, 'configuraciongeneral.mora', 'Ver item configuración de mora'),
 (142, 74, 'configuraciongeneral.refinanciamiento', 'Ver item configuracion de refinanciamientos'),
-(143, 74, 'configuraciongeneral.facturacion', 'Ver item configuración de facturación');
-(144, 17, 'puntoventa.editarinteres', 'Puede editar interés');
-
+(143, 74, 'configuraciongeneral.facturacion', 'Ver item configuración de facturación'),
+(144, 17, 'puntoventa.editarinteres', 'Puede editar interés'),
+(145, 75, 'historialpagos.ver', 'Ver submódulo historial de pagos'),
+(146, 76, 'metodospago.ver', 'Ver submódulo métodos de pago');

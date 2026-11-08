@@ -574,7 +574,7 @@ class Persona extends Helpers
 					SUM(COALESCE(c.mora,0) + COALESCE(c.mora_pagada,0)) AS mora_total,
 					SUM(COALESCE(c.mora,0)) AS mora_actual,
 					COALESCE((SELECT SUM(x.total_venta) FROM venta x
-						WHERE x.idcliente=:idcliente AND x.ventacredito='Si'
+						WHERE x.idcliente=:idcliente_credito AND x.ventacredito='Si'
 						AND x.deleted_at IS NULL), 0) AS monto_total_creditos
 				FROM venta v
 				INNER JOIN cuentas_por_cobrar c ON c.idventa=v.idventa AND c.deleted_at IS NULL
@@ -608,7 +608,10 @@ class Persona extends Helpers
 								AND vigente.idrefinanciamiento IS NOT NULL
 						)
 					)
-			", ['idcliente' => $idcliente])->first();
+			", [
+				'idcliente' => $idcliente,
+				'idcliente_credito' => $idcliente
+			])->first();
 	}
 
 	private function obtenerSeguimientosCrediticios($idcliente)

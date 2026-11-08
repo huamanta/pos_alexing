@@ -132,7 +132,8 @@ class FluentPaginator {
 
             this.renderTabla(
                 json.data,
-                this.permissions
+                this.permissions,
+                json.meta || {}
             );
 
             this.renderPagination(
