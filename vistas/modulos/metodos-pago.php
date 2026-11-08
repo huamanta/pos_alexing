@@ -1,3 +1,114 @@
+<style>
+    .metodo-card {
+        position: relative;
+        background: #fff;
+        border: 1px solid #e9edf3;
+        border-radius: 14px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all .25s ease;
+        overflow: hidden;
+    }
+
+    .metodo-card::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background: #3b82f6;
+        opacity: 0;
+        transition: opacity .25s ease;
+    }
+
+    .metodo-card:hover {
+        border-color: #c9dcff;
+        box-shadow: 0 8px 24px rgba(30, 64, 175, .09);
+        transform: translateY(-3px);
+    }
+
+    .metodo-card:hover::before {
+        opacity: 1;
+    }
+
+    .metodo-card-content {
+        display: flex;
+        align-items: center;
+        min-height: 65px;
+    }
+
+    .metodo-icon {
+        width: 54px;
+        height: 54px;
+        min-width: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 13px;
+        background: #eff5ff;
+        color: #3478df;
+        font-size: 21px;
+        margin-right: 15px;
+        transition: all .25s ease;
+    }
+
+    .metodo-card:hover .metodo-icon {
+        background: #3478df;
+        color: #fff;
+        transform: scale(1.05);
+    }
+
+    .metodo-info {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .metodo-label {
+        display: block;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: .8px;
+        color: #98a2b3;
+        margin-bottom: 5px;
+    }
+
+    .metodo-info h6 {
+        font-size: 15px;
+        font-weight: 700;
+        color: #263445;
+        margin: 0 0 5px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .metodo-action {
+        font-size: 11px;
+        color: #8b95a5;
+    }
+
+    .metodo-arrow {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background: #f5f7fa;
+        color: #9aa5b1;
+        font-size: 12px;
+        margin-left: 10px;
+        transition: all .25s ease;
+    }
+
+    .metodo-card:hover .metodo-arrow {
+        background: #3478df;
+        color: #fff;
+        transform: translateX(3px);
+    }
+</style>
 <div class="content-wrapper">
     <section class="content-header">
         <div class="container-fluid">
@@ -20,16 +131,11 @@
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
-                    <div class="card" id="panelMetodosPago">
-                        <div class="card-header">
-                            <h3 class="card-title">Métodos disponibles</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="row" id="listaMetodosPago">
-                                <div class="col-12 text-center text-muted py-4">
-                                    <i class="fas fa-spinner fa-spin"></i>
-                                    Cargando métodos de pago...
-                                </div>
+                    <div id="panelMetodosPago">
+                        <div class="row" id="listaMetodosPago">
+                            <div class="col-12 text-center text-muted py-4">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                Cargando métodos de pago...
                             </div>
                         </div>
                     </div>
@@ -43,7 +149,8 @@
                                 </h5>
                                 <small class="text-muted">Movimientos registrados para este método de pago</small>
                             </div>
-                            <button type="button" class="btn btn-secondary btn-sm ml-auto" onclick="regresarMetodosPago()">
+                            <button type="button" class="btn btn-secondary btn-sm ml-auto"
+                                onclick="regresarMetodosPago()">
                                 <i class="fa fa-arrow-left"></i> Regresar
                             </button>
                         </div>
@@ -66,7 +173,8 @@
                                             <i class="fas fa-arrow-down fa-lg text-success mr-3"></i>
                                             <div>
                                                 <small class="text-muted d-block">Ingresos</small>
-                                                <h4 class="mb-0 font-weight-bold text-success" id="resumenIngresos">S/ 0.00</h4>
+                                                <h4 class="mb-0 font-weight-bold text-success" id="resumenIngresos">S/
+                                                    0.00</h4>
                                             </div>
                                         </div>
                                     </div>
@@ -77,7 +185,8 @@
                                             <i class="fas fa-arrow-up fa-lg text-danger mr-3"></i>
                                             <div>
                                                 <small class="text-muted d-block">Egresos</small>
-                                                <h4 class="mb-0 font-weight-bold text-danger" id="resumenEgresos">S/ 0.00</h4>
+                                                <h4 class="mb-0 font-weight-bold text-danger" id="resumenEgresos">S/
+                                                    0.00</h4>
                                             </div>
                                         </div>
                                     </div>
@@ -88,7 +197,8 @@
                                             <i class="fas fa-wallet fa-lg text-info mr-3"></i>
                                             <div>
                                                 <small class="text-muted d-block">Saldo neto</small>
-                                                <h4 class="mb-0 font-weight-bold text-info" id="resumenNeto">S/ 0.00</h4>
+                                                <h4 class="mb-0 font-weight-bold text-info" id="resumenNeto">S/ 0.00
+                                                </h4>
                                             </div>
                                         </div>
                                     </div>
