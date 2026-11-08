@@ -58,7 +58,7 @@ class Bancos extends Helpers
             ->where('m.idbanco', '=', $idbanco)
             ->where('m.totaldeposito', '>', 0);
 
-        $cuentas = (new DBQuery($this->pdo))
+        $cuentascobrar = (new DBQuery($this->pdo))
             ->select([
                 'dcc.fechapago AS fecha',
                 "CONVERT('Ingresos' USING utf8mb4) COLLATE utf8mb4_spanish_ci AS tipo",
@@ -86,6 +86,27 @@ class Bancos extends Helpers
             ->where('dcc.idbanco', '=', $idbanco)
             ->where('dcc.montotarjeta', '>', 0);
 
+             $cuentaspagar = (new DBQuery($this->pdo))
+            ->select([
+                'dcp.fechapago AS fecha',
+                "CONVERT('Egresos' USING utf8mb4) COLLATE utf8mb4_spanish_ci AS tipo",
+                'dcp.montotarjeta AS monto',
+                'CONVERT(p.nombre USING utf8mb4) COLLATE utf8mb4_spanish_ci AS responsable',
+                "CONVERT('Cuentas por pagar' USING utf8mb4) COLLATE utf8mb4_spanish_ci AS origen",
+                'CONVERT(pe.nombre USING utf8mb4) COLLATE utf8mb4_spanish_ci AS cliente',
+                "CONVERT(CONCAT(
+                    'Pago aplicado a compra N° ',
+                    c.serie_comprobante, '-', c.num_comprobante
+                ) USING utf8mb4) COLLATE utf8mb4_spanish_ci AS descripcion",
+            ])
+            ->from('detalle_cuentas_por_pagar dcp')
+            ->join('personal p', 'p.idpersonal = dcp.idpersonal')
+            ->join('cuentas_por_pagar cp', 'cp.idcpp = dcp.idcpp')
+            ->join('compra c', 'c.idcompra = cp.idcompra')
+            ->leftJoin('persona pe', 'pe.idpersona = c.idproveedor')
+            ->where('dcp.idbanco', '=', $idbanco)
+            ->where('dcp.montotarjeta', '>', 0);
+
         $venta_pago = (new DBQuery($this->pdo))
             ->select([
                 'vp.created_at AS fecha',
@@ -108,7 +129,8 @@ class Bancos extends Helpers
             ->where('vp.monto', '>', 0);
 
         $resultado = $movimientos
-            ->unionAll($cuentas)
+            ->unionAll($cuentascobrar)
+            ->unionAll($cuentaspagar)
             ->unionAll($venta_pago)
             ->orderBy('fecha', 'DESC')
             ->paginate($page, $limit);
