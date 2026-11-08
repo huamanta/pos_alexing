@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
 
 class Roles extends Helpers
 {
