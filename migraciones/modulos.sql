@@ -100,5 +100,5 @@ VALUES
 (72, NULL, 'service', NULL, NULL, 7, 0, 1),
 (73, NULL, 'caja-chica2', NULL, NULL, 8, 0, 1),
 (74, 'Configuracion general', 'configuraciongeneral', NULL, NULL, 9, 0, 1),
-(75, 'Historial de pagos', 'historial-pagos', 'fas fa-history', 5, 7, 1, 1),
-(76, 'Métodos de pago', 'metodos-pago', 'fas fa-wallet', 9, 4, 1, 1);
+(75, 'Historial de pagos', 'historial-pagos', 'fas fa-history', 9, 4, 1, 1),
+(76, 'Métodos de pago', 'metodos-pago', 'fas fa-wallet', 5, 7, 1, 1);
