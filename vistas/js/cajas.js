@@ -2,14 +2,14 @@ var tablaPagos = null;
 var tablaCobros = null;
 var tabla = null;
 
-let paginaActual = 1;
-let limite = 10;
-let totalRegistros = 0;
+let listarCajas = null;
+let historialCajas = null;
+let idCaja = null;
 
 
 function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
-  listar();
+  listarCajas.load();
   $("#myModal").on("submit", function (e) {
     guardaryeditar(e);
   });
@@ -29,6 +29,68 @@ function init() {
   $("#panelCajas").show();
 }
 
+function pintarCajas(data, permissions) {
+  let html = "";
+
+  if (data.length === 0) {
+
+    html = `
+            <tr>
+                <td colspan="8" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+    $("#tbllistado tbody").html(html);
+    return;
+  }
+
+  data.forEach(item => {
+    let estado = null;
+    const estadoItem = parseInt(item.estado);
+    if (estadoItem === 1) {
+      estado = '<span class="badge bg-green">ACTIVADO</span>';
+    } else if (estadoItem === 2) {
+      estado = '<span class="badge bg-blue">ABIERTO</span>';
+    } else {
+      estado = '<span class="badge bg-red">DESACTIVADO</span>';
+    }
+
+    let btnDesactivar = '<button class="btn btn-danger btn-xs" onclick="desactivar(' + item.idcaja + ')"><i class="fas fa-times-circle"></i></button>';
+    if (!estadoItem) {
+      btnDesactivar = ' <button class="btn btn-primary btn-xs" onclick="activar(' + item.idcaja + ')"><i class="fa fa-check"></i></button>';
+    };
+
+    html += `
+            <tr>
+                <td>${item.numero}</td>
+                <td>${item.nombre || '-'}</td>
+                <td>${item.personal || '-'}</td>
+                <td>${item.almacen || '-'}</td>
+                <td>${estado}</td>
+                <td>
+                  <button class="btn btn-warning btn-xs" onclick="mostrar(${item.idcaja})"><i class="fas fa-edit"></i></button>
+                  <button class="btn btn-info btn-xs" onclick="historialCaja(${item.idcaja})"><i class="fas fa-list"></i></button>
+                  ${btnDesactivar}
+                </td>
+            </tr>
+        `;
+
+  });
+
+  $("#tbllistado tbody").html(html);
+}
+
+listarCajas = new FluentPaginator({
+  url: "controladores/cajas.php?op=listar",
+  renderTabla: pintarCajas,
+  tableBody: "#tbodyCajas",
+  extraParams: () => ({
+    idcaja: idCaja
+  })
+});
+
 function guardaryeditar(e) {
   e.preventDefault(); //No se activará la acción predeterminada del evento
   //$("#btnGuardar").prop("disabled",true);
@@ -40,83 +102,30 @@ function guardaryeditar(e) {
     data: formData,
     contentType: false,
     processData: false,
-
-    success: function (datos) {
+    success: function (response) {
+      const data = response;
+      if (!data.success) {
+        Swal.fire({
+          title: "Cajas",
+          icon: "error",
+          text: data.message,
+        });
+        return;
+      }
       Swal.fire({
-        title: "Correcto",
+        title: "Cajas",
         icon: "success",
-        text: datos,
+        text: data.message,
       });
-
       $("#myModal").modal("hide");
       listar();
+      limpiar();
     },
+    error: function (error) {
+      console.log(error);
+      Swal.fire("Error", error.responseJSON.message || 'Error al realizar la accion', 'error');
+    }
   });
-  limpiar();
-}
-
-//Función Listar
-function listar() {
-  tabla = $("#tbllistado")
-    .dataTable({
-      //"lengthMenu": [ 5, 10, 25, 75, 100],//mostramos el menú de registros a revisar
-      aProcessing: true, //Activamos el procesamiento del datatables
-      aServerSide: true, //Paginación y filtrado realizados por el servidor
-      processing: true,
-      language: {
-        processing: "<img style='width:80px; height:80px;' src='files/plantilla/loading-page.gif' />",
-      },
-      responsive: true,
-      lengthChange: false,
-      autoWidth: false,
-      dom: '<"row"<"col-sm-12 col-md-4"l><"col-sm-12 col-md-4"<"dt-buttons btn-group flex-wrap"B>><"col-sm-12 col-md-4"f>>t<"row"<"col-sm-12 col-md-6"i><"col-sm-12 col-md-6"p>>',
-      lengthMenu: [
-        [5, 10, 25, 50, 100, -1],
-        [
-          "5 filas",
-          "10 filas",
-          "25 filas",
-          "50 filas",
-          "100 filas",
-          "Mostrar todo",
-        ],
-      ],
-      buttons: [
-        "pageLength",
-        {
-          extend: "excelHtml5",
-          text: "<i class='fas fa-file-csv'></i>",
-          titleAttr: "Exportar a Excel",
-          // className: 'btn btn-success'
-        },
-        {
-          extend: "pdf",
-          text: "<i class='fas fa-file-pdf'></i>",
-          titleAttr: "Exportar a PDF",
-          // className: 'btn btn-danger'
-        },
-        {
-          extend: "colvis",
-          text: "<i class='fas fa-bars'></i>",
-          titleAttr: "",
-          // className: 'btn btn-danger'
-        },
-      ],
-      ajax: {
-        url: "controladores/cajas.php?op=listar",
-        type: "get",
-        dataType: "json",
-        error: function (e) {
-          console.log(e.responseText);
-        },
-      },
-      bDestroy: true,
-      iDisplayLength: 5, //Paginación
-      order: [
-        [0, "desc"]
-      ], //Ordenar (columna,orden)
-    })
-    .DataTable();
 }
 
 //Función para desactivar registros
@@ -132,22 +141,31 @@ function desactivar(idcaja) {
     reverseButtons: true
   }).then((result) => {
     if (result.isConfirmed) {
-      $.post(
-        "controladores/cajas.php?op=desactivar", {
-          idcaja: idcaja
-        },
-        function (response) {
-          const data = JSON.parse(response);
-          if (!data.success) {
-            Swal.fire("error!", data.message, "error");
-            return;
-          }
-          Swal.fire("Desactivado!", data.message, "success");
-          tabla.ajax.reload();
+      $.post("controladores/cajas.php?op=desactivar", { idcaja: idcaja }, function (response) {
+        const data = response;
+        if (!data.success) {
+          Swal.fire({
+            title: "Cajas",
+            icon: "error",
+            text: data.message,
+          });
+          return;
         }
-      );
+        Swal.fire({
+          title: "Cajas",
+          icon: "success",
+          text: data.message,
+        });
+        listarCajas.load();
+      }).fail(function (error) {
+        Swal.fire({
+          title: "Cajas",
+          icon: "error",
+          text: error.responseJSON.message || "Ocurrio un error",
+        });
+      });
     }
-  });
+  })
 }
 
 //Función para desactivar registros
@@ -162,20 +180,29 @@ function activar(idcaja) {
     confirmButtonText: "Si",
   }).then((result) => {
     if (result.isConfirmed) {
-      $.post(
-        "controladores/cajas.php?op=activar", {
-          idcaja: idcaja
-        },
-        function (response) {
-          const data = JSON.parse(response);
-          if (!data.success) {
-            Swal.fire("error!", data.message, "error");
-            return;
-          }
-          Swal.fire("Desactivado!", data.message, "success");
-          tabla.ajax.reload();
+      $.post("controladores/cajas.php?op=activar", { idcaja: idcaja }, function (response) {
+        const data = response;
+        if (!data.success) {
+          Swal.fire({
+            title: "Cajas",
+            icon: "error",
+            text: data.message,
+          });
+          return;
         }
-      );
+        Swal.fire({
+          title: "Cajas",
+          icon: "success",
+          text: data.message,
+        });
+        listarCajas.load();
+      }).fail(function (error) {
+        Swal.fire({
+          title: "Cajas",
+          icon: "error",
+          text: error.responseJSON.message || "Ocurrio un error",
+        });
+      });;
     }
   });
 }
@@ -183,10 +210,10 @@ function activar(idcaja) {
 function mostrar(idcaja) {
   $.post(
     "controladores/cajas.php?op=mostrar", {
-      idcaja: idcaja
-    },
-    function (data, status) {
-      data = JSON.parse(data);
+    idcaja: idcaja
+  },
+    function (response, status) {
+      const data = response;
       $("#myModal").modal("show");
 
       $("#nombre").val(data.nombre);
@@ -212,49 +239,77 @@ function regrearLista() {
   $("#panelCajas").show();
 }
 
-$("#limitHistorial").change(function () {
+function pintarHistorialCajas(data, permissions) {
+  let html = "";
 
-  limite = parseInt($(this).val());
+  if (data.length === 0) {
 
-  paginaActual = 1;
+    html = `
+            <tr>
+                <td colspan="8" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
 
-  historialCaja(idCajaSeleccionada);
+    $("#tblhistorial tbody").html(html);
+    return;
+  }
 
-});
+  data.forEach(item => {
+    let btnCierre = "";
 
-function historialCaja(idcaja) {
-  $("#panelHistorial").show();
-  $("#panelCajas").hide();
-  $.ajax({
-
-    url: "controladores/cajas.php?op=historialcajas",
-
-    data: {
-
-      idcaja: idcaja,
-
-      limit: limite,
-
-      offset: (paginaActual - 1) * limite
-
-    },
-
-    type: "GET",
-
-    dataType: "json",
-
-    success: function (response) {
-
-      totalRegistros = response.total;
-
-      cargarTabla(response.rows);
-
-      crearPaginador(idcaja);
-
+    if (permissions.superusuario && permissions.cerrar_caja && !item.fecha_cierre) {
+      btnCierre = `
+                  <button class="btn btn-danger btn-xs"
+                          title="Cerrar caja"
+                          onclick="showResumenCaja(${item.aperturacajaid})">
+                      <i class="fas fa-sign-out-alt"></i>
+                  </button>`;
     }
+
+    html += `
+            <tr>
+                <td>${item.nombre}</td>
+                <td>${item.personal || '-'}</td>
+                <td>${item.fecha_apertura || '-'}</td>
+                <td><span class="badge bg-danger">${item.efectivo_apertura_str || '-'}</span></td>
+                <td>${item.fecha_cierre || '<span class="badge bg-primary">ABIERTO</span>'}</td>
+                <td><span class="badge bg-success">${item.efectivo_cierre_str || '-'}</span></td>
+                <td>${item.cantventas || '-'}</td>
+                <td>
+                  <button class="btn btn-warning btn-xs"
+                          title="Ver registros de caja"
+                          onclick="verReportes(${item.aperturacajaid})">
+                      <i class="fas fa-eye"></i>
+                  </button>
+                  ${btnCierre}
+                </td>
+            </tr>
+        `;
 
   });
 
+  $("#tblhistorial tbody").html(html);
+}
+
+historialCajas = new FluentPaginator({
+  url: "controladores/cajas.php?op=historialcajas",
+  renderTabla: pintarHistorialCajas,
+  tableBody: "#tbodyHistorialCajas",
+  searchSelector: "#searchHistorialCajas",
+  limitSelector: "#limitHistorialCajas",
+  paginationId: "#paginationHistorialCajas",
+  extraParams: () => ({
+    idcaja: idCaja
+  })
+});
+
+function historialCaja(idcaja) {
+  idCaja = idcaja;
+  historialCajas.load();
+  $("#panelHistorial").show();
+  $("#panelCajas").hide();
 }
 
 let efectivoEsperado = 0;
@@ -333,112 +388,6 @@ function calcularDiferencia() {
   );
 
 }
-
-function cargarTabla(rows) {
-
-  let html = "";
-
-  if (rows.length > 0) {
-
-    $.each(rows, function (i, item) {
-
-      let btnCierre = "";
-
-      if (item.fecha_cierre === null && item.puede_cerrar_caja) {
-        btnCierre = `
-                    <button class="btn btn-danger btn-xs"
-                            title="Cerrar caja"
-                            onclick="showResumenCaja(${item.aperturacajaid})">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </button>`;
-      }
-
-      html += `
-                <tr>
-                    <td>${item.nombre}</td>
-                    <td>${item.personal}</td>
-                    <td>${item.fecha_apertura}</td>
-                    <td>${item.efectivo_apertura}</td>
-                    <td>${item.fecha_cierre ?? '<span class="badge bg-blue">ABIERTO</span>'}</td>
-                    <td>${item.efectivo_cierre ?? '<span class="badge bg-blue">ABIERTO</span>'}</td>
-                    <td>${item.cantventas}</td>
-                    <td>
-                        <button class="btn btn-warning btn-xs"
-                                title="Ver registros de caja"
-                                onclick="verReportes(${item.aperturacajaid})">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        ${btnCierre}
-                    </td>
-                </tr>`;
-    });
-
-  } else {
-
-    html = `
-            <tr>
-                <td colspan="8" class="text-center">
-                    No se encontraron resultados
-                </td>
-            </tr>`;
-  }
-
-  $("#tblhistorial").html(html);
-}
-
-
-function crearPaginador(idcaja) {
-
-  let totalPaginas = Math.ceil(totalRegistros / limite);
-
-  let html = "";
-
-  html += `
-        <li class="page-item ${paginaActual == 1 ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual - 1},${idcaja})">
-                Anterior
-            </a>
-        </li>
-    `;
-
-  for (let i = 1; i <= totalPaginas; i++) {
-
-    html += `
-            <li class="page-item ${i == paginaActual ? 'active' : ''}">
-                <a class="page-link" href="#" onclick="cambiarPagina(${i},${idcaja})">
-                    ${i}
-                </a>
-            </li>
-        `;
-
-  }
-
-  html += `
-        <li class="page-item ${paginaActual == totalPaginas ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="cambiarPagina(${paginaActual + 1},${idcaja})">
-                Siguiente
-            </a>
-        </li>
-    `;
-
-  $("#paginadorHistorial").html(html);
-
-}
-
-
-function cambiarPagina(pagina, idcaja) {
-
-  let totalPaginas = Math.ceil(totalRegistros / limite);
-
-  if (pagina < 1 || pagina > totalPaginas)
-    return;
-
-  paginaActual = pagina;
-
-  historialCaja(idcaja);
-
-}
-
 
 function verReportes(aperturacajaid) {
   $("#myModal2").modal("show");
@@ -721,7 +670,7 @@ $("#formCerrarCaja").submit(function (e) {
       }
       $("#modalCerrarCaja").modal("hide");
       Swal.fire("correcto!", data.message, "success");
-      historialCaja(data.idcaja);
+      historialCajas.load();
     }
   });
 
