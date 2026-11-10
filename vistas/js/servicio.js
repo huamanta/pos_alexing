@@ -58,10 +58,6 @@ function init(){
 
 	$("#idsucursal2").change(listar);
 
-	$('#navAlmacenActive').addClass("treeview active");
-    $('#navAlmacen').addClass("treeview menu-open");
-    $('#navServicio').addClass("active");
-
 }
 
 function limpiar() {

@@ -24,10 +24,6 @@ function init() {
     $("#select-all").on("click", function() {
         $("input[name='idventa[]']").prop("checked", this.checked);
     });
-
-    $("#navVentasActive").addClass("treeview active");
-    $("#navVentas").addClass("treeview menu-open");
-    $("#navResumen").addClass("active");
 }
 
 function listarBoletas() {

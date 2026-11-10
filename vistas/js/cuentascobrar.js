@@ -37,10 +37,6 @@ function init() {
     toggleBtnEstadoCuenta();
   });
 
-  $("#navCobros").addClass("treeview menu-open");
-  $("#navCobrosActive").addClass("treeview active");
-  $("#navCuentasPorCobrar").addClass("active");
-
   //cargamos los items al select almacen
   $.post("controladores/venta.php?op=selectSucursal3", function (r) {
     $("#idsucursal2").html(r);

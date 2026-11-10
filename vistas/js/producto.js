@@ -110,34 +110,9 @@ function init() {
       .trigger("change");
   });
 
-  // $("#idsucursal2").change(listar);
 
-  $("#navAlmacenActive").addClass("treeview active");
-  $("#navAlmacen").addClass("treeview menu-open");
-  $("#navProducto").addClass("active");
-
- // cargarComboProductos();
 }
 
-/*function cargarComboProductos() {
-  var idp = $("#idsucursal3").val();
-
-  //cargamos los items al select almacen
-  $.post("controladores/venta.php?op=selectProductoS&idp=" + idp, function (r) {
-    $("#idproducto2").html(r);
-    $("#idproducto2").select2("");
-  });
-}
-
-function cargarComboProductos2() {
-  var idp = $("#idsucursal4").val();
-
-  //cargamos los items al select almacen
-  $.post("controladores/venta.php?op=selectProductoS&idp=" + idp, function (r) {
-    $("#idproducto3").html(r);
-    $("#idproducto3").select2("");
-  });
-}*/
 
 function guardarcat(e) {
   e.preventDefault(); //no se activara la accion predeterminada
@@ -191,28 +166,6 @@ function seleccionarCategoria(nombre, idcategoria) {
   $("#idcategoria").select2("");
 }
 
-// function obtenerIdCategoriaVehiculoEnSelect() {
-//   let idVehiculo = "";
-//   $("#idcategoria option").each(function () {
-//     const texto = (($(this).text() || "") + "").trim().toUpperCase();
-//     if (texto === "VEHICULO") {
-//       idVehiculo = $(this).val();
-//       return false;
-//     }
-//   });
-//   return idVehiculo;
-// }
-
-// function sincronizarTipoProductoConCategoria() {
-//   const idSeleccionado = ("" + $("#idcategoria").val() || "").trim();
-//   const idVehiculo = obtenerIdCategoriaVehiculoEnSelect();
-
-//   if (idVehiculo && idSeleccionado === idVehiculo) {
-//     $("#tipo_producto").val("Vehiculo");
-//   } else {
-//     $("#tipo_producto").val("Producto");
-//   }
-// }
 //Función limpiar
 function limpiar() {
   $("#codigo").val("");

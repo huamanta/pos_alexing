@@ -1,6 +1,3 @@
-$("#navVentasActive").addClass("treeview active");
-$("#navVentas").addClass("treeview menu-open");
-$("#navConceptos").addClass("active");
 
 let listarConceptos = null;
 

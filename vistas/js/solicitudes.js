@@ -1,6 +1,3 @@
-$("#navPosActive").addClass("treeview active");
-$("#navPos").addClass("treeview menu-open");
-$("#navSolicitudes").addClass("active");
 let listarSolicitudes = null;
 var pasoSeleccionado = null;
 var pasoActualSolicitud = null;

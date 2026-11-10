@@ -32,10 +32,6 @@ function init(){
 	$.post("controladores/venta.php?op=selectSucursal3", function(r){
 		$("#idsucursal2").html(r);
 	});
-	
-	$('#navComprasActive').addClass("treeview active");
-    $('#navCompras').addClass("treeview menu-open");
-    $('#navOrdenCompra').addClass("active");
 
 	$("#fecha_inicio").change(listar);
 	$("#fecha_fin").change(listar);

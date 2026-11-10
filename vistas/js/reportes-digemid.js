@@ -6,10 +6,6 @@ function init(){
 	$("#fecha_fin").change(listar);
 	$("#idsucursal").change(listar);
 
-	$("#navAlmacenActive").addClass("treeview active");
-  	$("#navAlmacen").addClass("treeview menu-open");
-  	$("#navReportes").addClass("active");
-
     //cargamos los items al select almacen
 	$.post("controladores/venta.php?op=selectSucursal3", function(r){
 		$("#idsucursal").html(r);

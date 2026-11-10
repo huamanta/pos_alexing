@@ -50,10 +50,6 @@ function init() {
         $('#idsucursal').select2('');
     });
 
-    $('#navComprasActive').addClass("treeview active");
-    $('#navCompras').addClass("treeview menu-open");
-    $('#navCompra').addClass("active");
-
 }
 
 $("#fecha_inicio, #fecha_fin").change(function () {

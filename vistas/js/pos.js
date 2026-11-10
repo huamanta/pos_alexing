@@ -96,9 +96,6 @@ function init() {
   });
 
   $("#idsucursal").change(documentosSucursal);
-  $("#navPosActive").addClass("treeview active");
-  $("#navPos").addClass("treeview menu-open");
-  $("#navPos1").addClass("active");
   verificarConceptoMovimiento();
 
   /*document.getElementById("input-visa").readOnly = true;

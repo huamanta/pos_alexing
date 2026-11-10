@@ -11,10 +11,6 @@ function init() {
         guardaryeditar(e);
     });
 
-    $('#navConfiguracionActive').addClass("treeview active");
-    $('#navConfiguracion').addClass("treeview menu-open");
-    $('#navFacturadores').addClass("active");
-
 }
 
 //Función limpiar

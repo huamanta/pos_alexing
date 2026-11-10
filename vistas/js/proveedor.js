@@ -33,10 +33,6 @@ function init() {
 		guardaryeditar(e);
 	})
 
-	$('#navComprasActive').addClass("treeview active");
-	$('#navCompras').addClass("treeview menu-open");
-	$('#navProveedor').addClass("active");
-
 }
 
 

@@ -1,5 +1,4 @@
-$("#navCajaChica").addClass("treeview active");
-$("#navCajaChica").addClass("active");
+
 
 function mostrarEstadoCaja(data) {
     const estadoCaja = document.getElementById('estadoCaja');

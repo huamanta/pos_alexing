@@ -4,10 +4,6 @@ var cont = 0;
 var detalles = 0;
 let listarArticulos = null;
 
-$("#navPos").addClass("treeview active");
-$("#navPos").addClass("menu-open");
-$("#navGuia").addClass("active");
-
 function init() {
   $("#body").addClass("sidebar-collapse sidebar-mini");
 

@@ -13,10 +13,6 @@ function init() {
 		guardaryeditar(e);
 	});
 
-	$('#navPersonalActive').addClass("treeview active");
-	$('#navPersonal').addClass("treeview menu-open");
-	$('#navPersonalI').addClass("active");
-
 	$("#imagenmuestra").show();
 	$("#imagenmuestra").attr("src", "files/personal/user.png");
 	$("#imagenactual").val("user.png");

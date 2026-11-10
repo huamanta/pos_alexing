@@ -9,10 +9,6 @@ function init(){
 		guardaryeditar(e);	
 	});
 
-	$('#navAlmacenActive').addClass("treeview active");
-	$('#navAlmacen').addClass("treeview menu-open");
-    $('#navRubro').addClass("active");
-
 }
 
 //Función limpiar

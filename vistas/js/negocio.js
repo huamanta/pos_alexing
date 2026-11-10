@@ -10,10 +10,6 @@ function init(){
    	guardaryeditar(e);
    })
 
-   $('#navConfiguracionActive').addClass("treeview active");
-   $('#navConfiguracion').addClass("treeview menu-open");
-   $('#navDatosGeneralesI').addClass("active");
-
    $("#imagenmuestra").show();
    $("#imagenmuestra").attr("src","files/personal/user.png");
    $("#imagenactual").val("user.png");

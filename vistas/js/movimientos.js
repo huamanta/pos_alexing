@@ -1,6 +1,3 @@
-$("#navVentasActive").addClass("treeview active");
-$("#navVentas").addClass("treeview menu-open");
-$("#navMovimientos").addClass("active");
 
 let listarMovimientos = null;
 

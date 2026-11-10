@@ -7,9 +7,6 @@ toastr.options = {
 };
 
 function init() {
-  $("#navInventarioActive").addClass("treeview active");
-  $("#navInventario").addClass("treeview menu-open");
-  $("#navajuste-inventario").addClass("active");
 
   //cargamos los items al select almacen
   $.post("controladores/venta.php?op=selectSucursal3", function (r) {
