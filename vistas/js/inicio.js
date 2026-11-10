@@ -3,9 +3,6 @@ let chartProductosMasVendidos = null;
 
 //Función que se ejecuta al inicio
 function init() {
-    $("#body").addClass("sidebar-collapse sidebar-mini");
-    $('#navInicio').addClass("treeview active");
-    $('#navInicio').addClass("active");
     mostrarInicio();
    /* $.post("controladores/venta.php?op=selectSucursal3", function (r) {
         $("#idsucursal2").html(r);

@@ -58,10 +58,6 @@ function init() {
   $("#idproducto").change(listar);
   $("#idsucursal").change(documentosSucursal);
 
-  $("#navVentasActive").addClass("treeview active");
-  $("#navVentas").addClass("treeview menu-open");
-  $("#navVenta").addClass("active");
-
   window.addEventListener(
     "keypress",
     function (event) {

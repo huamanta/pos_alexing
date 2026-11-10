@@ -6,10 +6,6 @@ let paginatorMisSolicitudes = null;
 let paginatorTraslados = null;
 let sucursales = null;
 
-$("#navAlmacenActive").addClass("treeview active");
-$("#navAlmacen").addClass("treeview menu-open");
-$("#navTraslado").addClass("active");
-
 function init() {
   paginatorSolicitudes.load();
   paginatorMisSolicitudes.load();

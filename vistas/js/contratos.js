@@ -6,11 +6,6 @@ var tbllistadoAbonos;
 let listaContratos = null;
 
 function initializeContratos() {
-  //   $.post("controladores/venta.php?op=selectSucursal", function (r) {
-  //     $("#idsucursal").html(r);
-  //     $("#idsucursal").select2("");
-  //     listar();
-  //   });
 
   // Agregar event listeners para filtros
   $(
@@ -19,17 +14,8 @@ function initializeContratos() {
     listaContratos.load();
   });
 
-  $("#navPosActive").addClass("treeview active");
-  $("#navPos").addClass("treeview menu-open");
-  $("#navContratos").addClass("active");
   listaContratos.load();
 }
-
-// function recargarTabla() {
-//   if (typeof tabla !== "undefined") {
-//     tabla.ajax.reload();
-//   }
-// }
 
 function guardarComentarioCredito() {
   let comentario = $("#comentarioCredito").val();

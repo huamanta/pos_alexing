@@ -6,9 +6,7 @@ function init() {
   $("#asistenciaModal").on("submit", function (e) {
     guardaryeditar(e);
   });
-  $("#navPersonalActive").addClass("treeview active");
-  $("#navPersonal").addClass("treeview menu-open");
-  $("#navAsistencia").addClass("active");
+  
   $("#fecha_inicio").change(historial);
   $("#fecha_fin").change(historial);
 }

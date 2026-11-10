@@ -5,10 +5,6 @@ function init(){
         procesarXml(e);
     });
 
-    // Activar menú (ajusta según tu menú real)
-    $('#navProcesar').addClass("treeview active");
-    $('#navProcesar').addClass("active");
-
     // Limpiar preview y formulario
 	$("#btnLimpiar").on("click", function(){
 	    // Limpiar preview del ticket

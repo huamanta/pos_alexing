@@ -5,9 +5,6 @@ function init() {
     $("#myModal").on("submit", function(e) {
         guardaryeditar(e);
     });
-    $('#navAlmacenActive').addClass("treeview active");
-    $('#navAlmacen').addClass("treeview menu-open");
-    $('#navCondicionVenta').addClass("active");
 }
 
 function guardaryeditar(e) {

@@ -10,10 +10,6 @@ function init(){
 	            $('#idcliente').select2('');
 	});
 
-    $('#navConsultaVentasActive').addClass("treeview active");
-    $('#navConsultaVentas').addClass("treeview menu-open");
-    $('#navVentasVendedor').addClass("active");
-
 	//cargamos los items al select almacen
 	$.post("controladores/venta.php?op=selectSucursal3", function(r){
 		$("#idsucursal2").html(r);

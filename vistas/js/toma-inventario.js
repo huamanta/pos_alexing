@@ -16,10 +16,6 @@ function init() {
   document.getElementById("formularioregistros").style.display = "none";
   document.getElementById("btnregresar").style.display = "none";
 
-  $("#navInventarioActive").addClass("treeview active");
-  $("#navInventario").addClass("treeview menu-open");
-  $("#navtoma-inventario").addClass("active");
-
   //cargamos los items al select almacen
   $.post("controladores/venta.php?op=selectSucursal3", function (r) {
     $("#idsucursal").html(r);

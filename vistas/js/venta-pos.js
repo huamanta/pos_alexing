@@ -197,10 +197,6 @@ function init() {
   verificarConceptoMovimiento();
   cargarSucursales();
 
-  $("#navPos").addClass("treeview active");
-  $("#navPos").addClass("menu-open");
-  $("#navCrearVenta").addClass("active");
-
   $("form").keypress(function (e) {
     if (e == 13) {
       return false;

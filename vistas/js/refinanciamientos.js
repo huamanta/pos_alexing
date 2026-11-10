@@ -1,8 +1,3 @@
-$('#navCobros').addClass("treeview menu-open");
-$('#navCobrosActive').addClass("treeview active");
-$('#navRefinanciarDeuda').addClass("active");
-
-
 let idventa = 0;
 
 $("#btnBuscar").click(function () {

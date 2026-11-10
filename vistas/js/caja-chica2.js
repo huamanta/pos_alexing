@@ -19,9 +19,6 @@ function init() {
     guardaryeditar(e);
   });
 
-  $("#navCajaChica").addClass("treeview active");
-  $("#navCajaChica").addClass("active");
-
   $.post("controladores/venta.php?op=selectSucursal3", function (r) {
     $("#idsucursal2").html(r);
     $("#idsucursal2").select2("");

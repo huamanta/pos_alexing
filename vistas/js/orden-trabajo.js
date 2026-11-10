@@ -1,6 +1,3 @@
-$('#navTallerActive').addClass("treeview active");
-$('#navTaller').addClass("treeview menu-open");
-$('#navOrdenTrabajo').addClass("active");
 $('#frmOrdenTrabajo').hide();
 $("#btnRegresar").hide();
 const orderForm = $('#frmOrdenTrabajo');

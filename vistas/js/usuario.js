@@ -50,10 +50,6 @@ function init() {
 		actualizarEstadosModulos();
 	});
 
-	$('#navPersonalActive').addClass("treeview active");
-	$('#navPersonal').addClass("treeview menu-open");
-	$('#navUsuario').addClass("active");
-
 }
 
 //Función limpiar

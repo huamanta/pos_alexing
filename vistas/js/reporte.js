@@ -5,10 +5,6 @@ function init() {
         cargarReporte();
     });
 
-    $('#navReportesActive').addClass("treeview active");
-    $('#navReportes').addClass("treeview menu-open");
-    $('#navReporteConsolidado').addClass("active");
-
     $("#fecha_inicio, #fecha_fin, #idsucursal2").change(function(){
         cargarReporte();
     });

@@ -26,9 +26,6 @@ function init() {
     listarSaldos();
   });
 
-  $("#navCuentasPorPagar").addClass("treeview active");
-  $("#navCuentasPorPagar").addClass("active");
-
   //cargamos los items al select almacen
   $.post("controladores/venta.php?op=selectSucursal3", function (r) {
     $("#idsucursal2").html(r);

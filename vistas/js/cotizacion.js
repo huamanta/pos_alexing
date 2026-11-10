@@ -106,10 +106,6 @@ function init() {
     $("#idsucursal").prop("disabled", true);
   });
 
-
-  $("#navPosActive").addClass("treeview active");
-  $("#navPos").addClass("treeview menu-open");
-  $("#navCotizaciones").addClass("active");
   window.addEventListener(
     "keypress",
     function (event) {

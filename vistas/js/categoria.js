@@ -8,10 +8,6 @@ function init(){
 	{
 		guardaryeditar(e);	
 	});
-	
-	$('#navAlmacenActive').addClass("treeview active");
-    $('#navAlmacen').addClass("treeview menu-open");
-    $('#navCategoria').addClass("active");
 
 }
 

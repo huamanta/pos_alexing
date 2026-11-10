@@ -40,9 +40,6 @@ function init(){
     $("#fecha_fin").change(listar);
     $("#idsucursal2").change(listar);
 	
-	$('#navPosActive').addClass("treeview active");
-    $('#navPos').addClass("treeview menu-open");
-    $('#navNotasCredito').addClass("active");
     cargarSucursales();
     
     $("#tipo_comprobante").on("change", function () {
