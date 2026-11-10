@@ -26,7 +26,7 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'listarnoti':
-		$idsucursal = intval($_GET['idsucursal'] ?? 0);
+		$idsucursal = $_SESSION['idsucursal'] ?? null;
 		$rspta = $traslado->listarNotificaciones($idsucursal);
 		$data = [];
 		while ($reg = $rspta->fetch_object()) {
@@ -37,7 +37,8 @@ switch ($_GET["op"]) {
 				"fecha" => $reg->fecha,
 				"idtraslado" => $reg->idtraslado,
 				"tipo" => $reg->tipo,
-				"iddestino" => $reg->iddestino ?? null
+				"iddestino" => $reg->iddestino ?? null,
+				"currentSucursal" => $idsucursal
 			];
 		}
 		echo json_encode($data);

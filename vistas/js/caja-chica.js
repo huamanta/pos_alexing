@@ -83,7 +83,6 @@ async function resumenBancos() {
         const response = await fetch(
             "controladores/cajachica.php?op=resumenBancos"
         );
-        console.log(response);
         
         const data = await response.json();
         let r = data.resumen;

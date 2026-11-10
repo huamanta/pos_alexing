@@ -534,6 +534,4 @@
     </div>
   </div>
 </div>
-
-<script src="vistas/js/pagination.js"></script>
 <script src="vistas/js/traslado.js"></script>

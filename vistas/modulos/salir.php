@@ -1,8 +1,8 @@
 <?php
 // No iniciar sesión aquí - ya debería estar iniciada desde plantilla.php
-
 // Función para obtener IP real
-function getClientIP() {
+function getClientIP()
+{
     if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
         return $_SERVER['HTTP_CLIENT_IP'];
     } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
@@ -15,35 +15,42 @@ function getClientIP() {
     }
 }
 
-// Incluir archivo de conexión
-require_once __DIR__ . '/../../configuraciones/Conexion.php';
+require_once __DIR__ . '/../../configuraciones/ConexionPdo.php';
 
 if (isset($_SESSION['idusuario'])) {
 
     $idusuario = $_SESSION['idusuario'];
     $logout = date('Y-m-d H:i:s');
     $ip = getClientIP();
+    $pdo = Conexion::conectar();
 
-    // Actualizar el último login exitoso
-    $sql = "UPDATE login_historial
-            SET exito = 0, logout = ?, ip = ?
-            WHERE idusuario = ? AND exito = 1
-            ORDER BY fecha DESC
-            LIMIT 1";
+    $registro = (new DBQuery($pdo))
+        ->select('*')
+        ->from('login_historial')
+        ->where('idusuario', '=', $idusuario)
+        ->where('exito', '=', 1)
+        ->orderBy('fecha', 'DESC')
+        ->first();
 
-    $stmt = $conexion->prepare($sql);
-    $stmt->bind_param("ssi", $logout, $ip, $idusuario);
-    $stmt->execute();
+    if ($registro !== null) {
+        (new FluentSaver($pdo))
+            ->table('login_historial')
+            ->primaryKey('idhistorial')
+            ->timestamps(false)
+            ->data([
+                'idhistorial' => $registro['idhistorial'],
+                'exito' => 0,
+                'logout' => $logout,
+                'ip' => $ip
+            ])
+            ->update();
+    }
 }
 
 // Destruir sesión completamente
 $_SESSION = array();
 
-
-
 session_destroy();
 
-// Redirigir al login usando JavaScript (ya que los headers ya fueron enviados)
-echo '<script>window.location.href = "login";</script>';
+header('Location: ' . $_SERVER['PHP_SELF'] . '?ruta=login');
 exit;
-?>

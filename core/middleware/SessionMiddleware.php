@@ -32,7 +32,8 @@ class SessionMiddleware
 
             $esAjax = strtolower((string) ($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '')) === 'xmlhttprequest'
                 || strcasecmp((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json') === 0
-                || stripos((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json') !== false;
+                || stripos((string) ($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json') !== false
+                || isset($_GET['op']);
 
             if ($esAjax) {
                 require_once __DIR__ . '/../Response.php';

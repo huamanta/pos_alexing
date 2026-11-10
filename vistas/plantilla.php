@@ -1,28 +1,3 @@
-<?php
-//redirigir directamente
-$rutaActual = $_GET['ruta'] ?? null;
-
-if (
-  empty($rutaActual) &&
-  isset($_SESSION["iniciarSesion"]) &&
-  $_SESSION["iniciarSesion"] == "ok"
-) {
-  header("Location: " . $_SERVER['PHP_SELF'] . "?ruta=inicio");
-  exit();
-}
-if (isset($rutaActual)) {
-
-  if ($rutaActual == "salir") {
-    include "modulos/salir.php";
-    exit;
-  }
-
-  if ($rutaActual == "salirsucursal") {
-    include "modulos/salirsucursal.php";
-    exit;
-  }
-}
-?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -42,12 +17,14 @@ if (isset($rutaActual)) {
   <link rel="stylesheet" href="./files/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="./files/dist/css/adminlte.min.css">
-  <link rel="stylesheet" href="./vistas/css/variables.css">
+  <link rel="stylesheet" href="./files/dist/css/variables.css">
   <link href="./files/css/tailwind.min.css" rel="stylesheet">
   <link rel="stylesheet" href="./files/dist/css/neon.css">
   <link rel="stylesheet" href="./files/dist/css/tailpanel.css">
   <link rel="stylesheet" href="./files/css/pos.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/skeleton.min.css">
+  <link rel="stylesheet" href="./files/dist/css/general.css">
+
   <!-- jQuery -->
   <script src="./files/plugins/jquery/jquery.min.js"></script>
   <!-- Bootstrap 4 -->
@@ -103,63 +80,8 @@ if (isset($rutaActual)) {
   <script src="./files/plugins/toastr/toastr.min.js"></script>
 
   <script src="./files/plugins/fullcalendar/main.min.js"></script>
-  <script src="./vistas/js/pagination.js"></script>
-  <script>
-    $(document).ready(function() {
-      $('[data-toggle="tooltip"]').tooltip();
-    });
-  </script>
-
-  <style>
-    .select2-container .select2-selection--single {
-      height: 38px !important;
-      /* Bootstrap 4 */
-      padding: 6px 12px;
-      line-height: 1.42857143;
-      box-sizing: border-box;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-      line-height: 24px;
-      /* Ajusta según necesidad */
-      padding-left: 0px;
-    }
-
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-      height: 36px;
-    }
-
-    .loader-wrapper {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 200px;
-      /* ajusta según tu card */
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #e0e0e0;
-      border-top: 4px solid #0d6efd;
-      /* color azul bootstrap */
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    .loader-text {
-      margin-top: 10px;
-      font-size: 14px;
-      color: #555;
-    }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
-  </style>
+  <script src="./files/dist/js/pagination.js"></script>
+  <script src="./files/dist/js/general.js"></script>
 
 </head>
 
