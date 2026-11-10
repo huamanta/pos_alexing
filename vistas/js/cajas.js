@@ -13,18 +13,12 @@ function init() {
   $("#myModal").on("submit", function (e) {
     guardaryeditar(e);
   });
-  // $.post("controladores/venta.php?op=selectSucursal3", function (r) {
-  //   $("#idsucursal2").html(r);
-  // });
-  // $("#idsucursal2").change(historial);
   $.post("controladores/venta.php?op=selectSucursal", function (r) {
     $("#idsucursal").html(r);
     $("#idsucursal").select2("");
     $('#idsucursal').prop('disabled', true);
   });
-  $("#navVentasActive").addClass("treeview active");
-  $("#navVentas").addClass("treeview menu-open");
-  $("#navCajas").addClass("active");
+
   $("#panelHistorial").hide();
   $("#panelCajas").show();
 }
