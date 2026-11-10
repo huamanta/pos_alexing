@@ -279,8 +279,8 @@ class Guia extends Helpers
             ->from('guia_remision g')
             ->join('sucursal s', 'g.idsucursal = s.idsucursal')
             ->join('persona p', 'g.idcliente = p.idpersona')
-            ->join('persona tr', 'g.idtransportista = tr.idpersona')
             ->join('personal pe', 'g.idpersonal = pe.idpersonal')
+            ->leftJoin('persona tr', 'g.idtransportista = tr.idpersona')
             ->where('g.idguia', '=', $idguia)
             ->first();
     }

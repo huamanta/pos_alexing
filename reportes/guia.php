@@ -15,11 +15,11 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            font-size: 8.5px;
+            font-size: 9px;
             color: #000;
             margin: 0;
             padding: 0;
-            line-height: 1.2;
+            line-height: 1.45;
         }
 
         table {
@@ -55,7 +55,7 @@
         .ruc-box {
             border: 1.2px solid #000;
             border-radius: 10px;
-            padding: 8px 10px;
+            padding: 7px 9px;
             text-align: center;
         }
 
@@ -81,16 +81,31 @@
             margin-top: 6px;
         }
 
+        .box td {
+            padding: 4px 6px;
+            vertical-align: top;
+        }
+
         .label {
             font-weight: bold;
             display: inline-block;
-            min-width: 90px;
+            min-width: 100px;
+        }
+
+        .box div,
+        .info-box div {
+            margin-bottom: 5px;
+        }
+
+        .box div:last-child,
+        .info-box div:last-child {
+            margin-bottom: 0;
         }
 
         .detalle th,
         .detalle td {
             border: 1px solid #000;
-            padding: 5px 4px;
+            padding: 6px 4px;
             font-size: 8.5px;
         }
 
@@ -103,6 +118,90 @@
             border-top: 1px dashed #000;
             margin: 6px 0;
         }
+
+        .company-name {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 7px;
+            text-transform: uppercase;
+        }
+
+        .info-box {
+            border: 1px solid #000;
+            border-radius: 6px;
+            margin-top: 7px;
+            overflow: hidden;
+        }
+
+        .info-box td {
+            padding: 8px 9px;
+            vertical-align: top;
+        }
+
+        .info-box .divider {
+            border-left: 1px solid #000;
+        }
+
+        .section-title {
+            background: #1f2937;
+            color: #fff;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 5px 8px;
+        }
+
+        .data-table td {
+            border-bottom: 1px solid #d1d5db;
+            padding: 5px 7px;
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .field-name {
+            font-weight: bold;
+            width: 115px;
+            background: #f7f7f7;
+        }
+
+        .detalle {
+            margin-top: 8px;
+        }
+
+        .detalle th {
+            color: #fff;
+            background: #374151;
+            border-color: #374151;
+            text-transform: uppercase;
+        }
+
+        .detalle td {
+            border-color: #aeb4bb;
+        }
+
+        .detalle td {
+            line-height: 1.35;
+        }
+
+        .total-bar {
+            border: 1px solid #000;
+            border-radius: 4px;
+            margin-top: 8px;
+            padding: 7px 9px;
+            text-align: right;
+            background: #f7f7f7;
+        }
+
+        .footer-box {
+            border: 1px solid #000;
+            border-radius: 6px;
+            margin-top: 12px;
+            padding: 8px;
+            text-align: center;
+            background: #fafafa;
+        }
     </style>
 </head>
 
@@ -112,13 +211,27 @@
     // Logo convertido a ruta segura
     $logo = !empty($configuracion['logo']) ? $configuracion['logo'] : 'default.png';
     $rutaLogo = realpath(__DIR__ . '/../files/logos/' . $logo);
+    if (!$rutaLogo || !is_readable($rutaLogo)) {
+        $rutaLogo = realpath(__DIR__ . '/../files/logos/default.png');
+    }
+    $logoExtension = $rutaLogo ? strtolower(pathinfo($rutaLogo, PATHINFO_EXTENSION)) : '';
+    $logoMime = match ($logoExtension) {
+        'jpg', 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp',
+        default => 'application/octet-stream',
+    };
+    $logoData = $rutaLogo ? 'data:' . $logoMime . ';base64,' . base64_encode(file_get_contents($rutaLogo)) : '';
     ?>
 
     <table class="header-table">
         <tr>
             <td width="33%" class="text-center">
                 <div class="logo-text">
-                    <img src="file://<?= $rutaLogo ?>" height="60">
+                    <?php if ($logoData): ?>
+                        <img src="<?= htmlspecialchars($logoData, ENT_QUOTES, 'UTF-8') ?>" height="60">
+                    <?php endif; ?>
                 </div>
             </td>
             <td width="34%">
@@ -156,14 +269,17 @@
     <table class="box">
         <tr>
             <td>
-                <div></div><span class="label">Motivo Traslado:</span> <?= $guia['motivo_traslado'] ?? 'VENTA' ?></div>
-                <div></div><span class="label">Modalidad:</span>
+                <div><span class="label">Motivo Traslado:</span> <?= $guia['motivo_traslado'] ?? 'VENTA' ?></div>
+                <div><span class="label">Modalidad:</span>
                 <?= $guia['modalidad_traslado'] ?? 'TRANSPORTE PÚBLICO' ?></div>
             </td>
             <td>
-                <div><span class="label">Punto de
-                        Partida:</span><br><?= $guia['punto_partida'] ?? ($configuracion['direccion'] ?? '') ?></div>
-                <div><span class="label">Punto de Llegada:</span><br><?= $guia['punto_llegada'] ?? '' ?></div>
+                <div><span class="label">Punto de Partida:</span>
+                    <?= $guia['punto_partida'] ?? ($configuracion['direccion'] ?? '') ?>
+                </div>
+                <div><span class="label">Punto de Llegada:</span>
+                    <?= $guia['punto_llegada'] ?? '' ?>
+                </div>
             </td>
         </tr>
     </table>
@@ -171,7 +287,7 @@
     <table class="box" style="margin-top:6px;">
         <tr>
             <td colspan="4">
-                <label>DATOS DEL CONDUCTOR Y UNIDAD DE TRANSPORTE</label>
+                <strong>DATOS DEL CONDUCTOR Y UNIDAD DE TRANSPORTE</strong>
             </td>
         </tr>
         <tr>
@@ -195,13 +311,13 @@
         <tr>
             <td><strong>Tarjeta circulación:</strong></td>
             <td><?= $guia['tarjeta_circulacion'] ?? '' ?></td>
-            <td><strong>Numero NTC:</strong></td>
+            <td><strong>Número NTC:</strong></td>
             <td><?= $guia['num_ntc'] ?? '' ?></td>
         </tr>
         <tr>
             <td></td>
             <td></td>
-            <td><strong>Razon social</strong></td>
+            <td><strong>Razón social del transportista:</strong></td>
             <td><?= $guia['razon_social'] ?? '' ?></td>
         </tr>
     </table>
@@ -222,9 +338,8 @@
             $itemTotal = 0;
             foreach ($detalles as $row) {
                 $itemTotal += $row['cantidad'];
-                // Cambia aquí si tu campo se llama distinto: usa iddetalle_venta o iddetalle_guia
-                $lote = "buscarLotes";
-                $fecv = "buscarVencimientos";
+                $lote = !empty($row['iddetalle_guia']) ? buscarLotes($row['iddetalle_guia']) : '';
+                $fecv = !empty($row['iddetalle_guia']) ? buscarVencimientos($row['iddetalle_guia']) : '';
                 ?>
                 <tr>
                     <td class="text-center"><?= round($row['cantidad'], 2) ?></td>
@@ -241,7 +356,7 @@
     </table>
 
     <hr class="dotted">
-    <div style="padding:0 8px; font-weight:bold;">Total de Items: <?= round($itemTotal, 0) ?></div>
+    <div style="padding:4px 8px 0; font-weight:bold;">Cantidad total de ítems: <?= round($itemTotal, 0) ?></div>
     <div class="box text-center" style="margin-top:10px;">
         <strong>GUÍA DE REMISIÓN ELECTRÓNICA - REPRESENTACIÓN IMPRESA</strong><br>
         Autorizado mediante SEE - Del Contribuyente.<br>
