@@ -69,7 +69,7 @@ $total = 0;
 	<meta charset="UTF-8">
 	<title><?php echo $factura['tipo_comprobante']; ?></title>
 
-	<link rel="stylesheet" href="../../vistas/css/variables.css">
+	<link rel="stylesheet" href="../../files/dist/css/variables.css">
 	<link rel="stylesheet" href="./style.css">
 	<link rel="stylesheet" href="./css/cotizacion.css">
 </head>
