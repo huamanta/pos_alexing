@@ -1,7 +1,7 @@
 <?php
-//Incluímos inicialmente la conexión a la base de datos
-require "../configuraciones/Conexion.php";
-require_once 'Helpers.php';
+require_once __DIR__ . "/../core/Response.php";
+require_once __DIR__ . "/Helpers.php";
+
 class Cajas extends Helpers
 {
     public function __construct()
@@ -12,33 +12,72 @@ class Cajas extends Helpers
     //Implementamos un mÃ©todo para insertar registros
     public function insertar($nombre, $numero, $idsucursal)
     {
-        $sql = "INSERT INTO cajas (nombre,numero,idsucursal)
-        VALUES ('$nombre','$numero','$idsucursal')";
-        return ejecutarConsulta($sql);
+        try {
+            $insertar = (new FluentSaver($this->pdo))
+                ->table('cajas')
+                ->data([
+                    'nombre' => $nombre,
+                    'numero' => $numero,
+                    'idsucursal' => $idsucursal,
+                ])
+                ->save();
+
+            if (!$insertar) {
+                throw new Exception("Error al guardar la caja");
+            }
+
+            return Response::json([
+                'success' => true,
+                'message' => 'La caja se ha creado correctamente'
+            ]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
     }
 
     //Implementamos un método para editar registros
     public function editar($idcaja, $nombre, $numero)
     {
-        $sql = "UPDATE cajas SET nombre='$nombre',numero='$numero' WHERE idcaja='$idcaja'";
-        return ejecutarConsulta($sql);
+        try {
+            $editar = (new FluentSaver($this->pdo))
+                ->table('cajas')
+                ->primaryKey('idcaja')
+                ->data([
+                    'idcaja' => $idcaja,
+                    'nombre' => $nombre,
+                    'numero' => $numero,
+                ])
+                ->update();
+
+            if (!$editar) {
+                throw new Exception("Error al editar la caja");
+            }
+
+            return Response::json([
+                'success' => true,
+                'message' => 'La caja se ha editado correctamente'
+            ]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
     }
 
-    public function listar($idsucursal)
+    public function listar(int $idsucursal)
     {
-
+        $page = $_GET['page'] ?? 1;
+        $limit = $_GET['limit'] ?? 20;
+        $search = trim($_GET['search'] ?? '');
         $abierto = 2;
 
-        $sql = "SELECT 
-                c.*, 
-                CASE 
-                    WHEN c.estado = $abierto THEN pe.nombre 
-                    ELSE '' 
-                END AS personal,
-                s.nombre AS almacen, 
-                s.idsucursal
-            FROM cajas c
-            LEFT JOIN (
+        $response = (new DBQuery($this->pdo))
+            ->select([
+                'c.*',
+                "CASE WHEN c.estado = {$abierto} THEN pe.nombre ELSE '' END AS personal",
+                's.nombre AS almacen'
+            ])
+            ->from('cajas c')
+            ->leftJoin(
+                '(
                 SELECT ca1.*
                 FROM caja_apertura ca1
                 INNER JOIN (
@@ -46,139 +85,144 @@ class Cajas extends Helpers
                     FROM caja_apertura
                     GROUP BY idcaja
                 ) ca2 ON ca1.aperturacajaid = ca2.ultima_apertura
-            ) ca ON c.idcaja = ca.idcaja
-            LEFT JOIN usuario u ON ca.idusuario = u.idusuario
-            LEFT JOIN personal pe ON u.idpersonal = pe.idpersonal
-            LEFT JOIN sucursal s ON c.idsucursal = s.idsucursal
-            WHERE c.idsucursal = '$idsucursal' AND c.deleted_at IS NULL";
+            ) ca',
+                'ca.idcaja = c.idcaja'
+            )
+            ->leftJoin('usuario u', 'u.idusuario = ca.idusuario')
+            ->leftJoin('personal pe', 'pe.idpersonal = u.idpersonal')
+            ->leftJoin('sucursal s', 's.idsucursal = c.idsucursal')
+            ->where('c.idsucursal', '=', $idsucursal)
+            ->whereNull('c.deleted_at')
+            ->paginate($page, $limit);
 
-        return ejecutarConsulta($sql);
+        return Response::json($response);
     }
 
-
-
     //Implementamos un método para desactivar 
-    public function desactivar($idcaja)
+    public function desactivar(int $idcaja)
     {
         try {
 
             $verificarAperturaCaja = Helpers::verificarAperturaCaja($idcaja);
-
+            
             if ($verificarAperturaCaja) {
                 throw new Exception("La caja esta abierta no se puede descativar.");
             }
 
-            $sql = "UPDATE cajas
-                SET estado = '0'
-                WHERE idcaja = '$idcaja'";
+            $update = (new FluentSaver($this->pdo))
+                ->table('cajas')
+                ->primaryKey('idcaja')
+                ->data([
+                    'idcaja' => $idcaja,
+                    'estado' => 0
+                ])
+                ->update();
 
-            if (!ejecutarConsulta($sql)) {
+            if (!$update) {
                 throw new Exception("No se pudo desactivar la caja.");
             }
 
-            return json_encode(['success' => true, 'message' => 'La caja se desactivo con exito']);
+            return Response::json([
+                'success' => true,
+                'message' => 'La caja se desactivo con exito'
+            ]);
         } catch (Exception $e) {
-            return json_encode(['success' => false, 'message' => $e->getMessage()]);
+            return Response::error($e->getMessage());
         }
     }
 
     //Implementamos un método para activar 
-    public function activar($idcaja)
+    public function activar(int $idcaja)
     {
         try {
-            $sql = "UPDATE cajas SET estado='1' WHERE idcaja='$idcaja'";
-            if (!ejecutarConsulta($sql)) {
-                throw new Exception("No se pudo desactivar la caja.");
+            $update = (new FluentSaver($this->pdo))
+                ->table('cajas')
+                ->primaryKey('idcaja')
+                ->data([
+                    'idcaja' => $idcaja,
+                    'estado' => 1
+                ])
+                ->update();
+
+            if (!$update) {
+                throw new Exception("No se pudo activar la caja.");
             }
-            return json_encode(['success' => true, 'message' => 'La caja se activo con exito']);
+            return Response::json([
+                'success' => true,
+                'message' => 'La caja se activo con exito'
+            ]);
         } catch (Exception $e) {
-            return json_encode(['success' => false, 'message' => $e->getMessage()]);
+            return Response::error($e->getMessage());
         }
     }
 
     //Implementar un método para mostrar los datos de un registro a modificar
-    public function mostrar($idcaja)
+    public function mostrar(int $idcaja)
     {
-        $sql = "SELECT * FROM cajas WHERE idcaja='$idcaja'";
-        return ejecutarConsultaSimpleFila($sql);
+        $data = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('cajas')
+            ->where('idcaja', '=', $idcaja)
+            ->first();
+
+        return Response::json($data);
     }
 
-    public function historialCajas($idcaja, $limit = 10, $offset = 0)
+    public function historialCajas(int $idcaja, int $idusuario)
     {
-        $sqlTotal = "SELECT COUNT(*)
-                 FROM caja_apertura
-                 WHERE idcaja = '$idcaja'";
+        $page = $_GET['page'] ?? 1;
+        $limit = $_GET['limit'] ?? 20;
+        $search = trim($_GET['search'] ?? '');
 
-        $total = ejecutarConsultaSimpleFila($sqlTotal);
+        $response = (new DBQuery($this->pdo))
+            ->select([
+                'ca.aperturacajaid',
+                'ca.idcaja',
+                'ca.idusuario',
+                'ca.fecha_apertura',
+                'ca.fecha_cierre',
+                'ca.efectivo_apertura',
+                'ca.efectivo_cierre',
+                'c.numero',
+                'c.nombre',
+                'pe.nombre AS personal',
+                '(
+                SELECT COUNT(*)
+                FROM venta v
+                WHERE v.idcaja = ca.idcaja
+                AND v.fecha_hora BETWEEN ca.fecha_apertura
+                    AND IFNULL(ca.fecha_cierre, NOW())
+            ) AS cantventas',
+                '(
+                SELECT IFNULL(SUM(v.total_venta), 0)
+                FROM venta v
+                WHERE v.idcaja = ca.idcaja
+                AND v.fecha_hora BETWEEN ca.fecha_apertura
+                    AND IFNULL(ca.fecha_cierre, NOW())
+            ) AS totalventas'
+            ])
+            ->from('caja_apertura ca')
+            ->join('cajas c', 'c.idcaja=ca.idcaja')
+            ->join('usuario u', 'u.idusuario=ca.idusuario')
+            ->join('personal pe', 'pe.idpersonal=u.idpersonal')
+            ->where('ca.idcaja', '=', $idcaja)
+            ->search($search, ['pe.nombre', 'c.numero', 'c.nombre'])
+            ->orderBy('ca.aperturacajaid', 'DESC')
+            ->paginate($page, $limit);
 
-        $sql = "SELECT 
-                ca.aperturacajaid,
-                ca.idcaja,
-                ca.idusuario,
-                ca.fecha_apertura,
-                ca.fecha_cierre,
-                ca.efectivo_apertura,
-                ca.efectivo_cierre,
-                c.numero,
-                c.nombre,
-                pe.nombre AS personal,
-
-                (
-                    SELECT COUNT(*)
-                    FROM venta v
-                    WHERE v.idcaja = ca.idcaja
-                    AND v.fecha_hora BETWEEN ca.fecha_apertura
-                        AND IFNULL(ca.fecha_cierre, NOW())
-                ) AS cantventas,
-
-                (
-                    SELECT IFNULL(SUM(v.total_venta), 0)
-                    FROM venta v
-                    WHERE v.idcaja = ca.idcaja
-                    AND v.fecha_hora BETWEEN ca.fecha_apertura
-                        AND IFNULL(ca.fecha_cierre, NOW())
-                ) AS totalventas
-
-            FROM caja_apertura ca
-            INNER JOIN cajas c ON c.idcaja = ca.idcaja
-            INNER JOIN usuario u ON u.idusuario = ca.idusuario
-            INNER JOIN personal pe ON pe.idpersonal = u.idpersonal
-
-            WHERE ca.idcaja = '$idcaja'
-
-            ORDER BY ca.aperturacajaid DESC
-            LIMIT $offset, $limit";
-
-        $rspta = ejecutarConsulta($sql);
-
-        $data = [];
-
-        while ($reg = $rspta->fetch_object()) {
-
-            $supeUsuario = Helpers::esSuperusuario();
-            $pemisoUsuario = Helpers::verificarPermisoCodigo('cajas.cerrarcaja');
-            $puedeCerrarCaja = $supeUsuario || ($pemisoUsuario && $reg->idusuario == $_SESSION['idusuario']);
-
-            $data[] = [
-                'idcaja' => $reg->idcaja,
-                'aperturacajaid' => $reg->aperturacajaid,
-                'numero' => $reg->numero,
-                'nombre' => $reg->nombre,
-                'personal' => $reg->personal,
-                'fecha_apertura' => $reg->fecha_apertura,
-                'efectivo_apertura' => '<span class="badge bg-danger">' . Helpers::get_currency_symbol($reg->efectivo_apertura) . '</span>',
-                'fecha_cierre' => $reg->fecha_cierre,
-                'efectivo_cierre' => '<span class="badge bg-success">' . Helpers::get_currency_symbol($reg->efectivo_cierre) . '</span>',
-                'cantventas' => $reg->cantventas,
-                'totalventas' => $reg->totalventas,
-                'puede_cerrar_caja' => $puedeCerrarCaja,
-            ];
+        foreach ($response['data'] as &$row) {
+            $row['efectivo_apertura_str'] = Helpers::get_currency_symbol($row['efectivo_apertura']);
+            $row['efectivo_cierre_str'] = Helpers::get_currency_symbol($row['efectivo_cierre']);
+            $row['totalventas_str'] = Helpers::get_currency_symbol($row['totalventas']);
         }
+        unset($row);
 
-        return [
-            'total' => (int) $total,
-            'rows' => $data
+        $response['permissions'] = [
+            'superusuario' => Helpers::esSuperusuario($idusuario),
+            'cerrar_caja' => Helpers::verificarPermisoCodigo('cajas.cerrarcaja')
         ];
+
+        return Response::json($response);
     }
 
 
@@ -297,72 +341,82 @@ class Cajas extends Helpers
     }
 
 
+    public function getProveedorCompra(int $idcpp)
+    {
+        $data = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('cuentas_por_pagar cp')
+            ->join('compra c', 'c.idventa = cc.idventa')
+            ->join('persona p', 'c.idproveedor = p.idpersona')
+            ->where('cp.idcpp', '=', $idcpp)
+            ->first();
+
+        return $data['nombre'];
+    }
+
     public function getClienteVenta($idcpc)
     {
-        $sql = "SELECT * FROM cuentas_por_cobrar cc
-        INNER JOIN venta v ON v.idventa = cc.idventa
-        INNER JOIN persona p ON v.idcliente = p.idpersona
-        WHERE cc.idcpc = $idcpc";
-
-        $data = ejecutarConsultaSimpleFila($sql);
+        $data = (new DBQuery($this->pdo))
+            ->select('*')
+            ->from('cuentas_por_cobrar cc')
+            ->join('venta v', 'v.idventa = cc.idventa')
+            ->join('persona p', 'v.idcliente = p.idpersona')
+            ->where('cc.idcpc', '=', $idcpc)
+            ->first();
 
         return $data['nombre'];
     }
 
     public function listarPagosPorApertura($aperturacajaid)
     {
-        $sqlap = "SELECT fecha_apertura, fecha_cierre, idcaja 
-              FROM caja_apertura 
-              WHERE aperturacajaid = '$aperturacajaid'
-              LIMIT 1";
+        $aperturacaja = Helpers::verDataAperturaCaja($aperturacajaid);
 
-        $ap = ejecutarConsulta($sqlap)->fetch_object();
-
-        if (!$ap)
+        if (!$aperturacaja)
             return [];
 
-        $inicio = $ap->fecha_apertura;
-        $fin = !empty($ap->fecha_cierre) ? $ap->fecha_cierre : date('Y-m-d H:i:s');
-        $idcaja = $ap->idcaja;
+        $inicio = $aperturacaja['fecha_apertura'];
+        $fin = !empty($aperturacaja['fecha_cierre']) ? $aperturacaja['fecha_cierre'] : date('Y-m-d H:i:s');
+        $idcaja = $aperturacaja['idcaja'];
 
-        $sql = "SELECT dcp.*
-            FROM detalle_cuentas_por_pagar dcp
-            WHERE dcp.idcaja = '$idcaja'
-              AND dcp.fechapago BETWEEN '$inicio' AND '$fin'
-            ORDER BY dcp.iddcpp DESC";
-
-        $rspta = ejecutarConsulta($sql);
-
+        $cuentas = (new DBQuery($this->pdo))
+            ->select("dcc.*,
+                CONCAT(
+                    'Pago aplicado a cuota N° ',
+                    (
+                        SELECT COUNT(*)
+                        FROM cuentas_por_pagar cc2
+                        WHERE cc2.idcompra = cc.idcompra
+                        AND cc2.idcpp <= cc.idcpp
+                    ),
+                    ' de la compra N° ',
+                    v.serie_comprobante, '-', v.num_comprobante
+                ) AS descripcion")
+            ->from('detalle_cuentas_por_pagar dcc')
+            ->join('cuentas_por_pagar cc', 'cc.idcpp = dcc.idcpp')
+            ->join('compra v', 'v.idcompra = cc.idcompra')
+            ->where('dcc.montopagado', '>', 0)
+            ->whereBetween('dcc.created_at', $inicio, $fin)
+            ->where('dcc.idcaja ', '=', $idcaja)
+            ->orderBy('dcc.iddcpp', 'DESC')
+            ->get();
         $data = array();
-        while ($reg = $rspta->fetch_object()) {
+        foreach ($cuentas as $reg) {
             $data[] = array(
-                "0" => $reg->fechapago,
-                "1" => $this->getProveedorCompra($reg->idcpp),
-                "2" => $reg->formapago,
-                "3" => $reg->observacion,
-                "4" => $reg->montopagado,
-                "5" => $reg->montotarjeta,
+                "0" => $reg['fechapago'],
+                "1" => self::getProveedorCompra($reg['idcpc']),
+                "2" => $reg['formapago'],
+                "3" => $reg['descripcion'],
+                "4" => Helpers::get_currency_symbol($reg['montopagado']),
             );
         }
 
-        return array(
-            "sEcho" => 1,
-            "iTotalRecords" => count($data),
-            "iTotalDisplayRecords" => count($data),
-            "aaData" => $data
+        return Response::json(
+            [
+                "sEcho" => 1,
+                "iTotalRecords" => count($data),
+                "iTotalDisplayRecords" => count($data),
+                "aaData" => $data
+            ]
         );
-    }
-
-
-    public function getProveedorCompra($idcpp)
-    {
-        $sql = "SELECT * FROM cuentas_por_paga cp
-        INNER JOIN compra c ON c.idventa = cp.icompra
-        INNER JOIN persona p ON c.idcliente = p.idpersona
-        WHERE cp.idcpp = $idcpp";
-
-        $data = ejecutarConsultaSimpleFila($sql);
-
-        return $data['nombre'];
     }
 }

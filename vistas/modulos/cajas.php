@@ -43,45 +43,48 @@
                                 </div>
 
                             </div><br>
-
-                            <table id="tbllistado" class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Numero</th>
-                                        <th>Caja</th>
-                                        <th>Personal</th>
-                                        <th>Almacen</th>
-                                        <th>Estdo</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                </tbody>
-                                <tfoot>
-                                    <tr>
-                                        <th>Numero</th>
-                                        <th>Caja</th>
-                                        <th>Personal</th>
-                                        <th>Almacen</th>
-                                        <th>Estdo</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                        <!-- /.card-body -->
-                        <div class="card-body" id="panelHistorial">
-                            <div class="row mb-2">
-                                <div class="col-md-6">
-                                    Mostrar
-                                    <select id="limitHistorial" class="form-control form-control-sm d-inline-block"
-                                        style="width:80px;">
+                            <div class="row">
+                                <div class="col-md-6 d-flex align-items-center">
+                                    <span class="mr-2">Mostrar</span>
+                                    <select id="limit" class="form-control" style="width:100px">
                                         <option value="10">10</option>
                                         <option value="25">25</option>
                                         <option value="50">50</option>
                                         <option value="100">100</option>
                                     </select>
-                                    registros
+
+                                    <span class="ml-2">Registros</span>
+
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" id="search" class="form-control" placeholder="Buscar...">
+                                </div>
+                                <div class="col-md-12 mt-3">
+                                    <table id="tbllistado" class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th>Numero</th>
+                                                <th>Caja</th>
+                                                <th>Personal</th>
+                                                <th>Almacen</th>
+                                                <th>Estado</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="tbodyCajas">
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-6"></div>
+                                <div class="col-md-6">
+                                    <div id="pagination"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /.card-body -->
+                        <div class="card-body" id="panelHistorial">
+                            <div class="row mb-2">
+                                <div class="col-md-6">
                                 </div>
                                 <div class="col-md-6 d-flex justify-content-end">
                                     <button type="button" class="btn btn-outline-primary btn-xs"
@@ -91,28 +94,43 @@
                                     </button>
                                 </div>
                             </div>
-                            <table class="table table-striped">
-                                <thead>
-                                    <th>Caja</th>
-                                    <th>Personal</th>
-                                    <th>Fecha apertura</th>
-                                    <th>Efectivo apertura</th>
-                                    <th>Fecha cierre</th>
-                                    <th>Efectivo cierre</th>
-                                    <th>Ventas</th>
-                                    <th>Opciones</th>
-                                </thead>
-                                <tbody id="tblhistorial">
+                            <div class="row">
+                                <div class="col-md-6 d-flex align-items-center">
+                                    <span class="mr-2">Mostrar</span>
+                                    <select id="limitHistorialCajas" class="form-control" style="width:100px">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
 
-                                </tbody>
-                            </table>
-                            <div class="row mb-2">
+                                    <span class="ml-2">Registros</span>
+
+                                </div>
                                 <div class="col-md-6">
+                                    <input type="text" id="searchHistorialCajas" class="form-control" placeholder="Buscar...">
                                 </div>
 
-                                <div class="col-md-6 text-right">
-                                    <ul class="pagination pagination-sm justify-content-end mb-0"
-                                        id="paginadorHistorial"></ul>
+                                <div class="col-md-12 mt-3">
+                                    <table id="tblhistorial" class="table table-striped">
+                                        <thead>
+                                            <th>Caja</th>
+                                            <th>Personal</th>
+                                            <th>Fecha apertura</th>
+                                            <th>Efectivo apertura</th>
+                                            <th>Fecha cierre</th>
+                                            <th>Efectivo cierre</th>
+                                            <th>Ventas</th>
+                                            <th>Opciones</th>
+                                        </thead>
+                                        <tbody id="tbodyHistorialCajas">
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-md-6"></div>
+                                <div class="col-md-6">
+                                    <div id="paginationMisSolicitudes"></div>
                                 </div>
                             </div>
                         </div>

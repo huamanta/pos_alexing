@@ -1,6 +1,7 @@
 <?php
 //Incluímos inicialmente la conexión a la base de datos
-require "../configuraciones/Conexion.php";
+require_once __DIR__ . "/../configuraciones/Conexion.php";
+require_once __DIR__ . "/../core/Response.php";
 
 require_once 'Helpers.php';
 

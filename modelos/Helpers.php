@@ -265,7 +265,7 @@ class Helpers
     }
 
 
-    public function verificarAperturaCaja($idcaja): array
+    public function verificarAperturaCaja($idcaja): ?array
     {
         return (new DBQuery($this->pdo))
             ->select('ca.*')
