@@ -117,19 +117,16 @@ class DBQuery
         return $sql;
     }
 
-    private function buildQueryWithConditions(): array
+    private function buildQueryWithConditions(bool $includeSearch = true): array
     {
-        [$whereSql, $params] = $this->buildWhereClause();
+        [$whereSql, $params] = $this->buildWhereClause($includeSearch);
 
         $sql = $this->buildBaseQuery()
             . $whereSql
             . $this->buildGroupBy()
             . $this->buildHaving();
 
-        return [
-            $sql,
-            $params
-        ];
+        return [$sql, $params];
     }
 
     public function whereExists(string $sql): self
@@ -629,21 +626,33 @@ class DBQuery
 
     private function buildQuery(): string
     {
-        [$sql] = $this->buildQueryWithConditions();
+        [$sql] = $this->buildQueryWithConditions(empty($this->unions));
 
         if (!empty($this->unions)) {
-
             foreach ($this->unions as $union) {
-
                 $unionQuery = $union['query'];
 
-                [$unionSql] = $unionQuery->buildQueryWithConditions();
+                [$unionSql] = $unionQuery->buildQueryWithConditions(false);
 
                 $sql .= $union['all']
                     ? "\nUNION ALL\n"
                     : "\nUNION\n";
 
                 $sql .= $unionSql;
+            }
+
+            // Búsqueda global después del UNION ALL
+            if ($this->searchTerm !== '') {
+                $conditions = [];
+
+                foreach ($this->searchColumns as $i => $column) {
+                    $key = "search_{$this->queryId}_{$i}";
+
+                    $conditions[] = "LOWER(union_result.{$column}) LIKE LOWER(:{$key})";
+                }
+
+                $sql = "SELECT * FROM ({$sql}) AS union_result
+                    WHERE (" . implode(' OR ', $conditions) . ")";
             }
         }
 
@@ -704,7 +713,7 @@ class DBQuery
     /**
      * Construcción WHERE
      */
-    private function buildWhereClause(): array
+    private function buildWhereClause(bool $includeSearch = true): array
     {
         $conditions = $this->whereConditions;
         $params = $this->whereParams;
@@ -722,12 +731,10 @@ class DBQuery
         }
 
         // Search
-        if ($this->searchTerm !== '') {
-
+        if ($includeSearch && $this->searchTerm !== '') {
             $search = [];
 
             foreach ($this->searchColumns as $i => $column) {
-
                 $key = "search_{$this->queryId}_{$i}";
 
                 $search[] = "LOWER({$column}) LIKE LOWER(:{$key})";
