@@ -60,7 +60,7 @@ VALUES
 -- COBROS: PADRE ID 9
 (45, 'Cuentas por cobrar', 'cuentas-cobrar', 'fas fa-money-bill-wave', 9, 1, 1, 1),
 (46, 'Refinanciar creditos', 'refinanciamientos', 'fas fa-sync-alt', 9, 2, 1, 1),
-(47, 'Recuperacion de vehiculos', 'recuperacion-vehiculos', 'fas fa-car', 9, 3, 1, 1),
+(47, 'Recuperaciones', 'recuperacion-vehiculos', 'fas fa-car', 9, 3, 1, 1),
 
 -- TALLER: PADRE ID 10
 (48, 'Orden de trabajo', 'orden-trabajo', 'fas fa-tools', 10, 1, 1, 1),
