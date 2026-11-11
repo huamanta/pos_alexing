@@ -181,8 +181,8 @@ class Conciliaciones extends Helpers
             }
 
             $conciliacion = $this->obtenerConciliacionSucursal($idconciliacion);
-            if ($conciliacion['estado'] === 'cerrada') {
-                throw new RuntimeException('No se puede modificar una conciliacion cerrada.');
+            if (!$this->conciliacionEditable($conciliacion)) {
+                throw new RuntimeException('No se puede modificar esta conciliacion.');
             }
 
             $rutaTemporal = $archivo['tmp_name'];
@@ -222,6 +222,10 @@ class Conciliaciones extends Helpers
 
             $idusuario = (int) ($_SESSION['idusuario'] ?? 0);
             $this->pdo->beginTransaction();
+            $conciliacion = $this->bloquearConciliacionSucursal($idconciliacion);
+            if (!$this->conciliacionEditable($conciliacion)) {
+                throw new RuntimeException('No se puede modificar esta conciliacion.');
+            }
 
             $idimportacion = (new FluentSaver($this->pdo))
                 ->table('conciliacion_importaciones')
@@ -268,6 +272,9 @@ class Conciliaciones extends Helpers
                 $fecha = $this->parsearFecha($fechaTexto);
                 if (!$fecha) {
                     throw new InvalidArgumentException('Fecha invalida en la fila ' . ($i + 1) . '.');
+                }
+                if (!$this->fechaDentroPeriodo($fecha, $conciliacion)) {
+                    throw new InvalidArgumentException('La fecha de la fila ' . ($i + 1) . ' esta fuera del periodo de conciliacion.');
                 }
 
                 $descripcion = trim((string) ($descripcionCol !== null ? ($fila[$descripcionCol] ?? '') : ''));
@@ -332,13 +339,16 @@ class Conciliaciones extends Helpers
             }
 
             $conciliacion = $this->obtenerConciliacionSucursal($idconciliacion);
-            if ($conciliacion['estado'] === 'cerrada') {
-                throw new RuntimeException('No se puede modificar una conciliacion cerrada.');
+            if (!$this->conciliacionEditable($conciliacion)) {
+                throw new RuntimeException('No se puede modificar esta conciliacion.');
             }
 
             $fecha = $this->parsearFecha((string) ($data['fecha_operacion'] ?? ''));
             if (!$fecha) {
                 throw new InvalidArgumentException('Ingrese una fecha valida.');
+            }
+            if (!$this->fechaDentroPeriodo($fecha, $conciliacion)) {
+                throw new InvalidArgumentException('La fecha esta fuera del periodo de conciliacion.');
             }
 
             $tipo = strtolower(trim((string) ($data['tipo'] ?? '')));
@@ -357,6 +367,10 @@ class Conciliaciones extends Helpers
             $idusuario = (int) ($_SESSION['idusuario'] ?? 0);
 
             $this->pdo->beginTransaction();
+            $conciliacion = $this->bloquearConciliacionSucursal($idconciliacion);
+            if (!$this->conciliacionEditable($conciliacion)) {
+                throw new RuntimeException('No se puede modificar esta conciliacion.');
+            }
 
             $importacion = (new DBQuery($this->pdo))
                 ->select(['idimportacion'])
@@ -458,42 +472,22 @@ class Conciliaciones extends Helpers
                 throw new InvalidArgumentException('Datos de conciliacion incompletos.');
             }
 
-            $conciliacion = $this->obtenerConciliacionSucursal($idconciliacion);
-            if ($conciliacion['estado'] === 'cerrada') {
-                throw new RuntimeException('No se puede modificar una conciliacion cerrada.');
-            }
             $idusuario = (int) ($_SESSION['idusuario'] ?? 0);
-            $movimiento = (new DBQuery($this->pdo))
-                ->select(['importe'])
-                ->from('conciliacion_movimientos_bancarios mb')
-                ->join('conciliacion_importaciones i', 'i.idimportacion = mb.idimportacion')
-                ->where('mb.idmovimiento_bancario', '=', $idbancario)
-                ->where('i.idconciliacion', '=', $idconciliacion)
-                ->first();
-            if (!$movimiento) {
-                throw new RuntimeException('El movimiento bancario no pertenece a esta conciliacion.');
-            }
-
-            $existente = (new DBQuery($this->pdo))
-                ->select(['idrelacion'])
-                ->from('conciliacion_relaciones')
-                ->where('origen_sistema', '=', $origen)
-                ->where('idmovimiento_sistema', '=', $idsistema)
-                ->first();
-            if ($existente) {
-                throw new RuntimeException('El movimiento del sistema ya esta conciliado.');
-            }
-
-            $bancarioConciliado = (new DBQuery($this->pdo))
-                ->select(['idrelacion'])
-                ->from('conciliacion_relaciones')
-                ->where('idmovimiento_bancario', '=', $idbancario)
-                ->first();
-            if ($bancarioConciliado) {
-                throw new RuntimeException('El movimiento bancario ya esta conciliado.');
-            }
-
             $this->pdo->beginTransaction();
+            $conciliacion = $this->bloquearConciliacionSucursal($idconciliacion);
+            if (!$this->conciliacionEditable($conciliacion)) {
+                throw new RuntimeException('No se puede modificar esta conciliacion.');
+            }
+            $movimiento = $this->obtenerMovimientoBancarioConciliable($idconciliacion, $idbancario, true);
+            if (!$movimiento || $movimiento['estado'] !== 'pendiente') {
+                throw new RuntimeException('El movimiento bancario no esta pendiente en esta conciliacion.');
+            }
+            $sistema = $this->obtenerMovimientoSistemaConciliable($conciliacion, $origen, $idsistema, true);
+            if (!$sistema) {
+                throw new RuntimeException('El movimiento del sistema no pertenece a la cuenta y periodo de esta conciliacion.');
+            }
+            $this->validarCoincidenciaExacta($movimiento, $sistema);
+            $this->validarSinRelacionesExistentes($idbancario, $origen, $idsistema);
 
             (new FluentSaver($this->pdo))
                 ->table('conciliacion_relaciones')
@@ -503,7 +497,7 @@ class Conciliaciones extends Helpers
                     'idmovimiento_bancario' => $idbancario,
                     'origen_sistema' => $origen,
                     'idmovimiento_sistema' => $idsistema,
-                    'importe_sistema' => $this->numero((string) ($data['importe_sistema'] ?? $movimiento['importe'])),
+                    'importe_sistema' => $this->decimalString($sistema['importe']),
                     'tipo_relacion' => 'manual',
                     'idusuario' => $idusuario,
                 ])
@@ -533,6 +527,129 @@ class Conciliaciones extends Helpers
         }
     }
 
+    public function conciliarAutomatico(int $idconciliacion): void
+    {
+        try {
+            if (!Helpers::verificarPermisoCodigo('conciliaciones.conciliar')) {
+                throw new RuntimeException('No tiene permiso para conciliar movimientos.');
+            }
+
+            $this->pdo->beginTransaction();
+            $conciliacion = $this->bloquearConciliacionSucursal($idconciliacion);
+            if (!$this->conciliacionEditable($conciliacion)) {
+                throw new RuntimeException('No se puede modificar esta conciliacion.');
+            }
+
+            $bancarios = (new DBQuery($this->pdo))
+                ->select([
+                    'mb.idmovimiento_bancario',
+                    'mb.fecha_operacion',
+                    'mb.numero_operacion',
+                    'mb.tipo',
+                    'mb.importe',
+                    'mb.estado',
+                ])
+                ->from('conciliacion_movimientos_bancarios mb')
+                ->join('conciliacion_importaciones i', 'i.idimportacion = mb.idimportacion')
+                ->where('i.idconciliacion', '=', $idconciliacion)
+                ->where('mb.estado', '=', 'pendiente')
+                ->get();
+            $totalPendientes = count($bancarios);
+
+            $sistema = $this->movimientosSistema(
+                (int) $conciliacion['idbanco'],
+                $conciliacion['periodo_inicio'],
+                $conciliacion['periodo_fin']
+            );
+            $sistema = array_values(array_filter($sistema, function ($item) {
+                return $this->claveCoincidencia($item) !== null
+                    && !$this->tieneRelacionSistema((string) $item['origen'], (int) $item['id']);
+            }));
+            $bancarios = array_values(array_filter($bancarios, function ($item) {
+                return $this->claveCoincidencia($item) !== null;
+            }));
+
+            $conteoBancario = $this->contarClavesCoincidencia($bancarios);
+            $conteoSistema = $this->contarClavesCoincidencia($sistema);
+            $sistemaPorClave = [];
+            foreach ($sistema as $candidato) {
+                $clave = $this->claveCoincidencia($candidato);
+                if ($clave !== null && ($conteoSistema[$clave] ?? 0) === 1) {
+                    $sistemaPorClave[$clave] = $candidato;
+                }
+            }
+            $idusuario = (int) ($_SESSION['idusuario'] ?? 0);
+            $conciliados = 0;
+
+            foreach ($bancarios as $bancario) {
+                $clave = $this->claveCoincidencia($bancario);
+                if (($conteoBancario[$clave] ?? 0) !== 1 || ($conteoSistema[$clave] ?? 0) !== 1) {
+                    continue;
+                }
+
+                $idbancario = (int) $bancario['idmovimiento_bancario'];
+                $itemSistema = $sistemaPorClave[$clave] ?? null;
+                if (!$itemSistema) {
+                    continue;
+                }
+
+                $movimiento = $this->obtenerMovimientoBancarioConciliable($idconciliacion, $idbancario, true);
+                $registroSistema = $this->obtenerMovimientoSistemaConciliable(
+                    $conciliacion,
+                    (string) $itemSistema['origen'],
+                    (int) $itemSistema['id'],
+                    true
+                );
+                if (!$movimiento || $movimiento['estado'] !== 'pendiente' || !$registroSistema) {
+                    continue;
+                }
+                $this->validarCoincidenciaExacta($movimiento, $registroSistema, true);
+                if ($this->tieneRelacionBancaria($idbancario)
+                    || $this->tieneRelacionSistema((string) $itemSistema['origen'], (int) $itemSistema['id'])) {
+                    continue;
+                }
+
+                (new FluentSaver($this->pdo))
+                    ->table('conciliacion_relaciones')
+                    ->primaryKey('idrelacion')
+                    ->timestamps(false)
+                    ->data([
+                        'idmovimiento_bancario' => $idbancario,
+                        'origen_sistema' => $itemSistema['origen'],
+                        'idmovimiento_sistema' => (int) $itemSistema['id'],
+                        'importe_sistema' => $this->decimalString($registroSistema['importe']),
+                        'tipo_relacion' => 'exacta',
+                        'idusuario' => $idusuario,
+                    ])
+                    ->save();
+
+                (new FluentSaver($this->pdo))
+                    ->table('conciliacion_movimientos_bancarios')
+                    ->primaryKey('idmovimiento_bancario')
+                    ->data([
+                        'idmovimiento_bancario' => $idbancario,
+                        'estado' => 'conciliado_auto',
+                    ])
+                    ->update();
+                $conciliados++;
+            }
+
+            $this->auditar($idconciliacion, $idusuario, 'conciliacion_automatica', [
+                'conciliados' => $conciliados,
+            ]);
+            $this->pdo->commit();
+            Response::success(
+                ['conciliados' => $conciliados, 'pendientes' => $totalPendientes - $conciliados],
+                'Proceso de conciliacion automatica completado.'
+            );
+        } catch (\Throwable $th) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+            Response::error($th->getMessage(), 400);
+        }
+    }
+
     public function cerrar(int $idconciliacion, array $data): void
     {
         try {
@@ -540,9 +657,12 @@ class Conciliaciones extends Helpers
                 throw new RuntimeException('No tiene permiso para cerrar conciliaciones.');
             }
 
-            $conciliacion = $this->obtenerConciliacionSucursal($idconciliacion);
-            if ($conciliacion['estado'] === 'cerrada') {
-                throw new RuntimeException('La conciliacion ya esta cerrada.');
+            $idusuario = (int) ($_SESSION['idusuario'] ?? 0);
+            $saldoFinal = $this->validarDecimal($data['saldo_final_banco'] ?? 0, 'Saldo final del banco');
+            $this->pdo->beginTransaction();
+            $conciliacion = $this->bloquearConciliacionSucursal($idconciliacion);
+            if (!$this->conciliacionEditable($conciliacion)) {
+                throw new RuntimeException('No se puede cerrar esta conciliacion.');
             }
 
             $pendientes = (new DBQuery($this->pdo))
@@ -557,9 +677,22 @@ class Conciliaciones extends Helpers
                 throw new RuntimeException('Existen movimientos pendientes o con diferencias sin resolver.');
             }
 
-            $idusuario = (int) ($_SESSION['idusuario'] ?? 0);
-            $saldoFinal = $this->validarDecimal($data['saldo_final_banco'] ?? 0, 'Saldo final del banco');
-            $this->pdo->beginTransaction();
+            $resumen = (new DBQuery($this->pdo))
+                ->select([
+                    "COALESCE(SUM(CASE WHEN mb.tipo = 'abono' THEN mb.importe ELSE -mb.importe END), 0) AS variacion",
+                ])
+                ->from('conciliacion_movimientos_bancarios mb')
+                ->join('conciliacion_importaciones i', 'i.idimportacion = mb.idimportacion')
+                ->where('i.idconciliacion', '=', $idconciliacion)
+                ->first();
+            $saldoCalculado = round((float) $conciliacion['saldo_inicial'] + (float) ($resumen['variacion'] ?? 0), 2);
+            $diferencia = round($saldoFinal - $saldoCalculado, 2);
+            if ($diferencia !== 0.0 && empty($data['confirmar_diferencia'])) {
+                throw new RuntimeException(
+                    'El saldo final difiere del calculado en ' . $this->decimalString($diferencia)
+                    . '. Confirme expresamente el cierre con diferencia.'
+                );
+            }
 
             (new FluentSaver($this->pdo))
                 ->table('conciliaciones_bancarias')
@@ -576,9 +709,14 @@ class Conciliaciones extends Helpers
 
             $this->auditar($idconciliacion, $idusuario, 'cerrar', [
                 'saldo_final_banco' => $this->decimalString($saldoFinal),
+                'saldo_calculado' => $this->decimalString($saldoCalculado),
+                'diferencia' => $this->decimalString($diferencia),
             ]);
             $this->pdo->commit();
-            Response::success(null, 'Conciliacion cerrada correctamente.');
+            Response::success([
+                'saldo_calculado' => $this->decimalString($saldoCalculado),
+                'diferencia' => $this->decimalString($diferencia),
+            ], 'Conciliacion cerrada correctamente.');
         } catch (\Throwable $th) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
@@ -600,6 +738,205 @@ class Conciliaciones extends Helpers
             throw new RuntimeException('Conciliacion no encontrada.');
         }
         return $conciliacion;
+    }
+
+    private function bloquearConciliacionSucursal(int $idconciliacion): array
+    {
+        $idsucursal = (int) ($_SESSION['idsucursal'] ?? 0);
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM conciliaciones_bancarias
+            WHERE idconciliacion = :idconciliacion AND idsucursal = :idsucursal
+            FOR UPDATE'
+        );
+        $stmt->execute([
+            'idconciliacion' => $idconciliacion,
+            'idsucursal' => $idsucursal,
+        ]);
+        $conciliacion = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$conciliacion) {
+            throw new RuntimeException('Conciliacion no encontrada.');
+        }
+        return $conciliacion;
+    }
+
+    private function conciliacionEditable(array $conciliacion): bool
+    {
+        return in_array($conciliacion['estado'] ?? '', ['borrador', 'reabierta'], true);
+    }
+
+    private function fechaDentroPeriodo(DateTimeImmutable $fecha, array $conciliacion): bool
+    {
+        $dia = $fecha->format('Y-m-d');
+        return $dia >= $conciliacion['periodo_inicio'] && $dia <= $conciliacion['periodo_fin'];
+    }
+
+    private function obtenerMovimientoBancarioConciliable(
+        int $idconciliacion,
+        int $idmovimiento,
+        bool $bloquear = false
+    ): ?array {
+        $sql = 'SELECT mb.idmovimiento_bancario, mb.fecha_operacion, mb.numero_operacion, mb.tipo, mb.importe, mb.estado
+            FROM conciliacion_movimientos_bancarios mb
+            INNER JOIN conciliacion_importaciones i ON i.idimportacion = mb.idimportacion
+            WHERE mb.idmovimiento_bancario = :idmovimiento
+                AND i.idconciliacion = :idconciliacion'
+            . ($bloquear ? ' FOR UPDATE' : '');
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'idmovimiento' => $idmovimiento,
+            'idconciliacion' => $idconciliacion,
+        ]);
+        $movimiento = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $movimiento ?: null;
+    }
+
+    private function obtenerMovimientoSistemaConciliable(
+        array $conciliacion,
+        string $origen,
+        int $idmovimiento,
+        bool $bloquear = false
+    ): ?array {
+        $origenes = [
+            'movimiento' => [
+                'tabla' => 'movimiento',
+                'id' => 'idmovimiento',
+                'fecha' => 'fecha',
+                'importe' => 'totaldeposito',
+                'operacion' => 'noperacion',
+                'tipo' => 'tipo',
+            ],
+            'detalle_cuentas_por_cobrar' => [
+                'tabla' => 'detalle_cuentas_por_cobrar',
+                'id' => 'iddcpc',
+                'fecha' => 'fechapago',
+                'importe' => 'montotarjeta',
+                'operacion' => 'op',
+                'tipo' => "'Ingresos'",
+            ],
+            'detalle_cuentas_por_pagar' => [
+                'tabla' => 'detalle_cuentas_por_pagar',
+                'id' => 'iddcpp',
+                'fecha' => 'fechapago',
+                'importe' => 'montotarjeta',
+                'operacion' => 'op',
+                'tipo' => "'Egresos'",
+            ],
+            'venta_pago' => [
+                'tabla' => 'venta_pago',
+                'id' => 'idventapago',
+                'fecha' => 'created_at',
+                'importe' => 'monto',
+                'operacion' => 'nroOperacion',
+                'tipo' => "'Ingresos'",
+            ],
+        ];
+        if (!isset($origenes[$origen])) {
+            return null;
+        }
+
+        $fuente = $origenes[$origen];
+        $sql = 'SELECT ' . $fuente['id'] . ' AS id, ' . $fuente['fecha'] . ' AS fecha, '
+            . $fuente['importe'] . ' AS importe, ' . $fuente['operacion'] . ' AS numero_operacion, '
+            . $fuente['tipo'] . ' AS tipo FROM ' . $fuente['tabla']
+            . ' WHERE ' . $fuente['id'] . ' = :idmovimiento AND idbanco = :idbanco'
+            . ' AND ' . $fuente['fecha'] . ' >= :desde AND ' . $fuente['fecha'] . ' <= :hasta'
+            . ' AND deleted_at IS NULL AND ' . $fuente['importe'] . ' > 0'
+            . ($bloquear ? ' FOR UPDATE' : '');
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            'idmovimiento' => $idmovimiento,
+            'idbanco' => (int) $conciliacion['idbanco'],
+            'desde' => $conciliacion['periodo_inicio'] . ' 00:00:00',
+            'hasta' => $conciliacion['periodo_fin'] . ' 23:59:59',
+        ]);
+        $movimiento = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $movimiento ?: null;
+    }
+
+    private function validarCoincidenciaExacta(
+        array $bancario,
+        array $sistema,
+        bool $validarOperacion = false
+    ): void
+    {
+        $tipoSistema = $this->tipoConciliacion($sistema['tipo'] ?? '');
+        if ($tipoSistema === null || $tipoSistema !== ($bancario['tipo'] ?? null)) {
+            throw new InvalidArgumentException('El tipo de movimiento bancario no coincide con el movimiento del sistema.');
+        }
+        if ((int) round((float) $bancario['importe'] * 100) !== (int) round((float) $sistema['importe'] * 100)) {
+            throw new InvalidArgumentException('El importe bancario no coincide con el importe del movimiento del sistema.');
+        }
+        if ($validarOperacion
+            && trim((string) ($bancario['numero_operacion'] ?? '')) !== trim((string) ($sistema['numero_operacion'] ?? ''))) {
+            throw new InvalidArgumentException('El numero de operacion ya no coincide con el movimiento del sistema.');
+        }
+    }
+
+    private function tipoConciliacion($tipo): ?string
+    {
+        $tipo = strtolower(trim((string) $tipo));
+        if (in_array($tipo, ['abono', 'ingreso', 'ingresos', 'deposito'], true)) {
+            return 'abono';
+        }
+        if (in_array($tipo, ['cargo', 'egreso', 'egresos', 'retiro'], true)) {
+            return 'cargo';
+        }
+        return null;
+    }
+
+    private function claveCoincidencia(array $movimiento): ?string
+    {
+        $operacion = trim((string) ($movimiento['numero_operacion'] ?? ''));
+        $tipo = $this->tipoConciliacion($movimiento['tipo'] ?? '');
+        if ($operacion === '' || $tipo === null || !isset($movimiento['importe'])) {
+            return null;
+        }
+        return json_encode([
+            $operacion,
+            (int) round((float) $movimiento['importe'] * 100),
+            $tipo,
+        ]);
+    }
+
+    private function contarClavesCoincidencia(array $movimientos): array
+    {
+        $conteos = [];
+        foreach ($movimientos as $movimiento) {
+            $clave = $this->claveCoincidencia($movimiento);
+            if ($clave !== null) {
+                $conteos[$clave] = ($conteos[$clave] ?? 0) + 1;
+            }
+        }
+        return $conteos;
+    }
+
+    private function validarSinRelacionesExistentes(int $idbancario, string $origen, int $idsistema): void
+    {
+        if ($this->tieneRelacionBancaria($idbancario)) {
+            throw new RuntimeException('El movimiento bancario ya esta conciliado.');
+        }
+        if ($this->tieneRelacionSistema($origen, $idsistema)) {
+            throw new RuntimeException('El movimiento del sistema ya esta conciliado.');
+        }
+    }
+
+    private function tieneRelacionBancaria(int $idbancario): bool
+    {
+        return (bool) (new DBQuery($this->pdo))
+            ->select(['idrelacion'])
+            ->from('conciliacion_relaciones')
+            ->where('idmovimiento_bancario', '=', $idbancario)
+            ->first();
+    }
+
+    private function tieneRelacionSistema(string $origen, int $idsistema): bool
+    {
+        return (bool) (new DBQuery($this->pdo))
+            ->select(['idrelacion'])
+            ->from('conciliacion_relaciones')
+            ->where('origen_sistema', '=', $origen)
+            ->where('idmovimiento_sistema', '=', $idsistema)
+            ->first();
     }
 
     private function movimientosSistema(int $idbanco, string $inicio, string $fin): array

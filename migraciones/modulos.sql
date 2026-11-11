@@ -102,3 +102,4 @@ VALUES
 (74, 'Configuracion general', 'configuraciongeneral', NULL, NULL, 9, 0, 1),
 (75, 'Historial de pagos', 'historial-pagos', 'fas fa-history', 9, 4, 1, 1),
 (76, 'Métodos de pago', 'metodos-pago', 'fas fa-wallet', 5, 7, 1, 1);
+(77, 'Conciliaciones', 'conciliaciones-bancarias', 'fas fa-balance-scale', 5, 8, 1, 1);
