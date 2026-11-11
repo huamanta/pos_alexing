@@ -28,6 +28,7 @@ class MetodosPago extends Helpers
     {
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $limit = max(1, (int) ($_GET['limit'] ?? 10));
+        $search = trim($_GET['search'] ?? '');
 
         $movimientos = (new DBQuery($this->pdo))
             ->select([
@@ -141,6 +142,7 @@ class MetodosPago extends Helpers
             ->unionAll($cuentascobrar)
             ->unionAll($cuentaspagar)
             ->unionAll($venta_pago)
+            ->search($search, ['tipo', 'responsable', 'cliente', 'descripcion'])
             ->orderBy('fecha', 'DESC')
             ->paginate($page, $limit);
 

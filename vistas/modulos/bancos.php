@@ -25,9 +25,9 @@
                             <h3 class="card-title"> </h3>
                             <div class="row">
                                 <?php if ($helpers->verificarPermisoCodigo('bancos.crear')) { ?>
-                                <div class="col-md-1">
-                                <button type="button" class="btn btn-outline-primary btn-block btn-xs" id="btnNuevo"><i class="fa fa-plus"></i> Nuevo</button>
-                                </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-outline-primary btn-block btn-xs" id="btnNuevo"><i class="fa fa-plus"></i> Nuevo</button>
+                                    </div>
                                 <?php } ?>
                             </div>
                         </div>
@@ -87,8 +87,7 @@
                             <button
                                 type="button"
                                 class="btn btn-secondary btn-sm ml-auto"
-                                onclick="regresarBancos()"
-                            >
+                                onclick="regresarBancos()">
                                 <i class="fa fa-arrow-left"></i>
                                 Regresar
                             </button>
@@ -155,8 +154,7 @@
 
                                             <h4
                                                 class="mb-0 font-weight-bold text-success"
-                                                id="detalleBancoSaldo"
-                                            >
+                                                id="detalleBancoSaldo">
                                                 S/ 0.00
                                             </h4>
                                         </div>
@@ -172,27 +170,48 @@
                                     <label>Lista de movimientos</label>
                                 </h5>
                             </div>
+                            <div class="row">
+                                <div class="col-md-6 d-flex align-items-center">
+                                    <span class="mr-2">Mostrar</span>
+                                    <select id="limitBancoMovimientos" class="form-control" style="width:100px">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                    <span class="ml-2">Registros</span>
+                                </div>
+                                <div class="col-md-6">
+                                    <input type="text" id="searchBancoMovimientos" class="form-control" placeholder="Buscar...">
+                                </div>
 
-                            <div class="table-responsive">
-                                <table
-                                    id="tbllistadoMovimientos"
-                                    class="table table-striped table-hovered"
-                                >
-                                    <thead>
-                                        <tr>
-                                            <th>Fecha</th>
-                                            <th>Responsable</th>
-                                            <th>Origen</th>
-                                            <th>Cliente</th>
-                                            <th>Descripcion</th>
-                                            <th>Ingreso</th>
-                                            <th>Salida</th>
-                                        </tr>
-                                    </thead>
+                                <div class="col-md-12 mt-3">
+                                    <div class="table-responsive">
+                                        <table
+                                            id="tbllistadoMovimientos"
+                                            class="table table-striped table-hovered">
+                                            <thead>
+                                                <tr>
+                                                    <th>Fecha</th>
+                                                    <th>Responsable</th>
+                                                    <th>Origen</th>
+                                                    <th>Cliente</th>
+                                                    <th>Descripcion</th>
+                                                    <th>Ingreso</th>
+                                                    <th>Salida</th>
+                                                </tr>
+                                            </thead>
 
-                                    <tbody id="tbodyBancoMovimientos">
-                                    </tbody>
-                                </table>
+                                            <tbody id="tbodyBancoMovimientos">
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                </div>
+                                <div class="col-md-6">
+                                    <div id="paginationBancoMovimientos"></div>
+                                </div>
                             </div>
 
                         </div>
@@ -205,52 +224,52 @@
     <div class="modal fade" id="myModal">
         <div class="modal-dialog">
             <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Categoría</h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form class="form-horizontal" role="form" name="formulario" id="formulario" method="POST">
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="name" class="col-sm-2 control-label">Nombre:</label>
-                                <input type="hidden" name="idbanco" id="idbanco">
-                                <input type="text" class="form-control" name="nombre" id="nombre" maxlength="50" placeholder="Nombre" required>
+                <div class="modal-header">
+                    <h4 class="modal-title">Categoría</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form class="form-horizontal" role="form" name="formulario" id="formulario" method="POST">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="name" class="col-sm-2 control-label">Nombre:</label>
+                                    <input type="hidden" name="idbanco" id="idbanco">
+                                    <input type="text" class="form-control" name="nombre" id="nombre" maxlength="50" placeholder="Nombre" required>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="name" class="col-sm-2 control-label">Descripción:</label>
-                                <input type="text" class="form-control" name="descripcion" id="descripcion" maxlength="50" placeholder="Descripcion" required>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="name" class="col-sm-2 control-label">Descripción:</label>
+                                    <input type="text" class="form-control" name="descripcion" id="descripcion" maxlength="50" placeholder="Descripcion" required>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="name" class="col-sm-2 control-label">cuenta:</label>
-                                <input type="text" class="form-control" name="cuenta" id="cuenta" maxlength="50" placeholder="cuenta" >
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="name" class="col-sm-2 control-label">cuenta:</label>
+                                    <input type="text" class="form-control" name="cuenta" id="cuenta" maxlength="50" placeholder="cuenta">
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="name" class="col-sm-2 control-label">CCI:</label>
-                                <input type="text" class="form-control" name="cci" id="cci" maxlength="50" placeholder="cci" >
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="name" class="col-sm-2 control-label">CCI:</label>
+                                    <input type="text" class="form-control" name="cci" id="cci" maxlength="50" placeholder="cci">
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="modal-footer justify-content-between">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-                    <button class="btn btn-primary" type="submit" id="btnGuardar">Guardar</button>
-                </div>
-            </form>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+                        <button class="btn btn-primary" type="submit" id="btnGuardar">Guardar</button>
+                    </div>
+                </form>
             </div>
             <!-- /.modal-content -->
         </div>
         <!-- /.modal-dialog -->
-        </div>
     </div>
+</div>
 
-<script src="vistas/js/bancos.js"></script>
+<script src="<?= $rutas->asset('vistas/js/bancos.js') ?>"></script>

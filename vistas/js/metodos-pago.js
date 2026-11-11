@@ -48,27 +48,27 @@ function cargarMetodosPago() {
         const icono = obtenerIconoMetodo(nombre);
         html += `
                     <div class="col-xl-3 col-lg-4 col-md-6 mb-3">
-    <div class="metodo-card h-100"
-        role="button"
-        onclick='verDetalleMetodoPago(${JSON.stringify(nombre)})'>
+                      <div class="metodo-card h-100"
+                          role="button"
+                          onclick='verDetalleMetodoPago(${JSON.stringify(nombre)})'>
 
-        <div class="metodo-card-content">
-            <div class="metodo-icon">
-                <i class="${icono}"></i>
-            </div>
+                          <div class="metodo-card-content">
+                              <div class="metodo-icon">
+                                  <i class="${icono}"></i>
+                              </div>
 
-            <div class="metodo-info">
-                <span class="metodo-label">MÉTODO DE PAGO</span>
-                <h6>${escaparHtml(nombre)}</h6>
-                <span class="metodo-action">Ver movimientos</span>
-            </div>
+                              <div class="metodo-info">
+                                  <span class="metodo-label">MÉTODO DE PAGO</span>
+                                  <h6>${escaparHtml(nombre)}</h6>
+                                  <span class="metodo-action">Ver movimientos</span>
+                              </div>
 
-            <div class="metodo-arrow">
-                <i class="fas fa-arrow-right"></i>
-            </div>
-        </div>
-    </div>
-</div>
+                              <div class="metodo-arrow">
+                                  <i class="fas fa-arrow-right"></i>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
                 `;
       });
       $("#listaMetodosPago").html(html);
@@ -117,24 +117,24 @@ function pintarDetalleMetodoPago(data, permissions, meta) {
   );
   $("#resumenIngresos").text(
     "S/ " +
-      ingresos.toLocaleString("es-PE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
+    ingresos.toLocaleString("es-PE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }),
   );
   $("#resumenEgresos").text(
     "S/ " +
-      egresos.toLocaleString("es-PE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
+    egresos.toLocaleString("es-PE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }),
   );
   $("#resumenNeto").text(
     "S/ " +
-      neto.toLocaleString("es-PE", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      }),
+    neto.toLocaleString("es-PE", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }),
   );
 
   if (!Array.isArray(data) || data.length === 0) {
@@ -178,8 +178,10 @@ function pintarDetalleMetodoPago(data, permissions, meta) {
 listarDetalleMetodoPago = new FluentPaginator({
   url: "controladores/metodospago.php?op=listarDetalleMetodo",
   renderTabla: pintarDetalleMetodoPago,
-  tableBody: "#tbodyDetalleMetodosPago",
+  searchSelector: "#searchDetalleMetodosPago",
+  limitSelector: "#limitDetalleMetodosPago",
   paginationId: "#paginationDetalleMetodosPago",
+  tableBody: "#tbodyDetalleMetodosPago",
   extraParams: function () {
     return { nombre: nombreMetodoPago };
   },

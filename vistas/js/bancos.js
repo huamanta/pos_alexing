@@ -147,6 +147,9 @@ function pintarBancoMovimientos(data, permissions) {
 listarBancoMovimientos = new FluentPaginator({
     url: "controladores/bancos.php?op=listarMovimientos",
     renderTabla: pintarBancoMovimientos,
+    searchSelector: "#searchBancoMovimientos",
+    limitSelector: "#limitBancoMovimientos",
+    paginationId: "#paginationBancoMovimientos",
     tableBody: "#tbodyBancoMovimientos",
     extraParams: () => ({
         idbanco: idBanco
