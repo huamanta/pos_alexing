@@ -1,5 +1,7 @@
+let listarConciliaciones = null;
 let conciliacionSeleccionada = 0;
 let movimientoBancarioSeleccionado = null;
+let saldoCalculadoConciliacion = 0;
 
 $.ajaxSetup({ cache: false });
 
@@ -28,49 +30,58 @@ function formatoMonedaConciliacion(valor) {
     });
 }
 
-function cargarConciliaciones() {
-    $.getJSON('controladores/conciliaciones.php', {
-        op: 'listar',
-        page: 1,
-        limit: $('#limitConciliaciones').val(),
-        search: $('#searchConciliaciones').val()
-    }).done(function (response) {
-        const registros = response.data || [];
-        let html = '';
+function pintarConciliaciones(data, permissions) {
+    let html = "";
 
-        if (!registros.length) {
-            html = '<tr><td colspan="5" class="text-center text-muted">No hay conciliaciones registradas</td></tr>';
-        } else {
-            registros.forEach(function (item) {
-                const estadoClass = item.estado === 'cerrada'
-                    ? 'success'
-                    : item.estado === 'anulada'
-                        ? 'danger'
-                        : 'warning';
-                html += `
-                    <tr>
-                        <td>
-                            <strong>${escaparHtmlConciliacion(item.banco_nombre)}</strong><br>
-                            <small class="text-muted">${escaparHtmlConciliacion(item.banco_cuenta || '-')}</small>
-                        </td>
-                        <td>${escaparHtmlConciliacion(item.periodo_inicio)} al ${escaparHtmlConciliacion(item.periodo_fin)}</td>
-                        <td>${formatoMonedaConciliacion(item.saldo_inicial)}</td>
-                        <td><span class="badge badge-${estadoClass}">${escaparHtmlConciliacion(item.estado)}</span></td>
-                        <td>
-                            <button type="button" class="btn btn-info btn-sm btn-ver-conciliacion"
-                                data-id="${Number(item.idconciliacion)}">
-                                <i class="fas fa-eye"></i> Ver
-                            </button>
-                        </td>
-                    </tr>`;
-            });
-        }
+    if (data.length === 0) {
 
-        $('#tbodyConciliaciones').html(html);
-    }).fail(function (xhr) {
-        mostrarErrorConciliacion(xhr);
+        html = `
+            <tr>
+                <td colspan="5" class="text-center">
+                    No se encontraron registros
+                </td>
+            </tr>
+        `;
+
+        $("#tblConciliaciones tbody").html(html);
+        return;
+    }
+
+    data.forEach(item => {
+        const estadoClass = item.estado === 'cerrada'
+            ? 'success'
+            : item.estado === 'anulada'
+                ? 'danger'
+                : 'warning';
+
+        html += `
+            <tr>
+                <td>
+                    <strong>${escaparHtmlConciliacion(item.banco_nombre)}</strong><br>
+                    <small class="text-muted">${escaparHtmlConciliacion(item.banco_cuenta || '-')}</small>
+                </td>
+                <td>${escaparHtmlConciliacion(item.periodo_inicio)} al ${escaparHtmlConciliacion(item.periodo_fin)}</td>
+                <td>${formatoMonedaConciliacion(item.saldo_inicial)}</td>
+                <td><span class="badge badge-${estadoClass}">${escaparHtmlConciliacion(item.estado)}</span></td>
+                <td>
+                    <button type="button" class="btn btn-info btn-sm btn-ver-conciliacion"
+                        data-id="${Number(item.idconciliacion)}">
+                        <i class="fas fa-eye"></i> Ver
+                    </button>
+                </td>
+            </tr>`;
+
     });
+
+    $("#tblConciliaciones tbody").html(html);
 }
+
+listarConciliaciones = new FluentPaginator({
+    url: "controladores/conciliaciones.php?op=listar",
+    renderTabla: pintarConciliaciones,
+    tableBody: "#tbodyConciliaciones",
+});
+
 
 function cargarBancosConciliacion() {
     $.getJSON('controladores/conciliaciones.php', { op: 'listarBancos' })
@@ -87,6 +98,10 @@ function cargarBancosConciliacion() {
 }
 
 function seleccionarMovimientoBancario(fila) {
+    if (!fila.length || fila.attr('data-estado') !== 'pendiente') {
+        return;
+    }
+
     $('.bank-movement-row').removeClass('manual');
     $('.btn-seleccionar-bancario').removeClass('btn-primary').addClass('btn-outline-primary');
 
@@ -105,7 +120,7 @@ function seleccionarMovimientoBancario(fila) {
     }
 
     const descripcion = $.trim(fila.find('td').eq(1).text());
-    const importe = $.trim(fila.find('td').eq(3).text());
+    const importe = $.trim(fila.find('td').eq(4).text());
     $('#movimientoBancarioSeleccionado')
         .html(
             '<i class="fas fa-link text-primary mr-1"></i>' +
@@ -137,6 +152,14 @@ function abrirConciliacion(id) {
         $('#detalleSaldoFinal').text(formatoMonedaConciliacion(conciliacion.saldo_final_banco));
 
         const bancarios = response.movimientos_bancarios || [];
+        const saldoInicialCentimos = Math.round(Number(conciliacion.saldo_inicial || 0) * 100);
+        const saldoMovimientosCentimos = bancarios.reduce(function (saldo, item) {
+            const importeCentimos = Math.round(Number(item.importe || 0) * 100);
+            return saldo + (item.tipo === 'abono' ? importeCentimos : -importeCentimos);
+        }, 0);
+        saldoCalculadoConciliacion = (saldoInicialCentimos + saldoMovimientosCentimos) / 100;
+        $('#detalleSaldoCalculado').text(formatoMonedaConciliacion(saldoCalculadoConciliacion));
+
         const pendientes = bancarios.filter(function (item) {
             return ['pendiente', 'diferencia', 'no_identificado'].includes(item.estado);
         }).length;
@@ -145,14 +168,16 @@ function abrirConciliacion(id) {
 
         let htmlBancarios = '';
         if (!bancarios.length) {
-            htmlBancarios = '<tr><td colspan="5" class="text-center text-muted">No hay movimientos importados</td></tr>';
+            htmlBancarios = '<tr><td colspan="6" class="text-center text-muted">No hay movimientos importados</td></tr>';
         } else {
             bancarios.forEach(function (item) {
-                const classEstado = item.estado === 'pendiente' ? 'pending' : '';
+                const seleccionable = item.estado === 'pendiente' && conciliacion.estado !== 'cerrada' && conciliacion.estado !== 'anulada';
+                const classEstado = seleccionable ? 'pending' : '';
                 htmlBancarios += `
-                    <tr class="bank-movement-row ${classEstado}" data-id="${Number(item.idmovimiento_bancario)}">
+                    <tr class="bank-movement-row ${classEstado}" data-id="${Number(item.idmovimiento_bancario)}"
+                        data-estado="${escaparHtmlConciliacion(item.estado)}">
                         <td>
-                            <button type="button"
+                            <button type="button" ${seleccionable ? '' : 'disabled'}
                                 class="btn btn-outline-primary btn-sm btn-seleccionar-bancario mr-1"
                                 data-id="${Number(item.idmovimiento_bancario)}"
                                 title="Seleccionar movimiento bancario">
@@ -162,16 +187,16 @@ function abrirConciliacion(id) {
                         </td>
                         <td>${escaparHtmlConciliacion(item.descripcion || '-')}</td>
                         <td>${escaparHtmlConciliacion(item.tipo)}</td>
+                        <td>${escaparHtmlConciliacion(item.numero_operacion)}</td>
                         <td class="text-right">${formatoMonedaConciliacion(item.importe)}</td>
                         <td><span class="badge badge-light">${escaparHtmlConciliacion(item.estado)}</span></td>
                     </tr>`;
             });
         }
         $('#tbodyMovimientosBancarios').html(htmlBancarios);
-        if (bancarios.length) {
-            seleccionarMovimientoBancario(
-                $('#tbodyMovimientosBancarios .bank-movement-row').first()
-            );
+        const primerPendiente = $('#tbodyMovimientosBancarios .bank-movement-row.pending').first();
+        if (primerPendiente.length) {
+            seleccionarMovimientoBancario(primerPendiente);
         } else {
             movimientoBancarioSeleccionado = null;
             $('#movimientoBancarioSeleccionado').hide();
@@ -181,7 +206,7 @@ function abrirConciliacion(id) {
         let htmlSistema = '';
         if (!sistema.length) {
             htmlSistema =
-                '<tr><td colspan="5" class="text-center text-muted">' +
+                '<tr><td colspan="6" class="text-center text-muted">' +
                 'No hay movimientos del sistema para la cuenta y el periodo seleccionado.' +
                 '</td></tr>';
         } else {
@@ -191,9 +216,11 @@ function abrirConciliacion(id) {
                         <td>${formatoFechaConciliacion(item.fecha)}</td>
                         <td>${escaparHtmlConciliacion(item.origen)}</td>
                         <td>${escaparHtmlConciliacion(item.tipo)}</td>
+                        <td>${escaparHtmlConciliacion(item.numero_operacion)}</td>
                         <td class="text-right">${formatoMonedaConciliacion(item.importe)}</td>
                         <td>
                             <button type="button" class="btn btn-outline-primary btn-sm btn-conciliar-sistema"
+                                ${conciliacion.estado === 'cerrada' || conciliacion.estado === 'anulada' ? 'disabled' : ''}
                                 data-origen="${escaparHtmlConciliacion(item.origen)}"
                                 data-id="${Number(item.id)}"
                                 data-importe="${Number(item.importe || 0)}">
@@ -204,6 +231,9 @@ function abrirConciliacion(id) {
             });
         }
         $('#tbodyMovimientosSistema').html(htmlSistema);
+        const editable = conciliacion.estado !== 'cerrada' && conciliacion.estado !== 'anulada';
+        $('#btnImportarEstado, #btnAgregarMovimientoBancario, #btnAutoConciliar').toggle(editable);
+        $('#btnCerrarConciliacion').toggle(editable);
     }).fail(function (xhr) {
         mostrarErrorConciliacion(xhr);
     });
@@ -220,12 +250,8 @@ function mostrarErrorConciliacion(xhr) {
 }
 
 $(function () {
-    cargarConciliaciones();
+    listarConciliaciones.load();
     if ($.fn.select2) $('.select2').select2();
-
-    $('#searchConciliaciones, #limitConciliaciones').on('change keyup', function () {
-        cargarConciliaciones();
-    });
 
     $('#btnNuevaConciliacion').on('click', function () {
         cargarBancosConciliacion();
@@ -239,7 +265,7 @@ $(function () {
     $('#btnRegresarConciliaciones').on('click', function () {
         $('#panelDetalleConciliacion').hide();
         $('#panelListadoConciliaciones').show();
-        cargarConciliaciones();
+        listarConciliaciones.load();
     });
 
     $('#formConciliacion').off('submit').on('submit', function (event) {
@@ -259,7 +285,7 @@ $(function () {
         }).done(function (response) {
             $('#modalConciliacion').modal('hide');
             Swal.fire('Conciliacion creada', response.message, 'success');
-            cargarConciliaciones();
+            listarConciliaciones.load();
         }).fail(mostrarErrorConciliacion);
     });
 
@@ -325,7 +351,7 @@ $(function () {
         seleccionarMovimientoBancario($(this).closest('.bank-movement-row'));
     });
 
-    $(document).on('click', '.bank-movement-row', function (event) {
+    $(document).on('click', '.bank-movement-row.pending', function (event) {
         if ($(event.target).closest('.btn-conciliar-sistema').length) return;
         seleccionarMovimientoBancario($(this));
     });
@@ -355,27 +381,93 @@ $(function () {
         }).fail(mostrarErrorConciliacion);
     });
 
-    $('#btnCerrarConciliacion').on('click', function () {
+    $('#btnAutoConciliar').on('click', function () {
         Swal.fire({
-            title: 'Cerrar conciliacion',
-            text: 'Ingrese el saldo final confirmado por el banco.',
-            input: 'number',
-            inputValue: '0.00',
+            title: 'Conciliar coincidencias exactas',
+            text: 'Solo se vincularán coincidencias únicas por número de operación, importe y sentido. Las demás quedarán pendientes.',
+            icon: 'question',
             showCancelButton: true,
-            confirmButtonText: 'Cerrar',
+            confirmButtonText: 'Buscar coincidencias',
             cancelButtonText: 'Cancelar'
         }).then(function (result) {
             if (!result.isConfirmed) return;
             $.ajax({
-                url: 'controladores/conciliaciones.php?op=cerrar&idconciliacion=' + conciliacionSeleccionada,
+                url: 'controladores/conciliaciones.php?op=conciliarAutomatico&idconciliacion=' + conciliacionSeleccionada,
                 type: 'POST',
                 contentType: 'application/json',
                 dataType: 'json',
-                data: JSON.stringify({ saldo_final_banco: result.value })
+                data: JSON.stringify({})
             }).done(function (response) {
-                Swal.fire('Conciliacion cerrada', response.message, 'success');
+                const conciliados = Number(response.data && response.data.conciliados || 0);
+                const mensaje = conciliados
+                    ? 'Se conciliaron ' + conciliados + ' movimiento(s).'
+                    : 'No se encontraron coincidencias únicas que cumplan todos los criterios.';
+                Swal.fire(
+                    'Conciliación automática',
+                    mensaje,
+                    conciliados ? 'success' : 'info'
+                );
                 abrirConciliacion(conciliacionSeleccionada);
             }).fail(mostrarErrorConciliacion);
+        });
+    });
+
+    function enviarCierreConciliacion(saldoFinal, confirmarDiferencia) {
+        $.ajax({
+            url: 'controladores/conciliaciones.php?op=cerrar&idconciliacion=' + conciliacionSeleccionada,
+            type: 'POST',
+            contentType: 'application/json',
+            dataType: 'json',
+            data: JSON.stringify({
+                saldo_final_banco: saldoFinal,
+                confirmar_diferencia: confirmarDiferencia
+            })
+        }).done(function (response) {
+            const diferencia = Number(response.data && response.data.diferencia || 0);
+            const mensaje = diferencia === 0
+                ? response.message
+                : response.message + ' Diferencia respecto al saldo calculado: ' + formatoMonedaConciliacion(diferencia) + '.';
+            Swal.fire('Conciliación cerrada', mensaje, 'success');
+            abrirConciliacion(conciliacionSeleccionada);
+        }).fail(mostrarErrorConciliacion);
+    }
+
+    $('#btnCerrarConciliacion').on('click', function () {
+        Swal.fire({
+            title: 'Cerrar conciliacion',
+            text: 'Saldo calculado por movimientos: ' + formatoMonedaConciliacion(saldoCalculadoConciliacion) +
+                '. Ingrese el saldo final del estado de cuenta.',
+            input: 'number',
+            inputValue: saldoCalculadoConciliacion.toFixed(2),
+            inputAttributes: { step: '0.01' },
+            showCancelButton: true,
+            confirmButtonText: 'Cerrar',
+            cancelButtonText: 'Cancelar'
+        }).then(function (result) {
+            if (!result.isConfirmed || result.value === '') return;
+            const saldoFinal = Number(result.value);
+            if (!Number.isFinite(saldoFinal)) {
+                Swal.fire('Saldo no válido', 'Ingrese un saldo final numérico.', 'warning');
+                return;
+            }
+            const diferencia = Math.round((saldoFinal - saldoCalculadoConciliacion) * 100) / 100;
+            if (diferencia === 0) {
+                enviarCierreConciliacion(saldoFinal, false);
+                return;
+            }
+            Swal.fire({
+                title: 'Hay una diferencia de saldo',
+                text: 'El saldo ingresado difiere del calculado en ' + formatoMonedaConciliacion(diferencia) +
+                    '. ¿Desea cerrar de todos modos?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Cerrar con diferencia',
+                cancelButtonText: 'Revisar'
+            }).then(function (confirmacion) {
+                if (confirmacion.isConfirmed) {
+                    enviarCierreConciliacion(saldoFinal, true);
+                }
+            });
         });
     });
 });

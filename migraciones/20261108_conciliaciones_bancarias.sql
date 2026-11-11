@@ -1,10 +1,10 @@
 INSERT INTO modulos
 (nombre, ruta, icono, modulo_padre_id, orden, menu, estado)
 SELECT
-    'Conciliaciones bancarias',
+    'Conciliaciones',
     'conciliaciones-bancarias',
     'fas fa-balance-scale',
-    23,
+    5,
     8,
     1,
     1

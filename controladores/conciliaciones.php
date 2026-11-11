@@ -34,6 +34,10 @@ switch ($op) {
         $conciliaciones->conciliarManual($idconciliacion, is_array($data) ? $data : []);
         break;
 
+    case 'conciliarAutomatico':
+        $conciliaciones->conciliarAutomatico($idconciliacion);
+        break;
+
     case 'crearMovimientoBancario':
         $data = json_decode(file_get_contents('php://input'), true);
         $conciliaciones->crearMovimientoBancario($idconciliacion, is_array($data) ? $data : []);
