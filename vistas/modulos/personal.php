@@ -156,13 +156,21 @@
               <div class="form-group">
                 <label for="name" class="control-label">Cargo:</label>
                 <select id="cargo" name="cargo" class="form-control" required>
+                  <option value="">Seleccione un cargo</option>
+                  <option value="Encargado/a de tienda">Encargado/a de tienda</option>
+                  <option value="Asesor de ventas">Asesor de ventas</option>
+                  <option value="Asesor de ventas/VOLANTE">Asesor de ventas/VOLANTE</option>
+                  <option value="Jefe de cobranzas">Jefe de cobranzas</option>
+                  <option value="Gestor de cobranza y verificador">Gestor de cobranza y verificador</option>
+                  <option value="Gerente">Gerente</option>
                   <option value="Administrador">Administrador</option>
-                  <option value="Vendedor">Vendedor</option>
-                  <option value="Tecnico">Técnico</option>
-                  <option value="Transportista">Transportista</option>
-                  <option value="Mecanico">Mecánico</option>
-                  <option value="Otro">Otro</option>
+                  <option value="Recursos Humanos">Recursos Humanos</option>
+                  <option value="Tesorería">Tesorería</option>
+                  <option value="Contabilidad">Contabilidad</option>
+                  <option value="Logística">Logística</option>
+                  <option value="Trámites">Trámites</option>
                 </select>
+
               </div>
             </div>
           </div>
