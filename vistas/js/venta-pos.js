@@ -4163,22 +4163,32 @@ function calcularCuotas() {
   let data = {
     cuotas: parseInt($("#input_cuotas").val()),
     frecuencia: parseInt($("#input_frecuencia").val()),
-    interes: parseFloat($("#inputInteres").val()),
+    interes: ("" + $("#inputInteres").val()).trim() === ""
+      ? 0
+      : Number(("" + $("#inputInteres").val()).trim().replace(",", ".")),
     deuda: parseFloat($("#montoDeuda").val()),
     fechaBase: parseFecha(fechaOperacion),
   };
 
   if (!validarDatos(data)) return;
 
-  actualizarInteresCredito($("#montoPagado").val());
-  data.interes = parseFloat($("#inputInteres").val());
+  if (!Number.isFinite(data.interes)) {
+    Swal.fire("El interés debe ser un número válido", "", "warning");
+    return;
+  }
 
   let { montoCuota } = calcularMontos(data.deuda, data.interes, data.cuotas);
-  const fechasExistentes = $("#datafechas input[name='fecha_pago[]']")
-    .map(function () {
-      return $(this).val();
-    })
-    .get();
+  const configuracionAnterior = $("#datafechas").data("calculoCuotas") || {};
+  const mismaConfiguracionFechas =
+    configuracionAnterior.fechaBase === fechaOperacion &&
+    configuracionAnterior.frecuencia === data.frecuencia;
+  const fechasExistentes = mismaConfiguracionFechas
+    ? $("#datafechas input[name='fecha_pago[]']")
+        .map(function () {
+          return $(this).val();
+        })
+        .get()
+    : [];
   let html = generarTabla(
     data.cuotas,
     data.frecuencia,
@@ -4189,6 +4199,10 @@ function calcularCuotas() {
   );
 
   $("#datafechas").html(html);
+  $("#datafechas").data("calculoCuotas", {
+    fechaBase: fechaOperacion,
+    frecuencia: data.frecuencia,
+  });
   $("#resumenCuotas").html(
     generarResumenCuotas(
       data.deuda,
