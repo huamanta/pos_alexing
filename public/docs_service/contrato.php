@@ -95,6 +95,7 @@ $inicial = $resultVenta['totalrecibido'] ?? '';
 $meses = $resultVenta['meses'] ?? '';
 $nombreAcompanante = $resultVenta['nombre_acompanante'] ?? '';
 $nombreTipoAcompanante = $resultVenta['nombre_tipo_acompanante'] ?? '';
+$nombreGarante = $resultVenta['nombre_garante'] ?? '';
 $resultSucursal = $helpers->dataSucursal($resultVenta['idsucursal']);
 $tipoVenta = 'CRÉDITO';
 if ($resultVenta['ventacredito'] === 'No') {
@@ -184,13 +185,31 @@ ob_start();
         .firma {
             margin-top: 60px;
             width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
         }
 
-        .firma div {
-            width: 45%;
-            display: inline-block;
+        .firma td {
+            padding: 0 8px;
             text-align: center;
+            vertical-align: top;
             font-size: 10px;
+        }
+
+        .firma-linea {
+            width: 90%;
+            margin: 0 auto 5px;
+            border-top: 1px solid #000;
+        }
+
+        .firma-nombre {
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+        }
+
+        .firma-contenido-garante {
+            width: 33.333%;
+            margin: 0 auto;
         }
     </style>
 </head>
@@ -314,19 +333,45 @@ ob_start();
 
     <br><br>
 
-    <div class="firma">
-        <div>
-            ________________________________________<br>
-            FIRMA Y SELLO DEL GERENTE GENERAL<br>
-            ARRENDADOR-VENDEDOR
-        </div>
+    <table class="firma">
+        <tbody>
+            <tr>
+                <td style="width: <?php echo empty($nombreAcompanante) ? '50%' : '33.333%'; ?>">
+                    <div class="firma-linea"></div>
+                    <div class="firma-nombre">FIRMA Y SELLO DEL GERENTE GENERAL</div>
+                    ARRENDADOR-VENDEDOR
+                </td>
+                <td style="width: <?php echo empty($nombreAcompanante) ? '50%' : '33.333%'; ?>">
+                    <div class="firma-linea"></div>
+                    <div class="firma-nombre"><?php echo strtoupper($comprador); ?></div>
+                    ARRENDADOR-COMPRADOR
+                </td>
+                <?php if (!empty($nombreAcompanante)): ?>
+                    <td style="width: 33.333%">
+                        <div class="firma-linea"></div>
+                        <div class="firma-nombre"><?php echo strtoupper($nombreAcompanante); ?></div>
+                        <?php echo strtoupper($nombreTipoAcompanante); ?>
+                    </td>
+                <?php endif; ?>
+            </tr>
+        </tbody>
+    </table>
 
-        <div>
-            ________________________________________<br>
-            <?php echo strtoupper($comprador); ?><br>
-            ARRENDADOR-COMPRADOR
-        </div>
-    </div>
+    <?php if (!empty($nombreGarante)): ?>
+        <table class="firma">
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="firma-contenido-garante">
+                            <div class="firma-linea"></div>
+                            <div class="firma-nombre"><?php echo strtoupper($nombreGarante); ?></div>
+                            GARANTE
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    <?php endif; ?>
 
 </body>
 

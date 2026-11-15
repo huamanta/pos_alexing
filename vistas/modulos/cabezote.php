@@ -120,7 +120,7 @@ $helpers = new Helpers();
                         <?php echo explode(" ", $_SESSION['nombre'])[0]; ?>
                     </span>
                     <span class="d-block text-muted" style="font-size: 0.7rem;">
-                        <?php echo isset($_SESSION['nombre_negocio']) ? $_SESSION['nombre_negocio'] : 'Admin'; ?>
+                        <?php echo isset($_SESSION['cargo']) ? $_SESSION['cargo'] : 'Admin'; ?>
                     </span>
                 </div>
                 <i class="fas fa-chevron-down user-chevron"></i>
