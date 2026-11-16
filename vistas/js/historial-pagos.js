@@ -37,7 +37,7 @@ function pintarHistorialPagos(data, permissions) {
                 <td>${item.op || "-"}</td>
                 <td>${item.banco || "-"}</td>
                 <td>
-                    ${item.comprobante ? `<a class="btn btn-outline-primary" href="files/cuentasporcobrar/${item.comprobante}" target="_blank" title="Ver Comprobante">
+                    ${item.comprobante ? `<a class="btn btn-outline-primary" href="files/cuentascobrar/${item.comprobante}" target="_blank" title="Ver Comprobante">
                         <i class="fas fa-eye"></i>
                     </a>` : ''}
                 </td>
