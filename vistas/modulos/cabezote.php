@@ -2,6 +2,7 @@
 <?php
 require_once __DIR__ . '/../../modelos/Helpers.php';
 $helpers = new Helpers();
+$puedeImportarProductos = $helpers->verificarPermisoCodigo('productos.importar');
 ?>
 
 <div id="toastContainer" style="position: fixed; top: 80px; right: 20px; z-index: 1060;"></div>
@@ -27,6 +28,16 @@ $helpers = new Helpers();
         </li>
     </ul>
     <ul class="navbar-nav ml-auto align-items-center">
+
+        <?php if ($puedeImportarProductos): ?>
+            <li class="nav-item">
+                <a class="nav-link navbar-icon-link" href="#" data-toggle="modal"
+                    data-target="#modalImportarProductos" title="Importar productos">
+                    <i class="fas fa-file-upload"></i>
+                    <span class="d-none d-md-inline ml-1">Importar productos</span>
+                </a>
+            </li>
+        <?php endif; ?>
 
         <?php if (!empty($_SESSION['idsucursal'])): ?>
             <li class="nav-item">
@@ -164,6 +175,44 @@ $helpers = new Helpers();
 
     </ul>
 </nav>
+<?php if ($puedeImportarProductos): ?>
+    <div class="modal fade" id="modalImportarProductos" tabindex="-1" role="dialog"
+        aria-labelledby="modalImportarProductosLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="formImportarProductosJson">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title" id="modalImportarProductosLabel">
+                            <i class="fas fa-file-upload mr-2"></i>Importar productos desde JSON
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="sucursalImportacionJson">Sucursal destino</label>
+                            <select class="form-control" id="sucursalImportacionJson" required>
+                                <option value="">Seleccione una sucursal</option>
+                            </select>
+                        </div>
+                        <div class="form-group mb-0">
+                            <label for="archivoProductosJson">Archivo JSON</label>
+                            <input type="file" class="form-control-file" id="archivoProductosJson"
+                                accept=".json,application/json" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-info" id="btnImportarProductosJson">
+                            <i class="fas fa-upload mr-1"></i>Importar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
 <div class="modal fade" id="myModalEventosGeneral">
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content shadow-lg border-0">

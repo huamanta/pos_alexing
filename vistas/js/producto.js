@@ -113,7 +113,6 @@ function init() {
 
 }
 
-
 function guardarcat(e) {
   e.preventDefault(); //no se activara la accion predeterminada
   //$("#btnGuardar").prop("disabled",true);

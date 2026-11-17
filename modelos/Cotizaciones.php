@@ -670,6 +670,7 @@ class Cotizacion extends Helpers
                 num_comprobante
             ")
             ->from('cotizacion')
+            ->softDeletes()
             ->where('idsucursal', '=', $idsucursal)
             ->where('idcliente', '=', $idcliente)
             ->whereRaw('DATE_ADD(fecha_hora, INTERVAL nota DAY) >= CURDATE()');

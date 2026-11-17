@@ -1,5 +1,105 @@
 let archivosSeleccionadosGeneral = [];
 
+$(function () {
+    const $modal = $("#modalImportarProductos");
+    if (!$modal.length) {
+        return;
+    }
+
+    $modal.on("show.bs.modal", function () {
+        const $sucursal = $("#sucursalImportacionJson");
+        $sucursal.prop("disabled", true).html('<option value="">Cargando sucursales...</option>');
+        $("#btnImportarProductosJson").prop("disabled", true);
+
+        $.ajax({
+            url: "controladores/venta.php?op=selectSucursal",
+            type: "POST",
+            success: function (opciones) {
+                if (!opciones.trim()) {
+                    $sucursal.html('<option value="">No hay sucursales disponibles</option>');
+                    Swal.fire("Error", "No hay sucursales disponibles para importar productos.", "error");
+                    return;
+                }
+
+                $sucursal.html('<option value="">Seleccione una sucursal</option>' + opciones);
+                $sucursal.prop("disabled", false);
+                $("#btnImportarProductosJson").prop("disabled", false);
+            },
+            error: function () {
+                $sucursal.html('<option value="">No se pudieron cargar las sucursales</option>');
+                Swal.fire("Error", "No se pudieron cargar las sucursales.", "error");
+            },
+        });
+    });
+
+    $("#formImportarProductosJson").on("submit", function (event) {
+        event.preventDefault();
+
+        const archivo = $("#archivoProductosJson")[0].files[0];
+        const idsucursal = $("#sucursalImportacionJson").val();
+        const nombreSucursal = $("#sucursalImportacionJson option:selected").text();
+
+        if (!idsucursal || !archivo) {
+            Swal.fire("Datos incompletos", "Seleccione una sucursal y un archivo JSON.", "warning");
+            return;
+        }
+
+        if (!archivo.name.toLowerCase().endsWith(".json")) {
+            Swal.fire("Archivo inválido", "Seleccione un archivo con extensión .json.", "error");
+            return;
+        }
+
+        Swal.fire({
+            title: "¿Importar productos?",
+            text: `Se cargarán los productos de "${archivo.name}" en ${nombreSucursal}.`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Importar",
+            cancelButtonText: "Cancelar",
+        }).then((result) => {
+            if (!result.isConfirmed) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("archivo", archivo);
+            const $boton = $("#btnImportarProductosJson").prop("disabled", true);
+
+            $.ajax({
+                url: `controladores/producto.php?op=cargar_data&idsucursal=${encodeURIComponent(idsucursal)}`,
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                dataType: "json",
+                success: function (data) {
+                    Swal.fire({
+                        title: data.success ? "Importación completada" : "Error",
+                        icon: data.success ? "success" : "error",
+                        text: data.success
+                            ? `${data.message}. Productos: ${data.productos}; series: ${data.series}.`
+                            : data.message,
+                    });
+                    if (data.success) {
+                        $modal.modal("hide");
+                        $("#formImportarProductosJson")[0].reset();
+                        if (typeof listarProductos !== "undefined" && listarProductos && typeof listarProductos.load === "function") {
+                            listarProductos.load();
+                        }
+                    }
+                },
+                error: function (xhr) {
+                    const mensaje = xhr.responseJSON?.error || xhr.responseJSON?.message || "No se pudo importar el archivo JSON.";
+                    Swal.fire("Error al importar", mensaje, "error");
+                },
+                complete: function () {
+                    $boton.prop("disabled", false);
+                },
+            });
+        });
+    });
+});
+
 function listarEventos(idpersonal) {
     var calendarEl = document.getElementById('calendarGeneral');
 

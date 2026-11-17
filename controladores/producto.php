@@ -926,8 +926,57 @@ switch ($_GET["op"]) {
 		break;
 
 	case 'cargar_data':
-		$producto = new Producto();
-		$producto->cargarData();
+		$idsucursal = filter_input(INPUT_GET, 'idsucursal', FILTER_VALIDATE_INT);
+		if (!$idsucursal || $idsucursal <= 0) {
+			Response::error('Seleccione una sucursal válida.', 400);
+		}
+
+		$helpers = new Helpers();
+		if (!$helpers->verificarPermisoCodigo('productos.crear')) {
+			Response::error('No tiene permiso para importar productos.', 403);
+		}
+
+		$sucursalesPermitidas = $producto->listarsucursales((int) $_SESSION['idusuario']);
+		$sucursalPermitida = false;
+		while ($sucursal = $sucursalesPermitidas->fetch_object()) {
+			if ((int) $sucursal->idsucursal === (int) $idsucursal) {
+				$sucursalPermitida = true;
+				break;
+			}
+		}
+		if (!$sucursalPermitida) {
+			Response::error('No tiene acceso a la sucursal seleccionada.', 403);
+		}
+
+		if (!isset($_FILES['archivo']) || !is_array($_FILES['archivo'])) {
+			Response::error('Seleccione un archivo JSON.');
+		}
+
+		$archivo = $_FILES['archivo'];
+		if (!isset($archivo['error'], $archivo['name'], $archivo['tmp_name'])) {
+			Response::error('La carga del archivo no es válida.', 400);
+		}
+
+		if ($archivo['error'] !== UPLOAD_ERR_OK) {
+			$mensaje = $archivo['error'] === UPLOAD_ERR_NO_FILE
+				? 'Seleccione un archivo JSON.'
+				: 'No se pudo subir el archivo JSON.';
+			Response::error($mensaje, 400);
+		}
+
+		if (
+			strtolower(pathinfo($archivo['name'], PATHINFO_EXTENSION)) !== 'json'
+			|| !is_uploaded_file($archivo['tmp_name'])
+		) {
+			Response::error('El archivo seleccionado no es un JSON válido.');
+		}
+
+		$json = file_get_contents($archivo['tmp_name']);
+		if ($json === false) {
+			Response::error('No se pudo leer el archivo seleccionado.', 400);
+		}
+
+		$producto->cargarData((int) $idsucursal, $json);
 		break;
 
 }
