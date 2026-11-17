@@ -2527,21 +2527,9 @@ class Producto extends Helpers
 	}
 
 
-	public function cargarData()
+	public function cargarData(int $idsucursal, string $json)
 	{
 		try {
-
-			$jsonFile = __DIR__ . '/../productos_micaela.json';
-
-			if (!file_exists($jsonFile)) {
-				throw new Exception('No existe el archivo productos.json');
-			}
-
-			$json = file_get_contents($jsonFile);
-
-			if ($json === false) {
-				throw new Exception('No se pudo leer el archivo productos.json');
-			}
 
 			$productos = json_decode($json, true);
 
@@ -2554,8 +2542,6 @@ class Producto extends Helpers
 			if (!is_array($productos)) {
 				throw new Exception('La estructura del JSON no es válida');
 			}
-
-			$idsucursal = $_SESSION['idsucursal'];
 
 			$this->pdo->beginTransaction();
 

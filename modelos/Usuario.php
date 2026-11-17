@@ -134,7 +134,6 @@ class Usuario extends Helpers
                 'success' => true,
                 'message' => 'Se ha creado el usuario exitosamente'
             ]);
-
         } catch (\Throwable $th) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
@@ -270,7 +269,6 @@ class Usuario extends Helpers
                             "No se pudo activar la sucursal {$idSucursal}."
                         );
                     }
-
                 } else {
 
                     $insertado = $saverSucursal
@@ -325,7 +323,6 @@ class Usuario extends Helpers
                 'success' => true,
                 'message' => 'Usuario actualizado correctamente.'
             ]);
-
         } catch (\Throwable $th) {
 
             if ($this->pdo->inTransaction()) {
@@ -425,12 +422,176 @@ class Usuario extends Helpers
     public function mostrar($idusuario)
     {
         $data = (new DBQuery($this->pdo))
-        ->select('*')
-        ->from('usuario')
-        ->where('idusuario', '=', $idusuario)
-        ->first();
+            ->select('*')
+            ->from('usuario')
+            ->where('idusuario', '=', $idusuario)
+            ->first();
         return Response::json($data);
     }
+
+    public function obtenerPerfil(int $idusuario)
+    {
+        try {
+            $usuario = (new DBQuery($this->pdo))
+                ->select([
+                    'p.nombre',
+                    'p.tipo_documento',
+                    'p.num_documento',
+                    'p.direccion',
+                    'p.telefono',
+                    'p.email',
+                    'p.cargo',
+                    'u.login',
+                    'u.superusuario',
+                ])
+                ->from('usuario u')
+                ->join('personal p', 'p.idpersonal = u.idpersonal')
+                ->where('u.idusuario', '=', $idusuario)
+                ->first();
+
+            if (!$usuario) {
+                throw new Exception("No se encontró el perfil del usuario.");
+            }
+
+            $roles = (new DBQuery($this->pdo))
+                ->select('r.nombre')
+                ->from('usuario_roles ur')
+                ->join('roles r', 'r.id = ur.rol_id')
+                ->where('ur.idusuario', '=', $idusuario)
+                ->orderBy('r.nombre')
+                ->get();
+
+            return Response::json([
+                'success' => true,
+                'data' => [
+                    'usuario' => $usuario,
+                    'roles' => array_column($roles, 'nombre'),
+                ],
+            ]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
+    }
+
+    public function actualizarPerfil(int $idusuario, array $datos)
+    {
+        try {
+            $nombre = trim((string) ($datos['nombre'] ?? ''));
+            $tipoDocumento = trim((string) ($datos['tipo_documento'] ?? ''));
+            $numeroDocumento = trim((string) ($datos['num_documento'] ?? ''));
+            $direccion = trim((string) ($datos['direccion'] ?? ''));
+            $telefono = trim((string) ($datos['telefono'] ?? ''));
+            $email = trim((string) ($datos['email'] ?? ''));
+
+            if ($nombre === '' || strlen($nombre) > 250) {
+                throw new Exception("El nombre es obligatorio y no debe superar 250 caracteres.");
+            }
+
+            if (
+                !in_array($tipoDocumento, ['DNI', 'RUC', 'CEDULA'], true) ||
+                $numeroDocumento === '' ||
+                strlen($numeroDocumento) > 20
+            ) {
+                throw new Exception("El tipo y número de documento son obligatorios; el número no debe superar 20 caracteres.");
+            }
+
+            if (strlen($direccion) > 255 || strlen($telefono) > 20 || strlen($email) > 50) {
+                throw new Exception("La dirección no debe superar 255 caracteres, el teléfono 20 y el correo 50.");
+            }
+
+            if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                throw new Exception("El correo electrónico no tiene un formato válido.");
+            }
+
+            $personal = (new DBQuery($this->pdo))
+                ->select('idpersonal')
+                ->from('usuario')
+                ->where('idusuario', '=', $idusuario)
+                ->first();
+
+            if (!$personal) {
+                throw new Exception("No se encontró el usuario.");
+            }
+
+            $actualizado = (new FluentSaver($this->pdo))
+                ->table('personal')
+                ->primaryKey('idpersonal')
+                ->nullable(['direccion', 'telefono', 'email'])
+                ->data([
+                    'idpersonal' => (int) $personal['idpersonal'],
+                    'nombre' => $nombre,
+                    'tipo_documento' => $tipoDocumento,
+                    'num_documento' => $numeroDocumento,
+                    'direccion' => $direccion,
+                    'telefono' => $telefono,
+                    'email' => $email,
+                ])
+                ->update();
+
+            if (!$actualizado) {
+                throw new Exception("No se pudieron actualizar los datos personales.");
+            }
+
+            $_SESSION['nombre'] = $nombre;
+            return Response::json([
+                'success' => true,
+                'message' => 'Datos personales actualizados correctamente.',
+            ]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
+    }
+
+    public function cambiarClave(int $idusuario, string $claveActual, string $claveNueva, string $confirmacion)
+    {
+        try {
+            if ($claveNueva !== $confirmacion) {
+                throw new Exception("La confirmación no coincide con la nueva contraseña.");
+            }
+
+            $longitudClave = preg_match_all('/./us', $claveNueva);
+            if ($longitudClave === false || $longitudClave < 8 || $longitudClave > 128) {
+                throw new Exception("La nueva contraseña debe tener entre 8 y 128 caracteres.");
+            }
+
+            $usuario = (new DBQuery($this->pdo))
+                ->select('clave')
+                ->from('usuario')
+                ->where('idusuario', '=', $idusuario)
+                ->first();
+
+            if (!$usuario) {
+                throw new Exception("No se encontró el usuario.");
+            }
+
+            $claveActualValida = hash_equals((string) $usuario['clave'], hash('sha256', $claveActual)) || password_verify($claveActual, (string) $usuario['clave']);
+
+            if (!$claveActualValida) {
+                throw new Exception("La contraseña actual es incorrecta.");
+            }
+
+            $actualizado = (new FluentSaver($this->pdo))
+                ->table('usuario')
+                ->primaryKey('idusuario')
+                ->data([
+                    'idusuario' => $idusuario,
+                    'clave' => password_hash($claveNueva, PASSWORD_DEFAULT),
+                ])
+                ->update();
+
+            if (!$actualizado) {
+                throw new Exception("No se pudo actualizar la contraseña.");
+            }
+
+            return Response::json([
+                'success' => true,
+                'message' => 'Contraseña actualizada correctamente.',
+            ]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
+    }
+
 
     //Implementar un método para listar los registros
     public function listar()
@@ -457,23 +618,30 @@ class Usuario extends Helpers
                     'c.imagen',
                     'c.nombre as nombre',
                     'c.cargo',
-                    'u.login'
+                    'u.login',
+                    'u.clave'
                 ])
                 ->from('usuario u')
                 ->join('personal c', 'u.idpersonal=c.idpersonal')
                 ->where('u.login', '=', $login)
-                ->where('u.clave', '=', $clave)
                 ->where('u.condicion', '=', 1)
                 ->first();
+
+            $claveValida = $data && (
+                password_verify($clave, (string) $data['clave']) ||
+                hash_equals((string) $data['clave'], hash('sha256', $clave))
+            );
 
             // Datos de IP y user agent
             $ip = self::getClientIP();
             $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? 'Desconocido';
 
-            if (!$data) {
+            if (!$claveValida) {
                 self::registrarHistorial(0, $ip, $user_agent, 0);
                 throw new Exception('Usuario u contraseña incorrectos');
             }
+
+            unset($data['clave']);
 
             // Login exitoso
             $_SESSION['idusuario'] = $data['idusuario'];
@@ -491,7 +659,6 @@ class Usuario extends Helpers
                 'message' => 'Las credenciales han sido validadas',
                 'data' => $data
             ]);
-
         } catch (\Throwable $th) {
             return Response::error($th->getMessage());
         }
@@ -580,7 +747,6 @@ class Usuario extends Helpers
                 if (filter_var($externalIp, FILTER_VALIDATE_IP)) {
                     $ip = $externalIp;
                 }
-
             } catch (Exception $e) {
                 $ip = '0.0.0.0';
             }
@@ -595,7 +761,4 @@ class Usuario extends Helpers
 
         return $ip;
     }
-
 }
-
-?>
