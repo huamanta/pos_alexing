@@ -151,6 +151,10 @@ $puedeImportarProductos = $helpers->verificarPermisoCodigo('productos.importar')
                 </li>
 
                 <li class="user-footer p-2 bg-white">
+                    <a href="perfil"
+                        class="btn btn-outline-primary btn-block font-weight-bold border-0 text-left px-3 py-2">
+                        <i class="fas fa-user-circle mr-2"></i> Mi perfil
+                    </a>
                     <?php if (!empty($_SESSION['idsucursal'])): ?>
                         <a href="salirsucursal"
                             class="btn btn-outline-success btn-block font-weight-bold border-0 text-left px-3 py-2">

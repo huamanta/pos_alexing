@@ -21,7 +21,22 @@ if (isset($_POST["idsucursal"])) {
 $roles = isset($_POST['roles']) ? $_POST['roles'] : [];
 $permisos = isset($_POST['permisos']) ? $_POST['permisos'] : [];
 
-switch ($_GET["op"]) {
+switch ($_GET["op"] ?? '') {
+
+	case 'perfil':
+		$usuario->obtenerPerfil((int) $_SESSION['idusuario']);
+		break;
+
+	case 'actualizarPerfil':
+		$usuario->actualizarPerfil((int) $_SESSION['idusuario'], $_POST);
+		break;
+
+	case 'cambiarClave':
+		$claveActual = (string) ($_POST['clave_actual'] ?? '');
+		$claveNueva = (string) ($_POST['clave_nueva'] ?? '');
+		$confirmacion = (string) ($_POST['confirmar_clave'] ?? '');
+		$usuario->cambiarClave((int) $_SESSION['idusuario'], $claveActual, $claveNueva, $confirmacion);
+		break;
 
 	case 'guardaryeditar':
 
@@ -144,9 +159,7 @@ switch ($_GET["op"]) {
 	case 'verificar':
 		$logina = $_POST['logina'];
 		$clavea = $_POST['clavea'];
-		// Hash SHA256 en la contraseña
-		$clavehash = hash("SHA256", $clavea);
-		echo $usuario->verificar($logina, $clavehash);
+		echo $usuario->verificar($logina, $clavea);
 		break;
 
 

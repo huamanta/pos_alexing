@@ -108,7 +108,9 @@
     CONTENIDO
     =============================================*/
 
-    if (isset($_SESSION['idsucursal']) && !empty($_SESSION['idsucursal'])) {
+    if ($rutaUrl === 'perfil') {
+      include __DIR__ . "/modulos/perfil.php";
+    } elseif (isset($_SESSION['idsucursal']) && !empty($_SESSION['idsucursal'])) {
 
       require_once __DIR__ . "/../core/Rutas.php";
       require_once __DIR__ . "/../modelos/Helpers.php";
