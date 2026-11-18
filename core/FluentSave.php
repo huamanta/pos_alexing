@@ -222,7 +222,6 @@ class FluentSaver
                 "{$where['column']} {$where['operator']} {$param}";
 
             $bindings[$param] = $where['value'];
-
         }
 
         $sql = "
@@ -247,7 +246,6 @@ class FluentSaver
                 $value,
                 $type
             );
-
         }
 
         return $stmt->execute();
@@ -282,8 +280,8 @@ class FluentSaver
             ':id',
             $id,
             is_int($id)
-            ? PDO::PARAM_INT
-            : PDO::PARAM_STR
+                ? PDO::PARAM_INT
+                : PDO::PARAM_STR
         );
 
         return $stmt->execute();
@@ -345,8 +343,8 @@ class FluentSaver
             ':id',
             $id,
             is_int($id)
-            ? PDO::PARAM_INT
-            : PDO::PARAM_STR
+                ? PDO::PARAM_INT
+                : PDO::PARAM_STR
         );
 
         return $stmt->execute();
@@ -368,8 +366,8 @@ class FluentSaver
             ':id',
             $id,
             is_int($id)
-            ? PDO::PARAM_INT
-            : PDO::PARAM_STR
+                ? PDO::PARAM_INT
+                : PDO::PARAM_STR
         );
 
         return $stmt->execute();
@@ -429,8 +427,8 @@ class FluentSaver
             ':id',
             $id,
             is_int($id)
-            ? PDO::PARAM_INT
-            : PDO::PARAM_STR
+                ? PDO::PARAM_INT
+                : PDO::PARAM_STR
         );
 
         return $stmt->execute();
@@ -455,9 +453,44 @@ class FluentSaver
             ':id',
             $id,
             is_int($id)
-            ? PDO::PARAM_INT
-            : PDO::PARAM_STR
+                ? PDO::PARAM_INT
+                : PDO::PARAM_STR
         );
+
+        return $stmt->execute();
+    }
+
+    public function upsert(array $updateColumns): bool
+    {
+        $this->sanitizeData();
+        $this->manageTimestamps();
+
+        $columns = array_keys($this->data);
+
+        $columnSql = implode(', ', $columns);
+        $placeholders = ':' . implode(', :', $columns);
+
+        $updates = [];
+
+        foreach ($updateColumns as $column) {
+            if (!array_key_exists($column, $this->data)) {
+                throw new InvalidArgumentException("La columna {$column} no existe en los datos.");
+            }
+
+            $updates[] = "{$column} = VALUES({$column})";
+        }
+
+        if (empty($updates)) {
+            throw new InvalidArgumentException("Debe especificar columnas para actualizar.");
+        }
+
+        $sql = "
+        INSERT INTO {$this->table} ({$columnSql})
+        VALUES ({$placeholders})
+        ON DUPLICATE KEY UPDATE " . implode(', ', $updates);
+
+        $stmt = $this->pdo->prepare($sql);
+        $this->bindValues($stmt);
 
         return $stmt->execute();
     }

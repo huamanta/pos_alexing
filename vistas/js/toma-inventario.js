@@ -171,11 +171,16 @@ function guardaryeditar(e) {
     data: formData,
     contentType: false,
     processData: false,
-    success: function (datos) {
+    success: function (response) {
+      const data = response;
+      if (!data.success) {
+        Swal.fire({ title: "Inventarios", icon: "error", text: data.message });
+        return;
+      }
       Swal.fire({
         title: "Inventarios",
         icon: "success",
-        text: datos,
+        text: data.message,
       });
       $("#myModal").modal("hide");
       tabla.ajax.reload();
@@ -206,9 +211,9 @@ $("#buscar_producto").click(function (e) {
           <td colspan="4" style="text-align: center;">Buscando...</td>
       </tr>`);
     },
-    success: function (datos) {
-      var datos = JSON.parse(datos);
-      var html = "";
+    success: function (response) {
+      const datos = response;
+      let html = "";
       if (datos.length === 0) {
         html += `<tr>
           <td colspan="4" style="text-align: center;">Lista de productos vacia</td>
@@ -223,39 +228,6 @@ $("#buscar_producto").click(function (e) {
         </tr>`;
       });
       $("#data_productos").html(html);
-
-      function debounce(func, wait) {
-        let timeout;
-        return function() {
-          const context = this, args = arguments;
-          clearTimeout(timeout);
-          timeout = setTimeout(() => func.apply(context, args), wait);
-        };
-      }
-
-      $(".cantidad_input").on("input", debounce(function() {
-        var cantidad = $(this).val();
-        var idproducto = $(this).data("idproducto");
-
-        if (cantidad === "" || isNaN(cantidad) || parseFloat(cantidad) <= 0) return;
-
-        $.ajax({
-          url: "controladores/inventario.php?op=insertar_cantidad",
-          type: "POST",
-          data: { idproducto: idproducto, cantidad: cantidad },
-          success: function(res) {
-            var res = JSON.parse(res);
-            if (!res.status) {
-              toastr.error(res.message || "Error al guardar cantidad");
-            } else {
-              toastr.success("Cantidad actualizada correctamente");
-            }
-          },
-          error: function(err) {
-            console.log(err.responseText);
-          }
-        });
-      }, 500));
     },
     error: function (error) {
       console.log(error.responseText);
@@ -263,54 +235,10 @@ $("#buscar_producto").click(function (e) {
   });
 });
 
-
-$("#guardar_registros").submit(function (e) {
-  e.preventDefault();
-  var formData = new FormData($(this)[0]);
-  $.ajax({
-    url: "controladores/inventario.php?op=guardar_registros",
-    type: "POST",
-    data: formData,
-    contentType: false,
-    processData: false,
-    beforeSend: function () {
-      $("#btn_guardar_products").text("GUARDANDO...");
-      $("#btn_guardar_products").attr("disabled", "disabled");
-    },
-    success: function (data) {
-      var data = JSON.parse(data);
-      if (!data.status) {
-        Swal.fire({
-          title: "Error",
-          icon: "error",
-          text: data.message,
-        });
-        $("#btn_guardar_products").text("GUARDAR");
-        $("#btn_guardar_products").removeAttr("disabled", "disabled");
-        return;
-      }
-      $("#nombre").val("");
-      $("#codigo").val("");
-      $("#categoria").val("");
-      $("#data_productos").html(`<tr>
-			<td colspan="4" style="text-align: center;">Lista de productos vacia</td>
-		</tr>`);
-      Swal.fire({
-        title: "Inventarios",
-        icon: "success",
-        text: data.message,
-      });
-
-      $("#btn_guardar_products").text("GUARDAR");
-      $("#btn_guardar_products").removeAttr("disabled", "disabled");
-    },
-  });
-});
-
 // Función para “debounce”
 function debounce(func, wait) {
   let timeout;
-  return function() {
+  return function () {
     const context = this, args = arguments;
     clearTimeout(timeout);
     timeout = setTimeout(() => func.apply(context, args), wait);
@@ -330,9 +258,9 @@ function guardarProductoAutomaticamente() {
       $("#btn_guardar_products").text("GUARDANDO...");
       $("#btn_guardar_products").attr("disabled", "disabled");
     },
-    success: function (data) {
-      var data = JSON.parse(data);
-      if (!data.status) {
+    success: function (response) {
+      const data = response;
+      if (!data.success) {
         toastr.error(data.message || "Error al guardar");
       } else {
         toastr.success("Cantidad guardada correctamente");
@@ -348,118 +276,15 @@ function guardarProductoAutomaticamente() {
   });
 }
 
-$(document).on("input", ".cantidad_input", debounce(function() {
-  var cantidad = $(this).val();
-  
-  // Si está vacío, no hace nada
-  if (cantidad === "" || isNaN(cantidad) || parseFloat(cantidad) <= 0) return;
-
-  // Ejecuta la función para guardar automáticamente
-  guardarProductoAutomaticamente();
-
-}, 500));
-
-
-function agregarTemporal(idproducto, cantidad) {
-    var idinventario = $("#idinventario").val();
-    if(!idinventario) return;
-
-    $.ajax({
-        url: "controladores/inventario.php?op=agregar_temporal",
-        type: "POST",
-        data: { idinventario: idinventario, idproducto: idproducto, cantidad: cantidad },
-        success: function(resp) {
-            var data = JSON.parse(resp);
-            if(data.status) {
-                listarTemporales(); // Actualiza la tabla temporal en tiempo real
-            } else {
-                toastr.error(data.message);
-            }
-        }
-    });
-}
-
 // Función debounce
 function debounce(func, wait) {
-    let timeout;
-    return function() {
-        const context = this, args = arguments;
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(context, args), wait);
-    };
+  let timeout;
+  return function () {
+    const context = this, args = arguments;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(context, args), wait);
+  };
 }
-
-// Evento input automático para insertar/actualizar/eliminar
-$(document).on('input', '.cantidad_input', debounce(function() {
-    var $row = $(this).closest('tr');
-    var cantidad = $(this).val().trim();
-    var idproducto = $row.find('input[name="idproducto[]"]').val();
-    var idinventario = $("#idinventario").val();
-
-    if (!idinventario || !idproducto) return;
-
-    if (cantidad === "" || isNaN(cantidad) || parseFloat(cantidad) <= 0) {
-        // Eliminar automáticamente
-        $.ajax({
-            url: "controladores/inventario.php?op=eliminar_temporal",
-            type: "POST",
-            data: { idinventario: idinventario, idproducto: idproducto },
-            success: function(resp) {
-                var data = JSON.parse(resp);
-                if (data.status) {
-                    toastr.info("Producto eliminado del inventario");
-                    listarTemporales(); // refresca tabla temporal
-                } else {
-                    toastr.error(data.message);
-                }
-            },
-            error: function(err) { console.log(err.responseText); }
-        });
-    } else {
-        // Insertar o actualizar automáticamente
-        $.ajax({
-            url: "controladores/inventario.php?op=guardar_registros",
-            type: "POST",
-            data: { idinventario: idinventario, idproducto: [idproducto], cantidad: [cantidad] },
-            success: function(resp) {
-                var data = JSON.parse(resp);
-                if (data.status) {
-                    listarTemporales(); // refresca tabla temporal
-                    toastr.success("Cantidad actualizada");
-                } else {
-                    toastr.error(data.message);
-                }
-            },
-            error: function(err) { console.log(err.responseText); }
-        });
-    }
-}, 500));
-
-
-// Función para listar temporales
-/*function listarTemporales() {
-    var idinventario = $("#idinventario").val();
-    if(!idinventario) return;
-
-    $.getJSON("controladores/inventario.php?op=listar_temporales&idinventario=" + idinventario, function(data) {
-        var html = '';
-        if(data.length === 0) {
-            html = `<tr><td colspan="5" style="text-align:center;">No hay productos agregados</td></tr>`;
-        } else {
-            $.each(data, function(i, item){
-                html += `<tr>
-                    <td>${item.nombre}</td>
-                    <td>${item.codigo}</td>
-                    <td>${item.unidad}</td>
-                    <td>${item.cantidad}</td>
-                    <td>${item.stock}</td>
-                </tr>`;
-            });
-        }
-        $("#tabla_seleccionados tbody").html(html);
-    });
-}
-*/
 
 
 function editar(id, observacion_apertura) {
@@ -497,13 +322,8 @@ $("#formulario_cierre").submit(function (e) {
 });
 
 function ver(id) {
-  $.post("controladores/inventario.php?op=ver", { id: id }, function (data) {
-    try {
-      data = JSON.parse(data);
-    } catch (e) {
-      toastr.error("Error al procesar los datos del inventario");
-      return;
-    }
+  $.get("controladores/inventario.php?op=ver", { id: id }, function (response) {
+    const data = response;
 
     if (!data) {
       toastr.error("No se encontró información del inventario");
@@ -598,12 +418,12 @@ $(document).ready(function () {
 // Debounce
 // --------------------
 function debounce(func, wait) {
-    let timeout;
-    return function() {
-        const context = this, args = arguments;
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(context, args), wait);
-    };
+  let timeout;
+  return function () {
+    const context = this, args = arguments;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(context, args), wait);
+  };
 }
 
 // --------------------
@@ -614,183 +434,113 @@ let eliminados = [];
 // --------------------
 // Evento input en búsqueda / cantidad de productos
 // --------------------
-$(document).on('input', '.cantidad_input', debounce(function() {
-    var $row = $(this).closest('tr');
-    var cantidad = $(this).val().trim();
-    var idproducto = $row.find('input[name="idproducto[]"]').val();
-    var stock = parseFloat($row.data('stock'));
-    var idinventario = $("#idinventario").val();
+$(document).on('input', '.cantidad_input', debounce(function () {
+  var $row = $(this).closest('tr');
+  var cantidad = $(this).val().trim();
+  var idproducto = $row.find('input[name="idproducto[]"]').val();
+  var stock = parseFloat($row.data('stock'));
+  var idinventario = $("#idinventario").val();
 
-    if (!idinventario || !idproducto) return;
+  if (!idinventario || !idproducto) return;
 
-    // Resaltar stock
-    resaltarStock($row, cantidad, stock);
+  // Resaltar stock
+  resaltarStock($row, cantidad, stock);
 
-    if (cantidad === "" || isNaN(cantidad) || parseFloat(cantidad) <= 0) {
-        // Guardamos para deshacer
-        eliminados.push({idproducto: idproducto, rowHtml: $row.prop('outerHTML')});
+  if (cantidad === "" || isNaN(cantidad) || parseFloat(cantidad) <= 0) {
+    // Guardamos para deshacer
+    eliminados.push({ idproducto: idproducto, rowHtml: $row.prop('outerHTML') });
 
-        // Eliminamos automáticamente
-        $.ajax({
-            url: "controladores/inventario.php?op=eliminar_temporal",
-            type: "POST",
-            data: { idinventario: idinventario, idproducto: idproducto },
-            success: function(resp) {
-                var data = JSON.parse(resp);
-                if(data.status){
-                    toastr.info("Producto eliminado");
-                    $row.remove();
-                    listarTemporales();
-                    mostrarBotonDeshacer();
-                } else {
-                    toastr.error(data.message);
-                }
-            },
-            error: function(err){ console.log(err.responseText); }
-        });
+    // Eliminamos automáticamente
+    $.ajax({
+      url: "controladores/inventario.php?op=eliminar_temporal",
+      type: "POST",
+      data: { idinventario: idinventario, idproducto: idproducto },
+      success: function (response) {
+        const data = response;
+        if (data.success) {
+          toastr.info("Producto eliminado");
+          listarTemporales();
+          mostrarBotonDeshacer();
+        } else {
+          toastr.error(data.message);
+        }
+      },
+      error: function (err) { console.log(err.responseText); }
+    });
 
-    } else {
-        // Insertar o actualizar automáticamente
-        $.ajax({
-            url: "controladores/inventario.php?op=guardar_registros",
-            type: "POST",
-            data: { idinventario: idinventario, idproducto: [idproducto], cantidad: [cantidad] },
-            success: function(resp) {
-                var data = JSON.parse(resp);
-                if(data.status){
-                    listarTemporales();
-                    toastr.success("Cantidad actualizada");
-                } else {
-                    toastr.error(data.message);
-                }
-            },
-            error: function(err){ console.log(err.responseText); }
-        });
-    }
+  } else {
+    // Insertar o actualizar automáticamente
+    $.ajax({
+      url: "controladores/inventario.php?op=guardar_registros",
+      type: "POST",
+      data: { idinventario: idinventario, idproducto: [idproducto], cantidad: [cantidad] },
+      success: function (response) {
+        var data = response;
+        if (data.success) {
+          listarTemporales();
+          toastr.success("Cantidad actualizada");
+        } else {
+          toastr.error(data.message);
+        }
+      },
+      error: function (err) { console.log(err.responseText); }
+    });
+  }
 }, 500));
 
 // --------------------
 // Resaltar stock
 // --------------------
-function resaltarStock($row, cantidad, stock){
-    $row.removeClass("bg-danger bg-warning");
+function resaltarStock($row, cantidad, stock) {
+  $row.removeClass("bg-danger bg-warning");
 
-    if(stock == 0){
-        $row.addClass("bg-danger"); // rojo si no hay stock
-    } else if(parseFloat(cantidad) > stock){
-        $row.addClass("bg-warning"); // amarillo si supera stock
-    }
+  if (stock == 0) {
+    $row.addClass("bg-danger"); // rojo si no hay stock
+  } else if (parseFloat(cantidad) > stock) {
+    $row.addClass("bg-warning"); // amarillo si supera stock
+  }
 }
 
 // --------------------
 // Botón deshacer eliminación
 // --------------------
 function mostrarBotonDeshacer() {
-    if(eliminados.length > 0) $("#btnDeshacer").show();
-    else $("#btnDeshacer").hide();
+  if (eliminados.length > 0) $("#btnDeshacer").show();
+  else $("#btnDeshacer").hide();
 }
 
-$("#btnDeshacer").click(function(){
-    if(eliminados.length == 0) return;
-    let ultimo = eliminados.pop();
-    $("#data_productos").append(ultimo.rowHtml);
-    listarTemporales();
-    mostrarBotonDeshacer();
+$("#btnDeshacer").click(function () {
+  if (eliminados.length == 0) return;
+  let ultimo = eliminados.pop();
+  $("#data_productos").append(ultimo.rowHtml);
+  listarTemporales();
+  mostrarBotonDeshacer();
 });
 
 // --------------------
 // Listar productos temporales
 // --------------------
 function listarTemporales() {
-    var idinventario = $("#idinventario").val();
-    if(!idinventario) return;
+  var idinventario = $("#idinventario").val();
+  if (!idinventario) return;
 
-    $.getJSON("controladores/inventario.php?op=listar_temporales&idinventario=" + idinventario, function(data) {
-        var html = '';
-        if(data.length === 0){
-            html = `<tr><td colspan="5" style="text-align:center;">No hay productos agregados</td></tr>`;
-        } else {
-            $.each(data, function(i, item){
-                html += `<tr data-idproducto="${item.idproducto}" data-stock="${item.stock}">
+  $.getJSON("controladores/inventario.php?op=listar_temporales&idinventario=" + idinventario, function (data) {
+    var html = '';
+    if (data.length === 0) {
+      html = `<tr><td colspan="5" style="text-align:center;">No hay productos agregados</td></tr>`;
+    } else {
+      $.each(data, function (i, item) {
+        html += `<tr data-idproducto="${item.idproducto}" data-stock="${item.stock}">
                     <td>${item.nombre}</td>
                     <td>${item.codigo}</td>
                     <td>${item.unidad}</td>
                     <td><input type="text" class="form-control cantidad_temp" value="${item.cantidad}"></td>
                     <td>${item.stock}</td>
                 </tr>`;
-            });
-        }
-        $("#tabla_seleccionados tbody").html(html);
-    });
+      });
+    }
+    $("#tabla_seleccionados tbody").html(html);
+  });
 }
-
-// --------------------
-// Editar directamente desde tabla temporal
-// --------------------
-$(document).on('input', '#tabla_seleccionados input.cantidad_temp', debounce(function(){
-    var $row = $(this).closest('tr');
-    var cantidad = $(this).val().trim();
-    var idproducto = $row.data('idproducto');
-    var stock = parseFloat($row.data('stock'));
-    var idinventario = $("#idinventario").val();
-
-    resaltarStock($row, cantidad, stock);
-
-    if(cantidad === "" || isNaN(cantidad) || parseFloat(cantidad) <= 0) return;
-
-    $.ajax({
-        url: "controladores/inventario.php?op=guardar_registros",
-        type: "POST",
-        data: { idinventario: idinventario, idproducto: [idproducto], cantidad: [cantidad] },
-        success: function(resp){
-            var data = JSON.parse(resp);
-            if(data.status){
-                listarTemporales();
-                toastr.success("Cantidad actualizada");
-            } else {
-                toastr.error(data.message);
-            }
-        },
-        error: function(err){ console.log(err.responseText); }
-    });
-}));
-
-function actualizarCantidad(idinventario, idproducto, cantidad, $inputActual){
-    $.ajax({
-        url: "controladores/inventario.php?op=guardar_registros",
-        type: "POST",
-        data: { idinventario: idinventario, idproducto: [idproducto], cantidad: [cantidad] },
-        success: function(resp){
-            var data = JSON.parse(resp);
-            if(data.status){
-                // Sincronizamos solo los otros inputs, sin tocar el que estamos escribiendo
-                $(`input[data-idproducto="${idproducto}"]`).not($inputActual).val(cantidad);
-                $(`#tabla_seleccionados tr[data-idproducto="${idproducto}"] input.cantidad_temp`).not($inputActual).val(cantidad);
-            }
-        }
-    });
-}
-
-// Input de lista de productos
-$(document).on('input', '.cantidad_input', debounce(function(){
-    var $input = $(this);
-    var cantidad = $input.val().trim();
-    var idproducto = $input.data('idproducto');
-    var idinventario = $("#idinventario").val();
-    if(cantidad === "" || isNaN(cantidad) || parseFloat(cantidad) <= 0) return;
-
-    actualizarCantidad(idinventario, idproducto, cantidad, $input);
-}));
-
-// Input de tabla temporal
-$(document).on('input', '.cantidad_temp', debounce(function(){
-    var $input = $(this);
-    var cantidad = $input.val().trim();
-    var idproducto = $input.closest('tr').data('idproducto');
-    var idinventario = $("#idinventario").val();
-    if(cantidad === "" || isNaN(cantidad) || parseFloat(cantidad) <= 0) return;
-
-    actualizarCantidad(idinventario, idproducto, cantidad, $input);
-}));
 
 init();

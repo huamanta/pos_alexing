@@ -634,16 +634,16 @@ class Producto extends Helpers
 
 	public function listarstock22($idsucursal)
 	{
-		if (!$idsucursal){
+		if (!$idsucursal) {
 			return Response::json([]);
 		}
+
 		$data = (new DBQuery($this->pdo))
-			->select('a.idproducto, a.nombre, ip.stock, a.imagen, c.nombre AS categoria')
+			->select('a.idproducto, a.nombre, ip.stock, ip.stock_minimo, a.imagen, c.nombre AS categoria')
 			->from('producto a')
-			->join('inventario_producto ip', 'ip.idproducto = a.idproducto')
+			->leftJoin('inventario_producto ip', 'ip.idproducto = a.idproducto')
 			->join('categoria c', 'a.idcategoria = c.idcategoria')
-			->where('c.nombre', '!=', 'SERVICIO')
-			->where('ip.stock', '<=', 'ip.stock_minimo')
+			->whereRaw('ip.stock <= ip.stock_minimo')
 			->where('a.controla_stock', '=', 'Si')
 			->where('a.alerta_stock', '=', 'Si')
 			->where('a.idsucursal', '=', $idsucursal)
