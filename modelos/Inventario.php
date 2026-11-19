@@ -1,511 +1,741 @@
 <?php
-//Incluímos inicialmente la conexión a la base de datos
-require "../configuraciones/Conexion.php";
+require_once __DIR__ . "/Helpers.php";
+require_once __DIR__ . "/../core/Response.php";
 
-class Inventario
+class Inventario extends Helpers
 {
 	//Implementamos nuestro constructor
-	public function __construct() {}
-
-	//Implementamos un método para insertar registros
-	public function insertar($nombre)
+	public function __construct()
 	{
-		$sql = "INSERT INTO categoria (nombre,condicion)
-		VALUES ('$nombre','1')";
-		return ejecutarConsulta($sql);
-	}
-
-	//Implementamos un método para insertar registros
-	public function insertarSucursal($nombre, $direccion, $telefono, $nombreSucursal, $serie_comprobante, $num_comprobante, $distrito, $provincia, $departamento, $ubigeo)
-	{
-		$sql = "INSERT INTO sucursal (nombre,direccion,telefono,distrito,provincia,departamento,ubigeo)
-		VALUES ('$nombre','$direccion','$telefono','$distrito','$provincia','$departamento','$ubigeo')";
-
-		$idsucursalnew = ejecutarConsulta_retornarID($sql);
-
-		$num_elementos = 0;
-
-		$sw = true;
-
-		while ($num_elementos < count($nombreSucursal)) {
-
-			if ($serie_comprobante[$num_elementos] < 10) {
-
-				$serie_comprobante = $serie_comprobante;
-			} else {
-
-				$serie_comprobante = $serie_comprobante;
-			}
-
-			$sql = "INSERT INTO comp_pago (nombre,serie_comprobante,num_comprobante,idsucursal,condicion) VALUES
-				('$nombreSucursal[$num_elementos]','$serie_comprobante[$num_elementos]','$num_comprobante[$num_elementos]','$idsucursalnew','1')";
-
-			ejecutarConsulta($sql) or $sw = false;
-
-			$num_elementos = $num_elementos + 1;
-		}
-
-		return $sw;
-	}
-
-	public function insertarComprobantes($nombre, $serie_comprobante, $num_comprobante, $idsucursal) {}
-
-	//Implementamos un método para editar registros
-	public function editar($idinventario_edit, $observacion_apertura, $sucursal_id, $usuario_id)
-	{
-		$sql = "UPDATE inventarios SET observacion_apertura='$observacion_apertura' WHERE id='$idinventario_edit'";
-		return ejecutarConsulta($sql);
-	}
-
-	//Implementamos un método para editar registros
-	public function editarSucursal($idsucursal, $nombre, $direccion, $telefono, $distrito, $provincia, $departamento, $ubigeo)
-	{
-		$sql = "UPDATE sucursal SET nombre='$nombre',direccion='$direccion',telefono='$telefono',distrito='$distrito',provincia='$provincia',departamento='$departamento',ubigeo='$ubigeo' WHERE idsucursal='$idsucursal'";
-		return ejecutarConsulta($sql);
-	}
-
-	//Implementamos un método para desactivar categorías
-	public function desactivar($idcategoria)
-	{
-		$sql = "UPDATE categoria SET condicion='0' WHERE idcategoria='$idcategoria'";
-		return ejecutarConsulta($sql);
-	}
-
-	//Implementamos un método para activar categorías
-	public function activar($idcategoria)
-	{
-		$sql = "UPDATE categoria SET condicion='1' WHERE idcategoria='$idcategoria'";
-		return ejecutarConsulta($sql);
-	}
-
-	//Implementar un método para mostrar los datos de un registro a modificar
-	public function mostrar($idcategoria)
-	{
-		$sql = "SELECT * FROM categoria WHERE idcategoria='$idcategoria'";
-		return ejecutarConsultaSimpleFila($sql);
-	}
-
-	//Implementar un método para mostrar los datos de un registro a modificar
-	public function mostrarSucursal($idsucursal)
-	{
-		$sql = "SELECT * FROM sucursal WHERE idsucursal='$idsucursal'";
-		return ejecutarConsultaSimpleFila($sql);
+		parent::__construct();
 	}
 
 	//Implementar un método para listar los registros
 	public function listar()
 	{
-		$sql = "SELECT * FROM inventarios ORDER BY id DESC";
-		return ejecutarConsulta($sql);
-	}
+		$inventarios = (new DBQuery($this->pdo))
+			->select('*')
+			->from('inventarios')
+			->orderBy('id', 'DESC')
+			->get();
 
-	//Implementar un método para listar los registros
-	public function listarSucursales()
-	{
-		$sql = "SELECT * FROM sucursal";
-		return ejecutarConsulta($sql);
-	}
+		$data = array();
 
-	//Implementar un método para listar los registros y mostrar en el select
-	public function select()
-	{
-		$sql = "SELECT * FROM categoria where condicion=1";
-		return ejecutarConsulta($sql);
+		foreach ($inventarios as $reg) {
+			$fecha_cierre = $reg['fecha_cierre'] ? date("d-m-Y h:i A", strtotime($reg['fecha_cierre'])) : null;
+
+			// Definir estado
+			$estado = $reg['fecha_cierre']
+				? '<span class="badge badge-success">Cerrado</span>'
+				: '<span class="badge badge-danger">Abierto</span>';
+
+			$data[] = array(
+				"0" => date("d-m-Y h:i A", strtotime($reg['fecha_apertura'])),
+				"1" => $reg['observacion_apertura'],
+				"2" => $reg['fecha_cierre'] ? $reg['fecha_cierre'] : "—",
+				"3" => $reg['observacion_cierre'] ? $reg['observacion_cierre'] : "—",
+				"4" => $estado, // 👈 Nueva columna de estado
+				"5" =>
+				'<button class="btn btn-warning btn-xs" onclick="ver(' . $reg['id'] . ')"><i class="fas fa-eye"></i></button>' .
+					' <button class="btn btn-secondary btn-xs" onclick="mostrarform(true, ' . $reg['id'] . ', ' . $reg['sucursal_id'] . ', \'' . htmlspecialchars($fecha_cierre ?? '', ENT_QUOTES, 'UTF-8') . '\')"><i class="fa fa-cog"></i></button>' .
+					' <button class="btn btn-primary btn-xs" onclick="editar(' . $reg['id'] . ', \'' . htmlspecialchars($reg['observacion_apertura'] ?? '', ENT_QUOTES, 'UTF-8') . '\')"><i class="fa fa-edit"></i></button>'
+			);
+		}
+
+		$results = array(
+			"sEcho" => 1,
+			"iTotalRecords" => count($data),
+			"iTotalDisplayRecords" => count($data),
+			"aaData" => $data
+		);
+
+		return Response::json($results);
 	}
 
 
 	public function guardar($observacion_apertura, $sucursal, $usuario)
 	{
 		$fecha_apertura = date("Y-m-d H:i:s");
-		$sql = "INSERT INTO inventarios (fecha_apertura, observacion_apertura, usuario_id, sucursal_id) VALUES ('$fecha_apertura', '$observacion_apertura', '$usuario', '$sucursal')";
-		return ejecutarConsulta($sql);
+		try {
+			$save = (new FluentSaver($this->pdo))
+				->table('inventarios')
+				->timestamps(false)
+				->data([
+					'fecha_apertura' => $fecha_apertura,
+					'observacion_apertura' => $observacion_apertura,
+					'usuario_id' => $usuario,
+					'sucursal_id' => $sucursal
+				])
+				->save();
+			if (!$save) {
+				throw new Exception("Error al guardar el inventario");
+			}
+			return Response::json([
+				'success' => true,
+				'message' => 'Inventario guardado correctamente'
+			]);
+		} catch (\Throwable $th) {
+			return Response::error($th->getMessage());
+		}
+	}
+
+	//Implementamos un método para editar registros
+	public function editar($idinventario_edit, $observacion_apertura)
+	{
+		try {
+			$update = (new FluentSaver($this->pdo))
+				->table('inventarios')
+				->timestamps(false)
+				->primaryKey('id')
+				->data([
+					'id' => $idinventario_edit,
+					'observacion_apertura' => $observacion_apertura
+				])
+				->update();
+			if (!$update) {
+				throw new Exception("Error al editar el inventario");
+			}
+			return Response::json([
+				'success' => true,
+				'message' => 'Inventario editado correctamente'
+			]);
+		} catch (\Throwable $th) {
+			return Response::error($th->getMessage());
+		}
 	}
 
 	public function buscar_producto($nombre, $codigo, $categoria)
 	{
-		$sql = "SELECT p.idproducto, p.nombre as producto, p.codigo,p.stock, c.nombre as categoria, um.nombre as unidad_medida FROM producto as p, categoria as c, unidad_medida as um WHERE p.idunidad_medida = um.idunidad_medida AND c.idcategoria = p.idcategoria AND p.condicion=1";
+		$query = (new DBQuery($this->pdo))
+			->select('p.idproducto, p.nombre as producto, p.codigo, ip.stock, c.nombre as categoria, um.nombre as unidad_medida')
+			->from('producto p')
+			->join('categoria c', 'c.idcategoria = p.idcategoria')
+			->join('unidad_medida um', 'p.idunidad_medida = um.idunidad_medida')
+			->join('inventario_producto ip', 'ip.idproducto = p.idproducto')
+			->where('p.condicion', '=', 1);
 
 		if (!empty($nombre)) {
-			$sql .= " AND p.nombre LIKE '%$nombre%'";
+			$query->whereLike('p.nombre', $nombre);
 		}
 
 		if (!empty($codigo)) {
-			$sql .= " AND p.codigo LIKE '%$codigo%'";
+			$query->whereLike('p.codigo', $codigo);
 		}
 
-		$rspta =  ejecutarConsulta($sql);
-		$data = array();
-		while ($reg = $rspta->fetch_object()) {
-			$data[] = $reg;
-		}
+		$data = $query->get();
 
-		return $data;
+		return Response::json($data);
 	}
 
 
-	public function guardar_registros($idinventario, $idproducto, $cantidad)
-{
-    if ($idinventario === '') return array('status'=>FALSE,'message'=>'No se ha seleccionado inventario');
-    if (count($idproducto) == 0) return array('status'=>FALSE,'message'=>'Debe agregar al menos un producto');
 
-    $fecha_registro = date("Y-m-d H:i:s");
+	public function guardarRegistros($idinventario, $idproducto, $cantidad)
+	{
+		try {
+			$this->pdo->beginTransaction();
 
-    for($i=0;$i<count($idproducto);$i++){
-        $id_prod = $idproducto[$i];
-        $cant = $cantidad[$i];
-        if($cant == '' || $cant <= 0) continue;
+			if ($idinventario === '') {
+				throw new Exception("No se ha seleccionado inventario");
+			}
 
-        $rspta = ejecutarConsulta("SELECT stock FROM producto WHERE idproducto=$id_prod")->fetch_object();
-        $stock = $rspta->stock;
-        $diferencia = $cant - $stock;
+			if (count($idproducto) == 0) {
+				throw new Exception("Debe agregar al menos un producto");
+			}
 
-        $exists = ejecutarConsulta("SELECT * FROM inventario_productos WHERE inventario_id=$idinventario AND producto_id=$id_prod");
-        if($exists->num_rows == 0){
-            ejecutarConsulta("INSERT INTO inventario_productos (inventario_id, producto_id, cantidad, cantidad_real, diferencia, fecha_registro)
-                              VALUES ('$idinventario','$id_prod','$cant','$stock','$diferencia','$fecha_registro')");
-        } else {
-            ejecutarConsulta("UPDATE inventario_productos SET cantidad='$cant', cantidad_real='$stock', diferencia='$diferencia', fecha_registro='$fecha_registro'
-                              WHERE inventario_id='$idinventario' AND producto_id='$id_prod'");
-        }
+			$fecha_registro = date("Y-m-d H:i:s");
 
-        // Inventario temporales
-        ejecutarConsulta("INSERT INTO inventario_seleccionados (idinventario, idproducto, cantidad)
-                          VALUES ('$idinventario','$id_prod','$cant')
-                          ON DUPLICATE KEY UPDATE cantidad='$cant'");
-    }
+			for ($i = 0; $i < count($idproducto); $i++) {
+				$id_prod = $idproducto[$i];
+				$cant = $cantidad[$i];
 
-    return array('status'=>TRUE,'message'=>'Datos guardados correctamente');
-}
+				if ($cant == '' || $cant <= 0) continue;
 
+				$inventario_producto = (new DBQuery($this->pdo))
+					->select('stock')
+					->from('inventario_producto')
+					->where('idproducto', '=', $id_prod)
+					->first();
 
+				$stock = $inventario_producto['stock'] ?? 0;
+				$diferencia = $cant - $stock;
+
+				$inventario_detalle = (new DBQuery($this->pdo))
+					->select('*')
+					->from('inventario_detalles')
+					->where('inventario_id', '=', $idinventario)
+					->where('producto_id', '=', $id_prod)
+					->first();
+
+				if ($inventario_detalle) {
+					// Actualizar detalle existente
+					$save = (new FluentSaver($this->pdo))
+						->table('inventario_detalles')
+						->data([
+							'cantidad' => $cant,
+							'cantidad_real' => $stock,
+							'diferencia' => $diferencia,
+							'fecha_registro' => $fecha_registro,
+						])
+						->where('inventario_id', '=', $idinventario)
+						->where('producto_id', '=', $id_prod)
+						->update();
+				} else {
+					// Insertar nuevo detalle
+					$save = (new FluentSaver($this->pdo))
+						->table('inventario_detalles')
+						->timestamps(false)
+						->data([
+							'inventario_id' => $idinventario,
+							'producto_id' => $id_prod,
+							'cantidad' => $cant,
+							'cantidad_real' => $stock,
+							'diferencia' => $diferencia,
+							'fecha_registro' => $fecha_registro,
+						])
+						->save();
+				}
+
+				if (!$save) {
+					throw new Exception("Error al guardar el detalle del inventario");
+				}
+
+				// Inventario temporales: insertar o actualizar
+				$save = (new FluentSaver($this->pdo))
+					->table('inventario_seleccionados')
+					->timestamps(false)
+					->data([
+						'idinventario' => $idinventario,
+						'idproducto' => $id_prod,
+						'cantidad' => $cant
+					])
+					->upsert(['cantidad']);
+
+				if (!$save) {
+					throw new Exception("Error al guardar el producto seleccionado");
+				}
+			}
+
+			$this->pdo->commit();
+
+			return Response::json([
+				'success' => true,
+				'message' => 'Datos guardados correctamente'
+			]);
+		} catch (\Throwable $th) {
+			if ($this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+
+			return Response::error($th->getMessage());
+		}
+	}
 
 
 	public function listarInventarios()
 	{
-	    $sql = "SELECT i.*, 
-	                   (SELECT COUNT(*) 
-	                    FROM inventario_productos ip 
-	                    WHERE ip.inventario_id = i.id AND ip.estado = 0) AS pendientes
-	            FROM inventarios i 
-	            WHERE i.fecha_cierre IS NOT NULL 
-	            ORDER BY i.id DESC";
-	    return ejecutarConsulta($sql);
+		$data = (new DBQuery($this->pdo))
+			->select('i.*,
+	                (SELECT COUNT(*)
+					FROM inventario_detalles ip 
+					WHERE ip.inventario_id = i.id AND ip.estado = 0) AS pendientes')
+			->from('inventarios i')
+			->whereNotNull('i.fecha_cierre')
+			->orderBy('i.id', 'DESC')
+			->get();
+
+		$options = '<option value="" selected>Seleccionar...</option>';
+		foreach ($data as $reg) {
+			if ($reg['pendientes'] > 0) {
+				$estado = ' (<span style="color:red;">Por ajustar</span>)';
+			} else {
+				$estado = ' (<span style="color:green;">Ajustado</span>)';
+			}
+			$options .= '<option value="' . $reg['id'] . '">' . $reg['observacion_apertura'] . $estado . '</option>';
+		}
+
+		return $options;
 	}
+
 
 	public function buscarProductosInventario($idsucursal, $idinventario, $idcategoria, $tipo_ajuste)
 	{
-		if ($idsucursal === '') {
-			return [
-				"draw" => 0,
-				"recordsTotal" => 0,
-				"recordsFiltered" => 0,
-				"data" => [],
-			];
-		}
-		if ($idinventario === '') {
-			return [
-				"draw" => 0,
-				"recordsTotal" => 0,
-				"recordsFiltered" => 0,
-				"data" => [],
-			];
+		$empty = [
+			"draw" => (int) ($_GET['draw'] ?? 0),
+			"recordsTotal" => 0,
+			"recordsFiltered" => 0,
+			"data" => [],
+		];
+
+		if ($idsucursal === '' || $idinventario === '') {
+			return $empty;
 		}
 
-		$where = " WHERE ip.inventario_id = $idinventario";
+		// Total de registros del inventario sin filtros adicionales
+		$total = (new DBQuery($this->pdo))
+			->select('COUNT(*) AS total')
+			->from('inventario_detalles')
+			->where('inventario_id', '=', $idinventario)
+			->first();
 
+		$total = (int) ($total['total'] ?? 0);
+
+		// Consulta principal
+		$query = (new DBQuery($this->pdo))
+			->select([
+				'ip.producto_id',
+				'p.nombre AS producto',
+				'um.nombre AS unidad_medida',
+				'ip.cantidad',
+				'ip.cantidad_real',
+				'ip.diferencia',
+				'ip.estado'
+			])
+			->from('inventario_detalles ip')
+			->join('producto p', 'p.idproducto = ip.producto_id')
+			->join('unidad_medida um', 'um.idunidad_medida = p.idunidad_medida')
+			->where('ip.inventario_id', '=', $idinventario);
+
+		// Filtro por categoría
 		if (!empty($idcategoria)) {
-			$where .= " AND p.categoria_id = $idcategoria";
+			$query->where('p.categoria_id', '=', $idcategoria);
 		}
 
-		if (!empty($tipo_ajuste) && $tipo_ajuste === '1') {
-			$where .= " AND ip.diferencia > 0";
-		} elseif (!empty($tipo_ajuste) && $tipo_ajuste == '2') {
-			$where .= " AND ip.diferencia < 0";
-		};
+		// Filtro por tipo de ajuste
+		if ($tipo_ajuste == '1') {
+			$query->where('ip.diferencia', '>', 0);
+		} elseif ($tipo_ajuste == '2') {
+			$query->where('ip.diferencia', '<', 0);
+		}
 
-		$sql = "SELECT
-			ip.producto_id,
-            p.nombre as producto, 
-            um.nombre as unidad_medida, 
-            ip.cantidad, 
-            ip.cantidad_real, 
-            ip.diferencia,
-			ip.estado
-        FROM inventario_productos as ip 
-        JOIN producto as p ON p.idproducto = ip.producto_id 
-        JOIN unidad_medida as um ON um.idunidad_medida = p.idunidad_medida 
-        $where";
+		$registros = $query->get();
 
-		$rspta = ejecutarConsulta($sql);
-
-		// Total de registros (sin filtros adicionales)
-		$total = ejecutarConsultaSimpleFila("SELECT COUNT(*) as total FROM inventario_productos WHERE inventario_id = $idinventario");
-		$total = $total['total'];
-
-		$data = array();
+		$data = [];
 		$count = 1;
-		while ($reg = $rspta->fetch_object()) {
+
+		foreach ($registros as $reg) {
+
+			$producto_id = $reg['producto_id'];
+			$diferencia = $reg['diferencia'];
+			$estado = $reg['estado'];
+
+			$checkbox = $estado == 1
+				? '<label class="custom-check disabled">
+                    <input type="checkbox" class="checkItem" value="' . $producto_id . '" data-dif="' . $diferencia . '" disabled />
+                    <span class="checkmark"></span>
+               </label>'
+				: '<label class="custom-check">
+                    <input type="checkbox" class="checkItem" value="' . $producto_id . '" data-dif="' . $diferencia . '" />
+                    <span class="checkmark"></span>
+               </label>';
+
+			$icono = $estado
+				? '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 50 50" style="fill:#40C057;">
+                    <path d="M25 2C12.317 2 2 12.317 2 25s10.317 23 23 23 23-10.317 23-23c0-4.56-1.34-8.81-3.637-12.389l-1.369 1.617C45.895 15.382 47 19.06 47 23c0 11.579-9.421 21-21 21S5 34.579 5 23 14.421 2 26 2c5.443 0 10.394 2.1 14.129 5.51l1.309-1.545C37.353 2.262 32.936 0 27 0zM43.236 7.754 23.914 30.555l-8.133-7.586-1.363 1.463 9.666 9.016L44.763 9.047z"/>
+                </svg>'
+				: '';
+
 			$data[] = [
-				($reg->estado == 1
-				    ? '<label class="custom-check disabled">
-				            <input type="checkbox" class="checkItem" value="'.$reg->producto_id.'" data-dif="'.$reg->diferencia.'" disabled />
-				            <span class="checkmark"></span>
-				       </label>'
-				    : '<label class="custom-check">
-				            <input type="checkbox" class="checkItem" value="'.$reg->producto_id.'" data-dif="'.$reg->diferencia.'" />
-				            <span class="checkmark"></span>
-				       </label>'),
+				$checkbox,
 				$count++,
-				$reg->producto,
-				$reg->unidad_medida,
-				$reg->cantidad,
-				$reg->cantidad_real,
-				$reg->diferencia,
-				$reg->estado ? '<svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="20" height="20" viewBox="0,0,256,256"
-style="fill:#40C057;">
-<g fill="#40c057" fill-rule="nonzero" stroke="none" stroke-width="1" stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10" stroke-dasharray="" stroke-dashoffset="0" font-family="none" font-weight="none" font-size="none" text-anchor="none" style="mix-blend-mode: normal"><g transform="scale(5.12,5.12)"><path d="M25,2c-12.683,0 -23,10.317 -23,23c0,12.683 10.317,23 23,23c12.683,0 23,-10.317 23,-23c0,-4.56 -1.33972,-8.81067 -3.63672,-12.38867l-1.36914,1.61719c1.895,3.154 3.00586,6.83148 3.00586,10.77148c0,11.579 -9.421,21 -21,21c-11.579,0 -21,-9.421 -21,-21c0,-11.579 9.421,-21 21,-21c5.443,0 10.39391,2.09977 14.12891,5.50977l1.30859,-1.54492c-4.085,-3.705 -9.5025,-5.96484 -15.4375,-5.96484zM43.23633,7.75391l-19.32227,22.80078l-8.13281,-7.58594l-1.36328,1.46289l9.66602,9.01563l20.67969,-24.40039z"></path></g></g>
-</svg>' : ''
+				htmlspecialchars($reg['producto'] ?? '', ENT_QUOTES, 'UTF-8'),
+				htmlspecialchars($reg['unidad_medida'] ?? '', ENT_QUOTES, 'UTF-8'),
+				$reg['cantidad'],
+				$reg['cantidad_real'],
+				$reg['diferencia'],
+				$icono
 			];
 		}
 
-		// Armamos la respuesta que DataTables espera
-		return [
-			"draw" => isset($_GET['draw']) ? intval($_GET['draw']) : 0,
+		return Response::json([
+			"draw" => (int) ($_GET['draw'] ?? 0),
 			"recordsTotal" => $total,
 			"recordsFiltered" => count($data),
 			"data" => $data
-		];
+		]);
 	}
 
-	public function listarTiposAjuste($tipo)
+
+	public function listarTiposAjuste($tipo = null)
 	{
-	    if ($tipo == "todos" || $tipo == "") {
-	        $sql = "SELECT * FROM concepto_ajuste";
-	    } else {
-	        $sql = "SELECT * FROM concepto_ajuste WHERE tipo = '$tipo'";
-	    }
-	    return ejecutarConsulta($sql);
+		$query = (new DBQuery($this->pdo))
+			->select('*')
+			->from('concepto_ajuste');
+
+		if ($tipo) {
+			$query->where('tipo', '=', $tipo);
+		}
+		$data = $query->get();
+
+		$options = '<option value="" selected>Seleccionar...</option>';
+		foreach ($data as $reg) {
+			$options .= '<option value="' . $reg['id'] . '">' . $reg['nombre'] . '</option>';
+		}
+
+		return $options;
 	}
 
 
 	public function cerrarInventario($idinventario_cierre, $observacion_cierre)
 	{
-		$fecha_cierre = date("Y-m-d H:i:s");
+		try {
+			$this->pdo->beginTransaction();
+			$fecha_cierre = date("Y-m-d H:i:s");
+			$delete_seleccionados = (new FluentSaver($this->pdo))
+				->table('inventario_seleccionados')
+				->where('idinventario', '=', $idinventario_cierre)
+				->deleteWhere();
 
-		$sql_limpiar = "DELETE FROM inventario_seleccionados WHERE idinventario='$idinventario_cierre'";
-		ejecutarConsulta($sql_limpiar);
+			if (!$delete_seleccionados) {
+				throw new Exception("Error al eliminar seleccion del inventario");
+			}
 
-		$sql = "UPDATE inventarios SET observacion_cierre='$observacion_cierre', fecha_cierre='$fecha_cierre' WHERE id='$idinventario_cierre'";
-		return ejecutarConsulta($sql);
+			$update = (new FluentSaver($this->pdo))
+				->table('inventario_detalles')
+				->timestamps(false)
+				->primaryKey('id')
+				->data([
+					'id' => $idinventario_cierre,
+					'observacion_cierre' => $observacion_cierre,
+					'fecha_cierre' => $fecha_cierre
+				])
+				->update();
+
+			if (!$update) {
+				throw new Exception("Error al cerrar el inventario");
+			}
+
+			$this->pdo->commit();
+			return Response::json([
+				'success' => true,
+				'message' => 'Datos guardados correctamente'
+			]);
+		} catch (\Throwable $th) {
+			if ($this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+			return Response::error($th->getMessage());
+		}
 	}
 
+
 	public function ajustarInventario($idinventario, $idsucursal, $idtipo_ajuste, $fecha_ajuste, $idconcepto, $observacion_ajuste, $usuario_id, $productos = [])
-{
-    global $conexion; // conexión mysqli
+	{
+		try {
+			$this->pdo->beginTransaction();
 
-    try {
-        $conexion->begin_transaction(); // Iniciar transacción
+			$fecha_ajuste = !empty($fecha_ajuste) ? $fecha_ajuste : date("Y-m-d H:i:s");
 
-        // Usa la fecha enviada o ahora si viene vacía
-        $fecha_ajuste = !empty($fecha_ajuste) ? $fecha_ajuste : date("Y-m-d H:i:s");
-        $idinventario = intval($idinventario);
+			if (empty($productos)) {
+				throw new Exception("Debe seleccionar al menos un producto para ajustar.");
+			}
 
-        if (empty($productos)) {
-            throw new Exception("Debe seleccionar al menos un producto para ajustar.");
-        }
+			// Validar tipo de ajuste
+			if ($idtipo_ajuste == Constants::INGRESO_KARDEX) {
+				$condicion = '>';
+				$tipo_movimiento = Constants::MOVIMIENTO_INGRESO;
+				$descripcion = 'Ingreso por ajuste de inventario';
+			} elseif ($idtipo_ajuste == Constants::EGRESO_KARDEX) {
+				$condicion = '<';
+				$tipo_movimiento = Constants::MOVIMIENTO_EGRERSO;
+				$descripcion = 'Salida por ajuste de inventario';
+			} else {
+				throw new Exception("Tipo de ajuste no válido.");
+			}
 
-        // ¿Ya existe cabecera de ajuste para este inventario?
-        $sql_verificar_ajuste = "SELECT id FROM ajuste_inventario WHERE inventario_id = $idinventario";
-        $resultado_ajuste = ejecutarConsulta($sql_verificar_ajuste);
-        $ajuste_existente = ($resultado_ajuste && $resultado_ajuste->num_rows > 0) ? $resultado_ajuste->fetch_object()->id : null;
+			// Productos seleccionados
+			$idsSeleccionados = array_fill_keys(
+				array_map('strval', array_unique(array_map('intval', $productos))),
+				true
+			);
 
-        // ✅ Mapeo correcto:
-        // ENTRADA (1) => diferencia > 0
-        // SALIDA  (2) => diferencia < 0
-        if ($idtipo_ajuste == '1') {
-            $condicion = "diferencia > 0";
-        } elseif ($idtipo_ajuste == '2') {
-            $condicion = "diferencia < 0";
-        } else {
-            throw new Exception("Tipo de ajuste no válido.");
-        }
+			// Verificar cabecera de ajuste existente
+			$ajuste = (new DBQuery($this->pdo))
+				->select('id')
+				->from('ajuste_inventario')
+				->where('inventario_id', '=', $idinventario)
+				->first();
 
-        // Solo productos seleccionados
-        $ids = implode(",", array_map('intval', $productos));
-        $sql_detalles = "SELECT * 
-                         FROM inventario_productos 
-                         WHERE inventario_id = $idinventario 
-                           AND $condicion 
-                           AND estado = 0 
-                           AND producto_id IN ($ids)";
-        $resultado_detalles = ejecutarConsulta($sql_detalles);
+			$ajuste_existente = $ajuste['id'] ?? null;
 
-        if (!$resultado_detalles || $resultado_detalles->num_rows === 0) {
-            throw new Exception("No hay diferencias en los productos seleccionados para ajustar.");
-        }
+			// Obtener productos con diferencias pendientes
+			$query = (new DBQuery($this->pdo))
+				->select('*')
+				->from('inventario_detalles')
+				->where('inventario_id', '=', $idinventario)
+				->where('diferencia', $condicion, 0)
+				->where('estado', '=', 0);
 
-        // Crear cabecera si no existe
-        if (!$ajuste_existente) {
-            $rowTotal = ejecutarConsultaSimpleFila("SELECT COUNT(*) AS total FROM ajuste_inventario");
-            $total = isset($rowTotal['total']) ? ($rowTotal['total'] + 1) : 1;
+			$detalles = $query->get();
 
-            $sql_insert_ajuste = "INSERT INTO ajuste_inventario 
-                (fecha_ajuste, numero, serie, observacion, inventario_id, sucursal_id, usuario_id) 
-                VALUES ('$fecha_ajuste', '$total', 'A-00001', '$observacion_ajuste', '$idinventario', '$idsucursal', '$usuario_id')";
+			// Filtrar únicamente los productos seleccionados
+			$detalles = array_filter($detalles, function ($producto) use ($idsSeleccionados) {
+				return isset($idsSeleccionados[(string) $producto['producto_id']]);
+			});
 
-            $ajuste_existente = ejecutarConsulta_retornarID($sql_insert_ajuste);
-            if (!$ajuste_existente) throw new Exception("Error al crear ajuste de inventario.");
-        }
+			if (empty($detalles)) {
+				throw new Exception("No hay diferencias en los productos seleccionados para ajustar.");
+			}
 
-        // Recorrer productos
-        while ($producto = $resultado_detalles->fetch_object()) {
-            $diferenciaAbs = abs((float)$producto->diferencia);
+			// Crear cabecera si no existe
+			if (!$ajuste_existente) {
 
-            // Stock actual
-            $sql_stock = "SELECT stock FROM producto WHERE idproducto = $producto->producto_id AND idsucursal = $idsucursal";
-            $stock_resultado = ejecutarConsulta($sql_stock);
-            if (!$stock_resultado || $stock_resultado->num_rows === 0) continue;
+				$rowTotal = (new DBQuery($this->pdo))
+					->select('COUNT(*) AS total')
+					->from('ajuste_inventario')
+					->first();
 
-            $stock_actual = (float)$stock_resultado->fetch_object()->stock;
+				$total = (int) ($rowTotal['total'] ?? 0) + 1;
 
-            if ($idtipo_ajuste == '1') {
-                // ENTRADA → sumamos
-                $nuevo_stock = $stock_actual + $diferenciaAbs;
-                $tipo_movimiento = '0';
-                $descripcion = 'Ingreso por ajuste de inventario';
-            } else {
-                // SALIDA → restamos
-                $nuevo_stock = $stock_actual - $diferenciaAbs;
-                $tipo_movimiento = '1';
-                $descripcion = 'Salida por ajuste de inventario';
-            }
+				$ajuste_existente = (new FluentSaver($this->pdo))
+					->table('ajuste_inventario')
+					->timestamps(false)
+					->data([
+						'fecha_ajuste' => $fecha_ajuste,
+						'numero' => $total,
+						'serie' => 'A-00001',
+						'observacion' => $observacion_ajuste,
+						'inventario_id' => $idinventario,
+						'sucursal_id' => $idsucursal,
+						'usuario_id' => $usuario_id
+					])
+					->save();
 
-            // Detalle del ajuste
-            $sql_detalle = "INSERT INTO detalle_ajuste_inventario 
-                (ajuste_inventario_id, producto_id, cantidad_ajustada, stock_anterior, stock_nuevo, tipo_ajuste, concepto_ajuste_id)
-                VALUES ('$ajuste_existente', '$producto->producto_id', '$diferenciaAbs', '$stock_actual', '$nuevo_stock', '$idtipo_ajuste', '$idconcepto')";
-            if (!ejecutarConsulta($sql_detalle)) throw new Exception("Error en detalle ajuste.");
+				if (!$ajuste_existente) {
+					throw new Exception("Error al crear ajuste de inventario.");
+				}
+			}
 
-            // Kardex
-            $sql_kardex = "INSERT INTO kardex 
-                (idsucursal, idproducto, cantidad, cantidad_contenedor, precio_unitario, stock_actual, tipo_movimiento, motivo, descripcion, fecha_kardex) 
-                VALUES ('$idsucursal', '$producto->producto_id', '$diferenciaAbs', '1', '', '$nuevo_stock', '$tipo_movimiento', '$descripcion', '', '$fecha_ajuste')";
-            if (!ejecutarConsulta($sql_kardex)) throw new Exception("Error al insertar en Kardex.");
+			// Recorrer productos
+			foreach ($detalles as $producto) {
 
-            // Actualizar stock
-            $sql_update_stock = "UPDATE producto 
-                                 SET stock = '$nuevo_stock' 
-                                 WHERE idproducto = '$producto->producto_id' AND idsucursal = '$idsucursal'";
-            if (!ejecutarConsulta($sql_update_stock)) throw new Exception("Error al actualizar stock.");
+				$id_prod = $producto['producto_id'];
+				$diferenciaAbs = abs((float) $producto['diferencia']);
 
-            // Marcar línea de inventario como ajustada
-            $sql_update_ind = "UPDATE inventario_productos 
-                               SET estado = 1
-                               WHERE producto_id = '$producto->producto_id' AND inventario_id = '$idinventario'";
-            if (!ejecutarConsulta($sql_update_ind)) throw new Exception("Error al actualizar estado del producto.");
-        }
+				// Consultar stock actual
+				$stockResultado = (new DBQuery($this->pdo))
+					->select('ip.stock, p.precio, pg.idproducto_configuracion')
+					->from('producto p')
+					->join('inventario_producto ip', 'ip.idproducto=p.idproducto')
+					->leftJoin('producto_configuracion pg', 'pg.idproducto=p.idproducto')
+					->where('p.idproducto', '=', $id_prod)
+					->where('p.idsucursal', '=', $idsucursal)
+					->first();
 
-        $conexion->commit();
-        return true;
-    } catch (Exception $e) {
-        $conexion->rollback();
-        error_log("AJUSTE INVENTARIO ERROR: " . $e->getMessage());
-        // Propaga el detalle al controlador si quieres verlo en el alert:
-        throw $e;
-        // o si prefieres conservar tu retorno booleano:
-        // return false;
-    }
-}
+				if (!$stockResultado) {
+					continue;
+				}
+
+				$stock_actual = (float) $stockResultado['stock'];
+
+				// Calcular nuevo stock
+				if ($idtipo_ajuste == '1') {
+					$nuevo_stock = $stock_actual + $diferenciaAbs;
+				} else {
+					$nuevo_stock = $stock_actual - $diferenciaAbs;
+				}
+
+				if ($nuevo_stock < 0) {
+					throw new Exception("El producto {$id_prod} no tiene stock suficiente para realizar el ajuste.");
+				}
+
+				// Insertar detalle del ajuste
+				$saveDetalle = (new FluentSaver($this->pdo))
+					->table('detalle_ajuste_inventario')
+					->timestamps(false)
+					->data([
+						'ajuste_inventario_id' => $ajuste_existente,
+						'producto_id' => $id_prod,
+						'cantidad_ajustada' => $diferenciaAbs,
+						'stock_anterior' => $stock_actual,
+						'stock_nuevo' => $nuevo_stock,
+						'tipo_ajuste' => $idtipo_ajuste,
+						'concepto_ajuste_id' => $idconcepto
+					])
+					->save();
+
+				if (!$saveDetalle) {
+					throw new Exception("Error en detalle de ajuste.");
+				}
+
+				// Registrar Kardex
+				$saveKardex = Helpers::updateKardexSucursal(
+					$idsucursal,
+					$id_prod,
+					$stockResultado['idproducto_configuracion'],
+					$diferenciaAbs,
+					1,
+					$stockResultado['precio'] || 0,
+					$nuevo_stock,
+					$tipo_movimiento,
+					$descripcion,
+					'Inventarios'
+				);
+
+				if (!$saveKardex) {
+					throw new Exception("Error al insertar en Kardex.");
+				}
+
+				// Actualizar stock del producto
+				$updateStock = (new FluentSaver($this->pdo))
+					->table('inventario_producto')
+					->data([
+						'stock' => $nuevo_stock
+					])
+					->where('idproducto', '=', $id_prod)
+					->where('idsucursal', '=', $idsucursal)
+					->update();
+
+				if (!$updateStock) {
+					throw new Exception("Error al actualizar stock.");
+				}
+
+				// Marcar producto como ajustado
+				$updateInventario = (new FluentSaver($this->pdo))
+					->table('inventario_detalles')
+					->data([
+						'estado' => 1
+					])
+					->where('producto_id', '=', $id_prod)
+					->where('inventario_id', '=', $idinventario)
+					->update();
+
+				if (!$updateInventario) {
+					throw new Exception("Error al actualizar estado del producto.");
+				}
+			}
+
+			$this->pdo->commit();
+
+			return true;
+		} catch (\Throwable $e) {
+
+			if ($this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
+
+			error_log("AJUSTE INVENTARIO ERROR: " . $e->getMessage());
+
+			throw $e;
+		}
+	}
 
 
 	public function resumenInventario($idsucursal, $idinventario)
 	{
-	    // Datos del inventario
-	    $sql = "SELECT i.id, i.fecha_apertura, i.fecha_cierre, 
-	                   s.nombre AS sucursal,
-	                   IF(i.fecha_cierre IS NULL,'Abierto','Cerrado') AS estado
-	            FROM inventarios i
-	            JOIN sucursal s ON s.idsucursal = i.sucursal_id
-	            WHERE i.id = $idinventario AND s.idsucursal = $idsucursal";
-	    $info = ejecutarConsultaSimpleFila($sql);
-	    if (!$info) {
-	        return ["status" => false, "message" => "Inventario no encontrado"];
-	    }
+		// Datos del inventario
+		$info = (new DBQuery($this->pdo))
+			->select([
+				'i.id',
+				'i.fecha_apertura',
+				'i.fecha_cierre',
+				's.nombre AS sucursal',
+				"IF(i.fecha_cierre IS NULL, 'Abierto', 'Cerrado') AS estado"
+			])
+			->from('inventarios i')
+			->join('sucursal s', 's.idsucursal = i.sucursal_id')
+			->where('i.id', '=', $idinventario)
+			->where('s.idsucursal', '=', $idsucursal)
+			->first();
 
-	    // Totales
-	    $sql_totales = "SELECT 
-	                        COUNT(*) AS total_productos,
-	                        SUM(CASE WHEN ip.diferencia > 0 THEN 1 ELSE 0 END) AS total_positivos,
-	                        SUM(CASE WHEN ip.diferencia < 0 THEN 1 ELSE 0 END) AS total_negativos
-	                    FROM inventario_productos ip
-	                    WHERE ip.inventario_id = $idinventario";
-	    $totales = ejecutarConsultaSimpleFila($sql_totales);
-
-	    return [
-	        "status" => true,
-	        "inventario" => $idinventario,
-	        "sucursal" => $info["sucursal"],
-	        "estado" => $info["estado"],
-	        "fecha_apertura" => $info["fecha_apertura"],
-	        "fecha_cierre" => $info["fecha_cierre"],
-	        "total_productos" => $totales["total_productos"],
-	        "total_positivos" => $totales["total_positivos"],
-	        "total_negativos" => $totales["total_negativos"]
-	    ];
-	}
-
-	public function agregarTemporal($idinventario, $idproducto, $cantidad)
-	{
-	    if ($idinventario == '' || $idproducto == '' || $cantidad <= 0) {
-	        return array('status' => FALSE, 'message' => 'Datos inválidos');
-	    }
-
-	    // Verificar si ya existe
-	    $sql = "SELECT * FROM inventario_seleccionados WHERE idinventario='$idinventario' AND idproducto='$idproducto'";
-	    $exists = ejecutarConsulta($sql);
-
-	    if ($exists->num_rows > 0) {
-		    // Actualizar cantidad reemplazando la anterior, no sumando
-		    $sql = "UPDATE inventario_seleccionados 
-		            SET cantidad = '$cantidad' 
-		            WHERE idinventario='$idinventario' AND idproducto='$idproducto'";
-		} else {
-		    // Insertar nuevo registro
-		    $sql = "INSERT INTO inventario_seleccionados (idinventario, idproducto, cantidad) 
-		            VALUES ('$idinventario', '$idproducto', '$cantidad')";
+		if (!$info) {
+			return [
+				"status" => false,
+				"message" => "Inventario no encontrado"
+			];
 		}
 
+		// Totales del inventario
+		$totales = (new DBQuery($this->pdo))
+			->select([
+				'COUNT(*) AS total_productos',
+				'SUM(CASE WHEN ip.diferencia > 0 THEN 1 ELSE 0 END) AS total_positivos',
+				'SUM(CASE WHEN ip.diferencia < 0 THEN 1 ELSE 0 END) AS total_negativos'
+			])
+			->from('inventario_detalles ip')
+			->where('ip.inventario_id', '=', $idinventario)
+			->first();
 
-	    ejecutarConsulta($sql);
-	    return array('status' => TRUE, 'message' => 'Producto agregado temporalmente');
+		return Response::json([
+			"status" => true,
+			"inventario" => $idinventario,
+			"sucursal" => $info["sucursal"],
+			"estado" => $info["estado"],
+			"fecha_apertura" => $info["fecha_apertura"],
+			"fecha_cierre" => $info["fecha_cierre"],
+			"total_productos" => (int) ($totales["total_productos"] ?? 0),
+			"total_positivos" => (int) ($totales["total_positivos"] ?? 0),
+			"total_negativos" => (int) ($totales["total_negativos"] ?? 0)
+		]);
 	}
 
 	public function listarTemporales($idinventario)
 	{
-	    $sql = "SELECT s.idproducto, p.nombre, p.codigo, um.nombre as unidad, s.cantidad, p.stock 
-	            FROM inventario_seleccionados s
-	            INNER JOIN producto p ON s.idproducto = p.idproducto
-	            INNER JOIN unidad_medida um ON p.idunidad_medida = um.idunidad_medida
-	            WHERE s.idinventario = '$idinventario'";
-	    $rspta = ejecutarConsulta($sql);
-	    $data = array();
-	    while ($reg = $rspta->fetch_object()) {
-	        $data[] = $reg;
-	    }
-	    return $data;
+		$data = (new DBQuery($this->pdo))
+			->select('s.idproducto, p.nombre, p.codigo, um.nombre as unidad, s.cantidad, ip.stock')
+			->from('inventario_seleccionados s')
+			->join('producto p', 's.idproducto = p.idproducto')
+			->join('unidad_medida um', 'p.idunidad_medida = um.idunidad_medida')
+			->join('inventario_producto ip', 'ip.idproducto = p.idproducto')
+			->where('s.idinventario', '=', $idinventario)
+			->get();
+
+		return Response::json($data);
 	}
 
 	public function eliminar_temporal($idinventario, $idproducto)
-{
-    if($idinventario==''||$idproducto=='') return array('status'=>FALSE,'message'=>'Faltan datos para eliminar');
+	{
+		try {
+			$this->pdo->beginTransaction();
+			if ($idinventario == '' || $idproducto == '') {
+				throw new Exception("Faltan datos para eliminar");
+			}
 
-    ejecutarConsulta("DELETE FROM inventario_productos WHERE inventario_id='$idinventario' AND producto_id='$idproducto'");
-    ejecutarConsulta("DELETE FROM inventario_seleccionados WHERE idinventario='$idinventario' AND idproducto='$idproducto'");
+			(new FluentSaver($this->pdo))
+				->table('inventario_detalles')
+				->where('inventario_id', '=', $idinventario)
+				->where('producto_id', '=', $idproducto)
+				->deleteWhere();
 
-    return array('status'=>TRUE,'message'=>'Producto eliminado correctamente');
-}
+			(new FluentSaver($this->pdo))
+				->table('inventario_seleccionados')
+				->where('idinventario', '=', $idinventario)
+				->where('idproducto', '=', $idproducto)
+				->deleteWhere();
+			$this->pdo->commit();
+			return Response::json([
+				'success' => true,
+				'message' => 'Producto eliminado correctamente'
+			]);
+		} catch (\Throwable $th) {
+			if ($this->pdo->inTransaction()) {
+				$this->pdo->rollBack();
+			}
 
+			return Response::error($th->getMessage());
+		}
+	}
 
+	public function verInventario(int $id)
+	{
+		$inv = (new DBQuery($this->pdo))
+			->select('*')
+			->from('inventarios')
+			->where('id', '=', $id)
+			->first();
 
+		if (!$inv) {
+			return null;
+		}
 
+		// Traer productos de ese inventario
+		$inv["productos"] = (new DBQuery($this->pdo))
+			->select('ip.*, p.nombre as producto, um.nombre as unidad_medida')
+			->from('inventario_detalles ip')
+			->join('producto p', 'p.idproducto = ip.producto_id')
+			->join('unidad_medida um', 'um.idunidad_medida = p.idunidad_medida')
+			->where('ip.inventario_id', '=', $id)
+			->get();
+
+		return Response::json($inv);
+	}
 }

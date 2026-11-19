@@ -778,10 +778,61 @@ function mostrar(idcotizacion) {
     },
   );
 
-  $.post(
+  $.get(
     "controladores/cotizaciones.php?op=listarDetalle&id=" + idcotizacion,
-    function (r) {
-      $("#detallesm").html(r);
+    function (response) {
+      const data = response;
+      let html = '';
+      let total = 0;
+      const detalles = data.detalles || [];
+      detalles.map((item, i) => {
+        html += `<tr class="filas">
+					<td>
+						<div class="producto-name">
+							${item.codigo || ''} - ${item.nombre || ''} ${item.marca || ''} ${item.modelo || ''}
+						</div>
+					</td>
+
+					<td>
+						<span class="badge-cantidad">
+              ${item.cantidad || 0} - ${item.contenedor || ''}
+						</span>
+					</td>
+
+					<td>
+						<span class="precio">
+							${item.precio_venta_str || 0}
+						</span>
+					</td>
+
+					<td>
+						<span class="descuento">
+							${item.descuento_str || 0}
+						</span>
+					</td>
+
+					<td>
+						<span class="subtotal">
+							${item.subtotal_str || 0}
+						</span>
+					</td>
+
+				</tr>`;
+      });
+
+      html += `<tr>
+						<th colspan="4" style="text-align:right;">
+							TOTAL GENERAL
+						</th>
+
+						<th style="text-align:center;">
+							<div class="total-box">
+								${data?.total_str || 0}
+							</div>
+						</th>
+					</tr>`;
+
+      $("#detallesm").html(html);
     },
   );
 }
@@ -1692,7 +1743,7 @@ function BuscarCliente() {
           } else {
             $("#Buscar_Cliente").hide();
             var numdni = $("#num_documento").val();
-            var url =`${APIS_PERU_API_URL}/dni/${numdni}?token=${APIS_PERU_API_KEY}`;
+            var url = `${APIS_PERU_API_URL}/dni/${numdni}?token=${APIS_PERU_API_KEY}`;
 
             $("#cargando").show();
             $.ajax({
@@ -1735,8 +1786,8 @@ function BuscarCliente() {
             });
           } else {
             $("#Buscar_Cliente").hide();
-            var numruc= $("#num_documento").val();
-            var url =`${APIS_PERU_API_URL}/ruc/${numruc}?token=${APIS_PERU_API_KEY}`;
+            var numruc = $("#num_documento").val();
+            var url = `${APIS_PERU_API_URL}/ruc/${numruc}?token=${APIS_PERU_API_KEY}`;
             $("#cargando").show();
             $.ajax({
               type: "GET",

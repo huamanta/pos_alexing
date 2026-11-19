@@ -1,6 +1,5 @@
 <!-- Content Wrapper. Contains page content -->
 <link rel="stylesheet" href="<?= $rutas->asset('vistas/css/cotizacion.css') ?>">
-
 <div class="content-wrapper">
     <section class="content-header">
         <div class="container-fluid">
@@ -372,17 +371,17 @@
                                                 <!-- Sección colapsable con animación (ANTES estaba hidden) -->
                                                 <hr style="border: 1 px solid #007bff;" />
                                                 <div class="row col-md-12 mt-4">
-                                                    <div class="form-group col-lg-3">
+                                                    <div class="form-group col-lg-4">
                                                         <label for="inicial">Pago inicial:</label>
                                                         <div class="d-flex align-items-center" style="gap: 10px;">
                                                             <input type="text" class="form-control" name="inicial" id="inicial">
-                                                            <div class="alert alert-info py-0 px-0 mb-0 text-center" style="min-width: 100px;">
+                                                            <div class="alert alert-info py-0 px-0 mb-0 text-center" style="min-width: 80px;">
                                                                 <small>Porcentaje</small>
                                                                 <strong class="d-block" id="porcentajeInicial">0.00%</strong>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div class="form-group col-lg-3" id="n1">
+                                                    <div class="form-group col-lg-2" id="n1">
                                                         <label style="font-size: 11px;">Monto Deuda:</label>
                                                         <div class="input-group">
                                                             <input style="text-align:center" type="text"
@@ -807,17 +806,17 @@
                     </div>
 
                     <div class="table-responsive">
-                        <table id="detallesm" class="table table-modern table-hover" width="100%">
+                        <table class="table table-modern table-hover" width="100%">
                             <thead>
                                 <tr>
-                                    <th>Producto</th>
-                                    <th>UM</th>
-                                    <th>Precio</th>
-                                    <th>Cantidad</th>
-                                    <th>Subtotal</th>
+                                    <th style="width: 35%;">Producto</th>
+                                    <th style="width: 15%;">Cantidad</th>
+                                    <th style="width: 15%;">Precio Venta</th>
+                                    <th style="width: 15%;">Descuento</th>
+                                    <th style="width: 20%;">Subtotal</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="detallesm">
                                 <!-- Llenado dinámico -->
                             </tbody>
                         </table>

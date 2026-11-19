@@ -9,50 +9,50 @@ $rutaLogo = realpath(__DIR__ . '/../../files/logos/' . $logo);
 
 switch ($factura['frecuencia']) {
 
-    case 1:
-        $frecuenciaTexto = 'Diario';
-        $mesesPorCuota = 1 / 30;
-        break;
+	case 1:
+		$frecuenciaTexto = 'Diario';
+		$mesesPorCuota = 1 / 30;
+		break;
 
-    case 2:
-        $frecuenciaTexto = 'Semanal';
-        $mesesPorCuota = $calculo30Dias ? 1 / 5 : 1 / 4;
-        break;
+	case 2:
+		$frecuenciaTexto = 'Semanal';
+		$mesesPorCuota = $calculo30Dias ? 1 / 5 : 1 / 4;
+		break;
 
-    case 3:
-        $frecuenciaTexto = 'Quincenal';
-        $mesesPorCuota = 1 / 2;
-        break;
+	case 3:
+		$frecuenciaTexto = 'Quincenal';
+		$mesesPorCuota = 1 / 2;
+		break;
 
-    case 4:
-        $frecuenciaTexto = 'Mensual';
-        $mesesPorCuota = 1;
-        break;
+	case 4:
+		$frecuenciaTexto = 'Mensual';
+		$mesesPorCuota = 1;
+		break;
 
-    case 5:
-        $frecuenciaTexto = 'Bimestral';
-        $mesesPorCuota = 2;
-        break;
+	case 5:
+		$frecuenciaTexto = 'Bimestral';
+		$mesesPorCuota = 2;
+		break;
 
-    case 6:
-        $frecuenciaTexto = 'Trimestral';
-        $mesesPorCuota = 3;
-        break;
+	case 6:
+		$frecuenciaTexto = 'Trimestral';
+		$mesesPorCuota = 3;
+		break;
 
-    case 7:
-        $frecuenciaTexto = 'Semestral';
-        $mesesPorCuota = 6;
-        break;
+	case 7:
+		$frecuenciaTexto = 'Semestral';
+		$mesesPorCuota = 6;
+		break;
 
-    case 8:
-        $frecuenciaTexto = 'Anual';
-        $mesesPorCuota = 12;
-        break;
+	case 8:
+		$frecuenciaTexto = 'Anual';
+		$mesesPorCuota = 12;
+		break;
 
-    default:
-        $frecuenciaTexto = '-';
-        $mesesPorCuota = 1;
-        break;
+	default:
+		$frecuenciaTexto = '-';
+		$mesesPorCuota = 1;
+		break;
 }
 
 $subtotal = 0;
@@ -194,7 +194,7 @@ $total = 0;
 				$exonerado = 0;
 
 				foreach ($detalles as $row) {
-					?>
+				?>
 					<tr>
 						<td class="center">
 							<?php echo $row['codigo']; ?>
@@ -209,9 +209,8 @@ $total = 0;
 						</td>
 
 						<td class="description">
-							<?php echo $row['producto']; ?>
+							<?php echo trim(($row['producto'] ?? '') . ' ' . ($row['marca'] ?? '') . ' ' . ($row['modelo'] ?? '')); ?>
 						</td>
-
 						<td class="amount">
 							<?php echo $helpers->get_currency_symbol($row['precio_venta'], $currency); ?>
 						</td>
@@ -226,7 +225,7 @@ $total = 0;
 							</strong>
 						</td>
 					</tr>
-					<?php
+				<?php
 
 					$subtotal += $row['subtotal'];
 					$descuento += $row['descuento'];
@@ -474,7 +473,7 @@ $total = 0;
 							$interesCuotaTotal += $interesCuota;
 							$montoCuotaTotal += $montoCuota;
 
-							?>
+						?>
 
 							<tr>
 

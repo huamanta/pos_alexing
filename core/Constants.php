@@ -39,4 +39,6 @@ class Constants
         'exTicketPagoCuota.php' => true,
         'enviar_sms.php' => true,
     ];
+    const MOVIMIENTO_INGRESO = '1';
+    const MOVIMIENTO_EGRERSO = '0';
 }

@@ -1,6 +1,4 @@
 <?php
-//incluir la conexion de base de datos
-require_once __DIR__ . "/../configuraciones/Conexion.php";
 require_once __DIR__ . "/Helpers.php";
 require_once __DIR__ . "/../core/Constants.php";
 require_once __DIR__ . "/../core/Response.php";
@@ -132,7 +130,7 @@ class Cotizacion extends Helpers
                 } catch (Throwable $e) {
                     error_log(
                         "No se pudo encolar la cotización {$idcotizacion}: "
-                        . $e->getMessage()
+                            . $e->getMessage()
                     );
                 }
             }
@@ -141,7 +139,6 @@ class Cotizacion extends Helpers
                 'success' => true,
                 'message' => 'Cotizacion registrado correctamente.'
             ]);
-
         } catch (Throwable $e) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();
@@ -300,7 +297,6 @@ class Cotizacion extends Helpers
                 "success" => true,
                 "message" => "Cotización actualizada correctamente."
             ]);
-
         } catch (Throwable $e) {
 
             $this->pdo->rollBack();
@@ -312,11 +308,28 @@ class Cotizacion extends Helpers
         }
     }
 
-    //Implementamos un método para desactivar categorías
     public function eliminar($idcotizacion)
     {
-        $sql = "UPDATE cotizacion SET condicion='0' WHERE idcotizacion='$idcotizacion'";
-        return ejecutarConsulta($sql);
+        try {
+            $update = (new FluentSaver($this->pdo))
+                ->table('cotizacion')
+                ->primaryKey('idcotizacion')
+                ->data([
+                    'idcotizacion' => $idcotizacion,
+                    'condicion' => '0'
+                ])
+                ->update();
+            if (!$update) {
+                throw new Exception("No se puede eliminar la cotizacion");
+            }
+            
+            return Response::json([
+                'success' => true,
+                'message' => 'Cotización Eliminada'
+            ]);
+        } catch (\Throwable $th) {
+            return Response::error($th->getMessage());
+        }
     }
 
     //implementar un metodopara mostrar los datos de unregistro a modificar
@@ -373,23 +386,51 @@ class Cotizacion extends Helpers
         return Response::json($data);
     }
 
-    public function mostrardetalle($idcotizacion)
+    public function listarDetalle(int $idcotizacion)
     {
-        $sql = "SELECT dv.idcotizacion,dv.idproducto,a.nombre,dv.cantidad,dv.precio_venta,dv.descuento,(dv.cantidad*dv.precio_venta-dv.descuento) as subtotal, v.total_venta, p.nombre as cliente, v.num_comprobante FROM detalle_cotizacion dv INNER JOIN producto a ON dv.idproducto=a.idproducto INNER JOIN cotizacion v ON v.idcotizacion=dv.idcotizacion INNER JOIN persona p ON v.idcliente=p.idpersona WHERE dv.idcotizacion='$idcotizacion'";
-        return ejecutarConsulta($sql);
-    }
-
-    public function listarDetalle($idcotizacion)
-    {
-        $sql = "SELECT dv.idcotizacion,dv.idproducto,a.nombre,dv.cantidad_contenedor,dv.contenedor,dv.cantidad,dv.precio_venta,dv.descuento,(dv.cantidad*dv.precio_venta-dv.descuento) as subtotal, v.total_venta 
-		FROM detalle_cotizacion dv
-		INNER JOIN producto a ON dv.idproducto=a.idproducto 
-		INNER JOIN producto_configuracion pg ON a.idproducto=pg.idproducto
-		INNER JOIN producto_serie ps ON ps.idproducto=a.idproducto 
-		INNER JOIN inventario_producto ip ON ip.idproducto=a.idproducto 
-		INNER JOIN cotizacion v ON v.idcotizacion=dv.idcotizacion 
-		WHERE dv.idcotizacion='$idcotizacion'";
-        return ejecutarConsulta($sql);
+        $data = (new DBQuery($this->pdo))
+            ->select(
+                '
+                dv.idcotizacion,
+                dv.idproducto, 
+                a.codigo, 
+                a.nombre,
+                dv.cantidad_contenedor,
+                dv.contenedor,
+                dv.cantidad,
+                dv.precio_venta,
+                dv.descuento,
+                (dv.cantidad*dv.precio_venta-dv.descuento) as subtotal, 
+                v.total_venta,
+                ma.nombre as marca, 
+                mo.nombre as modelo,
+                v.idsucursal'
+            )
+            ->from('detalle_cotizacion dv')
+            ->join('producto a', 'dv.idproducto=a.idproducto')
+            ->join('producto_configuracion pg', 'a.idproducto=pg.idproducto')
+            ->join('producto_serie ps', 'ps.idproducto=a.idproducto')
+            ->join('inventario_producto ip', 'ip.idproducto=a.idproducto ')
+            ->join('cotizacion v', 'v.idcotizacion=dv.idcotizacion')
+            ->join('marca ma', 'ma.idmarca=a.idmarca ')
+            ->join('modelo mo', 'mo.idmodelo=a.idmodelo')
+            ->where('dv.idcotizacion', '=', $idcotizacion)
+            ->get();
+        $total = 0;
+        foreach ($data as &$item) {
+            $item['precio_venta_str'] = Helpers::get_currency_symbol($item['precio_venta']);
+            $item['descuento_str'] = Helpers::get_currency_symbol($item['descuento']);
+            $item['subtotal_str'] = Helpers::get_currency_symbol($item['subtotal']);
+            $item['total_venta_str'] = Helpers::get_currency_symbol($item['total_venta']);
+            $total += $item['total_venta'];
+        }
+        unset($item);
+        $response = [
+            'detalles' => $data,
+            'total' => $total,
+            'total_str' => Helpers::get_currency_symbol($total)
+        ];
+        return Response::json($response);
     }
 
     public function desistir($idcotizacion)
@@ -539,12 +580,6 @@ class Cotizacion extends Helpers
     }
 
 
-    public function ventacabecera($idcotizacion)
-    {
-        $sql = "SELECT v.idcotizacion, v.idcliente, p.nombre AS cliente, v.titulo, v.nota, v.saludo, v.fecha_h, p.direccion, p.tipo_documento, p.num_documento, p.email, p.telefono, v.idpersonal, u.nombre AS personal, v.tipo_comprobante, v.serie_comprobante, v.num_comprobante, DATE(v.fecha_hora) AS fecha, v.total_venta FROM cotizacion v INNER JOIN persona p ON v.idcliente=p.idpersona INNER JOIN personal u ON v.idpersonal=u.idpersonal WHERE v.idcotizacion='$idcotizacion'";
-        return ejecutarConsulta($sql);
-    }
-
     public function listarDetalleCotizacion($idcotizacion)
     {
         $data = (new DBQuery($this->pdo))
@@ -589,76 +624,10 @@ class Cotizacion extends Helpers
 
     public function buscarProducto($codigo)
     {
-        $sql = "SELECT * FROM producto WHERE codigo='$codigo'";
-        return ejecutarConsultaSimpleFila($sql);
-    }
-
-    // ==================== TABLA TEMPORAL ====================
-
-    // Agregar producto temporal
-    public function agregarTemporal($idusuario, $idproducto, $cantidad, $precio_venta, $descuento, $contenedor, $cantidad_contenedor, $idp)
-    {
-        $sql = "INSERT INTO cotizacion_tmp (idusuario, idproducto, cantidad, precio_venta, descuento, contenedor, cantidad_contenedor, idp)
-            VALUES ('$idusuario', '$idproducto', '$cantidad', '$precio_venta', '$descuento', '$contenedor', '$cantidad_contenedor', '$idp')";
-        return ejecutarConsulta_retornarID($sql);
-    }
-
-    // Actualizar un producto temporal
-    public function actualizarTemporal($idtmp, $cantidad, $precio_venta)
-    {
-        $sql = "UPDATE cotizacion_tmp SET cantidad='$cantidad', precio_venta='$precio_venta' WHERE idtmp='$idtmp'";
-        return ejecutarConsulta($sql);
-    }
-
-    // Listar productos temporales del usuario
-    public function listarTmp($idusuario)
-    {
-        $sql = "SELECT 
-                ct.idtmp,
-                ct.idproducto,
-                ct.idp,
-                pr.nombre,
-                conf.contenedor,
-                conf.cantidad_contenedor,
-                ct.cantidad,
-                ct.precio_venta
-            FROM cotizacion_tmp ct
-            INNER JOIN producto_configuracion conf ON ct.idproducto = conf.id
-            INNER JOIN producto pr ON conf.idproducto = pr.idproducto
-            WHERE ct.idusuario = '$idusuario'
-            ORDER BY ct.idtmp ASC";
-        return ejecutarConsulta($sql);
-    }
-
-
-
-    public function eliminarTemporal($idtmp, $idusuario)
-    {
-        $idtmp = intval($idtmp);
-        $idusuario = intval($idusuario);
-
-        // Eliminamos el registro
-        $sql = "DELETE FROM cotizacion_tmp WHERE idtmp = '$idtmp' AND idusuario = '$idusuario'";
-        $result = ejecutarConsulta($sql);
-
-        // Verificamos si se eliminó realmente
-        $verificar = "SELECT COUNT(*) AS total FROM cotizacion_tmp WHERE idtmp = '$idtmp' AND idusuario = '$idusuario'";
-        $row = ejecutarConsultaSimpleFila($verificar);
-
-        if (isset($row['total']) && $row['total'] == 0) {
-            return true; // eliminado correctamente
-        } else {
-            return false; // no se eliminó o no existía
-        }
-    }
-
-
-
-    // Limpiar carrito temporal del usuario (al guardar la cotización)
-    public function limpiarTemporales($idusuario)
-    {
-        $sql = "DELETE FROM cotizacion_tmp WHERE idusuario = '$idusuario'";
-        return ejecutarConsulta($sql);
+        return (new DBQuery($this->pdo))
+            ->from('producto')
+            ->where('codigo', '=', $codigo)
+            ->first();
     }
 
     public function cotizacionesCliente($idsucursal, $idcliente, $is_aprobated = false)
@@ -736,33 +705,37 @@ class Cotizacion extends Helpers
     public function listarDataDetalleCotizacion($idcotizacion): array
     {
         $query = (new DBQuery($this->pdo))
-            ->select('a.idproducto, 
-            a.nombre AS producto, 
-            pg.contenedor AS unidadmedida, 
-            a.idunidad_medida, 
-            CASE 
-                WHEN a.codigo = "SIN CODIGO"
-                    THEN "-"
-                ELSE a.codigo 
-            END AS codigo, 
-
-            d.cantidad_contenedor,
-            d.cantidad, 
-            d.precio_venta, 
-            d.descuento, 
-            (d.cantidad * d.precio_venta - d.descuento) AS subtotal,
-            ip.stock, 
-            a.imagen, 
-            a.proigv')
+            ->select(
+                'a.idproducto, 
+                a.nombre AS producto, 
+                pg.contenedor AS unidadmedida, 
+                a.idunidad_medida, 
+                CASE 
+                    WHEN a.codigo = "SIN CODIGO"
+                        THEN "-"
+                    ELSE a.codigo 
+                END AS codigo, 
+                d.cantidad_contenedor,
+                d.cantidad, 
+                d.precio_venta, 
+                d.descuento, 
+                (d.cantidad * d.precio_venta - d.descuento) AS subtotal,
+                ip.stock, 
+                a.imagen, 
+                ma.nombre as marca,
+                mo.nombre as modelo,
+                a.proigv'
+            )
             ->from('detalle_cotizacion d')
             ->join('producto a', 'd.idproducto = a.idproducto')
             ->join('producto_configuracion pg', 'pg.idproducto_configuracion = d.idproducto_configuracion AND pg.idproducto = a.idproducto')
             ->join('producto_serie ps', 'ps.idproducto = a.idproducto')
             ->join('inventario_producto ip', 'ip.idproducto = a.idproducto')
             ->join('unidad_medida um', 'a.idunidad_medida = um.idunidad_medida')
+            ->join('marca ma', 'ma.idmarca = a.idmarca')
+            ->join('modelo mo', 'mo.idmodelo = a.idmodelo')
             ->where('d.idcotizacion', '=', $idcotizacion);
 
         return $query->get();
     }
-
 }
