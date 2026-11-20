@@ -233,6 +233,7 @@ function limpiar() {
   detalles = 0;
   $("#total_venta").val("");
   $(".filas").remove();
+  $("#detalles").removeClass("has-items");
   $("#total").html("0");
   $("#most_total2").val("0");
   $("#most_total").html("0");
@@ -442,7 +443,7 @@ function obtenerInteresSegunPorcentajeInicial(porcentajeInicial) {
   return 2;
 }
 
-function actualizarDatosInicial() {
+function actualizarDatosInicial(recalcularInteres = false) {
   const total = Number($("#total_venta").val()) || 0;
   let inicial = Number(String($("#inicial").val() || "0").replace(",", ".")) || 0;
   inicial = Math.max(inicial, 0);
@@ -457,11 +458,12 @@ function actualizarDatosInicial() {
   );
   $("#textInicial").text(`S/ ${inicial.toFixed(2)}`);
 
-  if (total > 0) {
+  if (recalcularInteres && total > 0) {
     const interes = obtenerInteresSegunPorcentajeInicial(porcentajeInicial);
     $("#inputInteres").val(interes.toFixed(2));
-    $("#textInteres").text(`${interes}%`);
   }
+  const interesActual = Number($("#inputInteres").val()) || 0;
+  $("#textInteres").text(`${interesActual}%`);
 
   const deuda = Math.max(total - inicial, 0);
   $("#montoDeuda").val(deuda.toFixed(2));
@@ -645,7 +647,7 @@ $("#inicial").on("input change", function () {
     inicial = total;
     $(this).val(total.toFixed(2));
   }
-  actualizarDatosInicial();
+  actualizarDatosInicial(true);
 });
 
 $("#formapago").change(function () {
@@ -736,7 +738,7 @@ function mostrar(idcotizacion) {
         let total = parseFloat(data.total_venta) || 0;
         let inicial = parseFloat(data.inicial) || 0;
         const porcentajeInicial = obtenerPorcentajeInicial(inicial, total);
-        const interes = obtenerInteresSegunPorcentajeInicial(porcentajeInicial);
+        const interes = Number(data.interes) || 0;
         $("#inputInteres").val(interes.toFixed(2));
 
         let deuda = total - inicial;
@@ -957,8 +959,8 @@ function mostrarEditar(idcotizacion) {
           $("#nota").val(data.nota).trigger("change");
           $("#tiempoproduccion").val(data.tiempo_pro).trigger("change");
           $("#igv").val(data.igv).trigger("change");
-          $("#inputInteres").val(data.interes).trigger("change");
-          $("#inicial").val(data.inicial).trigger("change");
+          $("#inputInteres").val(data.interes);
+          $("#inicial").val(data.inicial);
           $("#input_frecuencia").val(data.frecuencia).trigger("change");
           $("#numeroMeses").val(data.meses).trigger("change");
           $("#formapago").val(data.formapago).trigger("change");
@@ -1696,6 +1698,9 @@ function modificarSubtotales() {
 }
 
 function evaluar() {
+  const tieneProductos = detalles > 0;
+  $("#detalles").toggleClass("has-items", tieneProductos);
+
   if (detalles > 0) {
     $("#btnGuardar").show();
     $("#detalles_empty").hide();

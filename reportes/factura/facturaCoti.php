@@ -258,14 +258,14 @@ $total = 0;
 
 			$saldoFinanciar = $totalVenta - $inicial;
 
-			$totalInteres = ($saldoFinanciar * $interes) / 100;
+			$interesPorPeriodo = $interes * $mesesPorCuota;
 
 			if ($numCuotas <= 0) {
 				$numCuotas = 1;
 			}
 
 			$capitalCuota = $saldoFinanciar / $numCuotas;
-			$interesCuota = $totalInteres;
+			$interesCuota = ($saldoFinanciar * $interesPorPeriodo) / 100;
 			$totalCredito = $saldoFinanciar + ($interesCuota * $numCuotas);
 			$montoCuota = $capitalCuota + $interesCuota;
 
@@ -300,7 +300,7 @@ $total = 0;
 
 						<td>Interés</td>
 						<td>
-							<?php echo number_format($interes, 2); ?> %
+							<?php echo number_format($interesPorPeriodo, 2); ?> %
 						</td>
 					</tr>
 

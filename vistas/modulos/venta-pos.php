@@ -61,24 +61,12 @@
                                     </div>
                                 </div>
 
-                                <!--div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
-                                    <label>Almacén:</label>
-
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">
-                                                <i class="fas fa-store-alt"></i>
-                                            </span>
-                                        </div>
-                                        <select id="idsucursal2" name="idsucursal2" class="form-control select2">
-                                        </select>
-                                    </div>
-                                </div-->
                                 <div class="form-group col-lg-4 col-md-2 col-sm-4 col-xs-12">
                                     <label>Producto:</label>
                                     <select id="idproducto" name="idproducto" class="form-control select2">
                                     </select>
                                 </div>
+
                                 <div class="form-group col-lg-2 col-md-2 col-sm-4 col-xs-12">
                                     <label>Estado:</label>
 
@@ -125,23 +113,28 @@
                         </div>
                         <!-- /.card-header -->
                         <div class="card-body" id="listadoregistros">
-                            <table id="tbllistado" class="table table-tailpanel dt-responsive">
-                                <thead>
-                                    <th>Fecha</th>
-                                    <th>Cliente / N° Documento</th>
-                                    <th>Número</th>
-                                    <th>Total Venta</th>
-                                    <th>Forma de pago</th>
-                                    <th>Tipo Pago</th>
-                                    <th>Estado</th>
-                                    <th>Sunat</th>
-                                    <th style="text-align: center;"><i class="fa fa-shield" aria-hidden="true"
-                                            title="Comprobar estado"></i></th>
-                                    <th>Acciones</th>
-                                </thead>
-                                <tbody id="tbody_ventas">
-                                </tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table id="tbllistado" class="table table-striped table-hover table-responsive-details" style="width: 100%;">
+                                    <thead>
+                                        <tr>
+                                            <th class="responsive-details-toggle-header"></th>
+                                            <th>Fecha</th>
+                                            <th>Cliente / N° Documento</th>
+                                            <th>Número</th>
+                                            <th>Total Venta</th>
+                                            <th class="responsive-hide-mobile">Forma de pago</th>
+                                            <th class="responsive-hide-mobile">Tipo Pago</th>
+                                            <th class="responsive-hide-mobile">Estado</th>
+                                            <th class="responsive-hide-mobile">Sunat</th>
+                                            <th class="responsive-hide-mobile" style="text-align: center;"><i class="fa fa-shield" aria-hidden="true"
+                                                    title="Comprobar estado"></i></th>
+                                            <th class="responsive-hide-mobile">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tbody_ventas">
+                                    </tbody>
+                                </table>
+                            </div>
                             <div class="row mt-1">
                                 <div class="col-md-6"></div>
                                 <div class="col-md-6">
@@ -359,13 +352,15 @@
                                                 <div id="detalles-wrapper">
                                                     <table id="detalles" class="table table-striped table-hover">
                                                         <thead class="bg-info">
-                                                            <th style="width: 250px;">Producto</th>
-                                                            <th>UM</th>
-                                                            <th>Precio</th>
-                                                            <th>Blz</th>
-                                                            <th>Cantidad</th>
-                                                            <th>Descuento</th>
-                                                            <th>Subtotal</th>
+                                                            <tr>
+                                                                <th style="width: 250px;">Producto</th>
+                                                                <th>UM</th>
+                                                                <th>Precio</th>
+                                                                <th>Blz</th>
+                                                                <th>Cantidad</th>
+                                                                <th>Descuento</th>
+                                                                <th>Subtotal</th>
+                                                            </tr>
                                                         </thead>
                                                         <tfoot>
                                                         </tfoot>
@@ -588,16 +583,6 @@
                                                                 value="<?php echo date("Y-m-d"); ?>">
                                                         </div>
                                                     </div>
-
-                                                    <!--<div class="form-group col-lg-2" style="display: none;" id="n1">
-
-                                                                    <label style="font-size: 11px;">Fecha de Pago:</label>
-                                                                    <div class="input-group">
-                                                                        <input style="text-align:center" type="date" class="form-control" id="fechaOperacion" name="fechaOperacion" value="<?php echo date("Y-m-d"); ?>">
-                                                                    </div>
-
-                                                                </div>-->
-
                                                     <div class="form-group col-lg-2" style="display: none;" id="n2">
 
                                                         <label style="font-size: 11px;">Monto Pagado:</label>
@@ -697,36 +682,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <!--div class="row col-md-12 mt-4" style="display: none;" id="n6">
-                                                    <div class="col-lg-2">
-                                                        <label style="font-size: 11px;"># de Operación:</label>
-                                                        <div class="input-group">
-                                                            <input style="text-align:center" type="text"
-                                                                class="form-control" id="nroOperacion"
-                                                                name="nroOperacion">
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-lg-2" style="display: none;" id="fechadeposito">
-                                                        <label style="font-size: 11px;">Fecha Depósito:</label>
-                                                        <div class="input-group">
-                                                            <input style="text-align:center" type="date"
-                                                                class="form-control" id="fechaDepostivo"
-                                                                name="fechaDepostivo">
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-lg-2" style="display: none;" id="banco">
-                                                        <label style="font-size: 11px;">Banco:</label>
-                                                        <select id="banco" name="banco" class="form-control"
-                                                            data-live-search="true" title="Seleccione Banco">
-                                                            <option value="BCP">BCP</option>
-                                                            <option value="BBVA">BBVA</option>
-                                                            <option value="INTERBANK">INTERBANK</option>
-                                                            <option value="OTRO">OTRO</option>
-                                                        </select>
-                                                    </div>
-                                                </div-->
                                                 <div class="row col-md-12 mt-4" id="panel1" style="display: none;">
                                                     <table class="table" style="width:100%;">
                                                         <thead
@@ -828,41 +783,58 @@
                                                             color: white;
                                                         }
                                                     </style>
-                                                    <div style="display: flex; align-items: center; gap: 8px;"
-                                                        id="div_search">
-                                                        <button type="button" class="btn btn-default"
-                                                            id="btn_text_search" onclick="activeSearch(1)"><span
-                                                                class="fas fa-keyboard"></span></button>
-                                                        <button type="button" class="btn btn-default"
-                                                            id="btn_barcode_search" onclick="activeSearch(2)"><span
-                                                                class="fas fa-barcode"></span></button>
-                                                        <input type="search" placeholder="Buscar producto"
-                                                            class="form-control" id="searchProductos">
-                                                        <button type="button"
-                                                            class="btn btn-default mb-3 d-xl-none d-lg-none btnAgregarProducto">
-                                                            Agregar producto
-                                                        </button>
+                                                    <div style="display: flex; align-items: center;" id="div_search">
+
                                                     </div>
-                                                    <div class="tab-pane fade show active" id="custom-tabs-two-home"
-                                                        role="tabpanel" aria-labelledby="custom-tabs-two-home-tab">
-                                                        <table id="tblarticulos"
-                                                            class="table table-striped table-responsive-lg"
-                                                            width="100%">
-                                                            <thead class="bg-info">
-                                                                <th>Op</th>
-                                                                <th>Codigo</th>
-                                                                <th>Nombre</th>
-                                                                <th>Stock</th>
-                                                                <th>P Venta</th>
-                                                                <th>Color</th>
-                                                            </thead>
-                                                            <tbody id="tbody_articulos">
-                                                            </tbody>
-                                                        </table>
-                                                        <div class="col-md-6"></div>
-                                                        <div class="col-md-6">
-                                                            <div id="paginationProductos"></div>
+                                                    <div class="tab-pane fade show active" id="custom-tabs-two-home" role="tabpanel" aria-labelledby="custom-tabs-two-home-tab">
+                                                        <div class="row">
+                                                            <div class="col-md-5 d-flex align-items-center">
+                                                                <span class="mr-2">Mostrar</span>
+                                                                <select id="limitProductos" class="form-control" style="width:100px">
+                                                                    <option value="10">10</option>
+                                                                    <option value="25">25</option>
+                                                                    <option value="50">50</option>
+                                                                    <option value="100">100</option>
+                                                                </select>
+                                                                <span class="ml-2">Registros</span>
+                                                            </div>
+                                                            <div class="col-md-7 d-flex align-items-center gap-1">
+                                                                <button type="button" class="btn btn-default" id="btn_text_search" onclick="activeSearch(1)">
+                                                                    <span class="fas fa-keyboard"></span>
+                                                                </button>
+                                                                <button type="button" class="btn btn-default" id="btn_barcode_search" onclick="activeSearch(2)">
+                                                                    <span class="fas fa-barcode"></span>
+                                                                </button>
+                                                                <input type="search" placeholder="Buscar producto" class="form-control" id="searchProductos">
+                                                                <button type="button" class="btn btn-default btnAgregarProducto">
+                                                                    <span class="fas fa-plus"></span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="col-md-12 mt-2">
+                                                                <div class="table-responsive">
+                                                                    <table id="tblarticulos"
+                                                                        class="table table-striped table-responsive-lg"
+                                                                        width="100%">
+                                                                        <thead class="bg-info">
+                                                                            <th>Op</th>
+                                                                            <th>Codigo</th>
+                                                                            <th>Nombre</th>
+                                                                            <th>Stock</th>
+                                                                            <th>P Venta</th>
+                                                                            <th>Color</th>
+                                                                        </thead>
+                                                                        <tbody id="tbody_articulos">
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="col-md-6"></div>
+                                                            <div class="col-md-6">
+                                                                <div id="paginationProductos"></div>
+                                                            </div>
                                                         </div>
+
                                                     </div>
                                                     <div class="tab-pane fade" id="custom-tabs-two-profile"
                                                         role="tabpanel" aria-labelledby="custom-tabs-two-profile-tab">
