@@ -406,7 +406,9 @@
 
    #detalles-wrapper {
        max-height: 320px;
+       overflow-x: auto;
        overflow-y: auto;
+       -webkit-overflow-scrolling: touch;
        width: 100%;
        border: 1px solid var(--pos-border);
        border-radius: 9px 9px 0px 0px;
@@ -445,6 +447,44 @@
        border-color: #f0f2f5;
    }
 
+   @media (max-width: 767.98px) {
+       #detalles {
+           width: 780px !important;
+           min-width: 780px !important;
+           table-layout: auto;
+       }
+
+       #detalles th:nth-child(1),
+       #detalles td:nth-child(1) {
+           min-width: 220px;
+       }
+
+       #detalles th:nth-child(2),
+       #detalles td:nth-child(2) {
+           min-width: 80px;
+       }
+
+       #detalles th:nth-child(3),
+       #detalles td:nth-child(3),
+       #detalles th:nth-child(5),
+       #detalles td:nth-child(5),
+       #detalles th:nth-child(6),
+       #detalles td:nth-child(6) {
+           min-width: 90px;
+       }
+
+       #detalles th:nth-child(4),
+       #detalles td:nth-child(4) {
+           min-width: 55px;
+       }
+
+       #detalles th:nth-child(7),
+       #detalles td:nth-child(7) {
+           min-width: 105px;
+           white-space: nowrap;
+       }
+   }
+
    #detalles tbody tr:hover {
        background: #f8fbff;
    }
@@ -462,6 +502,10 @@
    #floating-body::-webkit-scrollbar,
    #datafechas::-webkit-scrollbar {
        width: 6px;
+   }
+
+   #detalles-wrapper::-webkit-scrollbar {
+       height: 6px;
    }
 
    #detalles-wrapper::-webkit-scrollbar-track,

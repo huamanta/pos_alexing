@@ -322,44 +322,40 @@
 
                                             <div class="col-md-12" style="margin-top: -17px; margin-bottom: 20px">
                                                 <input type="hidden" name="idcotizacion" id="idcotizacion">
-                                                <table id="detalles" class="table table-striped table-responsive-sm">
-                                                    <thead class="bg-info">
-                                                        <tr>
-                                                            <th style="width: 500px;">Producto</th>
-                                                            <th>UM</th>
-                                                            <th>Precio</th>
-                                                            <th>Cantidad</th>
-                                                            <th style="width: 30px;">Subtotal</th>
-                                                            <th style="width: 50px;">Eliminar</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="detalles_empty">
-                                                        <tr>
-                                                            <td colspan="6">
-
-                                                                <div class="text-center bg-light">
-
-                                                                    <i
-                                                                        class="fas fa-box-open fa-4x text-primary mb-3 mt-2"></i>
-
-                                                                    <h5 class="font-weight-bold">
-                                                                        No hay productos agregados
-                                                                    </h5>
-
-                                                                    <p class="text-muted mb-0">
-                                                                        Agrega productos o servicios para generar la
-                                                                        cotización.
-                                                                    </p>
-
-                                                                </div>
-
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                    <tbody>
-                                                        <!-- Filas dinámicas -->
-                                                    </tbody>
-                                                </table>
+                                                <div id="detalles-wrapper">
+                                                    <table id="detalles" class="table table-striped">
+                                                        <thead class="bg-info">
+                                                            <tr>
+                                                                <th style="width: 500px;">Producto</th>
+                                                                <th>UM</th>
+                                                                <th>Precio</th>
+                                                                <th>Cantidad</th>
+                                                                <th style="width: 30px;">Subtotal</th>
+                                                                <th style="width: 50px;">Eliminar</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="detalles_empty">
+                                                            <tr>
+                                                                <td colspan="6">
+                                                                    <div class="text-center bg-light">
+                                                                        <i
+                                                                            class="fas fa-box-open fa-4x text-primary mb-3 mt-2"></i>
+                                                                        <h5 class="font-weight-bold">
+                                                                            No hay productos agregados
+                                                                        </h5>
+                                                                        <p class="text-muted mb-0">
+                                                                            Agrega productos o servicios para generar la
+                                                                            cotización.
+                                                                        </p>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                        <tbody>
+                                                            <!-- Filas dinámicas -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
 
 

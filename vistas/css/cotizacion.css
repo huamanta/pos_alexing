@@ -69,13 +69,6 @@
 
 /* ================== TUS ESTILOS (ajustados) ================== */
 /* Establecer una altura máxima para la tabla */
-#detalles {
-    max-height: 300px;
-    overflow-y: auto;
-    display: block;
-    width: 100%;
-}
-
 .btn-flotante {
     font-size: 16px;
     text-transform: uppercase;
@@ -207,8 +200,11 @@
    ========================================================= */
 
 #detalles-wrapper {
-    max-height: 320px;
+    max-height: 300px;
+    max-width: 100%;
+    overflow-x: auto;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     width: 100%;
     border: 1px solid var(--pos-border);
     border-radius: 9px 9px 0px 0px;
@@ -221,6 +217,42 @@
     margin: 0 !important;
     font-size: 11px;
     table-layout: fixed;
+}
+
+@media (max-width: 767.98px) {
+    #detalles.has-items {
+        width: 760px !important;
+        min-width: 760px !important;
+        table-layout: auto;
+    }
+
+    #detalles.has-items th:first-child,
+    #detalles.has-items td:first-child {
+        min-width: 300px;
+    }
+
+    #detalles.has-items th:first-child {
+        width: 300px !important;
+    }
+
+    #detalles.has-items th:nth-child(2),
+    #detalles.has-items td:nth-child(2) {
+        min-width: 80px;
+    }
+
+    #detalles.has-items th:nth-child(3),
+    #detalles.has-items td:nth-child(3),
+    #detalles.has-items th:nth-child(4),
+    #detalles.has-items td:nth-child(4),
+    #detalles.has-items th:nth-child(5),
+    #detalles.has-items td:nth-child(5) {
+        min-width: 100px;
+    }
+
+    #detalles.has-items th:nth-child(6),
+    #detalles.has-items td:nth-child(6) {
+        min-width: 60px;
+    }
 }
 
 #detalles thead {
@@ -264,6 +296,10 @@
 #floating-body::-webkit-scrollbar,
 #datafechas::-webkit-scrollbar {
     width: 6px;
+}
+
+#detalles-wrapper::-webkit-scrollbar {
+    height: 6px;
 }
 
 #detalles-wrapper::-webkit-scrollbar-track,
