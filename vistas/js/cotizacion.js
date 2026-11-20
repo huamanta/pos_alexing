@@ -991,6 +991,17 @@ function validateDataCotizacion() {
   return true;
 }
 
+function toggleDetallesCotizacion(button) {
+  const detailsRow = button.closest("tr").nextElementSibling;
+  const expanded = button.getAttribute("aria-expanded") === "true";
+
+  detailsRow.hidden = expanded;
+  button.setAttribute("aria-expanded", String(!expanded));
+  button.innerHTML = expanded
+    ? '<i class="fas fa-plus"></i>'
+    : '<i class="fas fa-minus"></i>';
+}
+
 function guardaryeditar() {
 
   if (!validateDataCotizacion()) {
@@ -1046,6 +1057,7 @@ function pintarCotizaciones(data, permissions) {
 
   data.forEach((item) => {
     const id = item.idcotizacion;
+    const detailsId = `detalles-cotizacion-${id}`;
     const url2 = `reportes/factura/generaFacturaCoti.php?id=${id}`;
 
     let estado = "";
@@ -1126,27 +1138,51 @@ function pintarCotizaciones(data, permissions) {
 
     html += `
       <tr>
+        <td class="responsive-details-toggle-cell">
+          <button type="button" class="btn btn-outline-primary btn-sm responsive-details-toggle"
+            aria-controls="${detailsId}" aria-expanded="false" onclick="toggleDetallesCotizacion(this)">
+            <i class="fas fa-plus"></i>
+          </button>
+        </td>
         <td>${item.fecha}</td>
         <td>${item.cliente || "-"}</td>
         <td style="text-align:left;">
           <strong>${item.personal || ""}</strong>
         </td>
-        <td>
+        <td class="responsive-hide-mobile">
           ${item.formapago === "Si"
         ? `<span class="badge badge-success">${item.formapago}</span>`
         : `<span class="badge badge-error">${item.formapago}</span>`
       }
         </td>
-        <td>${item.tipo_comprobante}</td>
-        <td>${item.serie_comprobante}-${item.num_comprobante}</td>
-        <td>S/ ${parseFloat(item.total_venta).toFixed(2)}</td>
-        <td>${estado}</td>
-        <td>
+        <td class="responsive-hide-mobile">${item.tipo_comprobante}</td>
+        <td class="responsive-hide-mobile">${item.serie_comprobante}-${item.num_comprobante}</td>
+        <td class="responsive-hide-mobile">S/ ${parseFloat(item.total_venta).toFixed(2)}</td>
+        <td class="responsive-hide-mobile">${estado}</td>
+        <td class="responsive-hide-mobile">
           ${botonVer}
           ${editar}
           ${botonImprimir}
           ${botonEnviar}
           ${desistir}
+        </td>
+      </tr>
+      <tr class="responsive-details-row" id="${detailsId}" hidden>
+        <td colspan="10">
+          <div class="responsive-details-grid">
+            <div><strong>Crédito</strong><span>${item.formapago === "Si"
+        ? `<span class="badge badge-success">${item.formapago}</span>`
+        : `<span class="badge badge-error">${item.formapago}</span>`
+      }</span></div>
+            <div><strong>Tipo Documento</strong><span>${item.tipo_comprobante}</span></div>
+            <div><strong>Número</strong><span>${item.serie_comprobante}-${item.num_comprobante}</span></div>
+            <div><strong>Total</strong><span>S/ ${parseFloat(item.total_venta).toFixed(2)}</span></div>
+            <div><strong>Estado</strong><span>${estado}</span></div>
+            <div class="responsive-details-actions">
+              <strong>Acciones</strong>
+              <span>${botonVer}${editar}${botonImprimir}${botonEnviar}${desistir}</span>
+            </div>
+          </div>
         </td>
       </tr>
     `;

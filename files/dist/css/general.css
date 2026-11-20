@@ -140,6 +140,102 @@
     color: var(--color-text-secondary);
 }
 
+@media (max-width: 991.98px) {
+    #navbar-global {
+        flex-wrap: wrap;
+        row-gap: 0.25rem;
+        padding: 0.5rem 0.75rem;
+    }
+
+    #navbar-global > .navbar-nav {
+        flex: 0 0 100%;
+        min-width: 0;
+    }
+
+    #navbar-global > .navbar-nav:first-of-type {
+        justify-content: flex-start;
+    }
+
+    #navbar-global > .navbar-nav:last-of-type {
+        justify-content: flex-end;
+        margin-left: 0 !important;
+    }
+
+    #navbar-global .navbar-divider {
+        display: none;
+    }
+
+    #navbar-global > .navbar-nav:first-of-type .user-profile-link {
+        max-width: calc((100vw - 5rem) / 2);
+        overflow: hidden;
+        padding-right: 0.5rem !important;
+        padding-left: 0.5rem !important;
+    }
+
+    #navbar-global > .navbar-nav:first-of-type .user-profile-link > span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.table-responsive-details .responsive-details-toggle-header,
+.table-responsive-details .responsive-details-toggle-cell {
+    display: none;
+}
+
+.table-responsive-details .responsive-details-row[hidden] {
+    display: none !important;
+}
+
+.table-responsive-details .responsive-details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.75rem;
+}
+
+.table-responsive-details .responsive-details-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.table-responsive-details .responsive-details-actions > span {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+}
+
+@media (max-width: 991.98px) {
+    .table-responsive-details .responsive-hide-mobile {
+        display: none !important;
+    }
+
+    .table-responsive-details .responsive-details-toggle-header,
+    .table-responsive-details .responsive-details-toggle-cell {
+        display: table-cell;
+        width: 1%;
+        white-space: nowrap;
+    }
+
+    .table-responsive-details .responsive-details-toggle {
+        width: auto !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0.35rem 0.5rem;
+        font-size: 0.8rem !important;
+        white-space: nowrap;
+    }
+
+    .table-responsive-details .responsive-details-actions .btn {
+        width: auto !important;
+        height: auto !important;
+        margin: 0 !important;
+        font-size: 0.8rem !important;
+    }
+}
+
 .stock-alert-dropdown {
     width: 360px;
     overflow: hidden;
