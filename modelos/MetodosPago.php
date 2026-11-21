@@ -150,97 +150,111 @@ class MetodosPago extends Helpers
             ->orderBy('fecha', 'DESC')
             ->paginate($page, $limit);
 
-        $resultado['meta']['summary'] = $this->obtenerResumenMetodoPago($metodo);
+        $resultado['meta']['summary'] = self::obtenerResumenMetodoPago($idsucursal, $metodo);
         return Response::json($resultado);
     }
 
-    private function obtenerResumenMetodoPago(string $metodo): array
-    {
-        $resumen = [
-            'movimientos' => 0,
-            'ingresos' => 0.0,
-            'egresos' => 0.0,
-            'neto' => 0.0,
-        ];
+    
+private function obtenerResumenMetodoPago(int $idsucursal, string $metodo): array
+{
+    $resumen = [
+        'movimientos' => 0,
+        'ingresos' => 0.0,
+        'egresos' => 0.0,
+        'neto' => 0.0,
+    ];
 
-        // MOVIMIENTOS
-        $movimientos = (new DBQuery($this->pdo))
-            ->select([
-                'COUNT(*) AS movimientos',
-                "COALESCE(SUM(CASE WHEN tipo = 'Ingresos' THEN " . ($metodo === 'Efectivo' ? 'totalefectivo' : 'totaldeposito') . " ELSE 0 END), 0) AS ingresos",
-                "COALESCE(SUM(CASE WHEN tipo = 'Egresos' THEN " . ($metodo === 'Efectivo' ? 'totalefectivo' : 'totaldeposito') . " ELSE 0 END), 0) AS egresos",
-            ])
-            ->from('movimiento')
-            ->where($metodo === 'Efectivo' ? 'totalefectivo' : 'totaldeposito', '>', 0);
+    $campoMovimiento = $metodo === 'Efectivo' ? 'totalefectivo' : 'totaldeposito';
+    $campoDetalle = $metodo === 'Efectivo' ? 'montopagado' : 'montotarjeta';
 
-        if ($metodo !== 'Efectivo') {
-            $movimientos->where('formapago', '=', $metodo);
-        }
+    // MOVIMIENTOS
+    $query = (new DBQuery($this->pdo))
+        ->select([
+            'COUNT(*) AS movimientos',
+            "COALESCE(SUM(CASE WHEN tipo = 'Ingresos' THEN {$campoMovimiento} ELSE 0 END), 0) AS ingresos",
+            "COALESCE(SUM(CASE WHEN tipo = 'Egresos' THEN {$campoMovimiento} ELSE 0 END), 0) AS egresos",
+        ])
+        ->from('movimiento')
+        ->where($campoMovimiento, '>', 0)
+        ->where('idsucursal', '=', $idsucursal);
 
-        $movimientos = $movimientos->first();
-
-        // CUENTAS POR COBRAR
-        $cuentas = (new DBQuery($this->pdo))
-            ->select([
-                'COUNT(*) AS movimientos',
-                'COALESCE(SUM(' . ($metodo === 'Efectivo' ? 'montopagado' : 'montotarjeta') . '), 0) AS ingresos',
-                '0 AS egresos',
-            ])
-            ->from('detalle_cuentas_por_cobrar');
-
-        if ($metodo === 'Efectivo') {
-            $cuentas->where('montopagado', '>', 0);
-        } else {
-            $cuentas
-                ->where('formapago', '=', $metodo)
-                ->where('montotarjeta', '>', 0);
-        }
-
-        $cuentas = $cuentas->first();
-
-        // CUENTAS POR PAGAR
-        $cuentasPagar = (new DBQuery($this->pdo))
-            ->select([
-                'COUNT(*) AS movimientos',
-                '0 AS ingresos',
-                'COALESCE(SUM(' . ($metodo === 'Efectivo' ? 'montopagado' : 'montotarjeta') . '), 0) AS egresos',
-            ])
-            ->from('detalle_cuentas_por_pagar');
-
-        if ($metodo === 'Efectivo') {
-            $cuentasPagar->where('montopagado', '>', 0);
-        } else {
-            $cuentasPagar
-                ->where('formapago', '=', $metodo)
-                ->where('montotarjeta', '>', 0);
-        }
-
-        $cuentasPagar = $cuentasPagar->first();
-
-        // PAGOS INICIALES DE VENTAS
-        $ventas = (new DBQuery($this->pdo))
-            ->select([
-                'COUNT(*) AS movimientos',
-                'COALESCE(SUM(monto), 0) AS ingresos',
-                '0 AS egresos',
-            ])
-            ->from('venta_pago')
-            ->where('metodo_pago', '=', $metodo)
-            ->where('monto', '>', 0)
-            ->first();
-
-        foreach ([$movimientos, $cuentas, $cuentasPagar, $ventas] as $fila) {
-            if (!$fila) {
-                continue;
-            }
-
-            $resumen['movimientos'] += (int) ($fila['movimientos'] ?? 0);
-            $resumen['ingresos'] += (float) ($fila['ingresos'] ?? 0);
-            $resumen['egresos'] += (float) ($fila['egresos'] ?? 0);
-        }
-
-        $resumen['neto'] = $resumen['ingresos'] - $resumen['egresos'];
-
-        return $resumen;
+    if ($metodo !== 'Efectivo') {
+        $query->where('formapago', '=', $metodo);
     }
+
+    $movimientos = $query->first();
+
+    // CUENTAS POR COBRAR
+    $cuentas = (new DBQuery($this->pdo))
+        ->select([
+            'COUNT(*) AS movimientos',
+            "COALESCE(SUM(dcpc.{$campoDetalle}), 0) AS ingresos",
+            '0 AS egresos',
+        ])
+        ->from('detalle_cuentas_por_cobrar dcpc')
+        ->join('cuentas_por_cobrar cpc', 'cpc.idcpc = dcpc.idcpc')
+        ->join('venta v', 'v.idventa = cpc.idventa')
+        ->where('v.idsucursal', '=', $idsucursal);
+
+    if ($metodo === 'Efectivo') {
+        $cuentas->where('dcpc.montopagado', '>', 0);
+    } else {
+        $cuentas
+            ->where('dcpc.formapago', '=', $metodo)
+            ->where('dcpc.montotarjeta', '>', 0);
+    }
+
+    $cuentas = $cuentas->first();
+
+    // CUENTAS POR PAGAR
+    $cuentasPagar = (new DBQuery($this->pdo))
+        ->select([
+            'COUNT(*) AS movimientos',
+            '0 AS ingresos',
+            "COALESCE(SUM(dcpp.{$campoDetalle}), 0) AS egresos",
+        ])
+        ->from('detalle_cuentas_por_pagar dcpp')
+        ->join('cuentas_por_pagar cpp', 'cpp.idcpp = dcpp.idcpp')
+        ->join('compra c', 'c.idcompra = cpp.idcompra')
+        ->where('c.idsucursal', '=', $idsucursal);
+
+    if ($metodo === 'Efectivo') {
+        $cuentasPagar->where('dcpp.montopagado', '>', 0);
+    } else {
+        $cuentasPagar
+            ->where('dcpp.formapago', '=', $metodo)
+            ->where('dcpp.montotarjeta', '>', 0);
+    }
+
+    $cuentasPagar = $cuentasPagar->first();
+
+    // PAGOS INICIALES DE VENTAS
+    $ventas = (new DBQuery($this->pdo))
+        ->select([
+            'COUNT(*) AS movimientos',
+            'COALESCE(SUM(vp.monto), 0) AS ingresos',
+            '0 AS egresos',
+        ])
+        ->from('venta_pago vp')
+        ->join('venta v', 'v.idventa = vp.idventa')
+        ->where('vp.metodo_pago', '=', $metodo)
+        ->where('vp.monto', '>', 0)
+        ->where('v.idsucursal', '=', $idsucursal)
+        ->first();
+
+    foreach ([$movimientos, $cuentas, $cuentasPagar, $ventas] as $fila) {
+        if (!$fila) {
+            continue;
+        }
+
+        $resumen['movimientos'] += (int) ($fila['movimientos'] ?? 0);
+        $resumen['ingresos'] += (float) ($fila['ingresos'] ?? 0);
+        $resumen['egresos'] += (float) ($fila['egresos'] ?? 0);
+    }
+
+    $resumen['neto'] = $resumen['ingresos'] - $resumen['egresos'];
+
+    return $resumen;
+}
+
 }
