@@ -203,8 +203,6 @@
 
 @media (max-width: 768px) {
   .btn-custom, .btn {
-    width: 100% !important;
-    height: 50px !important;
     font-size: 18px !important;
     margin-bottom: 10px;
   }

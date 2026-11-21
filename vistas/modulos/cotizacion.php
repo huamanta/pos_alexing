@@ -79,21 +79,21 @@
                         <!-- ============== LISTADO ============== -->
                         <div class="card-body">
                             <div class="row">
-
                                 <div class="col-md-12 mt-2">
-                                    <div class="table-responcive">
-                                        <table id="tbllistado" class="table table-striped table-hover">
+                                    <div class="table-responsive">
+                                        <table id="tbllistado" class="table table-striped table-hover table-responsive-details" style="width: 100%;">
                                             <thead>
                                                 <tr>
+                                                    <th class="responsive-details-toggle-header"></th>
                                                     <th>Fecha</th>
                                                     <th>Proveedor</th>
                                                     <th>Personal</th>
-                                                    <th>Crédito</th>
-                                                    <th>Tipo Documento</th>
-                                                    <th>Número</th>
-                                                    <th>Total</th>
-                                                    <th>Estado</th>
-                                                    <th>Acciones</th>
+                                                    <th class="responsive-hide-mobile">Crédito</th>
+                                                    <th class="responsive-hide-mobile">Tipo Documento</th>
+                                                    <th class="responsive-hide-mobile">Número</th>
+                                                    <th class="responsive-hide-mobile">Total</th>
+                                                    <th class="responsive-hide-mobile">Estado</th>
+                                                    <th class="responsive-hide-mobile" style="width: 20%; text-align: center">Acciones</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="tbody_cotizaciones"></tbody>
@@ -322,44 +322,40 @@
 
                                             <div class="col-md-12" style="margin-top: -17px; margin-bottom: 20px">
                                                 <input type="hidden" name="idcotizacion" id="idcotizacion">
-                                                <table id="detalles" class="table table-striped table-responsive-sm">
-                                                    <thead class="bg-info">
-                                                        <tr>
-                                                            <th style="width: 500px;">Producto</th>
-                                                            <th>UM</th>
-                                                            <th>Precio</th>
-                                                            <th>Cantidad</th>
-                                                            <th style="width: 30px;">Subtotal</th>
-                                                            <th style="width: 50px;">Eliminar</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="detalles_empty">
-                                                        <tr>
-                                                            <td colspan="6">
-
-                                                                <div class="text-center bg-light">
-
-                                                                    <i
-                                                                        class="fas fa-box-open fa-4x text-primary mb-3 mt-2"></i>
-
-                                                                    <h5 class="font-weight-bold">
-                                                                        No hay productos agregados
-                                                                    </h5>
-
-                                                                    <p class="text-muted mb-0">
-                                                                        Agrega productos o servicios para generar la
-                                                                        cotización.
-                                                                    </p>
-
-                                                                </div>
-
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                    <tbody>
-                                                        <!-- Filas dinámicas -->
-                                                    </tbody>
-                                                </table>
+                                                <div id="detalles-wrapper">
+                                                    <table id="detalles" class="table table-striped">
+                                                        <thead class="bg-info">
+                                                            <tr>
+                                                                <th style="width: 500px;">Producto</th>
+                                                                <th>UM</th>
+                                                                <th>Precio</th>
+                                                                <th>Cantidad</th>
+                                                                <th style="width: 30px;">Subtotal</th>
+                                                                <th style="width: 50px;">Eliminar</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="detalles_empty">
+                                                            <tr>
+                                                                <td colspan="6">
+                                                                    <div class="text-center bg-light">
+                                                                        <i
+                                                                            class="fas fa-box-open fa-4x text-primary mb-3 mt-2"></i>
+                                                                        <h5 class="font-weight-bold">
+                                                                            No hay productos agregados
+                                                                        </h5>
+                                                                        <p class="text-muted mb-0">
+                                                                            Agrega productos o servicios para generar la
+                                                                            cotización.
+                                                                        </p>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                        <tbody>
+                                                            <!-- Filas dinámicas -->
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
 
 
@@ -550,25 +546,43 @@
                                                 <div class="tab-content" id="custom-tabs-one-tabContent">
                                                     <div class="tab-pane fade show active" id="custom-tabs-two-home"
                                                         role="tabpanel" aria-labelledby="custom-tabs-two-home-tab">
-                                                        <input type="text" class="form-control" id="searchProductos">
-                                                        <table id="tblarticulos"
-                                                            class="table table-striped table-responsive-lg"
-                                                            width="100%">
-                                                            <thead class="bg-info">
-                                                                <tr>
-                                                                    <th>Op</th>
-                                                                    <th>Codigo</th>
-                                                                    <th>Nombre</th>
-                                                                    <th>Stock</th>
-                                                                    <th>P. venta</th>
-                                                                    <th>Color</th>
-                                                                </tr>
-                                                            </thead>
-                                                            <tbody id="tbody_productos"></tbody>
-                                                        </table>
-                                                        <div class="col-md-6"></div>
-                                                        <div class="col-md-6">
-                                                            <div id="paginationProductos"></div>
+                                                        <div class="row">
+                                                            <div class="col-md-6 d-flex align-items-center">
+                                                                <span class="mr-2">Mostrar</span>
+                                                                <select id="limitProductos" class="form-control" style="width:100px">
+                                                                    <option value="10">10</option>
+                                                                    <option value="25">25</option>
+                                                                    <option value="50">50</option>
+                                                                    <option value="100">100</option>
+                                                                </select>
+                                                                <span class="ml-2">Registros</span>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <input type="text" class="form-control" id="searchProductos">
+                                                            </div>
+                                                            <div class="col-md-12 mt-2">
+                                                                <div class="table-responsive">
+                                                                    <table id="tblarticulos"
+                                                                        class="table table-striped table-responsive-lg"
+                                                                        width="100%">
+                                                                        <thead class="bg-info">
+                                                                            <tr>
+                                                                                <th>Op</th>
+                                                                                <th>Codigo</th>
+                                                                                <th>Nombre</th>
+                                                                                <th>Stock</th>
+                                                                                <th>P. venta</th>
+                                                                                <th>Color</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody id="tbody_productos"></tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6 mt-2"></div>
+                                                            <div class="col-md-6 mt-2">
+                                                                <div id="paginationProductos"></div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div class="tab-pane fade" id="custom-tabs-two-profile"

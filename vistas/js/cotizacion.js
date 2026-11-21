@@ -233,6 +233,7 @@ function limpiar() {
   detalles = 0;
   $("#total_venta").val("");
   $(".filas").remove();
+  $("#detalles").removeClass("has-items");
   $("#total").html("0");
   $("#most_total2").val("0");
   $("#most_total").html("0");
@@ -442,7 +443,7 @@ function obtenerInteresSegunPorcentajeInicial(porcentajeInicial) {
   return 2;
 }
 
-function actualizarDatosInicial() {
+function actualizarDatosInicial(recalcularInteres = false) {
   const total = Number($("#total_venta").val()) || 0;
   let inicial = Number(String($("#inicial").val() || "0").replace(",", ".")) || 0;
   inicial = Math.max(inicial, 0);
@@ -457,11 +458,12 @@ function actualizarDatosInicial() {
   );
   $("#textInicial").text(`S/ ${inicial.toFixed(2)}`);
 
-  if (total > 0) {
+  if (recalcularInteres && total > 0) {
     const interes = obtenerInteresSegunPorcentajeInicial(porcentajeInicial);
     $("#inputInteres").val(interes.toFixed(2));
-    $("#textInteres").text(`${interes}%`);
   }
+  const interesActual = Number($("#inputInteres").val()) || 0;
+  $("#textInteres").text(`${interesActual}%`);
 
   const deuda = Math.max(total - inicial, 0);
   $("#montoDeuda").val(deuda.toFixed(2));
@@ -645,7 +647,7 @@ $("#inicial").on("input change", function () {
     inicial = total;
     $(this).val(total.toFixed(2));
   }
-  actualizarDatosInicial();
+  actualizarDatosInicial(true);
 });
 
 $("#formapago").change(function () {
@@ -736,7 +738,7 @@ function mostrar(idcotizacion) {
         let total = parseFloat(data.total_venta) || 0;
         let inicial = parseFloat(data.inicial) || 0;
         const porcentajeInicial = obtenerPorcentajeInicial(inicial, total);
-        const interes = obtenerInteresSegunPorcentajeInicial(porcentajeInicial);
+        const interes = Number(data.interes) || 0;
         $("#inputInteres").val(interes.toFixed(2));
 
         let deuda = total - inicial;
@@ -957,8 +959,8 @@ function mostrarEditar(idcotizacion) {
           $("#nota").val(data.nota).trigger("change");
           $("#tiempoproduccion").val(data.tiempo_pro).trigger("change");
           $("#igv").val(data.igv).trigger("change");
-          $("#inputInteres").val(data.interes).trigger("change");
-          $("#inicial").val(data.inicial).trigger("change");
+          $("#inputInteres").val(data.interes);
+          $("#inicial").val(data.inicial);
           $("#input_frecuencia").val(data.frecuencia).trigger("change");
           $("#numeroMeses").val(data.meses).trigger("change");
           $("#formapago").val(data.formapago).trigger("change");
@@ -989,6 +991,17 @@ function validateDataCotizacion() {
     return false;
   }
   return true;
+}
+
+function toggleDetallesCotizacion(button) {
+  const detailsRow = button.closest("tr").nextElementSibling;
+  const expanded = button.getAttribute("aria-expanded") === "true";
+
+  detailsRow.hidden = expanded;
+  button.setAttribute("aria-expanded", String(!expanded));
+  button.innerHTML = expanded
+    ? '<i class="fas fa-plus"></i>'
+    : '<i class="fas fa-minus"></i>';
 }
 
 function guardaryeditar() {
@@ -1046,6 +1059,7 @@ function pintarCotizaciones(data, permissions) {
 
   data.forEach((item) => {
     const id = item.idcotizacion;
+    const detailsId = `detalles-cotizacion-${id}`;
     const url2 = `reportes/factura/generaFacturaCoti.php?id=${id}`;
 
     let estado = "";
@@ -1126,27 +1140,51 @@ function pintarCotizaciones(data, permissions) {
 
     html += `
       <tr>
+        <td class="responsive-details-toggle-cell">
+          <button type="button" class="btn btn-outline-primary btn-sm responsive-details-toggle"
+            aria-controls="${detailsId}" aria-expanded="false" onclick="toggleDetallesCotizacion(this)">
+            <i class="fas fa-plus"></i>
+          </button>
+        </td>
         <td>${item.fecha}</td>
         <td>${item.cliente || "-"}</td>
         <td style="text-align:left;">
           <strong>${item.personal || ""}</strong>
         </td>
-        <td>
+        <td class="responsive-hide-mobile">
           ${item.formapago === "Si"
         ? `<span class="badge badge-success">${item.formapago}</span>`
         : `<span class="badge badge-error">${item.formapago}</span>`
       }
         </td>
-        <td>${item.tipo_comprobante}</td>
-        <td>${item.serie_comprobante}-${item.num_comprobante}</td>
-        <td>S/ ${parseFloat(item.total_venta).toFixed(2)}</td>
-        <td>${estado}</td>
-        <td>
+        <td class="responsive-hide-mobile">${item.tipo_comprobante}</td>
+        <td class="responsive-hide-mobile">${item.serie_comprobante}-${item.num_comprobante}</td>
+        <td class="responsive-hide-mobile">S/ ${parseFloat(item.total_venta).toFixed(2)}</td>
+        <td class="responsive-hide-mobile">${estado}</td>
+        <td class="responsive-hide-mobile">
           ${botonVer}
           ${editar}
           ${botonImprimir}
           ${botonEnviar}
           ${desistir}
+        </td>
+      </tr>
+      <tr class="responsive-details-row" id="${detailsId}" hidden>
+        <td colspan="10">
+          <div class="responsive-details-grid">
+            <div><strong>Crédito</strong><span>${item.formapago === "Si"
+        ? `<span class="badge badge-success">${item.formapago}</span>`
+        : `<span class="badge badge-error">${item.formapago}</span>`
+      }</span></div>
+            <div><strong>Tipo Documento</strong><span>${item.tipo_comprobante}</span></div>
+            <div><strong>Número</strong><span>${item.serie_comprobante}-${item.num_comprobante}</span></div>
+            <div><strong>Total</strong><span>S/ ${parseFloat(item.total_venta).toFixed(2)}</span></div>
+            <div><strong>Estado</strong><span>${estado}</span></div>
+            <div class="responsive-details-actions">
+              <strong>Acciones</strong>
+              <span>${botonVer}${editar}${botonImprimir}${botonEnviar}${desistir}</span>
+            </div>
+          </div>
         </td>
       </tr>
     `;
@@ -1660,6 +1698,9 @@ function modificarSubtotales() {
 }
 
 function evaluar() {
+  const tieneProductos = detalles > 0;
+  $("#detalles").toggleClass("has-items", tieneProductos);
+
   if (detalles > 0) {
     $("#btnGuardar").show();
     $("#detalles_empty").hide();
