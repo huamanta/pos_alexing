@@ -12,7 +12,7 @@ class HistorialPagos extends Helpers
         parent::__construct();
     }
 
-    public function listarHistorialPagos($fecha_inicio = null, $fecha_fin = null)
+    public function listarHistorialPagos($idsucursal, $fecha_inicio = null, $fecha_fin = null)
     {
         $page = (int) ($_GET['page'] ?? 1);
         $limit = (int) ($_GET['limit'] ?? 20);
@@ -42,6 +42,7 @@ class HistorialPagos extends Helpers
             ->join('venta v', 'v.idventa = cpc.idventa')
             ->join('persona p', 'p.idpersona = v.idcliente')
             ->leftJoin('bancos b', 'b.idbanco = dcpc.idbanco')
+            ->where('v.idsucursal', '=', $idsucursal)
             ->orderBy('dcpc.created_at', 'DESC')
             ->search($search, [
                 'p.nombre',

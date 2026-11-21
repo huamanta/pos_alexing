@@ -24,7 +24,7 @@ class MetodosPago extends Helpers
         return Response::json($metodos);
     }
 
-    public function listarDetalleMetodo($metodo)
+    public function listarDetalleMetodo($idsucursal, $metodo)
     {
         $page = max(1, (int) ($_GET['page'] ?? 1));
         $limit = max(1, (int) ($_GET['limit'] ?? 10));
@@ -43,7 +43,8 @@ class MetodosPago extends Helpers
             ->from('movimiento m')
             ->join('usuario u', 'u.idusuario = m.idusuario')
             ->join('personal p', 'p.idpersonal = u.idpersonal')
-            ->join('personal pe', 'pe.idpersonal = m.idpersonal');
+            ->join('personal pe', 'pe.idpersonal = m.idpersonal')
+            ->where('m.idsucursal', '=', $idsucursal);
 
         if ($metodo === 'Efectivo') {
             $movimientos
@@ -78,7 +79,8 @@ class MetodosPago extends Helpers
             ->join('personal p', 'p.idpersonal = dcc.idpersonal')
             ->join('cuentas_por_cobrar cc', 'cc.idcpc = dcc.idcpc')
             ->join('venta v', 'v.idventa = cc.idventa')
-            ->leftJoin('persona pe', 'pe.idpersona = v.idcliente');
+            ->leftJoin('persona pe', 'pe.idpersona = v.idcliente')
+            ->where('v.idsucursal', '=', $idsucursal);
 
         if ($metodo === 'Efectivo') {
             $cuentascobrar
@@ -106,7 +108,8 @@ class MetodosPago extends Helpers
             ->join('personal p', 'p.idpersonal = dcp.idpersonal')
             ->join('cuentas_por_pagar cp', 'cp.idcpp = dcp.idcpp')
             ->join('compra c', 'c.idcompra = cp.idcompra')
-            ->leftJoin('persona pe', 'pe.idpersona = c.idproveedor');
+            ->leftJoin('persona pe', 'pe.idpersona = c.idproveedor')
+            ->where('c.idsucursal', '=', $idsucursal);
 
         if ($metodo === 'Efectivo') {
             $cuentaspagar
@@ -136,7 +139,8 @@ class MetodosPago extends Helpers
             ->join('personal p', 'p.idpersonal = u.idpersonal')
             ->leftJoin('persona pe', 'pe.idpersona = v.idcliente')
             ->where('vp.metodo_pago', '=', $metodo)
-            ->where('vp.monto', '>', 0);
+            ->where('vp.monto', '>', 0)
+            ->where('v.idsucursal', '=', $idsucursal);
 
         $resultado = $movimientos
             ->unionAll($cuentascobrar)

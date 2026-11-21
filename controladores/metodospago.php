@@ -3,7 +3,8 @@ require_once __DIR__ . '/../configuraciones/bootstrap.php';
 require_once __DIR__ . '/../modelos/MetodosPago.php';
 
 $metodosPago = new MetodosPago();
-$op = $_GET['op'];
+$op = isset($_GET["op"]) ? limpiarCadena($_GET["op"]) : "";
+$idsucursal = $_SESSION['idsucursal'] ?? null;
 
 switch ($op) {
     case 'listar':
@@ -12,7 +13,7 @@ switch ($op) {
 
     case 'listarDetalleMetodo':
         $metodo = $_GET['nombre'];
-        $metodosPago->listarDetalleMetodo($metodo);
+        $metodosPago->listarDetalleMetodo($idsucursal, $metodo);
         break;
 
     default:
